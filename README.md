@@ -112,7 +112,7 @@ Across seeds 42/43/44: 1.55 ± 0.04 · CHAIR_s 78.3 ± 0.9 · CHAIR_i 49.7 ± 0.
 Zero-shot on the same backbone: 4.26 hallucinated objects/caption, CHAIR_s 98.0%.
 Template-only variant (VSPS-Base): 1.15 hallucinated objects · CHAIR_s 70.4%.
 
-Object precision / recall / F1 over unique classes per image (Table VII of the paper) are
+Object precision / recall / F1 over unique classes per image (Table IV of the paper) are
 reproduced from the shipped predictions with one command:
 
 ```bash

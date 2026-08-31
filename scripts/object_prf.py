@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Object-level precision, recall, and F1 over unique classes per image (Table VII).
+"""Object-level precision, recall, and F1 over unique classes per image (Table IV).
 
     python scripts/object_prf.py                       # KTVIC test split, all *.preds.json in data/results
     python scripts/object_prf.py --coco-preds ~/ncs-data/coco_score5000   # add the COCO-2014 block
