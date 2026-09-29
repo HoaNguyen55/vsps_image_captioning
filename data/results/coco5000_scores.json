@@ -1,0 +1,42 @@
+{
+  "protocol": " (research log) frozen before seeing results; committed before the probe finished",
+  "gold": "instances_val2014 ∪ ref-caption (synonyms.txt Rohrbach)",
+  "results": {
+    "zeroshot-short": {
+      "n_captions": 5000,
+      "n_missing": 0,
+      "missing_sample": [],
+      "mentions_per_caption": 1.245,
+      "chair_i": 0.0803,
+      "chair_s": 0.096,
+      "abs_halluc_per_caption": 0.1
+    },
+    "zeroshot-detailed": {
+      "n_captions": 5000,
+      "n_missing": 0,
+      "missing_sample": [],
+      "mentions_per_caption": 2.295,
+      "chair_i": 0.1954,
+      "chair_s": 0.3444,
+      "abs_halluc_per_caption": 0.448
+    },
+    "distill-short": {
+      "n_captions": 5000,
+      "n_missing": 0,
+      "missing_sample": [],
+      "mentions_per_caption": 0.854,
+      "chair_i": 0.0649,
+      "chair_s": 0.0542,
+      "abs_halluc_per_caption": 0.055
+    },
+    "distill-detailed": {
+      "n_captions": 5000,
+      "n_missing": 0,
+      "missing_sample": [],
+      "mentions_per_caption": 1.42,
+      "chair_i": 0.1177,
+      "chair_s": 0.1542,
+      "abs_halluc_per_caption": 0.167
+    }
+  }
+}

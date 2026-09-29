@@ -2,7 +2,7 @@
 """Object-level precision, recall, and F1 over unique classes per image (Table IV).
 
     python scripts/object_prf.py                       # KTVIC test split, all *.preds.json in data/results
-    python scripts/object_prf.py --coco-preds ~/ncs-data/coco_score5000   # add the COCO-2014 block
+    python scripts/object_prf.py --coco-preds data/results/coco5000   # add the COCO-2014 block
 
 Definitions (Section IV-C of the paper): with M_i the set of object classes mentioned
 in the caption of image i and G_i its gold classes, precision = sum|M_i & G_i| / sum|M_i|,
