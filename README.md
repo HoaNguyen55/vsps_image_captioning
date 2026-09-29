@@ -57,7 +57,9 @@ data/
   results/         raw numbers behind every table in the paper, including the test-split
                    predictions of the main system (main_s42/s43/s44-*.preds.json), the three
                    controlled variants (vsps_base/clean/neutral-detailed.preds.json), VCD, and
-                   the untrained pipeline (vsps-*.preds.json)
+                   the untrained pipeline (vsps-*.preds.json); the full 5,000-image COCO-2014
+                   Karpathy-test predictions (coco5000/: zero-shot + VSPS, coco5000_vcd/: VCD)
+                   with their CHAIR scores (coco5000_scores*.json)
   screening/, stress50/, vram/   auxiliary experiment data
 ```
 
@@ -130,7 +132,7 @@ reproduced from the shipped predictions with one command:
 
 ```bash
 python scripts/object_prf.py                                   # KTVIC block
-python scripts/object_prf.py --coco-preds <out-dir of coco_probe.py>   # + COCO block
+python scripts/object_prf.py --coco-preds data/results/coco5000        # + COCO block
 ```
 
 Expected (KTVIC, detailed mode): zero-shot 31.6 / 57.1 / 40.7 · VCD 31.9 / 55.9 / 40.6 ·
@@ -142,10 +144,13 @@ COCO-2014: zero-shot 80.5 / 63.3 / 70.9 · VSPS 88.2 / 45.9 / 60.4.
 ### Satellite experiments
 
 ```bash
-python scripts/coco_probe.py --manifest data/coco_probe/manifest_full5000.json \
-    --images-dir $NCS_DATA/coco_images --out-dir $NCS_DATA/coco_score5000   # out-of-domain COCO (+ --adapter for VSPS)
-python scripts/score_coco_probe.py --preds-dir $NCS_DATA/coco_score5000 \
-    --manifest data/coco_probe/manifest_full5000.json   # expected: 0.45 → 0.17 halluc./caption (−63%), CHAIR_s 34.4% → 15.4%
+python scripts/coco_probe.py --manifest data/coco_probe/manifest_full5000.json  # out-of-domain COCO
+python scripts/score_coco_probe.py --preds-dir data/results/coco5000 \
+    --manifest data/coco_probe/manifest_full5000.json --out data/results/coco5000_scores.json
+                                       # expected: 0.45 → 0.17 halluc./caption (−63%), CHAIR_s 34.4% → 15.4%
+python scripts/score_coco_probe.py --preds-dir data/results/coco5000_vcd \
+    --manifest data/coco_probe/manifest_full5000.json --out data/results/coco5000_scores_vcd.json
+                                       # expected (VCD, detailed): 0.38 halluc./caption, CHAIR_s 31.5%
 python scripts/baselines.py --method vcd            # VCD baseline (CVPR'24), same backbone
 python scripts/baselines.py --method selfcorrect    # Self-Correction baseline
 python scripts/run_ablations.py --in $NCS_DATA/stage1   # verification ablations replayed from the stored probes
@@ -159,9 +164,10 @@ python scripts/stress50_analysis.py \
 python scripts/agreement.py                        # Cohen's kappa (needs the annotation files, available on request)
 ```
 
-The shipped COCO score files (`data/results/coco_*scores*.json`) cover the first
-2,500-image half of the Karpathy test split (`data/coco_probe/manifest.json`); the paper
-reports the full 5,000 images (`manifest_full5000.json`).
+The paper's COCO numbers are the full 5,000-image Karpathy test split
+(`manifest_full5000.json`; predictions in `data/results/coco5000*/`, scores in
+`data/results/coco5000_scores*.json`). The older `data/results/coco_*scores*.json` files
+cover only the first 2,500-image half (`data/coco_probe/manifest.json`).
 
 ### Human rating of caption quality
 
