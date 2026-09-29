@@ -1,0 +1,92 @@
+{
+  "n_images": 50,
+  "n_raters": 2,
+  "systems": {
+    "P2": {
+      "faithfulness": {
+        "mean": 2.6,
+        "ci95": [
+          2.27,
+          2.94
+        ]
+      },
+      "completeness": {
+        "mean": 2.16,
+        "ci95": [
+          1.91,
+          2.41
+        ]
+      },
+      "fluency": {
+        "mean": 1.74,
+        "ci95": [
+          1.56,
+          1.93
+        ]
+      }
+    },
+    "VSPS": {
+      "faithfulness": {
+        "mean": 3.91,
+        "ci95": [
+          3.65,
+          4.16
+        ]
+      },
+      "completeness": {
+        "mean": 2.64,
+        "ci95": [
+          2.41,
+          2.86
+        ]
+      },
+      "fluency": {
+        "mean": 3.17,
+        "ci95": [
+          2.9,
+          3.44
+        ]
+      }
+    },
+    "zero-shot": {
+      "faithfulness": {
+        "mean": 4.17,
+        "ci95": [
+          3.94,
+          4.38
+        ]
+      },
+      "completeness": {
+        "mean": 4.47,
+        "ci95": [
+          4.33,
+          4.61
+        ]
+      },
+      "fluency": {
+        "mean": 4.29,
+        "ci95": [
+          4.07,
+          4.5
+        ]
+      }
+    }
+  },
+  "kappa": {
+    "faithfulness": 0.856,
+    "completeness": 0.952,
+    "fluency": 0.949
+  },
+  "wilcoxon_vs_VSPS": {
+    "P2": {
+      "faithfulness": 0.0,
+      "completeness": 0.00895,
+      "fluency": 0.0
+    },
+    "zero-shot": {
+      "faithfulness": 0.11788,
+      "completeness": 0.0,
+      "fluency": 1e-05
+    }
+  }
+}
