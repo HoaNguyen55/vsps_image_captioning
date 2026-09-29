@@ -190,7 +190,7 @@ def main() -> int:
     if args.dataset == "coco":
         man_path = (Path(args.coco_manifest) if args.coco_manifest
                     else Path(__file__).resolve().parents[1].joinpath(
-                        "paper/data/coco_probe/manifest.json"))
+                        "data/coco_probe/manifest.json"))
         man = json.loads(man_path.read_text(encoding="utf-8"))
         items = man.get("images") or man
         names = {str(it["cocoid"]): it["filename"] for it in items}

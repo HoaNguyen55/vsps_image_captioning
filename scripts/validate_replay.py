@@ -48,7 +48,7 @@ class _SizeOnly:
 
 def _load_sizes():
     import json as _json
-    path = Path(__file__).resolve().parents[1] / "paper" / "data" / "image_sizes.json"
+    path = Path(__file__).resolve().parents[1] / "data" / "image_sizes.json"
     try:
         return _json.loads(path.read_text(encoding="utf-8"))
     except Exception:
