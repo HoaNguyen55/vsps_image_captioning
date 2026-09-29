@@ -54,6 +54,9 @@ data/
   stage1_records/  3,700 verified Phase-1a records, one per training image (27 MB packed)
   supervision/     pre-built supervision store (sft.jsonl) — ready to train on
   coco_probe/      COCO manifests + the frozen Vietnamese→COCO object dictionary
+  annotations/     human audit of the verifier: the 244-proposition machine-Supported sample
+                   (audit_supported_sample.json) and its verdicts (audit/tn.json); the round-2
+                   sample (audit_round2_sample.json) and the 12 verdicts collected so far (audit/tn_dot2.json)
   results/         raw numbers behind every table in the paper, including the test-split
                    predictions of the main system (main_s42/s43/s44-*.preds.json), the three
                    controlled variants (vsps_base/clean/neutral-detailed.preds.json), VCD, and
