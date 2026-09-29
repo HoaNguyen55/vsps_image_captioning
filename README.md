@@ -66,26 +66,39 @@ data/
 ### Phase 1a — generate + verify propositions (optional, ~30 GPU-hours; results shipped)
 
 ```bash
-tar -xzf data/stage1_records/stage1_records.tar.gz -C $NCS_DATA   # use shipped records
-# OR regenerate from scratch:
-python scripts/generate_stage1.py --split train --out $NCS_DATA/stage1   # generation + dual-query verification + ceilings
+tar -xzf data/stage1_records/stage1_records.tar.gz -C $NCS_DATA   # shipped records -> $NCS_DATA/stage1
+# OR regenerate them from scratch:
+# python scripts/generate_stage1.py --source train_data.json --out $NCS_DATA/stage1   # generation + dual-query verification + ceilings
 python scripts/person_uncap.py --in $NCS_DATA/stage1 --out $NCS_DATA/stage1_final   # offline neutralization (un-capping)
 ```
 
 `generate_stage1.py` runs steps (1)–(2) of the paper's Fig. 2 and stores the evidence
-record of every proposition. `person_uncap.py` is step (3), the main system's
+record of every proposition. The shipped records are the output of this step, i.e.
+**before** neutralization (461 images without any SUPPORTED proposition), so
+`person_uncap.py` must be run on them too. `person_uncap.py` is step (3), the main system's
 neutralization: it recovers UNCERTAIN person propositions **offline from the stored
-evidence** (τ = 0.9, no model call; recovers 11,769 propositions on 2,351 images —
-printed at the end of the run). `person_backoff.py` is the alternative that re-queries
+evidence** (τ = 0.9, no model call; recovers 11,769 propositions on 2,351 images and
+leaves 83 images without any SUPPORTED proposition — printed at the end of the run).
+Relation propositions are never neutralized; `relation_audit.py` measures how many
+SUPPORTED relations still reach the detailed supervision (2.0% of selected propositions,
+`data/results/relation_audit.json`):
+
+```bash
+python scripts/relation_audit.py --in $NCS_DATA/stage1_final
+``` `person_backoff.py` is the alternative that re-queries
 the verifier with the neutral noun; it was explored but is not part of the main system.
 
 ### Phase 1b — build supervision + fine-tune (QLoRA, ~2 h per run on an RTX 4090)
 
 ```bash
-# step (4): selection + rendering are stored in the stage-1 records; this turns them into the store
-python scripts/build_dpo_data.py --stage1 $NCS_DATA/stage1_final --out $NCS_DATA/supervision   # writes sft.jsonl (and dpo.jsonl)
-# or use the shipped store data/supervision/sft.jsonl directly
-python scripts/train_stage2.py --data data/supervision --out $NCS_DATA/runs/sft --seed 42
+# step (4): selection (budget 9) + template rendering; variant B = uncertain content excluded
+python scripts/build_dpo_data.py --in $NCS_DATA/stage1_final --out $NCS_DATA/supervision \
+    --budget 9 --detailed-variant B --style-variation --clean-props   # writes sft.jsonl (and dpo.jsonl)
+# or use the shipped store data/supervision/sft.jsonl directly (it also contains the 650
+# constrained-LM detailed examples, rendered with the constrained_lm path of
+# rescap/pipeline/realize.py as in scripts/constrained_lm_pilot.py)
+python scripts/train_stage2.py --stage sft --data data/supervision --out $NCS_DATA/runs/sft \
+    --epochs 2 --seed 42
 # controls: --no-4bit (bf16 LoRA, no quantization) or --use-8bit
 ```
 
@@ -99,8 +112,8 @@ contributes supervision.
 ### Phase 2 — single-pass inference + scoring (558-image KTVIC test split)
 
 ```bash
-python scripts/evaluate.py --adapter $NCS_DATA/runs/sft --split test \
-    --out $NCS_DATA/results/eval.json
+python scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/sft \
+    --prompt detailed --name main_s42-detailed      # also --prompt short
 python scripts/score_ci.py --a data/results/zeroshot-detailed.preds.json --name-a zero-shot \
     --b data/results/main_s42-detailed.preds.json --name-b VSPS      # paired bootstrap, 5,000 rounds, seed 42
 ```
@@ -129,12 +142,15 @@ COCO-2014: zero-shot 80.5 / 63.3 / 70.9 · VSPS 88.2 / 45.9 / 60.4.
 ### Satellite experiments
 
 ```bash
-python scripts/coco_probe.py --manifest data/coco_probe/manifest_full5000.json  # out-of-domain COCO
-python scripts/score_coco_probe.py     # expected: 0.45 → 0.17 halluc./caption (−63%), CHAIR_s 34.4% → 15.4%
+python scripts/coco_probe.py --manifest data/coco_probe/manifest_full5000.json \
+    --images-dir $NCS_DATA/coco_images --out-dir $NCS_DATA/coco_score5000   # out-of-domain COCO (+ --adapter for VSPS)
+python scripts/score_coco_probe.py --preds-dir $NCS_DATA/coco_score5000 \
+    --manifest data/coco_probe/manifest_full5000.json   # expected: 0.45 → 0.17 halluc./caption (−63%), CHAIR_s 34.4% → 15.4%
 python scripts/baselines.py --method vcd            # VCD baseline (CVPR'24), same backbone
 python scripts/baselines.py --method selfcorrect    # Self-Correction baseline
-python scripts/run_ablations.py                    # budget × policy grid
-python scripts/measure_latency.py                  # median 0.81 s (short) / 1.88 s (detailed) on RTX 4090
+python scripts/run_ablations.py --in $NCS_DATA/stage1   # verification ablations replayed from the stored probes
+python scripts/measure_latency.py --adapter $NCS_DATA/runs/sft \
+    --out latency.json                             # median 0.81 s (short) / 1.88 s (detailed) on RTX 4090
 python scripts/stress50_analysis.py \
     --manifest data/stress50/stress50_manifest.json \
     --preds "zeroshot=data/results/zeroshot-detailed.preds.json" \
@@ -143,9 +159,22 @@ python scripts/stress50_analysis.py \
 python scripts/agreement.py                        # Cohen's kappa (needs the annotation files, available on request)
 ```
 
+The shipped COCO score files (`data/results/coco_*scores*.json`) cover the first
+2,500-image half of the Karpathy test split (`data/coco_probe/manifest.json`); the paper
+reports the full 5,000 images (`manifest_full5000.json`).
+
+### Human rating of caption quality
+
+```bash
+python scripts/human_eval_sample.py      # 50 test images x (zero-shot, P2, VSPS): blinded rating_sheet.xlsx + key.json
+# two annotators fill in copies of rating_sheet.xlsx (1-5: faithfulness, completeness, fluency)
+python scripts/human_eval_score.py --key data/human_eval/key.json \
+    --sheets rater_A.xlsx rater_B.xlsx --out data/results/human_eval.json
+```
+
 ### Optional: preference-tuning exploration (negative result)
 
-`scripts/build_dpo_data.py` and the `--dpo` flag of `train_stage2.py` reproduce the
+`scripts/build_dpo_data.py` (`dpo.jsonl`, 12,806 pairs) and `train_stage2.py --stage dpo --adapter <sft adapter>` reproduce the
 preference-tuning experiments reported as a controlled negative result: on the 4-bit
 backbone, every tested dose degraded CIDEr and leaked non-Vietnamese tokens. They are
 not part of the main system.

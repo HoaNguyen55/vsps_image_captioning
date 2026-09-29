@@ -28,7 +28,7 @@ from pathlib import Path
 
 DATA = Path(os.environ.get("NCS_DATA", Path.home() / "ncs-data"))
 KTVIC = DATA / "datasets" / "ktvic"
-SAMPLE = Path(__file__).resolve().parents[1] / "paper" / "data" / "annotations" / "audit_supported_sample.json"
+SAMPLE = Path(__file__).resolve().parents[1] / "data" / "annotations" / "audit_supported_sample.json"
 OUT_ROOT = DATA / "annotations" / "audit"
 BACKUP_ROOT = DATA / "annotations-backup" / "audit"
 
