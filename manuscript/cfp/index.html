@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CFP Timeline VSPS</title>
+<style>
+:root{--bg:#f7f7f5;--card:#fff;--fg:#1d1d1b;--mute:#6b6b66;--line:#e2e2dc;--accent:#2f6fde;--warn:#c9461b;--ok:#2e8b57;--soon:#d99a00}
+@media (prefers-color-scheme:dark){:root{--bg:#161615;--card:#20201e;--fg:#ececea;--mute:#9a9a94;--line:#33332f;--accent:#6d9cff;--warn:#ff7a4d;--ok:#5cc58a;--soon:#f0b82e}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 60px}
+h1{font-size:22px;margin:0 0 4px}
+.sub{color:var(--mute);margin:0 0 16px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;align-items:center}
+select,input{background:var(--card);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit}
+label{color:var(--mute);font-size:13px;display:flex;gap:6px;align-items:center}
+.month{margin:22px 0 8px;font-weight:600;color:var(--mute);border-bottom:1px solid var(--line);padding-bottom:4px}
+.item{display:grid;grid-template-columns:110px 1fr;gap:12px;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--accent);border-radius:8px;padding:10px 12px;margin:8px 0}
+.item.soon{border-left-color:var(--soon)}.item.urgent{border-left-color:var(--warn)}.item.rolling{border-left-color:var(--ok)}
+.date{font-weight:600}.days{font-size:13px;color:var(--mute)}
+.name{font-weight:600}.name a{color:var(--fg)}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin:4px 0}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:10px;padding:0 8px;color:var(--mute)}
+.tag.q{color:var(--accent);border-color:var(--accent)}.tag.unv{color:var(--warn);border-color:var(--warn)}
+.notes{font-size:13px;color:var(--mute)}
+.empty{color:var(--mute);padding:30px 0}
+@media (max-width:560px){.item{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+<h1>Lịch nộp bài: hội nghị và tạp chí cho VSPS</h1>
+<p class="sub" id="sub">Đang tải…</p>
+<div class="bar">
+  <select id="type"><option value="">Tất cả loại</option><option value="conference">Hội nghị</option><option value="journal">Tạp chí</option><option value="special_issue">Số đặc biệt</option></select>
+  <select id="fit"><option value="1">Độ phù hợp ≥1</option><option value="3" selected>Độ phù hợp ≥3</option><option value="4">Độ phù hợp ≥4</option></select>
+  <input id="q" placeholder="Tìm tên, nhà xuất bản, Q2…">
+  <label><input type="checkbox" id="past"> Hiện hạn đã qua</label>
+  <label><input type="checkbox" id="roll" checked> Hiện tạp chí nộp liên tục</label>
+</div>
+<div id="list"></div>
+</main>
+<script>
+const FILES=["01_intl_conferences.json","02_asia_vn_conferences.json","03_special_issues.json","04_rolling_journals.json"];
+const TYPE={conference:"Hội nghị",journal:"Tạp chí",special_issue:"Số đặc biệt"};
+const today=new Date(new Date().toDateString());
+let rows=[];
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const days=d=>Math.round((new Date(d+"T00:00:00")-today)/864e5);
+
+async function load(){
+  const got=await Promise.all(FILES.map(f=>fetch(f+"?t="+Date.now()).then(r=>r.ok?r.json():[]).catch(()=>[])));
+  const seen=new Set();
+  for(const v of got.flat()){
+    const key=(v.acronym||v.name)+"|"+v.type;
+    if(seen.has(key))continue; seen.add(key);
+    const ds=(v.deadlines||[]).filter(d=>/^\d{4}-\d{2}-\d{2}$/.test(d.date));
+    if(!ds.length) rows.push({v,dl:null});
+    for(const d of ds) rows.push({v,dl:d});
+  }
+  const loaded=got.filter(a=>a.length).length;
+  document.getElementById("sub").textContent=`${seen.size} địa điểm từ ${loaded}/${FILES.length} nguồn · hôm nay ${today.toLocaleDateString("vi-VN")} · dữ liệu do agent thu thập, hãy kiểm tra lại trên trang chính thức trước khi nộp.`;
+  render();
+}
+
+function render(){
+  const t=type.value,f=+fit.value,s=q.value.toLowerCase(),showPast=past.checked,showRoll=roll.checked;
+  const out=rows.filter(({v,dl})=>{
+    if(t&&v.type!==t)return false;
+    if((v.fit||0)<f)return false;
+    if(s&&!JSON.stringify(v).toLowerCase().includes(s))return false;
+    if(!dl)return showRoll;
+    return showPast||days(dl.date)>=0;
+  }).sort((a,b)=>(a.dl?a.dl.date:"9999")<(b.dl?b.dl.date:"9999")?-1:1);
+  let html="",month="";
+  for(const {v,dl} of out){
+    const m=dl?new Date(dl.date+"T00:00:00").toLocaleDateString("vi-VN",{month:"long",year:"numeric"}):"Nộp liên tục (không hạn)";
+    if(m!==month){month=m;html+=`<div class="month">${esc(m)}</div>`;}
+    const n=dl?days(dl.date):null;
+    const cls=!dl?"rolling":n<0?"":n<=14?"urgent":n<=45?"soon":"";
+    html+=`<div class="item ${cls}"><div><div class="date">${dl?esc(dl.date):"—"}</div><div class="days">${dl?(n<0?`đã qua ${-n} ngày`:`còn ${n} ngày`):"rolling"}</div><div class="days">${esc(dl?.label||"")}</div></div>
+<div><div class="name"><a href="${esc(v.url)}" target="_blank" rel="noopener">${esc(v.acronym?v.acronym+" · ":"")}${esc(v.name)}</a></div>
+<div class="tags"><span class="tag">${esc(TYPE[v.type]||v.type)}</span><span class="tag">${esc(v.publisher)}</span>${v.quartile?`<span class="tag q">${esc(v.quartile)}${v.quartile_source?" ("+esc(v.quartile_source)+")":""}</span>`:""}${v.rank_other?`<span class="tag">${esc(v.rank_other)}</span>`:""}${(v.indexing||[]).map(i=>`<span class="tag">${esc(i)}</span>`).join("")}<span class="tag">phù hợp ${esc(v.fit)}/5</span>${dl&&!dl.verified?`<span class="tag unv">ngày chưa xác nhận</span>`:""}</div>
+<div class="notes">${esc([v.event_date,v.location,v.apc&&"APC: "+v.apc,v.review_time&&"Phản biện: "+v.review_time].filter(Boolean).join(" · "))}</div>
+<div class="notes">${esc(v.notes)}</div></div></div>`;
+  }
+  list.innerHTML=html||`<div class="empty">Chưa có dữ liệu khớp bộ lọc (agent có thể vẫn đang thu thập — tải lại trang sau).</div>`;
+}
+for(const id of ["type","fit","q","past","roll"]) document.getElementById(id).addEventListener("input",render);
+load();
+</script>
+</body>
+</html>

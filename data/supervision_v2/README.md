@@ -21,3 +21,15 @@ Next step (GPU, one per variant and seed 42/43/44):
     python3 scripts/train_stage2.py --stage sft --data data/supervision_v2/raw --out $NCS_DATA/runs/v2raw_s42 --epochs 2 --seed 42
     python3 scripts/evaluate.py --adapter $NCS_DATA/runs/v2raw_s42 --split test_data.json --prompt detailed --name v2raw_s42-detailed
     python3 scripts/object_prf.py
+
+## Result: v2 raw, seed 42 (RTX 3090, 2026-10-10)
+
+KTVIC test (558 images), detailed prompt, same lexicon/gold as Table IV:
+
+| model | P | R | F1 | true obj/cap | CHAIR_s | CHAIR_i | halluc/cap | words |
+|---|---|---|---|---|---|---|---|---|
+| shipped VSPS main_s42 | 41.5 | 36.7 | 39.0 | 1.30 | 79.2 | 50.1 | 1.57 | 34 |
+| v2 raw s42 | 38.1 | 42.2 | 40.1 | 1.50 | 86.6 | 54.4 | 2.14 | 44 |
+| zero-shot Qwen2.5-VL-7B | 31.6 | 57.1 | 40.7 | 2.07 | 98.0 | 65.1 | 4.26 | 117 |
+
+Recall +5.5 and F1 +1.1 over shipped s42, but precision −3.4 and hallucinated mentions per caption +36%: the richer targets move the model along the same precision/recall curve toward zero-shot rather than above it. F1 still trails zero-shot. Single seed; v2 clean s42 is training next.

@@ -10,3 +10,5 @@
 - `KE_HOACH_Q2.md` — plan for the Q2 journal extension.
 - `slides/FAIR_VSPS_v11_talk.pptx` — Vietnamese FAIR talk revised along the review (section D),
   built by `slides/build_v11.py` from `slides/FAIR_VSPS_v10_talk_source.pptx` (the user-edited v10).
+- `research_wall/`: 11-agent literature wall (00_TONG_HOP.md = summary); `watch.py` re-runs the arXiv/OpenAlex watch monthly.
+- `cfp/`: venue deadlines; view with `python3 -m http.server 8765 -d manuscript/cfp` → http://localhost:8765

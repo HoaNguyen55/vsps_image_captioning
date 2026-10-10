@@ -94,7 +94,12 @@ def score(captions: dict[str, str], gold: dict[str, set[str]], lenient: bool) ->
         if lenient:
             vague_ok = {x for x in m if any(x in ANCESTORS[y] for y in g)}
             tp += len((m & g) | vague_ok)
-            covered = {y for y in g if y in m or ANCESTORS[y] & m}
+            # One vague mention covers one gold class: "người" must not cover phụ nữ, đàn ông and trẻ em at once.
+            covered = m & g
+            for x in sorted(vague_ok - g):
+                y = next((y for y in sorted(g - covered) if x in ANCESTORS[y]), None)
+                if y:
+                    covered.add(y)
         else:
             tp += len(m & g)
             covered = m & g
@@ -194,6 +199,9 @@ def self_check() -> None:
         assert r["agreement"]["pooled_kappa"] == 1.0, "lexicon word typed in 'other' must count as a tick"
         assert r["systems"]["vague"]["agreed/exact"]["P"] == 0.0
         assert r["systems"]["vague"]["agreed/lenient"] == {"P": 100.0, "R": 100.0, "F": 100.0}
+        crowd = dump("crowd.json", {i: {"phụ nữ", "đàn ông"} for i in ids})
+        r = run(d / "sample.json", [crowd, crowd], None, {"vague": {i: "một người đang đứng" for i in ids}})
+        assert r["systems"]["vague"]["agreed/lenient"]["R"] == 50.0, "one vague mention covers one gold class"
         print_report(run(d / "sample.json", [a, b], None, {"perfect": perfect, "half": half}))
     print("self-check OK")
 
