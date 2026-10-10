@@ -1,4 +1,4 @@
-# Kế hoạch lớn: Image captioning tiếng Việt với Transformer + Đồ thị tri thức — **bản v2** (sau vòng phản biện 2, 2026-10-10)
+# Kế hoạch lớn: Image captioning tiếng Việt với Transformer + Đồ thị tri thức — **bản v3** (sau 3 vòng phản biện, 2026-10-10; mục 12 thay thế các mục cũ khi mâu thuẫn)
 
 Nguồn: vòng 1 `01..20_*.md`; vòng 2 `R2_01..R2_06_*.md` (11 BLOCKER, ~35 MAJOR); bản trước `00_KE_HOACH_v1.md`. Số "ước tính" là của agent, **chưa đo**, trừ khi ghi "đo được". Mọi "chưa có ai làm" viết là **"chưa tìm thấy"**.
 
@@ -134,6 +134,67 @@ Người gán ~200 h, NCS ~90 h (R2-06 §4.3, ước tính, dư ~30%). GPU nhán
 - Verifier 63,1% lan sang G*: không claim đảm bảo trung thực.
 - Quyền riêng tư: vòng 1 có 8 agent gửi email người dùng trong mailto/User-Agent (OpenAlex/Crossref/Wikidata) trước khi có quy tắc; từ vòng 2 cấm rõ.
 
-## 11. Vòng lặp
 
-Vòng 2 → v2 (bản này). Vòng 3: kiểm lại v2 trên 3 trục bằng 3 critic mới (không đọc phản biện cũ trước khi tự đánh giá). Dừng nếu không còn BLOCKER.
+## 11. Kết quả vòng lặp
+
+| Vòng | Critic | BLOCKER | Trạng thái |
+|---|---|---|---|
+| 1 | 20 agent nghiên cứu | — | bản nháp v1 |
+| 2 | 6 critic (R2_01..06) | 11 | → v2 |
+| 3 | 3 critic (R3_01..03) | 4 (trùng lặp 0; reviewer 3; khả thi 1) | → v3 (mục 12); trùng lặp đã đạt (0 BLOCKER, 0 HIGH với cách viết v2) |
+
+Đạt giới hạn 3 vòng. 3/4 BLOCKER vòng 3 sửa được trong kế hoạch (mục 12); 1 BLOCKER (phân ranh P0/P2) **cần tác giả quyết định**.
+
+## 12. Sửa vòng 3 (v3)
+
+### 12.1 Phân ranh P0 ↔ P1 ↔ P2 (BLOCKER R3-02, cần tác giả chọn)
+
+`KE_HOACH_Q2.md` (kế hoạch P0) vẫn chứa lõi của P2 (D2 lùi quan hệ→thực thể, D3 lùi IsA "chó poodle → con chó", box/hình học B3/C4, hội đồng verifier C1/C3) và lõi của P1 (B1 object gold 300 ảnh, B2 chấm cấp mệnh đề). TALLIP cần ≥25–30% nội dung mới so với FAIR 2026.
+
+| Phương án | P0 (TALLIP) | P1 | P2 |
+|---|---|---|---|
+| **A (khuyến nghị)** | sửa lỗi VSPS + v2raw (recall) + verifier logit + dedup + CI văn hóa + object gold dùng *nội bộ* để báo recall (không claim tài nguyên) | gold SG, bộ chấm người cấp caption/mệnh đề, parser, M1/H-R/M2 | D2/D3 + lùi vị từ + GEPA |
+| B | gộp D2/D3 vào P0 (đủ ≥30% mới chắc chắn) | như A | hoãn; P2 chỉ còn nếu có thêm đóng góp |
+
+Cột FAIR 2026 (đã công bố): kiểm chứng 3 trạng thái, trung tính hóa giới tính, render truy vết, CHAIR-vi — không bài nào sau được claim lại.
+
+### 12.2 M1 thành metric tự động (BLOCKER R3-02)
+
+- **M1-P (tự động, cấp caption)** = claim khớp node SUPPORTED-gold / (claim khớp SUPPORTED-gold + claim khớp REJECTED-gold + claim không khớp gold), bỏ từ rỗng. Claim khớp UNCERTAIN-gold không vào cả tử lẫn mẫu, báo riêng thành **tỷ lệ claim mơ hồ**.
+- Ước lượng có hiệu chỉnh người (50+50 claim) chỉ là **phân tích cấp hệ thống**, không trộn vào điểm caption, không dùng cho τ cấp caption.
+- Đổi tên "điểm độ cụ thể" thành **độ sâu IsA trung bình** (tránh đụng SPECS, EMNLP 2025); trích CapProbe (08/2026) cho phần phạt caption dài-rỗng. M1/H-R trình bày là *công cụ đo cho tiếng Việt*, không claim metric mới về khái niệm.
+
+### 12.3 Cổng G-P2 kiểm đúng thứ (BLOCKER R3-02, MAJOR R3-01)
+
+G-P2 (31/01, trên **dev**, CI 95% bootstrap): ViHG-Cap phải **(a)** hơn VSPS-xóa, viết-lại-CLC, lùi-sau-sinh và **lọc claim conformal (BCEA, 06/2026)** về diện tích SFA ở cùng dải độ sâu IsA; **(b)** H-R không giảm > 2 điểm so với VSPS; **(c)** đo bằng CHAIR-vi + object P/R + H-R (đã có), **không dựa vào M1** vì T4 chưa xác nhận M1. CI chưa ngã ngũ → coi là trượt (không nộp ACM MM). Trượt (a) với CLC → bỏ chữ "KG" khỏi tên và claim.
+
+**G-pred (mới)**: đo riêng các bậc trung gian của vị từ (đang cưỡi → ở trên → ở gần). Không có lợi → bỏ "vị từ" khỏi claim, P2 chỉ còn lùi thực thể.
+
+**Baseline mới**: "tổng quát hóa mọi danh từ bất kể verdict" (kiểu Conceptual Captions ACL 2018, dùng Google KG để thay thực thể bằng từ chung trong dữ liệu huấn luyện captioner — **phải trích**, vì riêng nửa thực thể của P2 trùng HIGH với CC + VSPS + CLC). HALVA: **tự cài lại loss trên Qwen2.5-VL-7B tiếng Việt** (dùng chung code GEPA), bỏ checkpoint LLaVA tiếng Anh; RLAIF-V chuyển sang "thảo luận", không chạy.
+
+### 12.4 Giờ công theo tháng (BLOCKER R3-03)
+
+Cắt phạm vi: "nội dung không kiểm được" chỉ 4 hệ (zero-shot, VSPS, ViHG-Cap, baseline mạnh nhất) × 100 ảnh; kiểm claim M1 chỉ seed 42 của 6 hệ; meta-eval A = 300 ảnh ViSG + 100 ảnh XM3600; gold SG XM3600 100 ảnh; XM3600 phần meta-eval kéo lên 20/11–20/12.
+
+| Tháng | Năng lực người gán (2 người × 6–10 h/tuần) | Nhu cầu sau cắt (ước tính) |
+|---|---|---|
+| 11/2026 | 48–80 | hiệu chuẩn 20 + anchoring 100 ảnh ~25 + tập hiệu chỉnh verifier từ ảnh **train** 3–4 + XM3600 meta-eval ~18 ≈ 66–70 |
+| 12/2026 | 48–80 | SG ViSG 50 + SG XM3600 ~13 + sửa parse 20 ≈ 83 → **dồn 10–15 h sang 11** (bắt đầu SG từ 20/11) |
+| 01/2027 (thi) | 24–40 | meta-eval ViSG phần 1 ~30 |
+| 02/2027 (Tết) | 24–40 | meta-eval phần 2 ~23 + claim M1 6–12 |
+| 03/2027 | 48–80 | không kiểm được 13–20 + văn hóa 10 + human eval P2 23 ≈ 46–53 |
+| **Tổng** | **192–320** | **≈ 245–275** |
+
+NCS ~90–110 h (thêm loader OpenViIC/XM3600, cờ `--model-id` trong `train_stage2.py`, HALVA reimpl). Dư 0–20% → **không thêm việc mới** mà không cắt việc khác.
+
+### 12.5 GPU (MAJOR R3-03)
+
+Tính lại cho MVP: **~310–495 GPU-h** (2,5–3,5 tuần máy); +150–250 nếu T0.5 trượt (quay về K=5 cho lùi-sau-sinh mọi hệ). SFT 3,6 h/lượt: đo được trên RTX 3090: v2raw 1.800 bước 3 h 36 m, v2clean 1.778 bước 3 h 33 m (`data/supervision_v2/train_logs/`).
+
+### 12.6 Sửa nhỏ khác
+
+- Tập audit 244 mục là ảnh **test** → không dùng làm dev cho T0.5; gán 300–500 mệnh đề trên ảnh **train** (đã có trong 12.4).
+- Parser T3: baseline AMR (viSemParse) không chạy được (không có parser phát hành) → thay bằng **Qwen2.5-7B few-shot**; giữ "dịch→FACTUAL/DiscoSG".
+- XM3600: có tiếng Việt; caption CC BY 4.0, **ảnh Open Images CC BY 2.0** → chỉ phát hành ID + file ghi công. Qwen2.5-VL-3B: license *qwen-research* (phi thương mại) — ghi rõ; 7B Apache-2.0.
+- Trích thêm: HalCECE (2503.00436), DetailVerifyBench (2604.05623), SPECS, CapProbe, BCEA, Conceptual Captions; CLC đã xác nhận NeurIPS 2025. "Chưa tìm thấy cho caption" thu hẹp thành "chưa tìm thấy cho *sinh/huấn luyện* caption" (HalCECE).
+- T-dedup: KTVIC train↔test **đã xong** (mục 7.1); OpenViIC/XM3600 hạn 24/10 (cần tải 3 bộ).
