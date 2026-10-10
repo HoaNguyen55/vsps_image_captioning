@@ -195,7 +195,8 @@ def classify_epistemic(text: str, ptype: str | None = None) -> tuple[str, str]:
             return Epistemic.SPECULATION, kind
     if ptype is None or ptype in IDENTITY_TYPES:
         for noun, _ in GENDERED_NOUNS.items():
-            if noun in lowered:
+            # Whole words only: a substring test tags "bàn", "xanh", "sông" as gendered.
+            if re.search(rf"(?<!\w){re.escape(noun)}(?!\w)", lowered):
                 # Gender asserted from a caption is inference until the verifier
                 # finds visible evidence (formulation/02 §4.3).
                 return Epistemic.INFERENCE, "none"

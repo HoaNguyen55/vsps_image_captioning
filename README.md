@@ -18,8 +18,8 @@ shell command whose printed numbers can be checked against the tables in the pap
 | Step | GPU | Notes |
 |---|---|---|
 | Smoke test, scoring, figures | none | CPU-only |
-| Inference (Phase 2), latency | 1× 24 GB (RTX 3090/4090) | 4-bit NF4 |
-| Fine-tuning (Phase 1b) | 1× 24 GB | QLoRA r=16 |
+| Inference (Phase 2), latency | 1× 24 GB (RTX 3090/4090) | bf16 base + adapter (`evaluate.py --four-bit` loads NF4 instead) |
+| Fine-tuning (Phase 1b) | 1× 24 GB | QLoRA r=16 (4-bit NF4 base) |
 | Regenerating Phase-1a records | 1× 24 GB, ~30 h | **shipped** in `data/stage1_records/` — can be skipped |
 
 ## 1. Environment
@@ -46,7 +46,7 @@ the adapter still loads but inference goes wrong *silently*.
 rescap/            core library
   pipeline/generate.py   proposition generation (typed, atomic) from an image
   pipeline/verify.py     dual-query verification, K = 5 repeated decoding runs, 3 states + lower-only ceilings
-  pipeline/select.py     budgeted redundancy-aware selection (default budget 9)
+  pipeline/select.py     budgeted redundancy-aware selection (default budget 5; main system 9)
   pipeline/realize.py    rendering: template path / constrained-LM path
   chair.py               CHAIR-vi (object matching over VnCoreNLP word segmentation)
 scripts/           every experiment in the paper — one file per experiment
@@ -68,7 +68,34 @@ data/
 
 ## 3. Reproduction, phase by phase
 
-### Phase 1a — generate + verify propositions (optional, ~30 GPU-hours; results shipped)
+Phase naming follows the paper: **Phase 1** builds the model offline — **1a** constructs
+the supervision (generate → verify → neutralize → select + render), **1b** fine-tunes with
+QLoRA-SFT; **Phase 2** is deployment (single-pass inference). The code keeps older names:
+"stage 1" = the verified records of Phase 1a, and `train_stage2.py` = Phase 1b.
+
+Main system end to end, exact flags (from the shipped records; seeds 43/44: change `--seed`):
+
+```bash
+tar -xzf data/stage1_records/stage1_records.tar.gz -C $NCS_DATA
+python scripts/person_uncap.py --in $NCS_DATA/stage1 --out $NCS_DATA/stage1_final
+python scripts/build_dpo_data.py --in $NCS_DATA/stage1_final --out $NCS_DATA/supervision \
+    --budget 9 --detailed-variant B --style-variation --clean-props
+python scripts/train_stage2.py --stage sft --data data/supervision --out $NCS_DATA/runs/sft \
+    --epochs 2 --seed 42
+python scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/sft \
+    --prompt detailed --name main_s42-detailed
+python scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/sft \
+    --prompt short --name main_s42-short
+```
+
+`train_stage2.py` reads the shipped store `data/supervision/sft.jsonl`, which also holds
+the 650 constrained-LM detailed examples; `build_dpo_data.py` alone renders every detailed
+example with the template path (pass `--data $NCS_DATA/supervision` to train on its output).
+
+### Phase 1a — construct the supervision
+
+Steps (1)–(3): generate + verify propositions, neutralize (optional regeneration
+~30 GPU-hours; records shipped):
 
 ```bash
 tar -xzf data/stage1_records/stage1_records.tar.gz -C $NCS_DATA   # shipped records -> $NCS_DATA/stage1
@@ -90,10 +117,12 @@ SUPPORTED relations still reach the detailed supervision (2.0% of selected propo
 
 ```bash
 python scripts/relation_audit.py --in $NCS_DATA/stage1_final
-``` `person_backoff.py` is the alternative that re-queries
-the verifier with the neutral noun; it was explored but is not part of the main system.
+```
 
-### Phase 1b — build supervision + fine-tune (QLoRA, ~2 h per run on an RTX 4090)
+`person_backoff.py` is the alternative that re-queries the verifier with the neutral noun; it was explored but is not part of the main system.
+
+Step (4): selection + rendering. The script defaults (budget 5, variant A) are **not** the
+main system; pass the flags below:
 
 ```bash
 # step (4): selection (budget 9) + template rendering; variant B = uncertain content excluded
@@ -102,8 +131,13 @@ python scripts/build_dpo_data.py --in $NCS_DATA/stage1_final --out $NCS_DATA/sup
 # or use the shipped store data/supervision/sft.jsonl directly (it also contains the 650
 # constrained-LM detailed examples, rendered with the constrained_lm path of
 # rescap/pipeline/realize.py as in scripts/constrained_lm_pilot.py)
+```
+
+### Phase 1b — QLoRA-SFT (4-bit NF4 base, ~2 h per run on an RTX 4090)
+
+```bash
 python scripts/train_stage2.py --stage sft --data data/supervision --out $NCS_DATA/runs/sft \
-    --epochs 2 --seed 42
+    --epochs 2 --seed 42      # 2 epochs is also the SFT default
 # controls: --no-4bit (bf16 LoRA, no quantization) or --use-8bit
 ```
 
@@ -114,7 +148,11 @@ verified record by record: no empty responses, the 3,560 detailed examples split
 3,617 images belong to the KTVIC train split — the 558-image test split never
 contributes supervision.
 
-### Phase 2 — single-pass inference + scoring (558-image KTVIC test split)
+### Phase 2 — deployment: single-pass inference + scoring (558-image KTVIC test split)
+
+`evaluate.py` and `measure_latency.py` load the base model in **bf16** with the adapter on
+top; no verifier or post-editing runs. `evaluate.py --four-bit` loads the base in 4-bit NF4
+(the precision used in training) instead.
 
 ```bash
 python scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/sft \

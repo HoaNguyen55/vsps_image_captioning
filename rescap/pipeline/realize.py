@@ -50,6 +50,7 @@ import unicodedata
 from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Iterable, Sequence
 
+from ..chair import objects_in
 from ..vi.classifier import build_noun_phrase, classifier_for
 from ..vi.color import Xanh, parse_color
 from ..vi.lexicon import (
@@ -1000,6 +1001,7 @@ def plan_caption(
     sentence_count = 0
     topic_shifts = 0
     scene_used = False
+    listed: list[tuple[_Bucket, str, dict | None]] = []
 
     def hedge_for(prop: dict) -> bool:
         return str(prop.get("id")) in hedged
@@ -1034,13 +1036,14 @@ def plan_caption(
         # -- topic shift handling (§5.5 constraints 2 and 4) ------------------
         is_shift = index > 0
         if is_shift and topic_shifts >= cfg.max_topic_shifts:
+            # No full clause past the shift cap, but the entity is still named in
+            # the closing `còn có …` list: dropping it lost ~75% of the objects
+            # the renderer used to lose (render-loss audit).
             plan.warnings.append(
-                f"skipping {bucket.entity_id}: more than {cfg.max_topic_shifts} topic shifts "
-                "(§5.5 constraint 2)"
+                f"listing {bucket.entity_id}: more than {cfg.max_topic_shifts} topic shifts "
+                "(§5.5 constraint 2) — existence only"
             )
-            plan.unplanned_ids.extend(
-                pid for pid in _bucket_ids(bucket) if pid not in plan.ordered_ids
-            )
+            listed.append((bucket, head, anchor))
             continue
 
         fronted = _fronted_spatial(bucket, discourse) if is_shift else None
@@ -1375,6 +1378,8 @@ def plan_caption(
                     ),
                 )
 
+    _emit_listing(listed, plan, discourse, stats, emit, new_clause)
+
     plan.topic_order = [b.entity_id for b in buckets]
     plan.topic_shifts = topic_shifts
     stats.topic_shifts = topic_shifts
@@ -1389,6 +1394,41 @@ def plan_caption(
 
     _guard_opening(plan, log)
     return plan
+
+
+def _emit_listing(listed, plan, discourse, stats, emit, new_clause) -> None:
+    """Closing `Còn có X, Y và Z.` for entities past the topic-shift cap.
+
+    Existence only: each item is the entity's bare indefinite NP, provenance its
+    existence (or first) proposition, so nothing is said that P* does not hold.
+    A head already named earlier is not repeated (`một người, một người`).
+    """
+    said = " ".join(s.text for s in plan.spans).lower()
+    items: list[tuple[_Bucket, str, str, list[str]]] = []
+    for bucket, head, anchor in listed:
+        if _find_word(said, head) >= 0:
+            continue
+        said += " " + head
+        count, marker, exact = _number_realisation(bucket.entity, bucket.count)
+        text = _noun_phrase_text(head, count, marker, exact, [], bucket.entity, stats)
+        ids = [str(anchor.get("id"))] if anchor is not None else _bucket_ids(bucket)[:1]
+        if bucket.count is not None and str(bucket.count.get("id")) not in ids:
+            ids.append(str(bucket.count.get("id")))
+        items.append((bucket, head, text, ids))
+    if not items:
+        return
+    clause = new_clause(None, starts_sentence=True)
+    clause.pieces.append(ExemptToken("còn có", "discourse_connective"))
+    for position, (bucket, head, text, ids) in enumerate(items):
+        if position:
+            last = position == len(items) - 1
+            clause.pieces.append(ExemptToken(CONNECTIVE_COORDINATION, "discourse_connective")
+                                 if last else ExemptToken(",", "punctuation", glue=""))
+        span = PlannedSpan(text=text, proposition_ids=ids, span_role="subject",
+                           entity_id=bucket.entity_id)
+        hedged = any(pid in plan.hedged_ids for pid in ids)
+        emit(clause, _maybe_hedge(span, hedged, clause, plan))
+        discourse.note(bucket.entity_id, head)
 
 
 def _bucket_ids(bucket: _Bucket) -> list[str]:
@@ -2619,6 +2659,16 @@ def _drop_least_useful(
     candidates = [p for p in props if str(p.get("id")) in plan.ordered_ids]
     if not candidates:
         return None
+    # Prefer a victim whose object nouns another planned proposition also names:
+    # that drop loses a claim but no object (render-loss audit: length drops
+    # were the second-largest source of objects lost after selection).
+    nouns = {str(p.get("id")): set(objects_in(str(p.get("text_vi") or ""))) for p in candidates}
+    redundant = [
+        p for p in candidates
+        if nouns[str(p.get("id"))] <= set().union(
+            *(n for q, n in nouns.items() if q != str(p.get("id"))))
+    ]
+    candidates = redundant or candidates
     if all(p.get("informativeness") is not None for p in candidates):
         victim = min(candidates, key=lambda p: (float(p["informativeness"]), _pid_key(p)))
         log.append(f"length_drop rule=informativeness id={victim.get('id')}")
@@ -2738,3 +2788,47 @@ __all__ = [
     "EMPTY_CAPTION_VI",
     "PROMPT_REALISE",
 ]
+
+
+def _selfcheck() -> None:
+    """Render-loss regressions: `python3 -m rescap.pipeline.realize`."""
+    def ent(eid, cat, gender=None):
+        return {"id": eid, "category_vi": cat, "number": {"value": 1},
+                "gender": gender or {"value": "khong_xac_dinh", "evidence": "not_determinable"}}
+
+    def prop(pid, eid, text, ptype="entity", lemma="có"):
+        return {"id": pid, "type": ptype, "subject": {"entity_id": eid},
+                "predicate": {"lemma_vi": lemma}, "text_vi": text,
+                "verification": {"status": "SUPPORTED"}}
+
+    # 1. Entities past the topic-shift cap are still named, once each, with exact provenance.
+    heads = ["chó", "xe đạp", "ghế", "ô tô", "cây"]
+    ents = [ent(f"e{i}", h) for i, h in enumerate(heads)]
+    props = [prop(f"P{i}", f"e{i}", f"một {h}") for i, h in enumerate(heads)]
+    res = realize(props, ents, config=RealizeConfig(strategy="template"))
+    for head in heads:
+        assert _find_word(res.text_vi.lower(), head) >= 0, (head, res.text_vi)
+    assert not res.ungrounded_spans, res.ungrounded_spans
+    known = {p["id"] for p in props}
+    for span in res.caption["spans"]:
+        assert span["proposition_ids"] and set(span["proposition_ids"]) <= known, span
+        assert res.text_vi[span["char_start"]:span["char_end"]] == span["text"], span
+
+    # 2. Gender neutralisation is kept: an unverified `phụ nữ` is listed as `người`.
+    ents2 = ents[:3] + [ent("w", "phụ nữ")]
+    props2 = props[:3] + [prop("P9", "w", "một người phụ nữ")]
+    text2 = realize(props2, ents2, config=RealizeConfig(strategy="template")).text_vi
+    assert "phụ nữ" not in text2 and "người" in text2, text2
+
+    # 3. Over length, a proposition whose noun is named elsewhere goes before a unique one.
+    ents3 = [ent("a", "xe đạp"), ent("b", "chó")]
+    props3 = [prop("P1", "a", "một xe đạp"),
+              prop("P2", "a", "xe đạp đang đỗ cạnh tường rất dài", "action", "đang đỗ cạnh tường rất dài"),
+              prop("P3", "b", "một chó")]
+    res3 = realize(props3, ents3, config=RealizeConfig(strategy="template", max_chars=40))
+    assert "chó" in res3.text_vi and "P2" in res3.stats.dropped_for_length, res3.text_vi
+    print("realize selfcheck ok:", res.text_vi, "|", text2, "|", res3.text_vi)
+
+
+if __name__ == "__main__":
+    _selfcheck()

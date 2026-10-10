@@ -1,7 +1,9 @@
 #!/usr/bin/env python
-"""Turn Stage 1 verdict records into tri-level preference data for Stage 2.
+"""Phase 1a step (4): turn the verified records (the code's "stage 1") into supervision for Phase 1b.
 
-    python scripts/build_dpo_data.py --in ~/ncs-data/stage1 --out ~/ncs-data/stage2
+    # paper main system (budget 9, variant B, style variation, junk filter):
+    python scripts/build_dpo_data.py --in ~/ncs-data/stage1_final --out ~/ncs-data/supervision \
+        --budget 9 --detailed-variant B --style-variation --clean-props
 
 Writes `sft.jsonl` and `dpo.jsonl`. Nothing here calls a model: Stage 1 already
 paid for the verdicts, and this is the symbolic step that turns them into
@@ -38,6 +40,7 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -104,21 +107,85 @@ def _malformed(text: str) -> bool:
     return False
 
 
-def clean_props(props: list[dict], stats: Counter) -> list[dict]:
-    """Filter junk before the build ( (research log) #2): duplicated words · overlong predicate · duplicates."""
+_CLAUSE_NP = re.compile(
+    r"^(một số|một vài|một nhóm|nhiều|vài|các|những|một|hai|ba|bốn|năm)\s+(.+?)\s+((?:đang|đã)\s.+)$",
+    re.IGNORECASE)
+_NUMERALS = {"một": 1, "hai": 2, "ba": 3, "bốn": 4, "năm": 5}
+
+
+def _rehome_clause(p: dict, props: list[dict], entities: list[dict]) -> dict | None:
+    """Repair a clause-swallowing action instead of dropping it.
+
+    `nhiều chiếc áo | một người phụ nữ đang cầm một chiếc áo`: the predicate is a
+    whole clause about ANOTHER entity. Re-attach it to that entity, predicate =
+    the verb phrase only. Only when exactly one entity matches the clause's NP
+    (same head noun, or `người` for any person-classified entity), its count
+    agrees with the NP's quantifier, and its existence is SUPPORTED -- otherwise
+    None (drop, as before). The rewrite only removes words, so it can name no
+    object the verified text did not (the NP is replaced by the entity's own
+    surface, so a gender backoff is not undone).
+    """
+    from rescap.chair import objects_in
+
+    subj = p.get("subject") or {}
+    text, stext = str(p.get("text_vi") or ""), str(subj.get("text_vi") or "")
+    if p.get("type") != "action" or not stext or not text.lower().startswith(stext.lower()):
+        return None
+    m = _CLAUSE_NP.match(text[len(stext):].strip())
+    if not m:
+        return None
+    quant, np_rest, vp = m.group(1).lower(), m.group(2), m.group(3)
+    heads = objects_in(f"{quant} {np_rest}")
+    if not heads:
+        return None
+    existing = {str((q.get("subject") or {}).get("entity_id")): q.get("subject")
+                for q in props if q.get("type") == "entity" and verdict_of(q) == "SUPPORTED"}
+    want = _NUMERALS.get(quant)  # None = plural quantifier
+
+    def fits(e: dict) -> bool:
+        cat = objects_in(str(e.get("category_vi") or ""))
+        same = (bool(cat) and cat[0] == heads[0]) or (heads[0] == "người" and e.get("classifier") == "người")
+        n = (e.get("number") or {}).get("value")
+        return same and (n == want if want else n != 1)
+
+    cands = [e for e in entities
+             if str(e.get("id")) in existing and str(e.get("id")) != str(subj.get("entity_id")) and fits(e)]
+    if len(cands) != 1:
+        return None
+    import copy
+    out = copy.deepcopy(p)
+    out["subject"] = copy.deepcopy(existing[str(cands[0]["id"])])
+    out["predicate"]["lemma_vi"] = vp
+    # the entity's own (possibly gender-neutralised) surface, never the clause's NP
+    out["text_vi"] = f"{out['subject'].get('text_vi') or ''} {vp}".strip()
+    return out
+
+
+def clean_props(props: list[dict], stats: Counter, entities: list[dict] | None = None) -> list[dict]:
+    """Filter junk before the build ( (research log) #2): duplicated words · overlong predicate · duplicates.
+
+    With `entities`, a clause-swallowing action is re-attached to the clause's own
+    subject (`_rehome_clause`) instead of dropped.
+    """
     seen: set[str] = set()
     kept: list[dict] = []
+    import re as _re
+    # M2 bug trace (audit (research log), e.g. 4962 P23/P35): a predicate swallowing a
+    # whole clause WITH ITS OWN SUBJECT ("một người đang nắm chặt..."). A long predicate
+    # that does not open with an indefinite noun phrase + đang/đã is valid, keep it.
+    _emb = r"(?:^|\s)(một số|một vài|nhiều|vài|các|những|một|hai|ba|bốn|năm)\s+(?:\S+\s+){1,6}?(đang|đã)\s"
     for p in props:
+        pred = str(((p.get("predicate") or {}).get("lemma_vi")) or "")
+        if entities is not None and _re.search(_emb, " " + pred):
+            fixed = _rehome_clause(p, props, entities)
+            if fixed is not None:
+                p = fixed
+                stats["clean:pred_clause_rehomed"] += 1
         text = str(p.get("text_vi") or "")
         pred = str(((p.get("predicate") or {}).get("lemma_vi")) or "")
         if _malformed(text):
             stats["clean:dup_word"] += 1
             continue
-        # M2 bug trace (audit (research log), e.g. 4962 P23/P35): a predicate swallowing a
-        # whole clause WITH ITS OWN SUBJECT ("một người đang nắm chặt..."). A long predicate
-        # that does not open with an indefinite noun phrase + đang/đã is valid, keep it.
-        import re as _re
-        _emb = r"(?:^|\s)(một số|một vài|nhiều|vài|các|những|một|hai|ba|bốn|năm)\s+(?:\S+\s+){1,6}?(đang|đã)\s"
         m_pred = _re.search(_emb, " " + pred)
         m_text = _re.search(_emb, text)
         # a match at the START of the text is the valid subject of an action
@@ -224,7 +291,7 @@ def build_for_image(record: dict, stats: Counter):
     props = record.get("propositions") or []
     entities = record.get("entities") or []
     if CLEAN_PROPS[0]:
-        props = clean_props(list(props), stats)
+        props = clean_props(list(props), stats, entities)
         # (research log)b: an entity neutralized by backoff → every proposition hanging
         # off it must drop the repeated gendered pronoun in its text ("... cô ấy mặc
         # quần trắng ..."), lest the caption become "một người ... cô ấy ...".
@@ -357,15 +424,15 @@ def main() -> int:
     )
     parser.add_argument(
         "--budget", type=int, default=None,
-        help=" (research log): override the selection budget (the official recipe's "
-             "default of 5). Raise it so supervision captions keep more SUPPORTED "
+        help="override the selection budget (default: SelectionConfig's 5). The paper's "
+             "main system uses 9. Raise it so supervision captions keep more SUPPORTED "
              "propositions — the detail/risk knob of formulation/10 §3.1.",
     )
     parser.add_argument(
         "--detailed-variant", choices=("A", "B"), default="A",
-        help=" (research log) (team decision 22/08): 'B' emits the SILENT rung (SUPPORTED "
+        help="(team decision 22/08): 'B' emits the SILENT rung (SUPPORTED "
              "propositions only, no hedging words) as the detailed supervision instead of "
-             "rung A. The current official recipe keeps the default 'A'.",
+             "rung A. The paper's main system uses 'B'; 'A' is the hedged variant.",
     )
     parser.add_argument(
         "--style-variation", action="store_true",
@@ -389,7 +456,7 @@ def main() -> int:
     args = parser.parse_args()
     if args.budget is not None:
         SELECT_BUDGET[0] = args.budget
-        print(f"⚠ selection budget overridden: {args.budget} (official: 5)")
+        print(f"⚠ selection budget overridden: {args.budget} (SelectionConfig default: 5)")
     if args.style_variation:
         STYLE_VARIATION[0] = True
         print("⚠ (research log): rotating rendering templates (style_variation) ON")

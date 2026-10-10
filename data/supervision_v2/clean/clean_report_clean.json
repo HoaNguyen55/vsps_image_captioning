@@ -1,0 +1,395 @@
+{
+  "input": "/tmp/claude-1000/-mnt-d-vsps-image-captioning/60eefc4d-7f53-4b8f-b12b-b72a95ec8810/scratchpad/v2build/sft.jsonl",
+  "output": "/tmp/claude-1000/-mnt-d-vsps-image-captioning/60eefc4d-7f53-4b8f-b12b-b72a95ec8810/scratchpad/v2build/sft_clean_clean.jsonl",
+  "ngram_n": 5,
+  "n_in": 7206,
+  "n_out": 7112,
+  "by_mode": {
+    "short": {
+      "in": 3617,
+      "out": 3555
+    },
+    "detailed": {
+      "in": 3589,
+      "out": 3557
+    }
+  },
+  "filter_hits": {
+    "cjk": {
+      "repaired": {
+        "short": 0,
+        "detailed": 0
+      },
+      "dropped": {
+        "short": 13,
+        "detailed": 27
+      }
+    },
+    "garbled:cai_so_other": {
+      "repaired": {
+        "short": 0,
+        "detailed": 12
+      },
+      "dropped": {
+        "short": 0,
+        "detailed": 0
+      }
+    },
+    "garbled:dangling_cua": {
+      "repaired": {
+        "short": 1,
+        "detailed": 5
+      },
+      "dropped": {
+        "short": 1,
+        "detailed": 0
+      }
+    },
+    "garbled:dangling_function_word": {
+      "repaired": {
+        "short": 0,
+        "detailed": 14
+      },
+      "dropped": {
+        "short": 1,
+        "detailed": 0
+      }
+    },
+    "garbled:gender_role_noun": {
+      "repaired": {
+        "short": 2,
+        "detailed": 6
+      },
+      "dropped": {
+        "short": 0,
+        "detailed": 0
+      }
+    },
+    "garbled:headless_colour": {
+      "repaired": {
+        "short": 0,
+        "detailed": 33
+      },
+      "dropped": {
+        "short": 21,
+        "detailed": 1
+      }
+    },
+    "garbled:vague_head": {
+      "repaired": {
+        "short": 8,
+        "detailed": 35
+      },
+      "dropped": {
+        "short": 1,
+        "detailed": 1
+      }
+    },
+    "gender": {
+      "repaired": {
+        "short": 304,
+        "detailed": 623
+      },
+      "dropped": {
+        "short": 2,
+        "detailed": 0
+      }
+    },
+    "headless_colour_span": {
+      "repaired": {
+        "short": 58,
+        "detailed": 69
+      },
+      "dropped": {
+        "short": 0,
+        "detailed": 0
+      }
+    },
+    "hedge": {
+      "repaired": {
+        "short": 35,
+        "detailed": 219
+      },
+      "dropped": {
+        "short": 25,
+        "detailed": 2
+      }
+    },
+    "orphan_anaphor": {
+      "repaired": {
+        "short": 0,
+        "detailed": 11
+      },
+      "dropped": {
+        "short": 0,
+        "detailed": 0
+      }
+    },
+    "out_of_script": {
+      "repaired": {
+        "short": 0,
+        "detailed": 0
+      },
+      "dropped": {
+        "short": 0,
+        "detailed": 1
+      }
+    },
+    "repeat_adj": {
+      "repaired": {
+        "short": 131,
+        "detailed": 292
+      },
+      "dropped": {
+        "short": 14,
+        "detailed": 1
+      }
+    },
+    "repeat_clause": {
+      "repaired": {
+        "short": 7,
+        "detailed": 145
+      },
+      "dropped": {
+        "short": 0,
+        "detailed": 0
+      }
+    },
+    "repeat_ngram_residual": {
+      "repaired": {
+        "short": 44,
+        "detailed": 640
+      },
+      "dropped": {
+        "short": 0,
+        "detailed": 0
+      }
+    },
+    "repeat_span": {
+      "repaired": {
+        "short": 11,
+        "detailed": 57
+      },
+      "dropped": {
+        "short": 0,
+        "detailed": 0
+      }
+    },
+    "truncation": {
+      "repaired": {
+        "short": 98,
+        "detailed": 603
+      },
+      "dropped": {
+        "short": 0,
+        "detailed": 0
+      }
+    }
+  },
+  "dropped_by_first_reason": {
+    "cjk": 40,
+    "hedge": 27,
+    "garbled:headless_colour": 22,
+    "garbled:vague_head": 2,
+    "garbled:dangling_cua": 1,
+    "out_of_script": 1,
+    "garbled:dangling_function_word": 1
+  },
+  "images_losing_detailed": 32,
+  "images_losing_short": 62,
+  "images_losing_all": 16,
+  "cross_image_identical_responses_kept": 615,
+  "examples": [
+    {
+      "image_id": "5865",
+      "mode": "short",
+      "hits": [
+        "cjk"
+      ],
+      "before": "Có một người áo sơ mi xanh dương với nhiều huy hiệu và勋章.",
+      "after": null
+    },
+    {
+      "image_id": "2951",
+      "mode": "detailed",
+      "hits": [
+        "garbled:cai_so_other",
+        "truncation"
+      ],
+      "before": "Nhiều người bốn người thứ hai từ trái sang phải mặc áo sơ mi trắng đang xem xét các loại rau củ trong siêu thị, còn một cái số loại người mặc đồng phục xanh đang cầm một gói rau. Cái số loại này người mặc áo sơ mi trắng đang cầm một gói rau, cùng với đó có một cây.",
+      "after": "Nhiều người bốn người thứ hai từ trái sang phải mặc áo sơ mi trắng đang xem xét các loại rau củ trong siêu thị, còn một số loại người mặc đồng phục xanh đang cầm một gói rau. Cùng với đó có một cây."
+    },
+    {
+      "image_id": "5845",
+      "mode": "detailed",
+      "hits": [
+        "garbled:dangling_cua"
+      ],
+      "before": "Một người mặc áo dài trắng đội một chiếc nón lá đang đứng nhìn về phía cầu cổ và tư thế của là đứng, lưng hướng về phía camera. Ngoài ra một cây cầu đang phản chiếu hình ảnh trên mặt nước, bên cạnh đó có một con kênh nước nhỏ. Còn có một ngôi nhà.",
+      "after": "Một cây cầu đang phản chiếu hình ảnh trên mặt nước, bên cạnh đó có một con kênh nước nhỏ. Còn có một ngôi nhà."
+    },
+    {
+      "image_id": "4120",
+      "mode": "detailed",
+      "hits": [
+        "garbled:dangling_function_word",
+        "repeat_adj"
+      ],
+      "before": "Nhiều người nhiều người một số người mặc áo màu trắng một số người mặc áo màu hồng đang ngồi tại bàn ăn, sử dụng các món ăn và đồ uống trên bàn và một. Cùng với đó có nhiều cái đèn có màu vàng, ngoài ra có nhiều cái ghế. Còn có một cái màn hình và một chiếc xe.",
+      "after": "Nhiều người một số người mặc áo màu trắng một số người mặc áo màu hồng đang ngồi tại bàn ăn. Cùng với đó có nhiều cái đèn có màu vàng, ngoài ra có nhiều cái ghế. Còn có một cái màn hình và một chiếc xe."
+    },
+    {
+      "image_id": "10778",
+      "mode": "short",
+      "hits": [
+        "garbled:gender_role_noun",
+        "gender"
+      ],
+      "before": "Có một cái cô giáo, còn có một nhóm người học sinh áo đồng phục với màu xanh dương và trắng.",
+      "after": "Có một nhóm người học sinh áo đồng phục với màu xanh dương và trắng."
+    },
+    {
+      "image_id": "3110",
+      "mode": "detailed",
+      "hits": [
+        "garbled:headless_colour",
+        "repeat_adj"
+      ],
+      "before": "Một nhóm người một nhóm người màu nhiều người mặc áo màu xanh dương, xanh lá, nâu, trắng và đen có nhiều kích thước khác nhau, từ nhỏ đến lớn đang đứng nhìn đám cháy và đứng nhìn vào đám cháy. Bên cạnh đó một cái đám cháy lớn hàng một cái cửa, còn một ngôi nhà trong ảnh đang bốc cháy dữ dội.",
+      "after": "Một cái đám cháy lớn hàng một cái cửa, còn một ngôi nhà trong ảnh đang bốc cháy dữ dội."
+    },
+    {
+      "image_id": "1080",
+      "mode": "detailed",
+      "hits": [
+        "garbled:vague_head"
+      ],
+      "before": "Một đứa trẻ đang được một người lớn ôm trong vòng tay đang được người lớn ôm trong tay, cùng với đó một cái bảng menu đang treo trên tường. Ngoài ra một cái nhân viên đang đứng sau quầy. Còn có một cái đồ.",
+      "after": "Một đứa trẻ đang được một người lớn ôm trong vòng tay đang được người lớn ôm trong tay, cùng với đó một cái bảng menu đang treo trên tường. Ngoài ra một cái nhân viên đang đứng sau quầy."
+    },
+    {
+      "image_id": "4531",
+      "mode": "detailed",
+      "hits": [
+        "hedge"
+      ],
+      "before": "Nhiều đứa trẻ đều đang cọp vào một hố đất lớn đang nắm chặt vào viền của viên đá lớn một cái viên đá, còn cái viên đá này đang bao quanh một nhóm trẻ em. Người này có vẻ như là đá tự nhiên, có bề mặt mịn và hơi gồ ghề.",
+      "after": "Nhiều đứa trẻ đều đang cọp vào một hố đất lớn đang nắm chặt vào viền của viên đá lớn một cái viên đá, còn cái viên đá này đang bao quanh một nhóm trẻ em."
+    },
+    {
+      "image_id": "7401",
+      "mode": "detailed",
+      "hits": [
+        "hedge",
+        "orphan_anaphor",
+        "repeat_adj",
+        "truncation"
+      ],
+      "before": "Nhiều người nhiều người kích thước của nhiều người không rõ do khoảng cách xa đi bộ trên hành lang hàng một cái cửa cảnh một cây. Ngoài ra có cái cửa này, ở giữa trên cùng có màu trắng và ở giữa dưới cùng có màu đỏ, bên cạnh đó có một cái số biển một biển quảng cáo nhỏ hơn có màu trắng và đỏ.",
+      "after": "Có cái cửa, ở giữa trên cùng có màu trắng và ở giữa dưới cùng có màu đỏ, bên cạnh đó có một số biển một biển quảng cáo nhỏ hơn có màu trắng và đỏ."
+    },
+    {
+      "image_id": "3586",
+      "mode": "detailed",
+      "hits": [
+        "out_of_script"
+      ],
+      "before": "Một người áo đen đứng, cúi đầu và đang cầm một hộp trái cây lychee trong tay đang nhìn vào một hộp trái cây. Người này đang cầm một hộp lựu trong tay, bên cạnh đó có một cái hộp lựu plastик.",
+      "after": null
+    },
+    {
+      "image_id": "4422",
+      "mode": "detailed",
+      "hits": [
+        "repeat_clause"
+      ],
+      "before": "Nhiều người mặc váy kẻ sọc với màu sắc chủ đạo là đen và trắng mặc váy hoa với màu sắc chủ đạo là trắng và xanh dương thứ nhất đang vẫy tay. Người này thứ tư đang vẫy tay, bên cạnh đó có một chiếc bình chữa, còn có một người.",
+      "after": "Nhiều người mặc váy kẻ sọc với màu sắc chủ đạo là đen và trắng mặc váy hoa với màu sắc chủ đạo là trắng và xanh dương thứ nhất đang vẫy tay. Người này thứ tư đang vẫy tay, bên cạnh đó có một chiếc bình chữa."
+    },
+    {
+      "image_id": "10430",
+      "mode": "detailed",
+      "hits": [
+        "repeat_span"
+      ],
+      "before": "Một vài người có mũ đi bộ trong ảnh đang đi bộ trên đường phố. Bên cạnh đó một người đi bộ trên đường phố đang đi bộ trên đường phố, còn có một chiếc xe. Còn có một chiếc xe đạp.",
+      "after": "Một vài người có mũ đi bộ trong ảnh đang đi bộ trên đường phố. Bên cạnh đó một người đi bộ trên đường phố, còn có một chiếc xe. Còn có một chiếc xe đạp."
+    },
+    {
+      "image_id": "9880",
+      "mode": "short",
+      "hits": [
+        "gender"
+      ],
+      "before": "Có một người anh ta đội một chiếc mũ rộng vành anh ta đang đi xe đạp.",
+      "after": "Có một người đội một chiếc mũ rộng vành người đang đi xe đạp."
+    },
+    {
+      "image_id": "11684",
+      "mode": "short",
+      "hits": [
+        "headless_colour_span"
+      ],
+      "before": "Có một người màu xanh lá.",
+      "after": "Có một người."
+    },
+    {
+      "image_id": "5187",
+      "mode": "detailed",
+      "hits": [
+        "repeat_adj"
+      ],
+      "before": "Có một cái cổng có màu xám có kích thước lớn và được làm từ đá. Còn có nhiều cái cờ có màu đỏ, cùng với đó có một cái cột cờ. Còn có nhiều người nhiều người.",
+      "after": "Có một cái cổng có màu xám có kích thước lớn và được làm từ đá. Còn có nhiều cái cờ có màu đỏ, cùng với đó có một cái cột cờ. Còn có nhiều người."
+    },
+    {
+      "image_id": "2162",
+      "mode": "detailed",
+      "hits": [
+        "truncation"
+      ],
+      "before": "Một người mặc áo màu đỏ để treo biển quảng cáo và đi xe đạp qua trước cửa hàng. Bên cạnh đó có một cái bảng hiệu màu đen, vàng, trắng, xanh dương, còn có một cái cửa. Còn có một cái số dây và một vài chiếc xe máy.",
+      "after": "Một người mặc áo màu đỏ để treo biển quảng cáo và đi xe đạp qua trước cửa hàng. Bên cạnh đó có một cái bảng hiệu màu đen, vàng, trắng, xanh dương, còn có một cái cửa. Còn có một số dây và một vài chiếc xe máy."
+    },
+    {
+      "image_id": "9912",
+      "mode": "detailed",
+      "hits": [
+        "cjk"
+      ],
+      "before": "Có một người có mái tóc dài màu nâu cô mặc một bộ套装 gồm áo khoác và váy màu đen, cùng với đó có một cây cầu.",
+      "after": null
+    },
+    {
+      "image_id": "6355",
+      "mode": "detailed",
+      "hits": [
+        "garbled:cai_so_other",
+        "truncation"
+      ],
+      "before": "Nhiều đứa trẻ mặc áo nâu và quần xanh dương khác đang ngồi trên đống gạch và cúi xuống, gần như nằm trên đống gạch đang cầm một viên gạch một cái số viên. Còn cái số viên này đang nằm trên đống gạch, cùng với đó có một cái cửa. Còn có một cái viên đá.",
+      "after": "Nhiều đứa trẻ mặc áo nâu và quần xanh dương khác đang ngồi trên đống gạch và cúi xuống, gần như nằm trên đống gạch đang cầm một viên gạch một số viên. Cùng với đó có một cái cửa. Còn có một cái viên đá."
+    },
+    {
+      "image_id": "3632",
+      "mode": "detailed",
+      "hits": [
+        "garbled:dangling_cua",
+        "gender",
+        "repeat_adj",
+        "repeat_clause"
+      ],
+      "before": "Một người mặc một chiếc áo đen đội một chiếc nón truyền thống màu xanh lá đang nắm lấy một nhánh cây, nắm lấy một nhánh của cây và tư thế của là đứng và nâng tay lên để chạm vào quả cây. Cùng với đó một chiếc áo cô gái đang nắm lấy một nhánh cây, ngoài ra có một cây một cây. Còn có một cái nón lá.",
+      "after": "Một người mặc một chiếc áo đen đội một chiếc nón truyền thống màu xanh lá đang nắm lấy một nhánh cây. Cùng với đó một chiếc áo người đang nắm lấy một nhánh cây. Còn có một cái nón lá."
+    },
+    {
+      "image_id": "4551",
+      "mode": "detailed",
+      "hits": [
+        "garbled:dangling_function_word"
+      ],
+      "before": "Có nhiều người khác một số người mặc áo màu nâu một số người mặc áo màu đỏ, một số người mặc áo màu cam. Người khác này một số.",
+      "after": "Có nhiều người khác một số người mặc áo màu nâu một số người mặc áo màu đỏ, một số người mặc áo màu cam."
+    }
+  ]
+}

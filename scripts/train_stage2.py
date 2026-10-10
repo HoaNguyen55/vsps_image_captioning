@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-"""Stage 2 — distil the verified propositions into the generator.
+"""Phase 1b (the code's historical name: "stage 2") — distil the verified propositions into the generator.
 
-    python scripts/train_stage2.py --stage sft
-    python scripts/train_stage2.py --stage dpo --adapter ~/ncs-data/runs/sft
+    python scripts/train_stage2.py --stage sft --data data/supervision --seed 42   # paper main system (2 epochs)
+    python scripts/train_stage2.py --stage dpo --adapter ~/ncs-data/runs/sft     # exploration only, not the main system
 
 Two phases, run in order. SFT teaches the shape of a grounded Vietnamese caption
 from rung A of the preference data; DPO then teaches the **ordering** between the
@@ -506,7 +506,8 @@ def main() -> int:
     parser.add_argument("--stage", choices=["sft", "dpo"], required=True)
     parser.add_argument("--out", default=None)
     parser.add_argument("--adapter", default=None, help="adapter to continue from (required for DPO)")
-    parser.add_argument("--epochs", type=float, default=1.0)
+    parser.add_argument("--epochs", type=float, default=None,
+                        help="default: 2 for SFT (the paper's main system), 1 for DPO")
     parser.add_argument("--lr", type=float, default=None)
     parser.add_argument("--beta", type=float, default=0.1, help="DPO only")
     parser.add_argument("--grad-accum", type=int, default=8)   # 
@@ -535,6 +536,8 @@ def main() -> int:
     args = parser.parse_args()
 
     args.out = args.out or str(DATA / "runs" / args.stage)
+    if args.epochs is None:
+        args.epochs = 2.0 if args.stage == "sft" else 1.0
     if args.lr is None:
         # DPO moves an already-trained policy and needs the smaller step.
         args.lr = 1e-4 if args.stage == "sft" else 5e-6
