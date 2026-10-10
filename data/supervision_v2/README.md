@@ -30,6 +30,7 @@ KTVIC test (558 images), detailed prompt, same lexicon/gold as Table IV:
 |---|---|---|---|---|---|---|---|---|
 | shipped VSPS main_s42 | 41.5 | 36.7 | 39.0 | 1.30 | 79.2 | 50.1 | 1.57 | 34 |
 | v2 raw s42 | 38.1 | 42.2 | 40.1 | 1.50 | 86.6 | 54.4 | 2.14 | 44 |
+| v2 clean s42 | 37.6 | 41.0 | 39.2 | 1.45 | 86.7 | 54.8 | 2.12 | 40 |
 | zero-shot Qwen2.5-VL-7B | 31.6 | 57.1 | 40.7 | 2.07 | 98.0 | 65.1 | 4.26 | 117 |
 
-Recall +5.5 and F1 +1.1 over shipped s42, but precision −3.4 and hallucinated mentions per caption +36%: the richer targets move the model along the same precision/recall curve toward zero-shot rather than above it. F1 still trails zero-shot. Single seed; v2 clean s42 is training next.
+Recall +5.5 and F1 +1.1 over shipped s42, but precision −3.4 and hallucinated mentions per caption +36%: the richer targets move the model along the same precision/recall curve toward zero-shot rather than above it. F1 still trails zero-shot. Single seed. v2 clean (in-place repetition repair) is below v2 raw on every column, so the repair costs recall without buying precision; v2 raw is the better store.
