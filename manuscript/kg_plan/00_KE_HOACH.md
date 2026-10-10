@@ -102,7 +102,7 @@ Backbone thứ 2 (chuẩn tạp chí): **Qwen2.5-VL-3B** cùng môi trường (Q
 
 ## 7. Việc ngay cho bài VSPS (P0)
 
-1. Dedup all-vs-all, **đo trùng train↔test nội bộ KTVIC** (chưa từng đo) và trùng với UIT-OpenViIC; báo kết quả trên 157 ảnh sạch.
+1. ~~Đo trùng train↔test nội bộ KTVIC~~ **ĐÃ ĐO (2026-10-10)**: ~15/558 ảnh test (≈3%) trùng train (CLIP cos ≥ 0,93, kiểm bằng mắt); trên 543 ảnh còn lại mọi điểm đổi ≤1 và thứ hạng giữ nguyên (`data/dedup/README.md`). Còn lại: trùng với UIT-OpenViIC (401/558 theo ViCLIP-OT) — chỉ ảnh hưởng baseline từng học OpenViIC; báo thêm kết quả trên 157 ảnh sạch.
 2. 45% mệnh đề quan hệ hỏng cấu trúc (regex, cần kiểm tay ~100); thêm cổng cấu trúc; audit lại ≥150 quan hệ (hiện chỉ 7 mục).
 3. `geometric_check()` chưa từng chạy (0 box) → nêu trong bài hoặc thêm box.
 4. Xóa từ văn hóa sau SFT (58,8% → 16,2–23,5%, gold 65 ảnh) → hạn chế, kèm bootstrap CI.
