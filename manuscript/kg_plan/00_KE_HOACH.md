@@ -147,7 +147,9 @@ Người gán ~200 h, NCS ~90 h (R2-06 §4.3, ước tính, dư ~30%). GPU nhán
 
 ## 12. Sửa vòng 3 (v3)
 
-### 12.1 Phân ranh P0 ↔ P1 ↔ P2 (BLOCKER R3-02, cần tác giả chọn)
+### 12.1 Phân ranh P0 ↔ P1 ↔ P2 (BLOCKER R3-02, tác giả chọn **để sau** — quyết sau cổng G-P2 31/01/2027 (2026-10-11))
+
+Trong lúc chờ: viết P0 sao cho D2/D3 nằm ở một mục tách được (thêm hoặc bỏ không phải sửa phần khác); không đưa D2/D3, object gold hay chấm cấp mệnh đề lên arXiv trước 31/01/2027. Nếu G-P2 đạt → A; trượt → B.
 
 `KE_HOACH_Q2.md` (kế hoạch P0) vẫn chứa lõi của P2 (D2 lùi quan hệ→thực thể, D3 lùi IsA "chó poodle → con chó", box/hình học B3/C4, hội đồng verifier C1/C3) và lõi của P1 (B1 object gold 300 ảnh, B2 chấm cấp mệnh đề). TALLIP cần ≥25–30% nội dung mới so với FAIR 2026.
 
