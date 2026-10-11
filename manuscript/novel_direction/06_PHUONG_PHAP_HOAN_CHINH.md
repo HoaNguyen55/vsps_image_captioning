@@ -66,3 +66,14 @@ Các baseline bắt buộc: P1, PatchGate, gán tag kiểu RAM++ hoặc Groundin
 - PatchGate có thể đã xuất bản trước khi bài này được nộp, nên phần probe chỉ là thành phần, không làm luận điểm chính.
 - Gold 300 ảnh là đường găng: không có nó thì không có C1 và không có tuyên bố về recall.
 - Metric tham chiếu bão hòa ở khoảng F1 60, nên phần lợi trên metric này nhỏ. Bài phải được bán bằng gold đầy đủ, phép phân rã và CIDEr, không phải chỉ bằng F1 tham chiếu.
+
+## 6. Kết quả các cổng (cập nhật 11/10/2026)
+
+**E1 (đạt).** Bảng đầy đủ ở `data/results/object_prf_dual.md` (`scripts/object_prf.py --ci`). P1 đứng trên mọi hệ thống ở cả ba quy tắc, CI không chồng lấn: F1 55,3 / 55,0 / 58,6. Theo quy tắc khớp chính xác, VSPS và zero-shot ngang nhau (CI chồng lấn). Theo R_vague, VSPS hơn zero-shot (47,3 so với 43,1, CI tách rời). R_spec trả lại thứ tự cũ, nên khác biệt nằm ở mức gọi tên chứ không ở nội dung.
+
+**E4 (trượt, bỏ C2 khỏi danh sách đóng góp).** Chạy `e4_mention_gfm.py` trên 3.700 ảnh train, CV 5 fold theo ảnh:
+- Mô hình đếm binomial (k/5 người nhắc) cho AUROC 0,7766, so với 0,7764 khi dùng nhãn gộp. Số người nhắc không thêm thông tin xếp hạng.
+- GFM trên gold gộp đạt F1 51,0, so với ngưỡng cố định tốt nhất khoảng 50,8, tức +0,2. Với một người gán giữ lại, GFM trên q đạt 37,2 so với 36,6 của ngưỡng tốt nhất, tức +0,6.
+- Cả hai đều dưới cổng +1,5.
+
+Kết luận: quy tắc quyết định không phải đòn bẩy. Nút thắt là chất lượng điểm tồn tại (E2) và bước render (C4/E5). GFM chỉ còn là chi tiết cài đặt.
