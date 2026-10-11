@@ -2,14 +2,14 @@
  "name": "roundA-short",
  "split": "test_data.json",
  "n_images": 558,
- "prompt_style": "detailed",
- "prompt": "Mô tả chi tiết bức ảnh này bằng tiếng Việt.",
+ "prompt_style": "short",
+ "prompt": "Mô tả bức ảnh này bằng MỘT câu tiếng Việt ngắn gọn, giống chú thích ảnh. Không liệt kê, không giải thích.",
  "adapter": null,
  "model": null,
- "scale": "x100 (như số công bố của KTVIC)",
+ "scale": "x100 (as KTVIC's published numbers)",
  "results": [
   {
-   "tokenization": "từ (word-level)",
+   "tokenization": "word-level",
    "segmenter": "rdrsegmenter",
    "scores_scaled_x100": {
     "BLEU-1": 24.09356725145964,
@@ -18,7 +18,7 @@
     "BLEU-4": 4.073014754686016,
     "ROUGE-L": 24.343725430261163,
     "CIDEr": 6.454222308355856,
-    "METEOR": null,
+    "METEOR": 20.819571738557055,
     "SPICE": null,
     "num_images": 558
    },
@@ -29,7 +29,7 @@
     "BLEU-4": 0.040730147546860156,
     "ROUGE-L": 0.24343725430261162,
     "CIDEr": 0.06454222308355856,
-    "METEOR": null,
+    "METEOR": 0.20819571738557055,
     "SPICE": null,
     "num_images": 558
    },

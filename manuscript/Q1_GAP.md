@@ -23,7 +23,7 @@ Chuẩn so sánh: IEEE TMM, Pattern Recognition, Neurocomputing, IEEE TNNLS. Cơ
 | POPE-vi | không có. `probe_existence.py` đã có hạ tầng hỏi "Trong ảnh có X không?" | Thiếu | Cần gold E6 cho câu dương; câu âm lấy theo random/popular/adversarial |
 | Human eval | `human_eval_*.py` | 50 ảnh × 2 người chấm, κ 0,86-0,95 | Chuẩn Q1 là ≥ 200 ảnh × 3 người chấm, Fleiss κ, blind |
 
-**Một chỗ lệch cần sửa trước khi viết bảng:** `evaluate.py` in số GRIT tham chiếu là "B-4 34.2 · METEOR 28.5 · ROUGE-L 56.1", còn R2_01 ghi theo PDF KTVIC là B-4 40.6 / METEOR 36.6 / ROUGE-L 59.7. Hai bộ số không thể cùng đúng. Phải đối chiếu lại Bảng 3 của PDF.
+**Một chỗ lệch cần sửa trước khi viết bảng:** `evaluate.py` in số GRIT tham chiếu là "B-4 34.2 · METEOR 28.5 · ROUGE-L 56.1", còn R2_01 ghi theo PDF KTVIC là B-4 40.6 / METEOR 36.6 / ROUGE-L 59.7. Hai bộ số không thể cùng đúng. Phải đối chiếu lại Bảng 3 của PDF. **Đã đối chiếu (11/10):** Bảng 3 của arXiv 2401.08100 ghi GRIT 74.7 / 40.6 / 36.6 / 59.7 / 136.0; 34.2 và 28.5 không xuất hiện trong bài. `evaluate.py` đã sửa theo Bảng 3.
 
 ### 1b. `data/results/*.json` đang có những gì
 

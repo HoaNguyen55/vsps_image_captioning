@@ -2,14 +2,14 @@
  "name": "zeroshot-short",
  "split": "test_data.json",
  "n_images": 558,
- "prompt_style": "detailed",
- "prompt": "Mô tả chi tiết bức ảnh này bằng tiếng Việt.",
+ "prompt_style": "short",
+ "prompt": "Mô tả bức ảnh này bằng MỘT câu tiếng Việt ngắn gọn, giống chú thích ảnh. Không liệt kê, không giải thích.",
  "adapter": null,
  "model": null,
- "scale": "x100 (như số công bố của KTVIC)",
+ "scale": "x100 (as KTVIC's published numbers)",
  "results": [
   {
-   "tokenization": "từ (word-level)",
+   "tokenization": "word-level",
    "segmenter": "rdrsegmenter",
    "scores_scaled_x100": {
     "BLEU-1": 30.713834491468006,
@@ -18,7 +18,7 @@
     "BLEU-4": 5.477257452659985,
     "ROUGE-L": 25.624957283776006,
     "CIDEr": 28.980789475062352,
-    "METEOR": null,
+    "METEOR": 24.41031124606525,
     "SPICE": null,
     "num_images": 558
    },
@@ -29,7 +29,7 @@
     "BLEU-4": 0.054772574526599845,
     "ROUGE-L": 0.25624957283776006,
     "CIDEr": 0.2898078947506235,
-    "METEOR": null,
+    "METEOR": 0.24410311246065247,
     "SPICE": null,
     "num_images": 558
    },

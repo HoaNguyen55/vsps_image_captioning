@@ -2,14 +2,14 @@
  "name": "off4090sft-short",
  "split": "test_data.json",
  "n_images": 558,
- "prompt_style": "detailed",
- "prompt": "Mô tả chi tiết bức ảnh này bằng tiếng Việt.",
+ "prompt_style": "short",
+ "prompt": "Mô tả bức ảnh này bằng MỘT câu tiếng Việt ngắn gọn, giống chú thích ảnh. Không liệt kê, không giải thích.",
  "adapter": null,
  "model": null,
- "scale": "x100 (như số công bố của KTVIC)",
+ "scale": "x100 (as KTVIC's published numbers)",
  "results": [
   {
-   "tokenization": "từ (word-level)",
+   "tokenization": "word-level",
    "segmenter": "rdrsegmenter",
    "scores_scaled_x100": {
     "BLEU-1": 28.276389597140707,
@@ -18,7 +18,7 @@
     "BLEU-4": 6.201368823746328,
     "ROUGE-L": 27.365466065494005,
     "CIDEr": 16.206793992181282,
-    "METEOR": null,
+    "METEOR": 20.3756317515103,
     "SPICE": null,
     "num_images": 558
    },
@@ -29,7 +29,7 @@
     "BLEU-4": 0.062013688237463276,
     "ROUGE-L": 0.27365466065494004,
     "CIDEr": 0.16206793992181281,
-    "METEOR": null,
+    "METEOR": 0.203756317515103,
     "SPICE": null,
     "num_images": 558
    },
