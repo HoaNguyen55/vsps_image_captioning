@@ -69,6 +69,14 @@ def fused(captions: list[str], k: int) -> str:
     return " ".join(c if c.rstrip().endswith((".", "!", "?")) else c.rstrip() + "." for c in chosen)
 
 
+def halves(image_ids, seed: int) -> tuple[list[str], list[str]]:
+    """Seeded split of images into two disjoint halves A/B (cross-fitting: a model trained
+    on one half samples captions on the other, images it has never seen)."""
+    ids = sorted(image_ids)
+    random.Random(seed).shuffle(ids)
+    return sorted(ids[: len(ids) // 2]), sorted(ids[len(ids) // 2:])
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--annotations", required=True,
@@ -79,6 +87,10 @@ def main() -> int:
                         help="short-row caption: file order (P1), the most consensual one, or every caption (multi-reference SFT)")
     parser.add_argument("--fuse", type=int, default=1,
                         help="k > 1 adds a detailed-prompt row fusing up to k captions per image")
+    parser.add_argument("--images-file", default=None,
+                        help="keep only the image_ids listed in this file (one per line)")
+    parser.add_argument("--write-halves", default=None, metavar="DIR",
+                        help="write DIR/A.txt and DIR/B.txt (seeded split of the captioned images) and exit")
     parser.add_argument("--limit", type=int, default=0,
                         help="limit the number of images (0 = all) — for quick trials only")
     args = parser.parse_args()
@@ -98,6 +110,20 @@ def main() -> int:
             continue
         n_captions += 1
         captions.setdefault(image_id, []).append(caption)
+
+    if args.write_halves:
+        dst = Path(args.write_halves).expanduser()
+        dst.mkdir(parents=True, exist_ok=True)
+        for name, part in zip("AB", halves(captions, args.seed)):
+            (dst / f"{name}.txt").write_text("\n".join(part) + "\n", encoding="utf-8")
+            print(f"  {len(part)} images -> {dst / name}.txt")
+        return 0
+    if args.images_file:
+        keep = set(Path(args.images_file).expanduser().read_text(encoding="utf-8").split())
+        captions = {i: cs for i, cs in captions.items() if i in keep}
+        n_captions = sum(map(len, captions.values()))
+        if not captions:
+            sys.exit(f"no captioned image of {args.annotations} is listed in {args.images_file}")
 
     pick = (lambda cs: cs[0]) if args.select != "consensus" else consensual
     rows = []
@@ -124,7 +150,7 @@ def main() -> int:
             fh.write(json.dumps(row, ensure_ascii=False) + "\n")
 
     report = {
-        "source": str(args.annotations), "seed": args.seed,
+        "source": str(args.annotations), "seed": args.seed, "images_file": args.images_file,
         "baseline": "gold_sft (P1, )",
         "images_with_caption": len(captions),
         "captions_total": n_captions,
@@ -151,6 +177,10 @@ def _check() -> None:
     assert consensual(cs) == cs[1]
     assert fused(cs, 2) == "một người đàn ông và con chó. con chó cạnh chiếc xe máy.", fused(cs, 2)
     assert fused(cs[:1], 3) == cs[0]
+    ids = [str(i) for i in range(101)]
+    a, b = halves(ids, 42)
+    assert not set(a) & set(b) and sorted(a + b) == sorted(ids) and abs(len(a) - len(b)) <= 1
+    assert (a, b) == halves(reversed(ids), 42) and a != halves(ids, 43)[0]
 
 
 if __name__ == "__main__":

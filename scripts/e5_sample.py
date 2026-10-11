@@ -55,7 +55,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--adapter", required=True)
     ap.add_argument("--out", required=True)
-    ap.add_argument("--limit", type=int, default=1500)
+    ap.add_argument("--limit", type=int, default=1500, help="0 = every eligible image")
+    ap.add_argument("--images-file", default=None,
+                    help="sample only image_ids listed here (one per line), e.g. the half the adapter did not train on")
     ap.add_argument("--n", type=int, default=6)
     ap.add_argument("--temperature", type=float, default=0.8)
     ap.add_argument("--top-p", type=float, default=0.95)
@@ -76,8 +78,11 @@ def main() -> int:
     gold = {i: set().union(*[set(objects_in(c)) for c in cs]) for i, cs in refs.items()}
     probe, probe_ids = fit_probe(args.probe, gold) if args.probe else (None, set())
 
-    pool = sorted(i for i in refs if names.get(i) and i not in probe_ids)
-    ids = sorted(random.Random(args.seed).sample(pool, min(args.limit, len(pool))))
+    keep = set(Path(args.images_file).read_text(encoding="utf-8").split()) if args.images_file else None
+    pool = sorted(i for i in refs if names.get(i) and i not in probe_ids and (keep is None or i in keep))
+    if not pool:
+        sys.exit("no eligible image to sample")
+    ids = sorted(random.Random(args.seed).sample(pool, args.limit)) if 0 < args.limit < len(pool) else pool
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     done = set()
