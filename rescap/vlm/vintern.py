@@ -26,10 +26,24 @@ from __future__ import annotations
 
 from typing import Any
 
-from .base import VLM, dtype_kwarg
+from .base import VLM, Answer, ConfidenceMethod, Polarity, YesNo, dtype_kwarg, parse_yes_no
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
+
+#: Logit confidence max(P(yes), P(no)) -> the K=5 agreement level it stands in for.
+#: Quantile cuts fitted on 600 stored probes (data/results/gate_t05.md): 11.0% of
+#: probes were 3/5, 14.8% 4/5, the rest 5/5. Mapping onto the same three levels
+#: keeps the untuned decision thresholds meaning what they meant under K=5.
+LOGIT_TO_AGREEMENT = ((0.6225, 0.6), (0.7771, 0.8))
+
+
+def calibrated(conf: float) -> float:
+    """
+    >>> [calibrated(x) for x in (0.55, 0.7, 0.95)]
+    [0.6, 0.8, 1.0]
+    """
+    return next((level for cut, level in LOGIT_TO_AGREEMENT if conf < cut), 1.0)
 
 
 def _build_transform(input_size: int):
@@ -118,9 +132,13 @@ class VinternAdapter(VLM):
         dtype: str = "bfloat16",
         input_size: int = 448,
         max_tiles: int = 6,
+        logit_verifier: bool = False,
         **kwargs: Any,
     ):
         super().__init__(**kwargs)
+        # One logit pass per yes/no probe instead of K=5 samples (gate T0.5).
+        self.logit_verifier = logit_verifier
+        self.supports_logprobs = logit_verifier
         self.name = model_id
         self.model_id = model_id
         self.device = device
@@ -306,6 +324,21 @@ class VinternAdapter(VLM):
         p_yes, p_no = probs[yes].sum().item(), probs[no].sum().item()
         return str(text).strip(), p_yes / (p_yes + p_no) if p_yes + p_no > 0 else 0.5
 
+    def probe_yes_no(self, image: Any, question: str, *, k: int = 1, temperature: float = 0.0) -> YesNo:
+        if not self.logit_verifier:
+            return super().probe_yes_no(image, question, k=k, temperature=temperature)
+        import time
+
+        start = time.time()
+        text, p_yes = self.yes_no_logit(image, question)
+        polarity = parse_yes_no(text)
+        if polarity is not Polarity.INCONCLUSIVE:
+            polarity = Polarity.AFFIRMS if p_yes >= 0.5 else Polarity.REFUTES
+        conf = calibrated(max(p_yes, 1 - p_yes)) if polarity is not Polarity.INCONCLUSIVE else 0.0
+        answer = Answer(text=text, confidence=conf, method=ConfidenceMethod.TOKEN_PROB, samples=[text],
+                        latency_s=round(time.time() - start, 3), model=self.name, prompt=question)
+        return YesNo(polarity=polarity, confidence=conf, answer=answer)
+
     def _yes_no_ids(self) -> tuple[list[int], list[int]]:
         if not hasattr(self, "_yn_ids"):
             def first(words):
@@ -320,5 +353,6 @@ class VinternAdapter(VLM):
             "dtype": self.dtype,
             "input_size": self.input_size,
             "max_tiles": self.max_tiles,
+            "logit_verifier": self.logit_verifier,
             "loaded": self._model is not None,
         }

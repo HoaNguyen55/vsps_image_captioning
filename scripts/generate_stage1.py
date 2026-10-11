@@ -99,6 +99,8 @@ def main() -> int:
     parser.add_argument("--generator", default="qwen2.5-vl-7b")
     parser.add_argument("--verifier", default="vintern-1b")
     parser.add_argument("--max-entities", type=int, default=8)
+    parser.add_argument("--logit-verifier", action="store_true",
+                        help="one logit pass per yes/no probe instead of K=5 samples (gate T0.5)")
     parser.add_argument("--max-pairs", type=int, default=8)
     parser.add_argument(
         "--verifier-tiles", type=int, default=4,
@@ -151,6 +153,8 @@ def main() -> int:
     gen_model = get_vlm(args.generator).load()
     print(f"loading {args.verifier} …", flush=True)
     ver_model = get_vlm(args.verifier).load()
+    if args.logit_verifier:
+        ver_model.logit_verifier = ver_model.supports_logprobs = True
     if hasattr(ver_model, "max_tiles"):
         ver_model.max_tiles = args.verifier_tiles
         print(f"  verifier tile budget: {args.verifier_tiles}")
@@ -248,6 +252,7 @@ def main() -> int:
         "stopped_early": _stop,
         "generator": args.generator,
         "verifier": args.verifier,
+        "logit_verifier": args.logit_verifier,
         "colour_cross_check": not args.no_colour_cross_check,
         "seconds": round(time.time() - started, 1),
     }
