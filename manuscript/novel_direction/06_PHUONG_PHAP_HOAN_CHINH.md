@@ -158,3 +158,22 @@ Với cùng số đối tượng mỗi ảnh như SUPPORTED, P tăng +18,1 và R
 - Trên train, mẫu được chọn rất tốt (P 84,7 / R 79,4, so với 64,3 / 62,5 của mẫu ngẫu nhiên), nhưng mức này không chuyển sang được test. Lý do khả dĩ nhất: fuse2 đã học chính các ảnh này, nên mẫu "tốt nhất" chủ yếu là caption tham chiếu mô hình nhớ lại.
 - Hình phạt dựa trên probe gần như không đổi được lựa chọn (P +1,0, R −0,8 so với λ = 0), vì probe học nhãn "có người nhắc".
 - Muốn RFT có ý nghĩa thì phải lấy mẫu trên ảnh mô hình chưa thấy (cross-fit 2 nửa train), hoặc dùng ảnh không nhãn. Đã bỏ đối chứng `ctrl_fuse2plus1`; vẫn giữ DPO (22) để xem cặp tốt/xấu có lấy lại được P không.
+
+**P giảm ở fuse2 detailed: ảo giác thật hay gold tham chiếu thiếu? (12/10/2026, gold AI-silver, KHÔNG phải gold người).** `scripts/silver_precision.py --allow-ai`. Gold thứ hai là `data/object_gold/annot_claude.json`: Claude (annotator `claude_AI`) tick toàn bộ đối tượng nhìn thấy trên **300 ảnh test KTVIC** (mẫu phân tầng `sample.json`, seed 42, 101 lớp checkbox; trung bình 7,17 lớp/ảnh so với 3,66 của hợp 5 caption tham chiếu). Mention và cả hai gold đều gộp về cùng 101 lớp, khớp chính xác, CI 95% bootstrap theo ảnh. "Cứu" = tỉ lệ mention sai theo tham chiếu mà AI-silver đánh dấu có mặt.
+
+| hệ | mode | đối tượng/ảnh | P (a) tham chiếu | P (b) AI-silver | P (c) hợp a∪b | cứu |
+|---|---|---|---|---|---|---|
+| P1 | short | 1,81 | 77,2 [73,4; 81,0] | 69,3 | 89,2 [86,2; 91,6] | 52,4 |
+| fuse2_s42 | short | 2,12 | 76,6 [72,9; 80,0] | 70,3 | 89,0 [86,2; 91,4] | 53,0 |
+| e5_s42 | short | 2,07 | 75,1 | 70,3 | 88,1 | 52,3 |
+| P1 | detailed | 1,84 | 76,9 [73,4; 80,6] | 69,1 [65,0; 73,2] | 88,8 [85,9; 91,6] | 51,6 |
+| fuse2_s42 | detailed | 3,18 | 68,8 [65,5; 71,9] | 69,6 [66,0; 72,9] | 86,4 [83,5; 88,9] | 56,2 [49,6; 62,7] |
+| e5_s42 | detailed | 3,28 | 66,7 | 68,9 | 84,7 | 54,1 |
+| zero-shot | detailed | 6,43 | 33,7 | 54,4 | 62,3 | 43,2 |
+| main_s42 (VSPS) | detailed | 3,15 | 42,1 | 64,0 | 73,9 | 54,8 |
+
+ΔP ghép cặp fuse2 − P1 (detailed): tham chiếu −8,0 [−11,4; −4,6]; AI-silver +0,5 [−2,6; +3,6]; hợp −2,4 [−4,8; −0,2]. e5 − P1: −10,1 / −0,2 / −4,0 [−6,5; −1,5]. Short: mọi Δ chứa 0.
+
+- Theo AI-silver, phần lớn mức "mất P" của fuse2 detailed là đối tượng có thật mà 5 caption không nhắc: khoảng 56% mention sai theo tham chiếu được AI-silver xác nhận, và khoảng cách với P1 co từ −8,0 xuống −2,4 điểm dưới gold hợp. Phần còn lại (~2–4 điểm) vẫn tách khỏi 0, nên có một phần ảo giác thật, nhỏ.
+- Cùng hiện tượng nhưng mạnh hơn ở zero-shot và VSPS: P tham chiếu 33,7 / 42,1 nhưng hợp 62,3 / 73,9. Nghĩa là P theo tham chiếu phạt nặng caption dài vì gold không đầy đủ, không riêng gì fuse2.
+- Giới hạn: (1) đây là nhãn của một mô hình AI, không phải người; annotator có thể chia sẻ thiên lệch với VLM sinh caption (nhìn thấy cùng thứ "thường có" trong ảnh), nên "cứu" là cận trên của tỉ lệ đối tượng có thật. (2) AI-silver cũng bỏ sót: P1 chỉ đạt 69,1 theo AI-silver, thấp hơn 76,9 theo tham chiếu. (3) n = 300, một annotator, không có độ đồng thuận; mẫu phân tầng theo số đối tượng tham chiếu nên P (a) lệch nhẹ so với số trên toàn test (76,9 so với 78,3; 68,8 so với 68,0). Kết luận chỉ chắc khi có gold người 2 annotator (B1).
