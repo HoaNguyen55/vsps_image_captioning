@@ -2,11 +2,11 @@
 """Score captions against KTVIC test and print a table comparable to the paper's.
 
     # score a file of predictions
-    python scripts/evaluate.py --predictions preds.json --name "VSPS-D"
+    python scripts/evaluate.py --predictions preds.json --prompt detailed --name "VSPS-D"
 
     # generate with a model, then score
-    python scripts/evaluate.py --model qwen2.5-vl-7b --name "Qwen zero-shot"
-    python scripts/evaluate.py --model qwen2.5-vl-7b --adapter ~/ncs-data/runs/dpo
+    python scripts/evaluate.py --model qwen2.5-vl-7b --prompt short --name "Qwen zero-shot"
+    python scripts/evaluate.py --model qwen2.5-vl-7b --adapter ~/ncs-data/runs/dpo --prompt detailed
 
 `--predictions` takes `{image_id: "caption"}` or `{image_id: ["caption"]}`.
 
@@ -72,6 +72,38 @@ PROMPT = PROMPTS["detailed"]
 #: pycocoevalcap's raw scale -> the ×100 convention every KTVIC number uses.
 PUBLISHED_SCALE = 100.0
 SCALED = ("BLEU-1", "BLEU-2", "BLEU-3", "BLEU-4", "METEOR", "ROUGE-L", "CIDEr", "SPICE")
+
+
+def resolve_prompt(flag: str | None, predictions: str | None) -> str:
+    """The prompt style a score belongs to: `--prompt`, else the `-<mode>` suffix
+    of the predictions file name. Refuses when neither says, or when they disagree.
+
+    A silent default here once scored short captions as `detailed`: METEOR was
+    skipped and the results file recorded the wrong `prompt_style`.
+    """
+    named = None
+    if predictions:
+        stem = Path(predictions).name.split(".")[0]
+        named = next((m for m in PROMPTS if stem.endswith(f"-{m}")), None)
+    if flag and named and flag != named:
+        raise SystemExit(f"--prompt {flag} contradicts the file name {predictions!r} ({named})")
+    if flag or named:
+        return flag or named
+    raise SystemExit("--prompt is required (it cannot be read from the predictions file name)")
+
+
+def _self_check() -> None:
+    assert resolve_prompt(None, "x/zeroshot-short.preds.json") == "short"
+    assert resolve_prompt(None, "main_s44re-detailed.preds.json") == "detailed"
+    assert resolve_prompt("short", "roundA-short.preds.json") == "short"
+    assert resolve_prompt("short", "preds.json") == "short"
+    for flag, path in ((None, "preds.json"), ("detailed", "a-short.preds.json"), (None, None)):
+        try:
+            resolve_prompt(flag, path)
+        except SystemExit:
+            continue
+        raise AssertionError((flag, path))
+    print("self-check ok")
 
 
 def references(split: str) -> dict[str, list[str]]:
@@ -163,10 +195,12 @@ def main() -> int:
     parser.add_argument("--max-vision-tokens", type=int, default=512)
     parser.add_argument("--four-bit", action="store_true")
     parser.add_argument(
-        "--prompt", default="detailed", choices=sorted(PROMPTS),
+        "--prompt", default=None, choices=sorted(PROMPTS),
         help=("`short` matches the KTVIC reference style (one sentence); "
-              "`detailed` is what the paper actually wants to generate"),
+              "`detailed` is what the paper actually wants to generate. "
+              "Required unless the predictions file name ends in -<mode>"),
     )
+    parser.add_argument("--self-check", action="store_true")
     parser.add_argument(
         "--score-here", action="store_true",
         help="score inside this very process (used internally once --predictions exists)",
@@ -178,6 +212,10 @@ def main() -> int:
         help="add a syllable-level (whitespace) table for the appendix",
     )
     args = parser.parse_args()
+    if args.self_check:
+        _self_check()
+        return 0
+    args.prompt = resolve_prompt(args.prompt, args.predictions)
     args.prompt_text = PROMPTS[args.prompt]
 
     refs = references(args.split)
@@ -252,6 +290,12 @@ def main() -> int:
         scorer = CaptionMetrics(language="vi", use_meteor=use_meteor, tokenize=True,
                                 segmenter=segmenter)
         scores = scorer.compute(gt, {i: preds[i] for i in image_ids})
+        if use_meteor and scores.get("METEOR") is None:
+            raise SystemExit("METEOR was requested but not computed; refusing to write a "
+                             "table without it:\n  " + "\n  ".join(scorer.warnings))
+        if not use_meteor:
+            scorer.warnings.append("METEOR not computed: detailed captions deadlock "
+                                   "pycocoevalcap's METEOR pipe")
         scaled = {k: (v * PUBLISHED_SCALE if k in SCALED and isinstance(v, float) else v)
                   for k, v in scores.items()}
         # scorer.segmenter, NOT the loop variable: when VnCoreNLP is absent, the
@@ -288,7 +332,8 @@ def main() -> int:
           f"of the SAME length ")
 
     print(f"\n  reference — GRIT (KTVIC Table 3, same 558 images):")
-    print(f"    CIDEr 136.0 · BLEU-4 34.2 · METEOR 28.5 · ROUGE-L 56.1")
+    # Source: KTVIC paper (arXiv 2401.08100), Table 3, row "3) GRIT".
+    print(f"    CIDEr 136.0 · BLEU-1 74.7 · BLEU-4 40.6 · METEOR 36.6 · ROUGE-L 59.7")
     for r in rows:
         for w in r["warnings"]:
             print(f"  ! {w}")
