@@ -145,3 +145,16 @@ Với cùng số đối tượng mỗi ảnh như SUPPORTED, P tăng +18,1 và R
 - Short, cùng độ dài: R +5,7, P −2,2, F1 +4,0, CIDEr không khác có ý nghĩa. Đây vẫn là đánh đổi nhỏ, chưa phải "không đánh đổi".
 - Detailed: R +18,5, F1 +9,1 (CI tách rời), nhưng P −10,3 và CHAIR_i +9,5. CIDEr thấp vì caption dài gấp đôi tham chiếu một câu, nên không so CIDEr ở mode này.
 - Bước tiếp: E5 và đối chứng `ctrl_fuse2plus1` (đang chạy) xem có lấy lại P mà giữ R không.
+
+**E5 vòng 1, SFT (12/10/2026): kết quả rỗng.** Lấy 6 mẫu cho mỗi ảnh trên 1.500 ảnh train từ fuse2_s42, chọn mẫu theo U (λ = 0,1; τ = 0,2), rồi SFT tiếp 1 epoch trên 1.458 mẫu được chọn cộng gold_fuse2.
+
+| hệ | mode | P | R | F1 [CI] | CIDEr | CHAIR_i |
+|---|---|---|---|---|---|---|
+| fuse2_s42 | short | 75,7 | 47,1 | 58,1 [56,0; 60,3] | 143,9 | 21,9 |
+| e5_s42 | short | 75,0 | 46,3 | 57,3 [55,1; 59,6] | 137,9 | 22,5 |
+| fuse2_s42 | detailed | 68,0 | 61,2 | 64,4 [62,4; 66,3] | | 29,0 |
+| e5_s42 | detailed | 67,2 | 62,2 | 64,6 [62,6; 66,6] | | |
+
+- Trên train, mẫu được chọn rất tốt (P 84,7 / R 79,4, so với 64,3 / 62,5 của mẫu ngẫu nhiên), nhưng mức này không chuyển sang được test. Lý do khả dĩ nhất: fuse2 đã học chính các ảnh này, nên mẫu "tốt nhất" chủ yếu là caption tham chiếu mô hình nhớ lại.
+- Hình phạt dựa trên probe gần như không đổi được lựa chọn (P +1,0, R −0,8 so với λ = 0), vì probe học nhãn "có người nhắc".
+- Muốn RFT có ý nghĩa thì phải lấy mẫu trên ảnh mô hình chưa thấy (cross-fit 2 nửa train), hoặc dùng ảnh không nhãn. Đã bỏ đối chứng `ctrl_fuse2plus1`; vẫn giữ DPO (22) để xem cặp tốt/xấu có lấy lại được P không.
