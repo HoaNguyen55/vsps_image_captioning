@@ -77,3 +77,17 @@ Các baseline bắt buộc: P1, PatchGate, gán tag kiểu RAM++ hoặc Groundin
 - Cả hai đều dưới cổng +1,5.
 
 Kết luận: quy tắc quyết định không phải đòn bẩy. Nút thắt là chất lượng điểm tồn tại (E2) và bước render (C4/E5). GFM chỉ còn là chi tiết cài đặt.
+
+**E3, cận trên CPU (trượt, ngay cả ở mức oracle; hạ C3 thành phân tích).** Chạy `e3_ladder_bound.py` trên 3.700 ảnh train, đo theo đối tượng và gold gộp:
+
+| tập đối tượng | P | R | F1 | P_h | số đối tượng/ảnh |
+|---|---|---|---|---|---|
+| SUPPORTED | 39,3 | 50,5 | 44,2 | 44,2 | 4,45 |
+| + bậc lùi oracle (hypernym + cắt danh ngữ ghép), chỉ khi bậc đó có trong gold | 39,9 | **52,1** | 45,2 | 44,7 | 4,50 |
+| + luôn lùi 1 bậc, không kiểm chứng | 34,8 | 52,1 | 41,7 | 40,8 | 5,17 |
+| + mọi đối tượng không SUPPORTED (không verifier) | 30,0 | 67,9 | 41,6 | 33,0 | 7,95 |
+
+- Oracle chỉ cứu được 1.708 trong 10.394 đối tượng sai mức hoặc vắng, và chỉ thêm 1,6 điểm R. Lý do: bậc lùi gần như luôn gom về `người` hoặc `xe`, vốn đã nằm sẵn trong tập.
+- Trong khi đó, **2.308 đối tượng không SUPPORTED đã đúng ngay ở mức cụ thể**. Đây là phần verifier bỏ phí, và là nơi duy nhất còn khoảng R lớn (50,5 → 67,9).
+
+Hệ quả: đòn bẩy còn lại là **chất lượng trục tồn tại** (E2: probe so với Vintern) và **văn phong đầu ra** (E5). C3 chỉ còn là phân tích đo lường (R_vague, E1), không còn là cơ chế.
