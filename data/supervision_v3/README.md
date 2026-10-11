@@ -13,5 +13,5 @@ Rebuilt from the stored Stage-1 records (`data/stage1_records/stage1_records.tar
 Next step (GPU), same recipe as v2:
 
     python3 scripts/train_stage2.py --stage sft --data data/supervision_v3 --out $NCS_DATA/runs/v3_s42 --epochs 2 --seed 42
-    python3 scripts/evaluate.py --adapter $NCS_DATA/runs/v3_s42 --split test_data.json --prompt detailed --name v3_s42-detailed
+    python3 scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/v3_s42 --split test_data.json --prompt detailed --name v3_s42-detailed
     python3 scripts/object_prf.py

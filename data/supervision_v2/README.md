@@ -19,7 +19,7 @@ Detailed captions vs KTVIC train references (3,560 images; precision is a lower 
 Next step (GPU, one per variant and seed 42/43/44):
 
     python3 scripts/train_stage2.py --stage sft --data data/supervision_v2/raw --out $NCS_DATA/runs/v2raw_s42 --epochs 2 --seed 42
-    python3 scripts/evaluate.py --adapter $NCS_DATA/runs/v2raw_s42 --split test_data.json --prompt detailed --name v2raw_s42-detailed
+    python3 scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/v2raw_s42 --split test_data.json --prompt detailed --name v2raw_s42-detailed
     python3 scripts/object_prf.py
 
 ## Result: v2 raw, seed 42 (RTX 3090, 2026-10-10)
