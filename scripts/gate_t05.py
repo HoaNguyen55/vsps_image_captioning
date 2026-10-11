@@ -75,6 +75,7 @@ def main() -> int:
     ap.add_argument("--n", type=int, default=600)
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--raw-prompt", action="store_true", help="ask the probe verbatim, without the yes/no instruction")
     args = ap.parse_args()
 
     import sys
@@ -87,7 +88,7 @@ def main() -> int:
     for probe in sample_probes(args.src, args.n, args.seed):
         image = Image.open(IMAGES / probe["file_name"]).convert("RGB")
         t = time.perf_counter()
-        text, p_yes = model.yes_no_logit(image, probe["question"])
+        text, p_yes = model.yes_no_logit(image, probe["question"], instruct=not args.raw_prompt)
         rows.append({**probe, "logit_text": text, "p_yes": p_yes, "sec": time.perf_counter() - t})
     report = score(rows)
     args.out.parent.mkdir(parents=True, exist_ok=True)

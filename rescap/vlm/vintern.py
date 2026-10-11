@@ -271,13 +271,14 @@ class VinternAdapter(VLM):
 
         return [(str(r).strip(), None) for r in responses]
 
-    def yes_no_logit(self, image: Any, question: str) -> tuple[str, float]:
+    def yes_no_logit(self, image: Any, question: str, *, instruct: bool = True) -> tuple[str, float]:
         """One greedy pass: `(answer_text, P(yes))` with P(yes) read from the first decoding step.
 
         `chat()` returns text only, so the language model's `generate` is wrapped for the
         duration of the call to force `output_scores`; the prompt template is therefore
         exactly the one `chat()` builds. P(yes) = mass on the yes first-tokens divided by
-        the mass on yes + no first-tokens.
+        the mass on yes + no first-tokens. `instruct=False` keeps the probe exactly as
+        Stage 1 asked it.
         """
         import torch
 
@@ -292,7 +293,7 @@ class VinternAdapter(VLM):
             captured["scores"] = out.scores
             return out.sequences
 
-        prompt = f"{question.rstrip('?')}? Chỉ trả lời 'có' hoặc 'không'."
+        prompt = f"{question.rstrip('?')}? Chỉ trả lời 'có' hoặc 'không'." if instruct else question
         question = prompt if prompt.startswith("<image>") else f"<image>\n{prompt}"
         config = {"max_new_tokens": 4, "do_sample": False, "num_beams": 1, "repetition_penalty": 1.05}
         lm.generate = generate
