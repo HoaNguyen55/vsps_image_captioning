@@ -49,6 +49,12 @@ def mentions(caption: str) -> set[str]:
     return {class_key(n) for n in objects_in(caption or "")}
 
 
+def ai_produced(path: Path) -> bool:
+    """True for machine-made labels (`ai_produced: true` or an `*_AI` annotator such as claude_AI)."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    return bool(data.get("ai_produced")) or str(data.get("annotator", "")).lower().endswith("_ai")
+
+
 def read_annotations(path: Path, image_ids: list[str]) -> dict[str, set[str]]:
     data = json.loads(path.read_text(encoding="utf-8"))
     labels = data["labels"]
@@ -115,7 +121,11 @@ def load_preds(path: Path) -> dict[str, str]:
 
 
 def run(sample_path: Path, annotation_paths: list[Path], adjudicator_path: Path | None,
-        systems: dict[str, dict[str, str]], partial: bool = False) -> dict:
+        systems: dict[str, dict[str, str]], partial: bool = False, allow_ai: bool = False) -> dict:
+    ai = [p.name for p in [*annotation_paths, adjudicator_path] if p and ai_produced(p)]
+    if ai and not allow_ai:
+        raise SystemExit(f"AI-produced labels {ai} are not human gold; pass --allow-ai to score "
+                         "them as AI-silver")
     image_ids = [im["id"] for im in json.loads(sample_path.read_text(encoding="utf-8"))["images"]]
     if partial:
         done = [json.loads(p.read_text(encoding="utf-8"))["labels"] for p in annotation_paths]
@@ -124,6 +134,7 @@ def run(sample_path: Path, annotation_paths: list[Path], adjudicator_path: Path 
     adj = read_annotations(adjudicator_path, image_ids) if adjudicator_path else None
     golds = build_gold(ann[0], ann[1], adj)
     report = {"n_images": len(image_ids), "annotators": [p.name for p in annotation_paths],
+              "gold_kind": "AI-silver" if ai else "human", "ai_produced_files": ai,
               "agreement": agreement(ann[0], ann[1]),
               "n_disputed": sum(len(ann[0][i] ^ ann[1][i]) for i in image_ids),
               "gold_per_image": {k: statistics.mean(len(v) for v in g.values()) for k, g in golds.items()},
@@ -138,7 +149,7 @@ def run(sample_path: Path, annotation_paths: list[Path], adjudicator_path: Path 
 def print_report(r: dict) -> None:
     ag = r["agreement"]
     fmt = lambda x: "n/a" if x is None else f"{x:.3f}"  # noqa: E731
-    print(f"{r['n_images']} images, annotators {r['annotators']}")
+    print(f"{r['n_images']} images, annotators {r['annotators']}, gold: {r['gold_kind']}")
     print(f"  agreement: macro kappa={fmt(ag['macro_kappa'])}  pooled kappa={fmt(ag['pooled_kappa'])}  "
           f"raw={ag['raw']:.3f}  mean Jaccard={fmt(ag['mean_jaccard'])}  disputed ticks={r['n_disputed']}")
     low = sorted(((v["kappa"], c) for c, v in ag["per_class"].items()
@@ -202,6 +213,15 @@ def self_check() -> None:
         crowd = dump("crowd.json", {i: {"phụ nữ", "đàn ông"} for i in ids})
         r = run(d / "sample.json", [crowd, crowd], None, {"vague": {i: "một người đang đứng" for i in ids}})
         assert r["systems"]["vague"]["agreed/lenient"]["R"] == 50.0, "one vague mention covers one gold class"
+        bot = d / "bot.json"
+        bot.write_text(json.dumps({**json.loads(a.read_text()), "annotator": "claude_AI"}))
+        try:
+            run(d / "sample.json", [a, bot], None, {"perfect": perfect})
+            raise AssertionError("AI-produced labels must be refused without allow_ai")
+        except SystemExit:
+            pass
+        assert run(d / "sample.json", [a, bot], None, {}, allow_ai=True)["gold_kind"] == "AI-silver"
+        assert run(d / "sample.json", [a, b], None, {})["gold_kind"] == "human"
         print_report(run(d / "sample.json", [a, b], None, {"perfect": perfect, "half": half}))
     print("self-check OK")
 
@@ -215,6 +235,8 @@ def main() -> int:
     ap.add_argument("--split", default="test_data.json")
     ap.add_argument("--out", default=None)
     ap.add_argument("--partial", action="store_true", help="score only images every annotator finished (calibration)")
+    ap.add_argument("--allow-ai", action="store_true",
+                    help="accept AI-produced label files; the output is then labelled AI-silver, not human gold")
     ap.add_argument("--self-check", action="store_true")
     args = ap.parse_args()
     if args.self_check:
@@ -230,7 +252,8 @@ def main() -> int:
     if (KTVIC / args.split).exists():
         systems["human ref #1"] = {k: rs[0] for k, rs in references(args.split).items()}
     report = run(Path(args.sample), [Path(p) for p in args.annotations],
-                 Path(args.adjudicator) if args.adjudicator else None, systems, args.partial)
+                 Path(args.adjudicator) if args.adjudicator else None, systems, args.partial,
+                 args.allow_ai)
     print_report(report)
     if args.out:
         Path(args.out).write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
