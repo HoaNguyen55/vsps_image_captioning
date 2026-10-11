@@ -138,3 +138,17 @@ Nếu sau Giai đoạn 2 F1 vẫn dưới zero-shot: định vị bài là *"m�
 1. `python scripts/recall_decomp.py <stage1_neutralized>`, lưu bảng Mục 0 làm baseline.
 2. Viết selector entity-first (D1) như một hàm thay thế trong bước selection, chạy lại trên verdict sẵn có, so funnel.
 3. Viết `relation_to_entity` (D2), đặt cạnh `scripts/person_uncap.py`, theo cùng tiêu chí đã đăng ký trước: bằng chứng đồng thuận, không hỏi lại mô hình.
+
+---
+
+## 6. Cập nhật 11/10/2026 (CPU, máy GPU không truy cập được)
+
+Đo trên 3.701 bản ghi stage-1 đã lưu. Proxy là P/R của caption mục tiêu so với tham chiếu train; v2raw cho proxy 40,6/42,4 và mô hình đạt 38,1/42,2 trên test, nên proxy này dự báo tốt.
+
+- **Bộ lọc vị ngữ quan hệ** (`relation_predicate`): giữ 5.704/21.406 mệnh đề. Tất cả 468 mệnh đề SUPPORTED bị loại trong mẫu kiểm tra đều hỏng. Chỉ 2,5% mệnh đề được chọn là quan hệ, nên bộ lọc giúp precision chứ không giúp recall.
+- **`unanimous_uncap.py`** (chạy sau person_uncap): tập SUPPORTED đạt R 48,0 → 50,7 với P 39,8 → 39,3.
+- **Budget không phải điểm nghẽn**: tăng 9 → 15 chỉ được +0,7 R.
+- **Dữ liệu v3** (`data/supervision_v3`): F1 strict 41,6 (v2raw 41,5); R lenient 56,6 (v2raw 54,2). Lỗi trong caption mục tiêu: giới tính chưa kiểm chứng 12,2% → 0,3%, "một số X" đọc thành danh từ 14,2% → 0,4%, đại từ thừa 2,8% → 0. Nguyên nhân gốc: `NUMBER_MARKERS` thiếu "một số".
+- **Trần recall strict** cho mô hình trung tính giới tính là 83,7, nên giới tính không phải giới hạn.
+
+Kết luận: chỉ sửa dữ liệu mục tiêu thì recall strict của mục tiêu mới quanh 42–44. Muốn đạt R ≥ 55 (strict) thì phải tăng chính tập SUPPORTED, gồm verifier logit (T0.5), xếp hạng thực thể trước khi cắt `--max-entities` và kênh detector, và việc nào cũng cần chạy lại stage-1 trên GPU. Việc GPU kế tiếp: huấn luyện v3 seed 42 (lệnh trong `data/supervision_v3/README.md`), rồi đo T0.5 bằng `VinternAdapter.yes_no_logit` (đã viết, chưa chạy).
