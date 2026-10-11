@@ -271,6 +271,47 @@ class VinternAdapter(VLM):
 
         return [(str(r).strip(), None) for r in responses]
 
+    def yes_no_logit(self, image: Any, question: str) -> tuple[str, float]:
+        """One greedy pass: `(answer_text, P(yes))` with P(yes) read from the first decoding step.
+
+        `chat()` returns text only, so the language model's `generate` is wrapped for the
+        duration of the call to force `output_scores`; the prompt template is therefore
+        exactly the one `chat()` builds. P(yes) = mass on the yes first-tokens divided by
+        the mass on yes + no first-tokens.
+        """
+        import torch
+
+        self.load()
+        lm = self._model.language_model
+        captured: dict[str, Any] = {}
+        original = lm.generate
+
+        def generate(*args, **kwargs):
+            kwargs.update(output_scores=True, return_dict_in_generate=True)
+            out = original(*args, **kwargs)
+            captured["scores"] = out.scores
+            return out.sequences
+
+        prompt = f"{question.rstrip('?')}? Chỉ trả lời 'có' hoặc 'không'."
+        question = prompt if prompt.startswith("<image>") else f"<image>\n{prompt}"
+        config = {"max_new_tokens": 4, "do_sample": False, "num_beams": 1, "repetition_penalty": 1.05}
+        lm.generate = generate
+        try:
+            text = self._model.chat(self._tokenizer, self._pixel_values(image), question, config)
+        finally:
+            lm.generate = original
+        probs = torch.softmax(captured["scores"][0][0].float(), dim=-1)
+        yes, no = self._yes_no_ids()
+        p_yes, p_no = probs[yes].sum().item(), probs[no].sum().item()
+        return str(text).strip(), p_yes / (p_yes + p_no) if p_yes + p_no > 0 else 0.5
+
+    def _yes_no_ids(self) -> tuple[list[int], list[int]]:
+        if not hasattr(self, "_yn_ids"):
+            def first(words):
+                return sorted({self._tokenizer.encode(w, add_special_tokens=False)[0] for w in words})
+            self._yn_ids = (first(["Có", "có", " Có", " có"]), first(["Không", "không", " Không", " không"]))
+        return self._yn_ids
+
     def info(self) -> dict[str, Any]:
         return {
             **super().info(),
