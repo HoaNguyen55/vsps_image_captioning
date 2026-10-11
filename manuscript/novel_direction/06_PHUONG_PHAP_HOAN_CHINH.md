@@ -103,3 +103,32 @@ Hệ quả: đòn bẩy còn lại là **chất lượng trục tồn tại** (E
 | ghép cả 3 | 61,2 | 76,7 | 68,1 |
 
 Phần lớn mức tăng đến từ việc *ghép*. Chọn tham lam chỉ thêm +1,8 F1 so với ghép ngẫu nhiên, nên phải báo cáo trung thực đúng như vậy. Mô hình fuse2_s42 đang chờ GPU.
+
+**E2 (đạt, vượt xa cổng).** `scripts/probe_existence.py`: 497 ảnh train, 4.046 câu hỏi "Trong ảnh có X không?", CV 5 fold theo ảnh. Nhãn là "có người gán nào nhắc X không", nên AUROC đo **tồn tại × đáng nhắc**, chưa phải tồn tại thuần.
+
+| tín hiệu | AUROC |
+|---|---|
+| Vintern K=5 (tỉ lệ phiếu "có") | 0,612 |
+| tiên nghiệm lớp (out-of-fold) | 0,710 |
+| Qwen P(có): có ảnh / không ảnh | 0,709 / 0,453 |
+| probe layer 8 / 16 / 20 / **24** / 28, có ảnh | 0,714 / 0,765 / 0,790 / **0,807** / 0,801 |
+| probe, không ảnh (đối chứng rò tiên nghiệm) | 0,708 ở mọi layer |
+| Vintern + tiên nghiệm | 0,743 |
+| probe L24 + Vintern + tiên nghiệm | **0,817** |
+
+- Probe hơn Vintern +0,195; cổng chỉ đòi ≥ 0,03. Bỏ ảnh đi thì probe chỉ còn bằng tiên nghiệm lớp, nên phần thông tin tăng thêm đến từ ảnh.
+- Thông tin về tồn tại nằm ở các layer giữa và sau (20–28), không ở đầu ra. P(có) ở đầu ra chỉ đạt 0,709.
+
+Tập đối tượng trên cùng 497 ảnh, đo với gold gộp (`e2_probe_sets.py`):
+
+| tập | P | R | F1 | số đối tượng/ảnh |
+|---|---|---|---|---|
+| SUPPORTED (record gốc) | 47,9 | 32,6 | 38,8 | 2,92 |
+| Vintern + tiên nghiệm ≥ 0,50 | 59,8 | 30,9 | 40,8 | 2,31 |
+| Vintern + tiên nghiệm ≥ 0,30 | 50,2 | 53,6 | 51,9 | 4,69 |
+| **probe + V + tiên nghiệm ≥ 0,45** | **66,0** | **43,9** | 52,7 | 2,91 |
+| probe + V + tiên nghiệm ≥ 0,30 | 59,0 | 52,3 | **55,5** | 3,92 |
+
+Với cùng số đối tượng mỗi ảnh như SUPPORTED, P tăng +18,1 và R tăng +11,3. Đây là kết quả "không đánh đổi" đầu tiên đo được trên cùng một tập ứng viên. Bước tiếp theo:
+1. Dùng điểm probe để chọn nội dung cho mục tiêu SFT, thay cho Vintern.
+2. Kiểm định trên gold 300 ảnh để tách phần tồn tại khỏi phần đáng nhắc.
