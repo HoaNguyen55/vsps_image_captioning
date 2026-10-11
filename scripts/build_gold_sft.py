@@ -40,7 +40,33 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from build_dpo_data import PROMPT_SHORT  # the same prompt, not re-typed by hand
+from build_dpo_data import PROMPT, PROMPT_SHORT  # the same prompts, not re-typed by hand
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from rescap.chair import objects_in
+
+
+def consensual(captions: list[str]) -> str:
+    """The caption naming the most objects that another annotator also names."""
+    objs = [set(objects_in(c)) for c in captions]
+    shared = lambda i: sum(any(o in objs[j] for j in range(len(objs)) if j != i) for o in objs[i])
+    return captions[max(range(len(captions)), key=lambda i: (shared(i), -i))]
+
+
+def fused(captions: list[str], k: int) -> str:
+    """Start from the consensual caption, then add up to k-1 captions, each the one
+    contributing the most objects not yet named; a caption adding none is not used.
+    Every object in the result was written by an annotator, so fusion adds coverage
+    without adding content nobody saw."""
+    first = consensual(captions)
+    chosen, named = [first], set(objects_in(first))
+    rest = [c for c in captions if c != first]
+    while len(chosen) < k and rest:
+        best = max(rest, key=lambda c: len(set(objects_in(c)) - named))
+        if not set(objects_in(best)) - named:
+            break
+        chosen.append(best); named |= set(objects_in(best)); rest.remove(best)
+    return " ".join(c if c.rstrip().endswith((".", "!", "?")) else c.rstrip() + "." for c in chosen)
 
 
 def main() -> int:
@@ -49,6 +75,10 @@ def main() -> int:
                         help="KTVIC's train_data.json")
     parser.add_argument("--out", required=True)
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--select", choices=("first", "consensus"), default="first",
+                        help="short-row caption: file order (P1) or the most consensual one")
+    parser.add_argument("--fuse", type=int, default=1,
+                        help="k > 1 adds a detailed-prompt row fusing up to k captions per image")
     parser.add_argument("--limit", type=int, default=0,
                         help="limit the number of images (0 = all) — for quick trials only")
     args = parser.parse_args()
@@ -59,7 +89,7 @@ def main() -> int:
         for img in data.get("images", [])
     }
 
-    first_caption: dict[str, str] = {}
+    captions: dict[str, list[str]] = {}
     n_captions = 0
     for ann in data.get("annotations", []):
         image_id = str(ann["image_id"])
@@ -67,15 +97,19 @@ def main() -> int:
         if not caption:
             continue
         n_captions += 1
-        first_caption.setdefault(image_id, caption)
+        captions.setdefault(image_id, []).append(caption)
 
-    rows = [
-        {"image_id": image_id, "file_name": file_names.get(image_id),
-         "prompt": PROMPT_SHORT, "response": caption, "variant": "gold"}
-        for image_id, caption in sorted(first_caption.items())
-        if file_names.get(image_id)
-    ]
-    dropped = len(first_caption) - len(rows)
+    pick = (lambda cs: cs[0]) if args.select == "first" else consensual
+    rows = []
+    for image_id, cs in sorted(captions.items()):
+        if not file_names.get(image_id):
+            continue
+        base = {"image_id": image_id, "file_name": file_names[image_id]}
+        rows.append({**base, "prompt": PROMPT_SHORT, "response": pick(cs), "variant": "gold"})
+        if args.fuse > 1:
+            rows.append({**base, "prompt": PROMPT, "response": fused(cs, args.fuse),
+                         "variant": f"gold_fused{args.fuse}"})
+    dropped = len(captions) - len({r["image_id"] for r in rows})
     if args.limit:
         rows = rows[: args.limit]
 
@@ -91,17 +125,19 @@ def main() -> int:
     report = {
         "source": str(args.annotations), "seed": args.seed,
         "baseline": "gold_sft (P1, )",
-        "images_with_caption": len(first_caption),
+        "images_with_caption": len(captions),
         "captions_total": n_captions,
         "captions_used": len(rows),
-        "policy": "one first-caption per image, PROMPT_SHORT, no detailed variant",
+        "policy": (f"short row: {args.select} caption, PROMPT_SHORT; "
+                   + (f"detailed row: up to {args.fuse} fused captions, PROMPT" if args.fuse > 1
+                      else "no detailed variant")),
         "dropped_no_file_name": dropped,
     }
     (dst / "_build_report.json").write_text(
         json.dumps(report, ensure_ascii=False, indent=2), encoding="utf-8")
 
     print(f"  {len(rows)} gold-SFT examples (from {n_captions} captions / "
-          f"{len(first_caption)} images, first caption per image)")
+          f"{len(captions)} images, select={args.select}, fuse={args.fuse})")
     if dropped:
         print(f"  ⚠ {dropped} images dropped because file_name could not be resolved")
     print(f"  -> {dst/'sft.jsonl'}\n"
@@ -109,5 +145,13 @@ def main() -> int:
     return 0
 
 
+def _check() -> None:
+    cs = ["một người đàn ông đứng.", "một người đàn ông và con chó", "con chó cạnh chiếc xe máy"]
+    assert consensual(cs) == cs[1]
+    assert fused(cs, 2) == "một người đàn ông và con chó. con chó cạnh chiếc xe máy.", fused(cs, 2)
+    assert fused(cs[:1], 3) == cs[0]
+
+
 if __name__ == "__main__":
+    _check()
     sys.exit(main())
