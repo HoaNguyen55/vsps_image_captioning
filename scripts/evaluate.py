@@ -162,11 +162,16 @@ def generate(args, image_ids: list[str]) -> dict[str, list[str]]:
     names = file_names(args.split)
     model, processor = load_model(args)
     out: dict[str, list[str]] = {}
+    # Tags-in-prompt baseline: {image_id: [Vietnamese object names]} from scripts/tag_images.py.
+    tags = json.loads(Path(args.tags).read_text(encoding="utf-8")) if args.tags else {}
     started = time.time()
     for n, image_id in enumerate(image_ids, 1):
         image = Image.open(KTVIC / "images" / names[image_id]).convert("RGB")
+        prompt = args.prompt_text
+        if tags.get(image_id):
+            prompt += " Các đối tượng có thể có trong ảnh: " + ", ".join(tags[image_id]) + "."
         messages = [{"role": "user", "content": [
-            {"type": "image"}, {"type": "text", "text": args.prompt_text}]}]
+            {"type": "image"}, {"type": "text", "text": prompt}]}]
         text = processor.apply_chat_template(
             messages, tokenize=False, add_generation_prompt=True)
         inputs = processor(text=[text], images=[image], return_tensors="pt").to(model.device)
@@ -194,6 +199,8 @@ def main() -> int:
     parser.add_argument("--max-new-tokens", type=int, default=160)
     parser.add_argument("--max-vision-tokens", type=int, default=512)
     parser.add_argument("--four-bit", action="store_true")
+    parser.add_argument("--tags", default=None,
+                        help="JSON {image_id: [vi tags]} appended to the prompt (scripts/tag_images.py)")
     parser.add_argument(
         "--prompt", default=None, choices=sorted(PROMPTS),
         help=("`short` matches the KTVIC reference style (one sentence); "
