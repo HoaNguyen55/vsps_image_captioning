@@ -179,6 +179,79 @@ def _collapse_stutter(p: dict) -> dict:
     return out
 
 
+_NP_VALUE = re.compile(r"^(một số|một vài|một nhóm|một|hai|ba|bốn|năm|nhiều|các|những|vài)\s", re.IGNORECASE)
+
+
+def _fix_np_attribute(p: dict, entities: list[dict]) -> dict | None:
+    """`hai người | hai người đang đứng` -> `đang đứng`; a value naming another referent -> None.
+
+    The attribute prompt is answered with a clause about the subject (echoed) or about
+    something else in the image (`nhiều người khác | một người mặc áo màu xanh`);
+    rendered after the subject, either gives two noun phrases with no verb between.
+    Clothing values are noun phrases by nature and are left alone.
+    """
+    from rescap.pipeline.generate import strip_subject_echo
+
+    attrs = p.get("attributes") or []
+    if not any(_NP_VALUE.match(str(a.get("value_vi") or "")) for a in attrs if a.get("kind") != "trang_phục"):
+        return p
+    sid = str((p.get("subject") or {}).get("entity_id"))
+    entity = next((e for e in entities if str(e.get("id")) == sid), None)
+    if entity is None:
+        return None
+    import copy
+    out = copy.deepcopy(p)
+    for a in out["attributes"]:
+        value = str(a.get("value_vi") or "")
+        if a.get("kind") == "trang_phục" or not _NP_VALUE.match(value):
+            continue
+        value = strip_subject_echo(value, entity)
+        if _NP_VALUE.match(value):
+            return None
+        a["value_vi"] = value
+    stext = str((out.get("subject") or {}).get("text_vi") or "")
+    out["text_vi"] = " ".join([stext] + [str(a.get("value_vi") or "") for a in out["attributes"]]).strip()
+    return out
+
+
+def _neutral_gender(p: dict, entities: list[dict], stats: Counter) -> dict:
+    """Neutralise gendered nouns the verifier never checked.
+
+    Gender is only verified as an entity's own property (`gender_verified`). A
+    gendered noun inside a predicate or attribute value (`đang trò chuyện với một
+    người đàn ông`) was never asked about, so it is an unverified claim and leaked
+    into 10% of the detailed targets.
+    """
+    from person_uncap import neutralise
+    from rescap.pipeline.realize import gender_verified
+
+    sid = str((p.get("subject") or {}).get("entity_id"))
+    if any(str(e.get("id")) == sid and gender_verified(e) for e in entities):
+        return p
+    text = str(p.get("text_vi") or "")
+    fields = [text, str((p.get("predicate") or {}).get("lemma_vi") or "")]
+    fields += [str(a.get("value_vi") or "") for a in p.get("attributes") or []]
+    if all(neutralise(t) == t for t in fields):
+        return p
+    stats["clean:gender_neutralised"] += 1
+    from rescap.pipeline.generate import strip_subject_echo
+
+    entity = next((e for e in entities if str(e.get("id")) == sid), None)
+    if entity is not None:
+        surface = neutralise(str(entity.get("surface") or ""))
+        head = str(entity.get("category_vi") or "")
+        entity = {"surface": surface, "category_vi": "người" if neutralise(head) != head else head}
+    # `người phụ nữ đang đứng` neutralises to `người đang đứng`: an echo of a
+    # `người` subject that the generation-time strip could not see.
+    fix = (lambda t: strip_subject_echo(neutralise(t), entity)) if entity else neutralise
+    out = {**p, "text_vi": neutralise(text)}
+    if (p.get("predicate") or {}).get("lemma_vi"):
+        out["predicate"] = {**p["predicate"], "lemma_vi": fix(p["predicate"]["lemma_vi"])}
+    if p.get("attributes"):
+        out["attributes"] = [{**a, "value_vi": fix(str(a.get("value_vi") or ""))} for a in p["attributes"]]
+    return out
+
+
 def _subject_existence(p: dict) -> dict | None:
     """`Một chiếc xe đạp một người đàn ông … đang đi xe đạp` -> entity `Một chiếc xe đạp`."""
     subj = p.get("subject") or {}
@@ -209,6 +282,12 @@ def clean_props(props: list[dict], stats: Counter, entities: list[dict] | None =
             if fixed is not None:
                 p = fixed
                 stats["clean:pred_clause_rehomed"] += 1
+        p = _neutral_gender(p, entities or [], stats)
+        if p.get("type") == "attribute":
+            p = _fix_np_attribute(p, entities or [])
+            if p is None:
+                stats["clean:np_attribute"] += 1
+                continue
         if _malformed(str(p.get("text_vi") or "")):
             # a stutter (`áo đỏ đỏ`), not a wrong claim: collapse it, keep the claim
             p = _collapse_stutter(p)
@@ -272,7 +351,7 @@ _WEAR_FIXES = (
 )
 
 
-_PRONOUN_REMNANT = _re_verb.compile(r"\b(cô|anh|chị|ông|bà|em|họ)\s+ấy\b")
+_PRONOUN_REMNANT = _re_verb.compile(r"\b(cô|anh|chị|ông|bà|em|họ)\s+(?:ấy|ta)\b")
 
 
 def fix_wear_verbs(text: str) -> str:
@@ -321,11 +400,63 @@ def realise(props, entities, hedged_ids, stats: Counter, label: str) -> str | No
     return caption or None
 
 
+def _reparse_quantified(entity: dict, stats: Counter) -> dict:
+    """Records made before `một số` was a number marker read `một số rau` as ONE `số rau`."""
+    from rescap.vi.classifier import parse_noun_phrase
+
+    if not str(entity.get("category_vi") or "").startswith("số "):
+        return entity
+    phrase = parse_noun_phrase(str(entity.get("surface") or ""))
+    if phrase.number_marker != "một số" or not phrase.head_noun:
+        return entity
+    stats["clean:reparsed_mot_so"] += 1
+    return {**entity, "category_vi": phrase.head_noun, "classifier": None,
+            "number": {"value": None, "marker": "một số", "countable": True}}
+
+
+def _rehead(p: dict, heads: dict[str, str]) -> dict:
+    """Propagate a re-parsed head noun into the proposition's subject/object refs.
+
+    The echo strip ran with the stale head (`số sản`), so the predicate can still
+    open with the rest of the real head: `sản phẩm` left `phẩm được xếp …`.
+
+    >>> p = {"subject": {"entity_id": "e", "head_noun_vi": "số sản"}, "predicate": {"lemma_vi": "phẩm được xếp"}}
+    >>> _rehead(p, {"e": "sản phẩm"})["predicate"]["lemma_vi"]
+    'được xếp'
+    >>> p = {"subject": {"entity_id": "e", "head_noun_vi": "số sản"}, "attributes": [{"value_vi": "phẩm có màu vàng"}]}
+    >>> _rehead(p, {"e": "sản phẩm"})["attributes"][0]["value_vi"]
+    'có màu vàng'
+    """
+    stale = [k for k in ("subject", "object") if (p.get(k) or {}).get("entity_id") in heads
+             and p[k].get("head_noun_vi") != heads[p[k]["entity_id"]]]
+    if not stale:
+        return p
+    out = {**p, **{k: {**p[k], "head_noun_vi": heads[p[k]["entity_id"]]} for k in stale}}
+    if "subject" in stale:
+        old = p["subject"].get("head_noun_vi", "").split()
+        rest = [w for w in out["subject"]["head_noun_vi"].split() if w not in old]
+        lemma = str((p.get("predicate") or {}).get("lemma_vi") or "")
+        def cut(text: str) -> str:
+            words = text.split()
+            return " ".join(words[len(rest):]) if rest and words[:len(rest)] == rest else text
+
+        if cut(lemma) != lemma:
+            out["predicate"] = {**p["predicate"], "lemma_vi": cut(lemma)}
+        if any(cut(str(a.get("value_vi") or "")) != a.get("value_vi") for a in p.get("attributes") or []):
+            out["attributes"] = [{**a, "value_vi": cut(str(a.get("value_vi") or ""))} for a in p["attributes"]]
+        if rest:
+            out["text_vi"] = re.sub(rf"\b{' '.join(rest)} {' '.join(rest)}\b", " ".join(rest), str(p.get("text_vi") or ""))
+    return out
+
+
 def build_for_image(record: dict, stats: Counter):
     """Return `(sft_example, dpo_pairs)` for one Stage 1 record."""
     props = record.get("propositions") or []
     entities = record.get("entities") or []
     if CLEAN_PROPS[0]:
+        entities = [_reparse_quantified(e, stats) for e in entities]
+        heads = {str(e.get("id")): e["category_vi"] for e in entities}
+        props = [_rehead(p, heads) for p in props]
         props = clean_props(list(props), stats, entities)
         # (research log)b: an entity neutralized by backoff → every proposition hanging
         # off it must drop the repeated gendered pronoun in its text ("... cô ấy mặc
@@ -334,7 +465,7 @@ def build_for_image(record: dict, stats: Counter):
                        if (e.get("gender") or {}).get("backoff_neutralised")}
         if neutral_ids:
             import re as _re_pn
-            _pn = _re_pn.compile(r"\b(cô|anh|chị|ông|bà|em|họ)\s+ấy\b")
+            _pn = _re_pn.compile(r"\b(cô|anh|chị|ông|bà|em|họ)\s+(?:ấy|ta)\b")
             for p in props:
                 if str(((p.get("subject") or {}).get("entity_id"))) in neutral_ids:
                     for holder, key in ((p, "text_vi"),

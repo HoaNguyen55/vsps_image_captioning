@@ -45,6 +45,27 @@ Target captions vs KTVIC train references (`scripts/recall_funnel.py`, sft_capti
 | v2 raw, budget 12 / 15 | 40.2 / 40.0 | 41.8 / 41.9 |
 | + clean_props repairs (stutter collapse, clause → subject existence) | 40.7 | 41.2 |
 | + `scripts/unanimous_uncap.py` after person_uncap | 40.5 | 43.2 |
+| + target repairs below (v3) | 40.2 | 41.8 |
+
+v3 vs v2 raw on the same 3,589 train images, strict and lenient (gendered gold and caption words → `người`, as in the table above):
+
+| store | strict P / R / F1 | lenient P / R / F1 |
+|---|---|---|
+| v2 raw | 40.6 / 42.4 / 41.5 | 48.2 / 54.2 / 51.0 |
+| v3 | 40.2 / 43.0 / 41.6 | 47.6 / 56.6 / 51.7 |
+
+Defect rates in detailed targets (`scripts/target_lint.py`, % of captions with at least one hit):
+
+| pattern | shipped | v2 raw | v3 |
+|---|---|---|---|
+| unverified gendered noun | 9.9 | 12.2 | 0.3 |
+| `một số X` read as a noun `số X` (count 1) | 8.6 | 14.2 | 0.4 |
+| pronoun remnant (`anh ta`, `cô ấy`) | 2.0 | 2.8 | 0.0 |
+| person NP echoed (`một người, một người`) | 5.1 | 6.4 | 4.3 |
+| colour on a person (`người màu đỏ`) | 3.1* | 3.1 | 3.2 |
+| duplicated word | 1.3 | 1.4 | 1.5 |
+
+*same pattern as the other columns. v3 repairs: `một số` added to `NUMBER_MARKERS` (root cause: `một số rau` parsed as one `số rau`, count 1, in 1,597 of 28,912 entities; stored records re-parsed at build time); gendered nouns inside predicates/attribute values neutralised (the verifier never asked about them), with the subject echo stripped again afterwards; `anh ta`/`cô ta` added to the pronoun-remnant rule; attribute values that restate the subject or name another referent repaired or dropped. Gender neutrality costs about 1.2 strict recall points, which were credited for gender the verifier never checked.
 
 Proposition level (SUPPORTED set): person_uncap R 48.0 / P 39.8 → + unanimous_uncap R 50.7 / P 39.3. Budget is not the bottleneck. The renderer loses about 7 recall points between the SUPPORTED set and the caption, and the captions it writes carry errors the model then learns: a colour moved onto the wrong noun (`một người mặc áo kẻ có màu đỏ và trắng` → `Một người có màu đỏ và trắng`), gendered text leaking from clause-swallowing propositions, and ungrammatical sequences (`Cái mũ này đang đạp xe`). Fixing the renderer comes before the next training run.
 

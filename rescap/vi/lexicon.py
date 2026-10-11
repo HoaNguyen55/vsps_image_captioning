@@ -110,6 +110,7 @@ NUMBER_MARKERS: dict[str, str] = {
     "các": "definite plural (all of them)",
     "mấy": "small indefinite plural, informal",
     "một vài": "a few",
+    "một số": "some (indefinite plural)",
     "vài": "a few",
     "nhiều": "many",
     "một nhóm": "a group",

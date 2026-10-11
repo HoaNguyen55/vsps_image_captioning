@@ -603,8 +603,9 @@ def strip_subject_echo(line: str, entity: dict) -> str:
         # entity's head is the same referent said differently, whatever
         # quantifier it carries.
         phrase = parse_noun_phrase(line)
-        if phrase.head_noun and phrase.head_noun.lower() == head:
-            marker = phrase.head_noun.lower()
+        # `người` parses as the classifier of a person NP (`một số người đang …`)
+        marker = next((w.lower() for w in (phrase.head_noun, phrase.classifier) if w and w.lower() == head), "")
+        if marker:
             cut = lowered.find(marker)
             if 0 <= cut <= 24:  # a leading NP, not a mention deep in the clause
                 rest = line[cut + len(marker):].lstrip(" ,.:;-–—")

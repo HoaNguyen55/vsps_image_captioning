@@ -32,7 +32,6 @@ Other records are copied verbatim. The input directory is immutable.
 from __future__ import annotations
 
 import argparse
-import copy
 import json
 import re
 from collections import Counter
@@ -49,7 +48,7 @@ _GENDER_RE = re.compile(
 
 
 def neutralise(text: str) -> str:
-    out = re.sub(r"\b(cô|anh|chị|ông|bà|em|họ)\s+ấy\b", " ", text)
+    out = re.sub(r"\b(cô|anh|chị|ông|bà|em|họ)\s+(?:ấy|ta)\b", " ", text)
     out = _GENDER_RE.sub("người", out)
     out = re.sub(r"\bngười(\s+người)+\b", "người", out)
     out = re.sub(r"\s{2,}", " ", out).strip()
