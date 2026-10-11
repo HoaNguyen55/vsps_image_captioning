@@ -91,3 +91,15 @@ Kết luận: quy tắc quyết định không phải đòn bẩy. Nút thắt l
 - Trong khi đó, **2.308 đối tượng không SUPPORTED đã đúng ngay ở mức cụ thể**. Đây là phần verifier bỏ phí, và là nơi duy nhất còn khoảng R lớn (50,5 → 67,9).
 
 Hệ quả: đòn bẩy còn lại là **chất lượng trục tồn tại** (E2: probe so với Vintern) và **văn phong đầu ra** (E5). C3 chỉ còn là phân tích đo lường (R_vague, E1), không còn là cơ chế.
+
+**Hướng mới: mục tiêu SFT ghép từ nhiều caption người** (`build_gold_sft.py --select consensus --fuse 2`, xem kiểm tra tính mới ở R3_01). Ước lượng offline không rò nhãn: chọn 3 trong 5 caption để dựng mục tiêu, đo với 2 caption còn lại, trung bình qua 10 cách chia.
+
+| mục tiêu | P | R | F1 |
+|---|---|---|---|
+| caption đầu tiên (P1) | 71,8 | 52,5 | 60,7 |
+| caption đồng thuận | 71,1 | 56,6 | 63,0 |
+| ghép 2 caption ngẫu nhiên | 64,5 | 67,9 | 66,1 |
+| đồng thuận + ghép tham lam (của bài) | 63,0 | 73,6 | 67,9 |
+| ghép cả 3 | 61,2 | 76,7 | 68,1 |
+
+Phần lớn mức tăng đến từ việc *ghép*. Chọn tham lam chỉ thêm +1,8 F1 so với ghép ngẫu nhiên, nên phải báo cáo trung thực đúng như vậy. Mô hình fuse2_s42 đang chờ GPU.
