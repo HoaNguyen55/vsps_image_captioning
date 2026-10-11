@@ -161,6 +161,34 @@ def _rehome_clause(p: dict, props: list[dict], entities: list[dict]) -> dict | N
     return out
 
 
+def _dedupe_words(text: str) -> str:
+    out: list[str] = []
+    for w in text.split():
+        if not out or out[-1].lower() != w.lower():
+            out.append(w)
+    return " ".join(out)
+
+
+def _collapse_stutter(p: dict) -> dict:
+    import copy
+    out = copy.deepcopy(p)
+    out["text_vi"] = _dedupe_words(str(out.get("text_vi") or ""))
+    pred = out.get("predicate") or {}
+    if pred.get("lemma_vi"):
+        pred["lemma_vi"] = _dedupe_words(pred["lemma_vi"])
+    return out
+
+
+def _subject_existence(p: dict) -> dict | None:
+    """`Một chiếc xe đạp một người đàn ông … đang đi xe đạp` -> entity `Một chiếc xe đạp`."""
+    subj = p.get("subject") or {}
+    stext = str(subj.get("text_vi") or "").strip()
+    if p.get("type") not in ("action", "attribute") or not stext:
+        return None
+    return {**p, "id": f"{p.get('id')}e", "type": "entity", "text_vi": stext, "predicate": {"lemma_vi": "có"},
+            "attributes": [], "object": None, "backoff": {"kind": "pred_clause_subject"}}
+
+
 def clean_props(props: list[dict], stats: Counter, entities: list[dict] | None = None) -> list[dict]:
     """Filter junk before the build ( (research log) #2): duplicated words · overlong predicate · duplicates.
 
@@ -181,11 +209,12 @@ def clean_props(props: list[dict], stats: Counter, entities: list[dict] | None =
             if fixed is not None:
                 p = fixed
                 stats["clean:pred_clause_rehomed"] += 1
+        if _malformed(str(p.get("text_vi") or "")):
+            # a stutter (`áo đỏ đỏ`), not a wrong claim: collapse it, keep the claim
+            p = _collapse_stutter(p)
+            stats["clean:dup_word_collapsed"] += 1
         text = str(p.get("text_vi") or "")
         pred = str(((p.get("predicate") or {}).get("lemma_vi")) or "")
-        if _malformed(text):
-            stats["clean:dup_word"] += 1
-            continue
         m_pred = _re.search(_emb, " " + pred)
         m_text = _re.search(_emb, text)
         # a match at the START of the text is the valid subject of an action
@@ -193,7 +222,13 @@ def clean_props(props: list[dict], stats: Counter, entities: list[dict] | None =
         # (the M2 clause-swallowing bug trace).
         if m_pred or (m_text and m_text.start() > 0) or len(pred.split()) > 12:
             stats["clean:pred_clause"] += 1
-            continue
+            # The clause is unusable, but its verified probe presupposes the subject:
+            # back off to the subject's bare existence instead of losing the object.
+            p = _subject_existence(p)
+            if p is None:
+                continue
+            stats["clean:pred_clause_backoff"] += 1
+            text = p["text_vi"]
         key = text.lower().strip()
         if key and key in seen:
             stats["clean:dup_text"] += 1

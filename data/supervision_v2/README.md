@@ -34,3 +34,20 @@ KTVIC test (558 images), detailed prompt, same lexicon/gold as Table IV:
 | zero-shot Qwen2.5-VL-7B | 31.6 | 57.1 | 40.7 | 2.07 | 98.0 | 65.1 | 4.26 | 117 |
 
 Recall +5.5 and F1 +1.1 over shipped s42, but precision −3.4 and hallucinated mentions per caption +36%: the richer targets move the model along the same precision/recall curve toward zero-shot rather than above it. F1 still trails zero-shot. Single seed. v2 clean (in-place repetition repair) is below v2 raw on every column, so the repair costs recall without buying precision; v2 raw is the better store.
+
+## v3 target proxy (CPU, 2026-10-11, not trained)
+
+Target captions vs KTVIC train references (`scripts/recall_funnel.py`, sft_caption row; v2 raw reproduces 40.6 / 41.2 exactly from the stored records):
+
+| build | P | R |
+|---|---|---|
+| v2 raw (budget 9) | 40.6 | 41.2 |
+| v2 raw, budget 12 / 15 | 40.2 / 40.0 | 41.8 / 41.9 |
+| + clean_props repairs (stutter collapse, clause → subject existence) | 40.7 | 41.2 |
+| + `scripts/unanimous_uncap.py` after person_uncap | 40.5 | 43.2 |
+
+Proposition level (SUPPORTED set): person_uncap R 48.0 / P 39.8 → + unanimous_uncap R 50.7 / P 39.3. Budget is not the bottleneck. The renderer loses about 7 recall points between the SUPPORTED set and the caption, and the captions it writes carry errors the model then learns: a colour moved onto the wrong noun (`một người mặc áo kẻ có màu đỏ và trắng` → `Một người có màu đỏ và trắng`), gendered text leaking from clause-swallowing propositions, and ungrammatical sequences (`Cái mũ này đang đạp xe`). Fixing the renderer comes before the next training run.
+
+Relation gate (`relation_predicate` in `rescap/pipeline/generate.py`, applies to new Stage-1 runs): of 21,406 stored relation propositions it keeps 5,704. In a 40-item sample, all of the 468 SUPPORTED ones it drops are malformed (`một tòa nhà | thang | một cầu thang`). Only 511 relations reach the v2 targets (2.5% of selected propositions), so the gate matters for precision, not recall.
+
+Strict-metric ceiling for a gender-neutral captioner: 83.7 recall (47.6% of train images have gendered gold), so neutrality is not what caps recall.
