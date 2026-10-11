@@ -75,8 +75,8 @@ def main() -> int:
                         help="KTVIC's train_data.json")
     parser.add_argument("--out", required=True)
     parser.add_argument("--seed", type=int, default=42)
-    parser.add_argument("--select", choices=("first", "consensus"), default="first",
-                        help="short-row caption: file order (P1) or the most consensual one")
+    parser.add_argument("--select", choices=("first", "consensus", "all"), default="first",
+                        help="short-row caption: file order (P1), the most consensual one, or every caption (multi-reference SFT)")
     parser.add_argument("--fuse", type=int, default=1,
                         help="k > 1 adds a detailed-prompt row fusing up to k captions per image")
     parser.add_argument("--limit", type=int, default=0,
@@ -99,13 +99,14 @@ def main() -> int:
         n_captions += 1
         captions.setdefault(image_id, []).append(caption)
 
-    pick = (lambda cs: cs[0]) if args.select == "first" else consensual
+    pick = (lambda cs: cs[0]) if args.select != "consensus" else consensual
     rows = []
     for image_id, cs in sorted(captions.items()):
         if not file_names.get(image_id):
             continue
         base = {"image_id": image_id, "file_name": file_names[image_id]}
-        rows.append({**base, "prompt": PROMPT_SHORT, "response": pick(cs), "variant": "gold"})
+        for c in (cs if args.select == "all" else [pick(cs)]):
+            rows.append({**base, "prompt": PROMPT_SHORT, "response": c, "variant": "gold"})
         if args.fuse > 1:
             rows.append({**base, "prompt": PROMPT, "response": fused(cs, args.fuse),
                          "variant": f"gold_fused{args.fuse}"})
