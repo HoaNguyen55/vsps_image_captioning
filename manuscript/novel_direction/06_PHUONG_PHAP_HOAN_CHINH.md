@@ -132,3 +132,16 @@ Tập đối tượng trên cùng 497 ảnh, đo với gold gộp (`e2_probe_set
 Với cùng số đối tượng mỗi ảnh như SUPPORTED, P tăng +18,1 và R tăng +11,3. Đây là kết quả "không đánh đổi" đầu tiên đo được trên cùng một tập ứng viên. Bước tiếp theo:
 1. Dùng điểm probe để chọn nội dung cho mục tiêu SFT, thay cho Vintern.
 2. Kiểm định trên gold 300 ảnh để tách phần tồn tại khỏi phần đáng nhắc.
+
+**fuse2_s42 trên test (12/10/2026, 1 seed; s43/s44 đang trong hàng đợi).** Object P/R/F1 khớp chính xác, CI bootstrap 95%; CIDEr/CHAIR_i theo bootstrap ghép cặp so với P1 (`data/results/score_ci/score_ci_fuse2_s42-vs-p1-*.json`).
+
+| mode | hệ | số từ | P | R | F1 [CI] | CIDEr [CI] | CHAIR_i |
+|---|---|---|---|---|---|---|---|
+| short | P1 | 12,0 | 77,9 | 41,4 | 54,1 [51,8; 56,4] | 149,8 [140,9; 159,1] | 19,2 |
+| short | fuse2 | 12,4 | 75,7 | **47,1** | **58,1** [56,0; 60,3] | 143,9 [135,4; 152,7] (Δ −5,9, p = 0,11) | 21,9 (Δ +2,8, p = 0,03) |
+| detailed | P1 | 12,2 | 78,3 | 42,7 | 55,3 [53,0; 57,5] | 146,2 | 19,5 |
+| detailed | fuse2 | 24,0 | 68,0 | **61,2** | **64,4** [62,4; 66,3] | 23,9 | 29,0 |
+
+- Short, cùng độ dài: R +5,7, P −2,2, F1 +4,0, CIDEr không khác có ý nghĩa. Đây vẫn là đánh đổi nhỏ, chưa phải "không đánh đổi".
+- Detailed: R +18,5, F1 +9,1 (CI tách rời), nhưng P −10,3 và CHAIR_i +9,5. CIDEr thấp vì caption dài gấp đôi tham chiếu một câu, nên không so CIDEr ở mode này.
+- Bước tiếp: E5 và đối chứng `ctrl_fuse2plus1` (đang chạy) xem có lấy lại P mà giữ R không.
