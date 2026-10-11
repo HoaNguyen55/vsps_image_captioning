@@ -91,15 +91,13 @@ def file_names(split: str) -> dict[str, str]:
     }
 
 
-def generate(args, image_ids: list[str]) -> dict[str, list[str]]:
-    """Caption each image with the model under test."""
+def load_model(args):
+    """Qwen2.5-VL-7B (+ `args.adapter`) in eval mode, and its processor."""
     import torch
-    from PIL import Image
     from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 
     from rescap.vlm.base import dtype_kwarg
 
-    names = file_names(args.split)
     P = 28 * 28
     load_kw = dict(attn_implementation="sdpa", device_map={"": 0},
                    **dtype_kwarg(torch.bfloat16))
@@ -121,7 +119,16 @@ def generate(args, image_ids: list[str]) -> dict[str, list[str]]:
     processor = AutoProcessor.from_pretrained(
         "Qwen/Qwen2.5-VL-7B-Instruct",
         min_pixels=256 * P, max_pixels=args.max_vision_tokens * P)
+    return model, processor
 
+
+def generate(args, image_ids: list[str]) -> dict[str, list[str]]:
+    """Caption each image with the model under test."""
+    import torch
+    from PIL import Image
+
+    names = file_names(args.split)
+    model, processor = load_model(args)
     out: dict[str, list[str]] = {}
     started = time.time()
     for n, image_id in enumerate(image_ids, 1):

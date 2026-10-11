@@ -42,6 +42,26 @@ def candidates(records: Path, limit: int) -> list[tuple[dict, list[str]]]:
     return out
 
 
+def ask(model, proc, image, obj):
+    """(last-token hidden state at each of LAYERS, P(có | có or không)) for QUESTION about obj."""
+    import torch
+
+    tok = proc.tokenizer
+    yes = [tok.encode(w, add_special_tokens=False)[0] for w in ("có", "Có")]
+    no = [tok.encode(w, add_special_tokens=False)[0] for w in ("không", "Không")]
+    content = ([{"type": "image"}] if image is not None else []) + [
+        {"type": "text", "text": QUESTION.format(obj)}]
+    text = proc.apply_chat_template([{"role": "user", "content": content}],
+                                    add_generation_prompt=True)
+    inputs = proc(text=[text], images=[image] if image is not None else None,
+                  return_tensors="pt").to(0)
+    with torch.no_grad():
+        o = model(**inputs, output_hidden_states=True)
+    p = o.logits[0, -1].float().softmax(-1)
+    p_yes = (p[yes].sum() / (p[yes].sum() + p[no].sum())).item()
+    return np.stack([o.hidden_states[L][0, -1].float().cpu().numpy() for L in LAYERS]), p_yes
+
+
 def extract(args) -> None:
     import torch
     from PIL import Image
@@ -53,30 +73,14 @@ def extract(args) -> None:
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
         mid, attn_implementation="sdpa", device_map={"": 0}, **dtype_kwarg(torch.bfloat16)).eval()
     proc = AutoProcessor.from_pretrained(mid, min_pixels=256 * 784, max_pixels=512 * 784)
-    tok = proc.tokenizer
-    yes = [tok.encode(w, add_special_tokens=False)[0] for w in ("có", "Có")]
-    no = [tok.encode(w, add_special_tokens=False)[0] for w in ("không", "Không")]
-
-    @torch.no_grad()
-    def ask(image, obj):
-        content = ([{"type": "image"}] if image is not None else []) + [
-            {"type": "text", "text": QUESTION.format(obj)}]
-        text = proc.apply_chat_template([{"role": "user", "content": content}],
-                                        add_generation_prompt=True)
-        inputs = proc(text=[text], images=[image] if image is not None else None,
-                      return_tensors="pt").to(0)
-        o = model(**inputs, output_hidden_states=True)
-        p = o.logits[0, -1].float().softmax(-1)
-        p_yes = (p[yes].sum() / (p[yes].sum() + p[no].sum())).item()
-        return np.stack([o.hidden_states[L][0, -1].float().cpu().numpy() for L in LAYERS]), p_yes
 
     meta, h_img, h_txt, py_img, py_txt = [], [], [], [], []
     items = candidates(Path(args.records), args.limit)
     for n, (r, objs) in enumerate(items, 1):
         image = Image.open(Path(args.images) / r["file_name"]).convert("RGB")
         for obj in objs:
-            a, pa = ask(image, obj)
-            b, pb = ask(None, obj)
+            a, pa = ask(model, proc, image, obj)
+            b, pb = ask(model, proc, None, obj)
             meta.append(f"{r['image_id']}|{obj}")
             h_img.append(a.astype(np.float16)); h_txt.append(b.astype(np.float16))
             py_img.append(pa); py_txt.append(pb)
