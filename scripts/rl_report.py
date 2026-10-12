@@ -5,6 +5,8 @@
     python scripts/rl_report.py --g0 g0/dev300.jsonl g0/train300.jsonl --out g0/g0_report.json
     # G1 gate (judge C2): evaluate.py dev scores of P1_dev and of the RL adapter, plus the run's rollout log
     python scripts/rl_report.py --gate RUN --p1dev p1dev-dev300-short.json --rl rl-dev300-short.json --g0 g0_report.json
+    # RL starts only from a sane baseline (judge D1b): exit 1 unless P1_dev's dev CIDEr-D (evaluate.py) >= 120
+    python scripts/rl_report.py --floor p1dev-dev300-short.json
     # CN vs plain (judge C2): keep CN unless plain beats it by >= 3 dev CIDEr-D
     python scripts/rl_report.py --compare CN_RUN/gate.json PLAIN_RUN/gate.json --out compare.json
     # anti-gaming: dev predictions scored against the dev images' UIT-OpenViIC captions (scoring only, never trained on)
@@ -14,6 +16,8 @@ Gate (judge C2, point estimates; the CI test is left to the final 3-seed compari
 RL adapter >= P1_dev + 2.0; exact-copy rate of the rollouts on SFT'd images over the last 250 images <= 2x the step-0
 rate (G0's train file); share of dev captions ending in a function word <= 1%. 35_d is skipped when copies at tau
 take < 5% of the positive RLOO advantage on the SFT'd train images (G0's `skip_35d`): the mask would then be moot.
+Pre-registered (judge D1b): a failed gate whose final KL per caption (mean over the last 250-image block) is below
+0.2 nat is "under-moved", not "RL failed", and gets exactly one CN rerun at lr 5e-5 before any conclusion.
 """
 from __future__ import annotations
 
@@ -28,6 +32,7 @@ from rl_reward import ROOT, SPLIT, CiderD, Reward, Segmenter, boot, function_end
 
 GATE_DEV_GAIN, GATE_FW_END, KEEP_PLAIN_MARGIN, SKIP_35D_SHARE = 2.0, 0.01, 3.0, 0.05
 LOGP_GAP, SAMPLER_TOL, REPLICA_TOL, MEM_GB = 0.02, 1e-5, 1e-6, 22.0  # judge D1, C3
+UNDER_MOVED_KL, RERUN_LR, P1DEV_FLOOR = 0.2, 5e-5, 120.0  # judge D1b, pre-registered
 
 
 def _ci(x) -> str:
@@ -111,8 +116,9 @@ def _preds(path: str) -> dict[str, str]:
 
 
 def gate(run: Path, p1dev: str, rl: str, g0: str, block: int = 250) -> dict:
-    """Judge C2 on one G1 arm; writes RUN/gate.json."""
-    steps = [r for r in _jsonl(run / "log.jsonl") if "step" in r]
+    """Judge C2 on one G1 arm, with D1b's pre-registered verdict; writes RUN/gate.json."""
+    log = _jsonl(run / "log.jsonl")
+    steps, evals = [r for r in log if "step" in r], [r for r in log if "eval" in r]
     blocks: dict[int, list[int]] = {}
     for r in steps:
         b = blocks.setdefault((r["images"] - 1) // block, [0, 0])
@@ -127,8 +133,19 @@ def gate(run: Path, p1dev: str, rl: str, g0: str, block: int = 250) -> dict:
            "checks": {f"dev_gain_ge_{GATE_DEV_GAIN}": dev["rl"] - dev["p1dev"] >= GATE_DEV_GAIN,
                       "exact_copy_last_block_le_2x_step0": trajectory[-1] <= 2 * step0,
                       f"fw_end_dev_le_{GATE_FW_END}": fw <= GATE_FW_END},
+           "in_run_dev_cider": {"step0": evals[0]["cider"], "best": max(e["cider"] for e in evals),
+                                "last": evals[-1]["cider"], "last_at_images": evals[-1]["eval"]},
+           "kl_caption_final": {"last_block_mean": float(np.mean([r["kl_caption"] for r in steps
+                                                                  if (r["images"] - 1) // block == max(blocks)])),
+                                "last_step": steps[-1]["kl_caption"]},
            "in_run_summary": json.loads((run / "summary.json").read_text(encoding="utf-8"))}
     out["pass"] = all(out["checks"].values())
+    moved = out["kl_caption_final"]["last_block_mean"] >= UNDER_MOVED_KL
+    out["verdict"] = "pass" if out["pass"] else "RL failed" if moved else "under-moved"
+    out["verdict_rule"] = (f"pre-registered (judge D1b): a failed gate with the final KL per caption (mean over the "
+                           f"last {block}-image block) < {UNDER_MOVED_KL} nat is 'under-moved', not 'RL failed', and "
+                           f"gets exactly one CN rerun at lr {RERUN_LR} (same seed, images, beta, tau) before any "
+                           f"conclusion")
     (run / "gate.json").write_text(json.dumps(out, indent=1, default=float), encoding="utf-8")
     return out
 
@@ -155,8 +172,15 @@ def compare(cn: str, plain: str) -> dict:
     return {"dev_cider": {"cn": a["dev_cider_evaluate_py"]["rl"], "plain": b["dev_cider_evaluate_py"]["rl"]},
             "plain_minus_cn": diff, "exact_copy_trajectory": {"cn": a["exact_copy_trajectory_per_block"],
                                                                "plain": b["exact_copy_trajectory_per_block"]},
+            "verdict": {"cn": a["verdict"], "plain": b["verdict"]},
             "keep": "plain" if diff >= KEEP_PLAIN_MARGIN else "cn",
             "rule": f"keep CN unless plain beats it by >= {KEEP_PLAIN_MARGIN} dev CIDEr-D (evaluate.py)"}
+
+
+def floor(result: str) -> dict:
+    """Judge D1b: no RL from a broken baseline; P1_dev's dev CIDEr-D (evaluate.py) must reach the floor."""
+    c = _cider(result)
+    return {"p1dev_dev_cider_evaluate_py": c, "floor": P1DEV_FLOOR, "pass": c >= P1DEV_FLOOR}
 
 
 def panel(paths: list[str]) -> dict:
@@ -185,6 +209,7 @@ def main() -> int:
     ap.add_argument("--g0-report")
     ap.add_argument("--compare", nargs=2, metavar=("CN_GATE", "PLAIN_GATE"))
     ap.add_argument("--panel", nargs="+", metavar="PREDS")
+    ap.add_argument("--floor", metavar="P1DEV_RESULT", help="exit 1 unless its dev CIDEr-D >= the floor")
     ap.add_argument("--out")
     args = ap.parse_args()
     if args.g0:
@@ -195,13 +220,15 @@ def main() -> int:
         out = compare(*args.compare)
     elif args.panel:
         out = panel(args.panel)
+    elif args.floor:
+        out = floor(args.floor)
     else:
-        ap.error("one of --g0, --gate, --compare, --panel")
+        ap.error("one of --g0, --gate, --compare, --panel, --floor")
     text = json.dumps(out, ensure_ascii=False, indent=1, default=float)
     if args.out:
         Path(args.out).write_text(text, encoding="utf-8")
     print(text)
-    return 0
+    return 1 if args.floor and not out["pass"] else 0
 
 
 if __name__ == "__main__":
