@@ -37,7 +37,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 DATA = Path(os.environ.get("NCS_DATA", Path.home() / "ncs-data"))
-KTVIC = DATA / "datasets" / "ktvic"
+# The dataset the SFT rows' file_name values live in: KTVIC unless NCS_DATASET names another (as in evaluate.py).
+KTVIC = DATA / "datasets" / os.environ.get("NCS_DATASET", "ktvic")
 MODEL_ID = "Qwen/Qwen2.5-VL-7B-Instruct"
 P = 28 * 28
 # Chosen from the card, not hard-coded:  measured 512 vision tokens as the

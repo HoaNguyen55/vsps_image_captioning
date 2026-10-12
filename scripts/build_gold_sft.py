@@ -46,35 +46,35 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from rescap.chair import objects_in
 
 
-def consensual(captions: list[str]) -> str:
+def consensual(captions: list[str], objects=objects_in) -> str:
     """The caption naming the most objects that another annotator also names."""
-    objs = [set(objects_in(c)) for c in captions]
+    objs = [set(objects(c)) for c in captions]
     shared = lambda i: sum(any(o in objs[j] for j in range(len(objs)) if j != i) for o in objs[i])
     return captions[max(range(len(captions)), key=lambda i: (shared(i), -i))]
 
 
-def fusion_set(captions: list[str], k: int, rng: random.Random | None = None) -> list[str]:
+def fusion_set(captions: list[str], k: int, rng: random.Random | None = None, objects=objects_in) -> list[str]:
     """The consensual caption, then up to k-1 more. Greedy (rng None): each step adds the
     caption contributing the most objects not yet named, and a caption adding none is not
     used, so every object in the result was written by an annotator. With rng: k-1 others
     drawn uniformly (the random-pair control for the greedy choice)."""
-    first = consensual(captions)
-    chosen, named = [first], set(objects_in(first))
+    first = consensual(captions, objects)
+    chosen, named = [first], set(objects(first))
     rest = [c for c in captions if c != first]
     if rng is not None:
         return chosen + rng.sample(rest, min(k - 1, len(rest)))
     while len(chosen) < k and rest:
-        best = max(rest, key=lambda c: len(set(objects_in(c)) - named))
-        if not set(objects_in(best)) - named:
+        best = max(rest, key=lambda c: len(set(objects(c)) - named))
+        if not set(objects(best)) - named:
             break
-        chosen.append(best); named |= set(objects_in(best)); rest.remove(best)
+        chosen.append(best); named |= set(objects(best)); rest.remove(best)
     return chosen
 
 
-def fused(captions: list[str], k: int, rng: random.Random | None = None) -> str:
+def fused(captions: list[str], k: int, rng: random.Random | None = None, objects=objects_in) -> str:
     """fusion_set joined into one target, each caption closed with a full stop."""
     return " ".join(c if c.rstrip().endswith((".", "!", "?")) else c.rstrip() + "."
-                    for c in fusion_set(captions, k, rng))
+                    for c in fusion_set(captions, k, rng, objects))
 
 
 def halves(image_ids, seed: int) -> tuple[list[str], list[str]]:
@@ -100,6 +100,9 @@ def main() -> int:
     parser.add_argument("--unfused", action="store_true",
                         help="write the fusion captions as separate short rows instead of one detailed row "
                              "(control: the same captions without concatenation)")
+    parser.add_argument("--objects", choices=("ktvic", "coco80"), default="ktvic",
+                        help="object extractor for consensus and fusion: the KTVIC lexicon, or the 80 COCO classes "
+                             "named in Vietnamese (COCO-image datasets such as UIT-ViIC)")
     parser.add_argument("--images-file", default=None,
                         help="keep only the image_ids listed in this file (one per line)")
     parser.add_argument("--write-halves", default=None, metavar="DIR",
@@ -138,7 +141,12 @@ def main() -> int:
         if not captions:
             sys.exit(f"no captioned image of {args.annotations} is listed in {args.images_file}")
 
-    pick = (lambda cs: cs[0]) if args.select != "consensus" else consensual
+    objects = objects_in
+    if args.objects == "coco80":
+        from score_coco_probe import load_vi_terms, vi_classes
+        terms = load_vi_terms()
+        objects = lambda c: vi_classes(c, terms)  # noqa: E731
+    pick = (lambda cs: cs[0]) if args.select != "consensus" else (lambda cs: consensual(cs, objects))
     fuse_rng = random.Random(args.seed) if args.fuse_order == "random" else None
     rows = []
     for image_id, cs in sorted(captions.items()):
@@ -149,11 +157,11 @@ def main() -> int:
         for c in short:
             rows.append({**base, "prompt": PROMPT_SHORT, "response": c, "variant": "gold"})
         if args.fuse > 1 and args.unfused:
-            for c in fusion_set(cs, args.fuse, fuse_rng):
+            for c in fusion_set(cs, args.fuse, fuse_rng, objects):
                 if c not in short:
                     rows.append({**base, "prompt": PROMPT_SHORT, "response": c, "variant": f"gold_unfused{args.fuse}"})
         elif args.fuse > 1:
-            rows.append({**base, "prompt": PROMPT, "response": fused(cs, args.fuse, fuse_rng),
+            rows.append({**base, "prompt": PROMPT, "response": fused(cs, args.fuse, fuse_rng, objects),
                          "variant": f"gold_fused{args.fuse}"})
     dropped = len(captions) - len({r["image_id"] for r in rows})
     if args.limit:
@@ -169,7 +177,7 @@ def main() -> int:
             fh.write(json.dumps(row, ensure_ascii=False) + "\n")
 
     report = {
-        "source": str(args.annotations), "seed": args.seed, "images_file": args.images_file,
+        "source": str(args.annotations), "seed": args.seed, "images_file": args.images_file, "objects": args.objects,
         "baseline": "gold_sft (P1, )",
         "images_with_caption": len(captions),
         "captions_total": n_captions,
