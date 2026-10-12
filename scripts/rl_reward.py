@@ -9,6 +9,12 @@ recomputes them from whatever it scores) and an end token on each reference and 
 arXiv 2305.12254). Without it, dropping the last word raises CIDEr-D on ~30% of KTVIC images (B1 pilot, sec. 2.7);
 a rollout cut off by max_new_tokens gets no end token.
 
+Fragment guard (judge D1e, C-R2): END is the set of words (segmented, punctuation dropped) that end at least one
+reference of the images given (train minus dev300 in every caller). A caption whose last word is not in END ("... điện
+thoại di", a split compound) is a fragment; its advantage is capped at 0, so truncation can never earn credit. The EOS
+term alone leaves that loophole open: dropping the last syllable still raises the EOS-aware reward on 24% of test
+images (verifier B1-P1).
+
 Copy statistic m(c): the max over the image's references of the word-level similarity 1 - edit/max(len) and of
 single-reference BLEU-4, on segmented words without punctuation. A rollout with m(c) >= tau is a regurgitated
 reference: its advantage is 0 and it is left out of the leave-one-out baseline. tau is the 99th percentile of m over
@@ -53,7 +59,8 @@ def _serve(conn) -> None:
 
 class Segmenter:
     """RDRSegmenter in a spawned worker process, with a cache. It runs on a JVM through jnius, and a JVM started in a
-    process that has initialised CUDA deadlocks (evaluate.py's docstring); spawn, not fork, keeps the worker CUDA-free."""
+    process that has initialised CUDA deadlocks (evaluate.py's docstring); spawn, not fork, keeps the worker
+    CUDA-free."""
 
     def __init__(self) -> None:
         ctx = mp.get_context("spawn")
@@ -144,14 +151,15 @@ def copy_stat(c: list[str], refs: list[list[str]]) -> tuple[float, int]:
     return m, min(dist)
 
 
-def rloo(rewards, copy) -> np.ndarray:
+def rloo(rewards, copy, nonpos=None) -> np.ndarray:
     """r_i - mean(r_j, j != i) over the non-copies, no std normalisation (Dr. GRPO, arXiv 2503.20783); copies get 0
-    and sit in nobody's baseline. A group with fewer than two non-copies has no baseline: all zero."""
+    and sit in nobody's baseline. A group with fewer than two non-copies has no baseline: all zero. `nonpos` (the
+    fragments) keep their place in the baseline but their advantage is capped at 0."""
     r, keep = np.asarray(rewards, float), ~np.asarray(copy, bool)
     adv, n = np.zeros_like(r), int(keep.sum())
     if n > 1:
         adv[keep] = r[keep] - (r[keep].sum() - r[keep]) / (n - 1)
-    return adv
+    return adv if nonpos is None else np.where(np.asarray(nonpos, bool), np.minimum(adv, 0.0), adv)
 
 
 def syllables(text: str) -> list[str]:
@@ -171,24 +179,32 @@ def boot(x, seed: int = 0, b: int = 2000) -> list[float]:
 
 
 class Reward:
-    """EOS-aware word-level CIDEr-D (df from every reference set in `refs`) and the copy statistic, per image."""
+    """EOS-aware word-level CIDEr-D (df from every reference set in `refs`), the copy statistic and the fragment flag
+    (END from the references of `end_from`, default all of `refs`), per image."""
 
-    def __init__(self, refs: dict[str, list[str]], seg, sigma: float = 6.0) -> None:
+    def __init__(self, refs: dict[str, list[str]], seg, sigma: float = 6.0, end_from=None) -> None:
         self.seg = seg
         ids = sorted(refs)
         flat = iter(seg([r for i in ids for r in refs[i]]))
         self.refs = {i: [next(flat).split() for _ in refs[i]] for i in ids}
         self.eos_refs = {i: [r + [EOS] for r in rs] for i, rs in self.refs.items()}
         self.cider = CiderD(list(self.eos_refs.values()), sigma)
+        ends = sorted(refs if end_from is None else end_from)
+        self.end = {c[-1] for i in ends for r in self.refs[i] if (c := content(r))}
 
-    def __call__(self, image_id: str, texts: list[str], finished) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
-        """(reward, m, smallest word edit distance to a reference) per caption; finished[j]: caption j ended with
-        the model's EOS token."""
+    def fragment(self, tokens: list[str]) -> bool:
+        """The caption's last word ends no reference of `end_from` (an empty caption is a fragment too)."""
+        c = content(tokens)
+        return not c or c[-1] not in self.end
+
+    def __call__(self, image_id: str, texts: list[str], finished) -> tuple[np.ndarray, ...]:
+        """(reward, m, smallest word edit distance to a reference, fragment) per caption; finished[j]: caption j
+        ended with the model's EOS token."""
         toks = [s.split() for s in self.seg(texts)]
         words = [content(r) for r in self.refs[image_id]]
         r = [self.cider.score(t + [EOS] * bool(f), self.eos_refs[image_id]) for t, f in zip(toks, finished)]
         m, dist = zip(*(copy_stat(content(t), words) for t in toks))
-        return np.array(r), np.array(m), np.array(dist)
+        return np.array(r), np.array(m), np.array(dist), np.array([self.fragment(t) for t in toks])
 
 
 def replica_gap(reward: Reward, captions: dict) -> float:
@@ -234,8 +250,17 @@ def _check() -> None:
     assert bleu4(ref, ref) == 1.0 and bleu4(ref[:3], ref) == 0.0 and bleu4([], ref) == 0.0
     assert abs(bleu4(ref + ["đẹp"], ref) - math.exp(sum(math.log(x) for x in (5 / 6, 4 / 5, 3 / 4, 2 / 3)) / 4)) < 1e-12
     assert copy_stat(["hai", "chiếc", "thuyền"], [ref]) == (0.0, 5) and copy_stat([], [ref]) == (0.0, 5)
-    _, m, dist = R("1", ["Con chó chạy trên bãi cỏ xanh", "con chó chạy"], [True, True])
-    assert m[0] == 1.0 and dist.tolist() == [0, 4] and abs(m[1] - 3 / 7) < 1e-12
+    _, m, dist, frag = R("1", ["Con chó chạy trên bãi cỏ xanh", "con chó chạy"], [True, True])
+    assert m[0] == 1.0 and dist.tolist() == [0, 4] and abs(m[1] - 3 / 7) < 1e-12 and frag.tolist() == [False, True]
+    # fragment guard: END comes only from the images given; a split compound or a cut caption is flagged
+    phone = {"4": ["một người đang cầm điện_thoại di_động", "người đàn_ông nghe điện_thoại"], "5": ["ở trong cửa_tiệm"]}
+    F = Reward(phone, seg=lambda texts: [t.lower() for t in texts], end_from={"4"})
+    assert F.end == {"di_động", "điện_thoại"}
+    assert [F.fragment(t.split()) for t in ("cô ấy cầm điện_thoại di", "cô ấy cầm điện_thoại di_động .", "", ".",
+                                           "ở trong cửa_tiệm")] == [True, False, True, True, True]
+    assert F("4", ["cầm điện_thoại di", "cầm điện_thoại"], [True, True])[3].tolist() == [True, False]
+    assert np.allclose(rloo([1, 2, 3, 4], [0, 0, 0, 0], nonpos=[0, 0, 0, 1]), [1 - 3, 2 - 8 / 3, 3 - 7 / 3, 0])
+    assert np.allclose(rloo([4, 1, 1], [0, 0, 0], nonpos=[1, 1, 0]), [0, -1.5, -1.5])
     # RLOO with masked copies
     assert np.allclose(rloo([1, 2, 3, 4], [0, 0, 1, 0]), [-2, -0.5, 0, 2.5])
     assert np.allclose(rloo([1, 2, 3, 4], [0, 0, 0, 0]), [1 - 3, 2 - 8 / 3, 3 - 7 / 3, 4 - 2])

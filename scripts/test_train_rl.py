@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-"""CPU test of train_rl.py's policy path on a tiny RANDOM Qwen2.5-VL (2 layers, hidden 64; the 7B is never loaded),
-driven by the real Qwen2.5-VL processor and KTVIC train images, on the installed transformers/PEFT code path.
+"""CPU test of the policy path of train_rl.py and rl_policy.py on a tiny RANDOM Qwen2.5-VL (2 layers, hidden 64;
+the 7B is never loaded), driven by the real Qwen2.5-VL processor and KTVIC train images, on the installed
+transformers/PEFT code path.
 
     NCS_DATA=/root/ncs-data nice -n 19 taskset -c 12-15 python scripts/test_train_rl.py
 
@@ -8,19 +9,24 @@ Checks: the loss (ratio 1, clip, k3); the prompt-cache-shared log-probs and thei
 forward; generation-time log-probs equal the training forward and the sampler applies no processor (judge D1 C3 (i));
 the loss mask covers generated tokens only (C3 (iii)); the "ref" adapter is frozen and untouched by switching;
 batched left-padded greedy equals one image at a time; generate() with lm_head on the last position only emits the
-same tokens; an optimizer step back-propagated --micro responses at a time equals the unchunked step.
+same tokens; an optimizer step back-propagated --micro responses at a time equals the unchunked step; at temperature
+0.8 the sampler and every log-prob use the same tempered distribution; --resume restores the trained policy and its
+AdamW state, keeps the SFT adapter as the KL reference and refuses changed settings.
 """
 from __future__ import annotations
 
 import argparse
 import sys
+import tempfile
+from pathlib import Path
 
 import numpy as np
 
 from evaluate import file_names
 from rl_reward import SPLIT
-from train_rl import (Policy, chat, greedy, guard_mask, image, last_position, pg_loss, response_lengths, rollout,
-                      schedule, token_logprobs, update)
+from rl_policy import (Policy, chat, greedy, guard_mask, image, last_position, pg_loss, response_lengths, rollout,
+                       token_logprobs)
+from train_rl import RESUME_KEYS, configure, resume_from, save_last, schedule, update
 from train_stage2 import MODEL_ID
 
 EOS = [151645, 151643]
@@ -50,10 +56,9 @@ def check_loss() -> None:
     assert order == schedule(["c", "b", "a"], 7, 0) and sorted(order[:3]) == sorted(order[3:6]) == ["a", "b", "c"]
 
 
-def tiny_policy():
-    """Random 2-layer Qwen2.5-VL with a trainable "default" LoRA (random B) and a zero-B "ref" adapter."""
+def tiny_base():
+    """Random 2-layer Qwen2.5-VL, the same weights on every call."""
     import torch
-    from peft import LoraConfig, get_peft_model
     from transformers import Qwen2_5_VLConfig, Qwen2_5_VLForConditionalGeneration
 
     torch.manual_seed(0)
@@ -63,10 +68,17 @@ def tiny_policy():
         image_token_id=151655, video_token_id=151656, vision_start_token_id=151652, vision_end_token_id=151653,
         vision_config={"depth": 2, "hidden_size": 32, "intermediate_size": 64, "num_heads": 2, "out_hidden_size": 64,
                        "fullatt_block_indexes": [1]})
-    base = Qwen2_5_VLForConditionalGeneration._from_config(cfg, attn_implementation="sdpa", torch_dtype=torch.float32)
+    return Qwen2_5_VLForConditionalGeneration._from_config(cfg, attn_implementation="sdpa", torch_dtype=torch.float32)
+
+
+def tiny_policy():
+    """tiny_base with a trainable "default" LoRA (random B) and a zero-B "ref" adapter."""
+    import torch
+    from peft import LoraConfig, get_peft_model
+
     lora = LoraConfig(r=4, lora_alpha=8, task_type="CAUSAL_LM",
                       target_modules=r"^(?!.*visual).*\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)$")
-    model = get_peft_model(base, lora)
+    model = get_peft_model(tiny_base(), lora)
     model.add_adapter("ref", lora)
     with torch.no_grad():
         for name, p in model.named_parameters():
@@ -103,7 +115,8 @@ def check_policy() -> None:
     logp_gap = float((lp - gen_lp)[mask.bool()].abs().max())
     assert gap < 1e-5 and logp_gap < 1e-4, (gap, logp_gap)
     # EOS first, in the middle and never: values and gradients equal the full-sequence forward
-    gen = torch.tensor([[151645, 151643, 151643, 151643, 151643], [11, 12, 151645, 151643, 151643], [11, 12, 13, 14, 15]])
+    gen = torch.tensor([[151645, 151643, 151643, 151643, 151643], [11, 12, 151645, 151643, 151643],
+                        [11, 12, 13, 14, 15]])
     n, done = response_lengths(gen, EOS)
     assert n.tolist() == [1, 3, 5] and done.tolist() == [True, True, False]
     lp, mask = token_logprobs(model, inputs, gen, n)
@@ -138,9 +151,12 @@ def check_policy() -> None:
             hooked = model.generate(**batch, do_sample=False, max_new_tokens=6, eos_token_id=EOS)
     assert torch.equal(plain, hooked)
     step_gap = check_micro(pol, inputs, gen, n, done)
+    t_gaps = check_temperature(pol, ids[0])
+    check_resume(pol, inputs, gen, n, done)
     print(f"tiny Qwen2.5-VL: logp gap {logp_gap:.2e}, sampler gap {gap:.2e}, shared vs full forward: "
           f"values {float((lp * mask - lf * mask).abs().max()):.2e}, grads {grad_gap:.2e} (relative), "
-          f"{len(shared)} LoRA tensors; hooked generate == plain; --micro 2 vs unchunked step {step_gap:.2e}")
+          f"{len(shared)} LoRA tensors; hooked generate == plain; --micro 2 vs unchunked step {step_gap:.2e}; "
+          f"T=0.8 logp gap {t_gaps[0]:.2e}, sampler gap {t_gaps[1]:.2e}; --resume round trip exact")
 
 
 def check_micro(pol, inputs, gen, n, done) -> float:
@@ -156,13 +172,69 @@ def check_micro(pol, inputs, gen, n, done) -> float:
             for p, p0 in zip(params, start):
                 p.copy_(p0)
         pol.model.zero_grad(set_to_none=True)  # check_policy's own backward passes left gradients behind
-        args = argparse.Namespace(beta=0.03, dry_run=True, micro=micro)
+        args = argparse.Namespace(beta=0.03, dry_run=True, micro=micro, temperature=1.0)
         stats.append(update(pol, torch.optim.SGD(params, lr=1.0), params, [group], args, first=True))
         steps.append([p.detach() - p0 for p, p0 in zip(params, start)])
     assert abs(stats[0]["grad_norm"] - stats[1]["grad_norm"]) < 1e-4 * stats[1]["grad_norm"], stats
     gap = max(float((a - b).abs().max() / b.abs().max()) for a, b in zip(*steps) if b.abs().max() > 0)
     assert gap < 1e-4, gap
     return gap
+
+
+def check_temperature(pol, image_id: str) -> tuple[float, float]:
+    """At T = 0.8 the sampler applies only the temperature, and the training forward's tempered log-probs are the
+    generation-time ones."""
+    import torch
+
+    inputs, gen, n, _, _, gen_lp, gap = rollout(pol, image_id, 4, 6, True, temperature=0.8)
+    with torch.no_grad():
+        lp, mask = token_logprobs(pol.model, inputs, gen, n, 0.8)
+        lp1, _ = token_logprobs(pol.model, inputs, gen, n)
+    logp_gap = float((lp - gen_lp)[mask.bool()].abs().max())
+    assert gap < 1e-5 and logp_gap < 1e-4 and not torch.allclose(lp, lp1), (gap, logp_gap)
+    return logp_gap, gap
+
+
+def check_resume(pol, inputs, gen, n, done) -> None:
+    """save_last + what load() does with --resume (policy from RUN/last, ref from the SFT dir) + resume_from: the
+    trained policy, the SFT reference and the AdamW state all come back, and other settings are refused."""
+    import torch
+    from peft import PeftModel
+
+    lora = lambda m: {k: p.detach().clone() for k, p in m.named_parameters() if ".default." in k}  # noqa: E731
+    params = [p for p in pol.model.parameters() if p.requires_grad]
+    opt = torch.optim.AdamW(params, lr=1e-3)
+    with tempfile.TemporaryDirectory() as tmp:
+        sft, run = Path(tmp) / "sft", Path(tmp) / "run"
+        pol.model.save_pretrained(str(sft), selected_adapters=["default"])
+        sft_w = lora(pol.model)
+        args = argparse.Namespace(beta=0.03, dry_run=False, micro=2, temperature=1.0, adapter=str(sft), seed=42,
+                                  images_file="x.txt", k=3, lr=1e-3, tau=0.9, no_copy_mask=False, images_per_step=1,
+                                  max_new_tokens=6)
+        group = {"inputs": inputs, "gen": gen, "n": n, "done": done, "gen_lp": None, "adv": np.array([0.7, -0.2, -0.5])}
+        pol.model.zero_grad(set_to_none=True)
+        update(pol, opt, params, [group], args, first=True)
+        trained = lora(pol.model)
+        assert any(not torch.equal(trained[k], sft_w[k]) for k in trained)
+        save_last(pol.model, opt, run, {"images_done": 5, "resumed_from": None,
+                                        **{k: getattr(args, k) for k in RESUME_KEYS}})
+        model = PeftModel.from_pretrained(tiny_base(), str(run / "last"), is_trainable=True)
+        model.load_adapter(str(sft), adapter_name="ref")
+        configure(model)
+        got = dict(model.named_parameters())
+        assert all(torch.equal(got[k], v) for k, v in trained.items())
+        assert all(torch.equal(got[k.replace(".default.", ".ref.")], v) for k, v in sft_w.items())
+        with torch.no_grad():
+            assert torch.equal(token_logprobs(model, inputs, gen, n)[0], token_logprobs(pol.model, inputs, gen, n)[0])
+        opt2 = torch.optim.AdamW([p for p in model.parameters() if p.requires_grad], lr=1e-3)
+        assert resume_from(str(run), opt2, args) == 5
+        s1, s2 = opt.state_dict()["state"], opt2.state_dict()["state"]
+        assert s1.keys() == s2.keys() and all(torch.equal(s1[i]["exp_avg_sq"], s2[i]["exp_avg_sq"]) for i in s1)
+        try:
+            resume_from(str(run), opt2, argparse.Namespace(**{**vars(args), "lr": 5e-5}))
+        except AssertionError:
+            return
+        raise RuntimeError("resume_from accepted a run with other settings")
 
 
 if __name__ == "__main__":
