@@ -166,10 +166,10 @@ def instance_block(results_dir: Path, split: str, mode: str, gold_file: Path, vs
     if refs.keys() - inst.keys():
         raise SystemExit(f"{gold_file} lacks {len(refs.keys() - inst.keys())} images of {KTVIC.name}/{split}; "
                          "set NCS_DATASET to the dataset it was built for")
-    gold = {k: set(inst[k]["coco"]).union(*[sc.vi_classes(r, vi_terms) for r in rs]) for k, rs in refs.items()}
+    gold = {k: set(inst[k]["coco"]).union(*[sc.vi_objects(r, vi_terms) for r in rs]) for k, rs in refs.items()}
     print(f"\n{KTVIC.name.upper()} ({split}, {len(gold)} images, {mode} mode) -- instance + reference gold, "
-          "COCO-80 classes: P / R / F1, CHAIR_i = 100 - P, CHAIR_s (%)")
-    mentions = {f.name.removesuffix(f"-{mode}.preds.json"): {k: sc.vi_classes(cap, vi_terms) for k, cap in _preds(f).items()}
+          f"COCO-80 classes (Vietnamese lexicon {sc.VI_LEXICON}): P / R / F1, CHAIR_i = 100 - P, CHAIR_s (%)")
+    mentions = {f.name.removesuffix(f"-{mode}.preds.json"): {k: sc.vi_objects(cap, vi_terms) for k, cap in _preds(f).items()}
                 for f in sorted(results_dir.glob(f"*-{mode}.preds.json"))}
     per_system = _gold_table(mentions, gold)
     if vs:
@@ -234,9 +234,9 @@ def coco_block(preds_dirs: list[Path], manifest: Path, mode: str = "detailed", v
             for line in f.read_text(encoding="utf-8").splitlines():
                 r = json.loads(line)
                 if r["cocoid"] in inst:
-                    mentions[name][r["cocoid"]] = sc.vi_classes(r["caption"], vi_terms)
-    print(f"\nCOCO-2014 ({len(inst)} images, {mode} mode) -- object precision / recall / F1, "
-          "CHAIR_i = 100 - P, CHAIR_s = captions with an invented class (%)")
+                    mentions[name][r["cocoid"]] = sc.vi_objects(r["caption"], vi_terms)
+    print(f"\nCOCO-2014 ({len(inst)} images, {mode} mode, Vietnamese lexicon {sc.VI_LEXICON}) -- object precision / "
+          "recall / F1, CHAIR_i = 100 - P, CHAIR_s = captions with an invented class (%)")
     per_gold = {}
     for what, gold in (("instances + references", {i: inst[i] | ref[i] for i in inst}), ("instances only", inst)):
         print(f"  gold = {what}")

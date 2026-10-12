@@ -22,7 +22,7 @@ per caption; tau_I = d(I-false)/d(A-false) (share of a reference-precision chang
 V3), tau_U the same with U; conf = share of A-false mentions that I names (the legacy gate G3 for fuse2).
 Singletons: P(c in I | c named by k of the 5 captions) and the rate a class drawn from the mention mix would
 have by chance. Extractors: KTVIC objects_in (113 nouns); COCO-80 in Vietnamese (score_coco_probe.vi_classes,
-lexicon v1 = data/coco_probe/coco80_vi.json, v2 = LEX_V2); English en_classes (Rohrbach synonyms). Families:
+lexicon v1 = data/coco_probe/coco80_vi.json, v2 = score_coco_probe.LEX_V2); English en_classes (Rohrbach synonyms). Families:
 all; nosel = without sports ball and person (in 100% / 97.5% of UIT-ViIC images); reliable = classes named by
 5/5 captions that are >= 99% instance-present (n >= 10) on Karpathy VAL. 95% CIs resample images (weights
 shared by every statistic of a block); p two-sided, floored at 2/B.
@@ -34,7 +34,6 @@ import gc
 import itertools
 import json
 import random
-import re
 import sys
 from collections import Counter, defaultdict
 from functools import lru_cache
@@ -53,11 +52,6 @@ POLICIES = ("p1", "cons", "fuse2", "rnd2", "unf2", "multiref")
 FIELDS = ("m", "tpA", "tpI", "tpU", "rA", "hA", "rI", "hI", "rU", "hU")
 K = {f: j for j, f in enumerate(FIELDS)}
 SEL = frozenset({"sports ball", "person"})
-#: COCO-80 Vietnamese matcher v2 (V3; frozen here before jobs 59a/59b are scored): person nouns v1 misses,
-#: non-object spans consumed (bóng bàn = table tennis, ghi bàn / bàn thắng = score a goal), typos and misreads.
-LEX_V2 = [(r"\b(bóng|ghi) bàn\b", r"\1 _"), (r"\bbàn thắng\b", "_ thắng"), (r"\bgấu bống\b", "gấu bông"),
-          (r"\bchó bông\b", "gấu bông"), (r"\bmàn hình máy tính\b", "màn hình tivi"),
-          (r"\b(cầu thủ|vận động viên|vđv|thủ môn|trọng tài|khán giả|người chơi)\b", "người")]
 VI_TERMS = sc.load_vi_terms()
 EN_SYN = sc.load_synonyms()
 #: G3' (V3 sec. 4): replaces gate G3, which cannot fail on UIT-ViIC (human targets 98.6%, chance ~88%)
@@ -83,10 +77,8 @@ def ktvic_obj(text: str) -> frozenset[str]:
 
 @lru_cache(maxsize=None)
 def vi_obj(text: str, v2: bool = True) -> frozenset[str]:
-    t = text.lower()
-    for a, b in LEX_V2 if v2 else ():
-        t = re.sub(a, b, t)
-    return frozenset(sc.vi_classes(t, VI_TERMS))
+    """COCO-80 matcher v2 (frozen for G3', score_coco_probe.LEX_V2) or v1."""
+    return frozenset(sc.vi_objects(text, VI_TERMS, "v2" if v2 else "v1"))
 
 
 @lru_cache(maxsize=None)

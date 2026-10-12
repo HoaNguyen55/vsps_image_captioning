@@ -102,8 +102,9 @@ def main() -> int:
                              "(control: the same captions without concatenation)")
     parser.add_argument("--objects", choices=("ktvic", "coco80", "coco80en"), default="ktvic",
                         help="object extractor for consensus and fusion: the KTVIC lexicon, or the 80 COCO classes "
-                             "named in Vietnamese (COCO-image datasets such as UIT-ViIC) or in English (CHAIR's "
-                             "synonyms, for English captions such as uitviic_en)")
+                             "named in Vietnamese (COCO-image datasets such as UIT-ViIC; Vietnamese COCO-80 lexicon v1 "
+                             "on purpose: scoring uses v2, but the targets of the queued UIT-ViIC jobs must stay "
+                             "byte-identical) or in English (CHAIR's synonyms, for English captions such as uitviic_en)")
     parser.add_argument("--lang", choices=("vi", "en"), default="vi",
                         help="prompt language of the rows: evaluate.py's short/detailed prompts, or short_en/detailed_en")
     parser.add_argument("--images-file", default=None,
@@ -146,9 +147,9 @@ def main() -> int:
 
     objects = objects_in
     if args.objects == "coco80":
-        from score_coco_probe import load_vi_terms, vi_classes
+        from score_coco_probe import load_vi_terms, vi_objects
         terms = load_vi_terms()
-        objects = lambda c: vi_classes(c, terms)  # noqa: E731
+        objects = lambda c: vi_objects(c, terms, lexicon="v1")  # noqa: E731  (targets: v1, see --objects)
     elif args.objects == "coco80en":
         from score_coco_probe import en_classes, load_synonyms
         syn = load_synonyms()

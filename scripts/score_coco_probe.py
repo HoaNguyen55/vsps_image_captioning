@@ -19,6 +19,8 @@ is the entire value of this file):
    a term inside or overlapping a more specific one adds no second class (VI `ô tô`
    gave bowl too, `ngựa vằn` horse, `gấu bông` bear; EN `hot dog` gave dog), and
    "longest" ignores a leading classifier (`chiếc ô tô` is a car, not an umbrella).
+   2026-10-12: every score uses matcher v2 (VI_LEXICON): LEX_V2's rewrites of the lowercased caption, then
+   this lexicon; v1 = the lexicon alone. The version is written into the output.
 4. Metrics per (system × mode): classes mentioned/caption · CHAIR_i (invented
    classes / mentioned classes, pooled over the set) · CHAIR_s (% captions with
    ≥1 invented class) · absolute invented objects/caption (mean distinct
@@ -81,6 +83,28 @@ def load_vi_terms() -> list[tuple[str, str]]:
             if isinstance(t, str) and not t.startswith("_rui_ro"):
                 pairs.append((t.lower(), cls))
     return sorted(pairs, key=lambda x: (-len(head(x[0])), -len(x[0])))
+
+
+#: COCO-80 Vietnamese matcher v2: regex rewrites of the lowercased caption before vi_classes, frozen 2026-10-12 for
+#: gate G3' (two_gold_audit.py, V3): non-object spans consumed (bóng bàn = table tennis, ghi bàn / bàn thắng = score
+#: a goal), typos and misreads, sport-role person nouns v1 misses. Do not extend it in place: person nouns change
+#: G3' through consensus/fusion target selection even on family nosel (tested 2026-10-12, R5_02 appendix).
+LEX_V2 = [(r"\b(bóng|ghi) bàn\b", r"\1 _"), (r"\bbàn thắng\b", "_ thắng"), (r"\bgấu bống\b", "gấu bông"),
+          (r"\bchó bông\b", "gấu bông"), (r"\bmàn hình máy tính\b", "màn hình tivi"),
+          (r"\b(cầu thủ|vận động viên|vđv|thủ môn|trọng tài|khán giả|người chơi)\b", "người")]
+#: the matcher of every Vietnamese COCO-80 score (written into its output); build_gold_sft.py --objects coco80 builds
+#: training targets with v1, so the training data of the queued UIT-ViIC jobs stays byte-identical
+VI_LEXICON = "v2"
+
+
+def vi_objects(caption: str, vi_terms, lexicon: str = VI_LEXICON) -> set[str]:
+    """COCO-80 classes a Vietnamese caption names under lexicon v2 (LEX_V2 rewrites, then vi_classes) or v1."""
+    if lexicon not in ("v1", "v2"):
+        raise ValueError(f"unknown COCO-80 Vietnamese lexicon {lexicon!r}")
+    text = caption.lower()
+    for pattern, repl in LEX_V2 if lexicon == "v2" else ():
+        text = re.sub(pattern, repl, text)
+    return vi_classes(text, vi_terms)
 
 
 def vi_classes(caption: str, vi_terms) -> set[str]:
@@ -156,7 +180,7 @@ def main() -> int:
             men_total = hal_total = hal_caps = 0
             hal_per_cap = []
             for cid, cap in rows.items():
-                mentioned = vi_classes(cap, vi_terms)
+                mentioned = vi_objects(cap, vi_terms)
                 halluc = mentioned - gold[cid]
                 men_total += len(mentioned)
                 hal_total += len(halluc)
@@ -180,7 +204,7 @@ def main() -> int:
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({
         "protocol": " (research log) frozen before seeing results; committed before the probe finished",
-        "gold": "instances_val2014 ∪ ref-caption (synonyms.txt Rohrbach)",
+        "gold": "instances_val2014 ∪ ref-caption (synonyms.txt Rohrbach)", "vi_lexicon": VI_LEXICON,
         "results": results,
     }, ensure_ascii=False, indent=2), encoding="utf-8")
     print(f"wrote {out}")
@@ -197,6 +221,10 @@ def _check() -> None:
     assert vi_classes("Con gấu bông trên cái bàn phím.", terms) == {"teddy bear", "keyboard"}
     # every occurrence is consumed; a standalone shorter term still counts
     assert vi_classes("ô tô, ô tô và một cái tô", terms) == {"car", "bowl"}
+    # v2: non-object spans consumed, person nouns v1 misses; v1 is the lexicon alone
+    assert vi_objects("Cầu thủ đang ghi bàn", terms) == {"person"}
+    assert vi_objects("Cầu thủ đang ghi bàn", terms, "v1") == {"dining table"}
+    assert vi_objects("Khán giả xem bóng bàn", terms) == {"person"} and vi_objects("bóng bàn", terms, "v1") == {"dining table"}
     syn = load_synonyms()
     assert en_classes("A teddy bear and hot dogs on a motor bike.", syn) == {"teddy bear", "hot dog", "motorcycle"}
     assert en_classes("A dog eats a hot dog.", syn) == {"dog", "hot dog"}

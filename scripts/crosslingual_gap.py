@@ -218,12 +218,13 @@ def systems_of(results: Path, name: str, lang: str, ids: list[str]) -> dict[str,
 
 
 def matcher(lang: str):
-    """Caption -> the COCO-80 classes it names: coco80_vi.json in Vietnamese, CHAIR's synonyms in English."""
+    """Caption -> the COCO-80 classes it names: score_coco_probe's matcher (VI_LEXICON) in Vietnamese, CHAIR's
+    synonyms in English."""
     import score_coco_probe as sc
 
     if lang == "vi":
         terms = sc.load_vi_terms()
-        return lambda c: sc.vi_classes(c, terms)
+        return lambda c: sc.vi_objects(c, terms)
     syn = sc.load_synonyms()
     return lambda c: sc.en_classes(c, syn)
 
@@ -366,10 +367,12 @@ def score_language(ids, refs, gold, lang, systems, human: bool) -> dict:
 
 
 def cmd_score(args) -> None:
+    from score_coco_probe import VI_LEXICON
+
     out = {}
     for name in args.sets:
         ids, langs, gold = load_set(name)
-        entry = out[name] = {"ids": ids, "k": SETS[name][0]}
+        entry = out[name] = {"ids": ids, "k": SETS[name][0], "vi_lexicon": VI_LEXICON}
         for lang, d in langs.items():
             systems = systems_of(Path(args.results), name, lang, ids)
             print(f"{name}/{lang}: {len(ids)} images, {'k=' + str(SETS[name][0]) if d['refs'] else 'no'} references, "
@@ -434,10 +437,12 @@ def cmd_embed(args) -> None:
 
 # ---------------------------------------------------------------- report
 def merge(into: dict, more: dict) -> dict:
-    """Deep merge of score/embed JSONs; a set's image order must agree."""
+    """Deep merge of score/embed JSONs; a set's image order and Vietnamese lexicon must agree."""
     for key, v in more.items():
         if key == "ids" and "ids" in into and into["ids"] != v:
             raise SystemExit("two inputs order the images of a set differently")
+        if key == "vi_lexicon" and into.get(key, v) != v:
+            raise SystemExit(f"inputs scored with Vietnamese lexicons {into[key]} and {v}")
         if isinstance(v, dict) and isinstance(into.get(key), dict):
             merge(into[key], v)
         else:
@@ -526,7 +531,7 @@ def cmd_report(args) -> None:
             return cells.get((L, src, variant), {})
 
         human = {L: at(L, "human", "fold") for L in ("vi", "en")}
-        rep = report[name] = {"n_images": len(ids), "k": entry["k"], "B": args.B,
+        rep = report[name] = {"n_images": len(ids), "k": entry["k"], "B": args.B, "vi_lexicon": entry.get("vi_lexicon"),
                               "human": side_by_side(human["vi"], human["en"]), "systems": {}, "delta": {}}
 
         def norm(L, src):
@@ -574,7 +579,7 @@ def markdown(report: dict) -> str:
     lines = []
     for name, rep in report.items():
         lines.append(f"\n### {name} — {rep['n_images']} images, k = {rep['k']} references per language, "
-                     f"95% paired bootstrap CI (B = {rep['B']})")
+                     f"Vietnamese COCO-80 lexicon {rep['vi_lexicon']}, 95% paired bootstrap CI (B = {rep['B']})")
         lines += table("human ceiling (each reference vs the other k−1)", rep["human"])
         for src, r in rep["systems"].items():
             lines += table(f"{src} — raw (all k references)", r["raw"])
