@@ -7,17 +7,20 @@ driven by the real Qwen2.5-VL processor and KTVIC train images, on the installed
 Checks: the loss (ratio 1, clip, k3); the prompt-cache-shared log-probs and their gradients equal a full-sequence
 forward; generation-time log-probs equal the training forward and the sampler applies no processor (judge D1 C3 (i));
 the loss mask covers generated tokens only (C3 (iii)); the "ref" adapter is frozen and untouched by switching;
-batched left-padded greedy equals one image at a time.
+batched left-padded greedy equals one image at a time; generate() with lm_head on the last position only emits the
+same tokens; an optimizer step back-propagated --micro responses at a time equals the unchunked step.
 """
 from __future__ import annotations
 
+import argparse
 import sys
 
 import numpy as np
 
 from evaluate import file_names
 from rl_reward import SPLIT
-from train_rl import Policy, chat, greedy, guard_mask, pg_loss, response_lengths, rollout, schedule, token_logprobs
+from train_rl import (Policy, chat, greedy, guard_mask, image, last_position, pg_loss, response_lengths, rollout,
+                      schedule, token_logprobs, update)
 from train_stage2 import MODEL_ID
 
 EOS = [151645, 151643]
@@ -127,9 +130,39 @@ def check_policy() -> None:
     # batched left-padded greedy (dev evaluation) == one image at a time
     one = {i: greedy(pol, [i], 1)[i] for i in ids}
     assert greedy(pol, ids, 3) == one, one
+    # lm_head on the last position only changes no generated token
+    batch = proc(text=[pol.text] * 2, images=[image(pol.names, i) for i in ids[:2]], padding=True, return_tensors="pt")
+    with torch.no_grad():
+        plain = model.generate(**batch, do_sample=False, max_new_tokens=6, eos_token_id=EOS)
+        with last_position(model):
+            hooked = model.generate(**batch, do_sample=False, max_new_tokens=6, eos_token_id=EOS)
+    assert torch.equal(plain, hooked)
+    step_gap = check_micro(pol, inputs, gen, n, done)
     print(f"tiny Qwen2.5-VL: logp gap {logp_gap:.2e}, sampler gap {gap:.2e}, shared vs full forward: "
           f"values {float((lp * mask - lf * mask).abs().max()):.2e}, grads {grad_gap:.2e} (relative), "
-          f"{len(shared)} LoRA tensors")
+          f"{len(shared)} LoRA tensors; hooked generate == plain; --micro 2 vs unchunked step {step_gap:.2e}")
+
+
+def check_micro(pol, inputs, gen, n, done) -> float:
+    """update() with the k responses back-propagated 2 at a time takes the same SGD step as all at once."""
+    import torch
+
+    params = [p for p in pol.model.parameters() if p.requires_grad]
+    start = [p.detach().clone() for p in params]
+    group = {"inputs": inputs, "gen": gen, "n": n, "done": done, "gen_lp": None, "adv": np.array([0.7, -0.2, -0.5])}
+    steps, stats = [], []
+    for micro in (2, 3):
+        with torch.no_grad():
+            for p, p0 in zip(params, start):
+                p.copy_(p0)
+        pol.model.zero_grad(set_to_none=True)  # check_policy's own backward passes left gradients behind
+        args = argparse.Namespace(beta=0.03, dry_run=True, micro=micro)
+        stats.append(update(pol, torch.optim.SGD(params, lr=1.0), params, [group], args, first=True))
+        steps.append([p.detach() - p0 for p, p0 in zip(params, start)])
+    assert abs(stats[0]["grad_norm"] - stats[1]["grad_norm"]) < 1e-4 * stats[1]["grad_norm"], stats
+    gap = max(float((a - b).abs().max() / b.abs().max()) for a, b in zip(*steps) if b.abs().max() > 0)
+    assert gap < 1e-4, gap
+    return gap
 
 
 if __name__ == "__main__":

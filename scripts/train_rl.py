@@ -12,8 +12,10 @@ top_k 0, no repetition penalty (on-policy), max_new_tokens 40, evaluate.py's sho
 Loss per response token, averaged over the step's response tokens: -min(ratio*A, clip(ratio, 0.8, 1.2)*A) + beta*k3,
 one inner epoch (one optimizer step per rollout batch, so the ratio is 1 and the clip never binds). The prompt (~600
 tokens) runs once per image and its KV cache serves the k responses, as in generate(): this replaces gradient
-checkpointing (a k x 600-token forward is what made SFT cost 0.92 s per row). Greedy dev CIDEr-D (as evaluate.py)
-every --eval-every images selects OUT/best. Dev images are never trained on; KTVIC test is never read.
+checkpointing (a k x 600-token forward is what made SFT cost 0.92 s per row); the responses are back-propagated
+--micro at a time with the prompt graph kept between chunks, and lm_head runs on the last position only wherever the
+other positions are unused (the first 4-bit dry run peaked at 24.9 GB reserved without both). Greedy dev CIDEr-D (as
+evaluate.py) every --eval-every images selects OUT/best. Dev images are never trained on; KTVIC test is never read.
 """
 from __future__ import annotations
 
@@ -22,6 +24,7 @@ import json
 import random
 import sys
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -112,7 +115,7 @@ def rollout(pol: Policy, image_id: str, k: int, max_new: int, with_logp: bool = 
     import torch
 
     inputs = pol.proc(text=[pol.text], images=[image(pol.names, image_id)], return_tensors="pt").to(pol.model.device)
-    with torch.no_grad():
+    with torch.no_grad(), last_position(pol.model):
         out = pol.model.generate(**inputs, do_sample=True, temperature=1.0, top_p=1.0, top_k=0, repetition_penalty=1.0,
                                  num_return_sequences=k, max_new_tokens=max_new, eos_token_id=pol.eos, use_cache=True,
                                  return_dict_in_generate=True, output_logits=with_logp, output_scores=with_logp)
@@ -127,27 +130,48 @@ def rollout(pol: Policy, image_id: str, k: int, max_new: int, with_logp: bool = 
     return inputs, gen, n, done, texts, gen_lp, sampler_gap
 
 
-def token_logprobs(model, inputs, gen, n):
-    """Log-probs of the k responses under the active adapter, and the loss mask: generated tokens up to and including
-    the first EOS, nothing else. The prompt runs once (lm_head on its last position only, which predicts the first
-    response token) and its KV cache is repeated for the k responses, which run as one continuation."""
-    import torch
-
-    k, T = gen.shape
+@contextmanager
+def last_position(model):
+    """lm_head on the last position only, all that generate() and the prompt pass use: Qwen2.5-VL's forward in
+    transformers 4.51 has no logits_to_keep, and fp32 logits for k x ~600 prompt positions are a 2.7 GB block."""
     hook = model.get_base_model().lm_head.register_forward_pre_hook(lambda _m, a: (a[0][:, -1:],))
     try:
-        p = model(**inputs, use_cache=True)
+        yield
     finally:
         hook.remove()
-    cache = p.past_key_values
-    cache.batch_repeat_interleave(k)
+
+
+def prompt_pass(model, inputs):
+    """The prompt (image + instruction) once: the logits of its last position, which predict the first response
+    token, and its KV cache."""
+    with last_position(model):
+        p = model(**inputs, use_cache=True)
+    return p.logits, p.past_key_values
+
+
+def response_logprobs(model, head, cache, inputs, gen, n):
+    """Log-probs of the responses `gen` after a prompt_pass, run as one continuation on a per-response copy of the
+    prompt cache (the prompt graph itself is left for other chunks), and the loss mask: generated tokens up to and
+    including the first EOS, nothing else."""
+    import torch
+    from transformers import DynamicCache
+
+    k, T = gen.shape
+    rep = DynamicCache()
+    for i, (key, value) in enumerate(zip(cache.key_cache, cache.value_cache)):
+        rep.update(key.repeat_interleave(k, 0), value.repeat_interleave(k, 0), i)
     L = inputs["input_ids"].shape[1]
     mask = torch.arange(T, device=gen.device)[None] < n[:, None]
     att = torch.cat([inputs["attention_mask"].expand(k, -1), mask.long()], 1)
-    r = model(input_ids=gen, attention_mask=att, past_key_values=cache, use_cache=True,
+    r = model(input_ids=gen, attention_mask=att, past_key_values=rep, use_cache=True,
               cache_position=torch.arange(L, L + T, device=gen.device))
-    logits = torch.cat([p.logits.expand(k, -1, -1), r.logits[:, :-1]], 1).float()
+    logits = torch.cat([head.expand(k, -1, -1), r.logits[:, :-1]], 1).float()
     return logits.gather(-1, gen[..., None]).squeeze(-1) - logits.logsumexp(-1), mask.float()
+
+
+def token_logprobs(model, inputs, gen, n):
+    """Log-probs of the k responses under the active adapter (prompt run once), and the loss mask."""
+    return response_logprobs(model, *prompt_pass(model, inputs), inputs, gen, n)
 
 
 def pg_loss(lp, old, ref, adv, mask, beta: float, clip: float, denom: float):
@@ -181,15 +205,22 @@ def update(pol: Policy, opt, params, groups: list[dict], args, first: bool) -> d
             model.set_adapter("ref")
             ref, _ = token_logprobs(model, g["inputs"], g["gen"], g["n"])
             model.set_adapter("default")
-        lp, mask = token_logprobs(model, g["inputs"], g["gen"], g["n"])
+        head, cache = prompt_pass(model, g["inputs"])
+        adv, k, lps, masks = torch.tensor(g["adv"], dtype=torch.float32, device=ref.device), len(g["n"]), [], []
+        for s in range(0, k, args.micro):  # --micro responses per backward; the prompt graph stays until the last
+            rows = slice(s, s + args.micro)
+            lp, mask = response_logprobs(model, head, cache, g["inputs"], g["gen"][rows], g["n"][rows])
+            loss, k3 = pg_loss(lp, lp.detach(), ref[rows], adv[rows], mask, args.beta, CLIP, denom)
+            loss.backward(retain_graph=s + args.micro < k)
+            kl += float((k3 * mask).sum())
+            lps.append(lp.detach())
+            masks.append(mask)
+            del lp, loss  # this chunk's graph goes before the next chunk's forward
+        lp, mask = torch.cat(lps), torch.cat(masks)
         if args.dry_run:
             guard_mask(g["gen"], g["n"], g["done"], mask, pol.eos)
         if g["gen_lp"] is not None:
-            gaps.append((lp.detach() - g["gen_lp"])[mask.bool()].abs())
-        adv = torch.tensor(g["adv"], dtype=lp.dtype, device=lp.device)
-        loss, k3 = pg_loss(lp, lp.detach(), ref, adv, mask, args.beta, CLIP, denom)
-        loss.backward()
-        kl += float((k3 * mask).sum())
+            gaps.append((lp - g["gen_lp"])[mask.bool()].abs())
     if first and any(p.grad is None for p in params):
         raise SystemExit(f"{sum(p.grad is None for p in params)}/{len(params)} trainable tensors got no gradient")
     norm = float(torch.nn.utils.clip_grad_norm_(params, 1.0))
@@ -212,7 +243,7 @@ def greedy(pol: Policy, ids: list[str], batch: int) -> dict:
         chunk = ids[s:s + batch]
         inputs = pol.proc(text=[pol.text] * len(chunk), images=[image(pol.names, i) for i in chunk], padding=True,
                           return_tensors="pt").to(pol.model.device)
-        with torch.no_grad():
+        with torch.no_grad(), last_position(pol.model):
             seqs = pol.model.generate(**inputs, do_sample=False, max_new_tokens=GREEDY_MAX_NEW, eos_token_id=pol.eos,
                                       use_cache=True)
         gen = seqs[:, inputs["input_ids"].shape[1]:]
@@ -386,6 +417,7 @@ def main() -> int:
     ap.add_argument("--n-images", type=int, default=0, help="images to train on / sample (default: the whole pool)")
     ap.add_argument("--images-per-step", type=int, default=5)
     ap.add_argument("--k", type=int, default=8)
+    ap.add_argument("--micro", type=int, default=4, help="responses per backward chunk (memory, not the gradient)")
     ap.add_argument("--max-new-tokens", type=int, default=40)
     ap.add_argument("--tau", type=float, default=None, help="copy threshold on m(c): the G0 report's tau")
     ap.add_argument("--no-copy-mask", action="store_true", help="plain RLOO: copies keep their advantage")
