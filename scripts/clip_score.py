@@ -62,6 +62,7 @@ class Clip:
         self.model, _, self.prep = open_clip.create_model_and_transforms(
             MODEL, pretrained=PRETRAINED, device=device, precision="fp16" if device == "cuda" else "fp32")
         self.model.eval()
+        self.dtype = torch.float16 if device == "cuda" else torch.float32
         self.tok = open_clip.get_tokenizer(MODEL)
 
     def _norm(self, x):
@@ -79,7 +80,7 @@ class Clip:
         with self.torch.no_grad():
             for i in range(0, len(paths), bs):
                 x = self.torch.stack([self.prep(Image.open(p).convert("RGB")) for p in paths[i:i + bs]])
-                out.append(self._norm(self.model.encode_image(x.to(self.device, next(self.model.parameters()).dtype))))
+                out.append(self._norm(self.model.encode_image(x.to(self.device, self.dtype))))
         return self.torch.cat(out)
 
 
