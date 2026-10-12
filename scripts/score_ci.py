@@ -46,11 +46,8 @@ def load_preds(path: str) -> dict[str, list[str]]:
     return {str(k): (v if isinstance(v, list) else [v]) for k, v in raw.items()}
 
 
-def per_image_cider(gt: dict, preds: dict, ids: list[str], segmenter: str):
-    """Per-image CIDEr score vector, IDF over the full set — same preprocessing
-    path as evaluate.py (align + word segmentation) so the figure matches the main table."""
-    from pycocoevalcap.cider.cider import Cider
-
+def tokenized(gt: dict, preds: dict, ids: list[str], segmenter: str):
+    """(gts, res) aligned + word-segmented exactly as evaluate.py does."""
     from rescap.metrics import CaptionMetrics
 
     scorer = CaptionMetrics(language="vi", tokenize=True, segmenter=segmenter)
@@ -69,8 +66,19 @@ def per_image_cider(gt: dict, preds: dict, ids: list[str], segmenter: str):
         )
     for w in scorer.warnings:
         print(f"  ⚠ {w}")
+    return gts, res
+
+
+def per_image_cider(gt: dict, preds: dict, ids: list[str], segmenter: str,
+                    sigma: float = 6.0, toks=None):
+    """Per-image CIDEr score vector, IDF over the full set — same preprocessing
+    path as evaluate.py (align + word segmentation) so the figure matches the main table.
+    sigma=6 is standard CIDEr-D; sigma=inf switches its Gaussian length penalty off."""
+    from pycocoevalcap.cider.cider import Cider
+
+    gts, res = toks or tokenized(gt, preds, ids, segmenter)
     order = list(gts.keys())
-    corpus, per_image = Cider().compute_score(gts, res)
+    corpus, per_image = Cider(sigma=sigma).compute_score(gts, res)
     if len(order) != len(per_image):
         raise RuntimeError("per-image score count does not match image count — untrustworthy")
     return float(corpus), dict(zip(order, [float(s) for s in per_image]))
