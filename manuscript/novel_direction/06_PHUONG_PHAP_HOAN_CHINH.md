@@ -222,3 +222,28 @@ Với cùng số đối tượng mỗi ảnh như SUPPORTED, P tăng +18,1 và R
 - Ở short, fuse2 kèm tag nằm trên biên Pareto so với P1. Recall và F1 tăng có ý nghĩa thống kê, còn P, CIDEr và CHAIR_i không khác P1. Riêng fuse2 thì CHAIR_i tệ hơn P1 có ý nghĩa (p = 0,03); tag kéo phần này về lại (19,5 so với 21,9).
 - Ở detailed, tag tăng P 2,7 điểm và giảm CHAIR_i 3,4 điểm nhưng mất 1,5 điểm R, nên F1 gần như không đổi.
 - Kết luận còn chờ thêm: (1) mới một seed, cần tags trên fuse2_s43/s44 (đang chạy trên n3); (2) cần đối chứng tags_p1_s43 (job 32) để biết lợi ích đến từ tag hay từ việc kết hợp tag với fuse2; (3) Grounding DINO là mô hình thứ hai lúc suy luận, nên bài phải báo cả chi phí của nó, dù vẫn chạy trên 1 GPU.
+
+**Seed P1, đối chứng tag trên P1, baseline cùng độ dài và CLIPScore/BERTScore (12/10/2026).** Kiểm định bootstrap ghép cặp trên 558 ảnh, B = 5000.
+
+- **P1 seed 42 / 43 / 44, short:** F1 54,1 / 54,5 / 55,2; CIDEr 149,8 / 143,9 / 143,7.
+  - CIDEr chênh tới khoảng 6 điểm giữa các seed của cùng một công thức. So với trung bình 3 seed P1, fuse2_s42 chỉ thấp hơn 1,9 CIDEr. Vì vậy mọi kết luận về CIDEr phải dựa trên nhiều seed.
+- **Tag Grounding DINO trên P1** (tags_p1_s43 so với p1_s43): ΔF1 +0,4 [−0,9; +1,7], không có ý nghĩa. Tag chỉ giúp mô hình có độ bao phủ cao (fuse2: ΔP từ −3,0 lên −0,8 so với p1_s43).
+- **Prompt "hai câu":**
+  - P1 vẫn viết đúng 1 câu (11,9 từ), nên không thể "nhắc" P1 viết dài hơn.
+  - Zero-shot viết 19,8 từ và đạt F1 42,5.
+- **6 mẫu (T = 0,8), chọn caption đồng thuận nhất (MBR, k = 1), chế độ short:**
+  - P1: R +5,5, P −4,1. fuse2: R tăng thêm +6,0, P giảm thêm −4,9.
+  - CIDEr rơi còn khoảng 97, vì mẫu lấy ở nhiệt độ cao lệch khỏi văn phong tham chiếu. Đây không phải đòn bẩy cho độ chính xác.
+- **Tự ghép lúc suy luận (k = 2), cùng độ dài với fuse2 detailed:**
+
+  | hệ | P | R | F1 | số từ |
+  |---|---|---|---|---|
+  | P1_s43 tự ghép | 63,2 | 59,2 | 61,1 | 22,7 |
+  | fuse2_s42 tự ghép | 60,7 | 64,7 | 62,7 | 23,6 |
+  | fuse2_s42 detailed (greedy) | 68,0 | 61,2 | 64,4 | 24,0 |
+
+  - fuse2 detailed so với P1 tự ghép: ΔP +4,7 [+2,6; +7,0], ΔR +2,0 [−0,2; +4,1], ΔF1 +3,2 [+1,3; +5,2], p = 0,002.
+  - Kết luận: ghép tham chiếu khi huấn luyện không thể thay bằng ghép mẫu lúc suy luận. Đây là tiêu chí loại mà reviewer đặt ra, và fuse2 vượt qua.
+- **CLIPScore (CLIP đa ngữ) và BERTScore (XLM-R), chế độ short** (`data/results/metrics_v2/TABLE.md`):
+  - fuse2 không khác P1 trên mọi chỉ số này: BERT-F 0,95, CLIP-S 0,54, RefCLIP-S 0,66.
+  - CLIP-S chấm zero-shot (0,65) và VCD (0,67) cao hơn mô hình đã fine-tune, vì CLIP thích caption dài và mô tả nhiều. Không nên dùng CLIP-S làm thước đo chính cho bài toán bám sát tham chiếu.
