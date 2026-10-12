@@ -53,20 +53,28 @@ def consensual(captions: list[str]) -> str:
     return captions[max(range(len(captions)), key=lambda i: (shared(i), -i))]
 
 
-def fused(captions: list[str], k: int) -> str:
-    """Start from the consensual caption, then add up to k-1 captions, each the one
-    contributing the most objects not yet named; a caption adding none is not used.
-    Every object in the result was written by an annotator, so fusion adds coverage
-    without adding content nobody saw."""
+def fusion_set(captions: list[str], k: int, rng: random.Random | None = None) -> list[str]:
+    """The consensual caption, then up to k-1 more. Greedy (rng None): each step adds the
+    caption contributing the most objects not yet named, and a caption adding none is not
+    used, so every object in the result was written by an annotator. With rng: k-1 others
+    drawn uniformly (the random-pair control for the greedy choice)."""
     first = consensual(captions)
     chosen, named = [first], set(objects_in(first))
     rest = [c for c in captions if c != first]
+    if rng is not None:
+        return chosen + rng.sample(rest, min(k - 1, len(rest)))
     while len(chosen) < k and rest:
         best = max(rest, key=lambda c: len(set(objects_in(c)) - named))
         if not set(objects_in(best)) - named:
             break
         chosen.append(best); named |= set(objects_in(best)); rest.remove(best)
-    return " ".join(c if c.rstrip().endswith((".", "!", "?")) else c.rstrip() + "." for c in chosen)
+    return chosen
+
+
+def fused(captions: list[str], k: int, rng: random.Random | None = None) -> str:
+    """fusion_set joined into one target, each caption closed with a full stop."""
+    return " ".join(c if c.rstrip().endswith((".", "!", "?")) else c.rstrip() + "."
+                    for c in fusion_set(captions, k, rng))
 
 
 def halves(image_ids, seed: int) -> tuple[list[str], list[str]]:
@@ -87,6 +95,11 @@ def main() -> int:
                         help="short-row caption: file order (P1), the most consensual one, or every caption (multi-reference SFT)")
     parser.add_argument("--fuse", type=int, default=1,
                         help="k > 1 adds a detailed-prompt row fusing up to k captions per image")
+    parser.add_argument("--fuse-order", choices=("greedy", "random"), default="greedy",
+                        help="captions added after the consensual one: most new objects first, or random (control)")
+    parser.add_argument("--unfused", action="store_true",
+                        help="write the fusion captions as separate short rows instead of one detailed row "
+                             "(control: the same captions without concatenation)")
     parser.add_argument("--images-file", default=None,
                         help="keep only the image_ids listed in this file (one per line)")
     parser.add_argument("--write-halves", default=None, metavar="DIR",
@@ -126,15 +139,21 @@ def main() -> int:
             sys.exit(f"no captioned image of {args.annotations} is listed in {args.images_file}")
 
     pick = (lambda cs: cs[0]) if args.select != "consensus" else consensual
+    fuse_rng = random.Random(args.seed) if args.fuse_order == "random" else None
     rows = []
     for image_id, cs in sorted(captions.items()):
         if not file_names.get(image_id):
             continue
         base = {"image_id": image_id, "file_name": file_names[image_id]}
-        for c in (cs if args.select == "all" else [pick(cs)]):
+        short = cs if args.select == "all" else [pick(cs)]
+        for c in short:
             rows.append({**base, "prompt": PROMPT_SHORT, "response": c, "variant": "gold"})
-        if args.fuse > 1:
-            rows.append({**base, "prompt": PROMPT, "response": fused(cs, args.fuse),
+        if args.fuse > 1 and args.unfused:
+            for c in fusion_set(cs, args.fuse, fuse_rng):
+                if c not in short:
+                    rows.append({**base, "prompt": PROMPT_SHORT, "response": c, "variant": f"gold_unfused{args.fuse}"})
+        elif args.fuse > 1:
+            rows.append({**base, "prompt": PROMPT, "response": fused(cs, args.fuse, fuse_rng),
                          "variant": f"gold_fused{args.fuse}"})
     dropped = len(captions) - len({r["image_id"] for r in rows})
     if args.limit:
@@ -156,7 +175,9 @@ def main() -> int:
         "captions_total": n_captions,
         "captions_used": len(rows),
         "policy": (f"short row: {args.select} caption, PROMPT_SHORT; "
-                   + (f"detailed row: up to {args.fuse} fused captions, PROMPT" if args.fuse > 1
+                   + (f"up to {args.fuse} {args.fuse_order} fusion captions as separate short rows"
+                      if args.fuse > 1 and args.unfused else
+                      f"detailed row: up to {args.fuse} {args.fuse_order}-fused captions, PROMPT" if args.fuse > 1
                       else "no detailed variant")),
         "dropped_no_file_name": dropped,
     }
@@ -177,6 +198,8 @@ def _check() -> None:
     assert consensual(cs) == cs[1]
     assert fused(cs, 2) == "một người đàn ông và con chó. con chó cạnh chiếc xe máy.", fused(cs, 2)
     assert fused(cs[:1], 3) == cs[0]
+    r = fusion_set(cs, 2, random.Random(0))
+    assert r[0] == cs[1] and len(r) == 2 and r[1] in (cs[0], cs[2])
     ids = [str(i) for i in range(101)]
     a, b = halves(ids, 42)
     assert not set(a) & set(b) and sorted(a + b) == sorted(ids) and abs(len(a) - len(b)) <= 1

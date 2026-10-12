@@ -58,6 +58,11 @@ PROMPTS = {
         "Mô tả bức ảnh này bằng MỘT câu tiếng Việt ngắn gọn, "
         "giống chú thích ảnh. Không liệt kê, không giải thích."
     ),
+    # length-matched control for the two-sentence detailed output of reference-fusion SFT
+    "two": (
+        "Mô tả bức ảnh này bằng HAI câu tiếng Việt ngắn gọn, "
+        "giống chú thích ảnh. Không liệt kê, không giải thích."
+    ),
     # instructed-zero-shot baseline: the steelman for the question "is a clever
     # prompt enough?"; every constraint of the main system is stated explicitly in the prompt.
     "instructed": (

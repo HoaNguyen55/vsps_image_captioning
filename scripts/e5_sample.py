@@ -66,6 +66,8 @@ def main() -> int:
     ap.add_argument("--four-bit", action="store_true")
     ap.add_argument("--probe", default=None, help="E2 features (probe500.npz); enables p_exist")
     ap.add_argument("--seed", type=int, default=42)
+    ap.add_argument("--split", default=SPLIT)
+    ap.add_argument("--prompt", default="detailed", choices=sorted(PROMPTS))
     args = ap.parse_args()
 
     import torch
@@ -73,8 +75,8 @@ def main() -> int:
 
     from rescap.chair import objects_in
 
-    refs = references(SPLIT)
-    names = file_names(SPLIT)
+    refs = references(args.split)
+    names = file_names(args.split)
     gold = {i: set().union(*[set(objects_in(c)) for c in cs]) for i, cs in refs.items()}
     probe, probe_ids = fit_probe(args.probe, gold) if args.probe else (None, set())
 
@@ -96,7 +98,7 @@ def main() -> int:
     torch.manual_seed(args.seed)
     k = LAYERS.index(PROBE_LAYER)
     prompt = proc.apply_chat_template(
-        [{"role": "user", "content": [{"type": "image"}, {"type": "text", "text": PROMPTS["detailed"]}]}],
+        [{"role": "user", "content": [{"type": "image"}, {"type": "text", "text": PROMPTS[args.prompt]}]}],
         tokenize=False, add_generation_prompt=True)
 
     with out.open("a", encoding="utf-8") as fh:

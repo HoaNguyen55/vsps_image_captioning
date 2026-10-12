@@ -179,7 +179,7 @@ def main() -> int:
     ap.add_argument("--coco-preds", default=None, help="directory with {zeroshot,distill}-detailed.shard*.jsonl")
     ap.add_argument("--coco-manifest", default=str(ROOT / "data" / "coco_probe" / "manifest_full5000.json"))
     ap.add_argument("--ci", action="store_true", help="add 95%% bootstrap CIs over images")
-    ap.add_argument("--mode", choices=("detailed", "short"), default="detailed")
+    ap.add_argument("--mode", default="detailed", help="prompt suffix of the preds files: detailed, short, two")
     ap.add_argument("--vs", default=None, help="baseline stem (e.g. p1-gold): paired bootstrap of every system against it")
     args = ap.parse_args()
     ktvic_block(Path(args.results).expanduser(), args.split, args.ci, args.mode, args.vs)
