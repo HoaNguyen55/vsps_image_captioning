@@ -1,0 +1,495 @@
+K2_lvlm_vn REPORT - Knowledge graphs and graphs with LVLMs (2024-2026), Vietnamese KG resources, scoop check
+Round R7, 2026-10-12. Agent K2_lvlm_vn. CPU only (nice -n 15, <=2 threads); no VLM loaded; repo read-only.
+Work dir: research_kg/K2_lvlm_vn/ (cov/ = coverage measurements, pilot/ = CPU pilot, A1/ A2/ B/ = literature notes and
+full-text dumps from three sub-searches run in parallel). Every paper below was opened (arXiv full text/abs, CVF, ACL
+Anthology, OpenReview, Crossref, S2); venue sources are given; unconfirmed items are in section 7.
+All KTVIC pilot numbers are on TEST samples and are EFFECT-SIZE ESTIMATES; nothing was tuned on them.
+
+======================================================================================================================
+0. BOTTOM LINE
+======================================================================================================================
+- A KG is not a metric lever for KTVIC short captions. Every published case where a graph- or KG-structured term was added
+  to an n-gram reward, or where a graph or KG was added to a strong captioner, moved CIDEr/BLEU-4/METEOR/ROUGE-L by about
+  1 point:
+  - SPIDEr: C +0.5, B4 -1.1.
+  - MGRL-RSCC: C +0.56, B4 +1.02.
+  - RA-T kNN memory after SCST: C +1.1 to +1.4.
+  - MERGE's KG part alone: C -0.3.
+  Entity and cultural KG-RAG cannot lift reference metrics, because KTVIC references carry no entities.
+- Label-free CPU pilot on KTVIC (B1's best-of-7 protocol: pick on refs A, score on refs B and on the independent OpenViIC
+  panel). Adding an object/noun F1 term to the CIDEr-D reward gives:
+  - CIDEr on held-out refs: -2.9 to +2.4 over 48 settings. Every 95% CI covers 0 (two touch it).
+  - BLEU-4: at most +-0.6. ROUGE-L: -0.5 to +0.9.
+  - CHAIR_i against the panel: about -1 point with the repo's own 113-entry lexicon.
+  The Wikidata versions (KG synonyms plus IsA credit over a 211-noun vocabulary) do no better than the hand lexicon, also
+  on noun-level hallucination: -0.9 to +0.2.
+- Graph uses compatible with CN-RLOO and no new labels, all low novelty:
+  - a reference-derived object/IsA term as a hallucination guard;
+  - a detector-evidence object penalty (model-generated, so the user may veto it);
+  - kNN retrieval of KTVIC train captions. It opens a second copy channel that CN-RLOO's mask does not cover.
+  None of these reaches the +8 CIDEr bar or the -4 CHAIR_i Pareto bar.
+- Vietnamese KG resources, measured on the 200 most frequent KTVIC train nouns (image-weighted share in brackets):
+  - Wikidata vi label/alias: 81.0% [87.2%]. IsA (P279) parent: 72.5%. Parent with a vi label: 53.0% [60.7%]. vi synonyms:
+    43.5%. All three: 30.0%.
+  - Automatic sense linking is right for 84-88% of terms (COCO-80 check).
+  - The uncurated IsA closure is 72% generic sinks: product, part, goods.
+  - ConceptNet 5.7 Vietnamese: 171,987 edges, ZERO IsA and ZERO commonsense relations. Its commonsense edges are reachable
+    only through an English pivot, and the two pivots (ConceptNet vs Wikidata) agree on the English sense for 74% of nouns.
+  - OMW Wiktionary-derived Vietnamese wordnet: 53.5% [59.4%].
+  - Kaikki/Wiktionary: glosses for 96.0% [98.8%], hypernyms for 1 noun.
+  - VietSGG: 0.3% of noun mentions.
+  - The repo's CHAIR lexicon sees only 42% of noun mentions in KTVIC test references.
+- Scoop check: 47 logged searches. No paper puts a KG, scene graph or cultural knowledge into Vietnamese caption
+  generation, evaluation or RL rewards.
+  - Closest: ViG (MAPR 2026; relation + "local-cultural" memories on KTVIC) and an unreadable FAIR 2025 KG-captioning paper.
+  - Blocked claims: "first SCST/RL for Vietnamese captioning" (ObjectAoA 2023, VieCap4H 2022, OpenViIC baselines) and
+    "first Vietnamese SG data" (VietSGG).
+- Judgement: keep KG out of the method headline. At most, keep a lexicon object term (a hallucination guard checked on the
+  OpenViIC panel and on COCO instance labels) and a measured resource-coverage paragraph. Making Wikidata IsA safe would
+  need hand curation, which counts as annotation under the R7 rule.
+
+======================================================================================================================
+1. WHAT IS NEW HERE (relative to research_wall/11 and kg_plan/00, 03, 04, 05, 09, 11, 20)
+======================================================================================================================
+- Numbers from full text for graph rewards, graph hallucination mitigation, RAG captioning, graph metrics and cultural
+  resources (kg_plan/04-05 mostly had abstracts without numbers).
+- The CN-RLOO compatibility question, answered per family, with a label-free CPU pilot on the repo's own samples.
+- Resource coverage measured. kg_plan/03 and 20 had partial numbers (77-78% Wikidata label hits; ConceptNet unmeasurable
+  because the API returned 502). Here:
+  - three term sets;
+  - IsA and synonym fractions;
+  - an automatic sense-correctness check;
+  - the Wikidata IsA closure tested against the repo's hand hypernyms;
+  - ConceptNet measured from the 5.7 dump (the API is still 502 on 2026-10-12);
+  - the OMW, Kaikki, VietNet and VietSGG vocabularies;
+  - the CHAIR lexicon's blind spot.
+- A scoop check widened to RL/SCST and Vietnamese journals. It found ViG, HDUCap, ObjectAoA-SCST and VieCap4H-SCST,
+  which were not in kg_plan.
+
+======================================================================================================================
+2. PART 1 - KG AND GRAPH USES WITH LVLMs, 2024-2026 (numbers as reported: baseline -> +graph)
+======================================================================================================================
+Notation: C = CIDEr(-D), B4 = BLEU-4, M = METEOR, RL = ROUGE-L, CHs/CHi = CHAIR_s/CHAIR_i.
+"Needs labels" means human labels that do not exist for Vietnamese.
+
+2.1 Base fact: what CIDEr RL itself does to hallucination (decides whether a graph guard is needed)
+- Rohrbach et al., Object Hallucination in Image Captioning, EMNLP 2018 (1809.02156). CE -> SCST(CIDEr), COCO Karpathy:
+  - TopDown: C 107.6->117.2, CHs 8.4->13.6, CHi 6.1->8.8.
+  - TopDown-BB: C 113.7->120.6, CHs 8.3->10.4.
+  - FC: C 95.8->103.9, CHs 15.4->14.4.
+  - Authors: "CIDEr does not penalize object hallucination sufficiently".
+- Dai et al., Plausible May Not Be Faithful, EACL 2023 (2210.07688). Strong VLP models without -> with SCST:
+  - OFA-L: C 140.5->149.5, B4 41.7->43.8, CHi 4.7->4.2, CHs 8.9->8.1.
+  - VinVL-B: C 129.3->140.4, CHi 5.3->5.7, CHs 10.0->10.9.
+  - NoCaps out-of-domain (VinVL-B): CHi 12.1->17.4, CHs 21.2->32.1.
+=> At P1's strength (C about 145) CIDEr RL is roughly CHAIR-neutral in domain; the risk is out of domain (the UIT-ViIC and
+   COCO replications). B1's oracle picks lowered the reference-derived KTVIC CHi from 17.7 to 10.9.
+
+2.2 KG- or graph-structured REWARDS for RL
+- SPIDEr, Liu et al., ICCV 2017 (1612.00370; DOI 10.1109/ICCV.2017.100). Reward 0.5 SPICE (scene-graph tuples) + 0.5 CIDEr.
+  COCO C5 test server:
+  - MLE: C 94.7, M 25.1, RL 53.1, B4 29.4.
+  - PG-CIDEr: 99.5 / 24.9 / 54.8 / 33.3.
+  - PG-SPIDEr: 100.0 / 25.1 / 54.4 / 32.2.
+  - Graph term on top of CIDEr: C +0.5, B4 -1.1, M +0.2, RL -0.4.
+  - Humans prefer PG-SPIDEr (+4 points vs PG-BCMR, p=0.014).
+  - PG-SPICE alone gives ungrammatical repetitions.
+  - Needs an English SG parser.
+- MGRL-RSCC, Wang et al., arXiv 2609.26166 (Aug 2026; IEEE-Trans template, preprint). Remote-sensing change captioning.
+  The structural reward includes a rule-based (head, relation, tail) triplet F1 against the 5 references, from a hand tag
+  lexicon. No new labels: this is the closest analogue of a Vietnamese lexicon/KG term. LEVIR-CC, Table IV, single run:
+  - CE: C 136.25, B4 62.98, M 39.42, RL 74.34.
+  - + metric reward: 138.08 / 63.54 / 39.85 / 74.58.
+  - + metric + structural/KG: 138.64 / 64.56 / 40.23 / 74.95.
+  - Structural/KG term on top of the metric reward: C +0.56, B4 +1.02, M +0.38, RL +0.37.
+  - In its own top-k ablation, k=4 vs k=3 moves C by -3.89, so +0.56 is inside the run-to-run spread.
+- RadGraph reward, Delbrouck et al., Findings EMNLP 2022 (2210.12186). Entity/relation graph-F1 reward only. NLL -> RL:
+  - MIMIC-CXR: B4 10.5->11.4, RL 25.3->26.5, F1-CheXbert 44.8->62.2, RG_E 23.0->37.1.
+  - Open-i: B4 11.4->13.9.
+  - Graph reward: factual metrics +14 to +17, n-gram metrics about +1.
+  - Needs an extractor trained on radiologist labels.
+- SC-Captioner, ICCV 2025 (2508.06125). Set-difference reward over objects/attributes/relations from the English FACTUAL
+  parser; trained on 6.5K expert-revised COCO captions (new labels in their setting).
+  - Qwen2-VL-7B, DOCCI500: B4 40.92->43.70 (44.88 with self-correction), M 22.04->23.35.
+  - COCO-LN500: B4 34.59->35.29.
+  - LLaVA-1.5: B4 33.81->32.72.
+  - No CIDEr or CHAIR reported.
+- FoCUS, EMNLP 2026 Main (2609.00709). GRPO with scene-graph component rewards on 280 CompreCap images with human dense
+  SGs (needs labels).
+  - Qwen2.5-VL-3B: SCoPE 22.61->31.74, CompreCap 47.08->50.82.
+  - General DOCCI captioning, InternVL3-2B: C 11.10->9.08, RL 21.96->21.18. An SG reward without a CIDEr term leaves
+    CIDEr flat or lower.
+- CheXPO-v2 (2512.17213, preprint). GRPO; KG-consistency (Jaccard over Disease-Relation-Anatomy triplets) added to an
+  outcome reward. MIMIC-CXR-VQA accuracy: SFT 0.752, outcome reward 0.805, + KG 0.828. Needs a domain NER/RE model.
+- R1-SGG (2504.13617, preprint). Graph recall rewards for SG generation. VG150 AP@50 6.07->19.47. Needs SG labels.
+- ESREAL, ECCV 2024 (2403.16167). Unsupervised hallucination penalties typed by object, attribute and relation (via
+  reconstruction plus grounding) in PPO. LLaVA, Stanford Paragraph:
+  - CHs 0.64->0.43 (-32.8%), CHi 0.18->0.12, C 4.52->9.10.
+  - Without the holistic reward the model hacks by shortening: C 7.85->3.83.
+- FGAIF (TMLR 2025 per PDF header; 2404.05046). Object/attribute/relation AI-feedback rewards.
+  - LLaVA-7B: CHi 9.1->3.9, CHs 22.0->6.2.
+  - Caption length 216->60 tokens: a length hack.
+- MOCHa, Findings ACL 2024 (DOI 10.18653/v1/2024.findings-acl.657). Not a graph method; it is the trade-off evidence at
+  P1-like strength. NLI fidelity + BERTScore adequacy, PPO:
+  - BLIP-L: C 138.4->139.6, B4 41.5->41.9, CHi 2.3->2.1.
+  - BLIP-2: C 144.3->144.3, CHi 1.7->1.4.
+
+2.3 KG/SG-based hallucination DETECTION and MITIGATION for captions (beyond those in kg_plan/04 and 11)
+- HalluciDoctor, CVPR 2024 (2311.13614). FACTUAL SG chunks cross-checked by MLLM experts; cleans instruction data.
+  - MiniGPT-4: CHAIR_obj (instance) 12.0->5.9->5.7; CHAIR_rel 12.2->6.1->5.4.
+  - No CIDEr. Applied here it would mean AI judges rewriting human references, so not usable.
+- LURE, ICLR 2024 (2310.00754). Post-hoc revisor trained on GPT-3.5 synthetic data.
+  - MiniGPT-4: CHs 26.8->19.7, CHi 7.3->4.9.
+  - On short COCO captions (as reported in MOCHa) BLIP-L+LURE collapses to C 0.0.
+- HALC, ICML 2024 (2403.00425). Detector-grounded decoding.
+  - LLaVA-1.5: CHs 20.80->13.80, CHi 6.77->5.50, BLEU 15.93->16.10.
+  - Inference-time, so orthogonal to CN-RLOO.
+- Woodpecker (Sci. China Inf. Sci. 2024; not a listed venue). Graph-like "visual knowledge base" correction.
+  - POPE +30.66 / +24.33.
+  - In HALC's table on LLaVA-1.5: CHs 20.80->23.85 (worse).
+- CGRL, AAAI 2021 (2112.00974; precedent only). Visual-to-language SG alignment.
+  - Flickr30k Entities: C 62.9->65.2, CHi 0.437->0.347.
+  - Needs an English SG generator and an architecture change.
+- The graph-verification methods already in kg_plan/04 and 11 report POPE/MME-style numbers, not CIDEr/CHAIR on short
+  captions: RelCheck (MME hallucination 585->630), Tri-HE, Reefknot (-9.75%), ChainMPQ, CutPaste&Find.
+- Twelve further 2024-2026 searches found no KG/SG reward + CIDEr RL paper on short captions for an LVLM (A1/A1_notes.txt).
+
+2.4 KG-RAG and retrieval-augmented captioning
+- RA-T, ACM TOMM 2024 (DOI 10.1145/3663667; 2405.13127). The only paper found that combines a kNN caption memory with
+  CIDEr SCST.
+  - CE stage: C 121.6->123.7/124.5.
+  - After SCST, from a baseline of 135.3: C 136.4/136.5 (COCO index), 136.7 (CC3M index); B4 39.7->40.1-41.0;
+    M 29.6->29.6-30.0; RL 59.4->59.4-59.8.
+  - The retrieval gain halves after RL.
+- EVCap, CVPR 2024 (2311.15879). Ablation, memory vs none:
+  - COCO C 134.4->140.1, NoCaps val 108.8->119.3.
+  - CE only, no CHAIR.
+- Retrieval robustness, ACL 2024 (2406.02265). SmallCap copies "majority tokens" of the retrieved captions; random
+  retrieval costs up to 50% of CIDEr.
+- NES, AAAI 2026 (2511.08909; venue per the OJS listing seen in search results).
+  - 25.1% (NEF) / 23.4% (CLIP-Det) of hallucinated entities come from retrieved text.
+  - Flickr->COCO: C 87.5, CHs 12.1, CHi 8.0 with the filter.
+- MERGE, AAAI 2026 (2511.21002). Entity KB + KG for news captioning.
+  - GoodNews: C 87.70->94.54 (+6.84).
+  - Ablation: the KG-subgraph module alone gives 85.79, -0.3 vs 86.08; the gain comes from entity matching against
+    article text.
+- MsRAG, IJCAI 2025. Object-level RAG: Qwen2-VL Kale C 16.8->13.3 (lower); user study 2.8->5.5/10.
+- RAVENEA, ICLR 2026 (2505.14462). The "+11%" is RegionScore 57.5->68.8: does the caption name the country.
+  - Kendall tau with human judgements on cultural captioning: CIDEr -0.316 (ns), RegionScore 0.442.
+  - 8 countries, no Vietnam.
+- Re3Cap, EMNLP 2026 Main (2608.21305). Retrieval as a reasoning signal inside GRPO; QA-based metrics only.
+  - Qwen2.5-VL-7B relations QA: 44.15->46.02.
+  - No CIDEr or CHAIR. It already occupies "retrieval inside caption RL".
+- Multilingual retrieval captioning, XM3600 Vietnamese CIDEr:
+  - PAELLA (Findings NAACL 2024): 38.0; mBLIP mT0-XL 39.2.
+  - ConCap (COLM 2025; outside the venue list): no retrieval 31.8 -> concepts + captions 45.1.
+  - Large retrieval gains appear only on weak bases (30-45 CIDEr).
+- Graph RAG for VLMs (mKG-RAG SIGIR 2026, MMGraphRAG, MG2-RAG, KG-ViP) is VQA-only. AKGMA (AAAI 2026): OJS page
+  unreachable, no numbers.
+
+2.5 Graph-based caption EVALUATION (human correlation as reported)
+- SoftSPICE/FACTUAL, Findings ACL 2023. Flickr8K-Expert tau_c:
+  - SPICE 44.77; SPICE with the FACTUAL parser 45.12; SoftSPICE 53.35.
+  - RefCLIPScore 53.00.
+  - Parser-dependent: SPICE with the CDP-T5 parser 33.50.
+- CAPTURE (2405.19092, arXiv only). DetailCaps-100, PCC:
+  - CAPTURE 0.474; SPICE 0.358; METEOR 0.364; CIDEr 0.083; GPT4-Eval 0.516.
+- DCScore, ICLR 2025. PCC:
+  - DCScore 0.661; CAPTURE 0.352; METEOR 0.359; B4 0.344; SPICE 0.222; CIDEr 0.052.
+  - Needs GPT-4o and human hyper-detailed references.
+- PoSh, ICLR 2026. Scene graphs guide a 14B LLM judge. DOCENT Spearman:
+  - PoSh 0.599; DCScore 0.471; SPICE 0.458; CAPTURE 0.453; METEOR 0.113; CIDEr -0.106.
+  - Used as a DAPO reward on Qwen2.5-VL-7B: human-judged omissions +0.432 but mistakes -0.243. No CIDEr reported.
+- CompreCap, CVPR 2025. System-level Pearson: S_unified 0.989 vs CIDEr 0.563. Needs hand SGs and masks.
+- DSG, ICLR 2024 (text-to-image). TIFA160 Spearman: DSG 0.571 vs SPICE 0.329.
+- FIHA, Findings ACL 2025: 96-98% correct auto-built questions.
+- PROVE, ICCV 2025: Pearson helpfulness 0.81, truthfulness 0.45.
+- DiscoSG, EMNLP 2025: +30% SPICE from discourse parsing.
+- HalDec-Bench (2603.15253; not graph-based): 104K human-labelled sentences; Llama-4 detector AUROC 67.8; detectors
+  favour first sentences.
+=> Graph metrics beat CIDEr only on DETAILED captions, where CIDEr's human correlation is about 0.05-0.08. All of them need
+   an English parser, a hand SG or an LLM judge. No Vietnamese text-to-SG parser exists, and validating one needs human
+   ratings: only the repo's existing data/human_eval (2 raters) could be used.
+
+2.6 Cultural knowledge for VLMs (Vietnam coverage)
+- CVQA (NeurIPS 2024 D&B): 30 countries / 31 languages, no Vietnam (Table 8 checked).
+- CulturalVQA (EMNLP 2024): 0 mentions of Vietnam.
+- RAVENEA: no Vietnam.
+- WorldCuisines (NAACL 2025): 44 Vietnamese dishes (1.93%); Vietnamese is not one of its languages.
+- SEA-VQA (ALVR@ACL 2024): 122 Vietnam images, 313 questions.
+- SEA-VL (ACL 2025): 541 crowdsourced Vietnam images.
+- CulturalGround/CulturalPangea (EMNLP 2025; Wikidata-built):
+  - Vietnam: 3,230 entities with images (Germany 332,650).
+  - Vietnamese-language items: 199,562 open-ended after filtering.
+  - MERLIN vi EM: 67.6->85.7.
+  - XM100 vi CIDEr: 0.0->84.1. Pangea-7B's 0.0 is a failure to emit Vietnamese, not a clean KG effect.
+- MMA-ASIA (2510.08608, no venue): Vietnamese culture awareness 62.96%.
+- VietMEAgent (FAIR 2025): KB of 156 entities; removing the KB drops Cultural Accuracy 0.723->0.334 (VQA, not captioning).
+- VNCultureVQA: README only, "WACV 2027".
+- KTVIC: cultural terms occur in only 10-18% of images (kg_plan/09), and CIDEr already rewards them when the references
+  contain them.
+
+2.7 Synthesis: which uses fit CN-RLOO with NO new labels, and what they would add
+(CN-RLOO = RLOO on word-level, EOS-aware CIDEr-D with a copy mask; B1 expects, over P1: C +5 to +9, B4 +2 to +5,
+ M +1 to +2, RL +1 to +3, CHi -2 to -5. The increments below are ON TOP of that.)
+
+| use | labels | fits CN-RLOO | reported basis | expected increment on KTVIC (C / B4 / M / RL / CHAIR_i) |
+|---|---|---|---|---|
+| (1) Reference-derived object F1 term, lexicon or KG IsA/synonyms, added to the CIDEr-D reward | none | yes | SPIDEr: C +0.5, B4 -1.1; MGRL: C +0.56, B4 +1.02; pilot (section 3) | C about 0 (pilot -2.9 to +2.4, all ns); B4 within +-0.6; RL -0.5 to +0.9; M about 0; CHi about -1 vs the independent panel, -1 to -2 vs held-out refs. KG versions add nothing over the hand lexicon. |
+| (2) Detector-evidence object penalty (SG from an open-vocabulary detector; ESREAL/HALC family) | none, but model-generated, so the user may veto it | yes | MOCHa at C 138-144: C +1.2 / 0.0, CHi -0.2 / -0.3; HALC CHs -7.0 (detailed captions); repo: GDINO tags in the prompt gave C +1.1 / +2.5 and CHi -0.2 / -2.4 (P1 / fuse2) | C about 0 to +1, CHi -0.5 to -2. Mainly guards the out-of-domain CHAIR rise of CIDEr RL. R6 already killed an evidence-gated PU reward (about 0 C), and B1's P2 (EHX-RLOO) covers tags as hints. |
+| (3) kNN retrieval of KTVIC train captions into the prompt | none | yes, with care | RA-T after SCST: C +1.1 to +1.4, B4 +0.4 to +1.3, M 0 to +0.4, RL 0 to +0.4; NES: 23-25% of hallucinated entities come from retrieved text | C about +1; CHAIR uncertain. Opens a second regurgitation channel (neighbours' captions) that CN-RLOO's copy mask does not cover. Re3Cap already holds "retrieval inside caption RL". |
+| (4) Wikidata entity or cultural KG-RAG | none | technically | MERGE KG-only -0.3 C; MsRAG Kale 16.8->13.3; RAVENEA: CIDEr anti-correlates with cultural human judgements | C 0 or negative, CHAIR 0. Not a lever, because references carry no entities. |
+| (5) Graph metric as an auxiliary reward (SPICE/CAPTURE/PoSh style) | needs a Vietnamese parser that does not exist; validating one needs human ratings | no, unless built | SPIDEr: C +0.5, B4 -1.1; PoSh reward: mistakes -0.243 | neutral at best |
+| (6) Graph metric as evaluation only | none to compute (translate-then-parse); validation only on data/human_eval | n/a | DCScore/CAPTURE/PoSh: CIDEr r about 0.05-0.08 on detailed captions | does not move metrics. Useful only for the detailed prompt mode. |
+| (7) Rewards needing human SGs or trained graph extractors (FoCUS, full SC-Captioner, RadGraph, CheXPO-v2, R1-SGG) | yes | no | - | - |
+| (8) Graph-based data cleaning or rewriting (HalluciDoctor, LURE) | AI rewrites of the human references, or synthetic data | no | LURE C 0.0 on short COCO captions | - |
+
+======================================================================================================================
+3. LABEL-FREE CPU PILOT: does a lexicon/KG object term in the CIDEr-D reward change the one-step policy improvement?
+======================================================================================================================
+Protocol: B1's best-of-7 proxy for one RL step.
+- Candidates: greedy + 6 samples (T=0.8) per KTVIC test image, for P1 s43 and fuse2 s42.
+- Pick = argmax over candidates of CIDEr-D_A + lambda * 100 * F1_A, with A = refs{0,1,2}.
+- Scored on B = refs{3,4} (and on the swapped split A{2,3,4} -> B{0,1}) and on the UIT-OpenViIC panel (555 images,
+  independent annotators, never used in the selection).
+- Scorer: the repo's RDRSegmenter path + pycocoevalcap. Self-check reproduces stored values: P1 s43 greedy CIDEr-D 143.9,
+  mean sample 114.9. The CIDEr-only pick reproduces B1: +15.0 / +5.7 / +10.2 / +10.8 over greedy.
+- lambda grid 0.25 / 0.5 / 1 / 2, all reported; none was chosen. lambda=1 gives a perfect-F1 caption +100 reward, about
+  2 within-group SDs of CIDEr.
+- Terms, all computed against refs A, no labels:
+  - lex: CHAIR's own extractor (113-entry lexicon plus 27 hand hypernyms).
+  - kgsyn: VnCoreNLP common nouns in the 211-term Wikidata-linked vocabulary, synonyms merged by shared item.
+  - kgisa: kgsyn plus uncurated Wikidata P279+ credit for vaguer mentions.
+
+Results: change vs the CIDEr-only pick, 95% paired bootstrap CI over images (B=2000). Full table in pilot/pilot_table.txt.
+- CIDEr on held-out refs, all 48 settings (12 rules x 2 policies x 2 splits): between -2.9 and +2.4.
+  - Every CI covers 0. Two touch it: kgsyn@0.25 and kgisa@0.25 (identical picks) on fuse2 A012->B34, +0.6 [0.0, 1.2].
+  - lex@2.0 tends negative: -1.9 [-4.3, 0.3] and -2.9 [-7.1, 1.9] on P1.
+- BLEU-4 on held-out refs: within +-0.6. ROUGE-L: -0.5 to +0.9 (the maximum is kgsyn@2.0, fuse2 A234).
+- CHAIR_i (113-lexicon) vs held-out refs B, lex@1.0: -1.0, -1.5, -1.7, -0.5. CIs exclude 0 in 3 of 4 settings.
+- CHAIR_i vs the independent panel:
+  | rule | P1 A012 | P1 A234 | fuse2 A012 | fuse2 A234 |
+  |---|---|---|---|---|
+  | lex@1.0 | 16.7->15.5 [-2.2,-0.2] | 16.7->15.5 [-2.3,-0.2] | 19.0->18.4 [-1.4,0.3] | 20.1->19.3 [-1.8,0.1] |
+  | kgsyn@1.0 | 16.2 [-1.5,0.5] | 16.0 [-1.5,0.2] | 18.8 [-0.9,0.4] | 20.0 [-0.7,0.6] |
+  | kgisa@1.0 | 16.1 [-1.7,0.4] | 15.9 [-1.7,0.1] | 18.5 [-1.4,0.3] | 19.5 [-1.5,0.3] |
+- Noun-level hallucination vs the panel over the wider 211-noun vocabulary (plain string match, no KG relations):
+  - all terms: -0.9 to +0.2;
+  - KG terms are not better than lex. Only 2 of 16 KG CIs exclude 0: kgsyn@0.5 -0.6 and kgisa@0.5 -0.9, both P1 A234.
+- Mentions per caption rise slightly with lambda: 1.76 -> 1.82, because the F1 term rewards recall.
+
+Reading: a reference-derived object term buys about 1 point of CHAIR_i on an independent panel at about 0 CIDEr. Wikidata
+synonyms and IsA add nothing measurable over the existing hand lexicon.
+Caveats: one RL step, test images, 6 samples per image, single SFT seeds. Real RL takes many steps and can amplify both
+the effect and the hacking; the uncurated IsA sinks in section 4.3 make kgisa hackable by generic words.
+
+======================================================================================================================
+4. PART 2 - VIETNAMESE KG RESOURCES: what exists and is usable now (measured 2026-10-12)
+======================================================================================================================
+4.1 Term sets (cov/termsets.json)
+- lexicon113: the 113 keys of rescap/vi/lexicon.py NOUN_CLASSIFIER, which is also CHAIR's object vocabulary (minus "ảnh").
+- ktvic_top200: the 200 most frequent common nouns of KTVIC train captions by image count.
+  - VnCoreNLP-1.2 POS tag N on 18,845 captions; human compounds re-joined (cô gái, chàng trai, đứa trẻ, ...).
+  - A declared stoplist of locatives, abstract and image-meta nouns.
+  - These 200 cover 85.6% of the 59,374 noun tokens. Only 45 of them are in lexicon113.
+- coco80: the 224 Vietnamese terms of the repo's data/coco_probe/coco80_vi.json, with their COCO class: an existing
+  mapping used as an automatic sense check.
+- CHAIR blind spot: lexicon113 covers 41.5% of noun tokens in KTVIC train captions, 42.0% in test references and 45% in
+  P1 s43 predictions. CHAIR_i on KTVIC is measured on fewer than half of the noun mentions.
+
+4.2 Coverage. Counts are n/113 (lexicon) and n/200 (frequent nouns); the image-weighted share for frequent nouns is in
+brackets.
+| resource (licence) | Vietnamese label/node | IsA parent | parent with vi label | vi synonyms | all three | other |
+|---|---|---|---|---|---|---|
+| Wikidata (CC0), exact vi label/alias, WDQS | 90/113 (79.6%); 162/200 (81.0%) [87.2%] | 83 (73.5%); 145 (72.5%) [75.1%] | 69 (61.1%); 106 (53.0%) [60.7%] | 45 (39.8%); 87 (43.5%) [61.4%] | 35 (31.0%); 60 (30.0%) | ambiguous (>=2 exact items): 49/113, 90/200; WordNet-3.1 link (P8814): 75/113, 122/200; only 87 Vietnamese Lexemes in all of Wikidata |
+| ConceptNet 5.7 dump (CC BY-SA 4.0; API 502) | node 95/113 (84.1%); 185/200 [97.6%] | 0 | 0 | vi-vi Synonym: 35/113; 44/200 [36.7%] | 0 | link to English 92/113, 179/200 [96.0%]; zero commonsense relations |
+| ConceptNet via English pivot (any of 3.8-4.3 translations; upper bound) | - | 90/113; 175/200 [94.7%] | (English) | - | - | commonsense 87/113, 168/200 [91.1%]; AtLocation 82/113, 157/200 [83.0%]; pivots agree with the Wikidata English label 69/81 (lexicon), 113/153 (top-200) |
+| OMW wn-wikt-vie (2013, Wiktionary-derived; CC BY-SA 3.0 + GFDL) | noun synset 71/113 (62.8%); 107/200 (53.5%) [59.4%] | = noun synset (PWN 3.0 hypernyms) | (English synsets) | 52/113 (46.0%); 62/200 [41.9%] | 52/113 | about 5,000 lemmas, 3,627 synsets (3,084 noun); COCO terms: 73 found, 61 correct sense |
+| Kaikki, English Wiktionary Vietnamese (dump 2026-10-03; CC BY-SA + GFDL) | noun entry 95/113; 192/200 [98.8%] | hypernyms 1/113, 1/200 | - | 42/113; 65/200 [37.7%] | - | English glosses for all found entries; 51,896 entries (19,206 nouns), hypernyms on 72 entries/senses in total |
+| VietNet food+animal WN-LMF (GitHub TriDo86/WordNetBrowserStreamlit; "CC BY 4.0" in the XML, placeholder metadata, no paper) | 26/113; 36/200 [23%] | yes, in-domain | - | - | - | 1,803 lemmas, food and animals only |
+| VietSGG (CC BY 4.0 in README, no LICENSE file) | 2/113 (giày, trẻ em); 2/200 (đồng phục, giày) [0.3%] | - | - | - | - | 25 sports object classes |
+
+4.3 Linking precision and IsA quality (the part that decides usability)
+- Automatic sense linking: pick the linked item that has a P279 parent and the most sitelinks. No human choice.
+  - On the 224 COCO-80 terms: 118 found; 99 linked to an item whose English label/alias is in that COCO class's synonym
+    list (83.9% of found); about 5 more are near-hyponyms (birthday cake, flush toilet, northern giraffe), so roughly
+    88% acceptable. 61/80 COCO classes have at least one correctly linked Vietnamese term.
+  - Real errors: con chó -> a ruthenium chemical compound; bóng đá/rổ/chuyền -> the sport, not the ball; balo and vali ->
+    places; ván trượt tuyết -> ski; đĩa bay -> flying saucer; nón -> cone; kính -> glass (material); áo -> Austria
+    (Q40); phương tiện -> "upaya" (Q581473).
+- Wikidata IsA vs the repo's 27 hand HYPERNYMS pairs:
+  - Both ends linkable: 19. P279* reproduces 11/19.
+  - 7 of the 8 failures are linking errors: the 6 vehicle pairs (phương tiện -> "upaya") and áo -> Austria. The 8th,
+    cặp đôi -> người, is not an IsA relation in Wikidata's model (a couple is a group).
+  - Diagnostic with hand-picked senses (vehicle Q42889, furniture Q14745, shirt -> clothing Q11460): 9/9 re-tested pairs
+    reach their parent (6 vehicle pairs, the 2 furniture pairs whose parent đồ đạc has no item, and áo as shirt).
+  - 6 child terms have no item at all (bé trai, bé gái, đôi bạn, nam thanh niên, bạn trẻ, cô gái trẻ).
+  - So the edges mostly exist; sense linking of short, generic Vietnamese words is the bottleneck.
+- Uncurated transitive IsA (P279+) inside the 211-term linked vocabulary:
+  - 241 distinct pairs; 174 (72%) end in three generic sinks: sản phẩm "product" (61), phần "part" (59), hàng hoá "goods"
+    (54).
+  - Absurd chains: chó, mèo, cây ⊂ phần; cờ ⊂ ảnh. phụ nữ ⊂ mái: Wikidata's "female" sense, while captions use mái for
+    "roof".
+  - An IsA-credit reward would therefore pay generic market words ("hàng hoá", "sản phẩm" are frequent KTVIC nouns).
+  - Curating a safe-parent list or fixing senses by hand is annotation, which the R7 rule forbids, so the KG would have to
+    be used uncurated.
+- ConceptNet 5.7 Vietnamese, from the dump (the API returned 502 again):
+  - 171,987 edges with a Vietnamese node, 44,996 Vietnamese terms.
+  - Relations: RelatedTo 71,618; ExternalURL 46,183; Synonym 35,660 (only 1,550 vi-vi); HasContext 7,185;
+    SymbolOf 4,542 (emoji); EtymologicallyRelatedTo 2,537; DerivedFrom 2,335; EtymologicallyDerivedFrom 1,393;
+    FormOf 433; Antonym 96.
+  - IsA = 0. AtLocation/UsedFor/CapableOf/PartOf/HasA = 0.
+  - Sources: Wiktionary en 72,393 / fr 56,787 / de 713; DBpedia 37,552; emoji 4,542.
+  - It is a translation dictionary. Commonsense requires an English pivot whose translations are noisy (người -> {an, body,
+    he, her, him, human_being}; quầy -> {cabinet, counter, display, goods, kiosk, low}).
+- Vietnamese WordNets:
+  - OMW has no Vietnamese wordnet in its main collection, only the Wiktionary-derived wn-wikt-vie and wn-cldr-vie (431
+    synsets of language and country names).
+  - The `wn` package index has none.
+  - The large Vietnamese WordNets in the literature have no release: GWC 2016 (32,413 synsets); viet.wordnet.vn (40,788
+    synsets; unreachable 2026-10-12); Lam & Kalita 2022.
+
+4.4 Cultural terms (the 13 most frequent KTVIC cultural terms from kg_plan/09)
+- Wikidata: 11/13 (đòn gánh and cờ tổ quốc missing); 8 have a Vietnamese-labelled parent; 5 have aliases.
+  - Sense issues: bánh mì -> generic bread (Q7802); xích lô's parents include taxi and rickshaw.
+- ConceptNet: 11/13 nodes, 0 IsA.
+- OMW: 5/13.
+- Kaikki: 13/13.
+- No public, licensed Vietnamese cultural KG exists:
+  - VietMEAgent: KB of 156 entities, not released as a graph.
+  - VNCultureVQA: articles + QA, not a KG; release unconfirmed.
+  - The HUST + TU Wien tourism ontology and the festival/dance ontologies are unreleased or known from snippets only.
+- CulturalGround is the largest Wikidata-derived resource with Vietnam content (3,230 entities).
+
+4.5 Scene-graph data
+- VietSGG (GitHub Moobbot/VietSGG; README "Accepted at EAI GOODTECHS 2025", no DOI found):
+  - UIT-ViIC/COCO sports images; train 2,649 images, 20,334 boxes, 10,160 relation entries.
+  - 25 sports object classes and 71 predicates.
+  - Object overlap with KTVIC is 0.3% of noun mentions.
+  - 36 of the 71 predicates occur in KTVIC train captions; they are generic spatial and wearing/holding verbs: trên in
+    5,084 captions, trong 3,834, mặc 2,020, bên trong 1,137, phía trước 963, cầm 620, đeo 421. 14 are sport-specific.
+- No other Vietnamese scene-graph or visual-relation data was found.
+- Usable parts: the generic predicate inventory, and the 1,236 UIT-ViIC images that are also in Visual Genome (kg_plan/03).
+
+4.6 Tools and licences
+- VnCoreNLP 1.2: GPL-3.0 (LICENSE.md; GitHub shows NOASSERTION). It is the evaluator's segmenter.
+- underthesea: Apache-2.0. PhoNLP: BSD-3-Clause. PhoBERT: MIT (the HF base-v2 card says AGPL-3.0, per kg_plan/03).
+  ViT5: MIT.
+- VLSP:
+  - RelEx 2020: 1,056 documents, 5,900 named-entity relations; licence not seen.
+  - viSemParse 2025: 2,500 sentences, best Smatch 58%.
+  - Neither covers visual relations.
+- Data licences: Wikidata CC0; ConceptNet CC BY-SA 4.0 (the emoji part CC BY 4.0); OMW-wikt CC BY-SA 3.0/GFDL;
+  Kaikki CC BY-SA/GFDL. CC BY-SA cannot be relicensed inside a CC BY-NC-SA release.
+
+4.7 Usability verdict
+- Wikidata is the only usable IsA backbone (CC0, about 80% label coverage), but under no-annotation it carries 12-16% sense
+  errors and IsA chains dominated by generic sinks.
+- OMW-wikt is the cleanest automatic IsA (PWN), at 59% coverage.
+- ConceptNet gives commonsense only through a noisy English pivot.
+- Kaikki is a good vi->en dictionary with no IsA.
+- VietSGG is off-domain.
+- None of these improved the pilot's metrics beyond the repo's 113-entry hand lexicon.
+
+======================================================================================================================
+5. PART 3 - SCOOP CHECK: Vietnamese captioning x (KG | scene graph | commonsense | cultural knowledge | RAG | RL), 2020-2026
+======================================================================================================================
+- 47 logged searches (full log in B/B_notes.txt; raw JSON in B/raw/):
+  - arXiv API: 12.
+  - Semantic Scholar bulk: 6, plus citation lists of UIT-ViIC (26), KTVIC (6), OpenViIC (4), ViTextCaps and ViG (0).
+  - Crossref: 5+, including the FAIR (VAP) DOI prefix.
+  - ACL Anthology: the VLSP 2025 volume, 55 papers, 0 on captioning.
+  - WebSearch: 21, including 2 Vietnamese-language queries.
+  - OpenAlex: 3 attempts, all failed with 429.
+- Found:
+  - HIGH overlap for any generic "RL on Vietnamese captioning" claim:
+    - ObjectAoA (VNU JCSCE 2023, 2211.05405): CE then SCST on UIT-ViIC, C 148.8.
+    - VieCap4H UIT solution (VNU JCSCE 2022, DOI 10.25073/2588-1086/vnucsce.371): 1 SCST epoch.
+    - UIT-OpenViIC (Signal Process. Image Commun. 2025, DOI 10.1016/j.image.2025.117430): baselines trained CE then SCST.
+    - No SCST/RL on KTVIC was found, and none on an LVLM.
+  - MED-HIGH: ViG (MAPR 2026, DOI 10.1109/MAPR72750.2026.11685699). Frozen GRIT + Residual Relation Memory + Local-Cultural
+    Query Memory mined from training captions, on KTVIC and UIT-ViIC; claims to beat GRIT. No KG or RL in the abstract;
+    numbers unseen.
+  - UNKNOWN: "Developing a Knowledge Graph for The Image Captioning Problem" (FAIR 2025, DOI 10.15625/vap.2025.0297).
+    The PDF is inaccessible. The same group's ACIIDS 2025 / VJST 2025 / TNU 2025 papers use English COCO/Flickr30k +
+    ConceptNet, so likely LOW, but it is the same conference as VSPS: cite it.
+  - MED, unverified: HDUCap (J. Vis. Commun. Image Represent., Nov 2026, DOI 10.1016/j.jvcir.2026.104963), a spatially
+    aware transformer + a new Vietnamese dataset; no abstract available.
+  - LOW-MED: ViTextCaps/PhonoSTFG (2604.27712; the graph is feature fusion).
+  - LOW (English data, but the group best placed to port retrieval/event captioning to Vietnamese): HCMUS
+    EVENTA/ReCap/CIAN/R7.
+- Verdict:
+  - Open as of 2026-10-12: a KG, scene graph or cultural-knowledge component in Vietnamese caption generation, evaluation
+    or RL rewards.
+  - Blocked: "first RL/SCST for Vietnamese captioning" (say "first CIDEr-RL for an LVLM with QLoRA on KTVIC"), "first
+    Vietnamese SG data" (VietSGG), "first Vietnamese cultural KB for VLMs" (VietMEAgent).
+  - Must cite: ViG, the FAIR 2025 KG paper, HDUCap, ObjectAoA, VieCap4H.
+
+======================================================================================================================
+6. JUDGEMENT
+======================================================================================================================
+1. For the metrics-first goal (KTVIC CIDEr/B4/METEOR/ROUGE-L up, CHAIR_i down), a KG adds about 0 to the n-gram metrics,
+   and at most about 1 point of CHAIR_i on top of CN-RLOO.
+   - Literature: graph terms move n-gram metrics by 1 point or less (SPIDEr, MGRL-RSCC, RA-T, MERGE).
+   - Our pilot: C -2.9..+2.4 (ns); panel CHAIR_i about -1 for the hand lexicon; no extra gain from Wikidata.
+   - That is far from the +8 CIDEr bar and the -4 CHAIR_i Pareto bar. The CIDEr lever remains CN-RLOO itself.
+2. The one graph use worth keeping is a small reference-derived object term (the hand lexicon, optionally with the 27 hand
+   hypernyms) inside CN-RLOO, as a hallucination guard.
+   - Report it as an ablation, not as novelty (SPIDEr 2017 and MGRL-RSCC 2026 are prior art).
+   - Verify it where the reward cannot leak: COCO instance labels on UIT-ViIC and COCO Karpathy, and the OpenViIC panel.
+     KTVIC CHAIR shares its gold with the reward (Goodhart).
+   - CIDEr RL's documented hallucination risk is out of domain (VinVL NoCaps CHs +10.9), which is exactly the
+     replication setting.
+3. Do not put Wikidata IsA credit, ConceptNet or KG-RAG into the reward or prompt.
+   - Uncurated: 12-16% wrong senses, 72% sink IsA pairs, 0 Vietnamese commonsense edges.
+   - Curated: annotation, which is forbidden.
+   - Measured: no gain over the hand lexicon.
+4. Novelty for a Q1 journal will not come from "KG + captioning". The 2026 literature already holds KG-structured rewards
+   (CheXPO-v2, MGRL-RSCC, FoCUS), graph metrics (PoSh, CAPTURE, DCScore) and graph RAG (MERGE, mKG-RAG). The Vietnamese
+   gap is real but needs resources (parser, gold SGs, human ratings) that the R7 constraints exclude.
+5. Two small, label-free, citable additions for the paper:
+   (a) A resource-coverage paragraph with the numbers in 4.2-4.3. It justifies why no KG is used, and that the hand lexicon
+       is not a straw man.
+   (b) A CHAIR-coverage caveat: CHAIR_i sees 42% of noun mentions. Report noun-level hallucination against the OpenViIC
+       panel as a broader, still label-free check (pilot/noun_hall.py).
+   Neither changes the headline.
+
+======================================================================================================================
+7. UNVERIFIED / LIMITS
+======================================================================================================================
+- Venues not confirmed from proceedings:
+  - preprints: CAPTURE (arXiv only), MGRL-RSCC, CheXPO-v2, R1-SGG, MMA-ASIA;
+  - from secondary sources: NES (OJS listing seen in search), FGAIF (TMLR per the PDF header), VietSGG (README only),
+    VNCultureVQA (README only).
+  - ConCap (COLM 2025) and VietMEAgent (FAIR 2025) are outside the CONTEXT venue list.
+- Not read: AKGMA numbers (OJS unreachable), the FAIR 2025 KG-captioning paper, the HDUCap abstract, ViG numbers.
+- Not measured: BabelNet (has Vietnamese; non-commercial licence and an API key, from general knowledge, not checked
+  today).
+- Coverage numbers use exact-string linking with NFC and old/new tone-placement variants. "Found" means an exact
+  label/alias exists, not that the sense is right; the sense check exists only for COCO-80 terms.
+- ConceptNet pivot coverage counts ANY translation, so it is an upper bound.
+- The noun stoplist and human-compound joins were declared before coverage was computed (cov/termsets.py). About 15 of the
+  200 nouns are colours or abstract nouns (vàng, hồng, chủ đạo, ...).
+- The pilot is a one-step best-of-7 proxy on TEST samples from two SFT policies, one seed each, T=0.8. CHAIR in the pilot
+  uses the 113-entry lexicon. The panel is independent, but still reference-derived.
+- OpenAlex budget and the arXiv API were rate-limited; venues were confirmed through arXiv comments, CVF, ACL Anthology,
+  OpenReview and Crossref.
+
+======================================================================================================================
+8. FILES (all under research_kg/K2_lvlm_vn/)
+======================================================================================================================
+- cov/termsets.py + termsets.json: term sets; KTVIC noun counts (ktvic_train_nouns.json, from VnCoreNLP POS).
+- cov/wd_cov.py, wd_metrics.py -> wd_raw.json, wd_metrics.json: Wikidata coverage and the COCO sense check.
+- cov/wd_hyper.py -> wd_hyper.json: hand-hypernym test.
+- cov/wd_anc.py -> wd_vocab_kg.json: in-vocabulary IsA closure.
+- cov/cn/ (cn57_vi_edges.tsv, vi2en.json, cn57_en_pivot_edges.tsv), cn_cov.py, cn_pivot.py -> cn_metrics.json,
+  cn_pivot_metrics.json: ConceptNet.
+- cov/omw_cov.py -> omw_metrics.json (dl_omw/); cov/kaikki_cov.py -> kaikki_metrics.json (dl_kaikki/);
+  cov/cultural13.json; dl_vietsgg/, dl_vietnet/.
+- pilot/pilot_kg_reward.py (self-check: reproduces stored CIDEr 143.9) -> pilot_kg_reward.json, pilot_table.txt,
+  pilot_picks.json.
+- pilot/noun_hall.py -> noun_hall.txt. No caption text from the panel is written to any output.
+- A1/A1_notes.txt, A2/A2_notes.txt, B/B_notes.txt: literature numbers and the search log. A1/*.txt and A2/txt/: full-text
+  dumps.
+Compute: CPU only, about 15 min in total (two ConceptNet streams of about 2 min, VnCoreNLP tagging about 2 min, pilot about
+2.5 min); 0 GPU-h.

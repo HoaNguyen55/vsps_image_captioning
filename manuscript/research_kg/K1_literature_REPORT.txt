@@ -1,0 +1,332 @@
+K1_literature: the quantitative evidence base for "knowledge graphs improve image captioning"
+=============================================================================================
+Date 2026-10-12. Agent K1_literature, round R7. English. Builds on research_wall/11 and kg_plan/{00,06,12,17,R3_01};
+those files mapped WHO did WHAT (2019-2026) but carried almost no baseline-vs-+KG numbers. This report supplies the
+numbers, the delta-vs-baseline-strength analysis, a KTVIC reference-content census with oracle bounds, an updated trend
+count, and the post-2026-10-10 check. Every number below was read from a paper's own table (PDF full text) or computed
+here on CPU from repo files; anything else is under "Unverified" (section 8).
+
+0. BOTTOM LINE
+--------------
+(a) KG / scene-graph (SG) / concept gains shrink as the baseline gets stronger. Across 25 within-paper COCO ablations,
+    Spearman rho(baseline CIDEr, delta) = -0.42 (n=25); for baselines >= 115 rho = -0.71 (n=21, approx. p < 0.001, rows not
+    independent). Median delta: +6.5 CIDEr at baseline 115-125, +3.0 at 125-130, +1.4 at 130-140, +0.9 at >= 140 (one clean
+    point: VinVL-L, 140.0 -> 140.9). Within single papers the same component loses most of its gain as the baseline
+    improves (VinVL: +5.6 -> +3.0 -> +2.8 -> +0.9; TOMM'24 retrieval: +2.9 -> +1.4; TSG: +3.6 -> +2.2; Lee+'19: +1.1 -> +0.6),
+    and proper controls shrink reported gains (VC R-CNN +8.2 -> +3.0; VSUA +5.8 -> +4.9; GCN-LSTM +8.6 -> ~+1.8 against a
+    properly trained baseline). No published paper gives a clean
+    KG ablation for a 7B instruction-tuned LVLM on generic short captions with n-gram metrics. The closest 7B evidence is the
+    repo's own: Grounding-DINO tags in the Qwen2.5-VL-7B prompt, +1.1 CIDEr (P1 s43) and +2.5 (fuse2 s42) at 143.9, single
+    seed, inside the 2.5-3.8 MDE.
+(b) KGs pay off where the REFERENCES contain knowledge: named entities (news: +2.9 to +14.5 CIDEr at baselines 47-109,
+    entity-F1 +2.0 to +3.7, one -1.3), novel/rare objects (NoCaps out-domain +13.2 vs in-domain +1.0), knowledge keywords (KnowCap +20.9 vs COCO -1.2
+    to +1.4). They do not pay off on relations (SPICE relation-F1 stays ~5 with or without SG; Milewski+'20) and they LOWER
+    n-gram scores when the output becomes more specific or more cultural (RAVENEA cultural RAG: CIDEr 22.2 -> 8.5; specificity
+    guidance: CIDEr 126.1 -> 78.6; CONCAP, Vietnamese: cultural lexicon -5.2 CIDEr). KTVIC references contain almost none of
+    the knowledge-type content: 0 of 2,790 test references has a named entity (all text is lower-cased), strict cultural terms
+    appear in 5.3% of references, test-reference tokens unseen in training are 0.37%, and the knowledge-type union (strict
+    cultural + named entity + train-rare words) carries 4.5% of CIDEr's unigram IDF weight. An oracle that reads the test
+    references and inserts every missed knowledge-type token into P1's captions adds only +3.1 to +3.5 CIDEr (+4.0 to +4.8 with
+    context words) and LOWERS BLEU-4 by 0.4-0.7. KG-structured hypernym backoff: blanket -13.7 to -15.5 CIDEr; with a perfect
+    (reference-reading) verifier +0.2 to +0.6.
+(c) Rising (arXiv abstracts per year, 2023 -> 2026-to-date): KG/SG + hallucination 2 -> 24; SG-based caption evaluation 12 -> 17;
+    KG/SG rewards for captioning 1 -> 5; retrieval-augmented captioning 6 -> 29 (mostly caption/document memories, not KGs).
+    Saturated or declining: KG/commonsense injection (flat at 16/yr; share of captioning papers 2.9% in 2019 -> 1.3% in 2026),
+    KG/SG papers that report CIDEr (1-3/yr since 2019), entity/news captioning (10 -> 4).
+(d) Nothing published since 2026-10-10 changes the old verdicts (arXiv index to 2026-10-09 and Crossref to 2026-10-12 checked).
+    One old statement needs correcting: RAVENEA's "+11% culture-informed captioning" is RegionScore; its CIDEr falls.
+Judgement: KG cannot materially raise KTVIC CIDEr/BLEU-4/METEOR/ROUGE-L (section 7).
+
+1. METHOD AND SOURCES
+---------------------
+API status today: arXiv export API OK (https); Crossref OK; OpenAlex shared daily budget exhausted (HTTP 429 "Insufficient
+budget", resets 00:00 UTC); Semantic Scholar 429; AAAI OJS (AKGMA PDF) and IEEE Xplore (K-DFIC) unreachable or JS-only.
+Trend counts therefore come from the arXiv API (abstract field) and complement the OpenAlex counts of research_wall/11.
+
+Targeted searches (34): WebSearch x20 [KG/ConceptNet captioning CIDEr ablations; AKGMA/UniKnowCap; Vietnamese KG captioning
+(UIT-ViIC, KTVIC); SG prompting of LLaVA/Qwen captioning; KG + LVLM hallucination CHAIR 2026; low-resource-language KG
+captioning; entity-aware MMKG GoodNews/NYTimes800k; REVEAL Wikidata captioning; SG reward RL captioning; NOC-REK external
+knowledge; WordNet hypernym/specificity captioning; K-DFIC TCSVT; RAVENEA cultural captioning; "knowledge graph" captioning
+October 2026; VC R-CNN; Woodpecker/visual knowledge base; detector tags in LLaVA captioning; multilingual Wikidata/XM3600
+captioning; ViG/KTVIC cultural memory (scoop); Vietnamese captioning + commonsense/LLM (scoop)]; arXiv API x10 [abs:Vietnamese
+AND caption AND (knowledge OR graph): 2 hits, neither KG captioning (ViTextCaps 2604.27712, SeaLLMs-Audio); all:KTVIC: 2
+(KTVIC, ViCLIP-OT); UIT-ViIC/OpenViIC: 4 (none KG); KG/SG/commonsense/ConceptNet/Wikidata + caption submitted
+2026-10-08..12: 0; same 2026-09-01..10-12: 6 (FoCUS already known, others not image captioning); knowledge-enhanced/aware/
+guided/grounded captioning 2026-09-15..10-12: 1 (Mandela-Bench, not KG); SG/KG + hallucination 2026-10-05..12: 1 (remote-
+sensing VQA); CIDEr AND (SG OR KG OR commonsense) 2024-2026: 5; (CHAIR OR POPE) AND (SG OR KG): 4 (CART, ACM MM 2026);
+title look-ups]; Crossref x4 (works created 2026-09-25..10-12) + venue/DOI look-ups; arXiv per-year counts (10 families x
+8 years).
+
+Full texts (PDF, 31 papers): results and ablation sections read and tables extracted; pages rendered and read as images
+where the text layer was garbled (OSCAR Table 4, CONCAP Figure 4, CulturalGround Table 9):
+SPIDEr 1612.00370, GCN-LSTM 1809.07041, SGAE 1812.02378, Zhou+ 1901.08942, VSUA 1908.02127, Lee+ 1909.09953, VC R-CNN
+2002.12204, OSCAR 2004.06165, Milewski+ 2009.12313, VinVL 2101.00529, SG2Caps 2102.04990, Zhao+ (entity MMKG) 2107.11970,
+ReFormer 2107.14178, CGRL 2112.00974, NOC-REK 2203.14499, Cho+ (CLIP reward) 2205.13115, REVEAL 2212.05221, Tag2Text
+2303.05657, TSG 2305.02177, LMCap 2305.19821, Kornblith+ 2307.16686, KnowCap 2308.01126, EVCap 2311.15879, MeaCap
+2403.03715, RA-Transformer (TOMM) 2405.13127, KALE 2409.10921, RAVENEA 2505.14462, CONCAP 2507.20411, SC-Captioner 2508.06125,
+CulturalGround 2508.07414, MERGE 2511.21002.
+Venues confirmed from arXiv comments, Crossref DOIs or the PDF itself. Off-list venues (not in CONTEXT_KG's list) are
+marked [off-list]; pre-2019 papers are [background].
+
+CPU analyses (nice -n 15, 2 threads, no model loaded; repo read-only):
+- scripts/ktvic_content.py: KTVIC test census + oracle bounds. Reproduces the official P1 s42 numbers exactly
+  (CIDEr 149.79, BLEU-4 45.55) with RDRSegmenter word-level tokens (R6 segmentation cache) and pycocoevalcap.
+- scripts/hyper_backoff.py: repo hypernym map (rescap/vi/lexicon.py HYPERNYMS) applied to predictions.
+- scripts/delta_vs_base.py: section 3 statistics. scripts/trend.py: section 5 counts.
+
+2. TABLES OF REPORTED NUMBERS (deltas = +KG minus baseline, same paper, same split unless marked "cross-paper")
+------------------------------------------------------------------------------------------------------------
+Notation: C = CIDEr(-D), B4 = BLEU-4, M = METEOR, S = SPICE. XE = cross-entropy, RL = CIDEr-optimised (SCST). Values x100.
+
+2.1 KG / commonsense / Visual-Genome concept injection into the generator
+paper (venue, year, id)          | data / regime            | baseline C          | +KG C         | dC              | dB4      | dM       | dS     | other          | code
+Zhou+ WACV 2019 [off-list]       | COCO, LSTM, XE           | image only 99.5     | 100.5 / 103.6 | +1.0 (ConceptNet| +0.2/+1.0| +0.2/+0.5| -      | -              | none in PDF
+  1901.08942                     |                          |                     |               | terms only) /   |          |          |        |                |
+                                 |                          |                     |               | +4.1 (+YOLO objs)|         |          |        |                |
+VC R-CNN CVPR 2020 2002.12204    | COCO Karpathy, RL        | Up-Down 122.3       | 130.5         | +8.2 (+3.0 vs   | +2.8     | +1.2     | -      | CHAIR_i 8.1->6.5| Wangt-CN/VC-R-CNN
+  (commonsense learned from      |                          | AoANet 126.0        | 131.6         | matched control)| +1.4     | +0.9     | -      | CHAIR_i 8.0->5.5|
+   images, not an external KG)   |                          |                     |               | +5.6 (+3.0 vs ctl)|        |          |        |                |
+OSCAR ECCV 2020 2004.06165       | COCO, XE, short VLP      | no tags 115.6       | VG tags 123.4 | +7.8 (OI tags   | +1.9     | +1.2     | +1.1   | -              | microsoft/Oscar
+                                 |                          |                     |               | +3.9)           |          |          |        |                |
+VinVL CVPR 2021 2101.00529       | COCO Karpathy            | OSCAR-B XE 123.7    | 129.3         | +5.6            | +1.7     | 0.0      | +0.5   | VG object+attr | pzzhang/VinVL
+  (VG-derived 1848-object /      |                          | OSCAR-L XE 127.8    | 130.8         | +3.0            | +1.1     | -0.3     | -0.1   | semantics      |
+   524-attribute semantics)      |                          | OSCAR-B RL 137.6    | 140.4         | +2.8            | +0.4     | +1.2     | +2.3   |                |
+                                 |                          | OSCAR-L RL 140.0    | 140.9         | +0.9            | -0.7     | +0.5     | +0.7   |                |
+Tag2Text ICLR 2024 2303.05657    | COCO XE / NoCaps         | 123.3 / 88.8        | 124.6 / 89.5  | +1.3 / +0.7     | -        | -        | -      | tagging +3..+7 | xinyu1205/recognize-anything
+KnowCap ACM MM 2023 2308.01126   | COCO Karpathy (generic)  | OFA 139.3           | 138.1         | -1.2            | -0.8     | +0.2     | -      | knowledge replay| njucckevin/KnowCap
+  "Beyond Generic"               |                          | BLIP 135.6          | 135.9         | +0.3            | +0.4     | -0.4     | -      |                |
+                                 |                          | GIT 137.1           | 138.5         | +1.4            | +0.2     | +0.1     | -      |                |
+                                 | KnowCap test (>95% refs  | OFA 78.7            | 99.6          | +20.9           | +2.4     | +1.7     | -      | RecogAcc       |
+                                 |  hold a knowledge keyword)| BLIP 62.7          | 81.8          | +19.1           | +1.9     | +1.7     | -      | 34.0->54.5%    |
+Repo (CONTEXT_R6), GDINO tags in | KTVIC test, word level,  | P1 s43 143.9        | 145.0         | +1.1            | -0.5     | -0.4     | -      | CHAIR_i -0.2   | repo
+  Qwen2.5-VL-7B QLoRA prompt     | single seed              | fuse2 s42 143.9     | 146.4         | +2.5            | +1.4     | -0.3     | -      | CHAIR_i -2.4   |
+K-DFIC TCSVT 2025, AKGMA AAAI 2026: no verifiable ablation numbers (section 8).
+
+2.2 Scene-graph encoders, graph-then-caption, SG as auxiliary objective
+GCN-LSTM ECCV 2018 [background]  | COCO Karpathy            | published Up-Down   | XE 117.1      | +3.6 (XE)       | +0.9     | +1.1     | +0.8   | vs a re-trained Up-Down
+  1809.07041                     |                          | XE 113.5 / RL 120.1 | RL 128.7      | +8.6 (RL)       | +2.0     | +0.9     | +0.7   | (126.9, Lee+'19): ~+1.8 cross-paper
+SGAE CVPR 2019 1812.02378        | COCO Karpathy, RL        | Base 120.6          | SG enc. 123.4 | +2.8            | +0.4     | +0.2     | +0.3   | GT-graph oracle | none in PDF
+                                 |                          |                     | full 127.8    | +7.2            | +1.6     | +0.7     | +1.2   | 177.0 (leaks refs)|
+VSUA ACM MM 2019 1908.02127      | COCO Karpathy, RL        | Base 122.8          | 128.6         | +5.8 (+4.9 vs   | +1.7     | +0.6     | +1.1   | -              | ltguo19/VSUA-Captioning
+                                 |                          | (capacity ctl 123.7)|               | capacity ctl)   |          |          |        |                |
+Lee+ 2019 1909.09953 [arXiv only]| COCO Karpathy            | re-impl. XE 113.8   | 114.9         | +1.1            | -        | -        | +0.3   | "the gap between [Up-Down] and
+                                 |                          | re-impl. RL 125.5   | 126.1         | +0.6            | -        | -        | +0.2   | [GCN-LSTM] might not be as large"
+Milewski+ AACL 2020 [off-list]   | COCO Karpathy, XE        | BUTD 109.2          | 109.1 / 109.9 | -0.1 / +0.7     | +0.2/+0.7| -        |-0.2/-0.2| SPICE-Rel F1 ~5| none in PDF
+  2009.12313                     | high-quality-graph subset| 126.5               | 129.8         | +3.3            | +0.9     | -        | 0.0    | for every model|
+CGRL AAAI 2021 2112.00974        | Flickr30k Entities test  | w/o consensus 62.9  | 65.2          | +2.3            | +0.4     | 0.0      | +0.3   | CHAIR_i 43.7->34.7; obj recall 54.1->64.4 | none in PDF
+SG2Caps ICCV 2021 2102.04990     | COCO Karpathy, XE        | (feature SG model   | SG labels only| SG alone reaches ~90% of a feature model | none in PDF
+                                 |                          |  116.7)             | 104.4-106.6   |                 |          |          |        |                |
+ReFormer ACM MM 2022 2107.14178  | COCO Karpathy, RL        | without SG loss     | 131.2         | +1.8            | +0.9     | +0.9     | +0.7   | -              | none in PDF
+  (DOI 10.1145/3503161.3548409)  |                          | 129.4               |               |                 |          |          |        |                |
+TSG ACL 2023 2305.02177          | COCO Karpathy, RL        | BUTD Transformer    | 132.3         | +3.6 (SG node   | +1.4     | +1.1     | +1.4   | -              | GaryJiajia/TSG
+                                 |                          | 128.7               |               | embeddings alone +0.3)|    |          |        |                |
+                                 |                          | VinVL Transformer   | 139.5         | +2.2            | +1.1     | +0.5     | +0.9   |                |
+                                 |                          | 137.3               |               |                 |          |          |        |                |
+                                 |                          | PureT 138.2 (cross-paper) | 138.6   | +0.4            |          |          |        |                |
+KALE IJCAI 2024 2409.10921       | SemArt v1 visual/context-| text metadata model | 30.0/21.8/20.7| +2.5/+1.4/+8.4  | +0.2/+0.5| +0.1/+0.3| -      | art KG; weak   | none (mPLUG base)
+                                 | ual, v2 (mPLUG)          | 27.5/20.4/12.4      |               |                 | /+2.5    | /+1.6    |        | baselines      |
+
+2.3 Retrieval-augmented captioning with knowledge memories
+REVEAL CVPR 2023 2212.05221      | COCO Karpathy / NoCaps   | CoCa 143.6 / 122.4  | 145.4 / 123.0 | +1.8/+0.6       | -        | -        | -      | no captioning ablation; Wikidata | none
+  (Wikidata among 4 sources)     | (cross-model, same size) |                     |               | (not an ablation)|         |          |        | leave-out only on OK-VQA (-1.1 acc) |
+NOC-REK CVPR 2022 2203.14499     | NoCaps val (test server) | VinVL+VIVO 94.3     | 100.9 (93.0)  | +6.6 (test +0.5)| -        | -        | +0.9   | in-domain +1.0; out-domain +13.2 | none in PDF
+  (Wiktionary definitions)       |                          | (92.5)              |               |                 |          |          |        | (test out -0.6); -25% KB: -15.1 |
+RA-Transformer ACM TOMM 2024     | COCO Karpathy            | XE 121.6            | 124.5         | +2.9            | +0.8     | +0.4     | +0.3   | kNN caption memory | none in PDF
+  2405.13127                     |                          | SCST 135.3          | 136.7         | +1.4            | +1.3     | +0.4     | +0.3   | NoCaps +1.7    |
+EVCap CVPR 2024 2311.15879       | COCO / NoCaps / Flickr30k| ViT+Q-Former+frozen | 140.1 / 119.3 | +5.7/+10.5/+7.6 | -        | -        | +0.8/+1.1| deleting 90% of the | none in PDF
+  (object-name memory)           | (Vicuna-13B decoder)     | 134.4/108.8/76.8    | / 84.4        |                 |          |          | /+0.7  | memory: NoCaps -1.0 only |
+MeaCap CVPR 2024 2403.03715      | COCO, text-only training | ViECap 92.9 (cross-paper)| 95.4     | +2.5            | 0.0      | +0.5     | +0.8   | zero-shot regime | joeyz0z/MeaCap
+RAVENEA ICLR 2026 2505.14462     | CCUB culture-informed    | no RAG: C 22.2,     | C 8.5, R-L 15.3,| C -13.7, R-L -2.7, RegionScore +11.3; Kendall tau(CIDEr,human) | project page
+  (Wikipedia docs)               | captioning, mean of 14   | ROUGE-L 18.0,       | RegionScore 68.8| = -0.32 (n.s.), ROUGE-L -0.17                    |
+                                 | VLMs incl. Qwen2.5-VL-7B | RegionScore 57.5    |               |                                                    |
+
+2.4 Entity-aware / news captioning with KGs
+Zhao+ IEEE TMM 2024 2107.11970   | GoodNews / NYTimes800k   | own no-graph 47.6 / 48.5 | 54.0 / 54.5 | +6.4 / +6.0 | +0.8/+1.1| +0.3/+0.4| -   | entity F1 +2.1/+3.7; image sub-graph alone -0.1/0.0 | none in PDF
+  (DOI 10.1109/TMM.2023.3301279) |                          | prior SOTA Tell 53.8 / 54.4 |         | +0.2 / +0.1     |          |          |        |                |
+MERGE AAAI 2026 2511.21002       | GoodNews / NYT800k /     | previous stage 86.1 / 80.1 / 109.0 | KG stage 91.4 / 83.0 / 123.5 | +5.3/+2.9/+14.5 | +0.4/+0.7/-0.5 | +1.3/+0.6/-0.4 | - | NER-F1 +2.3/+2.0/-1.3 | youxiaoxing/MERGE
+  (InstructBLIP backbone)        | Visual News              | FT 84.8 / 73.7 / 103.5 | full 94.5 / 88.2 / 127.8 | +9.7/+14.5/+24.3 vs FT |  |  |  |                |
+  Qwen2.5-VL-7B backbone         | same                     | no FT-without-KG row | 89.6 / 80.2 / 121.3 | not isolable (zero-shot Qwen 20.7/19.0/15.4) |
+
+2.5 KG- or SG-based rewards in RL
+SPIDEr ICCV 2017 [background]    | COCO c5 server           | PG-CIDEr 99.5       | PG-SPIDEr 100.0| +0.5           | -1.1     | +0.2     | -      | SPICE = SG F1  | -
+Cho+ Findings NAACL 2022         | COCO Karpathy            | CIDEr reward 124.9  | CLIP-S 11.2;   | -113.7; -0.3;   | -32.0;-0.5;-21.3 |   |        | analog: any non-n-gram reward costs n-grams | -
+  2205.13115 (analog)            |                          |                     | +CIDEr 124.6; +grammar 71.0 | -53.9 |  |   |        |                |
+SC-Captioner ICCV 2025 2508.06125| DOCCI500 / COCO-LN500,   | SFT B4 40.92 / 34.59| 43.70 / 35.29 | C not reported  | +2.8 / +0.7 (+0.6 vs DPO on DOCCI) | +1.3/+0.5 | object F1 +1.2/+0.7 | zl2048/SC-Captioner
+  (SG-set reward)                | Qwen2-VL-7B              | LLaVA-1.5-7B 40.08 / 33.81 | 42.60 / 32.72 |       | +2.5 / -1.1 | +1.6/+0.5 |          |                |
+FoCUS EMNLP 2026 2609.00709      | SCoPE (controllability)  | coverage/suppression only, no n-gram numbers (kg_plan/01, /12) | project page
+
+2.6 KG-structured hypernym / hyponym control of specificity
+Kornblith+ ICCV 2023 2307.16686  | COCO Karpathy            | CFG gamma=1: C 126.1, B4 36.1, M 30.5, R@1 26.5 | gamma=2 (more specific): C 78.6, B4 20.9, M 23.3, R@1 44.6 | none in PDF
+  -> making captions more specific raises retrieval, lowers every n-gram metric (dC -47.5, dB4 -15.2).
+Repo test (this report)          | KTVIC test               | P1 s42 149.79 / s43 143.92 / fuse2 143.90
+  blanket HYPERNYMS backoff      |                          | 135.67 / 130.25 / 128.43: dC -14.1 / -13.7 / -15.5; dB4 -3.7 / -3.4 / -4.2 (187/171/211 captions)
+  oracle backoff (word absent    |                          | 150.14 / 144.21 / 144.11: dC +0.35 / +0.30 / +0.21; dB4 +0.5 / +0.5 / +0.6 (58/51/75 captions)
+   from all 5 refs)              |                          | best case (and refs use the hypernym): dC +0.47 / +0.44 / +0.64
+Conceptual Captions ACL 2018 [background] hypernymises named entities via Google KG; no n-gram delta for that step.
+Taxonomy-aware eval CVPR 2025, CLC NeurIPS 2025, SpeciaRL CVPR 2026: no captioning n-gram numbers (see R3_01).
+
+2.7 Multilingual / low-resource / cultural captioning with knowledge
+CONCAP COLM 2025 [off-list]      | XM3600, 36 languages     | NoRAG L36 26.9;     | concepts 30.3; | +3.4; L5 -0.1;  | rich cultural concepts: 28.6 (-1.7 vs concepts) | none
+  2507.20411 (mBLIP-based)       | L5 = bn, mi, quz, sw, te | L5 17.2             | L5 17.1        | vi (XM100) vs COCO-35L concept list: +XM3600 lexicon -2.4,
+                                 |                          |                     |                | +PangeaIns cultural terms -5.2, +Wikipedia -4.9 (Figure 4, read from the rendered heatmap)
+CulturalGround EMNLP 2025        | XM100, Pangea-7B         | Pangea-7B avg 29.7  | 36.9           | +7.2 avg; vi 0.0 -> 84.1 = language compliance (base emitted no
+  2508.07414 (Wikidata-grounded  | (LLaVA-Next 7B, instr.)  |                     |                | Vietnamese); where the base worked: en -2.4, es -13.6, id -6.9,
+   cultural QA, 22M pairs)       |                          |                     |                | sv -7.8, pl +14.2, cs +11.9 (Table 9) | neulab.github.io/CulturalGround
+LMCap Findings ACL 2023 2305.19821| XM3600 en/es/hi/zh      | caption retrieval, no KG, no Vietnamese | RitaRamo/lmcap
+Vietnamese: no KG or SG captioning on VIETNAMESE captions found (arXiv scoop 0; WebSearch scoop 0). The Vietnamese-author
+KG captioning papers V1-V4 in kg_plan/01 all use English captions.
+
+2.8 7B instruction-tuned LVLM evidence, consolidated
+- No clean KG on/off ablation on a 7B instruction-tuned captioner for generic short captions with n-gram metrics exists.
+- Repo, Qwen2.5-VL-7B SFT on KTVIC: detector tags in prompt +1.1 / +2.5 CIDEr at 143.9 (single seed).
+- SC-Captioner (Qwen2-VL-7B, SG reward, detailed captions): B4 +2.8 DOCCI, +0.7 COCO-LN; only +0.6 over plain DPO.
+- MERGE (Qwen2.5-VL-7B, news): strong absolute scores, KG contribution not isolated for this backbone.
+- CulturalGround (Pangea-7B): XM100 gain is mostly output-language compliance.
+- RAVENEA (16 VLMs incl. Qwen2.5-VL-7B): cultural retrieval lowers CIDEr on average.
+- EVCap (frozen Vicuna-7B decoder: COCO 139.0): ablation only at 13B (+5.7), and memory coverage barely matters.
+
+3. (a) DOES THE GAIN PERSIST AS BASELINES GET STRONGER?
+--------------------------------------------------------
+25 within-paper COCO-Karpathy ablations (sections 2.1-2.3; families A concept/commonsense/VG, B scene graph, C memory):
+  n=25 Spearman rho(baseline, delta) = -0.42;  baseline >= 115 only: n=21, rho = -0.71 (t ~ -4.4)
+  baseline [0,115):   n=4  median +2.4  (+0.7..+4.1)   weak LSTM/XE models
+  baseline [115,125): n=8  median +6.5  (+1.3..+8.6)
+  baseline [125,130): n=5  median +3.0  (+0.6..+5.6)
+  baseline [130,140): n=7  median +1.4  (-1.2..+5.7)
+  baseline >= 140:    n=1  +0.9 (VinVL-L RL); REVEAL (145.4) and K-DFIC (148.4) give no verifiable ablation
+  KTVIC, Qwen2.5-VL-7B, ~144 (repo): +1.1, +2.5 (single seed; MDE 2.5-3.8; P1 seed SD ~3.4)
+
+  text plot (x = baseline CIDEr, y = delta; letter = family)
+   +9 |                     B
+   +8 |                 A     A
+   +7 |                      B
+   +6 |                        BA A       C
+   +4 |A             B               B
+   +3 |                       C     A         A
+   +2 |                              B       B
+   +1 |          B    B        A B         C A  A
+   +0 |                                     A
+   -1 |                                        A
+      +-------------------------------------------
+       99       110       120       130       140
+
+Three effects compound:
+1. Within-paper strength curves fall: VinVL +5.6 (123.7) -> +3.0 (127.8) -> +2.8 (137.6) -> +0.9 (140.0); RA-Transformer +2.9
+   (XE, 121.6) -> +1.4 (SCST, 135.3); TSG +3.6 (128.7) -> +2.2 (137.3) -> +0.4 against PureT 138.2; Lee+ +1.1 (XE) -> +0.6 (RL).
+2. Controls shrink the gain: VC R-CNN +8.2 -> +3.0 and +5.6 -> +3.0 against matched feature controls; VSUA +5.8 -> +4.9
+   against a capacity control; GCN-LSTM's +8.6 over the PUBLISHED Up-Down (120.1) becomes ~+1.8 against an Up-Down re-trained
+   to 126.9 (Lee+ 2019 say exactly this); Zhao+ TMM entity KG: +6.4 over its own no-graph model, +0.2 over prior SOTA.
+3. At >= 135 the sign becomes uncertain: KnowCap knowledge replay on COCO -1.2 / +0.3 / +1.4 at 139.3 / 135.6 / 137.1.
+The 115-125 bin is the 2018-2021 "SG/commonsense era", whose gains were measured against under-trained baselines.
+
+4. (b) WHICH REFERENCE CONTENT DO KGs HELP, AND IS IT IN KTVIC?
+---------------------------------------------------------------
+Literature, by content type:
+- Named entities: large gains only where references are entity-dense: news (Zhao+ +6.0/+6.4 C, entity F1 +2.1/+3.7; MERGE KG
+  stage +2.9..+14.5 C, NER-F1 +2.0/+2.3); the IMAGE-side KG sub-graph alone adds nothing (-0.1/0.0 C, Zhao+ Table 2).
+- Rare / novel objects: NOC-REK out-domain +13.2 vs in-domain +1.0; EVCap NoCaps +10.5 vs COCO +5.7; KnowCap +20.9 on
+  knowledge-keyword references vs -1.2..+1.4 on COCO.
+- Objects/attributes in general (VG-derived semantics): +5.6 -> +0.9 as baselines strengthen (VinVL); hallucination falls
+  (VC R-CNN CHAIR_i -1.6/-2.5; CGRL -9.0).
+- Relations: SPICE relation-F1 ~5 for every model with or without SGs (Milewski+); SG node embeddings alone +0.3 C (TSG).
+- Cultural concepts: retrieval raises cultural relevance but LOWERS n-grams (RAVENEA: RegionScore +11.3, CIDEr -13.7, CIDEr
+  anti-correlated with human cultural judgement); CONCAP's cultural lexicons cost Vietnamese -5.2 CIDEr.
+- Specificity: more specific captions lose n-gram credit (Kornblith+: -47.5 C, -15.2 B4).
+
+KTVIC test census (this report; 558 images x 5 references; word-level RDRSegmenter; P1 s42 shown, P1 s43/s44 and fuse2 s42
+within the ranges given). Columns: % of references with >= 1 token of the category | % of images where >= 2/5 references
+share such a token | share of CIDEr IDF mass (n=1; mean n=1..4) | P1 miss rate of consensus tokens | oracle that appends the
+missed consensus tokens (O-tok) or the reference window around each (O-phrase): dCIDEr, dBLEU-4.
+  category                  | %refs | %imgs | IDF n=1 | n1-4 | P1 miss       | O-tok dC  dB4  | O-phrase dC  dB4
+  named entity (gazetteer)  |   0.0 |   0.0 |   0.0   |  0.0 | -             |  0.00   0.00   |  0.00    0.00
+  cultural, strict list     |   5.3 |   7.2 |   1.1   |  1.4 | 22/40   55%   | +0.67  -0.15   | +1.01   -0.18
+  cultural, broad (+cho,non)|  13.5 |  18.1 |   2.5   |  3.3 | 56/108  52%   | +1.19  -0.37   | +2.29   -0.43
+  rare (train df <= 2)      |   9.2 |  10.4 |   3.4   |  3.5 | 56/66   85%   | +2.63  -0.36   | +3.81   -0.49
+  KG-type union (strict cultural + NE + rare) | 14.1 | 16.7 | 4.5 | 4.9 | 78/106 74% | +3.24 -0.51 | +4.63 -0.64
+  colour                    |  19.7 |  27.1 |   2.9   |  5.7 | 145/168 86%   | +0.33  -0.96   | +3.71   -1.10
+  count (2..10, nhieu, vai) |  27.6 |  36.4 |   2.2   |  5.5 | 99/217  46%   | -0.48  -0.66   | +1.48   -0.44
+  spatial relation          |  71.2 |  84.2 |   4.2   | 17.4 | 286/557 51%   | -2.46  -1.77   | +1.31   -1.80
+  object noun (repo lexicon)|  79.6 |  89.6 |  15.6   | 28.4 | 516/1080 48%  | +2.52  -3.01   | +4.38   -3.49
+  action verb (after 'dang')|  99.9 | 100.0 |  16.5   | 49.9 | 794/2040 39%  | -3.54  -4.10   | -17.39  -4.69
+  top-25 template words     | 100.0 | 100.0 |  17.8   | 67.4 | -             | (not a KG category)
+  Ranges over the four systems: KG-type union O-tok +3.06..+3.46, O-phrase +3.98..+4.83, dB4 -0.42..-0.69; strict cultural
+  O-tok +0.45..+0.75; rare O-tok +2.63..+2.78.
+Other facts: 0/2,790 raw test captions contain an upper-case letter; mean length 10.7 words; 109 of 29,805 test-reference
+tokens (0.37%) never occur in train references; the commonest cultural tokens are cho 127 refs, non 75, den long 54, xuong 39,
+ao dai 37, xich lo 23 (diacritics dropped here).
+Reading: KTVIC n-gram credit lives in template words, verbs, objects and spatial phrases, chosen by annotator convention.
+The content KGs supply is rare, and an oracle that knows exactly which word the annotators used still buys ~+3 CIDEr while
+costing BLEU-4. A real KG does not know the annotators' word choice, so its share of that ceiling is smaller.
+
+5. (c) RISING VS SATURATED USES (arXiv abstract-field counts; 2026 = submissions to 2026-10-09, about 77% of a year)
+-------------------------------------------------------------------------------------------------------------
+family (query in scripts/trend.py)                 | 2019 2020 2021 2022 2023 2024 2025 2026*
+KG / commonsense / ConceptNet + captioning         |    8    8    9   11   19   16   16   16
+scene graph + captioning                           |    8   12   15    8   23   12   19   24
+retrieval-augmented captioning                     |    0    0    2    2    6   22   26   29
+entity-aware / news image captioning               |    2    6    4    5   10    8    6    4
+CIDEr AND (SG OR KG OR commonsense)                |    1    1    3    2    2    1    2    2
+(SG OR KG) AND hallucination AND (VLM/MLLM/LVLM)   |    0    0    0    0    2   13   17   24
+SG AND (evaluation/metric/benchmark) AND caption   |    3    5    4    3   12    8   13   17
+(SG OR KG) AND (reward OR RL) AND caption          |    0    0    0    0    1    1    2    5
+(multilingual OR low-resource) AND captioning AND (knowledge OR concept) | 0 1 2 2 5 6 6 5
+all captioning (denominator)                       |  274  310  358  467  808 1112 1316 1194
+- Rising: graph-based hallucination detection/correction/verification (Reefknot and FIHA, Findings ACL 2025; RelCheck 2026;
+  KG-ViP ACL 2026; CART ACM MM 2026 = SG-derived constraint checking in MLLM reasoning), graph-based evaluation of detailed
+  captions (DSG ICLR 2024; CompreCap CVPR 2025; PROVE ICCV 2025; DiscoSG EMNLP 2025; PoSh ICLR 2026), graph-structured
+  rewards for detailed captions (SC-Captioner ICCV 2025; FoCUS EMNLP 2026), knowledge-intensive / cultural benchmarks
+  (RAVENEA ICLR 2026; CulturalGround EMNLP 2025; MMAC ACL 2026, an evaluation framework).
+- Saturated: KG/commonsense injection into generic captioners (flat counts; share 2.9% -> 1.3%; the most recent top-venue
+  COCO-SOTA SG captioner found is TSG, ACL 2023); KG/SG work that reports CIDEr (1-3 papers a year, flat since 2019);
+  entity/news captioning (MERGE is incremental). OpenAlex counts in research_wall/11 show the same shape (commonsense
+  captioning 14 -> 4; KG + MLLM hallucination 0 -> 26).
+
+6. (d) SINCE 2026-10-10
+-----------------------
+- arXiv (index holds submissions to 2026-10-09; 10-10/11 was a weekend): no KG/SG/commonsense/Wikidata captioning paper
+  submitted 2026-10-08..09. Captioning papers of those days (MindVLM 2610.12673, Unsupervised Multimodal Reward Modeling
+  2610.12707, 2610.13252) are not KG work; ResOT 2610.11826 was already in R3_01.
+- Crossref (works created 2026-09-25..10-12): only ACM TOMM 10.1145/3857795 (2026-10-11, video commonsense captioning with
+  mixture of low-rank experts; video, not image) and non-listed venues. Nothing changes a verdict.
+- New to the KG files though not new in date: CART (ACM MM 2026, 2607.16727) and MMAC (ACL 2026, 10.18653/v1/2026.acl-long.989),
+  both verification/evaluation uses, consistent with "rising".
+- Correction to old files (kg_plan/04 T3, 05 R3, 09): RAVENEA's "+11% cIC" is RegionScore; Table 12 shows CIDEr falling
+  22.2 -> 8.5 and ROUGE-L 18.0 -> 15.3 with culture-aware retrieval.
+- Old verdicts, re-tested with numbers: "KG injection into the generator: drop" is confirmed (gains vanish at >= 135 CIDEr;
+  KTVIC ceiling ~+3 even for an oracle). "SG reward: HIGH overlap" stands, and SG rewards do not target n-grams
+  (SC-Captioner COCO-LN B4 +0.7, LLaVA -1.1). "KG-structured hierarchical backoff (ViHG-Cap) as the surviving core": it is
+  metric-neutral at best on KTVIC (oracle +0.2..+0.6 CIDEr; blanket -14), so under "metrics first" it is not a lever.
+
+7. JUDGEMENT: CAN A KG RAISE KTVIC n-GRAM METRICS?
+--------------------------------------------------
+No, not materially. P1 already sits at 145.8 CIDEr (3 seeds), where the literature's own ablations put the KG/SG/concept
+gain at +1.4 (median, 130-140) to +0.9 (>= 140), and where the repo's own detector-tag injection gave +1.1/+2.5 on one seed.
+KTVIC's references are short, lower-cased, template-heavy everyday descriptions with no named entities, few cultural terms
+and almost no out-of-training vocabulary; the content KGs supply carries 4.5% of CIDEr's unigram weight. Even an oracle
+that reads the test references and inserts every missed knowledge-type word adds only +3.1..+3.5 CIDEr (+4.0..+4.8 with
+context) and lowers BLEU-4, and KG-structured backoff ranges from -14 (blanket) to +0.6 (perfect verifier). Where KGs make
+captions more specific or more cultural, n-gram metrics fall (RAVENEA, Kornblith+, CONCAP-vi). A realistic KG gain on
+KTVIC is therefore 0 to +2 CIDEr, inside seed noise (SD ~3.4, MDE 2.5-3.8) and far from the +8 bar; RL on CIDEr-D
+(R6 B1: +5 to +9 expected) dominates on cost and effect. A KG is defensible only for a different target, lower CHAIR or
+verified faithfulness (VC R-CNN CHAIR_i -1.6/-2.5; CGRL -9.0), measured on existing truth sources, not for n-gram metrics.
+
+8. UNVERIFIED / LIMITATIONS
+---------------------------
+- AKGMA (AAAI 2026, vol. 40(18) pp. 15090-15098, abstract read via Crossref): full text unreachable (OJS socket errors);
+  backbone, datasets beyond UniKnowCap, and numbers unknown.
+- K-DFIC (TCSVT 2025, 10.1109/TCSVT.2024.3525158): "148.4 CIDEr-D" comes from kg_plan/01; no abstract or ablation reachable.
+- Wang, Beck & Cohn 2019 (EMNLP workshop; I+G 108.6 vs I 108.0) and an MDPI Electronics 2025 ConceptNet captioner (142.6
+  CIDEr): seen only in search snippets; not used in any table. "ViG" (MAPR 2026, KTVIC): no source found.
+- Lee+ 2019 (1909.09953): no venue found (arXiv only). SGAE/EVCap code links not printed in the PDFs (repositories may exist).
+- RAVENEA averages: Table 3 RegionScore over its VLM set, Table 12 CIDEr/ROUGE-L over 14 VLMs (Qwen3-VL omitted).
+- CONCAP Figure 4 values were read from the rendered heatmap; XM100 has 100 images, so per-language deltas are noisy.
+- The 25-point delta table pools heterogeneous papers and several rows per paper; rho is descriptive, p-values approximate.
+- KTVIC census: hand lists (41 broad / 33 strict cultural terms, ~45-name gazetteer, repo object/colour/spatial lexicons);
+  oracles read the test references and are diagnostic upper bounds, never tuning. Repo GDINO-tag numbers are single-seed
+  test estimates copied from CONTEXT_R6.
+- arXiv counts are abstract-keyword matches (noisy, arXiv-only); 2026 is partial.
+
+9. FILES (all under research_kg/K1_literature/)
+-----------------------------------------------
+REPORT.txt; scripts/{ktvic_content.py, hyper_backoff.py, delta_vs_base.py, trend.py, arxq.py, fetch.sh};
+api/{ktvic_content_<system>.txt, hyper_backoff.txt, delta_vs_base.txt, trend.log, venues.xml}; papers/<arXiv id>/paper.{pdf,txt}.

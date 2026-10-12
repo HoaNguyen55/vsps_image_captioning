@@ -1,0 +1,422 @@
+N1_vietnamese REPORT - Is there a VIETNAMESE-SPECIFIC lever that raises KTVIC CIDEr (short, word-level) and stacks
+with CN-RLOO (B1 proposal P1)?   Round R6, 2026-10-12.  Agent N1.
+CPU only (nice 15, <= 4 processes, bootstrap B = 2000, paired over images). No GPU, no VLM/LLM loaded (only the
+Qwen2.5-VL tokenizer.json vocabulary file was downloaded, for a fertility count). No new labels; no AI-made labels.
+Repo untouched. Work dir: research_r6/N1_vietnamese/ (code *.py, outputs out/).
+All numbers are on KTVIC TEST predictions/samples and are EFFECT-SIZE ESTIMATES (nothing was tuned on them; the one
+tuned knob, Form-MBR's K, was chosen on the KTVIC-TRAIN dev300 split of B2).
+
+==================================================================================================================
+0. BOTTOM LINE
+==================================================================================================================
+- Measured negative. No Vietnamese-specific component that I could build and pilot raises CIDEr over plain
+  word-level CIDEr-D. Tested: 17 alternative rewards, 2 decoding constraints, 4 target-style rewrite rules and a
+  tokenizer check. All were neutral or harmful, with CIs.
+- Vietnamese grammatical variation holds a large ALL-REFERENCE oracle stake. This covers optional classifiers,
+  plural quantifiers, aspect and locative morphemes, the existential/locative/nominalised sentence frames, and
+  fillers. Fixing only these in P1's captions is worth +26.5 [+23.7, +29.3] CIDEr (3-seed pool). That is about
+  half of B1's best-of-6 content oracle (+57).
+- None of that stake transfers. Choose the edits on refs A and score on disjoint refs B: −5.4 [−8.1, −2.7].
+  Human captions show the same pattern: a human ref against the other four gives +23.3 oracle / −9.4 held-out.
+  It is reference noise, not a P1 deficit, and it cannot be learned, normalised or decoded away.
+- Segmentation is not where CIDEr is lost:
+  - RDRSegmenter splits identical syllable strings the same way 99.5% of the time;
+  - P1 and the refs disagree on boundaries in 0.16% of shared spans;
+  - the re-segmentation oracle gives +1.7 on all refs and +0.05 held-out.
+  Orthography is 0 (KTVIC uses old-style oà/oá and P1 already does). Sino-Vietnamese/native and North/South
+  dialect pairs give +0.9 / +0.2. Reduplication is negligible. Qwen BPE fertility does not predict under-generation.
+- Where P1 is measurably worse than humans (1v4 protocol, same 4 refs):
+  - person-reference granularity (người ↔ người phụ nữ ↔ cô gái ↔ người đàn ông ↔ chàng trai):
+    +6.6 [+4.2, +9.1] more oracle headroom than a human caption;
+  - plural quantifiers (những vs nhiều / một vài): +3.2 [+1.9, +4.5];
+  - mid/long-tail culture vocabulary: recall 28.6% vs 49.0% (mid), 0% vs 48.4% (tail, n = 31).
+  P1 inherited the first two from reference position 0. Their transferable corpus-level CIDEr is small: naming
+  +2.0 [−0.5, +4.6], quantifiers +0.8 [−0.6, +2.1], long-tail culture +1.0 [−0.1, +2.5].
+- For CN-RLOO this means: keep plain word-level CIDEr-D with RDRSegmenter in the reward loop, plus EOS as in B1.
+  - The syllable-level reward is worse: −1.6 [−3.1, −0.1] on held-out refs, −0.6 [−1.0, −0.2] on the
+    OpenViIC panel.
+  - Every form-canonical ("Vietnamese analytic stemming") reward is worse by −1.8 to −4.0 at a 1-nat step.
+  - Naming and culture bonuses are neutral to harmful.
+  The Vietnamese-specific content (person naming, culture terms, "những") is learnable by the plain reward, and
+  only content transfers.
+- Proposals: both candidates taken to pilot (section 6) FAIL the CPU gate. I recommend 0 GPU-h for
+  Vietnamese-specific components. The reportable Vietnamese contribution is the analysis in sections 3-5: a
+  held-out-reference decomposition of CIDEr headroom by Vietnamese phenomenon, with a human control. It explains
+  why surface normalisation, segmentation and reward tweaks cannot move KTVIC CIDEr. No prior work doing this was
+  found (section 7).
+
+==================================================================================================================
+1. SETUP AND VALIDITY
+==================================================================================================================
+- Scorer: B2's exact pycocoevalcap CIDEr-D replica (common.py) with B2's RDRSegmenter cache (cache/seg.json) and an
+  N1 overlay cache (cache_seg.json, VnCoreNLP-1.2 RDRSegmenter via py_vncorenlp, lower()). Every edited string is
+  re-segmented by RDRSegmenter before it is scored, except the SEG oracle, which is by design a boundary-only edit.
+- Reproduction of data/results/*.json word-level CIDEr: p1_s42 149.79, p1_s43 143.92, p1_s44 143.70,
+  fuse2_s42 143.90, fuse2_s44 142.21 (= stored rows).
+- Oracle protocol (oracle_run.py; edits.py; namer_build.py):
+  - For each phenomenon, an edit set restricted to that phenomenon (section 3).
+  - Greedy hill-climb on CIDEr-D, 4 steps (8 for FORM).
+  - Every edit must create only bigrams attested >= 2 times in KTVIC TRAIN refs. This grammaticality guard blocks
+    metric hacks such as "ngôi ảnh".
+  - "oracle(all)": edits chosen and scored on all 5 refs (upper bound of the CIDEr at stake).
+  - "held-out": edits chosen on refs A, scored on disjoint refs B (IDF of each set). Averaged over the four
+    non-interleaved splits {012→34, 234→01, 01→234, 34→012}. Interleaved splits are inflated by the paraphrase
+    chain (B1, B2).
+  - Run on 5 systems (P1 seeds 42/43/44, fuse2 seeds 42/44). Pooled CIs average per image over seeds, then
+    bootstrap.
+- Human control (oracle_1v4.py): hypothesis = human ref k, refs = the other 4 (and P1 against the same 4).
+  - oracle(4) = edits chosen and scored on the 4.
+  - held-out(2→2) = chosen on 2 of them, scored on the other 2.
+- Reward pilots reuse B1's framework: 6 T = 0.8 samples + greedy per test image (p1_s43, fuse2_s42; copies in
+  B2_targets_data/samples).
+  - The train-side reward is computed on refs T. The judge is TRUE word-level CIDEr-D on disjoint refs E (4
+    splits) and on the independent UIT-OpenViIC panel (T = all 5 KTVIC refs; panel captions only scored, never
+    copied).
+  - Two estimates are reported. BoN7 = best-of-7 pick minus greedy. KL1 = the KL-matched one-step policy
+    improvement at 1 nat (B1 pilot 4), the offline proxy for one RL update.
+
+==================================================================================================================
+2. WHERE P1's CIDEr IS LOST (descriptive; a8_orders_length.py, a3_seg.py, a0_describe.py)
+==================================================================================================================
+- Deficit vs a human caption (1v4, same 4 refs): human 181.5, P1 149.8, deficit 31.8.
+  - P1 beats the human on 37.3% of images.
+  - The top 10% of images by deficit carry 79.5% of the total deficit.
+  - The deficit correlates with reference agreement (mean pairwise CIDEr of the 5 refs): r = 0.46. On images with
+    pairwise agreement >= 250 (n = 120) the deficit is 121.4. These are the paraphrase-chain images, where the
+    human LOO is inflated by near-copy neighbours.
+- By n-gram order (P1/human ratio, 1v4): 1-gram 0.824, 2-gram 0.809, 3-gram 0.831, 4-gram 0.873. The loss is
+  lexical (which words), not long-range word order.
+- Length:
+  - corr(per-image CIDEr, |len(P1) − mean len(refs)|) = −0.17.
+  - CIDEr by P1 length (syllables): [9,11) 151.3, [11,13) 161.9, [13,15) 135.7, >= 15 117.6.
+  - The CIDEr-D length penalty costs P1 6.1 (149.8 → 155.9 without it) and the human 7.4 (181.5 → 188.9). The
+    ratio is unchanged (0.8249 vs 0.8252), so length is not a P1-specific loss.
+- Word vs syllable level: P1/human ratio 0.825 at word level vs 0.834 at syllable level; same system ranking (P1
+  s42 > s43 ≈ s44 ≈ fuse2 s42 > fuse2 s44). Word-level scoring costs P1 nothing relative to humans.
+- Template and morphemes: P1 inherited reference position 0's Vietnamese construction profile.
+  - Captions starting "có": test refs 55.4%, P1 95.9%.
+  - Rates per caption, P1 vs test refs:
+    - "đang" (aspect): 0.763 vs 0.491; position-0 share of train "đang" 25% vs ~19% per other position.
+    - "của" (possessive): 0.057 vs 0.173; position-0 share 8%.
+    - "sự" (nominalised frame "có sự xuất hiện của"): 0 vs 0.056; position-0 share 0.0%.
+    - "xuất_hiện": 0.253 vs 0.154.
+    - "những" (plural marker): 0.034 vs 0.192.
+  - Orthography: all NFC. KTVIC uses old-style tone placement (test refs: 140 old-style, 0 new-style). P1 has
+    14 old-style and 1 new-style.
+
+==================================================================================================================
+3. CIDEr AT STAKE PER PHENOMENON (oracle that fixes ONLY that phenomenon in P1's captions)
+==================================================================================================================
+Edit sets:
+- CLS: substitute/delete/insert a classifier (chiếc/cái/con/bức/ngôi/toà/căn/tấm/cây/...).
+- QNT: những/các/nhiều/một_vài/vài/một_số/mấy.
+- FUNC: insert/delete optional đang/được/đã/ở/của/phía/bên.
+- FRAME: drop/add "có"; front the final locative phrase; nominalised "có sự xuất_hiện của".
+- FILL: xuất_hiện and the "trong bức ảnh / khung hình" tails.
+- ORTH: old/new tone placement.
+- FORM: all of the above.
+- NAME_SYN: same-level synonyms (nap.py A7 syn + near pairs admitted by train phi >= 0.9).
+- NAME_GRAN: hypernym/hyponym; mostly person terms.
+- SEG: word boundaries only.
+- CULT: a culture term the refs use replaces one noun span.
+- SV+DIAL: Sino-Vietnamese/native and North/South pairs.
+
+Columns: P1 3-seed pooled oracle(all refs) | P1 held-out A→B | fuse2 2-seed held-out | P1 s42 changed.
+  FORM        +26.48 [+23.74, +29.28] | −5.37 [−8.10, −2.65] | −3.25 [−5.90, −0.57] | 82%
+  FUNC        +11.12 [ +9.54, +12.72] | −5.12 [−6.97, −3.16] | −3.58 [−5.50, −1.66] | 59%
+  NAME_GRAN    +9.20 [ +6.96, +11.66] | +1.98 [−0.48, +4.62] | +0.88 [−1.38, +3.13] | 22%
+  FRAME        +6.86 [ +5.76,  +7.99] | −1.59 [−2.80, −0.43] | −1.13 [−2.40, −0.03] | 46%
+  CULT (s42)   +6.53 [ +4.52,  +8.73] | +1.32 [−0.66, +3.48] |                      | 15%
+    mid/tail CULT only (train freq < 50): +1.85 [+0.78, +3.29] | +1.03 [−0.06, +2.51] | changed 2.5%
+  QNT          +4.53 [ +3.44,  +5.70] | +0.76 [−0.56, +2.11] | +0.88 [−0.57, +2.38] | 21%
+  CLS          +2.68 [ +1.70,  +3.91] | −0.68 [−1.98, +0.67] | −1.03 [−2.27, +0.25] | 12%
+  NAME_SYN     +2.54 [ +1.69,  +3.54] | +0.45 [−0.43, +1.37] | +0.92 [+0.11, +1.82] |  8%
+  SEG (s42)    +1.65 [ +0.95,  +2.42] | +0.05 [−0.82, +0.89] |                      |  7%
+  FILL         +1.45 [ +0.94,  +2.02] | −1.59 [−2.31, −0.85] | −1.61 [−2.29, −0.95] | 16%
+  SV+DIAL(s42) +0.92 [ +0.36,  +1.60] | +0.20 [−0.32, +0.86] |                      |  3%
+  ORTH          0.00                  |  0.00                |                      |  0%
+  FORM+NAME   +38.85 [+35.15, +42.54] | −2.15 [−5.99, +1.38] | −0.51 [−4.04, +2.90] | 86%
+  Reference: B1's content oracle, best of 6 samples (p1_s43), is +57.3 [+51.4, +63.8] on all refs and about +8
+  on disjoint refs.
+
+Human control (1v4, P1 s42 vs a human caption, same 4 refs; columns: oracle(4) human / P1 / P1−human |
+held-out(2→2) P1−human):
+  FORM       +23.31 / +29.86 / +6.55 [+3.56, +9.53] | +3.01 [+0.11, +6.03]
+  NAME_GRAN   +2.97 /  +9.54 / +6.57 [+4.22, +9.10] | +6.13 [+3.54, +8.78]
+  QNT         +1.88 /  +5.02 / +3.15 [+1.90, +4.52] | +3.93 [+2.50, +5.46]
+  CLS         +1.63 /  +2.80 / +1.17 [+0.06, +2.48] | +2.60 [+1.24, +4.05]
+  NAME_SYN    +2.10 /  +2.62 / +0.51 [−0.59, +1.69] | +1.57 [+0.49, +2.70]
+  Absolute held-out: human FORM −9.38, P1 FORM −6.36. Caveat: a human caption's held-out is biased negative
+  because its chain neighbours sit in the scoring refs.
+Reading:
+- About 23 of P1's 30 form-oracle points are intrinsic reference variation, as large for a human caption.
+- P1's excess is concentrated in person-reference granularity and plural quantifiers.
+
+==================================================================================================================
+4. PER-PHENOMENON FINDINGS
+==================================================================================================================
+4.1 Classifiers (loại từ)
+- RDRSegmenter never joins a classifier to its noun, so the slots are clean.
+- Oracle swaps are mixed in direction: chiếc→con 7, con→chiếc 5, ngôi→căn 4, căn→ngôi 2, ∅→cái 6, cái→∅ 5.
+- Stake +2.7 oracle, −0.7 held-out. P1's excess over a human: +1.2 (oracle).
+- Classifier choice varies across refs of the same image (e.g. ngôi nhà vs căn nhà) and is unpredictable noise.
+
+4.2 Segmentation (a3_seg.py)
+- Same syllable string segmented as the same word: train refs 99.46%, test refs 99.23%, P1 99.75%. Rare splits:
+  toà_thành, không_gian, cổng_thành, lư_hương.
+- Shared P1/ref spans: 6 of 3,704 disagree on internal boundaries.
+- Re-segmentation oracle +1.65 / held-out +0.05.
+- No case for segmentation-aware training or decoding.
+
+4.3 Naming granularity and synonyms
+- NAME_GRAN oracle edits are person terms in both directions, so there is no global bias:
+  - ∅→phụ nữ 19 (người → người phụ nữ), người phụ nữ→cô gái 14, ∅→đàn ông 12, cô gái→người phụ nữ 8;
+  - người đàn ông→nam thanh niên 8, người đàn ông→chàng trai 4.
+- Person profile of captions that mention a person (a11_person.py):
+
+                      bare "người"   gendered   age-graded
+    test refs              34%          28%         38.5%
+    train position 0       42%          34%         26%
+    P1 s42                 43%          28%         29%
+
+- On 211 images where >= 3 refs name the person specifically, P1 stays bare on 14-18%.
+- NAME_SYN edits (cửa↔quầy, quầy→sạp, hoa quả→trái cây, mũ→nón) carry +0.5 held-out.
+- Word-level train phi (phi_words.py) conflates synonyms with frame complementarity (khung_cảnh vs phụ_nữ), so
+  object-level phi with A7 lists (nap.py) was used.
+
+4.4 Culture-specific concepts (a5_culture.py, a5b, a5c; an a-priori lexicon of 8 categories, not labels)
+- P1 recall of culture terms that >= 2 refs use: 41.1% (125/304); >= 3 refs: 52.4%. Precision 71.6% (in any ref).
+- 1v4 recall (terms named by >= 2 of the other 4; human vs P1):
+    all     50.1% vs 44.1%
+    head    50.3% vs 47.6%
+    mid     49.0% vs 28.6%
+    tail    48.4% vs  0.0%  (n = 31)
+    general objects (nap E1t)  53.3% vs 49.5%
+  So culture terms are as hard as other objects except in the mid/long tail.
+- Systematic misses (P1 hits / images where >= 2 refs use the term), each with P1's generic substitute:
+  - sạp 0/15 ("quầy hàng")
+  - xuồng 0/10 ("thuyền")
+  - vỉa hè 2/15
+  - ghe 0/3
+  - chợ nổi 0/3
+  - phố đi bộ 0/4
+  - mái tranh 0/3
+  - tết 0/2
+  Several of these are Southern regional words.
+- Images where a shared culture term is missed: CIDEr 122.6 (n = 157), vs 141.8 with no shared culture term
+  (n = 307) and 221.4 where P1 names it (n = 94; selection effect).
+- Stake: all culture terms +6.5 oracle / +1.3 held-out. Mid/tail only: +1.9 / +1.0. Corpus-level small.
+
+4.5 Sino-Vietnamese vs native, North/South dialect, reduplication (a6_lexvar.py)
+- P1 follows the dominant KTVIC choice: phụ nữ ≫ đàn bà, trưng bày ≫ bày, di chuyển ~ đi.
+- KTVIC is lexically mixed North/South: quả 482 vs trái 318, hoa quả 117 vs trái cây 150, mũ 134 vs nón 265,
+  kính 216 vs kiếng 0. P1 almost always says "quả" (s42 23/0, s43 24/2) while test refs use "trái" 26% of the
+  time.
+- Within-image alternation in 31 (SV) and 20 (dialect) test images. Even the KTVIC paper's Figure 1 alternates
+  thìa/muỗng and bát/tô in one image.
+- Swap oracle +0.92 / held-out +0.20.
+- Reduplicative words: 4.7% of ref captions, 3.8% of P1's; negligible.
+
+4.6 Word order, frames and template structure
+- FRAME +6.9 / −1.6. The 4-gram ratio is the best (0.873), so P1 is not losing on Vietnamese word order.
+- The KTVIC chain is largely frame rewriting of the same content (có X xuất hiện ở Y ↔ ở Y có sự xuất hiện của X
+  ↔ đây là khung cảnh...). KTVIC paper: 3 participants typed 5 sequential boxes per image, then 2 researchers
+  revised.
+
+4.7 Plural marking (a10_plural.py)
+- P1 under-uses "những" even against position 0: 0.034 vs 0.118 per caption (positions 1-4: 0.135-0.154). It
+  over-uses nhiều (0.27-0.30 vs 0.19-0.21) and một_vài (0.10-0.11 vs ~0.06). This is a model-level bias beyond
+  position 0.
+- Fixed rules lose: nhiều→những −5.08 [−6.97, −3.33] (3 seeds pooled); một_vài→những +0.28 [−0.47, +1.05].
+  Only the context choice matters (QNT held-out +0.8).
+
+4.8 Tokenizer (a9_fertility.py; Qwen2.5-VL tokenizer.json only)
+- P1 recall of words that >= 2 refs use, by BPE tokens/syllable, within train-frequency tiers, is non-monotone.
+  Train freq 20-100: 21.4 / 24.0 / 27.9 / 28.1% for fertility <= 1 / 1-1.6 / 1.6-2.2 / > 2.2.
+- Mean fertility of content words: P1 1.20 vs refs 1.23. sạp and quầy both have fertility 2.0.
+- No evidence for a vocabulary change.
+
+==================================================================================================================
+5. METHOD PILOTS (CPU). Δ vs plain word-level CIDEr-D unless stated; all CIs are 95% paired bootstrap.
+==================================================================================================================
+Table columns: BoN7 Δ | KL1 Δ | panel KL1 Δ.
+
+5.1 Form-canonical reward ("Vietnamese analytic stemming" = CIDEr's original stemming idea for an isolating
+language; pilot_canon_reward.py)
+- Canonicalisation levels, applied to sample and refs:
+  - C1 drops classifiers in classifier position, plural quantifiers and aspect markers (đang/đã/được), and
+    normalises orthography;
+  - C2 adds ở/của/phía/bên;
+  - C3 adds the frame words (initial có, xuất_hiện, sự, đây, là);
+  - C4 adds train-list synonyms.
+    p1_s43  C1   −2.42 [−4.47, −0.30] | −2.49 [−4.02, −1.02] | +0.06
+            C3   −4.97 [−7.67, −2.40] | −3.00 [−4.91, −1.19] | +0.20
+            C4   −4.81                | −3.12 [−4.94, −1.31] | −0.06
+            mix (plain + Ck) / 2, k = 1..4: BoN7 +0.14 to −0.86 | KL1 −0.64 to −0.85 (all CIs span 0)
+    fuse2   C1   −1.37 | −1.84 [−3.16, −0.52] ;  C3 −3.70 | −3.47 ;  C4 −3.78 | −3.96 [−5.91, −2.04]
+            mix (plain + Ck) / 2: BoN7 +0.65 to −0.01 | KL1 −0.36 to −1.09 [−2.08, −0.09] (C4)
+- KILLED. Form is noisy but not worthless: among the model's own natural samples, the plain reward's form
+  preferences transfer, and deleting them loses held-out CIDEr.
+
+5.2 Other reward variants (pilot_reward2.py, pilot_reward3.py)
+- Syllable-level CIDEr-D: p1 −1.59 [−3.11, −0.12] | −0.96 | −0.59 [−1.01, −0.20]; fuse2 −0.26 | −0.89 | −0.23.
+  This supports keeping RDRSegmenter in CN-RLOO's reward.
+- Frame-augmented refs (each ref credited with its best existential/locative/nominalised variant): ±0.1.
+- Word + syllable mix: −0.2 to −0.9.
+- + 50 or 100 × object-name F1 (nap.py Vietnamese lexicon): p1 −0.13 / −0.95 BoN7, −0.40 [−0.75, −0.06] /
+  −1.00 [−1.66, −0.36] KL1; fuse2 +0.05 / +0.73, +0.23 / +0.30 (n.s.).
+- + 50 or 100 × culture-term recall: p1 +0.20 / −0.08 | −0.16 / −0.65; fuse2 +0.05 / −0.36 | −0.22 / −0.60.
+- Name-F1 alone as a reward: −18.1.
+- ALL KILLED.
+
+5.3 Decoding-side (no test refs used for any choice)
+- Form-MBR (pilot_form_mbr.py): pick among P1's FORM variants by expected CIDEr-D against the refs of the K train
+  images with the most similar content words.
+  - Dev (train dev300; ref #0 as hypothesis, judged on refs 1-4): K = 5 −5.27 [−9.75, −0.64]; K = 15 −3.14
+    [−8.44, +2.10]; K = 50 −0.70 [−5.97, +4.30]. Fails dev.
+  - Test estimate, P1 s42: K = 50 +0.07 [−2.24, +2.56]; K = 15 +0.88 [−1.63, +3.35]. Changes about 70% of
+    captions for no gain.
+- Slot-MBR (pilot_slot_mbr.py): only person-term, synonym and quantifier slots of the greedy caption are edited,
+  using the policy's own 6 samples as pseudo-refs. p1_s43 +0.28 [−1.09, +1.65]; fuse2 +0.62 [−0.81, +2.09].
+- Both KILLED.
+
+==================================================================================================================
+6. PROPOSALS (at most 2): both candidates FAIL the CPU gate; recommended GPU-h = 0
+==================================================================================================================
+V1. ViStem-RLOO: CN-RLOO with a Vietnamese optional-morpheme-canonical CIDEr-D reward.
+  Plug-in: replace r = CIDEr-D(c, R) by CIDEr-D(canon(c), canon(R)), or by the mix. Same rollouts, copy mask, EOS
+    and KL as CN-RLOO; canonicalisation costs about 0.1 ms per caption on CPU.
+  Pilot: section 5.1. KL1 Δ −1.8 to −4.0 (all 8 CIs < 0, both policies); mixes −0.4 to −1.1 (7 of 8 n.s.).
+  Closest prior and delta:
+  - CIDEr (1411.5726) stems words; CIDEr-D removed stemming to reward correct word forms.
+  - METEOR stemming and synonyms. Learned compact reward 2003.10925.
+  - chrF++ vs BLEU rewards for low-resource MT RL (2601.12535: +2.47 vs +1.60 chrF++).
+  - Delta: the isolating-language analogue (optional classifiers, aspect, locative, plural morphemes and frames)
+    inside an RL reward, tested on held-out refs.
+  GPU: the same as CN-RLOO (about 10 GPU-h per seed on one 3090); no extra memory.
+  Verdict: do not run. No synthetic data.
+V2. Vietnamese slot-MBR / Form-MBR decoding on top of the CN-RLOO policy.
+  Plug-in: post-hoc. Greedy plus 6 samples; edit only Vietnamese grammatical or person-naming slots by expected
+    CIDEr against the samples (or train-retrieved refs).
+  Pilot: section 5.3. +0.3 to +0.9, all CIs span 0. Form-MBR fails dev.
+  Closest prior and delta:
+  - CBDT 2509.12677 (expected utility from retrieved memory; BERTScore; English MSCOCO/nocaps; BLEU 25.6 → 26.0
+    over MBR).
+  - Devlin et al. 1505.04467 (kNN consensus).
+  - MBR captioning (B2 3.6: +2.0, n.s.).
+  - Delta: MBR restricted to language-specific slots.
+  GPU: about 0.3 GPU-h per test pass (6 extra samples × 558 images).
+  Verdict: do not run. Uses model samples only at inference, not as training data.
+What the data does support (no new component):
+- Run B1's CN-RLOO with the PLAIN word-level RDRSegmenter CIDEr-D reward (no alternative of the 17 tested beat
+  it), on MR5 targets (B2).
+- Pre-register cheap Vietnamese diagnostics for those runs (CPU, 0 GPU-h). If RL and MR5 work through
+  content/naming, these should move toward the refs:
+  - age-graded person-term rate: P1 29% → refs 38.5%;
+  - "những" rate: 0.034 → 0.19;
+  - mid-frequency culture-term recall: 28.6% → about 49%;
+  - "sự/của" frame rates: 0 / 0.057 → 0.056 / 0.173.
+  None of these needs new labels.
+
+==================================================================================================================
+7. LITERATURE (arXiv ids verified with the arXiv API on 2026-10-12; OpenAlex returned 429; FT = full or section text read)
+==================================================================================================================
+Culturally-aware and low-resource / non-English captioning:
+- CIC 2402.05374 (FT; IJCAI'24): VQA + LLM rewrite; evaluated by human preference and CLIPScore; no reference
+  metrics.
+- MOSAIC-1.5k / CAS 2405.17475.
+- MosAIC (NAACL 2025, 2025.naacl-long.152): multi-agent cultural captions.
+- CROPE (NAACL 2025): culture-specific concept VQA gap.
+- CONCAP 2507.20411 (FT; COLM'25): concept and caption retrieval.
+  - Vietnamese XM3600: NoRAG 31.8 → ConCap 45.1, Pangea 64.3.
+  - Adding cultural term lists LOWERED CIDEr (−1.7, L36).
+  - Consistent with 4.4: culture vocabulary is not a cheap n-gram lever.
+- Berger and Ponti 2409.16646 (FT): cross-lingual variation in XM3600 (Vietnamese included); basic-level naming;
+  no method.
+- LaVy 2404.07922. Vintern-1B 2408.12480. Pangea 2410.16153. mBLIP 2307.06930. ViCLIP-OT 2602.22678 (retrieval).
+- KTVIC 2401.08100 (FT): 3 participants plus 2 revisers; RDRSegmenter segmentation; no SCST.
+- UIT-OpenViIC 2305.04166. UIT-ViIC 2002.00175.
+- VieCap4H (VLSP 2021): the UIT team used SCST, evaluated with BLEU (jcsce.vnu.edu.vn article 371); see also
+  2209.01304. Prior SCST on Vietnamese exists, but not for an LVLM or on KTVIC.
+Vietnamese NLP specifics and syllable vs word evaluation:
+- VnCoreNLP 1801.01331. PhoBERT 2003.00744.
+- BARTpho 2109.09701: word-level beats syllable-level on generation.
+- ViSP 2502.07188 (FT): BARTpho-word higher BLEU/ROUGE but lower BERTScore than syllable.
+- PhoMT 2110.12199.
+- Segmenting before BLEU/CIDEr in zh/ja captioning: iCap 2001.11782, MUNIChus 2603.10613.
+- Vi-Mistral-X 2403.15470 and In-place tokenizer expansion 2607.15232: tokenizer expansion reports efficiency,
+  not quality.
+- Classifier/measure-word generation: Zhang et al. ACL 2008 P08-1011 (English-Chinese SMT). Nothing for
+  Vietnamese captioning.
+Lexical or naming-consensus objectives:
+- Ordonez et al. ICCV 2013 (entry-level categories; reward over WordNet). Mathews et al. WACV 2015 (basic-level
+  names). ManyNames LREC 2020 (2020.lrec-1.710).
+- Devlin 1505.04467. CBDT 2509.12677 (FT).
+- HCO / WXE / validity sampling (B2 refs).
+- CIDEr 1411.5726 (FT section 8: CIDEr-D removed stemming). CIDEr-R 2109.13701. SPIDEr 1612.00370.
+- SacreEOS 2305.12254. Compact reward 2003.10925. Round-trip RL with chrF++ reward 2601.12535 (FT).
+Scoop searches run (26): culturally-aware captioning; Vietnamese captioning segmentation/syllable evaluation;
+Vietnamese VLMs; BARTpho syllable vs word; classifier/measure-word generation; ManyNames/entry-level naming;
+multilingual low-resource LVLM captioning (XM3600); Chinese char vs word evaluation; paraphrase-invariant RL
+rewards; Vietnamese tokenizer expansion; cultural long-tail captioning; PhoMT tokenisation; Vietnamese classifier
+NLP; Vietnamese captioning 2025-26; cultural captioning RL/GRPO; MBR with retrieved pseudo-refs; multilingual
+metric reliability; SCST reward noise; lemmatised/morphology-aware RL rewards; Thai/Japanese segmentation in
+captioning; Vietnamese person reference; naming granularity rewards; VieCap4H SCST; synonym-normalised SCST
+rewards; KTVIC 2025-26 SOTA; reference-variation analysis.
+Outcome: no paper decomposes captioning CIDEr headroom into language-specific variation vs transferable content
+with held-out references and a human control. No paper tests optional-morpheme canonicalisation, dialect or
+culture-term rewards for captioning RL. Those negatives (sections 3-5) are new; the components are not worth
+GPU.
+
+==================================================================================================================
+8. CAVEATS
+==================================================================================================================
+- The oracles are greedy hill-climbs over hand-defined edit sets; the all-ref numbers are upper bounds. The
+  held-out numbers depend on the selection rule. Three softer selectors (Form-MBR, slot-MBR, the KL-matched
+  reward steps) agree with them.
+- Lists (classifiers, quantifiers, SV/dialect pairs, culture lexicon) are a-priori analysis lexicons, not labels.
+  They may miss items; an unlisted variant counts as "not that phenomenon".
+- Reward pilots use 6 T = 0.8 samples of two SFT policies. The RL'd policy samples at T = 1 and drifts further.
+  The pilots bound one update, not a full run.
+- 1v4 human held-out is biased negative (chain neighbours). The P1−human ORACLE(4) difference is the cleaner
+  statistic.
+- OpenViIC panel captions were read for scoring only; none are reproduced here.
+
+==================================================================================================================
+9. FILES (work dir)
+==================================================================================================================
+code:
+- segtool.py, n1common.py: segmenter overlay, loaders, B2 CIDEr-D replica.
+- edits.py (edit generators + self-check), namer_build.py, canon.py (+ self-check), culture_lex.py.
+- oracle_run.py, oracle_1v4.py, a0_describe.py, a3_seg.py, a5_culture.py, a5b_culture_oracle.py,
+  a5b_culture_oracle_tail.py, a5c_recall_1v4.py, a6_lexvar.py, a8_orders_length.py, a9_fertility.py,
+  a10_plural.py, a11_person.py, phi_words.py.
+- pilot_canon_reward.py, pilot_reward2.py, pilot_reward3.py, pilot_form_mbr.py, pilot_slot_mbr.py.
+outputs: out/*.json and out/*.log
+- oracle_<system>.json: per-image gains and final strings.
+- oracle_1v4_p1_s42.json, a*.json, pilot_*.json.
+cache_seg.json (contains OpenViIC-derived strings: never commit). dl_tok/tokenizer.json (Qwen vocab file only).
+
+==================================================================================================================
+10. ADDENDUM: PRE-REGISTERED VIETNAMESE DIAGNOSTICS (coordinator request; frozen 2026-10-12 16:50 UTC)
+==================================================================================================================
+Repo working tree, NOT committed (a gatekeeper commits):
+  scripts/vi_diagnostics.py                                       sha256 1e4fc8b6653141204cd66f30581b276147b6600bee3db7a96ebe281e7f27f094
+  manuscript/prereg/2026-10-12_vietnamese_diagnostics/PREDICTIONS.md
+  manuscript/prereg/2026-10-12_vietnamese_diagnostics/person_terms.tsv   361cca3cf459d7d2741c250a6c26b2e348942a926d98a018407e59b507d29fd9
+  manuscript/prereg/2026-10-12_vietnamese_diagnostics/quantifiers.tsv    83d2a94c7c37e209f5621e55cf15678b9859522ee56eff3ec857d2dca93a2172
+  manuscript/prereg/2026-10-12_vietnamese_diagnostics/frames.tsv         77f4208419bcdd2b8134490b7991e0c816e5204b3258d05df07c918fe77aba87
+  manuscript/prereg/2026-10-12_vietnamese_diagnostics/culture_terms.tsv  7c8bcf3cc14d80ad1bde2f27e09861cc82de593d62b134579ed4687b816adc8c
+
+Instrument:
+- The script has a _check() and an aislop score of 100. Lists are train-derived (KTVIC train refs outside dev300;
+  86 culture terms: 27 head / 29 mid / 30 tail).
+- Lists are analysis lists, never labels. They contain no OpenViIC text and no full caption.
+
+Predictions (CN-RLOO minus P1_dev on dev300; confirmed when the paired-bootstrap 95% CI excludes 0 in the
+predicted direction):
+- primary: H1 q_những up; H2 cons_nhung_recall up; H3 q_một vài down; H4 init_có down;
+- secondary: H5 person_bare down; H6 cult_recall_all up; H7 f_đang down;
+- support-limited nulls (RL initialised from P1_dev): N1 f_sự xuất hiện <= 0.01; N2 init_ở <= 0.01.
+Direction evidence: a held-out CIDEr-selection step on test samples (prereg_evidence.py -> out/prereg_evidence.json).
+Context outputs: out/vi_diag_dev_refs.json and out/vi_diag_test_systems.json.

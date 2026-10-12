@@ -1,0 +1,695 @@
+B5_backbone_recipe -- strongest open backbone and QLoRA recipe on one RTX 3090 (R6 lever B5)
+Agent B5, 12 Oct 2026. CPU only (local, nice 15, <=4 threads); n2/n3 used read-only (scp copies of logs, data and
+one prediction file; nothing written there, GPUs and /root/queue untouched). Repo read-only. Scoring with a copy of
+HEAD's evaluator code (head/), RDRSegmenter word level, x100. No new labels; AI-silver not used.
+Every number computed on KTVIC test below is an EFFECT-SIZE ESTIMATE, not a tuned result: nothing was selected on test.
+
+=====================================================================================================================
+0. BOTTOM LINE
+=====================================================================================================================
+1. Nothing in this lever is a breakthrough. Backbone and recipe changes together are worth about +2 to +5 CIDEr
+   (central about +3) over the P1 seed mean. That is useful on top of whatever method wins R6, but below the +8 bar. Novelty: none
+   (engineering).
+2. The most reliable recipe gain is SEED ENSEMBLING, deployed as an exact delta-space LoRA soup.
+   - CPU proxy: MBR over 4 existing P1 replicates gives CIDEr 149.1 against a seed mean of 146.3:
+     +2.79 [+0.62, +5.15].
+   - The other metrics move the same way: B-4 +0.9, ROUGE-L +0.6, METEOR +0.2, CHAIR_i -0.3.
+   - With K=3 the gain is +2.3 on average over the four 3-of-4 subsets (range +1.1 to +2.8).
+   - Literature agrees: averaging the deltas of 3 seed LoRAs beats the individual seeds by +0.4 to +3.7 points (vanilla-LoRA rows)
+     (SeedLoRA, ICML 2025).
+   - It costs no extra training, because the paper needs >= 3 seeds per arm anyway.
+   - Measured on the existing adapters:
+     - P1 seed deltas have cosine 0.29-0.31 (SeedLoRA's same-task range), with uncorrelated random A inits.
+     - So the soup must be formed in DELTA space ("cat"); factor averaging is invalid.
+     - It keeps the shared component in full and shrinks the seed-specific part to 58 %.
+3. BACKBONE. The strongest open <=10B VLM that fits QLoRA on one 3090 in Oct 2026 is Qwen/Qwen3.5-9B
+   (27 Feb 2026, Apache-2.0, 201 languages, natively multimodal, hybrid Gated-DeltaNet).
+   - Estimated QLoRA SFT peak: about 15.4 GB at a 512-token cap and about 16.2 GB at 1,024 (+-1.5 GB).
+   - The expected KTVIC gain after SFT is small, 0 to +2 CIDEr:
+     - In PaliGemma 1 -> 2 a newer LM of the same size gave no fine-tuned captioning gain (COCO -0.6, COCO-35L -1.9).
+     - Only LM size helped: 3B -> 10B gave +1.4 to +2.4.
+     - LoRA-tuned Qwen3.5-9B beats Qwen3-VL-8B by only +0.6 / +1.2 OA on CDVQA (arXiv 2604.18429).
+   - Fallback: Qwen3-VL-8B, an easier port (standard attention, transformers >= 4.57).
+4. Vietnamese tokenization is NOT a differentiator. Every modern tokenizer needs 1.03-1.19 tokens per syllable on
+   KTVIC captions, i.e. 12.4-14.5 tokens per test caption.
+   - Qwen3.5's 248K vocabulary is the most efficient: 12.43 [12.35, 12.51] vs 13.72 for Qwen2.5/Qwen3 (-9.4 %).
+   - MiniCPM-V 4 (MiniCPM4 tokenizer) is the outlier at 3.48 tokens per syllable (42 tokens per caption):
+     exclude it.
+5. Vision tokens are not a first-order lever on KTVIC.
+   - The 512-token cap already covers native resolution for 281/558 test images.
+   - Raising the cap to 1,024 raises the mean from 417 to 592 tokens.
+   - Qwen3.x uses 32-px tokens: at the same 512 cap it sees 20 % more pixels (0.39 vs 0.33 MP) with fewer tokens
+     (382 vs 417).
+   - InternVL's default tiling (max 12 tiles + thumbnail) costs 2,134 tokens per image, 5x Qwen2.5-VL's, for no
+     captioning reason.
+6. The legacy loss-mask bug does not matter for P1 (predicted, then confirmed by the finished clean pair). It is
+   predicted to matter for fuse2:
+   - In P1 rows, 69 % of supervised tokens were the instruction and assistant header. The response was 31 %
+     (exact, Qwen2.5-VL tokenizer).
+   - transformers 4.51.3 Qwen2.5-VL computes a per-row MEAN loss (no num_items_in_batch).
+   - For P1 the bug mainly slowed response learning:
+     - The fixed instruction is memorised within about 40 steps (logged loss 4.25 -> 0.59 by step 50).
+     - Adam's step is suppressed by 27 % at step 50, falling to 6 % at step 470.
+     - At matched steps of epoch 1, response token accuracy is 3-6 points lower than under the fix (P7).
+     - Predicted |dCIDEr| <= 4, direction unknown: inside the single-seed MDE.
+   - In fuse2 the bug weighted detailed-row responses 1.91x relative to short-row responses. The fix removes that
+     weighting, so fuse2-short should become more P1-like. That is a real difference-in-differences (DiD), not
+     seed noise.
+   - Clean test (p1assist_s42 vs p1mask_s42: same seed, LoRA init and data order) finished during this round:
+     - CIDEr 148.66 vs 147.67, i.e. +0.99 [-3.59, +5.43]. CHAIR_i +0.26 [-1.19, +1.67]. B-4 +0.95.
+     - Every pre-registered bound held (P10).
+     - So for P1 the fix is metric-neutral. For fuse2 it is untested and predicted to matter.
+7. Do not run, each <= +1 or harmful: DoRA / rsLoRA / PiSSA / LoRA+ / rank sweeps, NEFTune, R-Drop, and vision-tower
+   LoRA.
+   - NEFTune makes outputs about 2.8x longer and lowers BLEU/ROUGE against references, which is fatal under CIDEr-D's
+     length penalty.
+   - DoRA on COCO captions: +0.6 CIDEr.
+8. Headroom diagnostic: on KTVIC test a held-out human caption scores CIDEr-D 181.5 [173.7, 189.0] against the other
+   4 references.
+   - P1 seeds score 143.7-149.8 against the same 4 references.
+   - The headroom (32-38 points) is in matching the annotators' phrasing, not in recognition. Consensus levers
+     (ensembles, multi-reference targets, CIDEr-RL) can reach it; a better visual backbone mostly cannot.
+   - Caveat: KTVIC references were typed by one person from 3 participants and are dependent, which inflates this
+     ceiling.
+
+=====================================================================================================================
+1. WHAT WAS RUN (all code and outputs in this directory)
+=====================================================================================================================
+- fetch_cards.py, hf/: HF API info, README, config and processor configs for 28 candidate repos.
+  - No backbone weights were ever downloaded. The only weights copied were our own LoRA adapters from n2, for P8.
+  - Model-card benchmark tables that are images were viewed directly: hf/img/.
+- fetch_tok.py, tok/: tokenizer files only, for 21 tokenizers.
+  - Gated repos used public mirrors: unsloth/gemma-3-12b-it, unsloth/Llama-3.2-11B-Vision-Instruct,
+    unsloth/gemma-2-9b-it (the PaliGemma 2 LM), unsloth/aya-vision-8b, unsloth/Apertus-8B-Instruct-2509.
+  - Vintern-3B-R ships vocab.json/merges.txt identical to Qwen2.5's (151,643 tokens, 151,291 merges; checked).
+- pilot1_fertility.py -> out_pilot1_fertility.json: tokens per caption and per syllable on KTVIC train/test and
+  UIT-ViIC test. Image-level bootstrap, B = 2000.
+- img_sizes.py -> out_img_sizes.json; pilot3_vision_tokens.py -> out_pilot3_vision_tokens.json: vision tokens per
+  KTVIC image under each processor's published resize/tiling rule.
+- st_headers.py -> out_param_breakdown.json; lora_params.py -> out_lora_params.json: parameter breakdown and LoRA
+  size from safetensors HEADERS only (HTTP range requests).
+  - Check: Qwen2.5-VL-7B LoRA r16 = 40,370,176 parameters, equal to the n2 training log.
+- seg.py: RDRSegmenter exactly as HEAD rescap.metrics (" ".join(word_segment(t)).lower()).
+  - Uses B2's cache plus its own overlay; 29/29 re-segmentations agree with the cache.
+- pilot2_seed_ensemble.py, pilot2b_k3.py -> out_pilot2*.json, out_pilot2.log: seed-ensemble proxy.
+  - The scorer reproduces data/results exactly: p1-gold-short B-4 45.55, METEOR 39.07, ROUGE-L 64.24, CIDEr 149.79,
+    CHAIR_i 19.16.
+- pilot4_human_ceiling.py -> out_pilot4_human_ceiling.json: leave-one-out human CIDEr-D.
+- pilot5_loss_mask.py -> out_pilot5_loss_mask.json: exact legacy vs assistant supervision on the real SFT rows.
+  - Rows: gold_p1, gold_fuse2, gold_multiref sft.jsonl, read-only copies from n2 in data/.
+- logs/: copies of the metrics.jsonl of p1_s43, p1_s44, p1mask_s42, fuse2_s42 and fuse2_s44; queue scripts;
+  trainer_state of the epoch-1 checkpoints (P7).
+- preds/: p1mask_s42 short/detailed/two results (n2, legacy mask + seeded init; a 4th P1 replicate).
+- pilot6_mask_dynamics.py -> out_pilot6_mask_dynamics.json: legacy vs assistant training dynamics, same seed.
+- pilot8_copy_rate.py, pilot8b_mbr_copy.py -> out_pilot8_copy_rate.json: verbatim train-copy rate and length.
+- pilot9_maskfix_result.py -> out_pilot9_maskfix.json: the finished clean mask pair (p1assist_s42 vs p1mask_s42).
+  - preds/ holds the p1assist_s42 results copied read-only from n2.
+- adapters/ + pilot7_delta_alignment.py -> out_pilot7_delta_alignment.json.
+  - adapters/ holds read-only copies of the n2 P1 adapters (p1_s43, p1_s44, p1mask_s42 and its epoch-1
+    checkpoint). Seed and epoch delta alignment.
+- make_soup.py -> adapters/soup_p1x3_uniform, adapters/traj_p1mask_s42_ep1ep2: ready-to-evaluate B5-1 pilot
+  adapters (exact delta-space soups, self-checked).
+- wheels/: transformers 4.51.3 and 5.19.0 wheels, inspected only, not installed.
+
+=====================================================================================================================
+2. BACKBONE SURVEY (verified on the HF API, 12 Oct 2026; MP = megapixels seen per image)
+=====================================================================================================================
+Column key:
+- tok/cap: tokens per KTVIC test caption [95 % CI].
+- vis tokens: mean vision tokens per KTVIC test image at a ~512 / ~1,024 budget.
+- W4: estimated 4-bit resident weights (NF4 + double-quant; embeddings, lm_head and norms in bf16).
+- peak: estimated QLoRA SFT peak at bs 1 with gradient checkpointing, +-1.5 GB. It is anchored on the MEASURED
+  Qwen2.5-VL-7B peak of 11.7-12.7 GB (nvidia-smi, n2 p1assist and n3 mr5assist, 12 Oct). Adjustments: dW4,
+  logits (seq x vocab x ~14 B), LoRA + Adam (16 B per parameter), activations.
+
+A. Qwen/Qwen2.5-VL-7B-Instruct (current)
+   - Released 26 Jan 2025, Apache-2.0. 8.29B parameters: Qwen2.5-7B LM + 675M ViT, 28 px per token.
+   - Vietnamese: Qwen2.5 LM is multilingual; MTVQA (9 languages incl. vi) 29.2.
+   - Captioning: no public COCO/XM3600 numbers. KTVIC zero-shot CIDEr 29.0; P1 SFT 146.3 (4 replicates, SD 3.0).
+   - tok/cap 13.72 [13.61, 13.84]. Vis tokens 417 / 592 (0.33 / 0.46 MP). W4 5.90 GB.
+   - Peak: 11.7-12.7 GB MEASURED at 512; about 13.5 GB at 1,024 (est.).
+   - Throughput: 7.2-7.5 s per step of 8 rows; P1 at 2 epochs = 1.92 h + 0.23 h per eval mode.
+B. Qwen/Qwen3-VL-8B-Instruct
+   - 11 Oct 2025, Apache-2.0. 8.77B: Qwen3-8B LM + SigLIP2-SO400M (27 layers), DeepStack, 32 px per token.
+   - 39 languages (report: up from 10 non-En/Zh languages in Qwen2.5-VL); OCR in 32 languages.
+   - Card (vs Qwen2.5-VL-7B card): MMStar 70.9 (63.9), MMMU 69.6 (58.6), OCRBench 896 (864), HallusionBench 61.1.
+   - No captioning numbers in the report (arXiv 2511.21631; checked).
+   - tok/cap 13.72 (Qwen2.5 BPE). Vis 382 / 506 (0.39 / 0.52 MP). W4 6.37 GB.
+   - Peak about 13.2 GB at 512, 13.8 GB at 1,024. Needs transformers >= 4.57.
+C. Qwen/Qwen3.5-9B  [recommended if a backbone change is made]
+   - 27 Feb 2026, Apache-2.0. 9.65B. Natively multimodal ("early fusion", card).
+   - LM: 32 layers, 8 x (3 Gated-DeltaNet + 1 gated attention), hidden 4096, vocab 248,320.
+   - Vision: 27-layer, 1152-wide ViT, 32 px per token. 201 languages. Thinking mode is ON by default (disable it).
+   - Card: MMStar 79.7, MMMU 78.4, RealWorldQA 80.3, HallusionBench 69.3, OCRBench 89.2, MMMLU 81.2, WMT24++ 72.6.
+     No captioning numbers and no technical report on arXiv (only the Qwen3.5-Omni report, 2604.15804).
+   - tok/cap 12.43 [12.35, 12.51] (best). Vis 382 / 506. W4 8.01 GB (embeddings and head are 2 x 1.02B in bf16).
+   - Peak about 15.4 GB at 512, 16.2 GB at 1,024.
+   - Needs transformers 5.x. In the 5.19.0 wheel, models/qwen3_5 uses a hub kernel ("fla") for the chunked
+     gated-delta rule and falls back to pure torch (checked), so no custom CUDA build is required. Speed in that
+     fallback was not measured.
+D. OpenGVLab/InternVL3_5-8B(-HF) / InternVL3-8B
+   - Aug 2025 / Apr 2025, Apache-2.0. InternViT-300M + Qwen3-8B / Qwen2.5-7B.
+   - MTVQA 35.2 / 30.2: the best 8B MTVQA in the InternVL3.5 table.
+   - tok/cap 13.72. Vis tokens 256 with 1 tile, 817 with max 4 tiles, 2,134 with the default max 12.
+   - W4 6.25 / 5.72 GB. Peak about 14.4 GB at 4 tiles; 17+ GB at 6 tiles.
+   - 448-px square tiles distort the 3:2 photos unless tiled. Needs transformers >= 4.55 for the -HF variant.
+E. openbmb/MiniCPM-V-4_5
+   - Aug 2025, Apache-2.0 (card). SigLIP-SO400M + Qwen3-8B. 64 tokens per 448-px slice: 271 tokens mean on
+     KTVIC test, the cheapest.
+   - "30+ languages". No MTVQA or captioning numbers. tok/cap 13.72. W4 6.36 GB. Peak about 12.9 GB.
+   - Remote code.
+   - MiniCPM-V-4.6 (Apr 2026) is a 1.3B model; MiniCPM-V-4 uses the MiniCPM4 tokenizer (3.48 tokens per syllable).
+F. google/gemma-4-12B-it
+   - 23 May 2026, Apache-2.0 (Gemma 4 switched licence). 11.96B: 48 layers x 3840, vocab 262,144.
+   - "Unified, encoder-free" vision (arXiv 2607.02770): 16-px patches pooled 3x3. Budgets of 70 / 140 / 280 / 560 /
+     1,120 soft tokens; the card advises low budgets for captioning.
+   - Languages: 140+ in pre-training, 35+ "out of the box".
+   - No captioning numbers in the report (checked). Gemma 3 PT reported COCOcap 102 / 111 / 116 for 4B / 12B / 27B.
+   - tok/cap 12.84. W4 7.68 GB. Peak about 15.2 GB at 280 tokens, 16.3 GB at 560. Needs transformers >= 5.10.
+   - gemma-4-E4B: 8.0B, of which 3.49B are per-layer embeddings that stay in bf16 (W4 9.3 GB). Poor fit for QLoRA.
+G. zai-org/GLM-4.6V-Flash
+   - Dec 2025, MIT. 10.29B. GLM-4.1V-9B: MTVQA 25.5. tok/cap 14.07. W4 7.19 GB. Peak about 14.1 GB.
+   - Needs transformers 5.x.
+H. 5CD-AI/Vintern-1B-v3_5, Vintern-3B-R-beta (Vietnamese; MIT)
+   - InternVL2.5 recipe on Qwen2-0.5B / Qwen2.5-3B.
+   - vi-MTVQA 41.9 for 1B v3.5 (vs InternVL2.5-1B 24.8): strong Vietnamese OCR.
+   - The 3B is a reasoning beta. No captioning numbers. LMs are 0.5-3B: not candidates for the main backbone.
+   - Already used as the verifier; Vintern-3B zero-shot is queued as an optional job (78).
+I. Others checked (exist, fit at 4-bit, none better grounded for Vietnamese captioning):
+   - CohereLabs/aya-vision-8b: CC-BY-NC-4.0; 23 languages incl. vi; tok/cap 12.71.
+   - meta-llama/Llama-3.2-11B-Vision: image+text officially English only. Centurio measured XM3600 multilingual
+     CIDEr 7.2 with 33 % language fidelity.
+   - mistralai/Ministral-3-8B-2512 (Apache, FP8 weights on the hub) and mistral-community/pixtral-12b: tok/cap 14.48.
+   - lmms-lab/LLaVA-OneVision-1.5-8B, allenai/Molmo2-8B, Zyphra/ZAYA1-VL-8B, swiss-ai/Apertus-v1.5-8B (gated):
+     no Vietnamese or captioning evidence.
+   - google/paligemma2-10b (Gemma licence, gated): the only family with PUBLISHED fine-tuned multilingual captioning
+     numbers. 3B / 10B / 28B at 224 px: COCOcap 141.3 / 143.7 / 144.0; COCO-35L avg34 113.9 / 115.8 / 116.5;
+     XM3600 avg35 42.8 / 44.5 / 45.2. At 448 px: COCOcap 143.4 / 145.0 / 145.2; COCO-35L 115.8 / 117.2 / 117.2.
+   - Qwen/Qwen2.5-VL-3B (the queued second backbone, jobs 57/58) is under the "qwen-research" licence, which is not
+     Apache. State it in the paper.
+   - No InternVL4 exists on HF. Qwen3.6 and Qwen3.8 (Apr and Aug 2026) have no general <=10B dense VL model (only the driving-specific Qwen-Drive-1.0-4B): 27B, MoE and
+     Flash only.
+
+What published evidence says about a backbone swap AFTER task fine-tuning (closest to our setting):
+- PaliGemma 1 -> 2: same 3B size, newer Gemma LM, same transfer protocol. Model cards, arXiv 2407.07726 and
+  2412.03555.
+  - COCOcap: 141.9 -> 141.3 at 224 px, 144.6 -> 143.4 at 448 px.
+  - COCO-35L avg34: 115.8 -> 113.9 and 118.0 -> 115.8.
+  - XM3600: 42.4 -> 42.8 and 42.9 -> 43.2.
+  - Net: no gain from a newer same-size LM. LM size 3B -> 10B: +2.4 COCOcap, +1.9 COCO-35L, +1.7 XM3600.
+  - Resolution 224 -> 448 (4x tokens): +1.2 to +2.1.
+- LoRA SFT on CDVQA (arXiv 2604.18429), Qwen3.5-9B vs Qwen3-VL-8B: 74.05 vs 73.47 (test1), 69.44 vs 68.29 (test2).
+  Sizes 0.8B -> 9B do not order monotonically.
+- Centurio (arXiv 2501.05122), zero-shot XM3600 multilingual CIDEr: Qwen2-VL-7B 24.6, InternVL2.5-8B 15.7,
+  Centurio-Qwen 34.4.
+  - Chat VLMs are weak multilingual captioners zero-shot. In-language SFT is what fixes it, which we already do
+    (zero-shot 29 -> 146).
+- Reading: after SFT on 3.7K images the backbone generation matters little; size and in-language data matter.
+  Expect 0 to +2 CIDEr from Qwen3.5-9B, not +8.
+
+=====================================================================================================================
+3. PILOTS (CPU), NUMBERS WITH CIs
+=====================================================================================================================
+P1. Tokens per Vietnamese caption (pilot1_fertility.py). KTVIC test, 2,790 captions, image bootstrap B = 2000.
+   tokens/caption [95% CI]  tokens/syllable (train)  short-prompt tokens
+   Qwen3.5 / MiniCPM-V-4.6 (248K)        12.43 [12.35, 12.51]     1.030        29
+   Aya-Vision (Command R7B, 255K)        12.71 [12.62, 12.81]     1.047        29
+   Gemma 2 (PaliGemma 2 LM, 256K)        12.73 [12.64, 12.82]     1.048        28
+   Gemma 3 / Gemma 4 / ZAYA1 (262K)      12.84 [12.74, 12.93]     1.063        29
+   Qwen2.5 / Qwen3 BPE (Qwen2.5-VL, Qwen3-VL, InternVL3/3.5, MiniCPM-V-4.5, LLaVA-OV-1.5, Molmo2, Vintern)
+                                         13.72 [13.61, 13.84]     1.127        29
+   GLM-4.6V                              14.07 [13.95, 14.17]     1.152        35
+   Llama 3.2 (128K)                      14.44 [14.33, 14.56]     1.194        34
+   Mistral Tekken (Ministral-3, Pixtral, Apertus)  14.48 [14.35, 14.62]  1.179  32
+   MiniCPM4 (MiniCPM-V-4)                41.98 [41.64, 42.33]     3.482        78
+   UIT-ViIC test shows the same order (Qwen3.5 14.25, Qwen2.5 15.76).
+   - Reading: Vietnamese is near 1 token per syllable for all candidate tokenizers except MiniCPM4. Sequence length
+     is dominated by roughly 400 vision tokens.
+   - Fertility cannot explain or produce metric differences, except that a 3.5x tokenizer would triple decode
+     length.
+
+P2. Seed ensembling (pilot2_seed_ensemble.py, pilot2b_k3.py). KTVIC test short mode, 558 images, ESTIMATE.
+   - Method: MBR among the K replicate greedy captions.
+     - Utility: CIDEr-D to the other K-1 captions, with document frequencies from KTVIC TRAIN references only, so no
+       test label enters the selection. Ties go to the earlier member.
+     - Scored with HEAD's recipe. Paired image bootstrap, B = 2000.
+   - P1 replicates (all legacy mask): s42 = p1-gold (149.79); s43 (143.92); s44 (143.70); p1mask_s42 (147.67,
+     seeded LoRA init). Mean 146.27, SD 2.97.
+                            B-4    METEOR  ROUGE-L  CIDEr   CHAIR_i  CHAIR_s
+   seed mean (4)            45.11  39.12   64.11    146.27  18.30    27.55
+   MBR over 4 replicates    46.04  39.35   64.66    149.06  18.03    26.70
+     MBR - seed mean CIDEr: +2.79 [+0.62, +5.15]. MBR minus each seed:
+     - s42: -0.73 [-4.0, +2.6]. CHAIR_i -1.14 [-2.25, -0.03].
+     - s43: +5.14 [+1.0, +9.3].
+     - s44: +5.36 [+1.5, +9.5].
+     - p1mask_s42: +1.39 [-1.6, +4.5].
+     So the ensemble reaches the "lucky seed" level without having to pick a seed.
+   K = 3 (every 3-of-4 subset): MBR CIDEr 148.42 / 148.27 / 149.75 / 147.86.
+     - Against each subset's seed mean: +2.61 [0.66, 4.64], +1.14 [-0.87, 3.15], +2.69 [0.71, 4.67],
+       +2.77 [0.74, 4.84].
+     - Mean +2.30. B-4 +0.5 to +1.0; ROUGE-L +0.3 to +0.7; METEOR +0.2 to +0.5.
+   Two recipes pooled (4 P1 + 2 fuse2): CIDEr 151.32, B-4 46.27, METEOR 39.69, ROUGE-L 65.06, CHAIR_i 16.93,
+     CHAIR_s 25.09.
+     - +6.12 [+3.03, +9.01] over the 6-member mean; +5.05 over the P1 mean.
+     - This is the V5 policy-diverse committee, measured here on CIDEr. Prior art: MBR/committee. Reported only as a
+       ceiling for "ensembling".
+   Diversity headroom: all 4 replicates write the identical caption on only 144/558 images. A per-image oracle over
+     the 4 replicates scores 170.8 CIDEr; over the 6, 195.0. This uses test references: headroom only.
+
+P3. Vision tokens per KTVIC image (pilot3_vision_tokens.py). Published processor rules; test set, 558 images.
+   Qwen2.5-VL (28 px per token, min 256 tokens):
+   - Cap 512: mean 417 (p10 286, p50 476, p90 494). 277 images capped below native. 0.33 MP.
+   - Cap 1,024: mean 592. 114 capped. 0.46 MP.
+   - Native: mean 891.
+   Qwen3-VL / Qwen3.5 (32 px per token):
+   - Cap 512: mean 382, 210 capped, 0.39 MP.
+   - Cap 1,024: mean 506, 77 capped, 0.52 MP.
+   - Native: mean 681.
+   InternVL 448-px tiles with thumbnail: max 1 tile = 256; max 4 = 817; max 6 = 1,607; max 12 (default) = 2,134
+     (p90 3,328).
+   MiniCPM-V-4.5 (64 tokens per slice, up to 9 slices + global view): mean 271 (p50 192, p90 448).
+   Train set (3,769 images) is the same: Qwen2.5 cap 512 gives mean 421; cap 1,024 gives 604.
+   Reading:
+   - The 512 cap halves the token count only for the larger half of the images.
+   - PaliGemma's 4x token increase (224 -> 448 px) bought +1.2 to +2.1 COCO CIDEr. Our 1,024 cap is a 1.4x increase
+     in mean tokens, so expect <= +1.
+
+P4. Human ceiling at equal reference count (pilot4_human_ceiling.py). Leave-one-out over 5 folds, 558 images.
+   CIDEr-D against the 4 remaining references [95% CI]:
+   - human: 181.5 [173.7, 189.0].
+   - P1 s42: 149.8 [140.4, 158.9]; s43: 143.9; s44: 143.7; p1mask_s42: 147.6.
+   - Model minus human: -31.8 to -37.8 (CI widths about +-9.5).
+   - KTVIC references are dependent (one typist, adjacent indices), so this ceiling is inflated. Still, it shows
+     where CIDEr headroom lies: in phrasing typical of these annotators.
+
+P5. What the legacy mask supervised (pilot5_loss_mask.py). Real rows, Qwen2.5-VL tokenizer and chat template,
+    VLCollator logic at HEAD.
+   P1 rows (3,769):
+   - Mean sequence 487 tokens (vision 421, p99 571).
+   - Supervised tokens: legacy 49.6 = instruction 29 + "<|im_end|>\n<|im_start|>assistant\n" 5 + response 13.6 +
+     end 2. Assistant mask: 15.6.
+   - The response is 31.2 % of legacy-supervised tokens (commit 7dacd8f said "about 30 %").
+   fuse2 rows:
+   - Short rows: response share 32.0 %.
+   - Detailed rows (26.3 response tokens, 12-token prompt): 61.0 %.
+   gold_multiref rows: response share 32.3 %.
+   transformers 4.51.3 (wheel inspected):
+   - Qwen2_5_VLForConditionalGeneration.forward has no **kwargs, so Trainer.model_accepts_loss_kwargs = False.
+   - num_items_in_batch is never passed. Each row's loss is CrossEntropyLoss(mean) over its own supervised tokens,
+     divided by grad_accum. Rows are weighted EQUALLY, whatever their length.
+   Consequence: under legacy, the per-row weight on response tokens is 0.31 for short rows and 0.61 for detailed
+     rows. Relative to the fix, legacy up-weighted detailed-row responses 1.91x against short-row responses.
+
+P6. Memory (st_headers.py, lora_params.py + measured anchors). Section 2 has the per-model figures.
+   - Measured on 12 Oct (nvidia-smi per-process), QLoRA 4-bit SFT, Qwen2.5-VL-7B, cap 512, bs 1 x accumulation 8:
+     - 11.69 GB (p1assist_s42, n2, about step 255).
+     - 12.72 GB (mr5assist_s42, n3, 56 min).
+   - The 19.15 GB in train_stage2's docstring is DPO (two sequences + reference pass), not SFT.
+   - Every 7-12B candidate is estimated at 13-16.5 GB at a 512-1,024 cap, leaving >= 7 GB headroom on 24 GB.
+     Exception: InternVL at >= 6 tiles.
+   - The repo's rule "<44 GB card -> 512 tokens" was set by DPO. SFT at 1,024 fits (est. 13.5 GB for Qwen2.5-VL-7B).
+
+P7. Training dynamics of the clean mask pair (pilot6_mask_dynamics.py)
+   - Pair: p1mask_s42 (legacy) vs p1assist_s42 (assistant). Same seed 42, same seeded LoRA init and data order. Logs
+     from checkpoint-472, steps 10-470.
+   Logged loss / grad-norm (legacy | assistant):
+   - Step 10: 4.25 / 2.78 | 2.19 / 1.75.
+   - Step 30: 0.72 / 5.85 | 1.33 / 1.96.
+   - Step 50: 0.59 / 0.86 | 1.18 / 1.96.
+   - Step 470: 0.44 / 0.72 | 1.04 / 2.35.
+   Gradient clipping:
+   - HF clips the global norm at 1.0 (TrainingArguments default; checked in the transformers 4.51.3 and trl 0.19.1
+     wheels).
+   - The assistant run is clipped at 100 % of logged steps (norm about 2).
+   - The legacy run only in its first about 40 steps (8.5 %); after that its norm is about 0.7.
+   - Legacy's early raw-norm RMS is 5.4x its late level, so the instruction-memorisation transient is real.
+   - After clipping, Adam's second-moment inflation suppresses legacy's effective step by about 27 % at step 50,
+     20 % at 100, 13 % at 200 and 6 % at 470 (global-norm proxy).
+   Response fit at matched steps (same rows):
+   - Legacy response-only token accuracy is 0.655-0.677 at step 100 and 0.672-0.694 at step 470 (bounding the 34
+     instruction tokens at 1.00 / 0.99), vs assistant 0.719 and 0.726.
+   - If the instruction loss were 0, legacy's response loss would be 1.41 vs 1.04 nats per token at step 470.
+     If both runs fit the response equally, the implied instruction loss would be 0.17 nats per token
+     (steps >= 200: 0.16-0.19).
+   - Truth is in between. Either way the legacy mask SLOWED response learning in epoch 1 by 3-6 accuracy points.
+   Final test numbers of p1assist_s42: P10.
+
+P8. LoRA delta alignment across seeds and epochs (pilot7_delta_alignment.py; 196 modules)
+   - Adapters copied read-only from n2. Exact Frobenius inner products via r x r traces.
+   Delta cosine, norm-weighted:
+   - s43 vs s44: 0.310. s43 vs p1mask_s42: 0.305. s44 vs p1mask_s42: 0.294.
+   - Same as SeedLoRA's 0.28-0.30 for same-task seeds.
+   A-factor cosine across seeds: -0.002 to 0.000, i.e. different random LoRA inits, even for the old s43/s44.
+   - Factor-space averaging (PEFT "linear") would therefore add random cross terms B_i A_j.
+   - Only delta-space averaging ("cat"/"svd") is valid.
+   Uniform 3-seed soup:
+   - ||mean delta|| = 0.732 x mean member norm. With shared fraction rho = 0.30 this is sqrt(rho + (1-rho)/3) = 0.73.
+   - So the soup keeps 100 % of the component shared by the seeds and 58 % of each seed's idiosyncratic part (the
+     seed-specific template choice).
+   Within one run, epoch 1 vs epoch 2: delta cosine 0.948, A-factor cosine 0.997 (A barely leaves its init), epoch-1
+     norm 0.85 x final.
+   - Averaging the two moves the delta by only about 5 %. Trajectory averaging is a small lever: expect <= +-1
+     CIDEr.
+
+P9. Verbatim copying of TRAIN captions in short-mode test predictions (pilot8_copy_rate.py, pilot8b_mbr_copy.py)
+   - Exact match after lower-casing, whitespace normalisation and stripping final punctuation. Image bootstrap CI.
+   P1 replicates:
+   - s42: 21.5 % [18.1, 24.9]. This reproduces the round-1 reviewers' 21.5 %, now in code.
+   - s43: 20.6 %. s44: 19.9 %. p1mask_s42: 21.3 %.
+   - Mean length 11.9 syllables.
+   fuse2 s42 / s44: 17.4 % / 17.7 % (12.4 syllables).
+   MBR over the 4 P1 seeds: 21.5 % [18.1, 24.9], 11.89 syllables.
+   - So the ensemble's CIDEr gain (P2) does NOT come from copying more memorised training captions. It comes from
+     picking the consensus phrasing among non-identical outputs.
+   - Prediction for p1assist_s42 (P7: faster response fitting): copy rate >= that of p1mask_s42 (21.3 %).
+
+P10. RESULT of the clean mask pair (pilot9_maskfix_result.py; p1assist_s42 finished on n2 at about 15:35 UTC, 12 Oct)
+   - Short mode, KTVIC test, HEAD scorer.
+   - The assistant-mask run's own evaluate.py JSON gives the same numbers: CIDEr 148.66, mentions per caption 1.82.
+                      B-4    METEOR  ROUGE-L  CIDEr   CHAIR_i  CHAIR_s  train-copy  length
+   p1assist_s42       45.88  39.21   64.57    148.66  18.29    27.78    22.8 %      11.88
+   p1mask_s42         44.93  39.25   64.44    147.67  18.03    27.24    21.3 %      11.95
+   Paired, same seed (assistant - legacy):
+   - CIDEr +0.99 [-3.59, +5.43]. CHAIR_i +0.26 [-1.19, +1.67].
+   - The two runs write identical captions on 320/558 images.
+   Against the mean of the 4 legacy replicates: CIDEr +2.39 [-1.55, +6.39].
+   Every pre-registered P1 prediction holds:
+   - |dCIDEr| <= 4. B-4 / ROUGE-L <= 1.5. Length <= 0.5 words. CHAIR_i <= 2.5.
+   - Copy rate >= 21.3 %: it rose to 22.8 %, consistent with faster response fitting (P7).
+   - Training: 6,875 s for 942 steps (1.91 GPU-h). Final train loss 0.93 per response token; token accuracy 0.81.
+   Reading:
+   - For P1 the fix changes nothing beyond seed noise on n-gram metrics and CHAIR. Object P/R was not computed here;
+     R5-00 §8's rule needs object_prf.
+   - fuse2 is still untested, and section 5 predicts a real shift there.
+   - p1assist_s42 is the first seed of the NEW recipe (assistant mask).
+     - It shares LoRA init and data order with p1mask_s42 (320/558 identical captions).
+     - So pairing the two adds little diversity to a soup: build soups from different seeds.
+
+=====================================================================================================================
+4. RECIPE LEVERS: literature, expected effect on KTVIC short-mode CIDEr, verdict
+=====================================================================================================================
+Current recipe:
+- QLoRA NF4 with double-quant; LoRA r16, alpha 32, dropout 0.05, on all 7 LM projections. The vision tower is
+  excluded on purpose (its LoRA got no gradient).
+- lr 1e-4, linear decay, no warm-up, 2 epochs; batch 1 x accumulation 8 (942 steps for P1); 512-token cap; legacy
+  mask in every finished run.
+
+(a) LoRA rank / alpha / rsLoRA / DoRA / PiSSA / LoRA+.
+    - QLoRA (arXiv 2305.14314): "r is unrelated to final performance if LoRA is used on all layers".
+    - "LoRA Without Regret" (Thinking Machines blog, 29 Sep 2025, read):
+      - LoRA equals full fine-tuning on small and medium SFT data.
+      - Use all layers, especially the MLP.
+      - The optimal LR is about 10x the full-FT LR and nearly rank-independent under 1/r scaling (alpha 32).
+      - Our 1e-4 at r16 is in range.
+    - DoRA (arXiv 2402.09353, HTML read): VL-BART COCO captioning 115.3 -> 115.9 (+0.6); LLaVA-1.5 average
+      66.9 -> 67.6.
+    - Expected effect: <= +1, far below the single-seed CIDEr MDE of about 14-16 (A6 power analysis).
+      VERDICT: do not run (agrees with A6).
+(b) Vision-tower LoRA / projector (merger) tuning.
+    - Code fact: the 192 vision LoRA tensors never received a gradient under the current checkpointing setup
+      (train_stage2 comment). Enabling them needs input-grad hooks on pixel_values or unfrozen merger weights.
+    - The prior is weak. KTVIC scenes are in-distribution for web-pretrained encoders, and the CIDEr headroom is in
+      phrasing (P4), not perception.
+    - VERDICT: not a metric lever. Run only if a perception-error analysis shows misrecognition (B4 owns evidence).
+(c) Epochs / LR / warm-up / early stopping on a dev split.
+    - The loss drops 0.074 nats per token at the epoch boundary (A6), so epoch 2 is mostly memorisation.
+    - The direction of the CIDEr effect is unknown: less memorisation can mean more typical captions, or less
+      KTVIC style.
+    - Free check: the epoch-1 checkpoints (checkpoint-472) of p1mask_s42 and p1assist_s42 exist on n2; 0.23 GPU-h per
+      mode.
+    - Any epoch choice for a claim must be made on a 300-image dev split of TRAIN (context rule).
+    - VERDICT: fold into proposal B5-1 as within-run trajectory averaging (cheap). Do not sweep LR.
+(d) NEFTune (arXiv 2310.05914, HTML read).
+    - LLaMA-2-7B on Alpaca: AlpacaEval answers grow from 60.5 to 169.4 whitespace tokens.
+    - ROUGE-L and BLEU against ground-truth answers DROP. The stated mechanism is less fitting of the dataset's
+      "formatting, exact wording, and text length".
+    - That is exactly what CIDEr-D and BLEU reward on KTVIC (12-word references, Gaussian length penalty with
+      sigma 6).
+    - VERDICT: predicted harmful. Do not run.
+(e) R-Drop (arXiv 2106.14448, abstract): NMT, summarisation, NLU, LM and image classification; no captioning.
+    - Twice the compute per step. Only LoRA dropout (0.05) is stochastic in our model, so the consistency signal is
+      weak.
+    - VERDICT: <= +1, not worth 2x GPU.
+(f) Weight averaging.
+    - Model soups (arXiv 2203.05482, ICML 2022): averaging fine-tuned weights approaches ensembling "without
+      incurring any additional inference or memory costs".
+    - SeedLoRA (Liu et al., ICML 2025, PMLR 267:38384, full text read): seeds trained on the SAME task.
+      - Cosine similarity between seed deltas is about 0.28-0.30, against about 0 across tasks.
+      - Plain "Model Soup" of 3 seed deltas vs single seeds:
+        - LLaMA2-7B GSM8K 66.6 vs 63.8-64.1.
+        - Mistral-7B GSM8K 79.1 vs 75.4-76.3.
+        - MATH 28.5 vs 24.8-25.9.
+      - Their two-stage fusion adds a little more: 68.9 / 80.7 / 28.8.
+    - Caveats:
+      - Averaging the FACTORS of adapters with different random inits fails: AdapterSoup (arXiv 2302.07027)
+        recommends a shared init.
+      - CoTo (arXiv 2506.05713) reports a vanilla-LoRA midpoint at about 39 % vs about 79 % on commonsense, and its
+        footnote separates factor "weight fusion" (B1+B2)(A1+A2) from the delta "model ensemble" B1A1 + B2A2.
+      - So average in DELTA space. PEFT add_weighted_adapter(combination_type="cat") is exact; "linear" averages
+        factors and is wrong across seeds.
+    - Expected effect: +2 to +3 CIDEr over the seed mean (P2 proxy), plus lower seed variance (SeedLoRA vanilla-LoRA soups: +0.4 to +3.7 over single seeds).
+    - VERDICT: PROPOSAL B5-1.
+(g) Image resolution / vision-token budget.
+    - P3: 1,024 changes only 114-277 test images. PaliGemma 4x tokens gave +1.2 to +2.1 on COCO.
+    - Literature cited in A6 (FastV, SparseVLM, ICLR 2025 token studies): everyday scenes tolerate token cuts.
+    - Expected effect: <= +1. VERDICT: keep job 73 optional. If the backbone moves to Qwen3.x, keep the 512 cap; it
+      already sees 20 % more pixels.
+(h) Backbone. Section 2. VERDICT: PROPOSAL B5-2 (low confidence, 0 to +2), or use it only as the second-backbone
+    replication.
+(i) Loss mask. Section 5. VERDICT: adopt --loss-mask assistant for every new run. This removes the length-dependent
+    row reweighting, a hidden hyper-parameter, rather than chasing a metric gain.
+
+=====================================================================================================================
+5. THE LEGACY LOSS-MASK BUG: WHAT IT DID AND THE EXPECTED EFFECT OF THE FIX
+=====================================================================================================================
+Facts:
+- Every finished run used the legacy mask. The code measured the prompt length before the image placeholder was
+  expanded.
+- So the 29-token instruction and the 5-token assistant header were supervised:
+  - 69 % of supervised tokens in P1 and multiref rows;
+  - 68 % in fuse2 short rows;
+  - 39 % in fuse2 detailed rows (P5).
+- In transformers 4.51.3 each row's loss is a per-row mean and rows are weighted equally (P5, code-verified).
+  Three mechanisms follow:
+  (1) Gradient dilution. Response gradients are scaled by about 0.31 (short rows) or 0.61 (detailed rows).
+      - A constant scale is cancelled by Adam, and by clipping when the norm exceeds 1.
+      - A scale that DIFFERS between rows is not cancelled. In fuse2, legacy effectively weighted detailed-row
+        responses 1.91x relative to short-row responses, against the fix.
+  (2) A memorisation transient. Steps 1-40 are spent learning the fixed instruction (logged loss 4.25 -> 0.59 by
+      step 50). The early raw gradient is 5.4x the late one. After clipping, Adam's second moment stays inflated,
+      cutting the effective step by about 27 % -> 6 % over epoch 1 (P7).
+  (3) Instruction tokens keep a share of every update. At matched steps the legacy run fits the response worse:
+      token accuracy 0.67-0.69 vs 0.73 (P7).
+Literature:
+- Prompt-loss weight matters mainly for SHORT completions. PLW = 0 is often worst; the optimum is about 0.24; effects
+  are < 2 points on short-generation benchmarks (Huerta-Enochian & Ko, EMNLP 2024, arXiv 2401.13586).
+- Loss over instructions helps with long instructions and short outputs on little data, through less overfitting
+  (Shi et al., NeurIPS 2024, arXiv 2405.14394).
+- Both studies use DIVERSE instructions. Ours is a single fixed string, so its "regularising" content is near zero
+  once memorised. What remains is mechanisms (1)-(3).
+Predictions (written before p1assist_s42's test numbers existed; P10 has the outcome, and all P1 bounds held):
+- P1, assistant vs legacy, same seed:
+  - The fix trains the response faster, with a higher effective step and no instruction share, so the model fits
+    and memorises the training captions more.
+  - Short-mode CIDEr changes by |d| <= 4: the direction is not predictable, and it sits inside the 1-seed MDE of
+    about 14-16.
+  - B-4 and ROUGE-L by <= 1.5. Mean caption length by <= 0.5 words. CHAIR_i by <= 2.5 (single-seed MDE 2.7).
+  - The R5-00 §8 rule then lands in "keep old runs, disclose" or the middle zone, not "rerun everything", for P1.
+- fuse2, assistant vs legacy (no clean pair has run; 50_b was killed because it was still legacy):
+  - The fix up-weights short rows relative to detailed rows (1:1 instead of 1:1.91).
+  - Predicted direction: fuse2-short becomes more P1-like (fewer mentions per caption, higher precision, higher
+    B-4/CIDEr). fuse2-detailed changes little in content and may get slightly shorter.
+  - This is the mechanism behind a possible nonzero DiD in R5-00 §8.
+  - The mr5assist_s42 run on n3 (multiref, assistant) is homogeneous short rows, like P1, so the reweighting does
+    not apply there.
+Recommendation: use --loss-mask assistant for every new R6 run (it removes a hidden, length-dependent row weighting).
+- For the paper, report fuse2's legacy runs as "length-weighted" training and give the reweighting factor (1.91).
+- Do not expect a metric gain from the fix itself.
+
+=====================================================================================================================
+6. PROPOSALS (at most 2; ranked by expected metric gain x confidence / cost; novelty is low for both)
+=====================================================================================================================
+B5-1  Seed soup: deploy the exact delta-space average of K >= 3 seed adapters (plus within-run trajectory averaging)
+  Mechanism:
+  - Train the final recipe with K seeds, as the 3-seed claims require anyway.
+  - For every adapted layer, form dW_soup = (1/K) * sum_k (alpha/r) * B_k A_k. With PEFT this is
+    add_weighted_adapter(names, [1/K]*K, combination_type="cat"): exact, rank K*r, works on the 4-bit base. Never use
+    "linear", which averages the factors and is wrong across random inits.
+  - Optional: within each run, average the epoch-1 and epoch-2 deltas first (2-point LAWA/SWA). It is free: the
+    checkpoints already exist.
+  - Optional upgrade: SeedLoRA two-stage fusion (TIES-style robust/conflict split + SVD subspace fusion). Report the
+    uniform soup as primary.
+  - Measured on the existing adapters (P8):
+    - Seed deltas have cosine 0.30 and independent A inits, so "cat" is mandatory.
+    - The uniform soup has 0.73x the member delta norm.
+  - A norm-preserving variant (weights 1/(K*0.73)) is a hyper-parameter: choose it on the 300-image dev split,
+    never on test.
+  - Fallbacks if weight space misbehaves:
+    - Logit-ensemble decoding over the K adapters: one base, K adapter passes per token, about 0.7 GPU-h per mode on
+      558 images.
+    - MBR over the K greedy captions: the measured +2.8.
+  Why it should raise the key metrics:
+  - KTVIC CIDEr variance is template variance. Same-recipe seeds differ by 6.1 CIDEr; all 4 write the same caption
+    on only 26 % of images.
+  - CIDEr-D rewards the modal phrasing of the references (P4). A consensus over seeds lands on that mode more often
+    (P2).
+  Novel element:
+  - None methodologically (model soups 2022; SeedLoRA 2025).
+  - The only new content: showing that seed consensus collapses CIDEr's template lottery in small-data VLM
+    captioning, and using the soup to shrink seed variance. That shrinks the MDE of every later comparison.
+  Closest prior: SeedLoRA (Liu et al., ICML 2025, PMLR 267:38384-38396); Model soups (Wortsman et al., ICML 2022,
+    arXiv 2203.05482); AdapterSoup (arXiv 2302.07027).
+  Pilot (0.5 GPU-h; pre-register before running):
+  - CPU merge already done, ready to copy to n2 and evaluate:
+    - adapters/soup_p1x3_uniform: rank 48, alpha 96, = (1/3)(p1_s43 + p1_s44 + p1mask_s42) in delta space.
+    - adapters/traj_p1mask_s42_ep1ep2: rank 32, the epoch-1 + epoch-2 average.
+    - Built by make_soup.py (numpy only). Its built-in assert checks soup(x) == sum_k w_k delta_k(x) on random
+      probes; it passed.
+  - Run, e.g.: python scripts/evaluate.py --model qwen2.5-vl-7b --adapter <dir> --split test_data.json --prompt short
+    --name soup_p1x3-short. Then the same for detailed.
+  - Evaluate the uniform delta soup in short mode, plus detailed mode, on KTVIC test: 0.25 GPU-h per mode.
+  - Pre-registered comparison: soup minus the mean of its members, paired image bootstrap B = 5000.
+  - The same pilot on epoch-1 + epoch-2 trajectory averages costs 0.23 GPU-h per run.
+  Expected gain (vs the mean of its own seeds; P2 proxy + SeedLoRA):
+  - CIDEr +1.5 to +3 (central +2.3 for K = 3). B-4 +0.5 to +1.0. ROUGE-L +0.3 to +0.6. METEOR +0.2 to +0.4.
+  - CHAIR_i about -0.3 (+-1).
+  - Between-soup SD expected well below the single-seed 3.0. The overlapping 3-of-4 MBR subsets span 147.9-149.8
+    vs 143.7-149.8 for single seeds.
+  - It stacks with any method, because it acts on seed variance, not on targets.
+  GPU-h: 0.5 for the pilot. In production 0 extra training, plus 0.25 GPU-h per soup per mode. If two independent
+    soups are wanted for a variance estimate, add 3 seeds: about 7.2 GPU-h for the P1 recipe, 13.4 for fuse2.
+  Kill criterion:
+  - On the pilot, uniform delta soup CIDEr < member mean + 1.0, OR CHAIR_i > member mean + 1.0.
+  - If killed, switch to logit-ensemble decoding. If that also fails (< mean + 1.0), drop the lever.
+  Synthetic training data: no.  Confidence: medium.
+
+B5-2  Backbone: Qwen3.5-9B (fallback Qwen3-VL-8B) under the FINAL R6 recipe, as the system backbone or the second
+      backbone
+  Mechanism:
+  - QLoRA NF4 on Qwen/Qwen3.5-9B, non-thinking chat template (enable_thinking=False; mask the empty think block).
+  - --loss-mask assistant. LoRA r16 on all LM linear layers, including the Gated-DeltaNet projections (41.6M
+    trainable).
+  - 512-token cap at 32 px per token: 382-388 tokens mean, 0.39 MP per image.
+  - Same epochs and LR as the final recipe. Re-check the LR on dev: PaliGemma 2 found optimal transfer LRs fall with
+    model size.
+  - Separate venv: transformers >= 5.x, peft and trl versions matched; the repo pin 4.51.3 cannot load it.
+  - In train_stage2/evaluate: AutoModelForImageTextToText, processor, template, target modules.
+  Why: the strongest Apache-2.0 <= 10B VLM as of Oct 2026.
+  - Card: MMStar 79.7 and MMMU 78.4 (Qwen2.5-VL-7B card: 63.9, 58.6); HallusionBench 69.3 (Qwen3-VL-8B: 61.1).
+  - 201 languages; 9 % fewer tokens per Vietnamese caption.
+  - 32-px tokens: 31 % more pixels per token. At the 512 cap that is 0.39 vs 0.33 MP per image with fewer tokens.
+  - Fits a 3090 with margin: est. 15.4 GB at 512, 16.2 GB at 1,024.
+  Novel element: none (engineering).
+  Closest prior: arXiv 2604.18429 (LoRA Qwen3.5 vs Qwen3-VL, CDVQA); PaliGemma 2 transfer study (arXiv 2412.03555).
+  Pilot (about 4.7 GPU-h):
+  - Hold out the context's dev split (random.Random(0).sample(sorted(train_ids), 300)).
+  - Train 1 seed of the final recipe on the remaining 3,469 images, on both Qwen2.5-VL-7B and Qwen3.5-9B
+    (867 steps each at 2 epochs).
+  - Measure peak memory and s/step.
+  - Score dev with the teacher-forced NLL of the 1,500 dev references in bits per SYLLABLE (comparable across
+    tokenizers, and far more precise than a 300-image CIDEr). Also score dev CIDEr and B-4.
+  Expected gain: KTVIC CIDEr 0 to +2 (central +1) over Qwen2.5-VL-7B under the same recipe. Generalisation to
+    UIT-ViIC/COCO possibly larger (broader multilingual pre-training) but unmeasured. CHAIR_i +-1.
+  GPU-h: pilot 4.7. Full run 3 seeds x (about 2.5-3.0 h train + 0.5 h eval) = about 10. Total about 15, plus 1-2
+    days of porting. Step time in the GDN torch fallback is unmeasured; budget 1.2-1.6x Qwen2.5-VL's 7.3 s.
+  Kill criterion, any one of:
+  - Dev bits/syllable not lower than Qwen2.5-VL-7B's by >= 2 % with a bootstrap CI over dev images excluding 0.
+  - Peak memory > 22 GB at the 512 cap.
+  - Step time > 2x the baseline.
+  - After 3 seeds, pooled paired-bootstrap dCIDEr on test with CI upper bound < +1.
+  If killed: keep Qwen2.5-VL-7B and use Qwen3-VL-8B (or the queued Qwen2.5-VL-3B) only as the second-backbone
+    replication.
+  Synthetic training data: no.  Confidence: low.
+
+Not proposed:
+- Multi-reference SFT (B2's lever) and CIDEr-RL (B1's). By P2 and P4 these are where the large CIDEr headroom is.
+  Both stack with B5-1.
+- The cross-recipe committee (P2: 151.3 CIDEr, CHAIR_i 16.9). It is V5/B3 territory: MBR at K-fold inference.
+
+=====================================================================================================================
+7. SOURCES (arXiv ids / venues; how each was read)
+=====================================================================================================================
+Backbones (HF API + cards fetched 12 Oct 2026; benchmark-table images viewed in hf/img/):
+- Qwen3-VL Technical Report, arXiv 2511.21631. HTML read in 2 chunks; no captioning numbers.
+- Qwen3.5: HF card Qwen/Qwen3.5-9B (no arXiv report found; Qwen3.5-Omni Technical Report is arXiv 2604.15804).
+- InternVL3.5, arXiv 2508.18265 (card + multilingual table image). InternVL3, arXiv 2504.10479 (card).
+- MiniCPM-V 4.5, arXiv 2509.18154 (card).
+- Gemma 4 Technical Report, arXiv 2607.02770 (abstract + HTML scan for captioning / token budgets).
+- PaliGemma, arXiv 2407.07726 (card table read). PaliGemma 2, arXiv 2412.03555 (HTML Table 13 + card table read).
+- Centurio, arXiv 2501.05122 (HTML read, Table 5). Pangea, arXiv 2410.16153 (title only).
+- Vintern-1B, arXiv 2408.12480 (card). LaVy, arXiv 2404.07922 (title).
+- Bazi et al., "Revisiting Change VQA ... Structured and Native Multimodal Qwen Models", arXiv 2604.18429 (HTML read).
+- KTVIC, arXiv 2401.08100; UIT-OpenViIC, arXiv 2305.04166; UIT-ViIC, arXiv 2002.00175; ViCLIP-OT, arXiv 2602.22678
+  (retrieval only; lists the KTVIC splits). Titles and abstracts only.
+Recipe:
+- QLoRA, arXiv 2305.14314. LoRA Without Regret, thinkingmachines.ai/blog/lora (29 Sep 2025, read).
+- DoRA, arXiv 2402.09353 (HTML Tables 2/4). LoRA+, arXiv 2402.12354; PiSSA, arXiv 2404.02948; rsLoRA,
+  arXiv 2312.03732 (as summarised in A6).
+- "Which LoRA?", arXiv 2606.10428 (A6, abstract).
+- NEFTune, arXiv 2310.05914 (HTML read). R-Drop, arXiv 2106.14448 (abstract).
+- Model soups, arXiv 2203.05482 (abstract). SeedLoRA, ICML 2025, PMLR 267:38384-38396 (full PDF text read,
+  papers/seedlora.txt).
+- AdapterSoup, arXiv 2302.07027 (search summary). CoTo, arXiv 2506.05713 (HTML read). LoRA Soups, arXiv 2410.13025
+  (title/abstract).
+- Huerta-Enochian & Ko, "Instruction Fine-Tuning: Does Prompt Loss Matter?", EMNLP 2024, arXiv 2401.13586
+  (HTML read):
+  - Short-completion data shows a negative quadratic effect of prompt-loss weight. PLW = 0 is "almost always" worst;
+    the optimum is about 0.24.
+  - Effects on short-generation benchmarks are < 2 points. Prompts there are diverse.
+- Shi et al., "Instruction Tuning With Loss Over Instructions", NeurIPS 2024, arXiv 2405.14394 (abstract): the
+  benefit comes from long instructions with short outputs and few examples (less overfitting).
+- A6 (manuscript/research_r2/A6_REPORT.txt): power analysis, adapter-variant negative, token-budget literature.
+  Reused, not re-derived.
+
+=====================================================================================================================
+8. SCOOP / COVERAGE SEARCHES (arXiv API, throttled; WebSearch)
+=====================================================================================================================
+arXiv API:
+- all:KTVIC -> KTVIC paper and ViCLIP-OT only.
+- abs:"Vietnamese image captioning" -> 4 dataset/older papers.
+- all:OpenViIC.
+- Vietnamese + vision-language + caption.
+- ti:Vintern.
+- Vietnamese + "multimodal large language model" -> Vintern, LaVy, a remote-sensing LoRA paper.
+- "Qwen3-VL" + caption + fine-tuning -> no KTVIC/Vietnamese captioning.
+- "Qwen2.5-VL" + "image captioning" + LoRA -> none.
+- "Qwen3.5" + vision.
+- ti:"Qwen3-VL Technical Report"; ti:"InternVL3.5"; ti:"MiniCPM-V 4.5"; ti:"Gemma 4"; ti:Centurio; ti:Pangea;
+  ti:"PaliGemma 2".
+- XM3600 + Vietnamese -> none.
+- low-resource-language image captioning with VLM -> nothing relevant.
+- "model soups" + captioning -> none.
+- LoRA + weight averaging + seeds -> none.
+- NEFTune + vision-language -> none. R-Drop + image captioning -> none.
+- vision encoder + LoRA + captioning + unfreeze -> none. "early stopping" + CIDEr + fine-tuning -> none.
+- visual-token count + captioning + CIDEr -> none.
+- "Qwen2.5-VL" + fine-tuned + CIDEr -> none. "Qwen3-VL" + CIDEr -> 2 unrelated.
+- "LoRA soups". EMA + LoRA. PiSSA + vision-language. DoRA + image captioning. Vietnamese + image captioning + LLM.
+WebSearch:
+- KTVIC VLM fine-tuning 2025 -> no VLM fine-tuning paper on KTVIC beyond GRIT and the dataset paper.
+- Qwen3-VL-8B vs Qwen2.5-VL-7B captioning fine-tuning -> none.
+- Qwen3.5-9B LoRA captioning CIDEr -> none.
+- Model soup + captioning CIDEr -> none.
+- LoRA seed averaging -> SeedLoRA, CoTo, AdapterSoup.
+- LoRA weight averaging for VLM captioning -> none.
+- Qwen3.5 technical report -> none on arXiv.
+- LoRA Without Regret.
+Conclusion: no published VLM fine-tuning results on KTVIC, and no seed-soup study on captioning. B5-1 is therefore
+"known technique, untested in this setting", not a scoop risk, but also not a novelty claim.
+
+=====================================================================================================================
+9. NOTES FOR THE SYNTHESIS
+=====================================================================================================================
+- Use p1mask_s42 (CIDEr 147.67, B-4 44.93, METEOR 39.25, ROUGE-L 64.44, CHAIR_i 18.03) as the 4th legacy P1
+  replicate.
+- p1assist_s42 is the first P1 seed of the new mask recipe: CIDEr 148.66, B-4 45.88, METEOR 39.21, ROUGE-L 64.57,
+  CHAIR_i 18.29.
+  - P1 4-run mean CIDEr 146.27, SD 2.97. +8 over it = 154.3.
+- The CIDEr headroom is real: human leave-one-out 181.5 vs P1 146.
+  - The levers that act on phrasing consensus can reach it: multi-reference targets (B2), CIDEr reward (B1),
+    ensembles (B5-1).
+  - Backbone and resolution mostly cannot.
+- A 3-seed soup per arm also helps POWER. The context's MDE of 12.7 CIDEr for 3 vs 3 seeds is driven by the
+  single-seed SD of 3.0. Comparing soups should lower it, but measure the between-soup SD before relying on it.
+- The repo's Qwen2.5-VL-3B second backbone is licensed "qwen-research". Qwen3-VL-8B or Qwen3.5-9B would be an
+  Apache-2.0 second backbone at 7-9B, which is more convincing for the "one 3090" claim.

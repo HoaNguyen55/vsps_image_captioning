@@ -1,0 +1,205 @@
+B5-2 VERIFIER NOTES -- "Backbone upgrade to Qwen3.5-9B (fallback Qwen3-VL-8B) under the final R6 recipe"
+Adversarial verifier, 13 Oct 2026. CPU only (local nice 15, <=4 threads). n2 touched read-only twice (ls of dist-info, grep of
+one peft source line); nothing written there, GPUs and /root/queue untouched. Repo read-only. Scoring with a copy of HEAD
+67b9b6e evaluator/rescap (verify/B5-2_work/head/), RDRSegmenter word level (VnCoreNLP-1.2 jar, local Java 21; B2/B5
+segmentation caches read-only), x100. No labels made; AI-silver not used. All KTVIC-test numbers below are existing runs,
+re-scored; nothing was selected on test.
+Work dir: verify/B5-2_work/ (null_power.py, mem_rederive.py, pilot1_fertility.py copy, q.py, lit/, wheel/ extracts).
+
+VERDICT: KILL as an R6 lever. Novelty none (its one claimed new element is standard practice), expected gain ~0 and
+undetectable at any affordable seed count, kill criteria too weak to stop a null result. Feasibility is fine (fits a 3090),
+which is the only lens it passes. If the paper wants a second backbone, fold that into the replication plan of whichever
+method wins R6 (prefer Qwen3-VL-8B: smaller port), with a contamination probe first. Not a proposal on its own.
+
+======================================================================================================================
+1. NOVELTY -- refuted (the claimed "new element" is prior art; the comparison design is done)
+======================================================================================================================
+Claimed novelty: "none (engineering)" + "selection protocol: teacher-forced dev bits per syllable, tokenizer-independent".
+- Tokenizer-independent likelihood normalisation is standard:
+  - The Pile, Gao et al., arXiv 2101.00027 (PDF read, sec. on metrics): "Bits per byte is preferred over bits per character
+    or perplexity ... due to its invariance to different tokenization schemes". Bits per syllable is the same normalisation
+    with a different unit.
+  - TokEval, arXiv 2608.18062 (abstract): "bits-per-byte (a tokenizer-agnostic version of perplexity)".
+  - arXiv 2610.12144 (abstract): 123 LMs over 54 tokenizers compared by BPB.
+  - Choosing a model by held-out NLL is ordinary model selection.
+- Backbone comparison under one fixed LoRA recipe is already published:
+  - Bazi et al., arXiv 2604.18429 (HTML read): Qwen3.5 0.8-9B vs Qwen3-VL 2-8B, same LoRA, CDVQA.
+  - PaliGemma 2, arXiv 2412.03555 (Table 13 read): 3B/10B/28B, two resolutions, 5 fine-tuning runs each, 30+ transfer tasks
+    including COCOcap, COCO-35L and XM3600.
+- What would be new: a first published KTVIC number for a 2026 backbone. My searches found no Qwen-VLM fine-tuning result on
+  KTVIC at all. That is a new data point, not a method, and it does not meet the user's "breakthrough novelty" bar.
+Scoop searches (22 issued; 18 returned results):
+  arXiv API (13):
+    (1) "Qwen3.5"+caption*: 7 hits. Qwen3.5-Omni report 2604.15804; Theia 2607.28269 (Qwen3.5 as a data captioner); LoMo
+        2605.30265 (+2.82 over SFT on Qwen3.5-9B, not captioning). None on Vietnamese or KTVIC.
+    (2) "Qwen3-VL"+captioning+fine-tuning: 15 hits. CapRL++ 2606.09393 (reference-free RL captioning) and video captioners.
+        No CIDEr comparison of backbone generations.
+    (3) Vietnamese+"image captioning": 8 hits. KTVIC, UIT-ViIC, OpenViIC, VieCap4H, ViTextCaps 2604.27712 (scene text).
+        No VLM SFT on KTVIC.
+    (4) KTVIC|OpenViIC|UIT-ViIC: dataset papers and ViCLIP-OT 2602.22678 (retrieval only).
+    (5) "bits per byte"+tokenizer: TokEval 2608.18062 and 2610.12144 (above).
+    (6) "Qwen3-VL"+Vietnamese: 0 hits.
+    (7) "Qwen2.5-VL"+"image captioning"+LoRA: 0 hits.
+    (8) "Qwen3.5"+LoRA+vision: 8 hits. Bazi 2604.18429 is the closest prior.
+    (9) "Gated DeltaNet"+fine-tuning: InfiniteVL 2512.08829, Super Apriel 2604.19877. Neither does captioning SFT.
+    (10) backbone+captioning+LM scale+transfer: BEiT-3 only.
+    (11) low-resource captioning VLM fine-tuning: 2 irrelevant hits.
+    (12) ti:"PaliGemma 2": 2412.03555.
+    (13) "multilingual image captioning"+VLM: scaling laws 2503.09443; CONCAP 2507.20411.
+  Semantic Scholar (5 queries, 2 returned results; the rest HTTP 429):
+    - "tokenizer-independent perplexity ... bits per character": TokEval.
+    - "Vietnamese image captioning VLM fine-tuning": ACM TALLIP 10.1145/3654796 (a Vietnamese general VLM). No KTVIC SFT.
+  OpenAlex (3 queries): every one HTTP 429, "Insufficient budget ... free daily budget shared by everyone on your network's
+    IP ... resets at midnight UTC". Not usable this session.
+  WebSearch (3): "KTVIC Qwen fine-tuning CIDEr", "Qwen3.5-9B LoRA captioning CIDEr vs Qwen2.5-VL", "Qwen3-VL-8B vs
+    Qwen2.5-VL-7B fine-tuned captioning". No head-to-head fine-tuned captioning result exists.
+Closest prior: Bazi et al. 2604.18429. Checked numbers, OA test1 / test2:
+  - Qwen3.5-9B 74.05 / 69.44; Qwen3-VL-8B 73.47 / 68.29 (+0.58 / +1.15).
+  - The best model is Qwen3.5-2B (74.74 / 70.94): accuracy is not monotone in size.
+  - Caveats: one run per model; a VQA classification task; bf16 LoRA on Q/K/V/O only (Qwen3.5-9B 29.1M vs Qwen3-VL-8B 66.0M
+    trainable); compared against Qwen3-VL, not Qwen2.5-VL. That is weak evidence for KTVIC CIDEr.
+
+======================================================================================================================
+2. FEASIBILITY ON ONE RTX 3090 -- passes on memory; real porting risk; LoRA count and memory estimate both slightly off
+======================================================================================================================
+- The model exists: HF Qwen/Qwen3.5-9B, created 2026-02-27, Apache-2.0, ungated, 9,653,104,368 parameters.
+- Config confirmed: 32 layers (24 linear_attention + 8 full_attention), vocab 248,320, untied embeddings, hidden 4096,
+  ViT depth 27 / width 1152, patch 16 x merge 2. One MTP layer, dropped at load (_keys_to_ignore ^mtp.*).
+- transformers 5.19.0 wheel, models/qwen3_5/modeling_qwen3_5.py (read):
+  - torch_chunk_gated_delta_rule is a pure-torch chunked scan (chunk 64, fp32, solve_triangular); the "fla" hub kernel is
+    optional (use_kernel_func_from_hub_with_fallback). At ~450 tokens that is 8 chunks x 24 layers: negligible memory and
+    compute. Speed risk is low, though unmeasured.
+  - accepts_loss_kwargs = False: per-row mean loss, the same as Qwen2.5-VL in 4.51.3.
+  - The wheel needs torch >= 2.5 (n2 has 2.5.1+cu121: OK), huggingface-hub >= 1.31, tokenizers 0.23.x, peft >= 0.20 (n2 has
+    0.21.2).
+  - trl 0.19.1 is unlikely to work with transformers 5.x, so SFTTrainer usage must move to trl 1.x. train_stage2's own
+    comment says the old pin blocked trl 1.x.
+- Chat template (tokenizer_config.json): the final assistant turn always renders '<think>\n' + '' + '\n</think>\n\n' +
+  content, and the non-thinking generation prompt renders the same empty block. Train and inference agree, but
+  VLCollator's assistant mask starts at '<|im_start|>assistant\n', so the ~4 constant think tokens would be supervised unless
+  masked. The proposal says it will mask them.
+- Port list (HEAD 67b9b6e):
+  - train_stage2.py hard-codes Qwen2_5_VLForConditionalGeneration, P = 28*28 and a LoRA regex
+    (q|k|v|o|gate|up|down)_proj.
+    - The regex misses every Gated-DeltaNet projection (in_proj_qkv, in_proj_z, in_proj_b, in_proj_a, out_proj), so a naive
+      port trains LoRA on only 8 attention layers plus the MLPs.
+    - Keeping P = 784 gives Qwen3.5 332 tokens / 0.34 MP per test image, not the claimed 382 / 0.39 (recomputed below).
+  - evaluate.py also hard-codes Qwen2_5_VLForConditionalGeneration.
+  - Every R6 method that would run "under the final recipe" (e.g. the CN-RLOO loop) must be re-ported to the 5.x stack.
+- LoRA size: B5's "41.6M trainable" (41,582,592) reproduces only when the dropped MTP layer is counted and the 4096->32
+  GDN gates in_proj_a/in_proj_b are left out (its filter is min(shape) > 64). The real r16 counts over the LM:
+  40,108,032 without a/b, 43,278,336 with a/b. Not decision-relevant, but the count was not read from the loaded module tree.
+- Memory, re-derived (mem_rederive.py), anchored on the MEASURED Qwen2.5-VL-7B peak of 11.69-12.72 GB:
+  - Verified on n2: peft 0.21.2 prepare_model_for_kbit_training casts every non-Params4bit bf16 tensor to fp32, so the 2 x
+    1.017B untied embedding and lm_head take 8.1 GB, not the 4.07 GB bf16 that B5 assumed.
+  - SFTConfig bf16=True adds a transient bf16 copy of the head (2.0 GB), plus 248K-vocab logits.
+  - Result: Qwen3.5-9B peak about 17.0-18.1 GB at the 512 cap (B5: 15.4 +- 1.5), about 18-19.5 GB at 1,024.
+  - Still under the 22 GB kill line and the 24 GB card, so it is FEASIBLE. Qwen3-VL-8B: about 12.7-13.7 GB (B5's 13.2 is
+    fine).
+- GPU-h: the 4.7 GPU-h pilot is plausible (2 x 867 steps; Qwen2.5-VL 7.2-7.5 s/step measured; Qwen3.5 about 1.1-1.3x).
+  The 15 GPU-h total omits:
+  - a Qwen2.5-VL re-baseline in the new 5.x stack (otherwise backbone and library versions are confounded);
+  - the contamination probe below;
+  - the UIT-ViIC replication the success bar requires (and COCO, since a backbone swap is language-agnostic).
+  Realistic total is about 20+ GPU-h, plus 1-2 days of porting for SFT/eval and more for the RL method.
+
+======================================================================================================================
+3. GAIN REALISM -- refuted: central gain about 0, undetectable; kill criteria cannot stop a null; contamination risk
+======================================================================================================================
+Recomputed the proposal's CPU sub-pilots (all reproduce exactly):
+- Tokens per KTVIC test caption (pilot1_fertility.py re-run on the tokenizer files): Qwen3.5 12.43 [12.35, 12.51];
+  Qwen2.5 / Qwen3-VL 13.72 [13.61, 13.84]. UIT-ViIC test: 14.25 vs 15.76. That saves 1.3 tokens out of about 450 per
+  sequence (0.3 %): irrelevant to CIDEr.
+- Vision tokens (independent smart_resize re-implementation, out_img_sizes.json), test set (558):
+  - 28 px, cap 512: 417.3 tokens, 0.327 MP.
+  - 32 px, cap 512: 382.2 tokens, 0.391 MP.
+  - 32 px with the repo's P = 784 (cap 392 tokens): 331.6 tokens, 0.340 MP.
+  - Train set: 421.4 / 388.3 tokens.
+  - +20 % pixels. PaliGemma's 4x tokens bought +1.2 to +2.1 COCO CIDEr, so this predicts about +0.2.
+- P1 replicate CIDEr-D re-scored with HEAD's recipe (null_power.py): s42 (p1-gold) 149.79, s43 143.92, s44 143.70,
+  p1mask_s42 147.67, p1assist_s42 148.66. SD 2.97 over the 4 independent legacy runs.
+Literature effect sizes at baselines >= 130 CIDEr (full text checked):
+- Same-size newer LM, PaliGemma 1 -> 2 (2407.07726 results table; 2412.03555 Table 13, 5-run means):
+  - COCOcap 141.9 -> 141.3 (224 px) and 144.6 -> 143.4 (448 px): -0.6 / -1.2.
+  - COCO-35L avg34 113.7 -> 113.9 and 115.8 -> 115.8.
+  - XM3600 avg35 41.9 -> 42.8 and 42.4 -> 43.2.
+  - B5's "COCO-35L 115.8 -> 113.9 / 118.0 -> 115.8" does NOT match the PaliGemma 1 paper (113.7 / 115.8). Its conclusion
+    (no in-domain gain) holds anyway.
+- LM size 3B -> 10B -> 28B: COCOcap 141.3 -> 143.7 -> 144.0 (224 px); 143.4 -> 145.0 -> 145.2 (448 px). A 3.3x LM gives
+  +1.6 to +2.4; a further 2.8x gives +0.2 to +0.3.
+- Qwen2.5-VL-7B -> Qwen3.5-9B is only about 1.1x in non-embedding LM parameters (6.53B vs 6.91B loaded). Size predicts
+  about +0.2; the generation swap predicts about 0 or below; resolution about +0.2.
+- B5's own P4: the 32-38 point headroom to the human leave-one-out (181.5) is in phrasing consensus, not recognition.
+=> Realistic KTVIC dCIDEr about 0 (plausible range -1 to +2). That is below the proposal's own central +1, and the
+   proposal itself says it is no path to +8.
+Seed noise vs that gain (null_power.py, same-recipe P1 runs as NULL arms, image bootstrap B = 2000):
+- 1 v 1 runs: mean 95 % CI half-width 4.77. s42 vs s43 = -5.88 [-10.92, -1.05] and s42 vs s44 = -6.10 [-10.88, -1.36]:
+  the image bootstrap calls same-recipe runs "significantly different" in 2/6 pairs.
+- 2 v 2 runs: half-width 3.33. {s42, p1mask_s42} vs {s43, s44} = -4.92 [-8.77, -1.00] (both members of the first arm use
+  seed 42, so this split is not fully independent).
+- Projected 3 v 3 pooled half-width: 2.73. Seed-level SE of a 3 v 3 mean difference: 2.97 x sqrt(2/3) = 2.43.
+- Seeds per arm for 80 % power (two-sided 0.05): 139 for +1, 35 for +2, 2 for +8. The context's 3 v 3 between-seed t-test
+  MDE is 12.7.
+- Kill criterion 3 ("pooled paired-bootstrap CI upper bound < +1 after 3 seeds") fires with probability (normal approx.):
+  0.38 at true -1, 0.24 at 0, 0.13 at +1, 0.06 at +2. It lets a useless backbone through about 3 times in 4.
+- In the other direction, pooled image bootstrap over 3 seeds declares a spurious two-sided "significant" difference in
+  about 26 % of null comparisons, about 13 % of them positive.
+Kill criterion 1 (dev bits per syllable >= 2 % lower) is not a valid gate for CIDEr:
+- Nothing ties dev likelihood to greedy-decoded CIDEr here, and the two are known to diverge for captioning: SCST, arXiv
+  1612.00563, gains CIDEr by optimising away from maximum likelihood.
+- Illustration (in-sample train loss, not dev NLL, legacy mask): s43 / s44 / p1mask_s42 end at train loss 0.462 / 0.462 /
+  0.461 with CIDEr 143.9 / 143.7 / 147.7. Equal likelihood fit, 4-point CIDEr spread.
+- A stronger multilingual LM can pass the 2 % gate on its Vietnamese prior alone, or on memorisation (next point).
+Leakage / metric gaming:
+- No Qwen3.5 predictions exist, so repetition, length or copy gaming cannot be measured; the train-copy rate must be checked
+  on any future run (P1 baseline 21-23 %).
+- CONCRETE CONTAMINATION RISK, specific to a newer backbone (HF Hub API, 13 Oct 2026; all ungated):
+  - KTVIC train AND test captions are public in several copies, some already in VLM SFT format:
+    - ttrung1402/KT-ViC (2024-05-01).
+    - ThucPD/KTVIC (2024-06-17; 'conversations' format; 18,845 train + 2,790 test captions).
+    - DS-IUH/ktvic_formatting_vlm (2024-07-20).
+    - Skyler215/KTVIC (2024-11-27).
+    - Skyler215/KTVIC_Test_5_Captions (2024-12-01; the 558 test images x 5 captions).
+    - ai-enthusiasm-community/KTVIC (2026-04-08).
+  - UIT-ViIC: ttrung1402 (2023-11), basso4 (2024-02), ThucPD (2024-03), a SEACrowd loader (2024-06).
+  - OpenViIC: no Hub copy found.
+  - Qwen3.5 (Feb 2026, 201 languages, early-fusion web-scale multimodal pre-training) may have seen KTVIC train and test
+    references. Qwen2.5-VL-7B zero-shot KTVIC CIDEr is 29.0, which shows no sign of memorisation; Qwen3.5 is untested.
+  - Consequences: the dev-NLL gate (dev = KTVIC TRAIN images, whose captions are in those copies) and any test gain could
+    reward memorisation. The claimed "larger transfer gains" on UIT-ViIC / COCO are the most contamination-prone of all,
+    since COCO captions are standard VLM pre-training data.
+
+======================================================================================================================
+4. WHAT WOULD HAVE TO CHANGE (only if a backbone run is wanted, e.g. as the second-backbone replication)
+======================================================================================================================
+a. Do not run it as a metric lever. Use it only as the replication backbone for whichever R6 method wins, with that
+   method's own matched baseline on the same backbone. Prefer Qwen3-VL-8B: transformers >= 4.57, standard attention, the
+   same BPE as Qwen2.5 (13.72 tokens per caption), and the LoRA regex unchanged. It needs about 13 GB.
+b. Before any training, pre-register a contamination probe, both backbones, zero-shot, about 0.5 GPU-h:
+   - teacher-forced bits per syllable on KTVIC test references vs the OpenViIC second-panel references of the same 555
+     images (not on the Hub);
+   - the same for KTVIC dev (train-image) references vs their OpenViIC captions;
+   - zero-shot CIDEr.
+   An anomalous KTVIC-vs-OpenViIC likelihood gap for Qwen3.5 relative to Qwen2.5-VL blocks KTVIC claims.
+c. Drop the "bits per syllable" novelty claim (it is The Pile's BPB with a different unit) and do not use it as the
+   go/no-go. Keep it as a diagnostic beside dev CIDEr.
+d. Replace kill criterion 3 with seed-level inference: >= 5 seeds per arm, or a hierarchical bootstrap over seeds and
+   images, with a pre-declared smallest effect of interest (e.g. an equivalence bound of +-2 CIDEr). The pooled image
+   bootstrap is anti-conservative across seeds (shown above).
+e. Run the Qwen2.5-VL-7B baseline in the same new transformers / trl stack, or show that the new stack reproduces
+   p1assist_s42 (148.66) within noise.
+f. Port details:
+   - P = 32*32 for Qwen3.x;
+   - LoRA regex that adds in_proj_qkv / in_proj_z / out_proj (decide and report in_proj_a / in_proj_b) and still excludes
+     'visual';
+   - mask the empty <think></think> block;
+   - enable_thinking=False at evaluation;
+   - budget memory at 17-18 GB.
+
+Key files:
+- verify/B5-2_work/null_power.py and out_null_power.json (re-scoring, null arms, power);
+- mem_rederive.py (memory);
+- out_fertility_recheck.json;
+- lit/ (search logs, Bazi / PaliGemma 1 / PaliGemma 2 / Pile text extracts);
+- dl_hf/ (HF dataset metadata);
+- wheel/transformers/models/qwen3_5/ (inspected code).

@@ -1,0 +1,121 @@
+P-B4-1 EV-MBR (evidence-factorised MBR: retrieved same-panel train refs as MBR pseudo-refs x mention-worthiness veto)
+Adversarial verification, round R6, 2026-10-13. Verifier work dir: research_r6/verify/pb41/ (code, logs, selections).
+CPU only (nice 15, <= 4 threads, B = 2000). Repo untouched; HEAD copies of evaluate.py, object_prf.py, score_coco_probe.py,
+rescap/ in pb41/head; word-level RDRSegmenter (VnCoreNLP-1.2, local OpenJDK 21). Every KTVIC number below is computed on
+TEST preds/samples = EFFECT-SIZE ESTIMATE, not a result. No dev-split samples exist yet (only the p1dev_s42 adapter on n2).
+
+VERDICT: MODIFY -- kill it as the R6 "breakthrough" (novelty is incremental; its core decision rule is anticipated by
+MBR-CBDT, EMNLP 2025, which already covers image captioning), keep it only as a cheap, label-free decode-time add-on whose
+KTVIC gain reproduces exactly. Alone it most likely lands just under the +8 bar (projected P1 3-seed mean ~152.5-153 vs 153.8).
+
+==========================================================================================================================
+LENS 1 -- NOVELTY: incremental (core rule anticipated)
+==========================================================================================================================
+Searches (2026-10-13): arXiv API x 19 (lit/arxiv_1-4.txt, arxiv_5-10.txt, arxiv_11-16.txt, arxiv_17-19.txt), WebSearch x 4.
+OpenAlex: HTTP 429, daily quota exhausted for this IP (retry-after 23,375 s); Semantic Scholar: HTTP 429 on every retry.
+Queries: MBR + caption; Bayes risk + retrieval; consensus reranking; rerank + nearest-neighbour captions; object
+hallucination + self-consistency; hallucination + sampled captions + vote/consensus; Vietnamese image captioning;
+pseudo-references + retrieval; retrieval-augmented captioning + decoding/rerank; Bayes risk + vision-language; nearest
+neighbour + caption + consensus; Minimum Bayes + caption; self-consistency + caption + hallucination; mention/content
+selection + salience; best-of-N + caption; consensus + caption + rerank; MBR + caption; training captions + neighbours.
+Closest prior (full text read where marked):
+ 1. Deguchi & Nagata, "Case-Based Decision-Theoretic Decoding with Quality Memories", arXiv 2509.12677, EMNLP 2025 main
+    (DOI 10.18653/v1/2025.emnlp-main.1710). FULL TEXT READ. It estimates the expected utility of each hypothesis from the
+    TRUE references of retrieved similar training examples (kNN on the input; memorised hypotheses scored against their
+    true reference, weighted by input and output similarity) and proposes MBR-CBDT = (1-lambda) MBR + lambda CBDT,
+    min-max normalised, lambda = 0.5. It is evaluated on image captioning: MSCOCO (memory = COCO train) and nocaps (memory =
+    Localized Narratives), BLIP-2 with 256 epsilon samples, DINOv2 image similarity, BERTScore utility. MBR -> MBR-CBDT on
+    COCO: BLEU 25.6 -> 26.0, chrF 43.2 -> 44.4, BERTScore 68.4 -> 68.6 (no CIDEr reported). This is the EV-MBR typicality
+    half (self-MBR + retrieved true references of similar training items, equal weight) in all but implementation detail.
+ 2. m-RNN, Mao et al. arXiv 1412.6632: rerank the model's hypotheses by mean CIDEr/BLEU vs captions of the k nearest train
+    images (COCO val CIDEr 84.2 -> 93.8). Devlin et al. 1505.04467: kNN consensus caption. EV-MBR's "retrieved refs as
+    pseudo-references" scoring IS this rule; mixing it with self-MBR is the MBR-CBDT interpolation.
+ 3. NICE 2024 ECO, arXiv 2405.01028: caption re-ranking with ensembled CLIP + consensus score (LVLM era, CIDEr-ranked).
+ 4. SelfVal, arXiv 2601.22451: validates objects in SAMPLED candidate captions, then caption selection or aggregation
+    (presence-based). The EV veto is the same family; its critic is in practice a vote-share threshold (logistic weight on
+    vote 3.1-3.6, prior 0.33-0.44), i.e. object-level sample consensus, and its "mention-worthiness" label is exactly
+    CHAIR-vi's reference-derived gold.
+ 5. MBR for captioning: model-based MBR 2311.05263, AMBR 2401.02749 (both with captioning experiments).
+Remaining delta: (a) retrieval keyed on the greedy CAPTION text (TF-IDF) instead of the image -- a useful engineering
+finding (B4: CLIP 1-NN unstable), not a method; (b) CIDEr-D utility and Vietnamese LVLM setting; (c) veto threshold on
+sample vote share. None is a step beyond prior art; the B4 author's own rating ("not a breakthrough on its own") stands.
+
+==========================================================================================================================
+LENS 2 -- FEASIBILITY on one RTX 3090: yes, low risk
+==========================================================================================================================
+Decode-time only, no captioner training. Existing infra: scripts/e5_sample.py (--images-file, --prompt short, --n,
+--temperature, --top-p, --four-bit; produced the existing 6 x T0.8 pools), data/splits/ktvic_dev300.txt (+ complement,
+scripts/ktvic_dev_split.py), and a P1-dev adapter already on n2 (/root/ncs-data/runs/p1dev_s42/checkpoint-434), which saves
+the 1.8 GPU-h B4 budgeted for it. Memory: Qwen2.5-VL-7B 4-bit + LoRA, num_return_sequences 6, short prompt: well under 24 GB.
+GPU-h: dev greedy + samples at 2 temperatures ~0.7; 24-sample self-MBR control on dev ~1.2; test samples s42/s44 ~1.1;
+UIT-ViIC 3 seeds ~0.7; COCO subset ~1.5-2.5 => ~5 GPU-h (excluding the UIT-ViIC P1 adapters the replication needs anyway).
+Retrieval, CIDEr and the veto are CPU-only (seconds per image). Inference cost: 7 decodes per image (~4.9 s vs 1.4 s).
+
+==========================================================================================================================
+LENS 3 -- GAIN REALISM: the test effect reproduces exactly; real but typicality-driven, and likely just short of +8 alone
+==========================================================================================================================
+3a. Reproduction. Sample files are md5-identical to n2 (e2e84921..., 90cd397a...). HEAD evaluator on P1 s43 greedy: 143.9 /
+    CHAIR_i 17.7 (= table). B4's selected files rescored with my copy of the HEAD evaluator, matching exactly:
+    PE-MBR 151.4 (B-4 45.9, M 39.6, R 64.9, CHAIR_i 17.0); EV cheap veto 152.3 (46.0/39.5/64.7, CHAIR_i 15.5, CHAIR_s 23.3);
+    fuse2 EV 149.9 (CHAIR_i 19.6). Independent re-implementation (evmbr_check.py: own CIDEr-D asserted equal to
+    pycocoevalcap per image, own TF-IDF index with per-caption bags, own selection) -> out/evmbr_check.log:
+      P1 s43:   self-MBR 146.5 (+2.6 [-1.9,+7.4]); retrieval only @10 147.7 (+3.8); PE-MBR @10 149.9 (+5.9 [+3.0,+9.2]),
+                @30 151.6 (+7.6 [+4.1,+11.8]); EV with critic fitted on the other pool (test labels) 151.1, CHAIR_i 14.9
+                (B4 8c: 151.1 / 14.9). Oracle best-of-7 201.2 (headroom; winner's curse).
+      fuse2 s42: self-MBR 146.2; PE-MBR @10 150.0 (+6.1 [+3.2,+9.3]), @30 150.6 (+6.7); EV critic 149.9, CHAIR_i 20.5.
+3b. Label-free variant (no GDINO, no fitted critic; veto = nouns named by < t of the 7 candidates) -> out/sweep.log:
+      P1 s43 @10: t=0 149.9/17.6 | t<.2 151.3/16.0 | t<.3 151.0/14.3 | t<.5 147.5/12.8 | t<.6 140.5/11.0 (CIDEr/CHAIR_i)
+      P1 s43 @30: t<.2 151.9 (+7.9 [+4.4,+12.2]) / 15.8 (-1.8 [-3.4,-0.4]); full table B-4 45.8, METEOR 39.7, ROUGE-L 64.9
+      fuse2 @10: t=0 150.0/21.1 | t<.3 149.1/19.9 | t<.5 145.5/17.5 | t<.6 144.0/16.2
+    => the test-label critic is unnecessary (label-free matches it). The veto is a monotone CIDEr-vs-CHAIR knob, not a free
+    lunch: at t<.5, CHAIR_i -4.9 (P1) but object recall -3.2 [-4.4,-2.0], F1 -1.7, mentions/cap 1.76 -> 1.51 (object_prf
+    at HEAD, out/sel_sweep). The CIDEr-neutral point (t<.2-.3) gives CHAIR_i -1.6 to -3.4 on P1 but ~0 to -1.2 on fuse2.
+3c. Controls for gaming. Random train refs (10 random train images per test image) or one global set of 10 give 146.0 /
+    146.5 = self-MBR exactly: the gain is image-specific retrieval evidence, not a generic style prior. Length unchanged
+    (11.9 syllables, greedy 11.9; refs 11.6); repeated-bigram rate down (0.011 -> 0.009); vocabulary 412 -> 391-400,
+    distinct-2 0.181 -> 0.179-0.182; share of 4-grams seen in train 0.875 -> 0.885-0.887; verbatim train-caption copy
+    20.6% -> 21.0-21.3%. Mild homogenisation toward panel phrasing, no length or repetition hacking. But: two-panel noun
+    precision (out/twopanel.log, 555 images) shows the retrieval term changes NO object precision (P1 PE-MBR @10/@30: KTVIC
+    +0.1/+0.8 n.s., OpenViIC -0.1/+0.3 n.s.; fuse2 likewise): its CIDEr gain is phrasing typicality. The veto adds
+    precision (P1 t<.3: KTVIC +3.4 [+1.9,+5.0], OpenViIC +2.3 [+0.9,+3.7]) but on fuse2 at t<.3 only +0.3 n.s. on OpenViIC.
+3d. Leakage. Selection uses no test refs: self-MBR DF over the 558 candidate pools (transductive but label-free -> use a
+    train-derived DF in the final protocol), retrieval DF over the pseudo-ref sets, train-only index (asserted disjoint), train
+    LOO prior. B4's critic WAS fitted on test labels in every reported variant; 3b shows this does not drive the result. Near
+    duplicates: the CLIP-nearest train image is among the top-10 text neighbours for 64 (P1) / 83 (fuse2) test images; on the
+    380 test images with no train image at CLIP cos >= 0.85 the gain holds (PE-MBR @10 +7.2 P1, +5.7 fuse2).
+3e. Seed noise and K. Per-adapter gains +5.9 to +7.9 (paired CI_low +3.0 to +4.4) exceed the seed SD 3.4, but both pools come
+    from greedy runs at 143.9 (the low end). Per-image gain is strongly regressive (decile gains +16.9 ... -8.1 by greedy
+    quality); projecting that curve onto P1 s42 (149.8) gives +6.9 vs +7.3 on s43/s44 (crude) -> PE-MBR@30 3-seed mean ~153.0,
+    EV ~153 vs the +8 bar 153.8; P(clear +8 alone) ~0.25-0.3, and a claim needs the pooled 3 x 558 paired bootstrap
+    (+-2.5). K scaling (greedy + 2/4/6 samples): self-MBR 140.7/144.7/146.5 (P1), 141.5/143.9/145.8 (fuse2) is still rising
+    ~+1.8 per 2 samples; the retrieval increment at equal K shrinks on P1 (5.0 -> 3.9 -> 3.3) and is flat on fuse2 (3.9 ->
+    3.8 -> 4.1). B4's criterion (b) "EV(K=6) >= self-MBR(K=24) + 2" is at real risk.
+3f. Literature at >= 130 CIDEr (COCO Karpathy test, PDFs read): ensembles of 2-4 models add +2.0 to +3.3 (M2 Transformer
+    1912.08226: 131.2 -> 133.2 (2) -> 134.5 (4); AoANet 1908.06954: 129.8 -> 132.0 (4)); MBR-CBDT over MBR on COCO +0.4 BLEU.
+    EV-MBR's +6 to +8 is 2-3x larger. This is plausible here because the KTVIC panel is formulaic and K is small, not
+    because the method is stronger. Transfer proxy (out/transfer_proxy.log, human refs only, equal ~3.7k-image index): a
+    kNN-consensus train caption reaches 0.76 (KTVIC), 0.99 (UIT-ViIC) and 0.90 (COCO) of the human leave-one-out CIDEr, and
+    41.2% of UIT-ViIC test refs occur verbatim among its train+val refs (KTVIC 6.5%, COCO 0.9%) -> the typicality lever
+    probably transfers (it may be even larger on UIT-ViIC, which makes copy-rate reporting mandatory there).
+3g. Stacking: "stacks with B1 RL / B2 MR5" is untested; a CIDEr-D-RL policy concentrates its samples, which typically
+    shrinks reranking headroom. Must be measured, not assumed.
+
+==========================================================================================================================
+REQUIRED CHANGES (if kept as an add-on)
+==========================================================================================================================
+1. Not the R6 headline. Frame it as retrieval-augmented MBR in the line of m-RNN 1412.6632 / MBR-CBDT 2509.12677 and the
+   veto as object-level sample consensus (cf. SelfVal 2601.22451); report it as a decode-time add-on on top of the novel
+   method, with 7x inference cost stated.
+2. Drop GDINO and the fitted critic: label-free vote-share veto, threshold chosen on dev from {<2/7, <3/7}; report the full
+   CIDEr / CHAIR / recall / F1 / two-panel-precision curve, not one point.
+3. Dev gate on dev300 with p1dev_s42 (retrieval index = train minus dev): choose k in {10,30}, T, threshold; >= +4 CIDEr over
+   greedy with CI_low > 0; controls at EQUAL K (self-MBR K=6 and K=24, random-ref pseudo-refs, image-keyed DINOv2/CLIP
+   retrieval as in CBDT); keep the retrieval term only if it adds >= +2 over self-MBR at K=24 or EV(K=6) >= self-MBR(K=24).
+4. Self-MBR DF from train references (per-image, non-transductive).
+5. Test: samples for P1 s42/s44, pooled paired bootstrap over 3 x 558; run on the RL / MR5 adapter on dev before claiming
+   stacking; UIT-ViIC (report verbatim train-copy rate) and a COCO subset for the language-agnostic replication.
+6. Faithfulness wording only from the veto and only with two-panel numbers; the retrieval term's gain is typicality.
+
+Files: pb41/evmbr_check.py (+out/evmbr_check.log, out/evmbr_check.json, out/sel/), pb41/sweep.py (+out/sweep.log,
+out/sel_sweep/), pb41/transfer_proxy.py (+log), pb41/seed_proj.py (+log), pb41/twopanel.py (+log), out/rescore/ (B4 files
+rescored), out/fullmetrics_mine.txt, lit/ (search logs, CBDT full text, M2/AoANet tables).

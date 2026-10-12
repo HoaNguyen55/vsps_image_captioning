@@ -1,0 +1,221 @@
+B2-2 adversarial verification: "PanelBridge" (second OpenViIC panel as a learned style pivot that writes KTVIC-style
+targets for the 8,642 OpenViIC images with no KTVIC copy) [FLAG: synthetic training targets]
+2026-10-13. CPU only (nice 15, <= 2 single-thread processes, bootstrap B <= 2000). No GPU, no VLM/LLM loaded.
+Work dir: verify/B2-2_work/. Repo, n2 and n3 were read only (n3: scp of the SSCD cache /root/r2/openviic_match/*.npz;
+n2: ls/head of /root/ncs-data/runs and /root/r6/smoke*; nothing written there). No OpenViIC caption text was written
+by this verifier; only file names and scores.
+
+VERDICT: KILL.
+  Novelty: incremental. Every part has prior art: learned rewriting from same-image caption pairs, a fine-tuned LLM
+           that fuses a caption set, synthetic captions to close a target benchmark's style gap, language pivoting,
+           and tagged synthetic data. The only delta is the instance: two same-language human panels on overlapping
+           images. On UIT-ViIC the "pivot panel" is English COCO, which is plain language pivoting (Gu 2018, Lan 2017).
+  Gain:    the mechanism evidence (4x images = +22..+26 stand-in points) is a retrieval-proximity property of the
+           kNN stand-in under every decoder. It says nothing about a pretrained 7B VLM. Synthetic-target precedents
+           at baselines >= 128 CIDEr give +0 to +2, and the in-repo precedent (E5) gave -8. Realistic: 0 +- 3 CIDEr over
+           MR5, inside seed noise.
+  Gates:   the gate-2 rule (+1.5 dev CIDEr, one run per arm) passes a NULL effect 39% of the time.
+  Cost:    the real budget is ~120-225 GPU-h, not 59. It also spends the OpenViIC independent panel, and the
+           UIT-ViIC arm as written leaks all 231 UIT-ViIC test images.
+
+-----------------------------------------------------------------------------------------------------------
+0. SETUP
+-----------------------------------------------------------------------------------------------------------
+- Scoring: pycocoevalcap Cider on RDRSegmenter word-level text, lowercased, IDF from the query reference sets, as
+  in HEAD's evaluate.py. B2's verified segmentation cache (B2_targets_data/cache/seg.json) and B2-1's seg_extra.json
+  were used read only; B2's venv was used.
+- Reproduction (KTVIC test, 558): p1-gold 149.8, p1_s43 143.9, p1_s44 143.7, p1mask_s42 147.7, p1assist_s42 148.7.
+  These equal CONTEXT_R6 and the commits.
+
+-----------------------------------------------------------------------------------------------------------
+1. PILOT RE-CHECK (lens 3, data side)
+-----------------------------------------------------------------------------------------------------------
+1a. FREE pool. Reproduced exactly: 8,642 images / 39,634 captions (OpenViIC train 6,175, dev 1,102, test 1,365).
+    The union of matched names is 4,509, but 51 of them are uncaptioned OpenViIC files (13,300 files, 13,100
+    captioned). So 13,100 - 4,458 = 8,642 is correct. All 558 KTVIC test images have >= 1 matched OpenViIC file
+    (3 match only uncaptioned files).
+1b. Gate 0 SSCD re-check. B2 left it "to do"; done here (free_vs_test_sscd.py, free_vs_test_pairs.json).
+    SSCD cosine of every FREE image vs the 558 KTVIC test images (n3 cache, sscd_disc_mixup, unit-norm):
+      SSCD >= 0.4: 46 FREE images (touching 35 test images); >= 0.5: 15 (12); >= 0.6: 7; >= 0.7: 3; >= 0.8: 1; >= 0.9: 0.
+      No FREE image meets the matcher's own AND rule (hash <= 10 and SSCD >= 0.5), so the matcher is consistent.
+      Likely cropped copies, per the provenance visual check (SSCD-only 0.7-0.8: 8/12 same photo; >= 0.8: 11/12):
+      test 00000000297 <-> FREE 00000001711 (OpenViIC dev, 0.882); 00000005377 <-> 00000009177 (OpenViIC test, 0.758);
+      00000001481 <-> 00000008566 (OpenViIC train, 0.705). The 0.5-0.7 band was 0/24 the same photo in that check
+      (same landmark or shop, another photo).
+    => Leakage is small (about 3 test images) and the proposed drop rule (SSCD >= 0.4, 46 images) removes it.
+       The list is in free_vs_test_pairs.json. Not a kill reason.
+1c. UIT-ViIC replication arm (NEW leak). The proposal extends the bridge "to the other Karpathy-train images".
+    All 231 UIT-ViIC TEST images and all 924 UIT-ViIC VAL images are Karpathy TRAIN images (by COCO id; UIT-ViIC
+    train: 1,545 train, 885 restval, 133 Karpathy test, 132 Karpathy val). As written, the replication would turn the
+    English COCO captions of the UIT-ViIC test images into Vietnamese training targets. That is direct test leakage.
+    Must exclude the 1,155 UIT-ViIC val/test images. The 265 UIT-ViIC train images in Karpathy test/val also matter
+    for any COCO replication.
+1d. The mechanism premise: B2's database-size curve, re-run under three decoders (db_curve.py; k=10, B2's
+    setting; 25/50/100% of the database, 3 subsample seeds below 100%). CIDEr-D x100:
+      DEV (296 queries, db 3,428)        25%    50%   100%   4x gain
+        consensus  pos0                76.8   87.4  104.1   +27.4
+        consensus  multiref            81.2   97.2  110.2   +29.0
+        trie-greedy pos0               59.9   62.7   80.3   +20.4
+        trie-greedy multiref           53.9   64.2   77.5   +23.6
+        ngram-greedy pos0              61.0   66.2   82.4   +21.4
+        ngram-greedy multiref          53.5   64.0   77.1   +23.6
+      TEST-555 (ESTIMATE, db 3,724)
+        consensus  pos0                81.0   94.2  107.5   +26.6   (B2: 81.1 / 94.2 / 107.5)
+        consensus  multiref            91.0  105.5  112.9   +21.9   (B2: 91.0 / 105.5 / 113.3)
+        trie-greedy pos0 / multiref    62.1 / 61.8   69.4 / 72.2   85.0 / 86.8   +22.9 / +25.1
+        ngram-greedy pos0 / multiref   61.7 / 62.4   70.7 / 72.1   88.4 / 81.8   +26.7 / +19.4
+    - B2's curve reproduces (within 0.4), and the size effect survives every decoder.
+    - It tracks retrieval proximity (nb_proximity.py, dev). Mean cosine of the 10 neighbours: 0.159 / 0.187 / 0.215;
+      top-1: 0.233 / 0.266 / 0.298; queries with a near-copy top-1 (>= 0.5): 0.6% / 1.9% / 4.1%.
+    - In the stand-in, a query can only output captions of its nearest database images, so more images means closer
+      neighbours and better content. A fine-tuned VLM gets content from its own recognition, not from a near-copy
+      training image. The curve is therefore evidence about retrieval, not about how a pretrained VLM scales with
+      more KTVIC-style images.
+    - The companion claim ("all 5 refs = about one doubling") holds only for the consensus decoder. Under the greedy
+      decoders multiref - pos0 at the full database is dev -2.8 / -5.3 and test +1.8 / -6.6 (matching B2-1's
+      finding).
+1e. The "CPU kNN bridge already gets 104.9-117.1 on dev". Reproduced: 104.1-110.2 at k=10 (B2-1: 116.9 at k=30),
+    consensus decoder. Consensus decoding is legitimate for an offline labeller, but it sits 30-45 points below P1's
+    image-based ~146 (greedy decoders: 77-82). The gate-1 hope rests entirely on an untested LLM bridge. The gate-1
+    bar (P1-dev's dev CIDEr) does not exist yet: n2 runs/p1dev_s42 is at checkpoint-434 (epoch 1 of 2), and the
+    /root/r6/smoke*/p1dev.json files are stubs.
+1f. Not recomputed (read from B2's logs/json): style gap (OpenViIC caption vs KTVIC refs CIDEr-D 42.7-45.3), untagged
+    expansion -6.3 [-12.1,-1.0] / -2.6, coverage 99.6%. They do not affect the verdict.
+
+-----------------------------------------------------------------------------------------------------------
+2. LENS 3, GAIN REALISM
+-----------------------------------------------------------------------------------------------------------
+2a. The design contradicts its own mechanism. The gain is supposed to come from "more images carrying the KTVIC
+    style", yet bridged rows carry a tag that is absent at test.
+    - Tagged: the untagged (test) mode is trained only on MR5 rows, and bridged rows act only through shared visual
+      learning. The proposer concedes the stand-in cannot see that channel, and the closest prompt-tagged
+      multi-dataset captioner gains +0.2 CIDEr (Wang et al. AAAI 2023, arXiv:2212.01803, per B2's reading).
+    - Untagged: the bridge LM's modal phrasing enters the test mode. That is E5's failure mode (rejection-sampling FT
+      on model text: 137.9, about -8 vs P1).
+    - The tagged back-translation analogy is inverted. BT has synthetic SOURCES and real targets. PanelBridge has real
+      inputs and synthetic TARGETS, i.e. forward translation / sequence-level KD. There a <SYN> tag vs no tag was not
+      significant (arXiv:2006.02876), and forward translation gains less on target-original text and risks
+      translationese (Bogoychev & Sennrich, arXiv:1911.03362).
+2b. Literature effect sizes at strong baselines (all far larger data than 8.6k images):
+    - BLIP CapFilt, synthetic captions + filter for 14M/129M pretraining images, COCO fine-tuned CIDEr: 127.8 -> 129.7
+      and 130.1 -> 131.4, i.e. +1.9 / +1.3 (arXiv:2201.12086 Table 1, HTML read).
+    - CapsFusion (arXiv:2310.20550 Table 1, HTML read): +5 to +19 CIDEr, but in a 10-100M-image pretraining regime with
+      a frozen LLM at 97-116 CIDEr, not a fine-tuned 146 model.
+    - PaliGemma (arXiv:2407.07726 Sec. 6.3, HTML read): "The majority of the tasks can reach within 10% of the
+      full-data score when using 4 k examples" (full COCOcap 141.9). So 28x more REAL in-style data is worth at most
+      ~10%. 2.3x more SYNTHETIC rows should be worth a small fraction of that.
+2c. In-repo precedent: synthetic targets in SFT lowered CIDEr (E5 137.9; E5+DPO 123.1). PanelBridge's content is
+    human-attested, but its wording is LM-generated modal text, the property that hurt E5.
+2d. Seed noise and the gates (gate_noise.py). Same-recipe P1 runs (4 legacy seeds), all ordered pairs, 296 of the
+    558 test images resampled to mimic the dev split (B=2000 per pair group): SD of a one-run-per-arm dev difference
+    = 5.3 CIDEr (image sampling alone: per-image SD 59.9 -> 3.5).
+      P(gate 2 "diff >= +1.5" passes): true effect 0 -> 0.39; +1.5 -> 0.50; +3 -> 0.60; +5 -> 0.73; +8 -> 0.88.
+      A 5% false-pass dev gate needs diff >= +8.6.
+    So gate 2 cannot separate the claimed +0..+5 from noise. The test claim needs >= 5-6 seeds per arm or a paired
+    bootstrap pooled across seeds (CONTEXT: 3 seeds detect about +12.7).
+2e. Stacking with MR5. B2-1 found MR5's own realistic gain is about 0 (-3..+3) once the stand-in uses greedy-type
+    decoders. The proposal's "+4 to +12 stacked (30%)" therefore needs PanelBridge alone to reach about +8: P < 5%.
+2f. Metric gaming. No length or repetition lever: bridged targets would match KTVIC length. The risk is template
+    concentration: P1 already opens 95.9% of captions with "co", and P1 copies a train caption verbatim in 20-23% of
+    test outputs (B2-1). Modal bridged targets would push both up. Report copy rate, distinct-n and the opening share.
+=> Realistic: CIDEr 0 +- 3 over MR5 (point 0 to +1); B-4 / METEOR / ROUGE-L within +-1; CHAIR_i within +-1.5
+   (human-attested content could lower it slightly, unproven). P(P1 mean + 8) < 5%.
+
+-----------------------------------------------------------------------------------------------------------
+3. LENS 1, NOVELTY: INCREMENTAL (no exact match found; every element is prior art)
+-----------------------------------------------------------------------------------------------------------
+Closest prior, and what each already does:
+- LaCLIP, Fan et al. NeurIPS 2023, arXiv:2305.20088 (HTML read, Sec. 3.2 + App. C.1). Its "MSCOCO" strategy takes
+  two human captions of the SAME image as source -> target rewrite pairs, then rewrites the captions of OTHER images
+  (CC3M/CC12M/RedCaps/LAION) with LLaMA-7B to make new training text. PanelBridge = the same recipe, with the pair
+  taken across two panels, a fine-tuned rewriter and a target-benchmark style.
+- CapsFusion, Yu et al. CVPR 2024, arXiv:2310.20550 (HTML read, Sec. 3). A fine-tuned LLaMA-2-13B (trained on 1M
+  ChatGPT fusion triplets) fuses a caption SET (raw alt-text + BLIP caption) into one caption for 120M images. This is
+  the "fuse a set of captions into one target caption" element. FuseCap (arXiv:2305.17718) and IC3
+  (arXiv:2302.01328) fuse caption sets with an LLM too.
+- NICE 2024 solution, arXiv:2404.12739 (abstract + search summary). Closes a new human test set's caption-STYLE gap
+  by re-annotating extra training images with captioners kept in the target (COCO) style. Same purpose as
+  PanelBridge, but the content comes from captioners.
+- MoCHA, arXiv:2603.23684 (2026, abstract). A learned caption canonicalizer (GPT-5.2 and a distilled FlanT5) removes
+  annotator-specific style across two datasets and improves cross-dataset transfer. Same idea of a learned
+  text-to-text style mapping between datasets' annotator styles (motion-text retrieval).
+- Language pivoting (Gu et al. ECCV 2018, arXiv:1803.05526), fluency-guided translated captions (Lan et al. MM 2017,
+  arXiv:1708.04390), pseudopairs across disjoint caption datasets (Kadar et al. 2019, arXiv:1911.03678). The
+  UIT-ViIC arm (English COCO -> Vietnamese) IS this line, so the replication would test prior art, not PanelBridge.
+- Teacher pseudo-captions for unlabeled images (arXiv:2201.02010); BLIP CapFilt (arXiv:2201.12086).
+- Tag component: tagged BT (arXiv:1906.06442), tagged forward translation (arXiv:2006.02876), prefix conditioning
+  (arXiv:2206.01125), prompt-tagged multi-dataset captioning (arXiv:2212.01803). Pseudo-style self-learning across
+  caption datasets: "Cross-domain multi-style merge for image captioning", CVIU 228 (2023) (abstract).
+Remaining delta: the source caption set is a second same-language HUMAN panel, and the fuser is supervised by the
+target benchmark's human captions on the overlapping images. This is a dataset-specific instance of learned caption
+rewriting/fusion, not a new mechanism and not a "breakthrough".
+Searches:
+- arXiv API, 16 queries (2022-2026 filters where useful): caption style transfer + pseudo; caption fusion / CapsFusion /
+  LLM fuse captions; rewrite captions + "another dataset"; language pivot captioning; semi-supervised captioning +
+  pseudo; Vietnamese image captioning; annotation style + caption; LLM rewrite + style; cross-dataset captioning style;
+  pseudo captions + unlabeled images; language rewrites / MSCOCO in-context; dense captions + summarize; stylized
+  captioning + pseudo; "caption style"; multi-dataset prompt style; text-only + target style.
+- OpenAlex + Semantic Scholar, 4 queries: HTTP 429 from this IP (as for B2 and B2-1).
+- WebSearch, 11 queries: two-dataset style mapping + pseudo-labels; LLM rewrite to benchmark style; Vietnamese
+  captioning 2025-26 (no KTVIC/OpenViIC captioning paper beyond the dataset papers; ViCLIP-OT is retrieval);
+  prefix/dataset tags with the tag removed at test; cross-domain multi-style merge; semi-supervised captioning at
+  strong baselines; sDCI LLM summaries of human dense captions; PaliGemma limited-data transfer; caption
+  harmonization; Kadar 2019 pseudopairs; tagged forward translation.
+- Full text read in this session: LaCLIP, CapsFusion, PaliGemma, BLIP (HTML).
+
+-----------------------------------------------------------------------------------------------------------
+4. LENS 2, FEASIBILITY on one RTX 3090 (24 GB), Qwen2.5-VL-7B 4-bit QLoRA, scripts/train_stage2.py @HEAD
+-----------------------------------------------------------------------------------------------------------
+- Memory: fits. Bridged rows are image + prompt(+tag) + ~12-word caption, the same shape as P1 rows (512 vision
+  tokens at 4-bit, batch 1 x 8). The text-only bridge is lighter.
+- Implementation, moderate-low risk, 3 code changes:
+  (i)   a text-only bridge trainer and generator. VLCollator/to_chat always attach an image, so a new ~150-line
+        script is needed.
+  (ii)  image_for() reads only DATA/datasets/$NCS_DATASET/images, so a mixed KTVIC+OpenViIC row set needs a
+        per-row image root or a symlink dir. No name collisions: every KTVIC file name's same-name OpenViIC copy is
+        matched and so excluded from FREE.
+  (iii) tag rows, the SSCD drop list (46 files), and OpenViIC images on the training node.
+- GPU-h, at the measured 0.91 s per row-epoch (n2) and 2 epochs:
+    bridge LoRA text-only (17,140 rows)       ~3 h      (proposal 1.5)
+    bridge labelling (dev + 8,596 FREE)       ~1 h
+    MR5-dev comparator                        8.8 h     (not in the 59)
+    MR5+bridge dev run (25,941 rows)          13.1 h
+    non-synthetic control dev run             13.1 h    (1 row/image; ~29 h with all captions; not in the 59)
+    bridge retrain on full train + relabel    ~4 h
+    test seed (27,441 rows) + eval            14.5 h/seed: 3 seeds 43.5 h, 5 seeds 72.5 h
+    MR5 test seeds to compare against         10 h/seed (only if B2-1's MR5 is not run)
+    UIT-ViIC arm (bridge + label + 3 seeds + MR5 baselines) ~60 h
+  Totals: ~117 GPU-h for a 3-seed KTVIC-only version; ~225 GPU-h for a powered (5 seeds/arm) version with the
+  required replication. The proposal's 59 GPU-h covers neither. Every single run fits one 3090 (<= 14.5 h).
+- Other costs:
+  - It spends the OpenViIC independent panel. Bridged content comes from OpenViIC annotators, so second-panel
+    precision stops being independent. CONTEXT requires a no-OpenViIC variant for every second-panel analysis; the
+    proposal does not state this.
+  - FREE contains 1,365 OpenViIC TEST and 1,102 OpenViIC DEV images, so no OpenViIC benchmark number could be
+    reported afterwards.
+  - Bridged targets are derived from licence-restricted OpenViIC text and must stay git-excluded.
+  - Synthetic training data is a user veto point.
+
+-----------------------------------------------------------------------------------------------------------
+5. IF THE USER STILL WANTS IT (minimum conditions; otherwise do not spend GPU)
+-----------------------------------------------------------------------------------------------------------
+- One cheap pre-gate only (~4 GPU-h): train the LLM bridge on train minus dev, label the dev images, and score them
+  against the dev refs. Stop unless bridge dev CIDEr >= P1-dev's dev CIDEr (p1dev_s42, already training).
+- Decide the tag question on dev with both arms (tagged and untagged), because the two arms test different
+  mechanisms.
+- Gate 2: a single-run dev difference must be >= +8.6 (5% false pass), or use >= 5 seeds per arm / a paired
+  bootstrap pooled across seeds.
+- Data hygiene: drop the 46 FREE images with SSCD >= 0.4 and all OpenViIC test images. For UIT-ViIC, exclude the
+  1,155 UIT-ViIC val/test images from the Karpathy-train extension.
+- Keep a no-OpenViIC variant for every second-panel analysis, or move the truth check to COCO instance labels.
+- Report copy rate, distinct-n, the "co" opening share, CHAIR_i and mentions per caption. Budget 120-225 GPU-h.
+
+-----------------------------------------------------------------------------------------------------------
+6. FILES (verify/B2-2_work/)
+-----------------------------------------------------------------------------------------------------------
+- free_vs_test_sscd.py, free_vs_test_pairs.json: gate-0 SSCD/hash re-check (file names + scores only);
+  sscd/*.npz is a read-only copy of n3's cache.
+- db_curve.py, db_curve_{dev,test}.log/.json: the database-size curve under 3 decoders.
+- nb_proximity.py, nb_proximity.log: neighbour proximity vs database size.
+- gate_noise.py: P1 reproduction and gate-2 false-pass / power.
+- arxiv_q.py, arxiv_abs.py, oa_s2.py, lit/*.xml: searches.

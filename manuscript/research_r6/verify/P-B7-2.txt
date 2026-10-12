@@ -1,0 +1,199 @@
+P-B7-2 CT-Veto (contextual-typicality veto for panel-evidence MBR; upgrade of B4's EV-MBR)
+Adversarial verification, round R6, 2026-10-13. Work dir: research_r6/verify/PB72_work/ (code, logs, selections, lit/).
+CPU only (nice 15, <= 4 threads, B = 2000). Repo untouched. HEAD (67b9b6e) copies of scripts/evaluate.py,
+object_prf.py, score_ci.py and rescap/ in PB72_work/head; evaluate.py, rescap/ and object_prf.py are byte-identical
+to B7's HEAD 607276a (git diff empty), so the scorer did not move. Word level = VnCoreNLP-1.2 RDRSegmenter, run locally
+(OpenJDK 21); the seeded segmentation cache matched the live segmenter on 300/300 random entries. Sample pools
+md5-identical to the n2 files (e2e84921..., 90cd397a...). Every KTVIC number below comes from TEST pools (greedy + 6
+T0.8 samples of P1 s43 and fuse2 s42), so it is an EFFECT-SIZE ESTIMATE, not a result. OpenViIC captions were read
+and segmented in memory only (probe: 0 cache keys or selected captions equal an OpenViIC-only caption; 20 substring
+hits are generic phrases inside longer KTVIC/model strings plus the repo's mock.py). No personal data was sent to
+any API (my OpenAlex helper has no mailto).
+
+VERDICT: KILL as an R6 method. The pilot reproduces exactly, but the claimed novel element (the kNN naming-rate
+feature kA in the mention critic) does not move any target metric beyond noise once it is compared with the
+label-free vote veto at matched CIDEr. It adds 0 CIDEr (the primary metric) and -0.6/-0.7 CHAIR_i (not
+significant). On P1 s43, which carries the headline, its CHAIR_i gain on the independent panel is exactly 0, and it
+costs 1 point of independent-panel CIDEr. Its novelty is incremental: kNN label transfer used as one feature of a
+TLC-style veto inside an MBR-CBDT-style utility. The headline 151.3 / 13.7 belongs to B4's PE-MBR plus a vote veto,
+which the P-B4-1 verifier already rated incremental (MBR-CBDT, EMNLP 2025).
+If EV-MBR (P-B4-1) runs anyway, kA may be ONE pre-registered dev300 ablation row (0 extra GPU-h), never the method.
+
+==========================================================================================================================
+LENS 1 -- NOVELTY: incremental (no exact scoop of the kA critic found; every component is prior art)
+==========================================================================================================================
+Searches (2026-10-13; logs in PB72_work/lit):
+- arXiv API, 32 keyword queries restricted to 2022-2026 (arxiv_01-20.txt, arxiv_21-32.txt). Topics: hallucination +
+  nearest neighbour / retrieval / similar images / kNN; object-hallucination priors; caption reranking with retrieved
+  neighbours; MBR for captioning; MBR + hallucination; kNN label transfer / tag propagation; content selection /
+  what annotators mention / salience; memory-augmented captioning; retrieved captions + hallucination; retrieval
+  hallucination detection; Vietnamese captioning; self-consistency; typicality decoding; co-occurrence priors;
+  retrieval-augmented captioning; candidate selection; verifier / critic reranking; caption quality estimation;
+  training-free retrieval decoding; dataset-specific caption conventions.
+- arXiv id_list lookup: 10 abstracts (ids_1.txt).
+- WebSearch: 5 queries (neighbour-image object priors for hallucination; RVCD; label transfer / tag propagation for
+  mention prediction; similar-image object-frequency features in hallucination classifiers; annotator-mention
+  prediction + reranking).
+- OpenAlex: HTTP 429 (daily quota exhausted for this IP, retry-after 17,817 s). Semantic Scholar: HTTP 429.
+- Full text: TLC-L 2305.07021 (sec. 3.3.2 veto rule, Table 4; PDF text saved by the P-B4-2 verifier, re-read here);
+  MBR-CBDT 2509.12677 (sec. 4.2 image captioning; text saved by the P-B4-1 verifier).
+Closest prior, component by component:
+ 1. The veto. TLC-L (Petryk et al., arXiv 2305.07021). A learned confidence on object words, with labels taken from
+    reference captions. Starting from the top beam, it REJECTS any candidate with an object whose confidence is
+    below gamma (gamma set on validation). OFA-Large: CHAIR_i 1.78 -> 1.17, CIDEr 144.4 -> 141.8. CT-Veto's
+    "fewest nouns with p < 0.5, ties -> utility" is a soft variant of the same rule.
+    SelfVal (arXiv 2601.22451) validates the objects in SAMPLED candidate captions, then selects or aggregates.
+ 2. The utility U. MBR-CBDT (Deguchi & Nagata, EMNLP 2025, arXiv 2509.12677). Self-MBR is interpolated with the true
+    references of retrieved similar training items, and image captioning (MSCOCO, nocaps) is evaluated.
+    m-RNN (1412.6632) and Devlin et al. (1505.04467) rerank hypotheses by consensus with kNN train captions.
+ 3. The novel feature kA = the share of the 30 CLIP-nearest train images whose references name the object. This is
+    nonparametric kNN label transfer of annotator tags:
+    - JEC (Makadia et al., ECCV 2008); TagProp (Guillaumin et al., ICCV 2009); 2PKNN (Verma & Jawahar, ECCV 2012).
+    LLM-era captioning that uses neighbour or memory object evidence:
+    - EVCap (2311.15879): object names retrieved by image similarity from a visual-name memory, given to the LLM.
+    - MeaCap (2403.03715): retrieve-then-filter of key concepts from a caption memory, to cut hallucination.
+    - ARA (2408.00555): CLIP-retrieved image-caption pairs against LVLM hallucination.
+    - NES (2511.08909): filters hallucination-prone entities out of retrieved captions.
+    Learned hallucination detectors with external priors:
+    - HaloProbe (2604.06165): a non-contextual prior (position, repetition, occurrence).
+    - MetaToken (2405.19186): meta-classifier on caption features.
+    - LURE (2310.00754): co-occurrence, uncertainty and position factors.
+    No paper found uses the neighbour NAMING RATE as a feature of a candidate-level mention critic, so this is not
+    scooped verbatim. But it is one logistic feature added to a known critic, inside a known veto and a known
+    utility. B7's own words: "neither is a breakthrough alone".
+Remaining delta: Vietnamese / KTVIC setting; the contextual rate replaces the class prior (the fitted weight on the
+prior collapses from 0.45 to 0.06 once kA is in; kA weight 0.44, vote 2.73). No step beyond prior art.
+
+==========================================================================================================================
+LENS 2 -- FEASIBILITY on one RTX 3090: yes, low risk (~5 GPU-h)
+==========================================================================================================================
+Decode-time only, no captioner training. Generation = greedy + 6 short samples per image with the 4-bit
+Qwen2.5-VL-7B + LoRA (scripts/e5_sample.py, which made the existing pools), well under 24 GB.
+GPU-h:
+  item                                    GPU-h
+  dev300 pools of the P1_dev adapter        0.4   (adapter exists on n2: runs/p1dev_s42; saves B7's 1.8)
+  s42/s44 test pools                        1.1
+  UIT-ViIC pools                            0.7   (needs P1 adapters there)
+  COCO 2,500-image subset                   2.5
+  total                                    ~5     (~0.5 incremental if run with P-B4-1's EV-MBR gate)
+kA and the critic are CPU-only. CLIP ViT-B/32 embeddings exist for KTVIC and UIT-ViIC (B6). COCO needs a ~15 min
+embedding job and an English CHAIR gold for kA.
+Inference cost: 7 decodes per image (~3.5x greedy latency).
+Implementation risk: low. Every piece runs on CPU today.
+
+==========================================================================================================================
+LENS 3 -- GAIN REALISM: pilot reproduces exactly; the novel element's gain is not significant against the right baseline
+==========================================================================================================================
+3a. Reproduction (PB72_work/ct_check.py -> out/ct_check.main.log). This is an independent re-implementation of B7's
+    U, kA and critics. CIDEr per member comes from pycocoevalcap (own CIDEr-D asserted equal). CHAIR is asserted
+    equal to HEAD rescap.chair. All of B7's S1/S2/S3 rows match to 0.1.
+      P1 s43 (CIDEr / CHAIR_i):
+        greedy          143.9 / 17.7
+        self-MBR        146.2 / 16.9
+        PE-MBR          150.4 / 17.1
+        cheap veto      151.4 / 14.8
+        CT-Veto         151.3 / 13.7   (CHAIR_s 21.5)
+      HEAD CaptionMetrics, CT-Veto: B-1 79.9, B-4 45.9, METEOR 39.4, ROUGE-L 64.7, CIDEr 151.3.
+      OpenViIC-gold CHAIR_i: 18.3 -> 15.8.
+      fuse2 s42: 143.9 / 21.9 -> 147.4 / 19.0 (B-1 78.4, B-4 43.2, METEOR 39.6, ROUGE-L 64.1).
+      Critic AUROC: 0.775 -> 0.819, dAUROC +0.044 [+0.031, +0.057] cross-fit, +0.045 [+0.032, +0.059] transfer.
+      fuse2: +0.035 [+0.024, +0.047].
+3b. B7's own comparison is not significant. CT-Veto minus cheap veto (both tau 0.5, critic fitted on the other pool),
+    paired over images:
+      pool       CIDEr                  CHAIR_i                OpenViIC CHAIR_i       OpenViIC CIDEr
+      P1 s43     -0.03 [-3.01, +2.96]   -1.14 [-2.39, +0.10]   -0.49 [-1.55, +0.62]   -1.13 [-2.06, -0.29]
+      fuse2 s42  -1.31 [-4.03, +1.21]   -1.30 [-2.51, -0.13]   -1.34 [-2.41, -0.26]   +0.19 [-0.96, +1.40]
+    On P1 the CHAIR_i gain's CI includes 0, and on the independent panel the ctx veto LOSES CIDEr. On fuse2 the gain
+    comes with -1.3 CIDEr, which is what a threshold move does, and the proposal's own rule ("at CIDEr within -1")
+    fails there.
+3c. The right baseline is the LABEL-FREE vote veto: no fitted critic, no kA, veto nouns named by < 0.3 of the 7
+    candidates. The P-B4-1 verifier showed that the fitted cheap critic is unnecessary.
+    (ct_followup.py -> out/ct_followup.log)
+      label-free vote veto:  P1 s43 151.2 / 14.3 (OV CHAIR_i 15.8, OV CIDEr 45.8)
+                             fuse2 148.0 / 19.7 (OV 18.8 / 47.3)
+      CT-Veto minus vote veto, matched CIDEr:
+      pool          CIDEr                  CHAIR_i                OpenViIC CHAIR_i       OpenViIC CIDEr
+      P1 s43        +0.13 [-3.03, +3.43]   -0.57 [-1.85, +0.66]   -0.05 [-1.19, +1.05]   -0.96 [-1.92, -0.05]
+      fuse2 s42     -0.54 [-3.33, +2.11]   -0.74 [-2.00, +0.50]   -1.54 [-2.72, -0.43]   +0.23 [-0.87, +1.49]
+      POOLED        -0.21 [-2.44, +1.91]   -0.67 [-1.52, +0.16]   -0.87 [-1.67, -0.07]   -0.35 [-1.12, +0.41]
+      (pooled = 2 x 558 images, pool-stratified resampling)
+      Cross-fitted ctx critic minus vote veto, pooled: CIDEr -0.89, CHAIR_i -0.90 [-1.81, +0.03].
+    Full HEAD metrics, P1 s43:
+      system           B-1    B-4    METEOR   ROUGE-L   CIDEr
+      label-free veto  79.9   46.1   39.6     64.8      151.2
+      CT-Veto          79.9   45.9   39.4     64.7      151.3
+    The contextual critic beats the label-free veto on NO n-gram metric.
+    The proposal's own kill rule is ">= 0.7 CHAIR_i below the B4 veto at CIDEr within -1". Against the label-free
+    form it already fires on the test estimate: P1 -0.57, pooled -0.67, CI includes 0.
+3d. Matched operating points over the full threshold sweep (taus picked on TEST for every family).
+    Lowest CHAIR_i per family with CIDEr >= PE-MBR:
+      family            P1 s43                  fuse2 s42
+      vote (label-free) 14.3                    21.0
+      cheap transfer    14.8                    19.2
+      ctx transfer      13.7                    20.9
+      cheap xfit        14.9                    19.5
+      ctx xfit          12.8 (tau 0.6, 151.4)   20.0
+    At PE-MBR - 2 on fuse2: ctx-transfer 18.0 vs cheap-xfit 18.8 vs ctx-xfit 19.9.
+    The ctx family is not consistently better: it wins on P1 and loses on fuse2. Adjacent thresholds move CIDEr by
+    1-3 points (P1 ctx-xfit at tau 0.55 / 0.60 / 0.65 = 150.9 / 151.4 / 148.5), so one test-picked point proves
+    little.
+    The contextual rate alone, as a label-free veto, lowers CIDEr below PE-MBR at every threshold (P1 147.8 -> 135.0;
+    fuse2 141.6 -> 138.6).
+3e. What the extra CHAIR_i is. B7's theory T2 says CHAIR_i vs refs measures KTVIC mention-worthiness, and kA is the
+    KTVIC naming rate of similar scenes. So the added reduction is largely panel typicality: on P1 s43, 0% of it
+    survives the independent panel (-0.05), and independent CIDEr drops (-0.96). On fuse2 it does survive (OpenViIC
+    CHAIR_i -1.3 to -1.5, CIs below 0), so the independent-panel evidence is split between the two pools.
+    Mention count, recall and exact-match precision are unchanged vs the label-free veto:
+      system            mentions/caption   recall   precision
+      CT-Veto           1.68               41.2     82.0
+      label-free veto   1.66               41.1     81.9
+3f. Gaming checks: none found.
+                                syllables   repeated-bigram rate   vocabulary   distinct-2   verbatim train copy
+      P1 CT-Veto                11.84       0.011                  411          0.184        21.3%
+      P1 greedy                 11.91       0.011                  412          0.181        20.6%
+    Share of 4-grams seen in train: 0.875 -> 0.882. fuse2 CT-Veto repeated-bigram rate 0.018 vs 0.013 greedy (minor).
+3g. Leakage.
+    - The critic weights are fitted on TEST labels of the other adapter's pool. 75.0% (P1) / 66.8% (fuse2) of the
+      (image, noun) keys are shared with identical labels.
+    - AUROC is not inflated by this (cross-fit = transfer, 0.819), but tau 0.5 is calibrated on test labels.
+    - kA reads train refs only, near-duplicates (cos >= 0.93) dropped.
+    - The AUROC gain holds on test images with no train image at cos >= 0.85: +0.038 [+0.021, +0.053] P1;
+      +0.028 [+0.014, +0.043] fuse2. So it is not a duplicate artefact.
+    - No dev pools exist: everything above is test.
+3h. Seeds and the bar.
+    - One seed per adapter. P1 s43 is a low seed (143.9 vs s42 149.8).
+    - "+5.5 vs the P1 3-seed mean" is B4's PE-MBR gain. CT-Veto vs PE-MBR: CIDEr +0.94 [-1.81, +3.74];
+      vs own greedy: +7.42 [+3.61, +11.55].
+    - Pareto arm (3-seed mean CHAIR_i <= 14.4):
+        CT-Veto           -3.99 [-5.65, -2.50] vs greedy -> projected 14.4 (borderline)
+        label-free veto   -3.4                           -> projected 15.0
+      The kA increment (-0.57) is below the per-seed CHAIR_i CI half-width (~1.25).
+    - +8 CIDEr arm: the system projects to ~152-153 (P-B4-1 regression analysis). kA contributes 0 CIDEr.
+    - B7's committee pool (4 greedy + 12 samples): the ctx veto LOWERS CIDEr 157.1 -> 155.0 for CHAIR_i
+      17.0 -> 16.5. On stronger candidate pools (RL or committee), it trades away the primary metric.
+3i. Literature at >= 130 CIDEr.
+    - Learned object veto: TLC-L costs -2.6 CIDEr at 144.4 for -0.61 CHAIR_i (absolute).
+    - 2-4 model ensembles: +2.0 to +3.3 (M2 1912.08226, AoANet 1908.06954).
+    - MBR-CBDT over MBR on COCO: +0.4 BLEU.
+    A critic feature worth ~0.6-0.9 CHAIR_i at 0 CIDEr is a normal refinement size, not a breakthrough.
+
+==========================================================================================================================
+REQUIRED CHANGES (only if kept as an ablation of P-B4-1; not as an R6 method)
+==========================================================================================================================
+1. No method or novelty claim. Cite kNN label transfer (JEC / TagProp / 2PKNN), TLC-L 2305.07021,
+   SelfVal 2601.22451 and MBR-CBDT 2509.12677. Describe kA as "a kNN tag-transfer prior added to the vote critic".
+2. Dev300 gate with the p1dev_s42 pools (shared with P-B4-1). Compare whole curves against the LABEL-FREE vote veto
+   at matched CIDEr, not against a fitted cheap critic at a fixed tau. Choose tau on dev. Keep kA only if:
+   - pooled CHAIR_i <= -1.0 with CI < 0, and
+   - OpenViIC-gold CHAIR_i <= -0.7, and
+   - CIDEr >= -0.5.
+3. Report B-4 / METEOR / ROUGE-L, recall, mentions per caption and the OpenViIC judge (CHAIR_i and CIDEr) for
+   every veto.
+4. Three seeds with pooled paired bootstrap before any Pareto claim. Measure stacking on the RL / MR5 adapter on dev
+   (the committee pool already shows a CIDEr cost).
+
+Files:
+- PB72_work/ct_check.py (-> out/ct_check.main.log, out/ct_check.json, out/sel/)
+- PB72_work/ct_followup.py (-> out/ct_followup.log)
+- PB72_work/ev.py (P-B4-1 verifier's EV-MBR module, re-pointed at this dir's HEAD copy)
+- lit/ (arxiv_01-32.txt, ids_1.txt, run scripts)

@@ -1,0 +1,474 @@
+R6 / B3_decoding: inference-time levers (MBR, committees, retrieval evidence, soups/ensembles)
+Agent B3_decoding, 2026-10-12. Work dir: /tmp/claude-1000/-mnt-d-vsps-image-captioning/755eae04-5e4c-4ce1-ab21-d4bc106761ee/scratchpad/research_r6/B3_decoding/
+ALL KTVIC NUMBERS BELOW ARE EFFECT-SIZE ESTIMATES ON THE KTVIC TEST PREDICTIONS (558 images). Nothing was tuned on them;
+the selection rules never read a test reference (rows marked ORACLE do, and are ceilings, not methods).
+
+=====================================================================================================================
+0. BOTTOM LINE
+=====================================================================================================================
+1. The "MBR at T=0.8 drops CIDEr to ~97" finding (R5-00 §2b) came from the OBJECT-CONSENSUS utility, not from sampling.
+   CIDEr-D MBR over the same six T=0.8 samples gives 139.4 (P1 s43) / 141.1 (fuse2), i.e. +42.6 [37.0, 48.5] and
+   +43.1 [37.6, 48.6] CIDEr over the object-consensus pick (96.7 / 98.0), which chose long, object-heavy samples
+   (12.0 words, 2.13 objects/caption vs 10.5 / 1.77). R5-00 was right that T=0.8 samples are poor CANDIDATES (a random
+   one scores 117.7), but they are good EVIDENCE.
+2. Committee CIDEr-D MBR, using greedy captions as hypotheses and T=0.8 samples as evidence only, is the largest
+   zero-training metric lever measured in this project:
+     - 4 adapters (P1 s42/s43/s44 + fuse2 s42; no tags, no E5), 4 greedy captions + 12 samples:
+       CIDEr 156.2, +10.3 [6.9, 14.0] over the P1 3-seed mean; +6.4 [2.1, 10.8] over the best seed (s42).
+       Also B-4 +1.8, METEOR +1.1, ROUGE-L +1.6, and CHAIR_i -1.0 [-2.3, +0.1], so CHAIR_i is not worse.
+     - The task's 8 members + 12 samples: CIDEr 157.5, +11.7 [7.5, 16.0]; +11.0 [6.6, 15.5] even without P1 s42.
+   This meets the R6 bar (+8 CIDEr over the P1 mean, CHAIR_i not worse) as an estimate, at K-fold inference cost and
+   no training. The CIs come from a paired image bootstrap pooled across the 3 P1 seeds (B = 2000).
+3. Most of the gain is real quality, not typicality. Scored against the INDEPENDENT UIT-OpenViIC panel of the same
+   images, the 4-adapter committee + samples gains +3.0 [1.6, 4.5] CIDEr and the 8-member one +3.5 [1.9, 5.3].
+   Relative to the P1 mean that is +6.7% and +7.8%, against +7.1% and +8.0% on the KTVIC references, while CHAIR_i
+   against the panel is unchanged.
+   Adding human captions of retrieved TRAIN images as extra evidence (m-RNN-style, 2015) adds a further +3.2 KTVIC
+   CIDEr (160.7, +14.9 [10.4, 19.2]) but ~0 on the independent panel (-0.3 at k = 5; -0.8 to +0.7 over k = 1..20).
+   That part is KTVIC annotator-style typicality, the same effect as R5's "precision measures typicality" finding.
+4. Committee MBR with samples moves OFF the P1<->fuse2 trade-off. Compared with the per-image P1/fuse2 mixture that
+   names the same number of objects, CHAIR_i is -2.3 [-3.4, -1.2] (4 adapters) and -3.0 [-4.2, -1.8] (8 members).
+   V5's object-F1 committee (+2 P vs the union gold) and the detector tags also leave it. Here the test is CHAIR_i,
+   and it holds for the CIDEr-D rule too.
+5. Novelty is the weak point. CIDEr consensus reranking against retrieved training captions is 2015 work (m-RNN §8:
+   +9.4/+9.8 CIDEr on COCO; Devlin et al. 2015). Committee/ensemble MBR is covered by UA-MBR (ICLR 2025) and
+   Multi-prompt MBR (EMNLP 2024). Separate hypothesis and pseudo-reference sets are covered by Kamigaito et al. 2024.
+   What is new here is narrow:
+     - the committee is drawn from the paper's own supervision-policy ladder;
+     - samples serve as evidence only;
+     - the gain is decomposed into transferable quality (independent panel) and typicality (retrieval).
+   The highest-value use of B3 is as the decoding stage of whatever training method R6 picks, plus a distillation
+   design that removes the K-fold inference cost.
+6. Length/EOS calibration has no headroom: P1 averages 10.42-10.49 words against 10.68 for the references (SD 1.66 vs
+   1.68), and only 34 of 558 images are more than 3 words from their mean reference length. Beam search, LoRA seed soups
+   and logit ensembles need a GPU; they are folded into P1's 8 GPU-h pilot as side arms.
+
+=====================================================================================================================
+1. SETUP AND IDENTITY CHECKS
+=====================================================================================================================
+- Scorers: HEAD's scripts/evaluate.py and rescap/ (exported with git archive HEAD into headsrc/), pycocoevalcap 1.2
+  (BLEU closest-ref, METEOR 1.5 jar "-l en -norm", ROUGE-L, CIDEr-D sigma 6), rescap.chair CHAIR (gold drawn from the
+  references, an upper bound). Word segmentation: VnCoreNLP-1.2 RDRSegmenter run locally (JRE 21 with JAVA_HOME set;
+  py_vncorenlp/jnius in a private venv), then lower-case, exactly as _tokenize_vietnamese does.
+- Checks, all passed:
+  (a) RDRSegmenter(caption).lower() equals KTVIC's own segment_caption on 18,845/18,845 train and 2,790/2,790 test captions.
+  (b) For all 10 stored systems, per-image re-scoring reproduces data/results/<sys>-short.json to 1e-6 on B-4, METEOR,
+      ROUGE-L, CIDEr and CHAIR_i (asserted in code).
+  (c) The CIDEr-D replica used for selection equals pycocoevalcap per image (max |diff| 8.9e-16).
+  (d) METEOR is re-aggregated per bootstrap draw from the jar's per-segment statistics. This reproduces the jar's
+      corpus score exactly once the jar's rule is applied: a perfect-match segment adds no chunk to the aggregate.
+      Without that rule the aggregate is off by 0.026.
+  (e) HEAD's evaluate.py copy re-scored three MBR outputs end to end and matched: cmbr_all8|ev+12smp gives
+      B-4 46.9 / METEOR 40.2 / ROUGE-L 65.7 / CIDEr 157.5 / CHAIR_i 17.1.
+- Statistics: paired bootstrap over images, B = 2000, numpy seed 42.
+  - BLEU-4 and METEOR are recomputed per draw from summed sufficient statistics; CIDEr and ROUGE-L are per-image means;
+    CHAIR_i is the ratio of summed counts.
+  - "vs P1 mean" averages the three seeds' corpus metric on the same draw, i.e. a paired image-level bootstrap pooled
+    across seeds, as CONTEXT_R6 allows for a +8 claim. It does not capture between-committee seed variance; the GPU
+    pilot adds 3 seed-disjoint committees for that.
+- Selection rule (fixed before any result was seen): per image, the candidate h maximising the mean over the pool
+  (minus h itself) of CIDEr-D(h, e).
+  - Settings: sigma 6, clipped tf-idf; IDF from the 3,769 KTVIC TRAIN reference sets; ties go to the smallest string.
+  - Candidates are the members' greedy captions. Evidence is the other members' greedy captions plus, where stated,
+    the 6 short-prompt samples per image (T = 0.8, top_p 0.95) of p1_s43 and fuse2_s42 (n2:/root/ncs-data/samples,
+    copied read-only).
+  - IDF from the test candidate pool instead of the train refs changes nothing (153.6 vs 153.6).
+- Retrieval block (pilot 2; k = 5 and lambda = 1 fixed before results): the 5 train images whose 5 references best
+  match the committee's own captions (TF-IDF uni+bigram cosine; no test refs), or the CLIP ViT-B/32 nearest train image
+  (data/dedup, images only). Utility = model-evidence mean + lambda x mean CIDEr-D vs the retrieved human captions.
+- Data used: the 8 short-prompt prediction files named by the task, the 2 object-consensus MBR files, the 2 sample files,
+  KTVIC refs, and the UIT-OpenViIC panel of 555 test images (data/ktvic_openviic_refs.json, read only for scoring;
+  no panel caption is printed or put in any report or committed file; segmented copies exist only in the scratch
+  cache cache/seg.json). No AI-made label was used.
+
+=====================================================================================================================
+2. RESULTS (tables generated by tables.py from out/pilot*.json; nothing typed by hand)
+=====================================================================================================================
+Reading guide.
+- "dec/img": decodes per image. "adapt": adapters needed. "+tags" = Grounding-DINO tags in the prompt, which needs a
+  second model at inference.
+- "ev+12smp": the 12 T=0.8 samples (6 P1 s43 + 6 fuse2 s42) as evidence only.
+- "first k": the first k members in the task's order: p1-gold, p1_s43, p1_s44, tags_p1_s43, fuse2_s42, tags_fuse2_s42,
+  e5_s42, e5dpo_s42.
+
+TABLE A. KTVIC test (558), short prompt, word-level RDRSegmenter, x100, HEAD evaluator scorers.
+system                                          adapt dec/img   B-1   B-4   MET   R-L  CIDEr  CH_i  CH_s obj/c words
+P1 s42 (greedy)                                     1       1  79.0  45.5  39.1  64.2  149.8  19.2  28.7  1.80 10.49
+P1 s43                                              1       1  79.1  45.2  39.1  64.0  143.9  17.7  26.7  1.76 10.42
+P1 s44                                              1       1  79.0  44.8  39.1  63.8  143.7  18.3  27.6  1.79 10.42
+P1 3-seed mean                                      -       -  79.0  45.2  39.1  64.0  145.8  18.4  27.7  1.78 10.45
+obj-consensus MBR, 6 smp T0.8 (P1 s43) [R5]         1       6  67.7  33.5  37.6  58.2   96.7  22.3  37.5  2.13 12.03
+obj-consensus MBR, 6 smp T0.8 (fuse2) [R5]          1       6  66.3  32.7  37.6  57.3   98.0  27.1  49.6  2.53 12.39
+one random T0.8 sample (P1 s43)                     1       1  72.9  35.9  36.2  58.5  117.7  22.5  31.2  1.75 10.60
+CIDEr-D MBR within 6 smp (P1 s43)                   1       6  78.0  42.3  38.6  62.9  139.4  18.6  28.0  1.77 10.53
+CIDEr-D MBR within 6 smp (fuse2)                    1       6  76.5  40.4  39.1  62.9  141.1  21.0  35.5  2.10 10.87
+  + greedy as candidate (P1 s43)                    1       7  79.2  44.7  39.4  64.2  146.2  16.9  25.3  1.75 10.46
+  + greedy as candidate (fuse2)                     1       7  77.7  42.3  39.4  63.9  145.9  21.4  36.0  2.13 10.83
+  P1 s43 greedy+6smp + retrieved refs               1       7  80.2  46.3  39.8  65.1  153.0  16.6  25.3  1.77 10.47
+committee P1 x3 seeds                               3       3  79.6  46.1  39.5  64.5  148.4  17.3  25.6  1.77 10.38
+  + 6 smp as evidence (P1 recipe only)              3       9  80.0  46.5  39.5  64.8  151.1  17.8  26.5  1.78 10.42
+P1 s43 + fuse2, 12 smp evidence                     2      14  79.6  45.3  39.7  64.7  151.4  18.6  29.4  1.94 10.63
+committee P1 x3 + fuse2                             4       4  79.9  46.1  39.6  64.8  150.3  17.7  26.9  1.80 10.40
+  + 12 smp as evidence                              4      16  80.5  47.0  40.1  65.5  156.2  17.3  27.2  1.88 10.51
+committee all 8 members                        6+tags       8  80.1  46.0  39.7  65.2  153.6  17.4  27.1  1.87 10.51
+  + 12 smp as evidence                         6+tags      20  80.7  46.9  40.2  65.7  157.5  17.1  27.2  1.91 10.57
+  same, without P1 s42                         5+tags      19  80.8  46.7  40.3  65.6  156.8  17.0  27.4  1.93 10.55
+  + refs of CLIP-1NN train image               6+tags      20  80.9  46.8  40.2  65.9  158.5  16.4  26.0  1.91 10.54
+  + refs of 5 caption-retrieved train imgs     6+tags      20  81.3  47.7  40.5  66.3  160.7  16.6  26.9  1.92 10.52
+all 8, retrieved refs only as evidence         6+tags       8  81.1  46.9  40.3  66.1  158.5  17.8  28.7  1.91 10.46
+ORACLE best of P1 x3 (reads refs)                   3       3  82.4  50.4  41.0  67.4  167.1  16.0  24.2  1.77 10.45
+ORACLE best of 8 (reads refs)                  6+tags       8  86.8  56.7  44.5  72.5  204.1  10.8  18.8  1.92 10.57
+ORACLE best of 6 smp P1 s43 (reads refs)            1       6  84.0  53.9  43.5  70.4  193.9  11.7  19.9  1.78 10.67
+
+TABLE B. Paired image bootstrap (B=2000, seed 42) vs the P1 3-seed mean (per draw: mean of the 3 seeds' corpus
+metric). Cells: difference [95% CI]. CHAIR: negative = fewer hallucinated mentions.
+system                                                      dCIDEr              dB-4           dMETEOR          dROUGE-L          dCHAIR_i
+obj-consensus MBR, 6 smp T0.8 (P1 s43) [R5]    -49.1 [-55.3,-43.0]-11.6 [-13.2,-9.9]  -1.4 [-2.2,-0.6]  -5.8 [-6.9,-4.5]  +3.9 [+1.8,+5.9]
+obj-consensus MBR, 6 smp T0.8 (fuse2) [R5]     -47.8 [-54.6,-40.6]-12.4 [-14.4,-10.5]  -1.5 [-2.3,-0.6]  -6.7 [-8.0,-5.3] +8.7 [+6.3,+11.0]
+one random T0.8 sample (P1 s43)                -28.1 [-35.2,-20.8] -9.2 [-11.0,-7.2]  -2.9 [-3.7,-2.1]  -5.5 [-6.8,-4.1]  +4.1 [+1.4,+6.6]
+CIDEr-D MBR within 6 smp (P1 s43)                -6.4 [-12.2,-0.4]  -2.9 [-4.3,-1.3]  -0.5 [-1.2,+0.2]  -1.1 [-2.2,-0.1]  +0.2 [-1.8,+2.1]
+CIDEr-D MBR within 6 smp (fuse2)                 -4.7 [-11.3,+2.0]  -4.8 [-6.6,-3.0]  +0.0 [-0.8,+0.8]  -1.1 [-2.3,+0.1]  +2.6 [+0.3,+4.7]
+  + greedy as candidate (P1 s43)                  +0.4 [-4.1,+5.1]  -0.5 [-1.8,+0.7]  +0.3 [-0.3,+0.9]  +0.2 [-0.6,+1.1]  -1.5 [-3.1,-0.0]
+  + greedy as candidate (fuse2)                   +0.1 [-6.7,+6.6]  -2.9 [-4.7,-1.1]  +0.3 [-0.4,+1.1]  -0.1 [-1.3,+1.0]  +3.0 [+0.9,+5.2]
+  P1 s43 greedy+6smp + retrieved refs            +7.2 [+2.5,+12.2]  +1.2 [-0.1,+2.5]  +0.7 [+0.1,+1.4]  +1.1 [+0.3,+2.0]  -1.7 [-3.4,-0.1]
+committee P1 x3 seeds                             +2.6 [+0.6,+4.6]  +1.0 [+0.4,+1.6]  +0.4 [+0.1,+0.6]  +0.5 [+0.1,+0.8]  -1.1 [-1.9,-0.3]
+  + 6 smp as evidence (P1 recipe only)            +5.3 [+2.6,+8.0]  +1.3 [+0.6,+2.0]  +0.4 [+0.1,+0.7]  +0.8 [+0.3,+1.3]  -0.6 [-1.6,+0.3]
+P1 s43 + fuse2, 12 smp evidence                  +5.5 [+0.7,+10.4]  +0.2 [-1.0,+1.4]  +0.7 [+0.1,+1.3]  +0.7 [-0.1,+1.6]  +0.2 [-1.5,+2.0]
+committee P1 x3 + fuse2                           +4.5 [+2.2,+6.8]  +0.9 [+0.3,+1.6]  +0.5 [+0.2,+0.8]  +0.8 [+0.4,+1.2]  -0.7 [-1.5,+0.2]
+  + 12 smp as evidence                          +10.3 [+6.9,+14.0]  +1.8 [+0.9,+2.7]  +1.1 [+0.6,+1.5]  +1.6 [+0.8,+2.2]  -1.0 [-2.3,+0.1]
+committee all 8 members                          +7.8 [+4.0,+11.9]  +0.8 [-0.3,+1.9]  +0.6 [+0.1,+1.2]  +1.2 [+0.4,+1.9]  -1.0 [-2.4,+0.5]
+  + 12 smp as evidence                          +11.7 [+7.5,+16.0]  +1.8 [+0.7,+2.9]  +1.1 [+0.6,+1.7]  +1.7 [+1.0,+2.5]  -1.3 [-2.9,+0.2]
+  same, without P1 s42                          +11.0 [+6.6,+15.5]  +1.5 [+0.3,+2.7]  +1.2 [+0.6,+1.8]  +1.6 [+0.8,+2.5]  -1.4 [-3.0,+0.2]
+  + refs of CLIP-1NN train image                +12.7 [+8.4,+17.1]  +1.7 [+0.5,+2.8]  +1.2 [+0.6,+1.7]  +1.9 [+1.1,+2.7]  -1.9 [-3.5,-0.5]
+  + refs of 5 caption-retrieved train imgs     +14.9 [+10.4,+19.2]  +2.5 [+1.4,+3.7]  +1.4 [+0.8,+2.0]  +2.3 [+1.5,+3.1]  -1.8 [-3.3,-0.4]
+all 8, retrieved refs only as evidence          +12.7 [+7.7,+17.6]  +1.7 [+0.5,+3.0]  +1.2 [+0.6,+1.8]  +2.1 [+1.3,+3.0]  -0.6 [-2.2,+0.9]
+ORACLE best of P1 x3 (reads refs)              +21.3 [+18.8,+23.9]  +5.2 [+4.5,+5.9]  +1.9 [+1.6,+2.3]  +3.4 [+2.9,+3.8]  -2.4 [-3.5,-1.2]
+ORACLE best of 8 (reads refs)                  +58.3 [+53.4,+63.8]+11.6 [+10.2,+12.9]  +5.5 [+4.8,+6.2]  +8.5 [+7.6,+9.5]  -7.6 [-9.5,-5.9]
+ORACLE best of 6 smp P1 s43 (reads refs)       +48.1 [+42.4,+54.3] +8.8 [+7.2,+10.6]  +4.5 [+3.7,+5.3]  +6.4 [+5.3,+7.6]  -6.7 [-8.8,-4.5]
+
+TABLE C. CIDEr difference [95% CI] p vs each P1 seed (paired, B=2000).
+system                                                            vs s42                    vs s43                    vs s44
+obj-consensus MBR, 6 smp T0.8 (P1 s43) [R5]   -53.1 [-59.9,-46.1] p=0.001-47.2 [-53.5,-40.8] p=0.001-47.0 [-53.9,-39.8] p=0.001
+obj-consensus MBR, 6 smp T0.8 (fuse2) [R5]    -51.8 [-59.1,-44.0] p=0.001-45.9 [-53.2,-38.1] p=0.001-45.7 [-53.3,-38.0] p=0.001
+one random T0.8 sample (P1 s43)               -32.1 [-40.1,-24.3] p=0.001-26.2 [-33.5,-18.8] p=0.001-26.0 [-33.4,-17.9] p=0.001
+CIDEr-D MBR within 6 smp (P1 s43)             -10.4 [-16.8,-3.6] p=0.001 -4.5 [-10.8,+2.2] p=0.182 -4.3 [-10.8,+2.0] p=0.198
+CIDEr-D MBR within 6 smp (fuse2)               -8.7 [-15.8,-1.9] p=0.014  -2.8 [-9.8,+4.6] p=0.460 -2.5 [-10.0,+4.8] p=0.505
+  + greedy as candidate (P1 s43)                -3.6 [-9.1,+2.2] p=0.213  +2.2 [-2.2,+7.2] p=0.306  +2.5 [-3.2,+8.5] p=0.383
+  + greedy as candidate (fuse2)                -3.9 [-11.2,+2.9] p=0.275  +1.9 [-5.0,+9.1] p=0.569  +2.2 [-5.2,+9.3] p=0.559
+  P1 s43 greedy+6smp + retrieved refs           +3.2 [-2.2,+9.3] p=0.268 +9.1 [+4.3,+14.3] p=0.001 +9.3 [+3.4,+15.2] p=0.004
+committee P1 x3 seeds                           -1.4 [-5.2,+2.0] p=0.435  +4.5 [+1.2,+8.1] p=0.007  +4.7 [+1.4,+7.9] p=0.006
+  + 6 smp as evidence (P1 recipe only)          +1.3 [-2.6,+5.3] p=0.513 +7.2 [+3.9,+11.0] p=0.001 +7.4 [+3.4,+11.5] p=0.001
+P1 s43 + fuse2, 12 smp evidence                 +1.6 [-3.9,+7.4] p=0.564 +7.4 [+2.6,+12.3] p=0.003 +7.7 [+1.8,+13.5] p=0.008
+committee P1 x3 + fuse2                         +0.5 [-3.3,+4.2] p=0.850 +6.4 [+3.2,+10.0] p=0.001 +6.6 [+3.0,+10.3] p=0.001
+  + 12 smp as evidence                         +6.4 [+2.1,+10.8] p=0.003+12.2 [+8.1,+16.8] p=0.001+12.4 [+7.8,+17.4] p=0.001
+committee all 8 members                         +3.8 [-1.2,+8.7] p=0.133 +9.7 [+5.4,+14.3] p=0.001 +9.9 [+4.9,+15.1] p=0.001
+  + 12 smp as evidence                         +7.7 [+2.8,+12.4] p=0.001+13.6 [+8.7,+18.6] p=0.001+13.8 [+8.4,+19.4] p=0.001
+  same, without P1 s42                         +7.0 [+1.8,+12.1] p=0.012+12.9 [+7.9,+18.0] p=0.001+13.1 [+7.4,+18.7] p=0.001
+  + refs of CLIP-1NN train image               +8.7 [+3.9,+13.5] p=0.001+14.6 [+9.8,+19.8] p=0.001+14.8 [+9.3,+20.4] p=0.001
+  + refs of 5 caption-retrieved train imgs    +10.9 [+5.7,+15.7] p=0.001+16.8 [+11.6,+21.7] p=0.001+17.0 [+11.4,+22.4] p=0.001
+all 8, retrieved refs only as evidence         +8.8 [+2.9,+14.4] p=0.004+14.6 [+9.2,+20.2] p=0.001+14.8 [+8.9,+20.8] p=0.001
+ORACLE best of P1 x3 (reads refs)             +17.3 [+14.4,+20.4] p=0.001+23.2 [+19.2,+27.3] p=0.001+23.4 [+19.3,+27.8] p=0.001
+ORACLE best of 8 (reads refs)                 +54.3 [+49.1,+60.2] p=0.001+60.2 [+54.3,+66.3] p=0.001+60.4 [+54.6,+66.7] p=0.001
+ORACLE best of 6 smp P1 s43 (reads refs)      +44.1 [+38.2,+50.7] p=0.001+50.0 [+43.8,+57.0] p=0.001+50.2 [+43.7,+57.4] p=0.001
+
+TABLE D. Committee size (members added in the task's order), CIDEr and dCIDEr vs P1 mean [95% CI].
+  first 3: greedy-only 148.4 (+2.6 [+0.6,+4.6])   +12 smp evidence 152.0 (+6.2 [+3.8,+8.8])
+  first 4: greedy-only 147.3 (+1.5 [-1.1,+4.2])   +12 smp evidence 152.4 (+6.6 [+3.9,+9.4])
+  first 5: greedy-only 150.0 (+4.2 [+1.7,+6.8])   +12 smp evidence 157.1 (+11.3 [+7.9,+14.9])
+  first 6: greedy-only 150.9 (+5.1 [+2.2,+8.0])   +12 smp evidence 157.8 (+12.0 [+8.2,+15.7])
+  first 7: greedy-only 152.3 (+6.5 [+3.2,+10.2])   +12 smp evidence 158.3 (+12.4 [+8.3,+16.8])
+  first 8: greedy-only 153.6 (+7.8 [+4.0,+11.9])   +12 smp evidence 157.5 (+11.7 [+7.5,+16.0])
+
+TABLE E. POST-HOC sensitivity of the retrieval block (headline k=5, lambda=1 was fixed before results).
+  all8|ev+12smp+cap1nn               CIDEr 160.8  vs P1 mean +15.0 [+10.3,+19.4]  CHAIR_i 17.3
+  all8|cap1nn_only                   CIDEr 158.5  vs P1 mean +12.7 [+7.8,+17.4]  CHAIR_i 18.4
+  all8|ev+12smp+cap3nn               CIDEr 160.1  vs P1 mean +14.3 [+9.9,+18.7]  CHAIR_i 16.5
+  all8|cap3nn_only                   CIDEr 160.4  vs P1 mean +14.6 [+9.3,+19.6]  CHAIR_i 17.1
+  all8|ev+12smp+cap10nn              CIDEr 161.9  vs P1 mean +16.1 [+11.8,+20.4]  CHAIR_i 16.7
+  all8|cap10nn_only                  CIDEr 159.1  vs P1 mean +13.3 [+8.2,+18.3]  CHAIR_i 17.6
+  all8|ev+12smp+cap20nn              CIDEr 160.1  vs P1 mean +14.3 [+10.0,+18.6]  CHAIR_i 16.9
+  all8|cap20nn_only                  CIDEr 158.3  vs P1 mean +12.5 [+7.2,+17.5]  CHAIR_i 17.4
+  all8|ev+12smp+cap5nn_lam0.5        CIDEr 160.5  vs P1 mean +14.8 [+10.6,+18.9]  CHAIR_i 16.4
+  all8|ev+12smp+cap5nn_lam2.0        CIDEr 160.2  vs P1 mean +14.4 [+9.7,+18.6]  CHAIR_i 16.9
+
+TABLE F. Same outputs scored against the INDEPENDENT UIT-OpenViIC panel (555 images; longer captions, so all
+CIDEr values are lower). dCIDEr / dCHAIR_i vs P1 3-seed mean [95% CI] p.
+  p1-gold                              CIDEr  45.00  CHAIR_i 18.82
+  p1_s43                               CIDEr  45.01  CHAIR_i 18.35
+  p1_s44                               CIDEr  44.76  CHAIR_i 18.09
+  P1-mean                              CIDEr  44.92  CHAIR_i 18.42
+  fuse2_s42                            CIDEr  46.75  CHAIR_i 19.26  dCIDEr +1.82 [-0.49,+4.48] p=0.125   dCHAIR_i +0.84 [-1.02,+2.69]
+  single_p1_s43|greedy+6smp            CIDEr  45.92  CHAIR_i 18.62  dCIDEr +1.00 [-0.42,+2.46] p=0.193   dCHAIR_i +0.20 [-1.22,+1.69]
+  single_p1_s43|greedy+6smp+cap5nn     CIDEr  46.41  CHAIR_i 18.02  dCIDEr +1.49 [-0.09,+3.01] p=0.060   dCHAIR_i -0.39 [-1.89,+1.04]
+  cmbr_p1x3|cap5nn                     CIDEr  45.66  CHAIR_i 18.02  dCIDEr +0.74 [-0.07,+1.56] p=0.061   dCHAIR_i -0.39 [-1.16,+0.36]
+  cmbr_all8|ev+12smp                   CIDEr  48.44  CHAIR_i 18.42  dCIDEr +3.52 [+1.92,+5.27] p=0.001   dCHAIR_i +0.00 [-1.30,+1.21]
+  cmbr_all8|ev+12smp+cap5nn            CIDEr  48.16  CHAIR_i 17.83  dCIDEr +3.24 [+1.53,+5.02] p=0.001   dCHAIR_i -0.59 [-1.87,+0.63]
+  cmbr_all8|cap5nn_only                CIDEr  46.66  CHAIR_i 18.57  dCIDEr +1.73 [-0.04,+3.60] p=0.056   dCHAIR_i +0.15 [-1.18,+1.53]
+  SENS_all8|ev+12smp+cap10nn           CIDEr  49.10  CHAIR_i 18.13  dCIDEr +4.17 [+2.43,+5.96] p=0.001   dCHAIR_i -0.29 [-1.54,+1.01]
+
+Extra results not in the tables
+- 543 test images without a train near-duplicate (CLIP cos < 0.93), vs the P1 mean on the same images (146.5):
+  all8|ev+12smp 157.6, +11.1 [6.6, 15.6]; with retrieval 160.9, +14.4 [9.7, 19.2] (pilot2_dedup543.json).
+- Deployable committees on the independent panel (pilot8_panel.json; dCIDEr vs P1 mean [95% CI]):
+    P1x3                 +0.42 [-0.33, 1.19]
+    P1x3 | ev+6smp(P1)   +1.45 [0.56, 2.32]
+    P1x3+fuse2           +0.67 [-0.15, 1.49]
+    P1x3+fuse2 | ev+12   +3.00 [1.58, 4.51]   (CHAIR_i +0.03 [-1.16, 1.19])
+    pair P1s43+fuse2 | ev+12  +2.36 [0.52, 4.31]
+    all8                 +2.38 [0.83, 4.04]
+  The sample evidence is what carries the gain across to the independent panel.
+- Chord test on CHAIR_i (KTVIC refs) vs the per-image P1(3-seed counts)<->fuse2 mixture with the same total objects
+  (pilot7.json):
+    P1x3+fuse2 | ev+12           -2.29 [-3.41, -1.20]   (lambda 0.32)
+    all8 | ev+12                 -2.97 [-4.19, -1.78]   (lambda 0.42)
+    all8 | ev+12 + retrieval     -3.59 [-4.82, -2.39]
+    greedy-only P1x3+fuse2       -0.89 [-1.68, -0.09]
+- MBR captures 12% of the 3-seed oracle headroom (2.6 of 21.3) and 20% of the 8-member one (11.7 of 58.3). Within
+  six samples the oracle is 193.9. Selection still leaves most of the per-image headroom unused.
+- Disagreement:
+  - The 3 P1 seeds give identical captions on only 162/558 images, and 3 different captions on 156.
+  - The 8 members give 5 or more distinct captions on 343/558.
+  - P1 s43's greedy caption appears among its own 6 samples on 161/558 images (fuse2: 225/558).
+- Shares picked in all8|ev+12smp (a caption produced by several members counts for each): p1 s42/s43/s44
+  0.44/0.52/0.45, tags_p1 0.43, fuse2 0.39, tags_fuse2 0.35, e5 0.27, e5dpo 0.13. Weak members still serve as evidence.
+- Single adapter, candidates = greedy + 6 samples (7 decodes): +2.2 [-2.2, 7.2] over its own greedy (P1 s43), and +2.0
+  (point) for fuse2. Not significant with 6 T=0.8 samples. Jinnai et al. 2024 (BLIP-2, COCO) report MBR BLEU rising
+  from 27.1 to 33.2 as samples go from 4 to 64, so 6 samples is far from saturation.
+
+Levers that need a GPU (not piloted; expectations only)
+- Beam search vs greedy: no beam outputs exist on n2/n3 (checked).
+  m-RNN reranked 10-best beam hypotheses. Borgeaud & Emerson 2020 report range voting on the beam beating beam search
+  at large beams: COCO BLEU-4 28.23 at k = 100 vs 27.16 for the best beam. Neither reports a CIDEr comparison usable here.
+  Beam N-best is proposed as extra hypotheses in P1's pilot (0.4 GPU-h).
+- LoRA seed soup: average the three P1 seeds' updates (Delta W = B A) exactly by concatenating them into one rank-48
+  adapter with weights 1/3 (PEFT add_weighted_adapter, combination_type "cat"; LoRA Soups / CAT, arXiv 2410.13025).
+  This runs at 1x inference. Expected +0 to +3 CIDEr.
+  Model soups (2203.05482) and SeedLoRA (ICML 2025) report gains from fusing same-task seeds, but nothing for
+  captioning or CIDEr.
+- Logit ensemble of the 3 seeds: 3x forward passes. Prior work: LoRA ensembles (2310.00035, probability averaging,
+  QA tasks); ATED (2510.18321, token-level LVLM ensembles against hallucination).
+  The committee MBR above is a sequence-level ensemble at the same decode count. Whether token-level averaging beats it
+  is the question the side arm answers.
+- Length/EOS calibration: dropped (section 0, point 6).
+
+=====================================================================================================================
+3. LITERATURE AND NOVELTY CHECK (22 targeted web searches + 13 page/PDF reads; ids verified in this session unless marked)
+=====================================================================================================================
+Full text read
+- Mao et al., m-RNN, ICLR 2015, arXiv 1412.6632, §8 "Nearest neighbor as reference".
+  Reranks 10-best beam hypotheses by mean CIDEr against the captions of the k = 60 nearest training images (top
+  m = 125). CIDEr goes 0.842 -> 0.938 on val (+9.4) and 0.819 -> 0.917 on the COCO test server (+9.8). Oracle 1.272.
+  This scoops "retrieved human captions as MBR evidence".
+- Borgeaud & Emerson 2020, WNGT, arXiv 1908.06288 (ACL 2020.ngt-1.11). Range voting (MBR with a similarity) over beam
+  candidates for a Show-and-Tell captioner on COCO and for MT. BLEU-1/BLEU-4 only, no CIDEr; human preference
+  106 vs 73.
+- Daheim, Meister, Moellenhoff, Gurevych, UA-MBR, ICLR 2025, arXiv 2503.05318.
+  - MBR with an expectation over a weight posterior (IVON, deep ensembles, snapshots).
+  - Sequence-level estimators pool hypotheses across members (Eq. 9) or sum utilities per member (Eq. 10).
+  - Tasks: MT, summarisation and data-to-text; no captioning. IWSLT17 BLEU 19.93 -> 21.24 with a deep ensemble.
+  - "More successful when the ensembled models are diverse."
+  This is the closest prior for committee MBR.
+- Deguchi & Nagata, CBDT, EMNLP 2025, arXiv 2509.12677, DOI 10.18653/v1/2025.emnlp-main.1710.
+  - Estimates expected utility from retrieved domain examples (DINOv2 image similarity for captioning).
+  - BLIP-2, 256 epsilon samples, BERTScore utility. MSCOCO BLEU: MAP 17.5, MBR 25.6, MBR+CBDT 26.0.
+  This is retrieval-augmented MBR for captioning in 2025.
+- Jeong et al., ECO, CVPR 2024 NICE workshop, arXiv 2405.01028.
+  - A CIDEr-derived consensus score over a ~60-caption pool, where the references are the other pool captions,
+    combined with a CLIP-model ensemble.
+  - CIDEr: consensus alone 202.89, combined 218.47.
+- Jinnai et al., Model-Based MBR, ICML 2024, arXiv 2311.05263.
+  - BLIP-2 captioning on COCO and nocaps, BLEU only; epsilon 0.02, BERTScore utility.
+  - COCO MBR BLEU 27.12 -> 33.24 as |H| goes 4 -> 64.
+- Finkelstein et al., MBR and QE Finetuning, ICLR 2024, arXiv 2309.10966 (en->de, COMET20).
+  - MBR teacher +1.56 over base beam.
+  - Self-MBR finetuning on 200k new monolingual sources: +2.15, beating its own teacher.
+  - The Phase-1 self-MBR student gained only +0.23, below its teacher.
+  - Stronger external teacher: +5.72.
+  This is the basis for P2.
+- Wang et al., LoRA ensembles, arXiv 2310.00035. Five LoRA members differing in adapter init, probability averaging;
+  no weight-averaging comparison.
+
+From abstracts or search records only
+- Devlin et al. 2015, arXiv 1505.04467: consensus caption = the kNN caption with the highest mean CIDEr-D/BLEU to the
+  others.
+- Fernandes et al., Quality-Aware Decoding, NAACL 2022, arXiv 2205.00978: N-best reranking plus MBR with metrics;
+  tuned reranking + MBR is best.
+- Kovacs, Deutsch, Freitag, WMT 2024, arXiv 2411.03524: MBR with the evaluation metric as utility inflates that metric
+  ("metric bias"); a utility ensemble mitigates it. Our independent-panel check measures exactly this.
+- Heineman et al., Multi-prompt MBR, EMNLP 2024, arXiv 2407.15343: diversity from a prompt bank, pooled by MBR.
+- Kamigaito et al. 2024, arXiv 2410.15021: hypotheses and pseudo-references drawn from different samplers; MT,
+  summarisation and captioning; bias-diversity decomposition.
+- Jinnai & Ariu 2024 (AMBR), arXiv 2401.02749: MBR for BLIP-2 captioning, CLIP utility.
+- Bertsch et al. 2023, arXiv 2310.01387: many decoding methods are special cases of MBR.
+- Macherey & Och 2007, EMNLP-CoNLL, ACL D07-1105: system combination needs similar-quality, nearly uncorrelated
+  systems.
+- ICCV 2021 VALUE challenge winner, arXiv 2110.06476: captioning ensemble of greedy outputs plus consensus ranking.
+- Bianco/Celona et al., arXiv 2306.11593 (DOI 10.1007/s00521-025-11672-x): rank captions from several models, fuse
+  the top two with an LLM.
+- Wortsman et al., model soups, ICML 2022, arXiv 2203.05482.
+- Prabhakar et al., LoRA Soups (CAT), arXiv 2410.13025.
+- Liu et al., SeedLoRA, ICML 2025, PMLR 267:38384-38396.
+- ATED, arXiv 2510.18321: adaptive token-level ensemble of LVLMs.
+- Wu et al. 2024, arXiv 2410.02902: MBR self-training with DPO.
+
+Known, not re-verified this session
+- Freitag et al., TACL 2022, arXiv 2111.09388 (MBR with neural metrics).
+- Freitag et al. 2023, arXiv 2305.09860 (epsilon sampling for MBR).
+- Kim & Rush 2016, arXiv 1606.07947 (sequence-level KD).
+- Li et al. 2022 BLIP CapFilt, arXiv 2201.12086.
+- Rohrbach et al. 2018 CHAIR, arXiv 1809.02156.
+
+Not found, despite targeted searches:
+- CIDEr-D MBR over a committee of LoRA VLM captioners trained under different SUPERVISION POLICIES;
+- a test of hypotheses-only vs evidence-only roles for high-temperature samples in captioning;
+- any MBR/ensemble result on Vietnamese captioning (KTVIC, UIT-ViIC);
+- a quality-vs-typicality split of MBR gains using a second independent human panel.
+These are the only defensible novelty claims, and they are incremental.
+
+=====================================================================================================================
+4. PROPOSALS (at most 2; ranked by expected metric gain x novelty x cost)
+=====================================================================================================================
+P1. LadderMBR: a supervision-policy committee with CIDEr-D MBR and samples as evidence only. Inference only.
+
+Mechanism
+- Members are the adapters the paper already trains or has queued for the frontier analysis:
+  - P1 and fuse2 at s42/s43/s44 (all six adapters exist; fuse2 s43/s44 on n3);
+  - the target-policy ladder (cons, unf2, rnd2, multiref, p1ep4) as it lands.
+- Each member decodes one greedy short caption (the hypothesis) and 6 samples (T 0.8, top_p 0.95; evidence only).
+- Per image, pick the hypothesis with the highest mean CIDEr-D (sigma 6, IDF from KTVIC train refs) against every other
+  member's greedy caption and all samples. No test refs, no weights, ties go to the smallest string.
+- Report two variants:
+  - "LadderMBR", the main claim;
+  - "LadderMBR+R", which adds the m-RNN retrieval block (k = 5, lambda = 1) only for the maximum-metric table, labelled
+    as typicality.
+- Freeze this rule now. Any decoding change (e.g. epsilon 0.02 or N = 16) is chosen on UIT-ViIC val with UIT-ViIC
+  adapters, never on KTVIC test.
+
+Novel element (narrow)
+- The diversity source is supervision policy at controlled points of the measured precision vs object-count frontier,
+  not seeds, prompts or architectures.
+- Samples are restricted to evidence; this is measured to matter. Added as evidence they lift a committee by +2.7 to
+  +7.1 CIDEr. As candidates, MBR over the samples scores 2.8 (fuse2) and 4.5 (P1 s43) below the adapter's own greedy
+  caption, and a random sample scores 26 below.
+- The gain is decomposed with an independent second human panel into transferable quality (+7% relative on both panels)
+  and typicality (retrieval: +2% KTVIC, ~0 on the panel).
+- The committee moves off the trade-off chord (CHAIR_i -2.3 at matched object count).
+
+Closest prior
+- UA-MBR (2503.05318): ensemble MBR with diversity helping; MT and summarisation, no captioning, no policy diversity.
+- Multi-prompt MBR (2407.15343).
+- Kamigaito et al. 2024 (2410.15021): decoupled samplers.
+- m-RNN §8 (1412.6632) and ECO (2405.01028): CIDEr consensus in captioning.
+- Delta: policy-ladder committee, evidence-only samples, panel decomposition.
+
+GPU pilot (about 8 GPU-h, inference only, one 3090)
+(i)   fuse2 s43/s44 on KTVIC test: greedy + 6 samples (1.3 GPU-h).
+(ii)  6 samples for P1 s42 and s44 (0.9).
+(iii) 16 epsilon samples for P1 s43, to check evidence quality (0.9).
+(iv)  Side arms (1.3): P1 seed soup via rank-48 CAT, 1 greedy run; 3-seed logit ensemble greedy; beam-5 N-best for P1
+      s42 as extra hypotheses.
+(v)   UIT-ViIC test with the uitviic_p1/fuse2 adapters (1.6).
+(vi)  A 1,000-image COCO Karpathy subset with the English adapters (2.4).
+Primary endpoint: the 6-adapter committee {P1, fuse2} x {42, 43, 44}, compared with the P1 3-seed mean.
+Replication: 3 seed-disjoint committees {P1_s, fuse2_s} + own samples, each vs P1_s and vs the P1 mean; paired image
+bootstrap, B = 2000. Also report the same committees on the OpenViIC panel and the chord test.
+
+Expected gain
+- KTVIC: +8 to +12 CIDEr over the P1 mean. Pilot estimates: 4 adapters +10.3 [6.9, 14.0]; 8 members +11.7 [7.5, 16.0].
+  Also B-4 +1.8, METEOR +1.1, ROUGE-L +1.6, CHAIR_i -1.0 to -1.3.
+- Independent panel: +3 CIDEr (+7% relative).
+- LadderMBR+R: a further +3 KTVIC CIDEr (pilot 160.7). Seed-disjoint 2-adapter committees: about +5.5.
+
+Kill criterion
+- On the new committee with fresh samples, the frozen rule gives < +6 CIDEr over the P1 mean on KTVIC test, or
+  CHAIR_i > P1 mean + 1.0, or the panel-gain CI contains 0: downgrade to an analysis appendix.
+- Drop a side arm (soup or logit ensemble) if it gains < +2 CIDEr over the P1 mean.
+
+Synthetic training data: none. Risk: K-fold inference cost (report decodes per image).
+Confidence: high for the metric gain; novelty low to moderate.
+
+P2. Committee-MBR distillation on unlabeled in-domain images, giving one adapter at 1x inference.
+FLAGGED: SYNTHETIC TRAINING DATA (model-written captions as targets). The user may veto.
+
+Mechanism
+- Run P1's frozen LadderMBR rule on about 4,000 of the ~8,770 UIT-OpenViIC images that are NOT KTVIC images.
+  - Use images only, never OpenViIC captions, so the second panel stays independent.
+  - Drop every image paired to a KTVIC train or test image in data/ktvic_openviic_refs.json "_pairs", and any CLIP
+    near-duplicate (cos >= 0.93) of a KTVIC test or dev image.
+- Keep the MBR-selected caption per image.
+- Fine-tune one P1-recipe QLoRA adapter on the KTVIC train caption #1 plus these pseudo-captions.
+  - The mix ratio is chosen from {0.5, 1.0} on the KTVIC dev-300 split, i.e. random.Random(0).sample(sorted(train_ids),
+    300), held out while tuning.
+  - Then retrain on full train for 3 seeds.
+- Decode greedy.
+- This fixes E5's stated failure, where self-RFT on SEEN images with an object-F1 utility caused memorisation and
+  short-mode collapse:
+  - new, unseen images;
+  - a cross-policy teacher;
+  - a CIDEr-consensus pick, which pilots show does not drift in length (10.5 words).
+
+Novel element: a captioning VLM distilled from a supervision-policy committee's CIDEr-MBR decisions on unlabeled
+in-domain images, audited on an independent human panel.
+
+Closest prior
+- MBR finetuning (2309.10966): self-MBR on 200k new sources gave +2.15 COMET vs the teacher's +1.56; the Phase-1
+  self-MBR student gained +0.23.
+- Sequence-level KD (1606.07947); BLIP CapFilt (2201.12086).
+- Delta: committee-of-policies teacher, CIDEr consensus, captioning, panel audit.
+
+GPU (about 35 GPU-h total)
+- Teacher on 4k images: 4 adapters greedy + 2 adapters x 6 samples, about 9.3.
+- Dev arm: student at 2 ratios + P1 baseline on train-minus-dev, about 11.7.
+- Final: 3 seeds on full train + decoding, about 15.
+- Go/no-go point after about 17 GPU-h (teacher + one student + baseline).
+
+Expected gain: +3 to +6 CIDEr over the P1 mean at 1x inference (30-60% of the committee's +10), CHAIR_i <= P1.
+Kill criterion: on dev-300, student minus P1 (trained on train-minus-dev) < +3 CIDEr, or CHAIR_i worse by > 1, or the
+OpenViIC-panel CIDEr does not rise: stop.
+Confidence: low (E5's history; MT evidence is positive only with new inputs).
+
+Not proposed
+- A single adapter conditioned on a policy token, as a "self-committee". Too close to the round-1 CoverageDial kill,
+  and diversity may collapse.
+- A learned reranker (Fernandes-style tuned reranking). It needs cross-fitted committees on dev, and it is prior art.
+- Lattice/n-gram MBR decoding to synthesise new captions. Engineering-heavy and close to the killed phrase-graft fusion.
+
+=====================================================================================================================
+5. CAVEATS
+=====================================================================================================================
+- Every KTVIC number is a test-set estimate.
+  - Pilot-1 variants and the retrieval k = 5 / lambda = 1 were fixed before seeing results.
+  - The 4-adapter committee (pilot 4) was picked after pilots 1-3, as the natural "no tags, no E5" subset.
+  - About 60 variants were scored in total (including oracles and the post-hoc grid), so treat single CIs as
+    optimistic. Table E is post-hoc.
+- The committee members share training data (KTVIC train) and backbone.
+- The tags members need Grounding DINO at inference. E5 and E5-DPO cost extra training.
+- Samples come from one sampling run (T 0.8, top_p 0.95), from two adapters only.
+- CHAIR uses reference-derived gold, an upper bound that also measures typicality. The OpenViIC panel captions are
+  longer (17.5 vs 12.1 words), so panel CIDEr values are about 3x lower; compare relative gains.
+- METEOR follows the repo convention (jar "-l en -norm" on segmented Vietnamese).
+- No UIT-ViIC or COCO committee outputs exist yet, so generalisation is untested (P1 pilot, items v and vi).
+- Leakage: the dedup-543 subset gives the same gains (+11.1, +14.4). Retrieval draws only on KTVIC train references.
+
+=====================================================================================================================
+6. FILES (all under the work dir)
+=====================================================================================================================
+Code
+- pilot.py          Segmentation cache, CIDEr-D replica, MBR rule, per-image scorers (BLEU/METEOR/ROUGE/CIDEr/CHAIR),
+                    bootstrap, self-check (python pilot.py --selfcheck); pilot-1 variants.
+- pilot2.py         Committee size curve, without s42, retrieval evidence, dedup-543 rescoring.
+- pilot3.py         Single-adapter variants, k/lambda sensitivity, independent-panel check.
+- pilot4.py         The 4-adapter committee and disagreement statistics.
+- pilot5.py         The 2-adapter committee.
+- pilot6.py         CIDEr-D MBR vs object-consensus MBR on the same samples.
+- pilot7.py         Chord test.
+- pilot8.py         Deployable committees on the panel.
+- tables.py         Builds the tables above.
+- headsrc/          HEAD copies of evaluate.py and rescap/.
+Outputs
+- out/*.json, out/*.log   Every number above.
+- preds/*-short.preds.json   Every selected output, scorable with headsrc/scripts/evaluate.py.
+- out/evalcheck_*.json    End-to-end HEAD-evaluator re-scores.
+Run
+- JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64 nice -n 15 venv/bin/python pilotN.py
+- CPU only, 4 threads, about 6 minutes in total; no GPU and no model loaded.

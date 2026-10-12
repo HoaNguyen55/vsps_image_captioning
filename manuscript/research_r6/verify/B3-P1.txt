@@ -1,0 +1,199 @@
+VERIFY B3-P1 "LadderMBR" (committee CIDEr-D MBR, T=0.8 samples as evidence only). Adversarial verifier, 2026-10-13.
+Work dir: research_r6/verify/B3-P1_work/ (common.py, cider.py, verify1-4.py, export.py, out/*.json, lit/).
+ALL KTVIC NUMBERS ARE TEST-SET EFFECT ESTIMATES (558 images, short prompt, word-level RDRSegmenter, x100). CPU only.
+
+VERDICT: MODIFY. Novelty: scooped (at best incremental). The metric gain is real and replicates out of sample. But the
+claimed novel elements are prior art or barely move the result, so this cannot be the R6 "breakthrough" method. Keep it
+as the decoding stage and the strong baseline that the R6 training method must stack with and beat.
+
+=====================================================================================================================
+1. GAIN REALISM: reproduction (independent code; only HEAD's evaluator copy is shared with B3)
+=====================================================================================================================
+Setup
+- HEAD scripts/evaluate.py + rescap/ via git archive into head/ (identical to B3's copy).
+- Segmentation: my own RDRSegmenter pass over 31,184 strings, run locally (VnCoreNLP-1.2, JRE 21). It is identical to
+  B3's cache on all 30,783 shared strings.
+- CIDEr-D: my own replica. Per image it matches pycocoevalcap to <= 1.3e-15 on all 11 systems.
+- Every stored data/results/<sys>-short.json CIDEr reproduces exactly, including the 3 runs that appeared after B3's
+  pilot: p1mask_s42 147.67, p1assist_s42 148.66, fuse2_s44 142.21.
+- Sample files are byte-identical to n2:/root/ncs-data/samples (md5 checked).
+
+Re-selection with the frozen rule (mean CIDEr-D vs other pool entries; train-ref IDF; ties to the smallest string)
+- P1x3 + fuse2_s42 + 12 samples: 156.15, the same output caption as B3's file on 558/558 images.
+  vs P1 3-seed mean (145.80): +10.35 [6.65, 14.24] (paired image bootstrap, my seed 7).
+- All 8 + 12 samples: 157.47, 558/558 identical; +11.67 [7.16, 16.27].
+- Greedy-only 4-committee: differs from B3's file on 2/558 images.
+  - Both are exact 2-vs-2 utility ties that floating-point noise resolves; the tie-break is float-fragile (minor).
+- OpenViIC panel: +3.00 [1.69, 4.41] (B3: +3.0). Chord test: -2.29 [-3.41, -1.18] (B3: -2.29).
+
+Out-of-sample replication: members B3 never saw (frozen rule, same 12 samples as evidence)
+- {p1mask_s42, p1_s43, p1_s44, fuse2_s44}: 154.21; vs P1 mean +8.40 [4.54, 12.17]; panel +2.93 [1.52, 4.41].
+  HEAD evaluator end to end: B-4 46.5, METEOR 39.8, ROUGE-L 65.5, CIDEr 154.2, CHAIR_i 17.6.
+- {P1 s42/s43/s44, fuse2 s42/s44} (5 of the 6 primary-endpoint adapters; fuse2_s43 preds do not exist yet):
+  157.72; vs P1 mean +11.91 [7.95, 16.16]; panel +3.66 [2.23, 5.21].
+  HEAD evaluator: B-4 46.9, METEOR 40.1, ROUGE-L 65.7, CHAIR_i 17.4.
+- Every 4-subset of the 7-adapter pool {p1-gold, p1_s43, p1_s44, p1mask_s42, p1assist_s42, fuse2_s42, fuse2_s44}, with the
+  12 samples (35 committees): min 152.45, mean 155.3, max 157.62.
+=> The KTVIC effect is robust: about 3 single-seed SDs (3.4). Across committee compositions the spread is only ~1-2 CIDEr.
+
+Metric gaming: none found (out/verify3.json)
+- Words/caption: 10.51-10.57 vs P1 10.42-10.49 (refs 10.27).
+- Repeated-bigram captions: 1.1-1.6% vs 1.1-1.4%.
+- Distinct output captions: 506-508 vs 495-502.
+- Vocabulary: 392-401 vs 402-412 (all-8 committee slightly more generic).
+- Mean unigram IDF: 1.469-1.484 vs 1.467-1.486.
+- No reference n-gram copying; selection reads no test reference. The dedup-543 subset keeps the gain (B3).
+- Remaining concern: metric bias (Kovacs et al. 2024, arXiv 2411.03524). The utility is the target metric. B-4, METEOR
+  and ROUGE-L rise too, but they are n-gram metrics as well. No utility-independent metric (CLIP-S, RefCLIP-S) has been
+  run.
+
+Where the gain comes from: the claimed novel element is not the driver
+- Matched contrast. Take any 3 P1 adapters T and compare T + 1 fuse2 adapter with T + 1 more P1 adapter, averaged over
+  the 10 T:
+  - no evidence: KTVIC +0.75 [-0.72, 2.21]; panel +0.50 [0.06, 0.93]
+  - 6 P1 samples: KTVIC +0.91 [-0.57, 2.33]; panel +0.68 [0.17, 1.24]
+  - 12 samples: KTVIC +1.87 [-0.30, 4.26]; panel +0.87 [-0.07, 1.82]
+  The policy-ladder membership adds <= ~2 CIDEr, and every KTVIC CI contains 0.
+- Seed-only committee {P1 s42, s43, s44, p1mask_s42} + 12 samples: 153.35 (+7.54 [4.60, 10.66]).
+  - HEAD evaluator: B-4 46.7, METEOR 39.9, ROUGE-L 65.4, CHAIR_i 17.3.
+  - With p1assist added (5 P1 runs): 154.46 (+8.66 [5.30, 12.13]).
+- Decomposition (4-subset means):
+  - seed-only greedy MBR: 149.7 (+3.9);
+  - + P1 samples as evidence: 152.9 (+3.2);
+  - + fuse2 members and samples: 155-156 (+1 to +3).
+  Most of the +10 is generic ensemble MBR plus sample evidence.
+- Chord claim (4) is not policy-specific.
+  - The seed-only committee is also below the chord: -1.52 [-2.46, -0.58].
+  - CHAIR_i vs P1 mean: seed-only -1.11 [-2.14, -0.13]; policy -1.05 [-2.27, +0.21]. Same CHAIR_i (17.3).
+  - The policy committee names 0.07 more objects per caption at that CHAIR_i: a small Pareto edge only.
+- Panel claim (3) is overstated.
+  - The panel prefers longer captions with more objects. A single fuse2 adapter already gains +1.8 (s42) and +3.2 (s44)
+    on the panel vs the P1 mean.
+  - Policy committee vs the fuse2 mean on the panel: +0.49 [-1.40, 2.55]; vs fuse2_s44: -0.20 [-2.52, 2.19].
+  - Near-primary committee vs the fuse2 mean on the panel: +1.15 [-0.62, 3.14].
+  - So "+7% transferable quality on both panels" does not show that the committee beats the best single model on the
+    independent panel. The pure-consensus part does transfer: P1x4 seed-only + 6 P1 samples gives panel +1.82 [0.93, 2.68].
+
+Baseline drift: the +8 bar is borderline against the current baseline
+- Commit 423ea81 makes p1assist_s42 (response-only loss, 148.66, one seed) the method-track baseline. Against it:
+  - B3 committee: +7.49 [2.72, 12.17];
+  - fresh committee: +5.54 [0.65, 10.17];
+  - near-primary: +9.05 [4.06, 14.04].
+- Mean of the 4 legacy P1 runs: 146.27; mean of all 5 P1 runs: 146.75.
+- The committee's gain over its own members' mean stays large: seed-only ~+7, mixed ~+10 (4-subset means).
+
+Literature effect sizes
+- At >= 127 CIDEr, CIDEr-optimised models (M2 Transformer arXiv 1912.08226, Tables 2-3; full text read):
+  - AoANet 129.8 -> 4-model ensemble 132.0;
+  - M2 131.2 -> 2-model 133.2, 4-model 134.5;
+  - GCN-LSTM 127.6 -> 128.7; SGAE 127.8 -> 129.1.
+  Ensembles add +1.1 to +3.3.
+- CIDEr-D optimisation over XE (AoANet arXiv 1908.06954, Table 1): Up-Down 113.5 -> 120.1; AoANet 119.8 -> 129.8;
+  SCST 99.4 -> 114.0. That is +6.6 to +14.6.
+- JHU IWSLT 2025 (2025.iwslt-1.32): MBR ensembling "often improves performance only slightly over the best performing
+  stand-alone model" and sometimes hurts.
+- So B3's +10 over XE/SFT members matches decode-time CIDEr optimisation, not typical ensembling. Expect a large overlap
+  with CIDEr RL (B1 CN-RLOO). Stacked on RL-tuned members, expect the ensemble-typical +1 to +3, not +10 (prediction,
+  not measured).
+
+=====================================================================================================================
+2. NOVELTY: scoop search log
+=====================================================================================================================
+Search log
+- arXiv API: 16 queries.
+  MBR+caption; MBR+ensemble; consensus+caption+rerank; MBR+VLM; ensemble+captioning+LoRA/VLM; pseudo-references+hypotheses;
+  self-consistency+caption; Vietnamese captioning; MBR+caption (abbrev.); hypothesis ensembling; LoRA ensembles;
+  ensemble+caption+CIDEr; rerank/best-of-N+caption; decoupled hypothesis space; MBR+hallucination; ensemble decoding+LVLM.
+- WebSearch: 5 queries.
+- Semantic Scholar: HTTP 429 on 6 attempts. OpenAlex: daily budget exhausted on this IP. Not used.
+- Full text or page read: ECO (HTML), M2 Transformer and AoANet (PDF tables), JHU IWSLT 2025.
+- Abstracts read: 2310.11430, 2302.01328, 2405.01028, 2410.15021, 2607.28986, 2306.05317, 2503.05318, 2404.00752,
+  2108.04718, 2205.00978, 2305.09860.
+
+Closest prior work, and what each already does
+- ECO, NICE @ CVPR 2024 (arXiv 2405.01028):
+  - picks, per image, the caption with the highest CIDEr-derived consensus against all other candidates in a pool
+    "generated by different models" (~60 per image, ~30 after filtering);
+  - consensus alone CIDEr 202.89; with CLIP 218.47.
+  This is committee CIDEr consensus selection in captioning.
+- Eikema & Aziz, EMNLP 2022 (arXiv 2108.04718): MBR approximations that "decouple the cost of exploration from the cost of
+  robust estimation of expected utility". Mode-seeking hypotheses plus sampled evidence. This scoops "greedy outputs as
+  hypotheses, T=0.8 samples as evidence only". Kamigaito et al. 2024 (2410.15021) and Fernandes et al. 2022
+  (2205.00978) also cover it.
+- UA-MBR, ICLR 2025 (arXiv 2503.05318): MBR over an ensemble or posterior; "performance improves with prediction
+  diversity".
+- Farinhas et al. 2023 (arXiv 2310.11430): hypothesis ensembling across LLMs, prompts and sampling, with MBR the most
+  effective rule.
+- HESM, BioNLP 2023 (arXiv 2306.05317): token-level ensembles of diverse fine-tuned models, then MBR.
+- JHU IWSLT 2025: MBR ensembling of systems fine-tuned under different data settings.
+- Devlin et al. 2015 (1505.04467) and m-RNN section 8 (1412.6632): CIDEr consensus reranking in captioning.
+- IC3, EMNLP 2023 (2302.01328): committee-consensus captioning.
+- ATED (2510.18321): token-level LVLM ensembles reduce hallucination. This covers the CHAIR_i side.
+- Adjudicated Captioning (2607.28986, 2026): consensus-distilled beam reranking, +9.6 CIDEr on COCO zero-shot. Related.
+
+No paper was found that does exactly this:
+- a committee of LoRA VLM captioners trained under different supervision policies;
+- any MBR or ensemble result on KTVIC or UIT-ViIC (Vietnamese).
+The first delta is measured above at <= ~2 CIDEr with CIs spanning 0. The second is an application, not a method.
+
+In-project precedent
+- R4-00 row T1 (ABC-Fuse annotator-bagged LoRA committee): judged incremental and dropped; "the real gain is generic
+  ensemble".
+- R2 A3 bottom line: "the defensible novelty is the test, not the committee".
+- R5-00 row 6 already registers the policy committee as ANALYSIS. Its forbidden-claims column lists "novel ensemble".
+=> Not a breakthrough. Every claimed element (1)-(4) is either prior art, analysis, or measured to contribute little.
+
+=====================================================================================================================
+3. FEASIBILITY: one RTX 3090, Qwen2.5-VL-7B 4-bit + LoRA
+=====================================================================================================================
+Memory and runtime
+- Inference only; each run fits one 3090 (an n3 3090 currently shows 13.1/24.6 GB used by another job).
+- Short-caption latency: 0.86 s per caption on a 4090 (latency_main_s42.json); expect ~1.5 s on a 3090. That is ~0.6-1.0
+  GPU-h per adapter for greedy + 6 samples on 558 images. The KTVIC part (~8 GPU-h) is plausible.
+
+Adapters (checked on n2/n3)
+- KTVIC P1 s43/s44, p1mask_s42 and p1assist_s42 are on n2; fuse2 s42/s43/s44 are on n3; the ladder adapters do not
+  exist yet.
+- UIT-ViIC: only uitviic_p1_s42 and uitviic_fuse2_s42 are queued (jobs 52_a/52_b).
+- English: only uitviic_en_p1_s42 is queued (53_a). No English fuse2 adapter and no seeds 43/44.
+- So the planned "UIT-ViIC with the uitviic adapters (1.6)" can only form a 2-adapter committee. Pilot regime ~+5.5,
+  below the +8 bar.
+- "COCO 1k with the English adapters (2.4)" has one adapter: single-model MBR, not a committee.
+- Meeting the R6 replication rule needs about 4 extra UIT-ViIC adapters (~3.2 GPU-h each, ~13 GPU-h) and 3 English
+  adapters (~4-5 GPU-h each, ~13 GPU-h), plus about 4 GPU-h of decoding.
+- Realistic total: ~8 (KTVIC) + ~3 (controls below) + ~27-30 (generalisation) = ~38-40 GPU-h, not 8.
+
+Side-arm implementation risk
+- Logit ensemble: needs a custom decode loop with 3 KV caches and adapter switching; HF generate() does not do it.
+  Moderate risk.
+- LoRA soup (CAT, rank 48): mechanically exact. But A3 measured LoRA-A factor cosine ~0 and Delta-W cosine 0.31 between
+  seeds, so averaging shrinks the update norm toward zero-shot. Predicted <= 0 gain.
+- Beam-5 N-best: easy.
+
+=====================================================================================================================
+4. REQUIRED CHANGES (for "modify")
+=====================================================================================================================
+1. Remove the method-novelty claims (1)-(4).
+   - Present LadderMBR as the decoding stage and a strong baseline: committee CIDEr-D MBR with decoupled evidence.
+   - Cite ECO, Eikema & Aziz, UA-MBR, Farinhas, HESM, Devlin and m-RNN.
+   - This matches R5-00 row 6: analysis, no "novel ensemble".
+2. Add pre-registered controls to the GPU pilot.
+   a) A seed-only committee at equal size with its own samples (P1 s42/s43/s44, p1mask_s42, p1assist_s42).
+   b) Single-adapter MBR at matched decodes per image (N = 16-20 epsilon samples).
+   c) CLIP-S / RefCLIP-S (scripts/clip_score.py) as a utility-independent check for metric bias.
+3. Report the gain vs the P1 3-seed mean, vs the best member, and vs the method-track baseline (p1assist, 3 seeds).
+   - The +8 bar vs p1assist_s42 is not met in the pilot: fresh +5.5, B3 +7.5.
+4. Stacking test: apply the frozen rule to the RL-tuned members (B1). Claim "method + MBR" only from that measured
+   number.
+5. Either budget ~30 extra GPU-h for UIT-ViIC and COCO committees, or state that generalisation is tested only with
+   2-adapter committees (expected ~+5).
+6. Panel claim: compare with the best single adapter on the panel (fuse2), not only with the P1 mean.
+7. Round utilities (1e-9) before the smallest-string tie-break.
+8. Drop the seed-soup side arm (A3 geometry predicts no gain), or pre-register a sign <= 0.
+
+Files
+- out/verify1.json: reproduction.
+- out/verify2.json: fresh members, 4-subset grid, panel.
+- out/verify3.json: matched policy contrast, panel vs fuse2, gaming diagnostics.
+- out/verify4.json: chord test.
+- out/eval_*-short.json: HEAD evaluator runs.

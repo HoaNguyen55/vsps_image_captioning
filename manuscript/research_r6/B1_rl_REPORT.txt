@@ -1,0 +1,483 @@
+B1_rl REPORT - Reinforcement learning on captioning metrics for the QLoRA Qwen2.5-VL-7B KTVIC captioner
+Round R6, 2026-10-12. Agent id B1_rl. Everything here was computed on CPU (nice -n 15, <=4 threads, B=2000).
+Work dir: /tmp/claude-1000/-mnt-d-vsps-image-captioning/755eae04-5e4c-4ce1-ab21-d4bc106761ee/scratchpad/research_r6/B1_rl/
+All KTVIC numbers: test split (558 images), short prompt, word-level CIDEr-D (VnCoreNLP-1.2 RDRSegmenter,
+lowercase, pycocoevalcap Cider sigma=6), x100. They are computed on TEST predictions/samples and are therefore
+EFFECT-SIZE ESTIMATES, not results; nothing was tuned on them (every rule was fixed before it was scored).
+CIs: 95% percentile bootstrap over images (paired), B=2000.
+
+======================================================================================================
+0. BOTTOM LINE
+======================================================================================================
+- RL on CIDEr-D is the most direct metric lever left, and the only RL variant that held up in these pilots.
+  Expect about +5 to +9 CIDEr over P1 (3-seed mean 145.8). That is in line with SCST on strong COCO baselines
+  (+6.1 to +14.1, median +8.5, for 12 models with CE CIDEr >= 130). The +8 bar is reachable but not likely:
+  confidence medium for >= +5, low for >= +8.
+- The +57 best-of-6(+greedy) oracle is mostly winner's curse. Picking with references disjoint from the
+  scoring references keeps only +0.1 to +15.0 of it (mean about +8). A KL-matched one-step policy improvement
+  at 1 nat beats greedy by +8.5 [+1.0, +15.4] (P1) and +7.0 [-0.6, +14.1] (fuse2) on held-out references.
+  That is the realistic ceiling for one round of on-policy RL from these SFT policies.
+- Reward hacking: the top-reward samples are not degenerate. They win on content: the specific salient object
+  or action that the annotators named. Word-level CIDEr-D punishes repetition (-40) and template padding
+  (-60). The open loophole is truncation: dropping the last word raises the reward on 29-30% of images.
+  The reward therefore needs an EOS token in it (SacreEOS).
+- Main new hazard, measured here: regurgitation. On SFT'd TRAIN images, verbatim copies of a reference take
+  20.3% of the positive RLOO advantage mass, and <=1-word near-copies take 34.5%. A copy's mean advantage is
+  +131.8 against -12.2 for other samples. Copying the SFT target still beats greedy by +19 to +28 CIDEr even
+  when it is scored only on references not adjacent to it. Picking held-out references therefore cannot close
+  this channel. This is the most likely mechanism behind the E5 RFT/DPO CIDEr drop.
+- Killed by the pilots before any GPU use:
+  - jackknife-min / leave-closest-reference-out reward
+  - reliability-weighted (empirical-Bayes) advantages
+  - cross-panel RL on OpenViIC-only images
+  - reference-free self-consensus RL (TTRL-style)
+  - low-capacity / global-preference RL
+  - held-out-reference reward as a copy fix
+- Proposals (section 3):
+  - P1 CN-RLOO: copy-neutral RLOO on word-level, EOS-aware CIDEr-D. New element: an RL-time advantage mask
+    for regurgitated references, with a detector calibrated on images the SFT model never saw.
+  - P2 EHX-RLOO: Grounding-DINO tags used only as train-time exploration hints, with the content they uncover
+    distilled into the tag-free captioner by importance-weighted policy gradient. Flagged as using
+    model-generated training signal.
+
+======================================================================================================
+1. LITERATURE (full text read where marked FT; IDs verified against the arXiv API on 2026-10-12)
+======================================================================================================
+1a. SCST and its variants
+- Rennie et al., Self-critical Sequence Training, arXiv 1612.00563 (FT). REINFORCE with the greedy caption as
+  baseline, CIDEr-D reward. Raised the COCO test-server best CIDEr-D from 104.9 to 114.7.
+- Luo, A Better Variant of SCST, arXiv 2003.09971 (FT). Uses the mean reward of the other K-1 samples as
+  baseline (K=5). Beats the greedy baseline on every architecture, e.g. Transformer 126.6 -> 129.6 and UpDown
+  122.7 -> 123.9. Over 5 seeds (UpDown-Long) the gain is +0.6 (127.3 -> 127.9).
+- Gao et al., Self-critical n-step training, arXiv 1904.06861. Bayesian SCST, arXiv 2004.02435. Both are
+  variance-reduction and baseline variants of the same family.
+- Hu, Cavicchioli, Capotondi, A request for clarity over the EOS token in SCST, arXiv 2305.12254 (FT). If EOS
+  is omitted from the CIDEr-D reward, models gain "up to +4.1 CIDEr-D using trivial sentence fragments" (bad
+  endings). They propose the SacreEOS signature.
+- Cornia et al., M2 Transformer, arXiv 1912.08226. SCST with beam candidates and a mean-of-beams baseline.
+- dos Santos et al., CIDEr-R, arXiv 2109.13701. With long, variable-length captions, SCST on CIDEr-D learns to
+  repeat words to fix length; CIDEr-R is the fix.
+- Wang and Chan, Describing like humans, arXiv 1903.12020. CIDEr-RL lowers caption diversity.
+- Liang, GRPO for Image Captioning, arXiv 2503.01333 (FT). Weak ResNet50 + 1-layer decoder. COCO: CE 84.3,
+  SCST 97.6, GRPO (G=5) 100.0. Flickr8k (6K train images, close to our scale): CE 34.2, SCST 36.6 (+2.4),
+  GRPO 38.3 (+4.1). SCST "occasionally crashes".
+- Moratelli et al., DiCO, arXiv 2408.14547 (FT, BMVC'24). SCST with CLIP-S/PAC-S rewards hacks the metric
+  (e.g. "A rusted rusty rusty rusty rusty"). On a CIDEr-optimised Transformer, DiCO gets 144.2 vs 143.3 for SCST.
+- Cho et al., CLIP reward, arXiv 2205.13115. Repetition and grammar hacks under CLIP-S; needs a grammar term.
+
+1b. CIDEr gain from CIDEr optimisation on top of strong CE/SFT baselines (CE >= 130, COCO Karpathy test)
+Sources (FT): GIT arXiv 2205.14100 Table 2; OFA arXiv 2202.03052 Table 3; mPLUG arXiv 2205.12005 Table 1.
+  model         CE     +CIDEr-opt   delta
+  OFA-Medium    130.4  140.7        +10.3
+  VinVL-L       130.8  140.9        +10.1   (VinVL arXiv 2101.00529)
+  GIT-B         131.4  139.1        +7.7
+  LEMON-large   135.7  144.3        +8.6    (LEMON arXiv 2111.12233)
+  OFA-Base      138.2  146.7        +8.5
+  GIT-L         138.5  144.6        +6.1
+  LEMON-huge    139.1  145.5        +6.4
+  mPLUG         141.0  155.1        +14.1
+  OFA-Large     142.2  150.7        +8.5
+  GIT           144.8  151.1        +6.3
+  GIT2          145.0  152.7        +7.7
+  OFA (huge)    145.3  154.9        +9.6
+  Range +6.1 to +14.1. Median +8.5 over all 12, +8.1 over the 8 with CE >= 138 (closest to P1's 145.8).
+Caveats: all are full fine-tunes on COCO (113K images x 5 refs); none states its EOS handling (SacreEOS shows
+up to 4.1 points can come from fragments); none is a 7B instruction-tuned LVLM trained with QLoRA on 3.7K images.
+KTVIC itself: the KTVIC paper (arXiv 2401.08100, FT) trained every baseline, including GRIT (136.0), with XE
+"without additional refinement through CIDEr-D optimization with SCST". No published SCST/RL on KTVIC was found.
+
+1c. RL for LVLM captioners, 2024-2026: none of these reports a CIDEr gain
+- CapRL, arXiv 2509.22647 (FT; ICLR'26). GRPO; reward = an LLM answering MCQs from the caption; Qwen2.5-VL-3B
+  policy; ~75K images. No COCO CIDEr/BLEU/CHAIR. Reward hacking with other judges: verbose captions, or
+  collapse to ":description".
+- SC-Captioner, arXiv 2508.06125 (FT; ICCV'25). LoRA; policy gradient with KL; scene-graph edit reward;
+  6.5K COCO images. Qwen2-VL-7B DOCCI500 B-4 40.92 -> 44.88, COCO-LN500 B-4 34.59 -> 35.05; LLaVA-1.5
+  COCO-LN500 B-4 33.81 -> 31.60. No CIDEr.
+- BalCapRL, arXiv 2605.07394 (FT). LLM-judge precision, reference-coverage and linguistic rewards; c-GDPO;
+  group of 8; length-conditional reward masking (keep the linguistic reward only if 0.5 <= len/len_ref <= 2);
+  ~90K images; 8x B200 for 24-46 h. No CIDEr. Hacks: meta-commentary, 3x length, over-short captions.
+- CCCaption, arXiv 2602.21655 (FT). GRPO, rollout 5; completeness/correctness rewards from LVLM-generated
+  queries; Qwen3-VL-2B. No CIDEr.
+- Also checked: CycleCap 2603.18282 (GRPO with an image-reconstruction reward), Re3Cap 2608.21305,
+  RubiCap 2603.09160, FoCUS 2609.00709, SimLoss 2609.00591, LoGIC 2507.08610 (BLEU 44 -> 46 from a
+  communication game). None optimises or reports CIDEr-D on short captions.
+=> No published CIDEr-reward RL for a 7B instruction-tuned LVLM on short reference-style captions was found
+   (more than 25 searches, listed in 1f). The empirical prior is the 2020-2022 VLP table in 1b.
+
+1d. Offline alternatives
+- DPO arXiv 2305.18290; IPO arXiv 2310.12036; RWR Peters and Schaal ICML'07 DOI 10.1145/1273496.1273590;
+  ReST arXiv 2308.08998; RAFT arXiv 2304.06767; ReST-EM arXiv 2312.06585.
+- MBR/QE fine-tuning arXiv 2309.10966; BOND arXiv 2407.14622; vBoN arXiv 2407.06057.
+- Metric-ranked DPO for captioning: VidChain M-DPO arXiv 2501.06761 (dense video captioning).
+- DiCO (above) is the closest captioning-specific offline/hybrid method that matched SCST on CIDEr
+  (144.2 vs 143.3).
+- In this repo, E5 RFT (137.9) and E5+DPO (123.1) lowered CIDEr. Pilot 9 below shows 15.9% of best-of-6
+  picks on SFT'd train images are verbatim reference copies, so offline selection without a copy filter
+  reinforces regurgitation.
+
+1e. Bounds, noise, hints, memorisation
+- Gao et al., arXiv 2210.10760: BoN KL = log n - (n-1)/n. Beirami et al., arXiv 2401.01879: that formula is
+  an upper bound. For n=6/7/8: <= 0.96/1.09/1.20 nats.
+- Yue et al., arXiv 2504.13837: RLVR improves sampling efficiency inside the base model's support and rarely
+  exceeds base pass@k. This motivates using the SFT sample distribution as the bound.
+- Policy-gradient estimators: RLOO arXiv 2402.14740; GRPO arXiv 2402.03300; DAPO arXiv 2503.14476;
+  Dr. GRPO arXiv 2503.20783 (drop std normalisation).
+- Noise-aware advantages: S-GRPO arXiv 2508.05928 and ODRPO arXiv 2605.12667. Both are prior art for
+  reweighting advantages under reward noise, and pilot 4 says it does not help here.
+- Pessimism: reward-model ensemble worst-case optimisation, Coste et al. arXiv 2310.02743. Prior for the
+  jackknife-min reward; pilot 2 shows it hurts here.
+- Test-time RL: TTRL arXiv 2504.16084; spurious-signal amplification DDRL arXiv 2604.21327.
+- Hints / off-policy guidance: QuestA arXiv 2507.13266; LUFFY arXiv 2504.14945; ADHint arXiv 2512.13095;
+  Selective Expert Guidance arXiv 2510.04140. NoisyRollout arXiv 2504.13055 (perturbed-image rollouts).
+- Tags as inputs with CIDEr optimisation: Oscar arXiv 2004.06165, VinVL arXiv 2101.00529.
+- GT captions inside captioning RL: Chaffin et al. arXiv 2402.13936. CIDEr against similar images' refs:
+  CIDErBtw, Wang et al. arXiv 2007.06877.
+- Memorisation: Goldfish loss arXiv 2406.10209 (SFT-time). Measuring memorisation in RLHF for code
+  arXiv 2406.11715: SFT memorisation persists through RL; no RL-time fix proposed.
+
+1f. Scoop searches (WebSearch + arXiv API; OpenAlex and Semantic Scholar were rate-limited during this run)
+Queries:
+- CapRL; SC-Captioner; BalCapRL; CCCaption
+- "CIDEr AND GRPO"; "image captioning AND GRPO"; "image captioning AND policy optimization"
+- "self-critical AND captioning" (by date); "captioning AND reward hacking"; "captioning AND DPO"
+- "Vietnamese AND image captioning"
+- "noisy reward AND GRPO"; "reward noise AND policy optimization"
+- "multiple references AND RL"
+- SCST + LLaVA/BLIP/Qwen; "CIDEr reward GRPO Qwen2.5-VL COCO"
+- memorisation/copy in captioning RL; cross-fitting SFT/RL; hint-guided rollouts; tags + SCST
+Outcome:
+- No prior found for (i) an RL-time copy-neutral advantage for regurgitated references, or (ii) detector tags
+  used as exploration hints distilled into a tag-free captioner.
+- Closest priors are listed with each proposal.
+
+======================================================================================================
+2. CPU PILOT
+======================================================================================================
+Setup.
+- Copied read-only from n2 (scp -P 2022):
+  - samples/{p1_s43,fuse2_s42}-test-short.jsonl: 6 samples/image, T=0.8, top_p 0.95; all 558 images, no empties.
+  - e5_round1/samples.jsonl: fuse2_s42, detailed prompt, T=0.8, 6 samples on 1,500 TRAIN images.
+  - vncorenlp/.
+- Scorer: HEAD scripts/evaluate.py and rescap/ via git show/archive into head/, inside a private venv
+  (pycocoevalcap, py_vncorenlp, JAVA_HOME=~/jdk21).
+- Exactness check: running head/scripts/evaluate.py on data/results/p1_s43-short.preds.json reproduces the
+  stored row exactly: B-1 79.1, B-4 45.2, METEOR 39.1, ROUGE-L 64.0, CIDEr 143.9, CHAIR_i 17.7, CHAIR_s 26.7.
+- CIDEr-D's df depends only on the references, so a per-image score does not depend on other images'
+  hypotheses. Corpus CIDEr of any per-image selection is therefore the mean of the selected per-image scores.
+Code (in the work dir) -> outputs (out/):
+  pilot_rl_bound.py         -> pilot_rl_bound.json, {pol}_scores.npz, {pol}{oracle7,mbr7}-short.preds.json
+  pilot2_reward_noise.py    -> pilot2_reward_noise.json   (reliability, ref dependency, jackknife-min, train rewards)
+  pilot3_cross_panel.py     -> pilot3_cross_panel.json    (OpenViIC-panel selection -> KTVIC; human LOO)
+  pilot4_kl_step.py         -> pilot4_kl_step.json        (KL-matched one-step improvement; reliability weighting)
+  pilot5_consensus_step.py  -> pilot5_consensus_step.json (reference-free consensus step)
+  pilot6_heldout_refs.py    -> pilot6_heldout_refs.json   (copy channel under held-out references)
+  pilot7_global_prefs.py, pilot7b_samples_only.py -> pilot7*.json (image-agnostic preferences)
+  pilot8_tag_hint.py        -> pilot8_tag_hint.json       (tag-conditioned candidates)
+  pilot9_copy_mass.py       -> pilot9_copy_mass.json      (advantage mass taken by copies)
+  memo_check.py             -> memo_check.json            (verbatim copy rates, train vs test)
+  head/scripts/evaluate.py was used for the full-metric rows -> {pol}{oracle7,mbr7}-short.json
+
+2.1 Bound on what on-policy RL can reach from the SFT sample distribution
+                                         p1_s43                    fuse2_s42
+  greedy CIDEr-D                         143.9                     143.9
+  mean T=0.8 sample                      114.9 (111.0-117.7 by j)  120.8 (117.7-123.4 by j)
+  greedy - mean sample                   +29.0 [22.9, 34.7]        +23.1 [18.2, 28.1]
+  E[best of k random samples] k=1..6     114.9/147.9/165.8/177.9/186.8/193.9   120.8/153.1/170.0/181.1/189.4/195.9
+  oracle best of 6 samples               193.9 [185.5, 202.4]      195.9 [186.8, 205.4]
+  oracle best of 6 + greedy              201.2 [192.2, 209.9]      199.6 [190.6, 208.9]
+  oracle gain over greedy                +57.3 [51.4, 63.8]        +55.7 [50.3, 61.3]
+  worst of 6                             47.2                      52.3
+Full-metric rows of the oracle best-of-7 picks (HEAD evaluator):
+  - p1: B-1 85.6, B-4 56.5, METEOR 44.3, ROUGE-L 71.7, CIDEr 201.2, CHAIR_i 10.9, CHAIR_s 18.3.
+    Greedy: 79.1 / 45.2 / 39.1 / 64.0 / 143.9 / 17.7 / 26.7.
+  - fuse2: 84.8 / 54.8 / 44.2 / 71.5 / 199.6, CHAIR_i 14.2, CHAIR_s 24.6.
+    Greedy: 77.4 / 42.3 / 39.4 / 63.7 / 143.9 / 21.9 / 35.8.
+  => CIDEr-maximal choice moves every reference metric the same way and lowers (reference-derived) CHAIR.
+     This is consistent with the round-5 finding that these metrics measure typicality.
+
+2.2 Within-group reward spread (what SCST, RLOO and GRPO see)
+  - Within-image SD of the 6 rewards: p1 mean 52.3 (median 44.2), fuse2 51.3 (43.6). Mean range 146.7 / 143.6.
+  - Groups with SD < 5 CIDEr points: 0.7% / 1.4%. Zero-variance groups: 0%. DAPO-style dynamic sampling is
+    therefore irrelevant here.
+  - Between-image share of reward variance: 0.59 / 0.61. Distinct samples per image: 5.73 / 5.53 of 6.
+  - SCST (greedy baseline): only 32.3% / 33.5% of samples beat greedy. On 27.4% / 26.0% of images no sample
+    beats greedy. Mean advantage -29.0 / -23.1.
+  - RLOO: mean |advantage| 52.9 / 52.0. corr(greedy reward, oracle headroom) = -0.41 / -0.26.
+
+2.3 How much of the spread transfers? (pick on some references, score on references the pick never saw)
+  Best-of-7 (6 samples + greedy), picked on refs A, scored on disjoint refs B, minus greedy on B:
+                                   p1_s43                fuse2_s42
+    A{0,1}   -> B{2,3,4}           +14.8 [8.6, 21.3]     +12.5 [6.5, 18.4]
+    A{3,4}   -> B{0,1,2}           +0.1 [-9.8, 9.9]      +4.2 [-4.6, 13.1]
+    A{0,1,2} -> B{3,4}             +15.0 [7.6, 22.2]     +10.2 [3.1, 17.7]
+    A{2,3,4} -> B{0,1}             +5.7 [-5.7, 17.6]     +10.8 [-0.1, 21.5]
+    A{0,2,4} -> B{1,3}             +27.2 [20.1, 34.8]    +27.7 [20.5, 34.8]   (interleaved: inflated by adjacency)
+    same-ref (optimistic) on B     +61.5 to +72.2        +56.7 to +75.2
+  Independent human panel (UIT-OpenViIC captions of the same images, 555 images; only scored here, never
+  copied). Pick on all 5 KTVIC refs:
+    - panel CIDEr: greedy 45.0 / 46.7; pick minus greedy +5.6 [3.2, 8.1] / +4.5 [1.8, 7.3]
+      (about +10-12% relative); panel self-oracle +25.6 / +26.3.
+    - within-group correlation of KTVIC vs panel rewards: 0.34 / 0.31.
+  => About 1/7 of the oracle gain is transferable consensus (mean about +8 on disjoint KTVIC refs). The rest
+     is the idiosyncrasy of the particular reference set.
+
+2.4 Reward reliability and reference dependency
+  - Within-group correlation of single-reference rewards (5x5, averaged over images):
+    adjacent pairs 0.38-0.48, non-adjacent 0.22-0.28 (both policies).
+    This confirms the adjacency dependence stated in the context.
+  - Split-half reliability of the within-group reward, disjoint non-interleaved halves: r = 0.38-0.43.
+    Spearman-Brown for 5 references: 0.55-0.60 (interleaved halves give 0.71-0.72, inflated).
+    So roughly 40-45% of the within-group reward variance is reference-specific.
+  - Per-image reliability is very heterogeneous: tercile means -0.23 / 0.58 / 0.92.
+    Panel gain by tercile:
+    - p1: +2.6 [-1.9, 7.4] / +7.3 [3.1, 12.0] / +6.8 [3.1, 11.1]
+    - fuse2: +2.9 [-2.0, 8.3] / +6.2 [2.0, 10.9] / +4.3 [0.7, 8.5]
+    By reference-consensus (human LOO) terciles the pattern is inconsistent across policies.
+  - Human leave-one-out CIDEr-D on test (each reference against the other four): 181.5.
+    By index: 172.9 / 192.1 / 199.0 / 183.5 / 160.1. The middle references are highest, as adjacency
+    dependence predicts.
+
+2.5 KL-matched one-step improvement (offline proxy for one RL update over the 6-sample support)
+  pi'_j ~ exp(eta*a_j), a = train-side reward - group mean. Value judged on references the update never saw.
+  T = refs{0,1,2}, E = refs{3,4}. Gain of the improved sampling policy over the mean sample, at
+  KL 0.1 / 0.25 / 0.5 / 1.0 nats:
+    p1:    +10.9 / +16.8 / +22.2 / +27.4
+           vs greedy: -8.0, -2.2, +3.2 [-3.2, 10.4], +8.5 [+1.0, +15.4]
+    fuse2: +10.1 / +15.4 / +20.8 / +26.3
+           vs greedy: -9.2, -3.9, +1.5 [-4.9, 8.0], +7.0 [-0.6, +14.1]
+    Oracle step on E itself: 29.9 / 46.1 / 61.6 / 76.8 (p1).
+  Reliability-weighted step (eta_i = eta * clip(rho_i, 0, 1)) at the same mean KL, minus the uniform step:
+    - p1 E{3,4}: -1.9 / -2.9 / -3.8 / -4.9, all CIs below 0. p1 panel: -0.5 / -0.9 / -1.3 / -1.8.
+    - fuse2: -2.5 / -4.1 / -5.6 / -6.5 on E{3,4}; -0.3 / -0.5 / -0.9 / -1.5 on panel.
+    => KILLED. Spending the KL budget uniformly is better.
+  => An RL'd sampler needs about 0.5-1 nat of KL from SFT before its samples beat greedy. Greedy is the bar,
+     because evaluation decodes greedily.
+
+2.6 Reference-free and cross-panel signals (all KILLED as metric levers)
+  - Self-consensus reward (CIDEr-D of a sample against the other samples; no references).
+    One-step value vs greedy at KL 0.1 / 0.25 / 0.5 / 1.0:
+    - judged on the full 5-ref metric:
+      - p1: -19.0 / -14.5 / -10.6 / -7.0 [-13.1, -0.6]
+      - fuse2: -14.3 / -10.4 / -7.1 / -4.0 [-9.1, 1.3]
+    - judged on E{3,4}: -2.8 (p1) and -2.2 (fuse2) at 1 nat.
+    MBR-CIDEr pick among 6 samples + greedy:
+    - p1: 146.5 [137.4, 155.4], minus greedy +2.6 [-2.1, 7.3]. Full row B-4 44.6, METEOR 39.2, ROUGE-L 64.1,
+      CHAIR_i 16.6.
+    - fuse2: 146.2, +2.3 [-1.9, 6.4].
+    MBR among the 6 samples only: -4.7 / -2.5.
+    => TTRL-style or semi-supervised consensus RL only sharpens towards greedy.
+  - Picking with the OpenViIC panel, scored on KTVIC:
+    - sigma=6: -5.6 [-13.1, 2.1] (p1), -2.2 [-9.4, 4.7] (fuse2)
+    - no length penalty: -1.7 [-9.5, 6.5], +0.8 [-6.4, 7.5]
+    => The panel's preferences do not transfer to KTVIC CIDEr, while KTVIC's do transfer to the panel
+       (+4.5 to +5.6). RL on OpenViIC-only images is killed for this target.
+  - Image-agnostic preferences (9 style features, train-reference IDF; 2-fold CV x5 on test):
+    - With greedy available, the reranker always picks greedy (gain 0).
+    - Among the 6 samples it gains +9.1 / +8.9 over the mean sample but stays -19.9 / -14.2 below greedy.
+    => The transferable gain is image-specific content. Low-capacity RL (steering vector, soft prompt) is killed.
+  - Jackknife-min (leave-closest-reference-out) as a pessimistic reward:
+    - Held-out KTVIC, minus plain CIDEr-D: -4.4 [-8.8, -0.5] and -6.7 [-14.1, 0.5] (p1);
+      -4.5 [-9.0, -0.4] and -1.9 [-8.6, 5.0] (fuse2).
+    - Panel: +0.5 [-1.1, 2.1] / -0.7 [-2.5, 0.8].
+    => KILLED.
+
+2.7 What reward hacking looks like
+  - Top-reward vs greedy captions (examples from the 12 largest oracle gains; model outputs from p1, p1, fuse2):
+    - "có nhiều người đang xuất hiện ở trong con phố" (26.8) -> "có những chiếc đèn lồng được treo ở phía trên
+      của con đường" (435.0)
+    - "có nhiều người đang đứng ở bên lề đường" (12.1) -> "có nhiều người đang xếp hàng trước một quán ăn" (383.0)
+    - "cô gái đang ngồi ở cầu thang của một cây cầu" (61.5) -> "có một cô gái đeo kính râm đang ngồi trên bậc thang"
+      (389.8)
+    => Gains come from naming the specific salient thing; generic greedy content ("nhiều người ... xuất hiện")
+       loses.
+  - Style statistics (p1): function-word endings 0% in every group.
+    - Repeated bigram: refs 1.6%, greedy 1.3%, oracle picks 0.4%, worst picks 3.2%.
+    - Length: refs 12.1, greedy 11.9, oracle 12.0 syllables.
+    - Starts with "có": refs 55.5%, greedy 95.5%, oracle 86.4%. Refs start with "ở" 20.8%; the model almost never does.
+    - distinct-2: greedy 0.170, oracle 0.193, worst 0.270.
+    => Inside the SFT support, high reward does not mean degenerate output.
+  - Edit probes on the greedy caption: mean delta CIDEr-D, and share of images where the reward goes up.
+                       p1                              fuse2
+    drop last word     -23.8 [-27.7, -19.8], 29.7% up  -26.3, 29.2% up
+    repeat last 2      -40.0, 0.5% up                  -40.3, 0.4% up
+    drop first word    -6.7, 21.7% up                  -6.0, 26.0% up
+    strip "có"         -6.1, 20.6% up                  -5.1, 25.4% up
+    + "ở trong khung hình"  -59.9, 1.4% up             -59.8, 0.5% up
+    => Repetition and template padding are not exploitable at word level. Truncation is exploitable on
+       about 30% of images, so EOS must be inside the reward.
+
+2.8 Memorisation channel on SFT'd TRAIN images (the hazard that decides the RL design)
+  - Verbatim sentence copies of a reference:
+    - train (fuse2 detailed rollouts, T=0.8): 3.07%; <=1-word edit 6.63%; captions containing a copied
+      sentence 5.53%
+    - test, fuse2 detailed greedy: 1.31% / 2.90%
+    - test, short samples: 0.87-0.90% / 3.0-3.3%
+  - First sentence of train rollouts:
+    - mean CIDEr-D 152.0, best of 6 244.5, within-group SD 64.8
+      (test comparator: fuse2 detailed greedy first sentence 145.9)
+    - exact copies: 5.1% of samples, 17.2% of groups; mean reward 388.5 vs 139.3 for non-copies
+    - 15.9% of best-of-6 picks are copies
+  - RLOO on these groups:
+    - copies take 20.3% of the positive advantage mass; <=1-edit near-copies take 34.5%
+    - mean advantage +131.8 (copy) vs -12.2 (non-copy)
+  - Copying the SFT target (ref #0) still beats greedy when scored only on other references:
+    - p1: +43.6 [33.2, 53.8] on refs{1-4}, +27.6 [17.3, 37.9] on refs{2,3,4}, +27.0 [15.5, 39.2] on refs{3,4}
+    - fuse2: +41.1 / +23.3 / +19.1, all CIs above 0
+    - train, copy of ref #0: 169.7 / 144.3 / 136.2
+    => Human captions are more consensual than model captions under ANY human reference set. A held-out-
+       reference reward (the ACF-RLOO idea) does not remove the incentive to regurgitate; the copies have to
+       be neutralised directly.
+
+2.9 Do detector-tag-conditioned captions add exploration value? (supports P2)
+  - Tag-conditioned greedy (data/results/tags_*-short) equals tag-free greedy on 50.7% / 50.2% of images.
+  - It beats tag-free greedy on 27.1% / 24.9% and beats the best of 6 tag-free samples on 18.1% / 15.2%.
+  - Adding that one candidate to the pool, with picking and scoring on disjoint references:
+    - p1: +0.8 [-0.7, 2.5] (A012->B34), +2.0 [0.3, 3.8] (A234->B01)
+    - fuse2: +3.1 [0.7, 5.8], +1.2 [-1.1, 3.6]
+
+2.10 What this bounds
+  The SFT policies already sample captions that are much better than greedy. Most of that apparent headroom
+  (about 85%) is reference idiosyncrasy. The transferable part is image-specific content choice, worth about
+  +8 on disjoint references at a ~1-nat KL budget. Train-time rewards are polluted by regurgitation (a third of
+  the positive gradient). The realistic RL target is therefore +5 to +9 CIDEr. +8 needs everything to go right:
+  copy neutralisation, EOS, enough KL, and train-to-test generalisation from 3.5K images.
+  Caveat: RL would sample at T=1.0, not 0.8, and P1 seed 43 (143.9) is below the 3-seed mean. G0 below
+  re-measures these quantities on a dev split.
+
+======================================================================================================
+3. PROPOSALS (at most 2; ranked by expected metric gain x novelty / cost)
+======================================================================================================
+P1. CN-RLOO: Copy-Neutral RLOO on word-level, EOS-aware CIDEr-D
+Mechanism.
+- Initialisation: the P1 SFT LoRA (r16) on NF4 4-bit Qwen2.5-VL-7B, 512 vision tokens, short prompt.
+  Two PEFT adapters on one base: "ref" (frozen SFT) and "policy" (trainable, initialised from SFT).
+- Rollouts: per image, k=8 samples at T=1.0, top_p 1.0, max_new_tokens 40.
+- Reward: word-level CIDEr-D (persistent CPU RDRSegmenter worker with a cache; train-split df; sigma 6).
+  An explicit EOS token is appended to the candidate and to all 5 references (SacreEOS-style; closes the
+  29-30% truncation loophole).
+- Copy-neutralisation (the new element): sample c is a copy if a near-copy statistic m(c) exceeds tau.
+  - m(c) = max over the image's references of the normalised word edit distance and of single-reference
+    BLEU-4.
+  - tau = the 99th percentile of m on k=8 rollouts over the 300 dev images (which the SFT model never saw).
+    Calibration therefore uses train data only.
+  - Copies get advantage 0 and are left out of the leave-one-out baseline.
+- Advantage and loss:
+  - RLOO advantage, with no per-group std normalisation (Dr. GRPO; pilot 4 shows reweighting groups loses
+    0.3-6.5 CIDEr at matched KL).
+  - Token-mean policy-gradient loss, PPO clip 0.2 with one inner epoch (on-policy).
+  - k3 KL to "ref"; beta chosen on dev from {0.01, 0.03, 0.1}, aiming at 0.5-1.5 nats per caption
+    (pilot 5: below 0.5 nat samples do not beat greedy).
+- Training and selection:
+  - Train on KTVIC train minus 300 dev images (random.Random(0).sample(sorted(train_ids), 300)), 1-2 epochs.
+  - Greedy dev CIDEr-D every 500 images; keep the best.
+  - Retrain on the full train set with the chosen beta and number of updates.
+  - 3 seeds; paired bootstrap against seed-matched P1.
+New element: an RL-time advantage mask for regurgitated references, with a detector calibrated on images the
+SFT model never saw. Pilot 6 shows that held-out references (the ACF-RLOO idea) and reference selection
+cannot remove this channel.
+Closest prior and delta:
+- SCST 1612.00563, Luo 2003.09971, RLOO 2402.14740: same estimator family, no memorisation handling.
+- SacreEOS 2305.12254: EOS diagnosis only.
+- Goldfish 2406.10209: SFT-time token dropping, not RL.
+- RLHF memorisation study 2406.11715: measures, no fix.
+- DAPO 2503.14476: filters zero-variance groups, not copies.
+- Delta: neutralise the specific high-advantage regurgitation channel measured here (20-35% of the positive
+  gradient), plus the first CIDEr-D RL for a QLoRA 7B LVLM on short Vietnamese captions with a published
+  bound analysis.
+Pilot (GPU, 2 arms, about 9.5 GPU-h):
+- P1_dev SFT on train minus dev (~3 GPU-h; needed for honest tuning anyway).
+- G0 (~1.5 GPU-h): k=8 rollouts on 300 SFT'd train images and on the 300 dev images. On CPU: copy rate,
+  tau, the T=1.0 reward spread, and best-of-8 gain on disjoint references.
+- G1 (~2 x 2.5 GPU-h): RL on 1,000 train images, CN-RLOO vs plain RLOO (same seed and beta), dev eval
+  every 250 images.
+Memory and time on one RTX 3090 (estimates, to be replaced by G1 measurements):
+- Peak memory at k=8: about 12-14 GB.
+  - 4-bit base incl. ViT ~6.5 GB; LoRA + Adam ~0.6 GB.
+  - Gradient-checkpointed activations for 8 x ~605 tokens ~2-3 GB; response-only logits ~0.1 GB.
+  - KV cache ~0.3 GB; allocator ~2 GB.
+  - k=4: ~10-11 GB; k=16: ~16-19 GB.
+- Time per image at k=8: about 5-7.5 s.
+  - Sampling ~2.5-4 s: greedy short measured 0.86 s/img on a 4090; x1.4 for a 3090; bnb-4bit decode
+    1.5-2x; batch 8 ~1.2x per step.
+  - fwd+bwd ~2-3 s; reference forward ~0.6 s; reward ~0.02 s on CPU.
+- Per epoch over 3,469 images: about 4.8-7.2 GPU-h (k=4 about 3.5-4.5; k=16 about 9-13).
+- Full plan about 45 GPU-h: 3 + 1.5 + 5 + 3 seeds x ~10 (1.5 epochs) + UIT-ViIC replication ~6.
+  A COCO 10K-image replication would add ~15 GPU-h.
+Expected gain (KTVIC short, seed-matched, word-level), over P1 (3-seed mean 145.8, so ~151-155):
+- CIDEr +5 to +9; B-4 +2 to +5; METEOR +1 to +2; ROUGE-L +1 to +3.
+- CHAIR_i -2 to -5 (reference-derived CHAIR moves with CIDEr: the oracle pick took 17.7 to 10.9).
+- Basis: COCO SCST median +8.5; pilot transferable +8 (BoN-7, disjoint references) and +7 to +8.5 (1-nat
+  step); panel +4.5 to +5.6. Discounted for 3.5K-image generalisation and LoRA capacity.
+Kill criterion, at G1 after 1,000 RL images; all three must hold:
+- Dev greedy CIDEr-D >= P1_dev + 3.0 with a paired-bootstrap 95% lower bound > 0.
+- The exact-copy rate of rollouts on SFT'd images stays <= 2x its step-0 value.
+- Function-word endings on dev stay <= 1%.
+If only plain RLOO passes, drop the copy mask. If both fail, do one cross-fitted retry (SFT on xfit A, RL
+rollouts on B images, and the reverse); if that also fails, the RL lever is dead.
+Confidence: medium for >= +5; low for >= +8.
+Synthetic training data: no. Only on-policy rollouts scored against existing human references; no generated
+text becomes an SFT target.
+
+P2. EHX-RLOO: Evidence-Hinted eXploration (detector tags as train-time hints, distilled into a tag-free captioner)
+Mechanism.
+- Run Grounding-DINO on KTVIC train images with the same tagger as data/results/tags_gdino.json
+  (scripts/tag_images.py), about 1 GPU-h.
+- Per image, k=8 rollouts:
+  - 4 from the plain short prompt x;
+  - 4 from x_h = x + " Các đối tượng có thể có trong ảnh: <tags>." (the repo's tag format).
+- Reward: as in P1 (word-level, EOS-aware CIDEr-D, copy-neutral). One RLOO baseline over the pooled group
+  of 8, so hinted samples that find the consensus content get positive advantage relative to plain ones.
+- Update the tag-free policy pi(.|x) on all 8 samples:
+  - plain samples on-policy;
+  - hinted samples off-policy, weight w = min(2, pi_theta(c|x) / pi_old(c|x_h)). The numerator comes from
+    the training forward; the denominator from generation-time log-probs, so there is no extra pass.
+    LUFFY-style policy shaping is the alternative.
+  - Plus the on-policy term for pi(.|x_h), so a tagged inference mode improves too.
+- Primary evaluation: the plain prompt, with no detector at test time. Secondary row: tagged prompt
+  (test tags exist).
+New element: open-vocabulary detector evidence used only as a train-time EXPLORATION hint for captioning RL,
+with the content it uncovers transferred into a detector-free captioner by importance-weighted policy gradient
+inside a pooled hinted+plain group baseline. The reward is untouched, so this is distinct from the killed
+evidence-gated PU reward. It follows the round-5 finding that only external evidence moved the frontier.
+Closest prior and delta:
+- QuestA 2507.13266 (partial-solution hints in math RL; no-hint ability improves) and ADHint 2512.13095.
+- LUFFY 2504.14945 (off-policy expert traces in GRPO groups); Selective Expert Guidance 2510.04140.
+- Oscar 2004.06165 / VinVL 2101.00529 (tags as inputs at train AND test, with CIDEr optimisation).
+- NoisyRollout 2504.13055 (perturbed-image rollouts).
+- Delta: the hints are noisy detector outputs, not gold partial answers or expert traces. They exist only at
+  training time and are distilled away, and the reward is a continuous reference metric.
+Pilot evidence (CPU, test, estimates): the tag-conditioned greedy beats the best of 6 tag-free samples on
+15-18% of images. Adding it to the pool adds +0.8 to +3.1 under disjoint-reference selection (2 of 4 CIs
+exclude 0; section 2.9).
+GPU pilot:
+- Tags on 300 dev + 1,000 train images (~0.5 GPU-h).
+- G0h (~0.5 GPU-h): 4 plain + 4 hinted samples per dev image. On CPU, check hinted best-of-4 minus plain
+  best-of-4 on disjoint references.
+- G1h (~2.5 GPU-h): a 1,000-image RL arm, matched to P1's G1.
+Memory and time: as P1 at k=8. The tags add about 20 prompt tokens and the extra x_h prefill about 0.3 s per
+image, so about 5.5-8 s/image and about 10-11 GPU-h per seed for 1.5 epochs, plus ~1 GPU-h of tagging.
+Total about 37 GPU-h: 1 + 0.5 + 2.5 + 3 x 11.
+Expected gain: +1 to +3 CIDEr over CN-RLOO at tag-free inference (about +6 to +12 over P1 combined), and
+CHAIR_i -1 to -2 more (tags raised P by about +2.2 in round 4).
+Kill criterion:
+- G0h: hinted best-of-4 minus plain best-of-4 < +2 CIDEr-D, or 95% lower bound <= 0. Stop before RL.
+- G1h: plain-prompt dev greedy < CN-RLOO G1 + 1.0 at matched updates. Stop.
+Confidence: low.
+Synthetic training data: YES, flagged for the user's veto. It trains on rollouts generated under detector-tag
+prompts, and the detector outputs are model-generated. No human label is created and nothing model-made is
+used for evaluation.
+
+======================================================================================================
+4. CAVEATS
+======================================================================================================
+- Every pilot number is from TEST samples of two SFT policies at T=0.8. They are estimates of headroom, not
+  results. G0 re-derives them on a dev split of TRAIN images before any claim.
+- The reliability, terciles and KL-step results rest on 6-7 candidates per image. The per-image correlations
+  are noisy, though the aggregate effects have bootstrap CIs.
+- The memorisation numbers come from fuse2 DETAILED rollouts (first sentence). P1 short rollouts on train
+  images were not available. P1 is trained on caption #0 only, so its copy rate may be higher; G0 measures it.
+- The time and memory figures are engineering estimates anchored on the repo's 4090 latency file
+  (data/results/latency_main_s42.json). G1 must measure them.
+- The panel (OpenViIC) captions were only read to score; none are reproduced here.
+- The success bar also needs UIT-ViIC, and COCO for language-agnostic methods. Both proposals are
+  language-agnostic, so the same recipe must be run with each dataset's own references.

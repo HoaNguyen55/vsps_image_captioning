@@ -1,0 +1,345 @@
+B2_targets_data -- R6 lever B2: which TRAINING TARGET and which EXISTING DATA maximise the n-gram metrics
+2026-10-12. CPU only (nice 15, <= 4 python processes, bootstrap B <= 2000). No GPU, no VLM/LLM loaded.
+Work dir (all code + outputs): /tmp/claude-1000/-mnt-d-vsps-image-captioning/755eae04-5e4c-4ce1-ab21-d4bc106761ee/scratchpad/research_r6/B2_targets_data/
+"Stand-in" below = a CPU nearest-neighbour consensus captioner used as a proxy for "SFT on target policy P, then
+greedy decoding". All test-set numbers are effect-size ESTIMATES; every choice between variants was made on the
+KTVIC-TRAIN dev split (300 images, out/dev300_train_ids.txt), never on test.
+
+==========================================================================================================
+0. BOTTOM LINE
+==========================================================================================================
+(a) The only target change the evidence supports is plain multi-reference SFT ("MR5": all 5 KTVIC captions as
+    rows, uniform weight). Every consensus-type alternative from the brief (n-gram MBR reference, CST/WXE
+    consensus weights, validity-weighted sampling, cross-panel selection, length-calibrated targets, sharper
+    "reference temperature") ties with or loses to MR5 on the TRAIN dev split, and the single-target variants
+    tie with or lose to the existing P1 target (the FIRST caption).
+(b) Reason (new, measured): KTVIC's 5 references are a PARAPHRASE CHAIN. Adjacent positions are near-rewrites
+    (mean pairwise CIDEr-D 199-256), non-adjacent ones are not (134-162), on train and on test. In-panel
+    consensus therefore mostly detects chain neighbours. The first caption is the canonical, most
+    transferable style. P1 has learned that style: its single-reference CIDEr-D is 219.5 against position 0 and
+    124-163 against positions 1-4.
+(c) Expected gain of MR5 over the P1 3-seed mean (145.8): +3 to +9 CIDEr on KTVIC (point estimate about +5),
+    CHAIR_i not worse. On UIT-ViIC, whose references are exchangeable, the gain should be larger (+5 to +15).
+    Probability that MR5 alone clears the +8 "breakthrough" bar: about 25%. Method novelty is low (standard
+    practice). The reportable novelty is the measured failure of consensus targets on chain-dependent references.
+(d) Extra existing data has little n-gram headroom. KTVIC-train captions already contain 99.63% of
+    test-reference word tokens and 100% of test object mentions. OpenViIC captions score CIDEr-D 45 against
+    KTVIC references, and untagged style-selected OpenViIC captions LOWER the stand-in (-6.3 [-12.1,-1.0] at
+    k=10; -2.6 n.s. at k=30). The closest prior for prompt/tag-separated multi-dataset training reports +0.2 CIDEr.
+    The one data design with a plausible gain is PanelBridge (section 6, proposal 2). It makes KTVIC-style
+    targets for the 8,642 OpenViIC images that have no KTVIC copy, so it USES SYNTHETIC TRAINING TARGETS
+    (user veto point). Expected gain +0 to +5, low confidence.
+(e) URGENT, outside B2: in train_stage2.py at HEAD, `--loss-mask assistant` is a no-op (section 1). The
+    "mask-fix" run on n2 right now (p1mask_s42) is a legacy-mask run.
+
+==========================================================================================================
+1. URGENT BUG (affects the queued GPU check pair)
+==========================================================================================================
+scripts/train_stage2.py @HEAD (1b5d16b), and the copy on n2 (/root/vsps) that runs
+`train_stage2.py ... --out /root/ncs-data/runs/p1mask_s42 --loss-mask assistant`:
+  - main() parses --loss-mask, but nothing reads args.loss_mask (grep: only the add_argument line);
+  - run_sft() builds `data_collator=VLCollator(processor),` (line 308), so assistant_only stays False.
+=> 33_p1_maskfix_s42 and 50_b_fuse2_maskfix_s42 train with the LEGACY mask. Their only change from P1/fuse2 s42
+   is the set_seed placement. Reading them as "the effect of the mask fix" would be wrong.
+One-line fix (repo is read-only for me; not applied):
+   data_collator=VLCollator(processor, assistant_only=args.loss_mask == "assistant"),
+Any multiref (MR5) run should use the same mask as the P1 run it is compared to.
+
+==========================================================================================================
+2. SETUP AND VALIDITY CHECKS
+==========================================================================================================
+- Evaluator: HEAD copy (git show HEAD:scripts/evaluate.py -> evaluate_head.py; `git archive HEAD rescap` ->
+  headsrc/). Segmenter: VnCoreNLP-1.2 RDRSegmenter (wseg model downloaded to ./vncorenlp, JDK 21 at
+  /home/hoanguyen/jdk21, py_vncorenlp + pyjnius in ./venv), so scoring is WORD-LEVEL (no syllable proxy).
+- Reproduction: data/results/p1-gold-short.preds.json -> B-1 79.0, B-4 45.5, METEOR 39.1, ROUGE-L 64.2,
+  CIDEr 149.8, CHAIR_i 19.2, CHAIR_s 28.7 (= the table in CONTEXT_R6). Output: out/p1_check.json.
+- KTVIC segment_caption.lower() == RDRSegmenter(caption).lower() on 18,845/18,845 train refs and 2,790/2,790
+  test refs. Cache of every needed caption: cache/seg.json (108,786 strings; it contains OpenViIC text because of
+  the licence, so never commit it).
+- CIDEr-D replica (common.py, cached tf-idf vectors) == pycocoevalcap Cider: 149.7926 vs 149.7926 (|diff| < 1e-9).
+
+==========================================================================================================
+3. RESULTS
+==========================================================================================================
+3.1 KTVIC references are a paraphrase chain (pair_matrix.py). Mean pairwise CIDEr-D x100, IDF = that split.
+    pair:   01     12     23     34   |  02     03     04     13     14     24
+    train: 246.6  218.2  204.5  199.2 | 161.9  134.3  140.5  141.8  137.4  142.1
+    test : 243.9  256.3  247.8  212.7 | 157.0  142.5  153.3  141.4  136.9  146.3
+    UIT-ViIC train: every pair between 160.9 and 167.8. UIT-ViIC test: 151.1 to 176.5, with no adjacency
+    pattern (uitviic_structure.py). So the UIT-ViIC references are exchangeable.
+    KTVIC train mean words by position (segmented): 10.42, 10.65, 11.05, 11.31, 11.65.
+    Captions starting with "co" (có): position 0 66.6% (2,512/3,769); all positions 57.2%; P1 test outputs 95.9% (535/558).
+
+3.2 P1 imitates position 0 (test_positions.py; KTVIC test; single-reference CIDEr-D, IDF from that position)
+                         pos0   pos1   pos2   pos3   pos4
+    p1-gold (s42)       219.5  162.8  137.5  124.1  131.4
+    p1_s43              209.3  158.8  133.5  119.1  127.7
+    p1_s44              211.8  156.2  129.8  119.0  129.6
+    fuse2_s42           198.9  154.5  129.8  129.7  132.6
+    zero-shot            35.8   30.9   30.4   30.0   31.3
+    Leave-position-out (refs = the other 4):
+      human ref k vs the other 4: 172.9 / 192.1 / 199.0 / 183.5 / 160.1 (mean 181.5; inflated by chain neighbours)
+      P1 s42 vs the same refs:    134.2 / 147.4 / 153.6 / 157.8 / 155.8. Dropping position 0 costs P1 15.6
+      points against its 149.8.
+    In-sample "MBR reference" (max CIDEr-D vs the other 4) scored vs the other 4: 252.1 [242.9, 260.5]
+    (B=2000). This is an upper bound inflated by selection and by chain neighbours. P1 against the same 4 refs: 142.1.
+    MBR position share on test: 17.2 / 24.6 / 27.4 / 19.2 / 11.6 %.
+
+3.3 TRAIN leave-out target ranking (pilot_targets.py; 3,769 images; the target is chosen from the visible refs,
+    scored vs the held-out refs; IDF from the held-out corpus; 95% CI by bootstrap over images, B=1000)
+    L1: |H|=1, 5 folds          CIDEr-D [CI]          vs first [CI]            words
+      first (= P1 target)       182.6 [179.1,186.4]    --                       10.47
+      mbr_cider (n-gram MBR)    180.4 [176.2,184.7]   -2.2 [-5.8,+1.3] p=.23   10.97
+      mbr_bleu / mbr_rouge      177.8 / 177.7         -4.9 / -4.9 (p<.01)
+      objcons (ladder 'cons')   178.7 [174.8,182.8]   -3.9 [-6.3,-1.3]
+      len_median                180.1                 -2.5 [-4.8,-0.2]
+      xpanel_cider (OpenViIC)   188.8 [185.2,192.6]   +6.2 [+2.9,+9.3] p=.003   11.54
+      joint (in+cross panel)    184.6                 +2.0 [-1.4,+5.5]
+      random visible ref        168.8                -13.8 [-16.2,-11.6]
+      shortest / longest        167.5 / 168.1        -15.1 / -14.5
+      anti-MBR                  153.9                -28.7
+      oracle (peeks at H)       324.9 (upper bound)
+    L2: |H|=2, 10 folds: first 180.2; mbr_cider 179.8 (-0.4 [-2.5,+1.9]); xpanel 186.3 (+6.1 [+3.6,+8.6]);
+      joint 184.6 (+4.4); objcons 177.2 (-3.0); len_median 175.3 (-4.9); random 169.3 (-10.9).
+    Reading: at target level, an n-gram MBR reference is NOT better than the first caption, length calibration
+    hurts, and only cross-panel selection helps. Within-image leave-out is contaminated by chain adjacency, so the
+    generalisation stand-in (3.4) decides.
+
+3.4 Generalisation stand-in (knn_sim.py, knn_sim2.py, knn_dev.py, knn_subsets.py, knn_ctrl.py, knn_chair.py)
+    Image descriptor = TF-IDF of the image's UIT-OpenViIC captions (an independent panel; never a target).
+    Retrieve the k nearest KTVIC-train images; candidate pool = the policy's targets of those images; output =
+    pool consensus caption (max mean CIDEr-D to the rest; Devlin et al. 2015 consensus, a mode-seeking decode).
+    Score = CIDEr-D vs all 5 KTVIC refs, as in evaluate.py. Paired bootstrap over images, B=1000.
+    TRAIN DEV split (selection set: 296 dev queries, database = the other 3,428 train images)
+                         k=10     k=30    (multiref - policy at k=30)
+      multiref (MR5)    111.8    117.1     --
+      pos0_x2           110.7    115.3    -1.8 [-6.6,+2.5]
+      wxe_in (CST/WXE)  108.4    114.9    -2.2 [-7.9,+2.9]
+      pos0_half         106.1    114.4    -2.7
+      wxe_x (x-panel w) 105.7    112.6    -4.5
+      wxe_x_sq (sharper)102.0    109.7    -7.4 [-14.7,-0.3]
+      pos0 = P1 target  104.9    108.4    -8.7 [-15.8,-1.9] p=.015   (k=10: -6.9 [-14.2,+1.0])
+      mbr_cider single   95.3    106.6   -10.5 [-16.4,-4.5]
+      random position    87.9    100.9   -16.1
+      xpanel single      94.7     98.0   -19.1
+    TEST-555 (ESTIMATE; 555 test images with OpenViIC copies; database = 3,724 train images)
+                         k=10     k=30
+      multiref          113.3    123.7   (vs pos0 +5.8 [+0.2,+11.3] / +11.5 [+6.3,+17.5])
+      pos0_x2           115.3    126.1   (vs multiref +2.0 [-1.4,+5.5] / +2.4 [-0.3,+5.3]; dev says -1.0/-1.8)
+      wxe_in            110.2    122.1   (vs multiref -3.1 [-7.1,+0.5] / -1.6 [-4.3,+0.9])
+      pos0              107.5    112.2
+      xpanel / joint    107.8 / 107.0   111.3 / 114.3
+      objcons           103.0    112.0
+      mbr_cider         102.3    110.0
+      random position    94.3    105.3
+      pos1..pos4        92.9 / 84.4 / 81.1 / 80.6     104.4 / 98.6 / 97.5 / 91.8
+    Single-ref profile by position (test, k=30): pos0 policy 145.7/116.5/116.5/105.6/102.2. multiref
+      145.1/127.3/124.9/116.6/117.8: positions 1-4 rise by 8-16 and position 0 is unchanged. Prediction to
+      check on the real MR5 run: the same flattening.
+    Which subset of the chain (unit mass per ref)? dev k=10/k=30: all5 111.8/117.1; 0+2+4 109.5/115.3;
+      0+4 107.5/113.3; 0+3 108.4/111.5; 0+1 105.6/112.3; 0+1+2 107.1/109.8; pos0 104.9/108.4.
+      test k=30: all5 123.7; 0+2+4 123.6 (-0.1 [-3.9,+3.9]); 0+1+2 119.5 (-4.2 [-7.8,-0.8]); 0+1 117.3.
+      => Non-adjacent refs carry the information. "0+2+4" (60% of MR5 rows) is the compute-saving fallback;
+         all 5 stays the default (best on dev).
+    Pool-size control: pos0 with 5x the neighbours (same pool size): pos0@k50 113.0 ~ multiref@k10 113.3, but
+      pos0@k150 104.0 << multiref@k30 123.7. The gain is not just a bigger pool: five captions of relevant
+      images beat one caption from five times as many images.
+    Database-size curve (test, k=10, 3 subsample seeds): 931 images: pos0 81.1, multiref 91.0; 1,862: 94.2,
+      105.5; 3,724: 107.5, 113.3. Using all 5 captions is worth about one doubling of KTVIC-style images.
+    CHAIR (rescap.chair, HEAD copy, gold = test refs; point estimates): k=30 multiref CHAIR_i 32.4 / CHAIR_s
+      43.6 / 1.80 mentions vs pos0 35.4 / 47.2 / 1.74; k=10 38.4 vs 38.0. MR5 targets carry the same objects
+      per row as P1 (1.634 vs 1.618; manuscript/prereg/2026-10-12_ladder_predictions.json), so the frontier
+      model also predicts no CHAIR shift.
+
+3.5 UIT-ViIC replication of the stand-in (uitviic_knn.py; descriptor = English COCO captions from the
+    Karpathy json; 231 test / 2,691 database images; word-level Vietnamese refs)
+      k=10: multiref 133.5, mbr_cider 115.9, random 110.1, pos0 106.2. multiref - pos0 = +27.3 [+13.6,+40.0]
+      k=30: multiref 136.7, mbr_cider 126.8, pos0 121.8, random 117.5. multiref - pos0 = +15.0 [+5.2,+25.3]
+    With exchangeable refs, MBR helps a little (+5 to +10, n.s.), as the classic literature reports, and MR5
+    helps more than on KTVIC. That is the replication prediction.
+
+3.6 Is greedy already the mode? (sample_mbr.py; 6 T=0.8 short samples per test image, copied read-only from n2)
+      p1_s43: greedy 143.9; mean random sample 114.9; CIDEr-MBR over 6 samples 139.4 (-4.5 [-10.5,+2.2]);
+              CIDEr-MBR over 6 samples + greedy 146.2 (+2.3 [-2.6,+7.2]).
+      fuse2_s42: 143.9; 120.8; 141.2 (-2.7); 145.9 (+2.0 [-2.1,+5.9]).
+    The earlier object-consensus MBR (96.7 / 98.0) collapsed because of its UTILITY, not because of MBR. A
+    CIDEr-utility MBR that includes the greedy caption is a cheap, n.s. +2 for the decoding lever, not B2.
+
+3.7 Existing data (pilot_data.py, coverage.py, knn_xsel.py, knn_curve.py)
+    - UIT-OpenViIC: 13,100 annotated images, 61,241 captions. Content-matched to KTVIC train: 3,939 OpenViIC
+      images; to KTVIC test: 601 (31 to both). FREE (no KTVIC copy): 8,642 images / 39,634 captions
+      (OpenViIC train 6,175, dev 1,102, test 1,365). Second panel on KTVIC-train images: 3,724 images /
+      19,355 captions. (The matcher's _pairs list is the only dedup used. Re-check SSCD >= 0.4 against all 558
+      test images before training on FREE; ViCLIP-OT used SSCD >= 0.8.)
+    - Style gap on the 555 test images (CIDEr-D vs the 5 KTVIC refs): OpenViIC caption #1 42.7 [38.4,47.0]
+      (16.0 words); random OpenViIC caption 45.3 [42.5,48.3]; shortest OpenViIC caption 60.0 [55.1,65.4]; KTVIC
+      human ref vs the other 4 181.8; P1 150.0 [140.5,159.3]. First words: OpenViIC "mot" (một) 44%, KTVIC "co" 57%.
+    - Coverage of KTVIC-test reference word tokens (segmented): KTVIC train 99.63% (60 unseen types);
+      + second panel 99.81%; + FREE OpenViIC 99.94%. Test object mentions (lexicon) covered by KTVIC train: 100%.
+      Only 3 test object classes have fewer than 5 train mentions (18 mentions, 0.4%). => vocabulary is not the bottleneck.
+    - Untagged real expansion in the stand-in (FREE images join the database with their 7,926 most KTVIC-like
+      captions: Moore-Lewis bigram cross-entropy difference, <= 14 words): k=10 113.3 -> 107.0 (-6.3
+      [-12.1,-1.0] p=.037); k=30 123.7 -> 121.1 (-2.6 [-7.5,+2.3]). Real OpenViIC text must be tagged; tagged,
+      it can only help through visual learning, which the stand-in cannot see.
+    - UIT-ViIC (COCO sports images, exchangeable refs) and English COCO are different image domains for KTVIC.
+      KTVIC-train coverage is already 99.6%, and translated COCO is a poor substitute for manual Vietnamese
+      (UIT-ViIC paper: CIDEr-D 0.578 vs 1.005). Not recommended as KTVIC training data. Each is the natural
+      in-domain set for its own replication.
+
+==========================================================================================================
+4. LITERATURE (full text or tables read in this session unless marked "abstract/snippet")
+==========================================================================================================
+[1] Phan, Henter, Miyao, Satoh 2017, Consensus-based Sequence Training (CST), arXiv:1712.09532 (PDF read).
+    WXE weights each GT caption's log-likelihood by its CIDEr against the other GTs. MSR-VTT: XE -> WXE
+    CIDEr 47.3 -> 49.7, BLEU-4 43.0 -> 44.1, METEOR 28.7 -> 29.1, ROUGE-L 61.7 -> 62.4. Full CST (RL) 54.2.
+[2] Nagasawa, Watanabe, Iyatomi 2021, Validity-Based Sampling and Smoothing for Multiple Reference Image
+    Captioning, MAI Workshop, ACL Anthology 2021.maiworkshop-1.6 (PDF read). p_j = softmax(mean CIDEr of ref j
+    vs the others) (= tempered MBR target sampling). Up-Down on COCO, 5 seeds: uniform 111.7; +LS 112.8;
+    +VBCS 113.1; +WCS 113.7; +VBCS+WCS 114.3 (BLEU-4 34.9 -> 35.8).
+[3] Wang et al. 2020, Human Consensus-Oriented Image Captioning, IJCAI 2020, DOI 10.24963/ijcai.2020/92 (PDF
+    read). Consensus-weighted CE: +3.2% relative CIDEr over CE Top-down.
+[4] Zheng, Ma, Huang 2018, Multi-Reference Training with Pseudo-References, EMNLP 2018, arXiv:1808.09564
+    (ar5iv read). COCO LSTM CIDEr: First ref only 80.70; Sample One 85.41; all 5 (Shuffle) 94.10; + lattice
+    pseudo-refs 97.10. Constructed consensus targets are therefore prior art too.
+[5] Hessel, Savva, Wilber 2015, arXiv:1508.02091 (ar5iv read). Same number of pairs on Flickr30k: 5 captions per
+    image for 20% of images vs 1 caption for all images: CIDEr-D 16.35 vs 15.55 (all 7 metrics favour more
+    captions per image; CIDEr p < .15).
+[6] Devlin et al. 2015, Exploring Nearest Neighbor Approaches for Image Captioning, arXiv:1505.04467: the
+    CIDEr-D consensus caption decode used in the stand-in.
+[7] Norouzi et al. 2016, RAML, arXiv:1609.00150. Targets drawn from exp(reward/tau): the "reference
+    temperature" prior.   [8] Rennie et al. 2017, SCST, arXiv:1612.00563 (lever B1).
+[9] Finkelstein, Freitag et al., MBR and QE Finetuning, ICLR 2024, arXiv:2309.10966 (HTML read). MBR targets
+    from the model's OWN samples are below human references (en-de Comet20 58.02 vs 60.95). Only a stronger
+    teacher's MBR beats them (63.51).
+[10] Wang et al. 2024, Don't Throw Away Data (MBR-n distillation), arXiv:2407.10456 (abstract).
+[11] Wang, Xie, Wu, Jia, Li, Controllable Image Captioning via Prompting, AAAI 2023, arXiv:2212.01803 (Table 2
+    via ar5iv). COCO CIDEr, individual vs joint multi-dataset: 133.5 vs 133.7 with learned prompts (+0.2);
+    132.4 vs 131.9 without prompts (-0.5).
+[12] Liu et al. 2023, LLaVA-1.5, arXiv:2310.03744. Response-format prompts let short-answer datasets be mixed
+    without behavioural overfitting (the tag mechanism for LVLM SFT).
+[13] Caswell, Chelba, Grangier 2019, Tagged Back-Translation, WMT 2019, arXiv:1906.06442.
+[14] Lam et al. 2020, UIT-ViIC, arXiv:2002.00175 (ar5iv read). Google-translated vs manual captions: CIDEr-D
+    0.578 vs 1.005 (pytorch-tutorial model), 0.567 vs 0.818 (NIC).
+[15] UIT-OpenViIC, arXiv:2305.04166; DOI 10.1016/j.image.2025.117430.   [16] KTVIC, arXiv:2401.08100.
+[17] ViCLIP-OT, arXiv:2602.22678 (App. B; SSCD >= 0.8: 401/558 test and 2,464/3,769 train KTVIC images in
+    OpenViIC train).
+[18] Gu, Joty, Cai, Wang, Unpaired Image Captioning by Language Pivoting, ECCV 2018, arXiv:1803.05526, DOI
+    10.1007/978-3-030-01246-5_31 (abstract).
+[19] Lan, Li, Dong, Fluency-Guided Cross-Lingual Image Captioning, ACM MM 2017, arXiv:1708.04390, DOI
+    10.1145/3123266.3123366 (abstract).
+[20] Li et al. 2022, BLIP / CapFilt, arXiv:2201.12086 (abstract). [21] Chan et al., IC3, EMNLP 2023,
+    arXiv:2302.01328 (abstract). [22] arXiv:2303.13040: dataset-identity style vector for a multi-dataset
+    captioner (snippet). [23] DCR, arXiv:2204.03938: GT reweighting by distinctiveness, +2.3 CIDEr (snippet).
+    [24] arXiv:2502.13363: SCST with LoRA on a BLIP-2-style VLM, +3.4% CIDEr with Vicuna-7B (snippet; B1 context).
+Scoop searches (WebSearch; the arXiv, OpenAlex and Semantic Scholar APIs returned HTTP 429 from this IP):
+  CST/WXE; all refs vs one ref for VLM fine-tuning; MBR finetuning/distillation; controllable or prompt-style
+  multi-dataset captioning; reference selection/consensus targets for LVLMs 2024-25; MBR decoding for captioning
+  with CIDEr utility; LLaVA-1.5 format prompts; tagged back-translation; translated vs manual Vietnamese captions;
+  KTVIC 2025-26 results; annotator/paraphrase dependence of references; label smoothing in captioning; SCST on
+  LVLMs; committee consensus (IC3); nearest-neighbour consensus; two caption panels on the same images; MBR-n
+  distillation; low-resource LVLM captioning with 5 refs; 1 vs 5 captions per image ablations; ViCLIP-OT dedup;
+  caption style transfer to pseudo-label new images (none found); language pivoting; fluency-guided cross-lingual.
+  No paper was found that (i) reports the paraphrase-chain dependence of a captioning benchmark's references and
+  its effect on consensus targets, or (ii) uses a second same-language caption panel on overlapping images as a
+  learned style pivot to label that panel's other images.
+
+==========================================================================================================
+5. VERDICT PER CANDIDATE FROM THE BRIEF
+==========================================================================================================
+  n-gram MBR reference target ........ NO. L1 -2.2, L2 -0.4 vs first. Dev stand-in 95.3/106.6 vs P1-target
+                                        104.9/108.4. Chain neighbours inflate in-panel consensus.
+  CST/WXE consensus weights (all 5) .. NO. Dev: -3.3/-2.2 vs uniform MR5 (n.s.). Prior effect +1.4 to +3.6
+                                        on independent refs [1-3].
+  multiref, all 5 rows (queued) ...... YES. Dev +6.9 [-1.0,+14.2] / +8.7 [+1.9,+15.8] vs the P1 target. Best
+                                        policy on dev and on test.
+  reference temperature / sharper w .. NO. Sharper is worse (wxe_x_sq < wxe_x < uniform). Uniform (tau -> inf)
+                                        is optimal here.
+  label smoothing .................... no CPU proxy. Prior +1.1 CIDEr [2]. Optional knob, tune only on dev.
+  length-calibrated targets .......... NO. len_median -2.5/-4.9; shortest/longest ~ random. P1 length already
+                                        matches (BLEU hyp/ref length 1.014).
+  curriculum by consensus ............ NO. It rests on the same chain-inflated in-panel consensus as WXE/HCO [3].
+  canonical anchoring (pos0 x2) ...... no: +2.0/+2.4 on test but -1.0/-1.8 on dev. Keep uniform.
+  chain-thinned 0+2+4 ................ compute fallback: about equal to all 5 at 60% of the rows.
+  OpenViIC on KTVIC train (2nd panel)  only tagged; style gap 45 CIDEr-D; selection +6 at target level but
+                                        no gain in the stand-in (wxe_x, xpanel).
+  other OpenViIC images (8,642 free) . untagged hurts (-6.3/-2.6); tagged ~0 by [11]. Only value: as
+                                        bridged KTVIC-style targets (proposal 2, synthetic).
+  UIT-ViIC / English COCO for KTVIC .. NO (other domain; translated data is weak [14]; coverage already 99.6%).
+
+==========================================================================================================
+6. PROPOSALS (at most 2)
+==========================================================================================================
+P-B2-1  MR5: uniform 5-reference SFT (all KTVIC captions as rows), consistent loss mask
+  Mechanism: keeps P1's canonical mode and adds the n-grams that rewrites 1-4 share. In the stand-in, positions
+    1-4 rise by 8-16 and position 0 is unchanged. No new hyperparameter (same prompt, lr 1e-4, r16, 2 epochs as P1).
+  Novel element: none in method (standard). The reportable part is the KTVIC evidence that MBR, consensus
+    weighting, validity sampling and cross-panel selection all lose to uniform MR5 because of reference-chain
+    dependence. This kills the "MBR reference target" line.
+  Closest prior: Zheng et al. 2018 [4] (first-ref -> all-5: +13.4 CIDEr on a COCO LSTM), Hessel et al. 2015 [5];
+    consensus variants [1-3]. Delta: none methodologically.
+  Pilot: already queued (gold_multiref on n2). (1) Decide the mask: fix the wiring (section 1) or keep legacy for
+    both P1 and MR5. (2) Selection run on the TRAIN dev split: MR5 vs P1, both trained without the 300 dev images
+    (~8.9 + 1.8 GPU-h). (3) One seed on full train, scored on test with the per-position single-ref profile.
+    Pre-registered: pos2-pos4 each +5 or more, pos0 within -5. Also CHAIR_i, and a paired bootstrap vs P1 s42-44.
+  Expected: KTVIC short CIDEr +3 to +9 over 145.8 (point about +5, ~151); B-4 +0.5 to +2; CHAIR_i within +-1.5.
+    UIT-ViIC +5 to +15 over a first-caption baseline. Derivation: stand-in relative gain +5.4%/+10.2% (test) and
+    +6.6%/+8.0% (dev), discounted 40-60% for a pretrained 7B VLM (my assumption); literature range +2.4 to +13.4.
+  GPU-h (n2 measured 0.92 s per row-epoch: P1 = 6,938 s for 3,769 x 2): MR5 9.6 h + 0.3 h eval per KTVIC seed;
+    3 seeds 30 h; dev pair 10.7 h; UIT-ViIC MR5 6.9 h/seed x 3 = 21 h. Total about 62 GPU-h; pilot about 11 GPU-h.
+  Kill: dev-split MR5 - P1 < +2 CIDEr (or the paired 95% lower bound < 0); or the first test seed < 147.8;
+    or CHAIR_i up by more than 2 points.
+
+P-B2-2  PanelBridge: second-panel style pivot to label the 8,642 OpenViIC images with no KTVIC copy
+  [FLAG: depends on SYNTHETIC training targets. The targets are model-written text, though their content comes
+   from human OpenViIC captions. User veto point.]
+  Mechanism: the stand-in says that what moves n-gram metrics is more images carrying the KTVIC style. Four
+    times the images gives +22 to +26 stand-in points, and all 5 refs are worth about one doubling. Real
+    OpenViIC text cannot supply that (style gap, untagged harm), and its vocabulary adds nothing (99.6% covered).
+    PanelBridge learns, on the 3,724 doubly-annotated train images, a text-to-text mapping from the set of
+    OpenViIC human captions to a KTVIC-style caption (real human pairs), then applies it to the FREE images.
+    Train MR5 rows + bridged rows (2.3x more images). Bridged rows carry an instruction suffix tag that is
+    absent at test, as in tagged back-translation. Content is human-attested, which avoids E5's
+    self-confirmation, and the style comes from real pairs.
+  Novel element: an in-language second caption panel on overlapping images used as a supervised style pivot that
+    fuses a caption SET into the target benchmark style, so the other images get targets whose content is human.
+  Closest prior: language pivoting [18] (pivot = another language; its pairs come from a separate parallel
+    corpus, not the same images); fluency-guided translated captions [19]; tagged BT [13]; CapFilt [20]
+    (content from the captioner itself).
+  Pilot: gate 0 (CPU, done): 8,642 FREE images after dropping all 601 test and 3,939 train matches. Re-check
+    SSCD >= 0.4 vs the 558 test images. Gate 1 (~2.5 GPU-h): train the bridge (text-only LoRA on the Qwen2.5-VL
+    LM; input = OpenViIC captions, target = each KTVIC caption) on train minus dev. The bridged captions of the dev
+    images must reach dev CIDEr >= P1-dev's image-based CIDEr, else stop. The CPU kNN bridge gives 104.9-117.1
+    on dev; P1 is about 146 on test. Gate 2 (~13 GPU-h): MR5+bridge vs MR5 on dev; then test seeds.
+  Expected: +0 to +5 CIDEr over MR5 on KTVIC, possibly lower CHAIR_i. Alone it has under a 10% chance of the +8 bar.
+    Stacked with MR5 the total is about +4 to +12, maybe 30%. On UIT-ViIC the same design uses English COCO
+    captions as the pivot panel (2,695 doubly-annotated images -> the other Karpathy-train images).
+  GPU-h: bridge 1.5 + bridge inference 0.5 + P1-dev 1.8 + MR5+bridge dev run 13.3 + 3 test seeds x 14 = about
+    59 GPU-h (KTVIC). The UIT-ViIC replication is extra.
+  Kill: gate 1 fails; or MR5+bridge - MR5 < +1.5 CIDEr on dev; or CHAIR_i up by more than 1.5.
+  Non-synthetic fallback (not a separate proposal): the same rows with the human OpenViIC captions under an
+    OpenViIC-style instruction. Expected about 0 [11]; worth running only as the control of P-B2-2.
+
+==========================================================================================================
+7. CAVEATS
+==========================================================================================================
+- The stand-in has no shared visual learning. Its absolute CIDEr (105-126) is far below the VLM (146), and its
+  deltas are not VLM deltas: the expected gains apply a discount of my own choosing. It ranks policies; it
+  does not measure their size.
+- Train leave-out (3.3) is biased by chain adjacency. Use it only for target-level statements.
+- The KTVIC "5 refs from 3 participants typed by one person" note explains the chain, but annotator identity is
+  not in the data. The position effects are what can be measured.
+- Test-set numbers are effect-size estimates. Selection was done on dev only: uniform MR5 vs weighted, subsets,
+  and single targets.
+
+==========================================================================================================
+8. FILES (all in the work dir)
+==========================================================================================================
+code: seg.py, common.py (CIDEr-D replica + bootstrap), pair_matrix.py, test_positions.py, pilot_targets.py,
+      knn_sim.py, knn_sim2.py, knn_dev.py, knn_subsets.py, knn_ctrl.py, knn_curve.py, knn_xsel.py, knn_chair.py,
+      sample_mbr.py, pilot_data.py, coverage.py, uitviic_structure.py, uitviic_knn.py,
+      evaluate_head.py + headsrc/ (HEAD copies)
+outputs: out/p1_check.json, out/pilot_targets.json, out/test_positions.json, out/knn_sim.json,
+      out/knn_outputs_k{10,30}.json, out/knn_sim2.json, out/knn_dev.json, out/knn_ctrl.json, out/*.log
+      (knn_dev, knn_subsets, knn_xsel, knn_curve, knn_ctrl), out/pilot_data.json, out/dev300_train_ids.txt
+      (random.Random(0).sample(sorted(str train ids), 300))
+literature PDFs/text: lit/

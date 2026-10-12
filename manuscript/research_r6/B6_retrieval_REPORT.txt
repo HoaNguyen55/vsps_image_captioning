@@ -1,0 +1,451 @@
+B6_retrieval REPORT -- R6 lever B6: retrieval augmentation (retrieved TRAIN captions in the prompt, at SFT and inference)
+for the QLoRA Qwen2.5-VL-7B KTVIC captioner. Agent id B6_retrieval, 2026-10-12.
+Work dir (all code + outputs): /tmp/claude-1000/-mnt-d-vsps-image-captioning/755eae04-5e4c-4ce1-ab21-d4bc106761ee/scratchpad/research_r6/B6_retrieval/
+
+READ FIRST. Every KTVIC-test number below is computed on TEST references and is an EFFECT-SIZE ESTIMATE, not a result.
+The only thing chosen by search (the kNN-consensus setting) was chosen on the KTVIC-TRAIN dev split (300 images,
+random.Random(0).sample(sorted(str train ids), 300), pool = the other 3,469 train images). For UIT-ViIC the setting was chosen
+on UIT-ViIC val. Every other rule was fixed before it was scored. CIs: 95% percentile bootstrap over images, paired when two
+systems are compared, B = 2000, seed 0. All KTVIC scores: short prompt, word level (VnCoreNLP-1.2 RDRSegmenter + lowercase),
+x100, HEAD's scorers.
+
+==========================================================================================================================
+0. BOTTOM LINE
+==========================================================================================================================
+(1) Retrieval alone is far below the fine-tuned VLM on KTVIC. With CLIP ViT-B/32 retrieval over KTVIC train
+    (near-duplicates removed), the nearest neighbour's caption scores CIDEr 61.6 [55.0, 68.3]. The dev-selected kNN
+    CIDEr-D consensus caption (k = 30, similarity-weighted) scores CIDEr 90.9 [83.4, 98.9], B-4 29.7, METEOR 32.5,
+    ROUGE-L 52.9, and CHAIR_i 37.1. P1 s42 scores CIDEr 149.8 and CHAIR_i 19.2, so the consensus is -58.9 [-68.0, -49.2]
+    CIDEr below it, with about twice its CHAIR_i. Retrieval reaches 62% of P1's CIDEr on KTVIC. On UIT-ViIC (sports COCO
+    images) the same recipe reaches CIDEr 127.4, where retrieval is much stronger.
+(2) The consensus step is annotator-style TYPICALITY. Against the independent UIT-OpenViIC panel of the same images, the
+    kNN consensus keeps 48.8% of P1's score, against 62.5% on the KTVIC references. The gap is +13.7 points [+8.1, +19.2].
+    A single neighbour caption shows no gap (-0.2 [-4.4, +4.2]). This agrees with B3 (retrieved evidence: +3.2 KTVIC
+    CIDEr, ~0 on the panel) and with R5's "precision measures typicality".
+(3) Retrieval does hold content that P1 misses, beyond chance, but it is buried in noise:
+    - The 10 nearest train images' references contain 50.3% [45.1, 55.5] of the consensus trigrams (>= 3 of 5 refs)
+      that P1 s42 misses. Random train images contain 20.3%.
+    - They contain 47.7% of the RARE consensus words (train DF <= 20 images). P1 names 31.0%; random images contain 0.6%.
+    - But only 4.3% of the neighbours' trigrams occur in the test references. Copying them doubles CHAIR_i.
+(4) Little of that content can be turned into CIDEr on top of P1, even with oracle help:
+    - Picking per image between P1 and the kNN consensus, with references {0,1} choosing and the non-adjacent {3,4}
+      scoring, gains only +1.8 [-3.7, +7.1] (s42), +3.7 [-1.6, +9.0] (s43) and +2.2 [-3.4, +7.8] (s44).
+    - Adding retrieved captions to the greedy + 6-sample pool under the same held-out selection gives +1.6 [-0.7, +4.1]
+      (P1 s43) and +0.5 [-2.0, +3.0] (fuse2).
+    - Retrieval anchored on P1's own caption (generate-then-retrieve) gives a better consensus, CIDEr 118-122, but it is
+      still -25.5 [-30.8, -20.2] below P1 s43.
+    - "Conventional" phrasing (every 4-gram seen in train refs) predicts CIDEr among T = 0.8 samples: +29.3 [22.4, 37.0]
+      at a fixed object set. But conventional samples do NOT beat a novel-phrased GREEDY caption: -3.7 [-23.8, +13.7]
+      (P1 s43, 62 images) and +1.8 [-16.0, +21.2] (fuse2, 71 images). Phrase-prior decoding (kNN-LM / train-n-gram
+      constraints) therefore has little headroom over greedy.
+(5) Literature agrees that retrieval gains shrink as the captioner gets stronger:
+    - SmallCap: +7 to +8 CIDEr with 7M trainable parameters.
+    - Sarto et al. 2024: +2 to +3 after XE but only +1.1 to +1.4 after SCST.
+    - Fei 2021 kNN memory: +2.5 to +4.6 on 2019-era captioners.
+    - In-prompt retrieved captions, keywords and concepts are established: SmallCap, Li et al. ACL 2024, DualCap 2025,
+      CONCAP 2025, EVCap 2024.
+    - Retrieved captions as MBR evidence are 2015 work (m-RNN, Devlin et al.), already owned by B3/B4.
+    - The closest RL use is Re3Cap (EMNLP 2026), which uses retrieval guidance during RL and no retrieval at inference.
+(6) VERDICT: retrieval augmentation is NOT a breakthrough lever for KTVIC with a 7B SFT'd VLM. Expect about +0 to +3 CIDEr
+    from it, mostly typicality, and no proposal here clears the +8 bar on its own. Two cheap, killable designs are proposed
+    (section 5), each with an early stop:
+    - P-B6-1 RMH, Retrieved Mention Hints: a ~1.5 GPU-h inference-only probe first. Hints come from neighbours' human
+      panels and replace the detector tags in the same prompt slot. Measured: they hold a P1-missed consensus content
+      word on 15-16% of test images, against 1.3-1.4% for Grounding-DINO tags.
+    - P-B6-2 RHX-RLOO: the same hints as train-time exploration hints inside B1's CIDEr-D RL, distilled into a
+      retrieval-free policy. It upgrades B1's tag-hinted EHX-RLOO and only makes sense if B1's RL runs.
+    Do NOT spend GPU on raw-caption RA-SFT, kNN-LM or train-phrase constrained decoding (section 6).
+
+==========================================================================================================================
+1. SETUP AND VALIDITY CHECKS
+==========================================================================================================================
+- Scorers. `git show HEAD:scripts/evaluate.py` -> evaluate_head.py; `git archive HEAD rescap scripts` -> ./head/.
+  Scoring uses head/rescap/metrics.CaptionMetrics (vi, RDRSegmenter, METEOR on, pycocoevalcap BLEU closest-ref, ROUGE-L,
+  CIDEr-D sigma 6) and head/rescap/chair.chair (strict_ids=False), the same path as evaluate.py.
+- Segmenter. VnCoreNLP-1.2 RDRSegmenter, run locally: py_vncorenlp + pyjnius in ./venv, JDK 21 at ~/jdk21, model in
+  ./vncorenlp. It reproduces KTVIC's own `segment_caption` field on 3,090/3,090 captions (all 2,790 test refs + 300 train
+  refs). So every number here is WORD level; no syllable proxy was needed.
+- Identity check (out/tables_knn_test_preds_emb_vitb32q_openai.json). data/results/p1-gold-short.preds.json gives B-1 79.0,
+  B-4 45.5, METEOR 39.1, ROUGE-L 64.2, CIDEr 149.8, CHAIR_i 19.2, CHAIR_s 28.7, identical to CONTEXT_R6. p1_s43 and
+  p1_s44 also match (143.9 / 143.7; B-4 45.1 vs the table's 45.2 is rounding).
+- Own CIDEr-D (lib.CiderD, used for MBR utilities with train-only IDF) and own BLEU statistics reproduce pycocoevalcap.
+  The asserts are in `python lib.py`.
+- Retrieval embeddings. open_clip 3.3.0 ViT-B-32-quickgelu, OpenAI weights, CPU, torch.set_num_threads(4), nice 15:
+  KTVIC 4,327 images in 603 s; UIT-ViIC 3,850 images in 805 s.
+  - Agreement with the repo's HF CLIP dedup (data/dedup): 11 test images have a train twin at cos >= 0.95 and 15 at
+    >= 0.93, exactly the repo's counts.
+  - KTVIC TRAIN has 86 images with another train image at cos >= 0.95 (40 at >= 0.99, i.e. the same photo).
+    Training-time retrieval MUST exclude them, or RA-SFT learns verbatim copying.
+  - Every pool excludes the query and every image at cos > 0.95.
+  - UIT-ViIC: no test image has a train twin above 0.95.
+- Superseded first pass. My first KTVIC/UIT-ViIC embedding used "ViT-B-32" with OpenAI weights, which open_clip warns
+  is a GELU/QuickGELU mismatch (mean cos to the correct features 0.967). All numbers in this report use the corrected
+  QuickGELU features. The superseded outputs (out/*_gelu.json, out/*emb_vitb32_openai*) gave the same conclusions:
+  kNN consensus 88.0, held-out switch +1.3 to +4.2, overlap within 0.03.
+- Data hygiene.
+  - The UIT-OpenViIC panel (data/ktvic_openviic_refs.json) was read only for scoring. No panel caption is printed here or
+    written anywhere except the scratch segmentation cache (segcache.json).
+  - No AI-made labels were used.
+  - n2: scp of the two sample files (read-only). n3: rsync of UIT-ViIC images (read-only). No compute on n2/n3.
+- Compute compliance. CPU only, nice 15. DISCLOSURE: for about 25 minutes the UIT-ViIC embedding (4 torch threads) ran
+  concurrently with a 4-worker CPU pilot, so up to ~8 busy threads at nice 15 on this 4-core box. Otherwise at most 4.
+  B <= 2000 everywhere.
+
+==========================================================================================================================
+2. PILOT RESULTS
+==========================================================================================================================
+2.1 (a)+(b) Nearest-neighbour caption and kNN CIDEr-D consensus (pilot_knn.py, score_tables.py)
+- Consensus = CIDEr-D MBR over all 5k references of the k nearest train images. Each candidate's utility is the (weighted)
+  mean CIDEr-D against the other candidates. Options: drop same-image siblings from the evidence (default) or keep them
+  ("_sib"); "_w" = weights cos^4. IDF comes from the pool's train references only.
+- DEV (300 train images, pool 3,469; CIDEr-D with IDF over the dev panels):
+    NN first caption 54.0 | NN medoid caption 58.5
+    k=3 70.2-74.3 | k=5 78.8-82.7 | k=10 85.7-88.2 | k=20 86.1-90.9 | k=30 87.5-91.7 | k=50 84.0-90.1 (range over the 4 variants)
+    chosen: k=30, weighted, siblings excluded (91.7). Dev top-1 cos 0.802 vs test 0.811, and dev 91.7 ~ test 90.9: the
+    dev split is a faithful proxy for retrieval settings.
+- TEST (558), HEAD scorers:
+  system                         B-1   B-4   MET   R-L  CIDEr [95% CI]       CH_i  CH_s  obj/c  dCIDEr vs P1 s42
+  P1 s42 (p1-gold)               79.0  45.5  39.1  64.2  149.8 [140.7,159.1]  19.2  28.7  1.80   --
+  P1 s43                         79.1  45.1  39.1  64.0  143.9 [134.5,152.8]  17.7  26.7  1.76   -5.9 [-11.1,-1.0]
+  P1 s44                         79.0  44.8  39.1  63.8  143.7 [135.0,152.8]  18.3  27.6  1.79   -6.1 [-10.7,-1.4]
+  (a) NN caption (1st ref)       55.4  19.7  27.8  43.5   61.6 [ 55.0, 68.3]  45.3  56.6  1.77  -88.2 [-97.4,-78.7]
+  (a') NN medoid of its 5 refs   54.0  19.6  28.5  43.0   64.0 [ 57.3, 71.4]  47.7  57.4  1.82  -85.8 [-94.9,-76.0]
+  (b) kNN consensus k30 w        67.3  29.7  32.5  52.9   90.9 [ 83.4, 98.9]  37.1  50.5  1.78  -58.9 [-68.0,-49.2]
+  BLEU-4 CIs: NN 19.7 [17.8, 21.6]; consensus 29.7 [27.8, 31.7], -15.8 [-18.2, -13.3] vs P1 s42. Against the P1 3-seed
+  mean (145.8) the consensus is about -55 CIDEr.
+- By retrieval quality (terciles of top-1 cos, 186 images each), consensus vs P1 3-seed mean:
+    0.52-0.79: 64.1 vs 141.9 | 0.79-0.85: 93.6 vs 148.7 | 0.85-0.95: 115.0 vs 146.8.
+  Even the best-retrieved third is ~32 CIDEr below P1.
+
+2.2 Independent-panel check (pilot_panel.py, pilot_ratio.py; 555 images; panel = UIT-OpenViIC captions of the same image)
+  system          KTVIC CIDEr (share of P1 mean)   panel CIDEr (share of P1 mean)   share gap KTVIC - panel
+  P1 s42/s43/s44  150.0 / 144.0 / 143.8           45.0 / 45.0 / 44.8                 --
+  NN caption       61.8 (0.423)                   19.1 (0.425)                       -0.002 [-0.044, +0.042]
+  NN medoid        63.8 (0.437)                   18.7 (0.415)                       +0.021 [-0.029, +0.071]
+  kNN consensus    91.2 (0.625)                   21.9 (0.488)                       +0.137 [+0.081, +0.192]
+  Reading:
+  - The CIDEr-MBR consensus over KTVIC neighbours converts retrieval into KTVIC-annotator typicality. A single
+    neighbour caption does not.
+  - Side finding: P1 s42's +6 CIDEr KTVIC lead over s43/s44 is absent on the panel (45.0 vs 45.0), so it is a
+    KTVIC-specific seed effect.
+
+2.3 (c) n-gram overlap between test references and neighbours' references (pilot_overlap.py; k = 10 unless noted)
+  Consensus n-grams = in >= 3 of the image's 5 refs. "Missed" = consensus n-grams absent from P1 s42's caption.
+  n   P1 covers     10-NN refs cover     random 10 cover   P1-missed found in 10-NN   (random)   precision of 10-NN n-grams (>=2 panels)
+  1   63.6%         92.4% [91.4,93.4]    78.7%             83.3% [80.8,85.8]          66.9%      18.7% (35.6%)
+  2   44.4%         80.4% [78.0,82.7]    53.6%             69.5% [66.1,72.9]          42.7%       8.2% (22.9%)
+  3   34.3%         62.9% [58.7,66.9]    27.1%             50.3% [45.1,55.5]          20.3%       4.3% (16.2%)
+  4   28.3%         53.6% [47.6,59.7]    20.0%             43.5% [37.0,50.1]          14.4%       2.4% (12.5%)
+  k = 30: P1-missed consensus 4-grams found 56.6% (random 28.8%). Rare consensus words (pilot_rare.py; train DF <= 20
+  images; 155 occurrences): P1 3-seed recall 31.0%, 10-NN refs 47.7%, random 0.6%. With DF <= 5: 23.6% / 32.3% / 0.0%.
+  So retrieval is informative beyond chance, at 2-3x for 3-4-grams, but noisy: 96% of retrieved trigrams are wrong for
+  the image.
+
+2.4 What P1 already does (pilot_overlap.py, pilot_diag.py, pilot_within*.py)
+- Verbatim copies of a train caption: 21.5% of P1 s42 outputs, 20.6% s43, 19.9% s44.
+  - They are generic templates: 77 distinct captions for s42, 63 of 120 found in several train images; the most copied
+    is "there are many people appearing in the market". Only 9/120 come from the CLIP top-1 neighbour and 34/120 from
+    the top 10; median rank 39-45.
+  - Copied outputs score 184.8 CIDEr against 140.2 for the rest. That is a selection effect: P1 copies on typical
+    images.
+  P1 is already an implicit, parametric template retriever, and it does better than explicit CLIP retrieval.
+- Phrasing is already conventional: 99.7 / 97.9 / 94.7 / 88.3% of P1's 1/2/3/4-grams occur in train refs. 41-42% of
+  captions contain an unseen 4-gram; they score 117-128 against 160-165 for fully conventional ones (between images,
+  confounded).
+- Within image (greedy + 6 T=0.8 samples):
+  - Conventional candidates beat novel ones by +38.0 [31.3, 44.7] (P1 s43) and +33.0 [25.8, 40.5] (fuse2).
+  - At the SAME object set: +29.3 [22.4, 37.0] and +28.0 [18.9, 37.3]; on refs {3,4} only, +27.1 and +18.7.
+  - But where the GREEDY caption is novel, conventional same-object samples do not beat it: -3.7 [-23.8, +13.7]
+    (n=62) and +1.8 [-16.0, +21.2] (n=71). A test-blind "use a conventional sample instead" rule moves the corpus by
+    -0.2 [-2.3, +2.0] / +0.3 [-2.0, +2.9].
+  => The conventionality premium is sampling noise in T=0.8 samples, not a fixable phrasing defect of greedy decoding.
+
+2.5 Can retrieval add to P1? (pilot_diag.py, pilot_explore.py, pilot_capquery.py)
+- Held-out switch oracle: choose P1 or the kNN consensus per image with refs {0,1}, score on refs {3,4}:
+  +1.8 [-3.7, +7.1] (s42, switches 159), +3.7 [-1.6, +9.0] (s43, 150), +2.2 [-3.4, +7.8] (s44, 159). None excludes 0,
+  even with human references doing the choosing.
+- Exploration proxy: pool A = greedy + 6 T=0.8 samples; held-out pick (refs {0,1} -> {3,4}):
+                      A      A+consensus           A+5 NN first captions   A+5 random (control)
+  P1 s43            129.0   +1.6 [-0.7, +4.1]      +1.2 [-3.7, +6.0]       -1.3 [-2.6, -0.3]
+  fuse2 s42         133.4   +0.5 [-2.0, +3.0]      -3.7 [-8.4, +0.6]       -2.7 [-4.4, -1.2]
+  Retrieved neighbour captions are poor extra candidates. B1's tag-conditioned greedy gave +0.8 to +3.1 in its analogous
+  test.
+- Retriever sensitivity (test, estimate; min-max-rescaled cos^4 weights, so not the dev rule):
+  CLIP image 83.8; caption query with P1 s43's own caption (TF-IDF uni+bigram vs train panels) 118.4; hybrid z-sum 121.6
+  (+37.8 [+29.2, +45.8] over CLIP). Still -25.5 [-30.8, -20.2] below P1 s43 (143.9). Dedup-543 subset: same to +-0.6.
+
+2.6 Retrieved mention hints vs detector tags (pilot_hints.py, pilot_hint_opps.py)
+- Hints:
+  - Retrieved: content words (train DF <= 5%) of the 10 neighbours' refs, ranked by sum_j cos_j^4 * [w in panel_j] * idf.
+  - GDINO: data/results/tags_gdino.json, the tags whose in-prompt use gave +1.1 (P1 s43) / +2.5 (fuse2) CIDEr.
+- Quality (precision = hint named by >= 1 ref; recall over consensus content words, >= 3 refs and DF <= 5%):
+  hint source              size   precision(>=1 / >=2 refs)   recall consensus   recall P1-missed   images with a useful hint
+  GDINO tags               2.4    39.3% / 32.2%                4.4%               2.0%               7-8 (1.3-1.4%)
+  retrieved top-5 (CLIP)   5      24.1% / 16.3%               37.8%              23.3%              83-90 (14.9-16.1%)
+  retrieved top-5 (hybrid) 5      29.3% / 20.4%               50.2%              20.8%              83-95 (14.9-17.0%)
+  retrieved top-5 OR tags  7.3    27.1% / 19.8%               39.8%              25.2%              --
+- Tags and retrieved hints are complementary:
+  - Tags name frequent present objects (người, xe máy); their intersection with retrieved hints is near empty.
+  - Retrieved hints carry ~10x more of the rarer, mention-worthy content P1 misses.
+  - But 71-76% of retrieved hint words are named by no reference, against 61% of tag words on this content filter.
+
+2.7 UIT-ViIC replication of (a)+(b) (pilot_uitviic.py; pool = UIT-ViIC train 2,695; setting chosen on val 924)
+- val grid: NN 69.9; k=3 97.6-99.6; k=5 107-108; k=10 120.2-121.9; k=20 122.1-124.0; k=30 125.3-127.6.
+  Chosen k=30, siblings kept, weighted. Larger k may still be better: k=30 was the grid edge.
+- test (231), HEAD scorers:
+  NN caption        B-1 61.3  B-4 26.0  METEOR 31.7  ROUGE-L 53.4  CIDEr  64.1  CHAIR_i 20.8  CHAIR_s 34.6
+  kNN consensus     B-1 75.7  B-4 43.6  METEOR 38.6  ROUGE-L 65.4  CIDEr 127.4  CHAIR_i 12.9  CHAIR_s 19.9
+- Context:
+  - Published UIT-ViIC SOTA (ObjectAoA, arXiv 2211.05405): B-4 49.7, METEOR 37.3, ROUGE-L 64.8, CIDEr 148.8. Its
+    tokenisation may differ.
+  - Repo's human ceiling: UIT-ViIC test CIDEr-D 163.1 (commit d4de7b0).
+  - Retrieval reaches 78% of the human ceiling on UIT-ViIC against 50% on KTVIC (90.9 vs human LOO 181.5, per B1).
+    Indicative only: the human figures are leave-one-out scores against 4 refs, and the systems are scored against 5.
+- So RA is likelier to matter on the UIT-ViIC replication set. No UIT-ViIC model predictions exist yet (jobs queued), so
+  there is no model comparison.
+
+==========================================================================================================================
+3. LITERATURE (FT = full text read in this session; otherwise abstract/API record; ids verified via export.arxiv.org)
+==========================================================================================================================
+Retrieval-augmented captioners and their measured retrieval gain
+- SmallCap. Ramos, Martins, Elliott, Kementchedjhieva. CVPR 2023. arXiv 2209.15323. FT.
+  - Frozen CLIP ViT-B/32 + GPT-2; 7M trainable cross-attention parameters.
+  - k=4 captions retrieved with CLIP RN50x64 image-to-text over COCO train captions.
+  - COCO test CIDEr 119.7. Without retrieval (OPT decoders) COCO val 113.4 / 112.6, vs 120.8 with: +7 to +8.
+  - The gap shrinks as trainable capacity grows (Fig. 6).
+- Li, Li, Ramos, Tang, Elliott. Understanding Retrieval Robustness for Retrieval-Augmented Image Captioning. ACL 2024.
+  arXiv 2406.02265. FT.
+  - Copying of "majority tokens" (present in > half of the retrieved captions): 86.5% copy rate in a 2-good/1-bad
+    setting.
+  - Random retrieval drops CIDEr by up to 50%.
+  - Sample-k from top-7 during training: in-domain about equal (119.2-119.3 vs 120.1); NoCaps +2.3 to +3.2.
+  - No LVLMs tested.
+- Sarto, Cornia, Baraldi, Nicolosi, Cucchiara. Towards Retrieval-Augmented Architectures for Image Captioning. ACM TOMM
+  2024. arXiv 2405.13127. FT.
+  - kNN memory, k=10.
+  - COCO: no-memory 121.6 -> 123.7 / 124.5 after XE; after SCST 135.3 -> 136.4-136.7, i.e. only +1.1 to +1.4.
+  - The query image's own captions are excluded during training. No near-duplicate filtering, no copying analysis.
+  - Earlier version: Sarto et al., CBMI 2022, arXiv 2207.13162.
+- Fei. Memory-Augmented Image Captioning. AAAI 2021, 35(2):1317-1324. FT (text).
+  - kNN-LM for captioning: (context vector, next word) memory, k=512, T=100, lambda=0.3.
+  - Up-Down 113.5 -> 116.3 (XE), 120.8 -> 125.4 (SCST); AoANet 118.5 -> 121.0, 128.9 -> 132.0.
+- CONCAP. Ibrahim, Ramos, Kementchedjhieva. COLM 2025. arXiv 2507.20411. FT.
+  - mBLIP (BLIP-2 + mT0-XL, LoRA, 111M trainable); prompt = top-4 retrieved captions + top-10 mSigLIP-retrieved
+    concepts.
+  - COCO-35L dev: NoRAG 99.2, captions 102.3, both 109.4.
+  - XM3600 L36: 26.9 -> 31.4 -> 34.2. Vietnamese XM3600: 45.1 (mBLIP 35.8, Pangea 64.3).
+- EVCap. Li et al. CVPR 2024. arXiv 2311.15879. Object names retrieved from an external visual-name memory; 3.97M
+  trainable parameters.
+- DualCap, arXiv 2510.24813 (2025): keywords and phrases from captions of visually similar scenes, used as visual
+  prompts. This is the closest prior to retrieved mention hints.
+- ViPCap (AAAI 2025, arXiv 2412.19289), RACap (arXiv 2509.15883), RORPCap (arXiv 2508.07318): lightweight SmallCap-family
+  captioners.
+- IFCap. EMNLP 2024, arXiv 2409.18046. Frequency-based entity filtering of retrieved captions; zero-shot.
+- MeaCap. CVPR 2024, arXiv 2403.03715. Retrieve-then-filter key concepts from a memory.
+- EXTRA (Ramos et al., EACL 2023, arXiv 2302.08268); Re-ViLM (Findings EMNLP 2023, arXiv 2302.04858); RA-CM3 (ICML 2023,
+  arXiv 2211.12561); DIR (arXiv 2412.01115).
+- UniRAG. arXiv 2405.10311. Retrieved examples as few-shot context for LVLMs at inference only.
+- Yang et al., Exploring Diverse In-Context Configurations for Image Captioning, NeurIPS 2023 (arXiv 2305.14800): +20.9
+  CIDEr on average from better in-context configurations. Lever-LM, NeurIPS 2024 (arXiv 2312.10104).
+Nearest-neighbour baselines and consensus reranking (scoops for retrieval-as-MBR-evidence)
+- Devlin et al. 2015, arXiv 1505.04467: kNN consensus caption.
+- Mao et al., m-RNN, arXiv 1412.6632, §8 "nearest neighbour as reference": +9.4 / +9.8 CIDEr. Read in full by B3, not
+  re-read here.
+- Deguchi & Nagata, CBDT, EMNLP 2025, arXiv 2509.12677 (retrieval-augmented MBR, per B3).
+- Wang, Chan et al., Compare and Reweight, ECCV 2020, arXiv 2007.06877. Uses similar-image sets to reward
+  DISTINCTIVENESS, the opposite use of neighbours.
+RL with retrieval / hints
+- Re3Cap. Jia et al. EMNLP 2026. arXiv 2608.21305. FT.
+  - OpenCLIP ViT-H/14 retrieval, K=3; k-core graphs over neighbours' sentences give keep/add/remove guidance; the
+    policy writes refined rollouts.
+  - Rewards: CLIP / SC / CIM. Backbones: LLaVA-1.5, Qwen2-VL, Qwen2.5-VL-7B. Retrieval is NOT used at inference.
+  - Dense captioning (COCO-LN500, DOCCI500), +8.64% relations QA over GRPO; no CIDEr.
+  This is the closest prior for P-B6-2.
+- QuestA (ICLR 2026, arXiv 2507.13266); LUFFY (arXiv 2504.14945); ADHint (arXiv 2512.13095). Hints and off-policy guidance
+  in RL; B1 read them.
+Robust retrieval training and related ideas
+- RetRobust (arXiv 2310.01558), RAFT (arXiv 2403.10131), RoRA-VLM (arXiv 2410.08876): training with irrelevant or noisy
+  retrieved context.
+- kNN-LM (ICLR 2020, arXiv 1911.00172), kNN-MT (ICLR 2021, arXiv 2010.00710).
+- Test-time training on nearest neighbours (ICLR 2024, arXiv 2305.18466).
+Datasets and retrievers
+- KTVIC (arXiv 2401.08100); UIT-OpenViIC (arXiv 2305.04166); UIT-ViIC (arXiv 2002.00175).
+- ViCLIP-OT (arXiv 2602.22678): a Vietnamese image-text retriever evaluated on KTVIC/OpenViIC, a possible stronger
+  text-side retriever.
+- Beyond Vision (arXiv 2512.20042): event captioning, retrieval + Qwen3 QLoRA, no CIDEr.
+Search log:
+- 8 WebSearch queries, 12 arXiv-API search queries and 2 arXiv id-list lookups. Topics: RA-captioning newest; ti:retrieval AND ti:captioning; kNN /
+  datastore captioning; RA + LLaVA/Qwen/BLIP-2; copying / over-reliance; multilingual / low-resource RA; Vietnamese RA;
+  RA hallucination; RL + hints + captioning; TTT-NN; kNN-LM vision.
+- Plus 6 full-text reads (SmallCap PDF, 2406.02265, 2405.13127, 2507.20411, 2608.21305 Re3Cap, Fei 2021).
+- No paper was found doing in-prompt retrieval-augmented SFT of a 7B LVLM for Vietnamese captioning. The mechanism itself
+  is established, so that would be an application, not a method novelty.
+
+==========================================================================================================================
+4. NOVELTY CHECK FOR THE B6 LEVER AS BRIEFED
+==========================================================================================================================
+- "Retrieved TRAIN captions in the prompt during SFT and inference" (RA-SFT): SmallCap 2022/23, EXTRA 2023, Sarto
+  2022/2024, Re-ViLM 2023, CONCAP 2025. Robust variants: Li et al. 2024 (sample-k), RetRobust / RAFT / RoRA-VLM. No method
+  novelty is left in the plain lever.
+- kNN consensus / NN baselines: Devlin 2015. Retrieved captions as MBR / rerank evidence: m-RNN 2015, CBDT 2025. B3/B4
+  already cover it in this round.
+- Retrieved keywords / concepts in the prompt: DualCap 2025, CONCAP 2025, IFCap 2024, EVCap 2024.
+- What is still defensible:
+  (i) the panel-level DIAGNOSIS: retrieval gains are typicality (section 2.2) and do not fix greedy phrasing (2.4).
+      Analysis, not method.
+  (ii) a head-to-head of mention-worthiness evidence (neighbours' human panels) against presence evidence (detector
+       tags) in the same prompt slot, with counterfactual-hint training (P-B6-1).
+  (iii) those hints as RL exploration hints distilled into a hint-free policy (P-B6-2). Its delta over Re3Cap and
+       B1-P2 is moderate.
+
+==========================================================================================================================
+5. PROPOSALS (at most 2; neither clears the +8 bar alone; both have early kills)
+==========================================================================================================================
+P-B6-1. RMH: Retrieved Mention Hints (neighbours' human-panel vocabulary in the tag slot), inference probe -> hint-dropout SFT
+Mechanism
+- Retriever.
+  - open_clip ViT-B-32-quickgelu (OpenAI) image embeddings.
+  - Datastore: KTVIC train for test; train minus the 300 dev images while tuning.
+  - Exclude the query and every image at cos > 0.95 (86 train images have such a twin). k = 10.
+- Hint words: RDRSegmenter words of the neighbours' 5 refs with train DF <= 5%, scored sum_j cos_j^4 * [w in panel_j] *
+  idf(w); keep the top m.
+- Prompt: the repo's existing tag template, " Các đối tượng có thể có trong ảnh: w1, w2, ...", underscores removed. Only
+  the hint SOURCE changes from the GDINO-tags runs.
+- Stage A, no training. Decode the existing adapters (P1 s42/s43/s44, fuse2 s42) on KTVIC test with m = 5, k = 10,
+  fixed now, before any run. Compare with the plain and tag preds already in data/results.
+  - Also one arm with retrieved OR tags (m = 5 plus tags).
+  - Pooled paired bootstrap across the 3 P1 seeds. Effect-size estimate only; no setting is picked on test.
+- Stage B, only if Stage A passes.
+  - SFT with hints and the same target as the round's chosen recipe (P1 first caption, or B2's MR5). Hint dropout 0.3
+    keeps a hint-free mode.
+  - 20% counterfactual hints (another random train image's hints, target unchanged) teach the model to check hints
+    against the image (RetRobust/RAFT-style negatives).
+  - Tune m in {3, 5, 8} and the inference mode on dev, retrain on full train, 3 seeds.
+  - UIT-ViIC replication with retrieval over UIT-ViIC train, where retrieval is much stronger (2.7).
+New element
+- Retrieval supplies mention-worthiness evidence (words human annotators used for visually similar train images), not
+  presence evidence.
+- It is tested head-to-head against the detector tags in the identical prompt slot, plus counterfactual-hint training.
+- Measured (2.6): the hints hold a P1-missed consensus content word on 15-16% of test images, against 1.3-1.4% for GDINO
+  tags. Precision is lower (24% vs 39%), which is why the counterfactual-hint training is there.
+Closest prior and delta
+- DualCap 2510.24813 (keywords from captions of similar scenes, lightweight GPT-2 captioner).
+- CONCAP 2507.20411 (retrieved captions + concepts; +10 CIDEr on COCO-35L at 111M trainable parameters).
+- IFCap 2409.18046, EVCap 2311.15879. The repo's GDINO-tags-in-prompt baseline: +1.1 / +2.5 CIDEr.
+- Delta: a QLoRA 7B LVLM in Vietnamese; hints drawn from neighbours' human reference panels; the source-controlled
+  comparison with detector tags; counterfactual hints. Novelty is low.
+Pilot
+- Stage A, about 1.5 GPU-h: 4 decodes x 558 short captions at 4-bit on a 3090, about 0.35 GPU-h each. Hints are
+  computed on CPU from this report's code.
+Expected gain (KTVIC short, word level)
+- Stage A: +0 to +2 CIDEr. Basis: tags gave +1.1 / +2.5; the hints are richer but noisier.
+- Stage B: +1 to +3 CIDEr over the matched no-hint recipe; B-4 +0 to +1; CHAIR_i -1 to +1.5 (noisy-hint risk).
+- Independent panel: about 0 to +1.
+GPU-h: about 23 in total.
+- Stage A: 1.5.
+- Dev arm: 3 SFT + 0.6 sweeps.
+- 3 seeds x 3.2.
+- Test decodes: 1.2.
+- UIT-ViIC: 3 x 2.2.
+- Hint prompts add about 25 tokens.
+Kill criterion
+- Stage A: pooled 3-seed paired dCIDEr < +1.0, or 95% lower bound <= 0, or dCHAIR_i > +1.0 -> do not train.
+- Stage B: dev dCIDEr-D (hint SFT vs matched no-hint SFT) < +2.0 or lower bound <= 0 -> stop.
+Synthetic training data: no. The hints are human captions of OTHER train images and the targets are human references.
+No detector, no AI labels.
+Confidence: low.
+
+P-B6-2. RHX-RLOO: Retrieval-Hinted eXploration for CIDEr-D RL, distilled into a retrieval-free captioner
+Mechanism
+- B1's CN-RLOO: word-level, EOS-aware CIDEr-D reward; copy-neutral advantage mask; RLOO; KL to ref; train minus dev.
+  k = 8 rollouts per image:
+  - 4 from the plain short prompt x;
+  - 4 from x_h = x + the RMH hint line of P-B6-1, with the image itself and its cos > 0.95 twins excluded from its
+    neighbours.
+- One pooled RLOO baseline over the 8 samples.
+- The plain policy is updated on all 8: hinted samples off-policy with weight min(2, pi_theta(c|x) / pi_old(c|x_h)), as
+  in B1-P2.
+- Inference uses the plain prompt: no retrieval and no extra model at test time.
+- Why retrieval hints and not B1-P2's detector tags:
+  - B4 shows tags are presence evidence, misaligned with what the references name.
+  - Section 2.6 shows the retrieved hints carry ~10x more of the consensus content P1 misses.
+New element
+- Human-panel words of visual neighbours as train-time exploration hints for captioning RL.
+- What hinted rollouts find is transferred to a hint-free policy by importance-weighted policy gradient inside a pooled
+  hinted+plain group baseline.
+Closest prior and delta
+- Re3Cap 2608.21305: retrieval-derived keep/add/remove guidance for refining rollouts, a retrieval-free policy, dense
+  captions, CLIP/CIM rewards.
+- QuestA 2507.13266, LUFFY 2504.14945, ADHint 2512.13095; B1-P2 (detector tags).
+- Delta: lexical mention-worthiness hints from other images' human captions, not the image's own gold and not a
+  refinement instruction; reward is reference CIDEr-D on short Vietnamese captions. Novelty is moderate-low.
+Pilot (requires B1's P1_dev SFT and its CN-RLOO G1 arm)
+- G0r, about 0.6 GPU-h: 4 plain + 4 hinted samples on the 300 dev images. On CPU: hinted best-of-4 minus plain
+  best-of-4 under disjoint-reference selection ({0,1} choose -> {3,4} score).
+- G1r, about 2.5 GPU-h: a 1,000-image RL arm matched to CN-RLOO G1 (same seed and beta).
+Expected gain: +1 to +3 CIDEr over CN-RLOO at plain-prompt inference (B1 expects CN-RLOO itself at +5 to +9), so about +6
+to +12 over the P1 mean if additive. CHAIR_i -1 to +1.
+- Weak CPU support: retrieved neighbour CAPTIONS added to the sample pool gave only +1.6 [-0.7, +4.1] (2.5). Hinted
+  rollouts describe the image itself and should do better, but this is untested.
+GPU-h: about 37 if run in full (B1-P2's budget). About +5 GPU-h over CN-RLOO for G0r/G1r and hinted prefill.
+Kill criterion
+- G0r: hinted minus plain best-of-4 < +2 CIDEr-D, or lower bound <= 0 -> stop before RL.
+- G1r: plain-prompt dev greedy < CN-RLOO G1 + 1.0 at matched updates -> stop.
+Synthetic training data: no detector and no AI labels. The model-generated text is the hinted RL rollouts, scored against
+human references (RL rollouts are an allowed method component). No generated text becomes an SFT target.
+Confidence: low.
+
+==========================================================================================================================
+6. NOT RECOMMENDED (evidence-based)
+==========================================================================================================================
+- Raw-caption RA-SFT (retrieved neighbour captions in the prompt):
+  - Retrieved captions are poor candidates: +1.2 / -3.7 held-out (2.5).
+  - Copying them doubles CHAIR_i (37-48 vs 18-19).
+  - Gains in the literature shrink to about +1 after CIDEr optimisation (Sarto 2024).
+  - If the synthesis still wants it as a diverse committee member for B3's MBR, use dedup-aware sample-k retrieval
+    (Li et al. 2024) and expect +0 to +2.
+- kNN-LM "panel memory" and train-n-gram constrained decoding: conventional phrasing does not beat a novel greedy caption
+  at fixed content (2.4). P1 already writes 88% train-seen 4-grams and copies templates on 20% of images. B2's MR5 covers
+  the multi-annotator part parametrically.
+- Retrieval-pseudo-reference rewards on unlabelled images: the reward would be typicality only. Neighbour content is
+  hallucination-prone (consensus CHAIR_i 37 vs 18).
+- Test-time training on neighbours (2305.18466 style): per-image fine-tuning cost for what is, at most, the +3 typicality
+  that MBR evidence already gives (B3/B4).
+
+==========================================================================================================================
+7. CAVEATS
+==========================================================================================================================
+- All KTVIC test numbers are estimates on test. Only the kNN setting was selected, and on train dev.
+- The within-image and exploration analyses use only 6 T=0.8 samples per image for P1 s43 and fuse2 s42. The
+  greedy-vs-conventional comparison covers 62-71 images, so its CIs are wide.
+- Retrieval uses CLIP ViT-B/32 only. A Vietnamese text-side retriever (ViCLIP-OT) or a larger CLIP could raise retrieval
+  quality. The hybrid caption-query retriever already gains +38 consensus CIDEr over image-only, and is still 25 below
+  P1.
+- UIT-ViIC k = 30 was at the edge of the grid. Cross-paper UIT-ViIC comparisons depend on tokenisation.
+- The hint "content word" filter (train DF <= 5%) is a fixed, untuned rule. It excludes the frequent objects that tags
+  cover, which is why the tag recall on it is low.
+
+==========================================================================================================================
+8. FILES (all under the work dir)
+==========================================================================================================================
+code:
+- lib.py (data, RDRSegmenter cache, CIDEr-D/BLEU, bootstrap, HEAD full_table; self-check `python lib.py`)
+- embed.py, embed_uitviic.py (CLIP embeddings); preseg.py (segmentation + segment_caption check)
+- pilot_knn.py (a, b; dev grid -> test); score_tables.py (HEAD tables + paired bootstrap)
+- pilot_overlap.py (c + P1 copy analysis)
+- pilot_panel.py, pilot_ratio.py (independent panel, typicality gap)
+- pilot_diag.py (phrasing novelty, held-out switch oracle, terciles)
+- pilot_within.py, pilot_within2.py, pilot_within3.py (within-image conventionality tests)
+- pilot_explore.py (retrieved candidates in sample pools); pilot_capquery.py (retriever sensitivity, dedup-543)
+- pilot_rare.py, pilot_hints.py, pilot_hint_opps.py (rare words, hint quality vs GDINO tags)
+- pilot_uitviic.py (UIT-ViIC replication)
+- run_q.sh (reruns everything on the corrected embeddings); arxq.sh (arXiv API search)
+outputs (out/):
+- pilot_knn_emb_vitb32q_openai.json, knn_test_preds_emb_vitb32q_openai.json (raw strings, scorable)
+- nb_{dev,test}_emb_vitb32q_openai.json (neighbour lists)
+- tables_knn_test_preds_emb_vitb32q_openai.json
+- pilot_{overlap,panel,diag,within,within3,explore,capquery,rare,hints}_emb_vitb32q_openai.json
+- pilot_ratio.json, pilot_hint_opps.json, pilot_within2_gelu.json (no embedding dependence)
+- pilot_uitviic.json, uitviic_knn_test_preds.json
+- superseded GELU-mismatch run: *_gelu.json, *emb_vitb32_openai*.
+embeddings: emb_vitb32q_openai.npz (KTVIC), emb_uitviic_vitb32q_openai.npz (UIT-ViIC).

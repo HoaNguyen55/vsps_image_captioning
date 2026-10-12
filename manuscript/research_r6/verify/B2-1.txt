@@ -1,0 +1,191 @@
+B2-1 adversarial verification: "MR5, uniform 5-reference SFT (all KTVIC captions as rows), matched loss mask"
+2026-10-12. CPU only (nice 15, <= 4 single-thread processes, bootstrap B <= 2000). No GPU, no VLM loaded.
+Work dir: verify/B2-1_work/ (code, logs, json). Repo and n2 were read only (n2: ls/cat of queue files, nothing changed).
+
+VERDICT: KILL as an R6 method proposal.
+  Novelty: scooped. Multi-reference SFT is the standard recipe, and the proposer concedes "none in method".
+  Gain: B2's stand-in gain comes from its decoder. The stand-in picks the pool's MBR-consensus human caption.
+        Swap in greedy-type decoders (they reproduce real P1's 96-98% "co" openings) and MR5 minus the P1 target
+        on KTVIC is -6.7 to +1.9 CIDEr-D, about 0 on average.
+  Power: the proposed gates cannot separate a +5 effect from seed noise.
+  Keep at most ONE reconfigured MR5 run, as the standard all-reference baseline/control (section 5), not as a contribution.
+
+-----------------------------------------------------------------------------------------------------------
+0. SETUP
+-----------------------------------------------------------------------------------------------------------
+- Evaluator: `git show HEAD:scripts/evaluate.py` -> evaluate_head.py; `git archive HEAD rescap` -> headsrc/.
+  Scores use pycocoevalcap Cider on RDRSegmenter word-level text, lowercased, as evaluate.py does.
+- Segmentation: VnCoreNLP-1.2 RDRSegmenter through B2's local JDK21 and venv (read-only use).
+  B2's cache matches a fresh segmentation on 400/400 random strings. I segmented the 401 newer strings
+  (fuse2_s44, p1assist_s42, p1mask_s42 preds) myself.
+
+-----------------------------------------------------------------------------------------------------------
+1. REPRODUCTION OF THE PILOT FILES
+-----------------------------------------------------------------------------------------------------------
+- Corpus CIDEr-D on KTVIC test (558 images): p1-gold 149.8, p1_s43 143.9, p1_s44 143.7, p1mask_s42 147.7,
+  p1assist_s42 148.7. These match CONTEXT and the commits.
+- P1 s42 single-reference profile by position: 219.5 / 162.8 / 137.5 / 124.1 / 131.4. Leave-position-out:
+  134.2 / 147.4 / 153.6 / 157.8 / 155.8. Human ref k vs the other 4: 172.9 / 192.1 / 199.0 / 183.5 / 160.1.
+  All equal B2's numbers.
+  New: p1assist_s42 216.2 / 163.9 / 138.2 / 123.0 / 129.3; p1mask_s42 215.9 / 167.0 / 133.0 / 122.2 / 126.3.
+- The chain is confirmed (mean of both directions, IDF from the single reference):
+    test:  adjacent pairs 01 242.4, 12 254.9, 23 243.6, 34 209.2; non-adjacent pairs 136-155
+    train: adjacent pairs 196-240; non-adjacent pairs 130-156
+  Cause: KTVIC paper (arXiv:2401.08100, sec. 3.2, Fig. 5). One annotator gets an image and types five captions
+  into five stacked boxes. So the chain is a consequence of a documented protocol, not a discovery.
+
+-----------------------------------------------------------------------------------------------------------
+2. LENS 3, GAIN REALISM (main refutation)
+-----------------------------------------------------------------------------------------------------------
+2a. Decoder swap inside B2's own stand-in. Retrieval is unchanged: TF-IDF of the image's OpenViIC captions.
+  - Dev: data/splits/ktvic_dev300.txt (md5 e1af9069, the same file as B2's); 296 queries, database 3,428 images.
+  - Test: 555 queries, database 3,724 images.
+  Entries are MR5 minus the P1 target (pos0), CIDEr-D x100, with a paired bootstrap 95% CI (B=1000).
+
+  decoder                              dev k=10            dev k=30            test k=10           test k=30
+  consensus (B2: MBR over the pool)    +6.0 [-1.8,+13.3]   +7.6 [+1.0,+13.9]   +5.3 [-0.2,+10.9]   +11.5 [+6.5,+17.6]
+  trie-greedy (no free parameter)      -2.8 [-11.5,+5.8]   +1.4 [-6.4,+9.2]    +1.9 [-4.1,+8.2]    +1.2 [-5.5,+7.6]
+  n-gram greedy (lambda 0.8)           -5.3 [-14.1,+3.7]   -3.4 [-11.8,+5.0]   -6.7 [-13.6,+0.1]   +0.7 [-6.4,+7.3]
+
+  - The consensus row agrees with B2's figures within 1 point (B2: dev +6.9/+8.7, test +5.8/+11.5).
+  - trie-greedy: the majority next word among pool captions that share the prefix. This is greedy decoding
+    of a model that fits the pool exactly.
+  - n-gram greedy: 0.8 x pool + 0.2 x policy-wide stupid-backoff trigram, no repeated trigram.
+  - Robustness to lambda (dev, n-gram): lambda 0.5 gives -6.7 / -8.0; lambda 0.95 gives -5.5 / -5.3 (k=10 / k=30).
+  - The 7 dev queries with a near-duplicate photo in the database move any delta by at most 1.1.
+
+  Which decoder behaves like the real VLM?
+  - Share of outputs starting with "co": real P1 seeds 95.5-97.7%, trie and n-gram 98-100%, consensus 70-86%.
+  - Mean words: real P1 10.42-10.50, n-gram 10.5.
+  - The consensus decoder selects a central human caption from 5k candidates. Greedy decoding of an SFT model
+    does not do that, and that selection is where B2's gain comes from.
+
+  Mechanism on KTVIC:
+  - The MR5 mixture mode is still the canonical first-caption template. Share of train captions starting with
+    "co": pos0 66.6%, pos1 61.4%, pos2 53.6%, pos3 54.3%, pos4 50.1%.
+  - P1 already sits at that mode (96-98% "co").
+  - What positions 1-4 add: "o ..." openings (9-18%) and 0.2-1.2 extra words. A greedy decoder will not pick these.
+
+2b. UIT-ViIC, whose references are exchangeable. The decoder swap shrinks the gain but keeps it:
+  - consensus: +27.3 / +15.0 (= B2)
+  - trie: +14.7 [+4.7, +24.9] / +9.6 [-1.6, +19.6]
+  - n-gram: +9.2 [-3.1, +22.0] / +10.2 [-0.2, +20.3]
+  So MR5 can help when references are exchangeable. But the UIT-ViIC comparator ("first caption only") is a straw
+  baseline, because all-reference cross-entropy training is the standard recipe there.
+
+2c. Evidence from real VLM runs.
+  - fuse2's short row is the consensual caption, an MBR-type target. Against P1 s42 it flattened the position
+    profile: pos0 -20.6, pos1 -8.3, pos2 -7.7, pos3 +5.6, pos4 +1.2.
+  - Yet fuse2 lost 5-reference CIDEr: 143.9 and 142.2, against the legacy P1 mean of 146.3. A flatter profile
+    does not by itself raise 5-reference CIDEr.
+  - The pre-registration (manuscript/prereg/2026-10-12_ladder_predictions.json) predicts multiref about equal to
+    P1 on objects: mentions ratio 0.976, dP +0.5, dR -0.6. Agent A1 predicted recall at least 2 points below P1.
+
+2d. Seed noise. Paired bootstrap over 558 images (B=2000), same recipe, different seed:
+  - s42 - s43: +5.88 [+1.03, +10.36]
+  - s42 - s44: +6.10 [+1.31, +10.64]
+  Both CIs exclude 0 with an identical recipe. p1assist - p1mask: +0.99 [-3.59, +5.43].
+  Legacy P1 seeds: 149.8 / 143.9 / 143.7 / 147.7 (mean 146.27, SD 2.97).
+  What this means for the proposal's gates:
+  - Test gate "first seed >= 147.8": passes a null MR5 with p = 0.30.
+  - One-seed dev gate (diff >= +2 and paired lower bound > 0): on 300 images the bound needs diff >= ~6.4.
+    It passes a null effect 13% of the time, a true +5 only 41%, and a true +8 only 61%.
+  - 80% power with a between-seed t-test needs about 6 seeds per arm for +5, 2-3 for +8, 15 for +3.
+
+2e. Literature effect sizes.
+  - The only direct first-reference vs all-references number: Zheng, Ma & Huang 2018 (arXiv:1808.09564, Table 5,
+    read). ResNet+LSTM, no pretraining, COCO: 80.70 -> 94.10 (Sample One 85.41). That is a data-starved regime
+    60+ points below P1.
+  - Consensus-weighting variants on exchangeable references give +1.1 to +3.6:
+    VBCS 111.7 -> 114.3; WXE 47.3 -> 49.7 (MSR-VTT); HCO +3.2% relative.
+  - No paper reports 1-reference vs all-reference SFT for a pretrained VLM at >= 130 CIDEr, because
+    all-reference training is the default.
+
+2f. Leakage and metric gaming.
+  - 14 KTVIC test images share an OpenViIC copy with a KTVIC train image. Their train captions score 128.1 against
+    the test references (P1 scores 146.9 on them), and P1 copies none of them. Negligible.
+  - Verbatim copies of a train caption among test outputs: P1 19.9-22.8% (about 15% are a first caption),
+    fuse2 17.4%, E5 16.1%. MR5 at 2 epochs shows each image 10 times, so report copy rate and distinct-n.
+  - Length moves +0.2 to +0.4 words in the stand-in. No brevity-penalty or repetition risk.
+
+  => Realistic KTVIC gain for the VLM: about -3 to +3 CIDEr (point 0 to +1), inside seed noise. P(>= +8) < 5%.
+     B-4 / METEOR / ROUGE-L within +-1. CHAIR_i about unchanged (pre-registered).
+
+-----------------------------------------------------------------------------------------------------------
+3. LENS 1, NOVELTY: SCOOPED
+-----------------------------------------------------------------------------------------------------------
+- Closest prior: Zheng, Ma & Huang, EMNLP 2018 (arXiv:1808.09564). It is exactly first reference -> all
+  references (Shuffle) on COCO, +13.4 CIDEr, with pseudo-references adding +3.0 more.
+- All-reference cross-entropy is the default COCO recipe. Examples: BLIP fine-tuning (arXiv:2201.12086); GRIT,
+  KTVIC's SOTA baseline, trained with 10-epoch XE (arXiv:2401.08100, sec. 5).
+- Weighted variants: CST/WXE arXiv:1712.09532; VBCS 2021.maiworkshop-1.6; HCO IJCAI 2020
+  (doi:10.24963/ijcai.2020/92); DCR arXiv:2204.03938; Hessel et al. arXiv:1508.02091.
+  SMILE (NeurIPS 2023) shows how MLE pushes models toward concise "average" captions.
+- The "reportable" finding (chain dependence kills consensus targets) fails on three counts:
+  (i) it is an analysis, not the method R6 asks for;
+  (ii) it follows from KTVIC's documented protocol;
+  (iii) it depends on the decoder. Its policy ranking was measured only with the consensus decoder, and
+        section 2a shows that MR5 vs pos0 reverses under greedy decoders.
+- Searches. arXiv API (17 queries, emphasis on 2022-2026):
+    KTVIC; Vietnamese image captioning; multi-reference caption*; "multiple references" captioning;
+    "captions per image" training; MBR caption*; reference selection captioning; GT-caption weighting;
+    QLoRA captioning; low-resource captioning VLM; annotator bias in references; multiple captions MLLM
+    fine-tuning; self-critical VLM CIDEr; "human consensus" captioning; reference independence of annotators;
+    LVLM captioning CIDEr fine-tuning; captioning RL LoRA.
+  WebSearch (7 queries):
+    1-vs-5 references in VLM fine-tuning; KTVIC VLM results 2025-26; Vietnamese MLLMs on UIT-ViIC
+    (Vintern-1B arXiv:2408.12480 has no captioning results); multi-reference MLE and generic captions; SMILE;
+    captions per image for BLIP/OFA/GIT; QLoRA Qwen2.5-VL on COCO.
+  OpenAlex and Semantic Scholar returned HTTP 429 from this IP.
+  Result: no 2022-2026 paper presents uniform multi-reference SFT as a contribution, because it is the default.
+
+-----------------------------------------------------------------------------------------------------------
+4. LENS 2, FEASIBILITY: fits one 3090, but the queued job is not this proposal and the budget is underpowered
+-----------------------------------------------------------------------------------------------------------
+- Memory: MR5 rows are as long as P1's, so peak memory equals P1's on a 3090 (QLoRA 4-bit, r16, batch 1 x 8).
+- Throughput, from n2's 35_a_p1dev_sft log: 866 steps for 3,469 images x 2 epochs, ~7.3 s per step,
+  8 rows per step, i.e. 0.91 s per row-epoch.
+  - Full-train MR5 at 2 epochs: 37,690 rows = 9.5 h, plus ~0.6 h eval = ~10 h per seed.
+  - MR5 on train minus dev: 8.8 h.
+  - P1-dev already exists: B1's 35_a job (seed 42, assistant mask). Reuse it.
+- Optimizer steps (linear decay, no warmup):
+  - P1 at 2 epochs: 942. MR5 at 2 epochs: 4,711 (5x). The queued job at 1 epoch: 2,356.
+  - So "no new hyperparameter" is false. Epochs or steps for 5x the rows must be chosen on dev, and attribution
+    needs a step-matched P1 control.
+- Queue reality: /root/queue/40_multiref_s42.sh (dated 2026-10-11, before the mask fix) differs from the proposal.
+  - It runs --epochs 1 with the LEGACY mask and goes straight to TEST, with no dev gate.
+  - Its comparator is the legacy P1 family (mean 146.3), not the method-track baseline p1assist_s42 (148.7).
+  - The --loss-mask bug the proposal asks to fix is already fixed at HEAD (559c448). The mask has no detectable
+    effect: +0.99 [-3.59, +5.43].
+- Budget: the proposal's 62 GPU-h cannot detect +5. A powered version costs about 100 GPU-h:
+  6 MR5 seeds (60 h), 5 more P1-assist seeds (11 h), the dev pair (9 h), UIT-ViIC 3+3 seeds (25 h).
+  It also competes with B1's RL pilots on n2.
+- Implementation risk: low. `build_gold_sft --select all` exists (8d56acc) and the collator is wired.
+
+-----------------------------------------------------------------------------------------------------------
+5. REQUIRED CHANGES (only for the baseline run; no method claim)
+-----------------------------------------------------------------------------------------------------------
+- Keep at most ONE MR5 run, as the standard all-reference SFT baseline row. It answers the reviewer question
+  "why train on 1 of 5 captions?". It is also B1's control: CN-RLOO rewards against all 5 references, and MR5
+  gives the same references through SFT.
+- Before job 40 runs:
+  - Use --loss-mask assistant, to match p1assist_s42 and p1dev_s42.
+  - Train first on train minus dev300 and compare with p1dev_s42 on dev. Run a test seed only after that.
+  - Fix the epoch choice on dev, or report steps and add a step-matched P1 control.
+  - Report the per-position profile, copy rate, distinct-n, CHAIR_i and mentions per caption.
+- Any gain claim needs >= 5-6 seeds per arm, or a paired bootstrap pooled across seeds. The single-seed gate
+  "147.8" (30% false pass) and the one-seed dev gate (41% power at +5) are not valid decision rules.
+- Do not try the 0+2+4 fallback on test as a second variant: that is selection on test.
+
+-----------------------------------------------------------------------------------------------------------
+6. FILES (verify/B2-1_work/)
+-----------------------------------------------------------------------------------------------------------
+- recheck.py, recheck.json: reproduction, chain matrix, seed-noise bootstrap, first words.
+- seg_check.py, cache/seg_extra.json: cache validation and new segmentations.
+- knn_greedy.py, knn_greedy_{dev,test}.log/.json: the decoder swap.
+- knn_lam.py: lambda robustness.
+- uit_greedy.py: UIT-ViIC.
+- dup_leak.py, dups.json: leakage (ids only, no captions).
+- copy_rate.py.
+- lit/: arXiv query XML, KTVIC PDF text.
+- No OpenViIC caption text is written to any file here except B2's existing cache, which is read only.

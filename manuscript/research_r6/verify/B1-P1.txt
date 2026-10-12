@@ -1,0 +1,155 @@
+VERIFY B1-P1  CN-RLOO (copy-neutral RLOO on word-level, EOS-aware CIDEr-D)        2026-10-12, adversarial verifier
+Work dir: verify/B1-P1_work/ (common.py, recheck.py, eos_cases.py, gate_noise.py, capdup*.py and their *.json outputs)
+Scorer: my own copy of HEAD scripts/evaluate.py + rescap/ + rl_reward.py (git archive HEAD), VnCoreNLP-1.2 RDRSegmenter
+(JDK21), pycocoevalcap. Exactness: p1_s43-short.preds.json -> CIDEr 143.92, CHAIR_i 17.68, CHAIR_s 26.7 (stored 143.9/17.7/26.7).
+All KTVIC numbers below come from TEST predictions/samples = effect-size ESTIMATES (nothing tuned on them).
+
+VERDICT: MODIFY. Novelty = INCREMENTAL (not scooped, not a breakthrough). Feasible on one 3090 (memory tighter than claimed).
+Realistic gain +2 to +6 CIDEr, not +5 to +9; the +8 "breakthrough" bar is unlikely (~10-15%). Keep it only as the
+metric engine, with the changes listed at the end. As the paper's breakthrough-novelty method, it fails.
+
+STATUS FOUND IN THE REPO: already implemented and committed (b71a288 scripts/train_rl.py, rl_reward.py, rl_report.py,
+test_train_rl.py; 607276a gate D1b). No real G0/G1 output exists yet: n2 /root/r6/smoke* are stub fixtures and the n2 GPU
+was running an evaluate.py job at 15:40 UTC. n2 = RTX 3090 24 GB; peft 0.21.2, transformers 4.51.3, bnb 0.50.2, torch 2.5.1.
+
+=====================================================================================================================
+LENS 1 - NOVELTY  (verdict: incremental)
+=====================================================================================================================
+Searches run (2022-2026 filter):
+ arXiv API, 15 queries: memorization/regurgitation x GRPO/RLOO/policy gradient x advantage/mask/filter; "self-critical" x
+   memorization/copy; captioning x GRPO/RLOO/SCST x CIDEr x LVLM/Qwen; Vietnamese x captioning x SCST/RL; captioning x
+   CIDEr x GRPO; captioning x "self-critical" x LLM; Vietnamese "image captioning"; memorization x GRPO; memorization x
+   RLHF x training data; "self-critical sequence training"; "reward hacking" x captioning; hallucination x
+   "self-critical"; captioning x memorization x training captions; captioning x "novel captions" x RL; captioning x GRPO.
+ WebSearch, 8 queries: RL advantage masking of memorized training references; CIDEr-reward GRPO on Qwen2.5-VL/COCO;
+   SCST and CHAIR/hallucination; SCST on LLaVA/BLIP-2/MLLM with LoRA; Vietnamese SCST (UIT-ViIC, VieCap4H, KTVIC); GRPO
+   rollout filtering of copied/memorized answers; CIDEr RL on LLaVA/Qwen2-VL/InternVL; RL on SFT images and regurgitation.
+ OpenAlex and Semantic Scholar: HTTP 429 on every attempt (also seen by B1); arXiv API + full-text checks used instead.
+Closest prior (what each already does):
+ - 2604.01476 Wu & Tang, "From Rebound to Remedy" (Advantage Modification): a per-rollout detector score (representation
+   "shortcut" direction) is put into the GRPO advantage to suppress hacking rollouts before the update. CN-RLOO uses the
+   same mechanism family: a detector-gated advantage for one rollout class. Only the detector (n-gram/edit copy statistic
+   with a held-out 99th-percentile threshold) and the class (regurgitated references) are new.
+ - 2503.14476 DAPO "overlong filtering": masks the loss of one rollout class (truncated samples) whose reward is
+   misleading. This is the same "zero the gradient of a flagged rollout class" pattern.
+ - 2305.01550: PPO with a negative similarity-to-training-text reward to reduce (approximate) memorization.
+   2406.11715: memorised SFT examples persist through RLHF. 2607.21351: GRPO stores ~3x less example-specific information
+   than SFT because it rarely samples it. 2601.06103: GRPO resurfaces leaked data. None masks reference copies in a PG update.
+ - Estimator/reward family: SCST 1612.00563, Luo LOO 2003.09971, RLOO 2402.14740, Dr. GRPO 2503.20783, SacreEOS 2305.12254,
+   GRPO captioning 2503.01333, Pinto et al. 2302.08242 (REINFORCE-CIDEr on ViT captioners).
+ - Vietnamese: VieCap4H 2021 entries already used SCST (jcsce.vnu.edu.vn/article/371; 2209.01304, 2211.05405 VLSP), so
+   only the "first CIDEr-D RL on KTVIC / on a QLoRA 7B LVLM" qualifiers remain. A BLIP-2-FlanT5-XL + LoRA + SCST(CIDEr)
+   pipeline exists (github BoPythonAI/Image_captioning_project, ICAICE 2025; results not checked).
+Delta that survives: masking reference regurgitation inside RLOO, with a threshold calibrated on unseen images.
+This is a new detector inside a known mechanism, i.e. an ablation-level component. The "bound analysis" is diagnostic,
+not a method, and its key "+8 transferable" number is fragile (lens 3).
+
+=====================================================================================================================
+LENS 2 - FEASIBILITY ON ONE RTX 3090  (verdict: feasible; memory tight; GPU-h underestimated)
+=====================================================================================================================
+- Code exists, with dry-run guards: log-prob gap < 0.02 between sampler and training forward (catches mRoPE/cache-position
+  errors in the shared-prompt-cache trick), sampler == policy, reward replica == pycocoevalcap, loss mask = generated
+  tokens up to EOS, peak reserved <= 22 GB. LoRA r16 excludes the vision tower (adapter_config target regex
+  '^(?!.*visual).*'), so no ViT activations are kept.
+- Memory: the proposal says 12-14 GB at k=8. My estimate is 18-22 GB reserved, for three reasons:
+  (i) train_rl.load -> build_model(for_training=True) -> prepare_model_for_kbit_training, which in peft 0.21.2 upcasts
+      every non-quantised parameter to fp32 (other.py:204-209), including embed_tokens (152k x 3584) and lm_head (bnb
+      skips it). That is ~4.4 GB of fp32 weights and an fp32 residual stream (bnb Linear4bit casts outputs back to the
+      fp32 input dtype).
+  (ii) model.eval() turns gradient checkpointing off (needed for use_cache), so every fp32 activation of the ~460-token
+      prompt plus 8 x <=40 response tokens is stored: ~11 MB per token over 28 layers, ~8-9 GB.
+  (iii) LoRA policy + ref + Adam ~0.8 GB, fp32 logits/temps ~0.6 GB, allocator slack.
+  k=8 is plausible but close to the 22 GB guard. k=16 is not feasible as written. Cheap fixes: cast the non-quantised
+  params back to bf16 for RL (roughly halves activations; re-check the log-prob gap), or use k=4.
+- Time: rollout 8 x <=40 tokens with bnb-4bit decode + 8x prefill/ViT ~3-4.5 s, ref + policy fwd/bwd ~1.3 s,
+  CPU reward ~0.02 s, so ~4.5-6 s/image. That matches the proposal. G1 is ~1.6-2 h per arm. Measured anchor: P1 SFT
+  (2 epochs, 3,769 rows) = 6,938 s = 1.93 GPU-h on this 3090 (n2 runs/p1_s43 metrics.jsonl).
+- GPU-h for a paper-grade claim is ~75, not 45.5: P1_dev 1.9 + G0 1 + G1 3.5 (+2 for the D1b rerun) + the beta sweep the
+  proposal promises ({0.01, 0.03, 0.1} on dev, ~10) + 3 full-train seeds ~27 + 2 more seeds for a +8 claim (R6 power note)
+  ~18 + one full-scale plain-RLOO ablation seed ~9 + UIT-ViIC ~8 + COCO subset ~15. Every run fits one 3090.
+
+=====================================================================================================================
+LENS 3 - GAIN REALISM, GAMING, LEAKAGE  (verdict: overstated; pilot partly reproduced, key claims do not hold)
+=====================================================================================================================
+Reproduced (my code, same inputs):
+ - p1_s43 oracle best-of-6+greedy minus greedy +57.3 [51.5, 63.7] (B1: +57.3); fuse2 +55.7.
+ - Best-of-7 picked on refs A, scored on disjoint refs B, minus greedy (p1_s43): A012->B34 +15.0, A34->B012 +0.1,
+   A234->B01 +5.7, A01->B234 +14.8 (same as B1). fuse2: +10.2 / +4.2 / +10.8 / +12.5.
+ - KL-matched 1-nat step A012->B34: p1 +8.5 [+1.2, +15.8] (B1 +8.5 [+1.0, +15.4]); fuse2 +7.0 [-0.3, +14.4].
+ - Copy channel on the E5 train rollouts (fuse2, DETAILED prompt, first sentence, T=0.8, 1,500 images x 6), scored with
+   the proposal's own EOS-aware reward (HEAD rl_reward.Reward, train df): exact copies 5.1% of samples and 19.8% of
+   positive RLOO advantage (B1 20.3%); <=1-word-edit 11.9% and 38.0% (B1 34.5%); mean advantage +130.7 vs -13.9 (B1
+   +131.8 vs -12.2). Copy of ref#0 minus p1 greedy on refs 1-4 (test): +43.6 [33.6, 54.0] (B1 same).
+NOT supported / contradicted:
+ 1. "About +8 is transferable" depends on which references define the reward. The reverse splits, which B1 did not
+    report for the KL step, are p1_s43 A34->B012 -5.3 [-15.2, +5.0] and A234->B01 -1.7 [-12.6, +10.4] at 1 nat
+    (-11.5 and -10.0 at 0.5 nat). The 4-split mean at 1 nat is +2.6 (p1) and +6.4 (fuse2). Every one of these numbers
+    is also an ORACLE that reweights each test image using that image's own other references. RL must instead
+    generalise from 3.5K train images, so the expected RL gain is a fraction of +2.6 to +8.5, not equal to it.
+ 2. EOS does NOT close the truncation loophole. With the proposal's EOS-aware reward (train df), dropping the last
+    syllable of p1_s43 greedy still raises the reward on 24.2% of test images (29.7% without EOS); dropping the last 2
+    does so on 32.6% (37.3%). Of the EOS up-cases, 25.9% split a compound word and 10.4% end on a function word.
+    Examples (reward x100): "...điện thoại di động" 45.4 -> "...điện thoại di" 75.0; "...trong khung hình" 157.8 ->
+    "...trong khung" 159.4; "...trong cửa tiệm" 20.0 -> "...trong cửa" 25.2. The gate checks only function-word
+    endings (<=1%), so split-compound fragments and length shrink are unguarded.
+ 3. Copy-mask size for the actual policy is unmeasured. The 20-35% figure is from fuse2 detailed first sentences at
+    T=0.8, not from P1 short captions at T=1.0. With tau taken as the 99th percentile of m on unseen test samples
+    (0.917 p1 / 0.909 fuse2; unseen exact-copy rate 0.9%), m>=tau flags 6.3-7.5% of the fuse2 train rollouts and
+    24.5-28% of positive advantage. Even then the <=1-edit channel (38%) is only partly masked. P1 memorises only
+    moderately: response-only SFT loss is ~1.0 nat/token on unseen rows (late epoch 1) and 0.75-0.78 on seen rows
+    (epoch 2), token accuracy 0.78. At T=1.0 the copy share may fall to the 5% "mask is moot" rule (skip_35d), in which
+    case the novel element disappears.
+ 4. E5 is not evidence for the copy mechanism: E5 picked samples by object-F1 utility (scripts/e5_select.py), on
+    DETAILED-prompt samples, not by CIDEr-D.
+ 5. CHAIR_i -2 to -5 comes from oracle selection with the same references CHAIR uses. A held-out check (pick on refs
+    0-2, CHAIR on refs 3-4 only) gives 36.9 -> 34.5 (-2.4 on a 2-ref scale, ~-1 on a 5-ref scale, and still an oracle).
+    Literature goes the other way: Rohrbach et al. 1809.02156 Table 1 (XE -> self-critical): TopDown CHAIR_i 6.1 -> 8.8
+    (CHAIR_s 8.4 -> 13.6), TopDown-BB 5.9 -> 6.9, Att2In 7.9 -> 8.4, LRCN 12.6 -> 12.9, FC 11.0 -> 10.1. Quote: "the
+    popular self critical loss increases CIDEr score, but also the amount of hallucination". 2110.01705 Remark 1.1
+    says the same. KTVIC CHAIR is reference-derived, so it may drop with CIDEr (typicality, per R5), but that is not
+    evidence of truth.
+ 6. Baseline has moved. Response-only-loss P1 (n2 results/p1assist_s42-short.json): CIDEr 148.7, B-4 45.9, METEOR 39.2,
+    ROUGE-L 64.6, CHAIR_i 18.3. p1mask_s42 147.7. P1 runs 149.8/143.9/143.7/147.7/148.7: mean 146.8, SD 2.8.
+    P1_dev should use the assistant mask, and gains must be measured against the mask-matched P1, not the legacy 145.8.
+ 7. Missing control: RL rewards with all 5 references, while P1 saw only caption #0. A multi-reference SFT (job
+    40_multiref_s42, queued) is the necessary control, or "RL beats SFT" is confounded with "more references".
+ 8. Noise. Paired per-image SD between two SFT seeds is 52-57 CIDEr: test SE 2.2-2.4, dev300 SE 3.0-3.3; p1_s43 vs
+    p1_s44 is +0.2 [-4.5, +4.9]. The implemented gate (rl_report.py: dev >= P1_dev + 2.0, point estimate) is weaker
+    than the proposal's kill rule (+3.0 with paired-bootstrap LB > 0). A null policy passes it with P ~0.26 on one
+    checkpoint and ~0.65 when the best of 5 dev evaluations (selected on the same 300 images; rho 0.5 assumed) is
+    scored. The "keep CN unless plain beats it by >= 3" rule keeps the novel element without evidence.
+ 9. Literature effect size: COCO CIDEr optimisation at CE >= 130 gives +6.1 to +14.1, but with 113K images and full
+    fine-tuning; REINFORCE-CIDEr from about 120 gives +14.5/+17.0 (2302.08242). Small data: Flickr8k SCST +2.4, GRPO +4.1
+    (2503.01333, weak model). No 7B-LVLM short-caption CIDEr-RL result exists.
+10. Leakage: none in the design (dev split from train, test never read; OpenViIC only scored on dev images). Caption
+    proxy: 126/558 test images share >= 1 exact reference with train refs, and 13 share >= 2 with a single train image.
+    None of the 13 pairs are identical files, but a regurgitation-prone policy could exploit near-duplicates, so the
+    final result should also be reported without CLIP near-dup pairs (scripts/near_dup.py, cos >= 0.90).
+Realistic gain (KTVIC short, seed- and mask-matched): CIDEr +2 to +6 (central ~+4); B-4 +1 to +3; ROUGE-L +0.5 to +2;
+METEOR -0.5 to +1; CHAIR_i -1 to +2. P(>= +8 over P1 with CHAIR_i not worse) ~10-15%. CN vs plain RLOO: likely within
++/-2 CIDEr, not detectable with <= 3 seeds.
+
+=====================================================================================================================
+REQUIRED CHANGES (for MODIFY)
+=====================================================================================================================
+ 1. Reframe novelty as incremental. Claim the copy mask only if G0 (P1_dev, k=8, T=1.0) shows the m>=tau share of
+    positive advantage >= 10% AND full-scale CN beats plain RLOO on test (paired bootstrap pooled over >= 3 seeds, LB > 0).
+    Otherwise report CN-RLOO as an engineering recipe (SCST/RLOO + EOS), with the bound analysis as diagnostics.
+ 2. Restore the pre-registered kill rule: dev gain >= +3.0 with paired-bootstrap LB > 0, judged on the LAST checkpoint
+    or on a second disjoint dev split, never on the checkpoint selected on the same 300 images. Drop the
+    "keep CN unless plain wins by >= 3" bias.
+ 3. Baselines: mask-matched P1 (assistant loss; p1assist 148.7) as P1_dev and P1 full, plus a multiref SFT control at
+    matched steps. Report every gain against both.
+ 4. Reward hardening: add a fragment guard (the last segmented token must be a word that ends some train reference, or
+    a re-segmentation check for split compounds). Monitor dev mean syllables (>= 0.9x SFT) and mentions/caption, and add
+    split-compound endings <= 1% and length to the gate.
+ 5. Hallucination: pre-register CHAIR_i on KTVIC dev AND a truth-based check (UIT-ViIC with COCO instance labels; COCO
+    POPE/CHAIR). Do not predict a CHAIR decrease; the SCST literature says hallucination rises.
+ 6. Re-estimate the transfer bound over all 4 reference splits (1-nat mean +2.6 p1 / +6.4 fuse2) and state the expected
+    gain as +2 to +6.
+ 7. Memory: run the dry run at k=8 first. If peak > 22 GB, cast the non-quantised params to bf16 for RL or use k=4. No k=16.
+ 8. Budget ~75 GPU-h (beta sweep, 5 seeds or pooled bootstrap, ablation, UIT-ViIC, COCO), and report results with and
+    without train-test near-duplicates.
+Sources: arxiv.org/abs/2604.01476, /2503.14476, /2305.01550, /2406.11715, /2607.21351, /2601.06103, /1612.00563, /2003.09971,
+/2402.14740, /2503.20783, /2305.12254, /2503.01333, /2302.08242, /1809.02156, /2110.01705, /2209.01304, /2211.05405;
+jcsce.vnu.edu.vn/index.php/jcsce/article/view/371; github.com/BoPythonAI/Image_captioning_project

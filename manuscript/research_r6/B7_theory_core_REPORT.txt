@@ -1,0 +1,391 @@
+B7_theory_core REPORT -- R6 lever B7: derive the method from the verified findings (typicality, frontier invariance,
+two human panels on the same train images), not from the literature.  Round R6, 2026-10-12.  Agent id B7_theory_core.
+Work dir (all code + outputs): /tmp/claude-1000/-mnt-d-vsps-image-captioning/755eae04-5e4c-4ce1-ab21-d4bc106761ee/scratchpad/research_r6/B7_theory_core/
+CPU only (nice -n 15, <= 4 threads, bootstrap B <= 2000). No GPU, no VLM/LLM loaded. n2/n3 not touched. Repo not written.
+
+READ FIRST
+- Every KTVIC number computed on TEST predictions / TEST samples is an EFFECT-SIZE ESTIMATE, not a result. Nothing was
+  tuned on test: primaries were declared before running (critic k = 30; veto rule = B4's; reward grids reported in full);
+  the RL shrinkage weight is fixed from TRAIN refs only (pilot N2).
+- "Proxy" = B1's KL-matched one-step policy improvement over the 6 existing T=0.8 short samples per test image, judged on
+  references the reward never saw (4 contiguous chain splits of the 5 KTVIC refs) and on the independent OpenViIC panel.
+- Paired CIs are 95% percentile bootstrap over images (B = 1000-2000), paired when two systems are compared.
+- No new labels, no AI-silver. OpenViIC captions were read at run time only (never written; checked by string probe).
+- Privacy note: one OpenAlex request in the scoop search carried the user's e-mail as the API "mailto" parameter (it
+  returned HTTP 429). That should not have been sent; no other request did.
+
+==========================================================================================================================
+0. BOTTOM LINE
+==========================================================================================================================
+(a) THEORY (section 2). Both target metrics are functionals of ONE reference panel:
+    T1  CIDEr(c,R) = (10/4) sum_n <g_n(c), gbar_n(R)>: expected CIDEr = alignment with the panel's n-gram CENTROID.
+    T2  CHAIR_i vs refs = share of proposed nouns outside the panel's gold: for a captioner whose proposals are mostly
+        present (78.7% of P1 pool nouns are named by >= 1 of the two panels), it measures panel MENTION-WORTHINESS.
+    So the panel-Bayes caption maximises both at once; there is no intrinsic CIDEr-CHAIR trade-off, and a Pareto shift
+    needs better estimates of the SAME panel's centroid and mention-worthiness, or a better decision rule.
+(b) THE SECOND PANEL IS A JUDGE, NOT A TRAINING SIGNAL, FOR KTVIC METRICS (falsification of the brief's main idea).
+    Two panels identify KTVIC salience separately from presence (capture-recapture logic; e.g. class-level salience of
+    "cua" 0.40 vs single-panel prior 0.88). But:
+    - as critic features they add +0.000 [-0.002, +0.003] AUROC over a single-panel contextual rate (k = 30; same at
+      k = 10/100 and on fuse2: +0.002 [-0.002, +0.005]);
+    - even the test image's OWN OpenViIC captions (an oracle) add only +0.022 / +0.024 AUROC;
+    - as training labels of a learner stand-in they LOWER KTVIC-mention precision at matched count: -7.1 [-10.3, -4.1]
+      (M = 1.0) and -5.6 [-8.0, -3.1] (M = 1.5) for a two-panel mixed target; -14.1 / -7.1 for "present" labels.
+    => "panel-agreement target construction" and "second-panel frontier-shifting training" are killed for metric gains.
+(c) WHAT MOVES THE FRONTIER: same-panel NEIGHBOURHOOD evidence and the decision rule.
+    - Frontier invariance reproduced in a learner stand-in: first / MR5 / union / consensus labels give the same precision
+      at matched count (all within +-2, every CI contains 0).
+    - Contextual same-panel critic (KTVIC naming rate among the 30 CLIP-nearest train images): +0.044 [+0.031, +0.057]
+      AUROC over B4's cheap critic (0.775 -> 0.819), replicated on fuse2 (+0.035 [+0.024, +0.047]).
+    - Reward-side: shrinking the per-image reference centroid toward neighbour train refs (NCR) raises the held-out
+      KTVIC value of a 1-nat RL step by +2.7 [+1.0, +4.4] (P1) / +2.7 [+0.8, +4.7] (fuse2) at lam = 0.5. A
+      reference-gold CHAIR term is partly OFF-frontier: -0.9 to -1.7 CHAIR at MATCHED object count on every split, and
+      -1.32 [-1.86, -0.81] / -0.89 [-1.25, -0.47] on the independent panel.
+(d) TYPICALITY AXIS (sign test). The neighbour term with lam > 0 raises held-out KTVIC CIDEr (+1.3 to +6.2) and lowers
+    the independent panel (0 to -3.2) as lam grows. The distinctiveness sign (lam < 0, CIDErBtw's direction, ECCV 2020)
+    lowers held-out KTVIC CIDEr in 8/8 configurations (-0.35 to -1.33, all CIs < 0). KTVIC's metrics sit on the
+    typicality side; this is the quantitative form of finding (1).
+(e) Proposals (section 6):
+    P-B7-1 PB-RLOO: a panel-Bayes reward for B1's CN-RLOO = (1-lam) CIDEr-D(own refs) + lam CIDEr-D(neighbour refs)
+           - beta #(nouns outside the own-ref CHAIR gold). Expected vs CN-RLOO: CIDEr +1 to +3, CHAIR_i -2 to -3;
+           vs P1 3-seed mean: CIDEr +6.5 to +12, CHAIR_i -4 to -7 (if CN-RLOO lands at B1's +5 to +9). ~5 GPU-h gate.
+    P-B7-2 CT-Veto: the decode-time half of the same utility = B4's panel-evidence MBR with the contextual critic.
+           Test-pool ESTIMATE on P1 s43: CIDEr 151.3 (+5.5 [+1.3, +9.9] vs P1 mean), CHAIR_i 13.7 (-4.7 [-6.2, -3.2]),
+           i.e. the Pareto bar on one seed; -1.1 CHAIR_i vs B4's cheap veto at equal CIDEr. ~0.5 GPU-h incremental.
+    Honest novelty: neither is a breakthrough alone. The new elements are the empirical-Bayes typicality reward with
+    its sign test (P-B7-1) and the contextual same-panel critic (P-B7-2); the reference-gold CHAIR term is prior art
+    in spirit (MOCHa, CHAIR-DPO), and neighbour-image evidence is used in Re3Cap (as prompt hints, not rewards).
+
+==========================================================================================================================
+1. SETUP AND VALIDITY
+==========================================================================================================================
+- Scorer: HEAD copy of scripts/evaluate.py (evaluate_head.py) and `git archive HEAD rescap scripts data/coco_probe`
+  (./head, HEAD = 607276a). Word level: VnCoreNLP-1.2 RDRSegmenter + lower(), read from the sibling caches (B2
+  cache/seg.json, B4 out/seg_cache.json, N1 cache_seg.json; read-only) with the local segmenter as fallback (OpenJDK 21,
+  py_vncorenlp + pyjnius in B3's venv, used read-only). CIDEr-D replica (common.CiderD) with fixed DF and weighted refs.
+- Reproduction (common.py __main__): p1-gold short CIDEr-D 149.79 (replica) = 149.79 (pycocoevalcap), CHAIR_i 19.2,
+  CHAIR_s 28.7, 1.80 mentions/caption = CONTEXT_R6 table. Full HEAD metric table (pilot S3) reproduces P1 s42/s43/s44
+  and fuse2 s42 exactly (B-1/B-4/METEOR/ROUGE-L/CIDEr/CHAIR).
+- Data: KTVIC train (3,769) / test (558) refs in FILE ORDER (chain positions); OpenViIC panel for 3,724 train and 555 test
+  images (data/ktvic_openviic_refs.json); CLIP ViT-B/32 (OpenAI) image embeddings of all 4,327 KTVIC images computed by
+  B6 (emb_vitb32_openai.npz, read-only); test samples (6 x T=0.8 short) of P1 s43 and fuse2 s42 (B4's read-only copies of
+  the n2 files); B1's 1,500 E5 train-image rollouts (copy check only); UIT-ViIC train refs; COCO Karpathy train refs.
+- Leakage guards: every kNN over train images drops train images with CLIP cos >= 0.93 to the query (near-duplicates);
+  the caption-keyed retrieval for test images drops the same set. 543-image dedup numbers reported in S3.
+
+==========================================================================================================================
+2. THEORY (derived from the three verified findings; each statement has a test in section 3)
+==========================================================================================================================
+T1 Centroid identity (lemma, exact without CIDEr-D's clipping and length penalty, by linearity of the inner product):
+   CIDEr(c,R) = (10/4) sum_{n=1..4} <g_n(c), gbar_n(R)>,  gbar_n(R) = (1/|R|) sum_j g_n(r_j), g_n = unit tf-idf vector.
+   E_R[CIDEr] = alignment with the panel centroid mu_n(x). Consequences:
+   - every CIDEr lever either estimates mu(x) better for the decision (model samples, committees = model-based
+     estimates; retrieved train refs = neighbourhood estimate) or decides better given it (MBR, RL);
+   - an RL reward on a train image needs mu(x_i); the own 5 refs give an unbiased but noisy estimate. Empirical-Bayes
+     (James-Stein) shrinkage m = (1-lam) gbar(T) + lam gbar(N) has least-squares weight
+     lam* = sum <gbar(T)-gbar(E), gbar(T)-gbar(N)> / sum ||gbar(T)-gbar(N)||^2  (held-out refs E independent of T|x).
+T2 CHAIR as mention-worthiness: a proposed noun o is flagged iff no ref names o (or a hyponym). With proposals mostly
+   present, P(flag) ~ 1 - s_A(o|x), s_A = P(panel A names o | o present, x). CHAIR_i vs refs is a typicality metric.
+T3 Identifiability: with one panel only pi_A = P(present) s_A is observable; a second panel B on the same images makes
+   "present" observable (named by A or B; 84% joint recall, R5-01) and so identifies s_A (capture-recapture logic).
+   Prediction tested in S1/S4/C: identified salience improves the KTVIC critic and two-panel labels improve a learner.
+   RESULT: REFUTED for metric purposes (bottom line b). Reason: given the context (CLIP neighbours), the KTVIC naming rate
+   already carries the salience information; the other panel's mention policy is a different typicality.
+T4 Frontier = salience-ranking quality of the learner. Target policies that use one panel only change the operating
+   point (count); ranking improves only with new information about the SAME panel (neighbourhood evidence), variance
+   reduction (committees), or a decision rule that uses object-level panel evidence (veto; CHAIR term in the reward).
+T5 Typicality axis: the reward r = CIDEr(c, own refs) + lam CIDEr(c, neighbour refs) moves along one axis; same-panel
+   metrics prefer lam > 0, an independent panel prefers lam <= 0. Pre-registered prediction "lam* is smaller where
+   references are exchangeable" (UIT-ViIC, COCO): REFUTED -- lam* is ~0.87 there vs 0.75-0.84 on KTVIC (N2b), so the
+   shrinkage is a generic small-sample property of n-gram centroids, not a paraphrase-chain effect.
+
+==========================================================================================================================
+3. PILOT RESULTS (code in the work dir; outputs in out/)
+==========================================================================================================================
+S1 Critic AUROC on candidate nouns (pilot_s1_critic.py, salience.py; out/pilot_s1_k30.txt, out/pilot_s1_k10_100.txt)
+   Candidates = (image, CHAIR-vi noun) named by greedy or any of 6 samples; label = in the CHAIR gold of the 5 test refs.
+   P1 s43: 2,161 candidates, base rate 0.627. Single-feature AUROC: vote 0.768, class prior 0.608, two-panel class
+   salience s0 0.622, kNN KTVIC rate kA 0.741, kNN presence kU 0.709, kNN two-panel salience kS 0.690.
+   critic (logistic)                     cross-fit   fitted on fuse2 pool
+   vote + prior (B4 cheap, no tags)       0.775        0.774
+   vote + s0                              0.785        0.782
+   vote + prior + kA (1 panel, context)   0.819        0.819
+   + kU + kS + s0 (2 panels)              0.820        0.819
+   dAUROC ctx - cheap: +0.044 [+0.031, +0.057] (cross-fit), +0.045 [+0.032, +0.059] (transfer)
+   dAUROC 2 panels - 1 panel ctx: +0.000 [-0.002, +0.003]   (k = 10: +0.002 [-0.001, +0.005]; k = 100: -0.000 [-0.003, +0.003])
+   fuse2 s42: 2,427 candidates, base 0.609; cheap 0.762 / 0.762; ctx 0.797 / 0.799; 2 panels 0.799 / 0.802;
+   ctx - cheap +0.035 [+0.024, +0.047]; 2 panels - 1 panel +0.002 [-0.002, +0.005].
+S4 Panel oracle (pilot_s4_panel_oracle.py; out/pilot_s4.txt; ORACLE analysis, not a method). 555 images with a panel.
+   P1 s43: 62.7% of candidates named by KTVIC refs, 78.7% by either panel; of KTVIC-ref-false candidates 43.0% are named
+   by OpenViIC (n = 804). AUROC: ctx 0.818; test-image OpenViIC panel alone 0.687; ctx + panel oracle 0.842 (+0.024).
+   fuse2: 60.8% / 78.4% / 45.0% (n = 947); ctx 0.797; panel alone 0.671; ctx + panel 0.819 (+0.022).
+S2 Veto-MBR with each critic (pilot_s2_veto.py; out/pilot_s2.txt). U(c) = self-consensus CIDEr-D + CIDEr-D vs the refs
+   of the 10 caption-retrieved train images (B4's PE-MBR without the detector gate); veto = fewest nouns with p < 0.5,
+   ties -> max U; critic fitted on the OTHER adapter's pool. Deltas vs the P1 3-seed mean (145.8 / 18.4), paired over
+   images per draw.
+   pool / rule                          CIDEr  dCIDEr vs P1 mean     CHAIR_i  dCHAIR_i vs P1 mean   CHAIR_s ment/cap
+   P1 s43 greedy                        143.9  -1.9 [-4.9, +1.0]     17.7     -0.7 [-1.9, +0.4]     26.7   1.76
+   P1 s43 self-MBR (greedy + 6 smp)     146.2  +0.4 [-4.3, +5.0]     16.9     -1.5 [-3.1, +0.1]     25.3   1.75
+   P1 s43 PE-MBR                        150.4  +4.6 [+0.8, +8.3]     17.1     -1.3 [-2.6, -0.1]     26.5   1.77
+   P1 s43 PE-MBR + cheap veto (B4)      151.4  +5.6 [+1.2, +9.8]     14.8     -3.6 [-5.1, -2.1]     22.4   1.69
+   P1 s43 PE-MBR + ctx veto (CT-Veto)   151.3  +5.5 [+1.3, +9.9]     13.7     -4.7 [-6.2, -3.2]     21.5   1.68
+   P1 s43 PE-MBR + 2-panel veto         151.3  +5.5 [+1.3, +9.7]     13.5     -4.9 [-6.4, -3.4]     21.1   1.67
+   P1 s43 ORACLE veto (reads test refs) 156.9  +11.1                  2.9     -15.4                  4.7   1.58
+   fuse2 s42 greedy                     143.9  -1.9 [-8.9, +5.4]     21.9     +3.5 [+1.2, +5.8]     35.8   2.09
+   fuse2 PE-MBR / + cheap / + ctx       148.2 / 148.7 / 147.4        21.1 / 20.3 / 19.0                  2.11 / 2.07 / 2.03
+   committee 4 greedy + 12 smp: self-MBR 156.2 (+10.3 [+6.6, +14.2]) / 17.3; PE-MBR 157.1 (+11.3 [+8.0, +15.0]) /
+   17.0 (-1.4 [-2.5, -0.3]); + cheap veto 156.8 / 16.8; + ctx veto 155.0 (+9.2 [+5.5, +13.1]) / 16.5 (-1.9 [-3.1, -0.7]).
+   Reading: on one adapter the contextual critic adds -1.1 CHAIR_i at equal CIDEr; on a committee pool the veto trades
+   ~2 CIDEr for ~0.5 CHAIR (consensus has already removed the easy errors, as B4 found).
+S3 Full HEAD-evaluator metrics, 543 dedup images, independent panel (pilot_s3_fullmetrics.py; out/pilot_s3_table.txt)
+   system                          B-1   B-4   METEOR ROUGE-L CIDEr  CHAIR_i CHAIR_s | CIDEr(543) | OpenViIC: CIDEr CHAIR_i
+   P1 s42 / s43 / s44 greedy       79.0/79.1/79.0  45.5/45.2/44.8  39.1  64.2/64.0/63.8  149.8/143.9/143.7  19.2/17.7/18.3 |
+                                   150.2/144.7/144.7 | 45.0/45.0/44.8  18.8/18.3/18.1
+   P1 s43 PE-MBR + cheap veto      79.7  46.2  39.6  64.8  151.4  14.8  22.4 | 152.3 | 46.0  16.3
+   P1 s43 PE-MBR + ctx veto        79.9  45.9  39.4  64.7  151.3  13.7  21.5 | 152.3 | 44.9  15.8
+   fuse2 s42 greedy                77.4  42.3  39.4  63.7  143.9  21.9  35.8 | 143.9 | 46.7  19.3
+   fuse2 PE-MBR + ctx veto         78.4  43.2  39.6  64.1  147.4  19.0  31.5 | 147.6 | 47.5  17.3
+   committee PE-MBR                80.4  46.9  39.9  65.1  157.1  17.0  26.2 | 157.8 | 47.3  18.1
+   committee PE-MBR + ctx veto     80.2  46.6  39.8  65.0  155.0  16.5  25.6 | 155.6 | 46.8  17.2
+   Independent panel: the ctx veto's CHAIR_i reduction holds in part (P1 s43 18.3 -> 15.8; fuse2 19.3 -> 17.3) while
+   panel CIDEr is flat (45.0 -> 44.9; 46.7 -> 47.5). The ctx critic never reads OpenViIC, so this judge is independent.
+M  Frontier residual (pilot_m_mechanism.py part b; prereg V4 frontier TP(M) = 1.3996 (M/1.7826)^0.7468; object_prf P vs
+   the union of the 5 refs): P1 s43 greedy +0.03; P1 s43 ctx veto +2.28 [-0.33, +4.96] (M 1.68, P 82.0); fuse2 ctx veto
+   +2.72 [+0.02, +5.39]; fuse2 2-panel veto +3.20 [+0.45, +5.79]; committee self-MBR +2.33 [-0.38, +5.06]; committee ctx
+   veto +2.09 [-0.49, +4.78]. Single-pool CIs mostly touch 0; the pooled sign is consistently positive.
+C  Learner stand-in (pilot_c_standin.py; out/pilot_c.txt). Per-class ridge logistic regression on CLIP ViT-B/32 features
+   of the 3,769 train images, 56 leaf CHAIR-vi classes (>= 20 train images, pure hypernyms removed); test gold = CHAIR
+   gold of the 5 test refs; precision at a matched number of predicted classes per image (global threshold), vs MR5.
+   label policy        AUROC   AP      P@M=1.0 (vs MR5)              P@M=1.5 (vs MR5)
+   first caption       0.907   0.519   74.4 (-1.9 [-4.3, +0.4])      65.7 (-1.1 [-2.8, +0.7])
+   MR5 (soft c/5)      0.911   0.531   76.3                          66.8
+   union of 5          0.927   0.547   74.9 (-1.4 [-4.0, +1.1])      66.9 (+0.1 [-1.9, +2.1])
+   consensus >= 2      0.916   0.545   77.2 (+0.9 [-0.7, +2.5])      68.0 (+1.2 [-0.2, +2.6])
+   two-panel mixed     0.901   0.487   69.2 (-7.1 [-10.3, -4.1])     61.2 (-5.6 [-8.0, -3.1])
+   present (A or B)    0.921   0.472   62.2 (-14.1 [-17.7, -10.6])   59.6 (-7.1 [-9.9, -4.2])
+   kNN rate (no fit)   0.907   0.511   71.5 (-4.9 [-8.2, -1.6])      62.3 (-4.5 [-7.0, -2.0])
+   MR5 + kNN blend 0.25: AUROC 0.922, P@M=1.5 68.3 (blend weights 0.25/0.5 both shown in the log; not bootstrapped).
+N1 Reward validity, one-step proxy (pilot_n1_reward.py; out/pilot_n1*.txt/.json). KL 1.0 nat; d = gain(reward) -
+   gain(plain CIDEr-D on own refs T); KTVIC = mean over 4 chain splits (CI = mean of the split CIs); panel = T all 5,
+   E = OpenViIC (555 images). Neighbours: ref-keyed = 10 train images TF-IDF-closest to T; clip = 10 CLIP-nearest.
+   reward                      P1 s43: KTVIC d (CI)        panel d [CI]          | fuse2 s42: KTVIC d (CI)     panel d [CI]
+   NCR ref lam 0.25            +1.39 (+0.63, +2.23)        -0.00 [-0.27, +0.30]  | +1.32 (+0.57, +2.12)       -0.58 [-1.03, -0.19]
+   NCR ref lam 0.5             +2.65 (+1.04, +4.35)        -0.13 [-0.74, +0.50]  | +2.71 (+0.83, +4.74)       -1.53 [-2.51, -0.74]
+   NCR ref lam 0.8             +3.63 (+0.73, +6.61)        -1.01 [-2.06, +0.05]  | +3.22 (-0.24, +6.58)       -3.17 [-4.59, -1.79]
+   NCR clip lam 0.5            +3.86 (+2.00, +5.83)        -0.52 [-1.12, -0.02]  | +3.26 (+1.53, +5.23)       -0.63 [-1.21, -0.13]
+   NCR clip lam 0.8            +6.21 (+2.07, +10.62)       -2.36 [-3.65, -1.16]  | +4.85 (+0.79, +9.14)       -3.06 [-4.45, -1.79]
+   distinct. ref lam -0.25     -1.33 (-2.05, -0.68)        -0.09 [-0.30, +0.11]  | -1.15 (-1.72, -0.63)       +0.34 [+0.02, +0.78]
+   distinct. clip lam -0.25    -1.03 (-1.44, -0.67)        +0.05 [-0.07, +0.18]  | -0.78 (-1.16, -0.45)       +0.12 [-0.03, +0.33]
+   CHAIR term (lam 0.5 ref):   d CIDEr / dCHAIR_E (2-3 held-out refs) / dCHAIR_panel
+     beta 0.25   P1: +1.00 (-0.90, +3.05) / -3.07 / -1.83 [-2.70, -1.02]   fuse2: +2.34 (+0.04, +4.70) / -3.23 / -1.43 [-2.23, -0.70]
+     beta 0.5    P1: -1.27 / -4.67 / -2.73 [-3.72, -1.73]                   fuse2: +1.32 / -4.54 / -2.27 [-3.16, -1.40]
+   (lam 0, beta 0.25: P1 -1.19 (-2.11, -0.27) / -2.14 / -1.59; fuse2 -0.04 / -2.02 / -1.42.) Objects per caption under
+   the stepped policy: 1.786 -> 1.699 (P1, beta 0.25) and 2.070 -> 1.964 (fuse2).
+N4 Off-frontier test of the CHAIR term (pilot_n4_offfrontier.py; out/pilot_n4.txt): same step with r_lam - b' #nouns,
+   b' bisected to MATCH the object count of the CHAIR-term step (lam 0.5, beta 0.25, KL 1).
+   chair-term - count-term:  P1 dCHAIR -1.13 [-1.52, -0.77], -1.66 [-2.26, -1.11], -0.98 [-1.27, -0.73], -1.59 [-2.20, -1.07]
+   (4 splits); panel -1.32 [-1.86, -0.81]; dCIDEr -0.58 to -0.96 (2/4 CIs < 0), panel +0.13 [-0.16, +0.42].
+   fuse2 dCHAIR -1.17, -1.42, -0.88, -1.03 (all CIs < 0); panel -0.89 [-1.25, -0.47]; dCIDEr -0.52 to +0.54 (n.s.).
+   => about a third to a half of the CHAIR term's effect is better object CHOICE (off-frontier), the rest fewer objects.
+N2 Shrinkage weight from TRAIN refs only (pilot_n2_lambda.py; out/pilot_n2.txt). KTVIC train, 3,769 images:
+   lam* = 0.768 [0.761, 0.776] (T012/E34), 0.753 (T234/E01), 0.843 (T01/E234), 0.839 (T34/E012); mean 0.801.
+   Per n-gram order (T012/E34): 0.59 / 0.75 / 0.83 / 0.88. Toward the OpenViIC panel centroid: 0.838 [0.833, 0.843].
+N2b Other datasets (pilot_n2b_lambda_xdata.py; out/pilot_n2b.txt): UIT-ViIC train 0.867 [0.852, 0.881] / 0.870
+   [0.855, 0.884]; COCO Karpathy train (20,000-image index, 2,000 queries) 0.869 [0.864, 0.875] / 0.874 [0.868, 0.880].
+N3 Object-level shrinkage of the CHAIR term toward the kNN rate (pilot_n3_objshrink.py): |dCHAIR| <= 0.24, all CIs
+   contain 0 -> no gain; the own-ref gold is already the right penalty. Killed.
+N5 Regurgitation channel on SFT'd TRAIN images (pilot_n5_copy.py; B1's 1,500 E5 rollouts; lam 0 reproduces B1 pilot 9):
+   positive-advantage mass share of verbatim / <=1-edit copies: lam 0: 20.4% / 34.6%; 0.25: 19.3 / 33.2; 0.5: 17.5 /
+   30.8; 0.8: 14.0 / 25.9. A copy is still the argmax in 87.6% (0.5) / 76.4% (0.8) of groups that contain one.
+   => NCR only dilutes the copy channel; B1's copy-neutral mask stays necessary.
+M  What NCR selects (pilot_m_mechanism.py part a; argmax sample, P1 s43, split T012/E34): same length (10.63 -> 10.59
+   words) and object count (1.77), more KTVIC-typical bigrams (mean log train bigram count 5.631 -> 5.742), more "co ..."
+   openings (83.7% -> 86.4%), slightly fewer distinct captions (530 -> 521); CIDEr-D(E) 131.0 -> 135.6.
+
+==========================================================================================================================
+4. FALSIFIED OR KILLED IN THIS ROUND (with the number that killed it)
+==========================================================================================================================
+- Two-panel salience critic (TPS): +0.000 AUROC over a single-panel contextual rate (S1); oracle panel +0.02 (S4).
+- Panel-agreement / two-panel TARGET construction for KTVIC metrics: -5.6 to -7.1 P at matched count in the learner
+  stand-in (C); consistent with B2 (cross-panel weights -4.5 on dev) and K3 (OpenViIC-chosen names -12.2 CIDEr).
+- Object-level shrinkage of the CHAIR penalty (N3): n.s.
+- Distinctiveness reward (CIDErBtw sign) for KTVIC metrics: -0.35 to -1.33 in 8/8 configurations (N1).
+- Neighbour-smoothed SFT TARGETS (training on neighbours' captions as targets): not piloted; rejected on theory and on
+  B4/B6's copy-hazard numbers (copying retrieved refs: CIDEr 97-122, CHAIR_i 29-37). The RL form scores the model's
+  own samples of THIS image against neighbour refs, so no other image's content becomes a target.
+- My pre-registered "lam* smaller for exchangeable refs" (T5): refuted (0.87 on UIT-ViIC and COCO vs 0.80 on KTVIC).
+
+==========================================================================================================================
+5. LITERATURE AND SCOOP CHECK (2023-2026 focus; 19 WebSearch queries, arXiv/OpenAlex/Semantic Scholar APIs all
+   returned HTTP 429 from this IP; full text read where marked FT)
+==========================================================================================================================
+Closest prior for P-B7-1 (neighbour-shrunk reward + reference-gold CHAIR term):
+- Wang, Xu, Wang, Chan, "Compare and Reweight: Distinctive Image Captioning Using Similar Images Sets", ECCV 2020,
+  arXiv 2007.06877 (ar5iv method + Table 1 read): CIDErBtw = CIDEr vs GT captions of similar images; RL reward
+  R = CIDEr - 0.4 CIDErBtw (Eq. 8) and GT reweighting w_i = 1.5 - a v_i/max v; COCO Transformer+SCST CIDEr 125.13 ->
+  128.11. SAME neighbour references, OPPOSITE sign. Journal version arXiv 2204.03938. Delta: P-B7-1 uses lam > 0 with an
+  empirical-Bayes lam from held-out refs, and N1 shows the CIDErBtw sign lowers held-out KTVIC CIDEr.
+- "Shrinking the Variance: Shrinkage Baselines for RL with Verifiable Rewards", arXiv 2511.03710 (abstract): James-Stein
+  shrinkage of the per-prompt BASELINE toward the across-prompt mean. Also arXiv 2511.22177 (REINFORCE baseline
+  shrinkage for diffusion sampling schedules). Delta: P-B7-1 shrinks the reward's TARGET (reference centroid), which
+  changes the reward's expectation, not only its variance.
+- Ben-Kish et al., MOCHa / "Mitigating Open-Vocabulary Caption Hallucinations", EMNLP 2024, arXiv 2312.03631, DOI
+  10.18653/v1/2024.emnlp-main.1263 (FT pp. 4-7): PPO reward alpha (1 - 2 p_NLI-contradiction vs refs) + (1-alpha)
+  BERTScore + KL; BLIP-L CIDEr 138.4 -> 139.6, CHAIR_i 2.3 -> 2.1; BLIP-2 144.3 -> 144.3, 1.7 -> 1.4; Pareto curve over
+  alpha. Prior art for a reference-based fidelity term in the captioning reward.
+- Compagnoni et al., CHAIR-DPO, BMVC 2025, arXiv 2508.20181 (abstract/listing): CHAIR ranks DPO pairs (detector gold).
+  VES-RFT, CVPR 2026 (search snippet of the poster page, not read): verifiable object-mention reward in GRPO; CHAIR_s -12.8, CHAIR_i -1.8 on LLaVA-7B.
+- Re3Cap, Jia et al., EMNLP 2026, arXiv 2608.21305 (FT pp. 1-5): image- and caption-conditioned retrieval over an
+  external corpus (K = 3) builds k-core "refinement suggestions" (correct / omitted / hallucinated content) that are put
+  in the PROMPT of off-policy rollouts; the reward is SC / CLIP / CIM; no retrieval at inference. Retrieved captions are
+  not used as reward references and no reference-n-gram metric is optimised.
+- Rennie et al. SCST arXiv 1612.00563; Luo arXiv 2003.09971; RLOO arXiv 2402.14740; SacreEOS arXiv 2305.12254; B1's
+  CN-RLOO (in-house). Wang and Chan, "Describing like Humans", CVPR 2019, arXiv 1903.12020: CIDEr optimisation lowers
+  diversity (the typicality side of T5). Dai et al. 2017 (conditional GAN captions) argues the same; not re-read here.
+Closest prior for P-B7-2 (contextual same-panel critic in a veto-MBR):
+- B4's EV-MBR (in-house; cheap critic vote + prior + tags). m-RNN arXiv 1412.6632 and Devlin et al. arXiv 1505.04467 /
+  1505.01809: kNN-consensus reranking. A USPTO patent (11593612 / 10423874) scores hypotheses against k-NN images'
+  captions with sentence CIDEr (search snippet only).
+- HaloProbe, ICML 2026, arXiv 2604.06165 (abstract + search summary): Bayesian factorisation of internal signals and a
+  learned prior over EXTERNAL features = token position, object repetition, object occurrence; presence labels. No
+  contextual (neighbour-image) mention prior.
+- Petryk et al., TLC, WACV 2024, arXiv 2305.07021 (abstract): learned token confidence cuts COCO object hallucination
+  ~30% relative and reranks captions. Re3Cap's CQA (above) uses image-vs-caption retrieval discrepancy as a
+  hallucination hint. SelfVal arXiv 2601.22451 (via B4).
+- Salience / importance (via B4): Berg et al., "Understanding and Predicting Importance in Images", CVPR 2012; Spain and Perona,
+  IJCV 2011; "Multi-Object Hallucination in VLMs", NeurIPS 2024, arXiv 2407.06192 (salience as pixel share); CAOS arXiv
+  2501.15046; ALOHa arXiv 2404.02904; Rohrbach et al. CHAIR, arXiv 1809.02156 (context words precede hallucinations).
+  None identifies a panel's mention-worthiness with a second human panel, and S1 shows doing so adds nothing here.
+Other checks: no published RL or LVLM KTVIC result with CIDEr was found (KTVIC arXiv 2401.08100; ViCLIP-OT arXiv
+  2602.22678 is retrieval); no captioning paper uses neighbour references as additional REWARD references with lam > 0
+  (searches on pseudo-references / retrieved references in SCST, semi-supervised SCST with kNN pseudo-labels -- closest:
+  D19-1208 pseudo-labels by retrieval, arXiv 2301.11174, arXiv 2307.14750 CIDEr-filtered pseudo-sentences; kernel or
+  label smoothing across images -- none).
+Queries run (WebSearch): retrieved captions as pseudo-references in SCST; object-hallucination penalty / CHAIR reward
+  in RL captioning; Re3Cap; semi-supervised captioning with kNN pseudo-references; CIDErBtw; James-Stein shrinkage of
+  rewards; HaloProbe; mention / importance prediction from multiple annotators; two annotator groups on the same images;
+  contextual object prior from similar images for hallucination; SCST reference augmentation / kernel smoothing; KTVIC
+  + RL 2026; generic captions under CIDEr optimisation; TLC; multi-objective RL captioning Pareto; human-free RL for
+  hallucination; MOCHa id; CHAIR-DPO id; neighbour captions as training targets.
+
+==========================================================================================================================
+6. PROPOSALS (at most 2; ranked by expected metric gain x novelty / cost)
+==========================================================================================================================
+P-B7-1  PB-RLOO: panel-Bayes reward for CIDEr RL (neighbour-shrunk reference centroid + reference-gold CHAIR term)
+  Mechanism. Drop-in reward for B1's CN-RLOO (same QLoRA policy/ref adapters, k = 8 rollouts, RLOO, k3 KL, EOS-aware
+   word-level CIDEr-D, copy-neutral mask kept -- N5 shows NCR does not remove the copy channel):
+     r(c; x_i) = (1-lam) CIDEr-D(c; R_i) + lam CIDEr-D(c; R_N(i)) - beta * #{o in nouns(c) : o not in CHAIR-gold(R_i)}
+   R_N(i) = the 5 refs of each of the 10 train images whose refs are TF-IDF-closest to R_i (image and near-duplicates
+   excluded; precomputed on CPU once). lam: James-Stein estimate from train refs (N2: 0.80) is the principled value;
+   declared primary lam = 0.5 (proxy gains at 0.5 vs 0.8 are within CI, panel cost smaller), dev chooses {0.5, 0.8}.
+   beta in {0.25, 0.5} chosen on dev300 (B2's file) with the rule "largest beta whose dev CIDEr is >= the beta = 0 arm - 1".
+   Reward cost on CPU: ~10x the plain reward (50 extra refs), still < 0.3 s per group.
+  Novel element. The RL target is the panel-Bayes utility derived from T1-T2: (i) the per-image reference centroid is
+   shrunk toward the same panel's neighbourhood with an empirical-Bayes weight estimated from held-out references
+   (James-Stein on reference centroids, not on baselines); (ii) the hallucination term is the evaluation metric's own
+   gold, and its value is shown to be partly off-frontier at matched object count; (iii) a sign test separates
+   typicality (what the same-panel metric pays for) from distinctiveness (CIDErBtw) and reports the independent-panel
+   cost, so the paper can state exactly what the gain is.
+  Closest prior and delta. CIDErBtw (arXiv 2007.06877): same neighbour refs, opposite sign, no shrinkage estimate.
+   Shrinkage baselines (arXiv 2511.03710): shrink the baseline, not the reward target. MOCHa (arXiv 2312.03631), CHAIR-DPO
+   (arXiv 2508.20181), VES-RFT (CVPR 2026): object-fidelity terms (prior art for beta; delta: metric-matched gold and the
+   matched-count test). Re3Cap (arXiv 2608.21305): retrieval only as prompt guidance. B1 CN-RLOO: plain CIDEr-D reward.
+  Pilot. Done on CPU (N1-N5, section 3). GPU gate (~5 GPU-h, one RTX 3090 per arm): two G1 arms on 1,000 images of
+   train minus dev300, matched KL to B1's CN-RLOO G1 arm and the same P1_dev init: (A) PB-RLOO lam 0.5 beta 0.25;
+   (B) NCR-only lam 0.5 beta 0. Score dev greedy every 250 images (word-level CIDEr-D, CHAIR_i, distinct captions,
+   neighbour-n-gram copy rate).
+  Pre-registered predictions (falsifiable).
+   1. Dev, matched KL: A - CN-RLOO: CIDEr >= +1.5 and CHAIR_i <= -2.0 (paired 95% CIs excluding 0).
+   2. Dev: B - CN-RLOO: CIDEr >= +1.0, |dCHAIR_i| <= 1.
+   3. Independent panel (OpenViIC refs of the 555 test images, final models): B - CN-RLOO CIDEr <= 0 (typicality does
+      not transfer); A - CN-RLOO CHAIR_i vs the OpenViIC gold <= -1.0.
+   4. Control (lam = -0.25, CIDErBtw sign; optional 2.5 GPU-h): dev CIDEr below CN-RLOO by 0.5-1.5.
+   5. Test, 3 seeds, pooled paired image bootstrap (5 seeds if a between-seed claim is made): PB-RLOO - CN-RLOO CIDEr
+      >= +1.5 and CHAIR_i <= -2; vs P1 3-seed mean (145.8 / 18.4): CIDEr +6.5 to +12, CHAIR_i -4 to -7.
+  Expected gain (KTVIC short, word level). vs CN-RLOO: CIDEr +1 to +3 (proxy +1.0 to +2.7 at 1 nat), CHAIR_i -2 to -3
+   (proxy -3.1/-3.2 on 2-3 held-out refs, scaled by 18/27 to the 5-ref metric). vs P1 3-seed mean: CIDEr +6.5 to +12
+   (central ~+8, ~154), CHAIR_i -4 to -7, B-4 +2 to +5, METEOR +1 to +2, ROUGE-L +1 to +3 -- conditional on CN-RLOO
+   reaching B1's +5 to +9. UIT-ViIC: same reward with its own refs (lam* 0.87 by N2b); COCO-language-agnostic.
+  GPU-h. Gate 5 (+ P1_dev adapter shared with B1). Full: 3 KTVIC seeds x ~10 = 30 (these replace CN-RLOO's seeds if the
+   gate passes) + UIT-ViIC 3 x ~2 = 6 -> ~41 total, ~11 incremental over B1's plan. COCO 10K subset +15 if required.
+  Kill criterion. At the G1 gate: kill PB-RLOO if A - CN-RLOO dev CIDEr < +1.0 AND dev CHAIR_i > -1.5; keep only the
+   component that passes (NCR if B - CN-RLOO >= +1.0 with CI > 0; the CHAIR term if A - B CHAIR_i <= -1.5 at CIDEr >= -1).
+   Also stop if dev distinct captions drop > 10% below CN-RLOO or the neighbour-n-gram copy rate doubles (generic
+   captions), or if final test CHAIR_i is not below CN-RLOO.
+  Synthetic training data: NO (on-policy rollouts scored against existing human references only).
+  Confidence: medium for the direction over CN-RLOO; low for clearing +8 CIDEr on its own.
+
+P-B7-2  CT-Veto: contextual-typicality veto for panel-evidence MBR (the decode-time half of the same utility)
+  Mechanism. Per test image: candidates = greedy + 6 short samples (one adapter; T on dev from {0.5, 0.8}); centroid
+   estimate U(c) = CIDEr-D(c, other candidates) + CIDEr-D(c, refs of the 10 train images retrieved by the greedy
+   caption); mention-worthiness critic p(o) = logistic(vote share, class prior, kA), kA = KTVIC naming rate of o among
+   the 30 CLIP ViT-B/32-nearest train images (near-duplicates excluded); veto = keep candidates with the fewest nouns of
+   p < 0.5, ties -> max U. Critic fitted on dev300 candidates of the P1_dev adapter (3 weights + bias). No detector.
+  Novel element. The critic's contextual same-panel typicality feature, chosen because two-panel salience and presence
+   evidence were measured to add nothing (S1, S4; B4 for tags). Upgrade of B4's EV-MBR: -1.1 CHAIR_i at equal CIDEr.
+  Closest prior. B4 EV-MBR (in-house); m-RNN 1412.6632 / Devlin 1505.04467 (kNN consensus); Re3Cap CQA 2608.21305
+   (neighbour-image evidence as RL prompt hints); HaloProbe 2604.06165 (non-contextual external prior, presence labels);
+   TLC 2305.07021; SelfVal 2601.22451.
+  Pilot (test, ESTIMATES; critic fitted on the other adapter's pool). P1 s43: CIDEr 151.3 (+5.5 [+1.3, +9.9] vs P1
+   3-seed mean; +7.4 vs its greedy), CHAIR_i 13.7 (-4.7 [-6.2, -3.2] vs P1 mean), CHAIR_s 21.5, B-1 79.9, B-4 45.9,
+   METEOR 39.4, ROUGE-L 64.7; 543 dedup CIDEr 152.3; OpenViIC-gold CHAIR_i 18.3 -> 15.8; frontier residual +2.3.
+   fuse2 s42: 143.9/21.9 -> 147.4/19.0. Committee pool: 155.0 / 16.5 (PE-MBR alone 157.1 / 17.0).
+  Predictions. Dev: critic AUROC >= cheap + 0.03; CHAIR_i <= greedy - 3.5 at CIDEr >= greedy + 4. Test, 3 P1 seeds:
+   mean CIDEr >= 150 and CHAIR_i <= 14.4 (the Pareto bar), OpenViIC-gold CHAIR_i -2 or better.
+  Expected gain. Per adapter: CIDEr +4 to +7 over greedy, CHAIR_i -3.5 to -5 over greedy; vs P1 mean ~+5 / ~-4.
+   Stacks on a PB-RLOO policy with a smaller CIDEr gain (RL closes part of the decision gap; retrieval gains shrink after
+   SCST in the literature, +2-3 -> +1.1-1.4 per B6).
+  GPU-h. ~0.5 incremental if B4's EV-MBR validation runs (same dev/test samples); standalone ~6.5 (P1_dev adapter 1.8,
+   dev samples 0.4, s42/s44 test samples 1.1, UIT-ViIC samples 0.7, COCO 2,500-image subset 2.5). Inference: 7 decodes.
+  Kill criterion. Dev AUROC gain over the cheap critic < +0.02, or dev CHAIR_i not >= 0.7 below B4's cheap veto at CIDEr
+   within -1 -> fall back to B4's EV-MBR. Test: mean CHAIR_i reduction over the 3 greedy seeds < 3 -> drop the Pareto claim.
+  Synthetic training data: NO (no captioner training; the critic is fitted on model candidates labelled by human refs).
+  Confidence: medium (one seed per adapter, test candidates; dev replication needed).
+
+==========================================================================================================================
+7. WHERE THE OPTIMUM IS (targets for the paper, all ESTIMATES; to be re-measured on dev and with 3 seeds)
+==========================================================================================================================
+- Single adapter, decode-time only (P1 s43 + CT-Veto): 151.3 / 13.7 -> already at the Pareto bar on one seed.
+- Zero-training committee (B3) + panel evidence: 157.1 / 17.0 (CIDEr bar, CHAIR not worse); B3's 8 members + retrieved
+  refs 160.7 / 16.6, but the retrieval share is KTVIC typicality (~0 on the independent panel).
+- Training route: CN-RLOO (B1) with the PB reward (P-B7-1) on MR5 targets (B2) as the SFT start, then CT-Veto at
+  decode time. If the gates pass, a plausible target is CIDEr ~155-160 with CHAIR_i ~12-14 on the 3-seed mean, i.e. both
+  bars; the components act on different error terms of T1-T4 (target variance, decision gap, object typicality), so
+  partial additivity is expected, but no stacking has been measured.
+- What the paper can claim honestly: gains are same-panel typicality plus a smaller transferable part. Report every
+  number with the OpenViIC judge next to it (S3: veto CHAIR transfers in part; NCR's CIDEr does not).
+
+==========================================================================================================================
+8. CAVEATS
+==========================================================================================================================
+- The RL evidence is a one-step proxy on 6 samples of two SFT policies (test images). Full RL can drift outside the
+  sample support; NCR at high lam could teach generic, neighbourhood-typical phrasing (watch distinct captions).
+- CHAIR_E in N1 is measured against 2-3 held-out refs (baseline 27-31%), so its deltas overstate 5-ref CHAIR deltas;
+  section 6 scales them by ~0.67.
+- S2/S3 numbers come from one seed per adapter (P1 s43 is a low seed: 143.9 vs 149.8 for s42). Regression to the mean is
+  possible; s42/s44 samples cost 1.1 GPU-h.
+- The critic was fitted on test candidates of the other adapter (no dev candidates exist yet; P1 saw every train image).
+- lam* from N2 is the MSE-optimal centroid shrinkage, not the reward-ranking optimum; N1 brackets it (0.5-0.8).
+- The 2-panel variant (ctx2) used OpenViIC TRAIN captions as a feature, so the OpenViIC judge is not independent for it;
+  the proposed critic (ctx) does not read OpenViIC.
+- Paraphrase-chain dependence of the KTVIC refs (B2) affects held-out splits; contiguous blocks were used throughout.
+
+==========================================================================================================================
+9. FILES (work dir; run with ../B3_decoding/venv/bin/python from the work dir, nice -n 15)
+==========================================================================================================================
+common.py            loaders, HEAD scorer imports, merged read-only seg caches, CIDEr-D replica, AUROC, IRLS logistic, bootstrap
+salience.py          two-panel salience, class priors, CLIP kNN (near-duplicates dropped)          (self-check in __main__)
+pilot_s1_critic.py   S1 critic AUROC (k = 30 primary; 10/100)          -> out/pilot_s1_k30.txt, out/pilot_s1_k10_100.txt, out/pilot_s1.json
+pilot_s2_veto.py     S2 veto-MBR selections                             -> out/pilot_s2.txt/.json, out/sel_s2/*.preds.json
+pilot_s3_fullmetrics.py S3 HEAD metrics, 543 subset, OpenViIC judge     -> out/pilot_s3_table.txt, out/pilot_s3.json
+pilot_s4_panel_oracle.py S4 oracle panel information                    -> out/pilot_s4.txt
+pilot_c_standin.py   C learner stand-in (frontier invariance, two-panel labels) -> out/pilot_c.txt/.json
+pilot_n1_reward.py   N1 reward proxy (env LAMS, BETAS, N1OUT)            -> out/pilot_n1*.txt/.json
+pilot_n2_lambda.py   N2 James-Stein lam* on KTVIC train                  -> out/pilot_n2.txt/.json
+pilot_n2b_lambda_xdata.py N2b lam* on UIT-ViIC and COCO                  -> out/pilot_n2b.txt/.json
+pilot_n3_objshrink.py N3 object-level shrinkage (killed)                 -> out/pilot_n3.txt/.json
+pilot_n4_offfrontier.py N4 matched-count test of the CHAIR term          -> out/pilot_n4.txt
+pilot_n5_copy.py     N5 copy channel under NCR                           -> out/pilot_n5.txt/.json
+pilot_m_mechanism.py M  NCR selections; frontier residuals               -> out/pilot_m.txt
+evaluate_head.py, head/ (HEAD copies), vncorenlp/ (model copy). No OpenViIC caption is written in any file (string
+probe over all outputs: only generic phrases shared with model outputs and a repo mock file).

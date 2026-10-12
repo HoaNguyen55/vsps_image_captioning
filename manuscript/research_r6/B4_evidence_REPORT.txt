@@ -1,0 +1,428 @@
+B4_evidence REPORT -- Lever B4: EVIDENCE (external or internal) that moves the precision frontier while keeping or
+raising CIDEr, for the QLoRA Qwen2.5-VL-7B KTVIC captioner. Round R6, 2026-10-12. Agent id B4_evidence.
+
+Work dir (all code + outputs): /tmp/claude-1000/-mnt-d-vsps-image-captioning/755eae04-5e4c-4ce1-ab21-d4bc106761ee/scratchpad/research_r6/B4_evidence/
+CPU only (nice -n 15, 1 python process at a time, bootstrap B = 2000). No GPU, no VLM/LLM loaded. n2/n3: read-only
+(scp of the two sample files, reading queue logs and file timestamps). The repo was not written.
+
+Scoring: HEAD copies of scripts/evaluate.py, scripts/score_ci.py, scripts/object_prf.py, scripts/score_coco_probe.py and
+rescap/ (git show HEAD:..., git archive HEAD rescap) in ./head; word-level RDRSegmenter (VnCoreNLP-1.2 via
+py_vncorenlp + pyjnius, local OpenJDK 21), x100, CHAIR-vi from rescap/chair.py. Reproduction check: HEAD evaluate.py
+on data/results/p1_s43-short.preds.json gives B-1 79.1, B-4 45.2, METEOR 39.1, ROUGE-L 64.0, CIDEr 143.9, CHAIR_i 17.7,
+CHAIR_s 26.7 -- identical to the R6 table (out/p1_s43_check.json). Weighted-reference CIDEr-D (ciderd.py) was checked
+against pycocoevalcap (assert in its __main__).
+
+READ THIS FIRST. Every KTVIC number below is computed on TEST predictions or TEST samples and is therefore an
+EFFECT-SIZE ESTIMATE, not a result. No rule was tuned on test: every selection rule was written before it was scored;
+where a retrieval depth k was varied, k = 10 was declared primary before running and k = 30 is shown as sensitivity.
+CIs are 95% percentile bootstrap over images, paired when two systems are compared (B = 2000, seed 0). "Greedy" =
+the existing greedy preds; "samples" = the 6 short samples per test image at T = 0.8, top_p 0.95 copied from n2.
+
+==========================================================================================================================
+0. BOTTOM LINE
+==========================================================================================================================
+(a) Presence evidence (object detectors) is the WRONG evidence for KTVIC's metrics. Measured, not assumed:
+    - Grounding-DINO tags recall 92.8% [90.8, 94.7] of the COCO classes any reference names (97.7% of classes named by
+      >= 3 refs, 100% of those named by all 5), but only 44.5% [42.0, 47.1] of tagged classes are named by any of the 5
+      references (54.8% with the independent OpenViIC panel added). 55.5% of tagged classes are named by no reference.
+    - The same holds with HUMAN presence labels: on UIT-ViIC's 3,850 COCO images, 51.1% [50.3, 51.9] of present COCO
+      classes are named by >= 1 of the 5 Vietnamese references, 64.9% [64.0, 65.6] by >= 1 of the 5 English ones, while
+      98.9% of what the Vietnamese references name is present. Mention-worthiness, not presence, is what references
+      encode, and it is PANEL-specific (same images, same presence, 51% vs 65%).
+    - On the objects that a captioner actually proposes, tag status separates "named by the refs" from "not named"
+      at AUROC 0.58 (tag supports) and 0.48 (tag contradicts), i.e. close to chance.
+    - Upper bounds: deleting every mention the tags contradict lowers CHAIR_i by only 0.4 [-1.0, +0.0] (P1 s43: 17.7 ->
+      17.3), because only 4.0% of CHAIR-vi hallucinations are tag-contradicted and 64% are outside COCO-80 (quầy hàng,
+      đường, cửa, vỉa hè, cầu...). A PERFECT COCO-80 presence oracle would reach -5.5 [-6.9, -4.3], and most of that is
+      person-naming (phụ nữ / đàn ông / người), where the person IS present. Choosing among existing captions by tag
+      agreement adds nothing over plain consensus (MBR) on any pool (-0.5 to +0.2 CIDEr).
+    - Removing GDINO entirely from the best decoder below changes nothing (151.1 vs 151.1 CIDEr; CHAIR_i 14.9 vs 15.0).
+    => Tags in the SFT prompt (with or without tag dropout) are predicted to give <= +1.5 CIDEr (Tag2Text measured +1.3
+       on COCO); not worth the ~8 GPU-h of a 3-seed tag-SFT arm for the headline. Tagging the 3,769 train images costs
+       <= 0.61 GPU-h (GDINO-base, measured basis, section 8), so it is cheap if anyone still wants it as a feature.
+(b) The evidence that DOES move the key metrics is TYPICALITY evidence from the same reference panel plus a
+    MENTION-WORTHINESS veto:
+    - Retrieved KTVIC-TRAIN references of the k train images closest to the greedy caption, used as extra MBR pseudo-
+      references next to the model's own samples, add +3.4 to +5.3 CIDEr over self-consensus MBR on ONE adapter, and
+      replicate on a second adapter (fuse2 s42: +3.6 to +4.8).
+    - A 4-feature mention-worthiness critic (sample vote share, train-reference prior, optional tag status) used as an
+      object veto adds CHAIR_i -0.9 to -2.0 on top of that (-2.0 to -2.7 vs greedy in total) at no CIDEr cost, also
+      when its weights come from the OTHER adapter.
+    - Together (proposal 1, EV-MBR) on P1 s43: CIDEr 143.9 -> 151.1-152.3 (+7.2 [+3.1, +11.9] to +8.4 [+4.7, +12.6]),
+      BLEU-4 45.2 -> 46.0, METEOR 39.1 -> 39.5, ROUGE-L 64.0 -> 64.7, CHAIR_i 17.7 -> 15.0-15.5, CHAIR_s 26.7 -> 23.3,
+      object P +2.2 [+0.7, +3.6] at unchanged R (+0.1), +1.4 [+0.1, +2.8] against the INDEPENDENT OpenViIC panel.
+      On fuse2 s42: +6.0 to +6.2 CIDEr, CHAIR_i -2.0 to -2.4. Same on the 543 deduplicated images; verbatim copying of
+      train captions unchanged (20.6% -> 21.1%).
+(c) Proposals (section 7): P-B4-1 EV-MBR (decode-time, ~5.3 GPU-h to validate on dev + 3 seeds + UIT-ViIC; expected
+    +5 to +8 CIDEr over each seed's greedy, CHAIR_i -1.5 to -3); P-B4-2 PM-Probe, a hidden-state panel-mention probe that
+    replaces the cheap critic (2-4 GPU-h gate); it is the only B4 route to the CHAIR Pareto bar (needs critic AUROC
+    >= ~0.85; the cheap critic is 0.76-0.78; simulated 0.90 gives CHAIR_i 11.4 at CIDEr 151.1 on P1 s43).
+(d) Honest novelty rating: EV-MBR is a new COMBINATION and a new TARGET (panel mention-worthiness instead of presence)
+    built from known parts (MBR; kNN-consensus reranking, m-RNN 1412.6632 / Devlin et al. 1505.04467; object veto,
+    SelfVal 2601.22451 / HaloProbe 2604.06165). It is not a breakthrough on its own. Its strength is that it is cheap,
+    adapter-agnostic (it stacks with B1's RL or B2's MR5 adapters) and backed by the paper's own typicality diagnosis.
+    Alone it is unlikely (P ~ 0.25) to clear +8 CIDEr over the P1 3-seed mean; the expected 3-seed mean is ~151-153.
+(e) Killed B4 sub-ideas (section 9): tag-SFT as the main lever, tag-gated deletion, token-level probe gating,
+    plan-then-caption, region crops / higher resolution, independent-panel object evidence, retrieved captions copied
+    into the output (copying the top retrieved caption: CIDEr 97.4, CHAIR_i 37.0).
+
+==========================================================================================================================
+1. FILES AND HOW TO RERUN (all under the work dir; run from it with ./venv/bin/python)
+==========================================================================================================================
+common.py                       loaders (HEAD code in ./head, refs, preds, GDINO tags as COCO classes, OpenViIC panel),
+                                paired bootstrap helpers (B = 2000)
+ciderd.py                       CIDEr-D with fixed DF and per-reference weights (== pycocoevalcap, asserted)
+pilot1_tags_vs_refs.py          -> out/pilot1.txt    tags vs refs (A1), mention-level bounds (A2), CHAIR-vi bounds (A3)
+pilot2_select.py                -> out/pilot2.txt, out/sel/, out/pilot2_fullmetrics.txt   selection among existing captions
+pilot3_mw_evidence.py [--veto]  -> out/pilot3.txt, out/pilot3_veto.txt   mention-worthiness evidence: panel oracle,
+                                train prior, simulated probe AUROC curve, oracle
+pilot4_cheap_critic.py          -> out/pilot4.txt    cheap critic (vote, prior, tags) cross-fitted; veto-MBR
+pilot5_typicality_evidence.py   -> out/pilot5.txt    retrieved train refs (text k = 5/10/30; CLIP 1-NN) as pseudo-refs
+pilot6_weighted_pseudorefs.py   -> out/pilot6.txt    presence gate and self-agreement filter on retrieved refs
+pilot7_replicate.py             -> out/pilot7.txt, out/sel7/, out/pilot7_fullmetrics.txt   second adapter (fuse2 s42)
+pilot8_pembr_veto.py            -> out/pilot8.txt, out/sel8/, out/pilot8_fullmetrics.txt   EV-MBR = PE-MBR + veto, probe sim
+pilot8b_critic_transfer.py      -> out/pilot8b.txt   critic weights fitted on the other adapter
+pilot8c_no_detector.py          -> out/pilot8c.txt   EV-MBR with GDINO removed
+pilot9_presence_vs_mention_coco.py -> out/pilot9.txt presence (COCO instances) vs mention (VI and EN refs), UIT-ViIC
+pilot10_copy_hazard.py          -> out/pilot10.txt   what copying retrieved evidence would score
+objprf_sel.py, twopanel_sel.py, copyrate_sel.py -> out/*.txt  object P/R/F1, two-panel P, copy rate, 543-dedup
+score_sel.sh <dir>              full HEAD-evaluator table for every *-short.preds.json in a dir
+samples/                        n2 sample files (p1_s43 / fuse2_s42, 6 x T0.8 per test image), copied read-only
+OpenViIC captions are read from data/ktvic_openviic_refs.json at run time and never written anywhere.
+
+==========================================================================================================================
+2. PILOT A -- HOW TAGS RELATE TO THE REFERENCES' OBJECT MENTIONS (typicality vs presence)
+==========================================================================================================================
+A1. KTVIC test, data/results/tags_gdino.json (Grounding-DINO base, 80 COCO classes in 2 prompts, box 0.35 / text 0.25),
+classes matched in captions with coco80_vi.json (score_coco_probe.vi_classes at HEAD). 558 images.
+  tags/image 2.39; COCO classes named by the refs/image 1.14; images with no tag 23
+  tag precision vs KTVIC refs (class named by >= 1 of 5)   44.5 [42.0, 47.1]
+  tag precision vs KTVIC refs U OpenViIC panel (555 imgs)  54.8 [52.4, 57.2]
+  tag recall of classes named by >= 1 / >= 3 / 5 refs     92.8 [90.8, 94.7] (n 638) / 97.7 [96.2, 99.0] (n 393) / 100 (n 156)
+  tagged classes by number of refs naming them             0: 55.5%  1: 6.3%  2: 9.3%  3: 8.6%  4: 8.5%  5: 11.7%
+  tagged but named by no KTVIC ref: 738, of which the OpenViIC panel names 18.7%
+  named by a KTVIC ref but not tagged: 45, of which the panel also names 73.3% (real GDINO misses)
+  per class: detections | P(>= 1 ref names | tagged) | P(tagged | >= 1 ref names)
+    person 491 | 85.3% | 97.4% of 430      handbag 116 | 2.6% | 3/3        motorcycle 105 | 32.4% | 97.1% of 35
+    chair 49 | 20.4% | 76.9% of 13         car 47 | 27.7% | 92.9% of 14    bicycle 47 | 36.2% | 94.4% of 18
+    potted plant 47 | 21.3% | 76.9%        bottle 43 | 2.3% | 1/2         boat 41 | 85.4% | 35/35
+    bowl 40 | 10.0% | 4/6                  umbrella 36 | 8.3% | 3/4       backpack 33 | 12.1% | 4/5
+  Reading: GDINO almost never misses an object the panel agrees on, but more than half of what it finds is never
+  mentioned. Tags carry PRESENCE; the references reward MENTION-WORTHINESS (typicality).
+
+A2 (pilot 9). Same question with HUMAN presence labels: UIT-ViIC (3,850 COCO-2014 images, data/uitviic/instance_gold.json),
+5 Vietnamese refs (uitviic) and 5 English COCO refs (uitviic_en) of the SAME images.
+                                   Vietnamese panel        English panel
+  present classes / named classes  3.52 / 1.82 per image   3.52 / 2.33 per image
+  P(named by >= 1 ref | present)   51.1 [50.3, 51.9]       64.9 [64.0, 65.6]
+  P(present | named by >= 1 ref)   98.9 [98.6, 99.1]       98.0 [97.7, 98.3]
+  present but named by no ref      48.9%                   35.1%
+  per class P(named | present), VI vs EN: sports ball 56.3 / 83.1 (present in 3,850); tennis racket 41.8 / 73.1;
+  baseball bat 31.3 / 35.6; baseball glove 6.4 / 4.8; chair 1.7 / 2.8; bench 0.8 / 4.1; car 1.9 / 1.9; handbag 0 / 0.
+  Reading: even perfect presence evidence over-predicts what a panel names by about 2x, and the over-prediction is
+  panel-specific. This is the human-label version of the paper's "typicality vs truth" diagnosis, and it is the reason
+  presence evidence cannot move reference-based metrics.
+
+==========================================================================================================================
+3. PILOT B -- UPPER BOUNDS ON CHAIR / PRECISION FROM KEEPING OR DELETING MENTIONS BY TAG AGREEMENT
+==========================================================================================================================
+B1. COCO-80 space (mentions matched with coco80_vi; "supported" = class tagged, "contradicted" = not tagged):
+  system          COCO ment/cap  P(all)             P(supported)       P(contradicted)    %contra  delete-contradicted dP   R before->after  add-tag precision
+  P1 s42 (p1-gold) 0.82          94.1 [91.8, 96.1]  96.3 [94.4, 98.0]  50.0 [28.6, 68.8]   4.8%    +2.2 [+1.0, +3.6]        71.0 -> 69.2     19.3% of 896
+  P1 s43           0.82          93.0 [90.6, 95.4]  96.1 [94.2, 97.9]  42.3 [22.7, 61.9]   5.7%    +3.0 [+1.6, +4.6]        70.5 -> 68.7     19.5% of 897
+  P1 s44           0.82          94.3 [92.2, 96.3]  96.3 [94.5, 98.0]  52.4 [30.4, 73.7]   4.6%    +2.0 [+0.8, +3.4]        71.6 -> 69.8     19.1% of 894
+  fuse2 s42        0.93          93.1 [90.7, 95.2]  95.5 [93.6, 97.3]  51.7 [33.3, 70.0]   5.6%    +2.5 [+1.2, +3.8]        80.1 -> 77.7     14.8% of 842
+  zero-shot        0.80          87.5 [84.1, 90.7]  92.5 [89.4, 95.3]  26.5 [11.6, 41.4]   7.6%    +5.0 [+3.3, +7.0]        62.5 -> 60.9     22.9% of 918
+  "add-tag precision" = share of tagged-but-unmentioned classes that a reference names: forcing tags into captions
+  would be ~80% wrong against the references.
+B2. Official CHAIR-vi (113-noun lexicon, ref gold + hypernyms):
+  system      CHAIR_i  %mentions COCO-mappable  %halluc COCO-mappable  %halluc tag-contradicted  delete tag-contradicted        oracle: delete every COCO-mappable halluc
+  P1 s42      19.2     44.9%                    34.4%                  3.6%                      18.8 (-0.4 [-0.8, +0.0])       13.5 (-5.7 [-7.1, -4.4])
+  P1 s43      17.7     45.6%                    35.6%                  4.0%                      17.3 (-0.4 [-1.0, +0.0])       12.1 (-5.5 [-6.9, -4.3])
+  P1 s44      18.3     45.3%                    35.0%                  3.3%                      18.0 (-0.3 [-0.7, +0.1])       12.7 (-5.6 [-7.0, -4.3])
+  fuse2 s42   21.9     44.6%                    33.2%                  3.9%                      21.5 (-0.4 [-0.9, -0.0])       15.8 (-6.1 [-7.4, -4.8])
+  P1 s43 hallucinated nouns (count, COCO class): quầy hàng 18 (-), đường 16 (-), phụ nữ 13 (person), đàn ông 13 (person),
+  người 11 (person), cửa 8 (-), thuyền 8 (boat), quả 7 (-), xe 7 (-), đồ 7 (-), cầu 5 (-), vỉa hè 5 (-), cô gái 4 (person).
+B3. Selection among EXISTING captions (pilot 2), rules fixed in advance: first = P1 s43 greedy; mbr = max mean CIDEr-D vs
+the other members; tag = fewest tag-contradicted mentions, ties -> mbr; tagfb = keep greedy unless contradicted.
+  pool (members)                               first   mbr                     tag              tagfb                   CHAIR_i first/mbr/tag/tagfb
+  seeds3 (P1 s43, s42, s44 greedy)              143.9   148.6 (+4.7 [+1.3,+8.5]) 148.5 (+4.5)     144.3 (+0.4 [-0.6,+1.8]) 17.7 / 17.4 / 17.2 / 17.6
+  pool6 (seeds3 + P1s43+tags, fuse2, +tags)     143.9   151.2 (+7.3 [+4.0,+10.9]) 150.7 (+6.8)    144.7 (+0.8 [-0.5,+2.3]) 17.7 / 17.5 / 17.6 / 17.5
+  s43x2 (P1 s43 with / without tags)            143.9   145.2 (+1.3)             145.2 (+1.3)     143.0 (-0.9)             17.7 / 17.8 / 17.7 / 17.9
+  s43smp (P1 s43 greedy + 6 samples)            143.9   146.5 (+2.6 [-1.9,+7.4]) 146.7 (+2.8)     143.8 (-0.1)             17.7 / 16.6 / 16.6 / 17.5
+  Full metrics (HEAD evaluator): seeds3-mbr B-4 46.2 / METEOR 39.5 / ROUGE-L 64.7 / CIDEr 148.6; pool6-mbr 46.1 / 39.5 /
+  64.9 / 151.2 (out/pilot2_fullmetrics.txt). Consensus over several adapters is itself a strong lever (B3's territory);
+  tag agreement adds nothing to it.
+  In-repo cross-check (data/results): VCD on zero-shot short lowers CIDEr 29.0 -> 26.1 and raises CHAIR_i 42.9 -> 44.9;
+  tags in the zero-shot prompt: CIDEr 29.0 -> 27.9, CHAIR_i 42.9 -> 42.1. Presence-oriented decoding does not help
+  reference metrics here either.
+
+==========================================================================================================================
+4. PILOT C -- WHAT KIND OF EVIDENCE WOULD BE WORTH HAVING (mention-worthiness ceilings and a probe-quality curve)
+==========================================================================================================================
+Rule (veto, parameter-free): among the pool, keep the candidates with the fewest nouns whose p(named by refs) < 0.5,
+ties -> MBR. p comes from: panel = 1/0 from the independent OpenViIC captions (+hypernyms); prior = leave-one-out naming
+rate in KTVIC TRAIN refs (no test information); sim@a = simulated probe z = D*y + N(0,1) combined with the prior, D set so
+the posterior's AUROC on the pool's candidate nouns is a (mean of 10 noise draws; independent noise is an optimistic
+assumption); oracle = named by the test refs (winner's-curse ceiling).
+  pool     mbr            panel (indep.)                prior          sim 0.81       sim 0.90                     sim 0.95       oracle
+  seeds3   148.6 / 17.4   149.3 (+0.7 [-1.6,+2.9]) / 15.8  148.6 / 17.4   148.7 / 16.4   149.4 (+0.8) / 15.3 (-2.2)   150.2 / 14.4   151.9 / 13.0
+  pool6    151.2 / 17.5   152.7 (+1.5 [-1.4,+4.6]) / 14.7  151.3 / 17.4   151.5 / 15.9   153.4 (+2.2 [+1.0,+3.5]) / 13.4  155.7 / 11.4  159.9 / 8.0
+  s43smp   146.5 / 16.6   141.2 (-5.3) / 14.3              146.5 / 16.6   145.7 / 14.4   146.7 (+0.2) / 11.0 (-5.6)   148.0 / 8.5    151.4 / 3.0
+  (cells: CIDEr-D / CHAIR_i; deltas vs mbr.) Candidate-noun base rates: 0.77 / 0.72 / 0.63; the train prior's AUROC on
+  them is only 0.59-0.61. The additive utility sum(2p-1) instead of the veto rewards MORE objects and is worse everywhere
+  (out/pilot3.txt), so the veto form is used from here on.
+  Reading: (1) even PERFECT knowledge of what an independent human panel mentions buys at most +1.5 CIDEr over MBR; the
+  evidence has to come from the SAME panel. (2) An object critic needs AUROC ~0.90 on these candidates to cut CHAIR_i by
+  4-6 points on single-adapter pools (2 on cross-seed pools) at unchanged CIDEr; at the E2 probe's 0.81 it buys ~1-2.
+Pilot 4 -- what cheap signals reach (cross-fitted logistic critic, 5 folds by image; single-signal AUROC on s43smp:
+vote share 0.768, train prior 0.608, tag supports 0.589, tag contradicts 0.482, "greedy names it" 0.690):
+  s43smp: critic vote+prior AUROC 0.775 -> veto-MBR 147.3 / 15.5 (CHAIR_i -1.1 [-2.1, -0.3] vs mbr);
+          vote+prior+tags AUROC 0.782 -> 146.5 / 15.4 (-1.3 [-2.3, -0.4]). Tags add +0.007 AUROC.
+  seeds3 / pool6: critics reach only 0.71 / 0.75 and change nothing (consensus across adapters already removed it).
+
+==========================================================================================================================
+5. PILOT D -- TYPICALITY EVIDENCE: RETRIEVED SAME-PANEL REFERENCES AS MBR PSEUDO-REFERENCES, AND THE VETO ON TOP
+==========================================================================================================================
+Retrieval (pilot 5): TF-IDF (word uni+bigrams, RDRSegmenter) over each KTVIC-train image's 5 refs; query = the pool's
+greedy caption; the 5k refs of the top-k train images are pseudo-references. Score = CIDEr-D vs pseudo-refs (DF over the
+pseudo-ref sets), optionally + self-MBR CIDEr-D (equal weight, fixed). Presence gate (pilot 6): drop retrieved refs that
+name a COCO-80 class GDINO did not tag in the test image (50 -> 44.3 refs per image at k = 10).
+D1. One adapter, greedy + 6 samples (P1 s43 and, as replication, fuse2 s42) -- pilot 7:
+  rule              P1 s43: CIDEr-D (vs greedy) (vs self-MBR)                      CHAIR_i | fuse2 s42: CIDEr-D (vs greedy) (vs self-MBR)                   CHAIR_i
+  greedy            143.9                                                          17.7    | 143.9                                                          21.9
+  self-MBR          146.5 (+2.6 [-1.9, +7.4])                                      16.6    | 146.2 (+2.3 [-1.8, +6.6])                                      21.1
+  plain+self @10    149.9 (+6.0 [+3.0, +9.2]) (+3.4 [-0.3, +7.1] p .075)          17.6    | 149.9 (+6.0 [+3.1, +9.2]) (+3.7 [+0.4, +6.9] p .032)          21.1
+  gate+self  @10    151.4 (+7.5 [+4.4, +11.0]) (+4.9 [+1.2, +8.6] p .006)         17.0    | 149.8 (+5.9 [+3.0, +9.2]) (+3.6 [+0.4, +6.8] p .034)          20.9
+  plain+self @30    151.6 (+7.7 [+4.2, +11.9]) (+5.1 [+2.2, +8.1] p .001)         16.9    | 150.7 (+6.8 [+3.5, +10.5]) (+4.5 [+1.8, +7.1] p .001)         21.2
+  gate+self  @30    151.8 (+7.9 [+4.3, +12.1]) (+5.3 [+2.3, +8.3] p .001)         16.8    | 151.0 (+7.1 [+3.7, +10.8]) (+4.8 [+2.2, +7.4] p .001)         20.9
+  543 deduplicated images: same deltas within 0.1 (e.g. P1 s43 gate+self@10 +7.5). Greedy is kept in 41-61% of images.
+  The presence gate's own contribution: +1.5, +0.2 (P1, k = 10/30), -0.1, +0.3 (fuse2) -> about +0.5 on average.
+  Retrieval evidence alone (no self-MBR) already beats greedy by +3.1 to +4.4 (P1: plain@10 147.6, gate@10 148.4).
+  Image-keyed 1-NN (CLIP ViT-B/32 neighbour from data/dedup) as the only evidence is unstable (s43smp: 131.8; with self
+  +1.0 n.s.); caption-keyed k-NN is the robust variant.
+  Across ADAPTERS (seeds3, pool6) the same evidence adds only -0.2 to +1.0 over cross-adapter MBR: retrieval supplies the
+  panel typicality that a single adapter's samples lack and that a multi-adapter committee already has. One adapter +
+  retrieval (151.4-151.8) matches the 6-system committee (151.2) at 1/6 of its training cost.
+D2. EV-MBR = (gate+self @10) + mention-worthiness veto (pilot 8, 8b, 8c):
+  variant (P1 s43 pool)                         CIDEr-D (vs greedy)          CHAIR_i (vs greedy)      CHAIR_s  ment/cap
+  greedy                                        143.9                        17.7                     26.7     1.76
+  PE-MBR (gate+self@10)                         151.4 (+7.5 [+4.4, +11.0])   17.0 (-0.7 [-1.8, +0.4]) 26.2     1.77
+  + cheap veto, critic cross-fitted on test     152.3 (+8.4 [+4.7, +12.6])   15.5 (-2.2 [-3.7, -0.8]) 23.3     1.70
+  + cheap veto, critic fitted on fuse2 pool     151.1 (+7.2 [+3.1, +11.9])   15.0 (-2.7 [-4.3, -1.2])  -       1.68
+  + veto, NO detector (gate off, critic vote+prior, fitted on fuse2)  151.1 (+7.2 [+3.4, +11.3])  14.9 (-2.7 [-4.2, -1.5])
+  + simulated critic AUROC 0.81                 150.0 (+6.1 [+2.8, +9.9])    14.9 (-2.8 [-3.9, -1.6])
+  + simulated critic AUROC 0.90                 151.1 (+7.2 [+3.7, +11.2])   11.4 (-6.3 [-7.8, -4.8])
+  + oracle veto (ceiling, uses test refs)       156.3 (+12.4)                 3.0                     4.7      1.57
+  variant (fuse2 s42 pool)
+  greedy                                        143.9                        21.9                     35.8     2.09
+  PE-MBR (gate+self@10)                         149.8 (+5.9 [+3.0, +9.2])    20.9 (-1.0 [-2.3, +0.1]) 34.9     2.10
+  + cheap veto, cross-fitted                    149.9 (+6.0 [+2.7, +9.7])    19.6 (-2.4 [-3.9, -0.9]) 32.4     2.04
+  + cheap veto, critic fitted on P1 pool        150.1 (+6.2 [+2.8, +9.8])    20.0 (-2.0 [-3.4, -0.6])
+  + veto, NO detector, fitted on P1 pool        149.8 (+5.9 [+2.6, +9.6])    20.6 (-1.4 [-2.9, +0.0])
+  + simulated critic AUROC 0.90                 151.8 (+7.9 [+4.3, +11.7])   14.6 (-7.3 [-8.8, -5.9])
+  Critic weights fitted on one pool (vote share, logit prior, tag+, tag-, bias): [3.0, 0.37, 0.21, -0.94, -1.59] (fuse2),
+  [3.6, 0.21, 0.44, -0.88, -1.40] (P1); AUROC on the other pool 0.782 / 0.767.
+  Full HEAD-evaluator table (out/pilot8_fullmetrics.txt):
+    system                          B-1   B-4   METEOR ROUGE-L CIDEr  CHAIR_i CHAIR_s
+    P1 s43 greedy                   79.1  45.2  39.1   64.0    143.9  17.7    26.7
+    P1 s43 EV-MBR (cross-fit veto)  79.7  46.0  39.5   64.7    152.3  15.5    23.3
+    fuse2 s42 greedy                77.4  42.3  39.4   63.7    143.9  21.9    35.8
+    fuse2 s42 EV-MBR                78.6  43.3  39.7   64.4    149.9  19.6    32.4
+    (P1 3-seed mean, for reference: 79.0 / 45.2 / 39.1 / 64.0 / 145.8 / 18.4 / 27.7; best single P1, s42: CIDEr 149.8)
+  Object P/R/F1 (object_prf.py at HEAD, KTVIC gold; paired vs greedy): P1 s43 EV-MBR P 80.9 (+2.2 [+0.7, +3.6]), R 41.8
+  (+0.1 [-0.9, +1.0]), F1 55.1 (+0.6 [-0.5, +1.6]); fuse2 P 78.2 (+2.5 [+1.0, +4.0]), R 47.6 (+0.5 [-0.7, +1.7]), F1 59.2
+  (+1.1 [-0.1, +2.3]). Precision rises at unchanged recall, i.e. off the precision-count frontier.
+  Two-panel object precision (CHAIR-vi nouns, 555 images; paired vs greedy): P1 s43 EV-MBR: KTVIC +2.2 [+0.7, +3.7],
+  OpenViIC (independent, never used by the critic) +1.4 [+0.1, +2.8], union +1.6 [+0.4, +3.0]; fuse2: +2.4 [+0.9, +3.9],
+  +1.2 [-0.2, +2.6], +1.2 [+0.0, +2.3]. About 60% of the precision gain survives an independent panel.
+  543 deduplicated images: P1 s43 greedy 144.7 -> EV-MBR 153.2 (CIDEr-D, IDF of the 558), CHAIR_i 17.5 -> 15.4; fuse2
+  143.8 -> 150.0, 21.8 -> 19.2. Verbatim copy of a KTVIC-train caption: P1 s43 20.6% -> 21.1%, fuse2 17.4% -> 17.2%.
+D3. Copy hazard (pilot 10): copying retrieved evidence instead of voting with it scores CIDEr 97.4 / CHAIR_i 37.0 (top-1
+retrieved ref), 122.0 / 30.4 (Devlin kNN-consensus ref); the presence gate only trims this to 98.7 / 34.9 and 121.0 /
+29.0. Retrieved captions must stay pseudo-references; putting them into the generator's prompt (RA-SFT) inherits a
+large hallucination risk (section 9).
+
+==========================================================================================================================
+6. LITERATURE (scoop searches done 2026-10-12: WebSearch x 24, arXiv API x 10, WebFetch full text/HTML for the closest
+   papers; arXiv ids were resolved via OpenAlex or the arXiv abstract page in this session (lit/id_check.txt), except
+   those marked [search result] (seen in search results only) or [R4-00] (taken from the repo's earlier scoop table))
+==========================================================================================================================
+Detector / tag evidence in captioning (training-time):
+- Oscar 2004.06165 and VinVL 2101.00529: detector tags as encoder input (pre-LVLM). VIVO 2009.13682 (AAAI'21).
+- Tag2Text 2303.05657 (ICLR'24), full text read: tag guidance COCO-FT CIDEr 123.3 -> 124.6 (+1.3), NoCaps-ZS 88.8 -> 89.5
+  (Table 5); fine-tuning MIXES parsed (oracle) and recognised tags -- i.e. tag-SFT with tag noise is already published.
+- RAM 2306.03514 (tagger trained on caption-parsed tags). RORPCap 2508.07318: retrieved object words as prompts,
+  object prompt +6.9% CIDEr to 117.2. VCoder 2312.14233 (CVPR'24): perception maps as control inputs.
+- Visual Evidence Prompting (Li et al., ACL 2025, DOI 10.18653/v1/2025.acl-long.205): small expert models' outputs in
+  the prompt, training-free; the inference-time tag baseline.
+Hallucination mitigation and whether it reports caption-quality metrics (checked in the papers' HTML):
+- OPERA 2311.17911, VCD 2311.16922: no CIDEr. HALC 2403.00425 (ICML'24): CHAIR + BLEU only (LLaVA-1.5 CHAIR_s 20.80 ->
+  13.80, CHAIR_i 6.77 -> 5.50, BLEU 15.93 -> 16.10); GDINO/OWLv2 only initialise its field-of-view search.
+  PAI 2407.21771: CHAIR + GPT-4V scores (LLaVA greedy 46.6/13.4 -> 24.8/6.9). VTI 2410.15778: CHAIR + recall + length.
+  ICT 2411.15268 and AGLA 2406.12718: abstracts only checked, no CIDEr found there. Woodpecker 2310.16045, LURE 2310.00754
+  (LURE's baselines include "list objects first, then describe" CoT). SENTINEL 2507.12455: two open-vocabulary detectors
+  label sentences for C-DPO data.
+  => None of these optimises or reports CIDEr; the repo's own VCD run lowers KTVIC CIDEr (29.0 -> 26.1).
+- Self-consistency over samples: SelfVal 2601.22451 -- N sampled captions, LVLM self-verification of each object,
+  Best-of-N or filter-then-aggregate; Qwen2.5-VL-7B CHAIR_i 9.9 -> 4.1 (Best-of-10), no CIDEr. Closest prior for the veto.
+- Internal-state detectors: HaloProbe 2604.06165 -- Bayesian posterior from internal signals x a prior on external
+  description statistics, AUROC 93.5 on LLaVA-1.5 detailed captions, used to score beams (S = n_hal + p_hal - beta(n_corr
+  + p_corr)); CHAIR/F1 only. HALP 2603.05465 (EACL'26): pre-generation probes up to 0.93 AUROC, ~0.79 for Qwen2.5-VL-7B
+  with visual-only features. TruthPrInt 2503.10602 (ICCV'25), Jiang et al. 2410.02762 (ICLR'25; logit-lens erasure, up
+  to -25.7% hallucinations), IFCD 2502.01056 [search result], 2508.04567 [search result] (linear presence probes). All define the label as PRESENCE.
+- In-house: E2 probe (scripts/probe_existence.py): label = named by any reference, AUROC 0.807 at layer 24 (class prior
+  0.710) on VSPS proposition objects.
+Mention-worthiness / content selection (the target EV-MBR's critic uses):
+- Wang & Gaizauskas, "Don't Mention the Shoe! A Learning to Rank Approach to Content Selection for Image Description
+  Generation", INLG 2016 (ACL Anthology W16-6631); Berg et al., "Understanding and Predicting Importance in Images",
+  CVPR 2012; Spain & Perona, "Measuring and Predicting Object Importance", IJCV 2011. Pre-LVLM, from boxes; no use as an
+  MBR veto. Language-Guided Salient Object Ranking (CVPR 2025) ranks salience, not panel mention.
+Retrieval evidence and consensus decoding:
+- m-RNN 1412.6632 (appendix): rerank the model's n-best by mean similarity to captions of the k nearest TRAIN images;
+  COCO val CIDEr 84.2 -> 93.8, test server 81.9 -> 91.7. Devlin et al. 1505.04467, 1505.01809 (kNN consensus caption).
+  This is the closest prior of the typicality component; EV-MBR differs by mixing it with self-samples (MBR), gating it,
+  and adding the veto, on an LVLM.
+- MBR: model-based MBR 2311.05263 (ICML'24; weights pseudo-refs by model probability; BLIP-2 COCO BLEU 27.12 -> 28.75 at
+  4 samples, BERTScore utility, no CIDEr); AMBR 2401.02749; IC3 2302.01328 [R4-00]. No paper found that uses
+  retrieved human captions of other images as MBR pseudo-references for an LVLM captioner.
+- Retrieval-augmented captioning: SmallCap 2209.15323, RA-Transformer 2207.13162, EXTRA 2302.08268, EVCap 2311.15879,
+  RACap 2509.15883, Re3Cap 2608.21305, and Li et al. 2406.02265 (ACL'24, read): SmallCap copies tokens that a majority
+  of retrieved captions share (86.5% in the 2-good-1-bad setting); training with captions sampled from the top-7 instead
+  of the fixed top-k fixes part of it (COCO 120.1 vs 119.2 in-domain; NoCaps out 68.3 -> 71.1).
+- kNN-LM 1911.00172 / kNN-MT 2010.00710: no captioning datastore variant found.
+- Pseudo-references for training: Zheng et al. 1808.09564 (+11.7 CIDEr; cited in R4-00).
+Small objects / resolution: ViCrop 2310.16033 -> "MLLMs Know Where to Look" 2502.17422 (ICLR'25): crops help
+small-detail VQA (TextVQA, V*), with smaller gains on larger-concept benchmarks.
+Detectors for tagging cost: Grounding DINO 2303.05499, OWLv2 2306.09683, Florence-2 2311.06242, YOLO-World 2401.17270.
+
+==========================================================================================================================
+7. PROPOSALS (at most 2; ranked by expected metric gain x novelty / cost)
+==========================================================================================================================
+P-B4-1  EV-MBR: evidence-factorised MBR decoding (panel typicality x mention-worthiness veto)
+  Mechanism (decode-time, one adapter, one 3090, no new training of the captioner):
+   1. Candidates: greedy + K = 6 short samples from the adapter (temperature chosen on dev from {0.5, 0.8}).
+   2. Typicality evidence: retrieve the k train images whose 5 refs are closest (TF-IDF, word uni+bigrams) to the
+      greedy caption; their 5k refs are pseudo-references (k chosen on dev from {10, 30}); optional presence gate.
+   3. Score = CIDEr-D vs the other candidates (self-consensus) + CIDEr-D vs the retrieved refs, equal weight.
+   4. Mention-worthiness veto: a logistic critic gives p(noun named by the panel) for each candidate noun from [vote share
+      among the K+1 candidates, KTVIC-train leave-one-out naming prior, (GDINO tag status)]; fit on the dev split's
+      candidates with their EXISTING 5 references as labels. Keep the candidates with the fewest nouns of p < 0.5; take
+      the best score among them.
+  Novel element: the Bayes decision is factorised by evidence type -- panel typicality comes from the SAME panel's
+   captions of retrieved images mixed into the MBR pseudo-reference distribution, object choice is vetoed by a critic of
+   PANEL MENTION-WORTHINESS (not presence). The project's diagnostics motivate both halves (sections 2, 4) and the
+   pilots show presence evidence is dispensable (8c).
+  Closest prior and delta: m-RNN 1412.6632 / Devlin 1505.04467 rerank by kNN captions alone (pilot: alone +3.1 to +4.4;
+   mixed with self-MBR +6.0 to +7.9); MBR / MBMBR 2311.05263 use self-samples only (pilot: +2.3 to +2.6); SelfVal
+   2601.22451 and HaloProbe 2604.06165 veto or rescore by PRESENCE-hallucination signals and report no CIDEr.
+  Pilot (test, ESTIMATES): P1 s43 CIDEr 143.9 -> 151.1-152.3 (+7.2 [+3.1, +11.9] with the critic fitted on another
+   adapter; +8.4 [+4.7, +12.6] cross-fitted), CHAIR_i -2.2 to -2.7, BLEU-4 +0.8, METEOR +0.4, ROUGE-L +0.7, object P +2.2
+   at equal R, independent-panel P +1.4 [+0.1, +2.8]; fuse2 s42 +5.9 to +6.2 CIDEr, CHAIR_i -1.4 to -2.4.
+  Dev protocol (no test tuning): dev = random.Random(0).sample(sorted(train_ids), 300) (B2 wrote it to
+   B2_targets_data/out/dev300_train_ids.txt); P1-dev adapter trained on the other 3,469 train images; retrieval index =
+   train minus dev; choose T, k, gate on/off and fit the critic on dev; then freeze and run on test with the 3 full-train
+   P1 seeds. Required control on dev: self-MBR with 24 samples (is it just "more pseudo-references"?).
+  GPU-h (one RTX 3090; measured unit costs: P1 SFT 6,938 s; greedy short 1.3-1.5 s/image; 6 short samples ~3.6 s/image;
+   GDINO <= 0.58 s/image): P1-dev adapter 1.8 + dev greedy and samples at 2 temperatures 0.7 + 24-sample control 0.9 +
+   test samples for s42 and s44 (s43 exists) 1.1 + UIT-ViIC test samples, 3 seeds 0.7 (+ the UIT-ViIC P1 seeds that the
+   generalisation requirement needs anyway) + GDINO on dev/UIT-ViIC test 0.1 = ~5.3 GPU-h. COCO-Karpathy replication
+   (language-agnostic; 2,500-image subset, 1 seed) +2.5. Inference cost: 7 decodes per image (~4.9 s vs 1.4 s greedy).
+  Expected gain: +5 to +8 CIDEr over each seed's greedy (3-seed mean ~151-153 vs 145.8), CHAIR_i -1.5 to -3, BLEU-4 /
+   METEOR / ROUGE-L +0.4 to +1. P(+8 over the 3-seed mean, pooled paired bootstrap over 3 x 558 pairs) ~0.25 alone;
+   it stacks with any adapter (B1 RL, B2 MR5), which is the realistic path to the +8 bar.
+  Kill criterion: on dev, EV-MBR must beat greedy by >= +4 CIDEr with paired CI_low > 0 and CHAIR_i <= greedy, and beat
+   the 24-sample self-MBR control by >= +2 CIDEr; drop the retrieval term if it adds < +1.5 over self-MBR on dev, drop the
+   veto if the critic's dev AUROC < 0.72. On test, stop if the mean gain over the 3 greedy seeds is < +4 CIDEr.
+  Synthetic training data: none for the captioner. The critic (4-5 weights) is fitted on model-generated candidate nouns
+   labelled by existing human references. Overlap: the self-MBR half is B3's baseline; merge with B3 if both are chosen.
+  Confidence: medium.
+
+P-B4-2  PM-Probe: a hidden-state PANEL-MENTION probe as the veto critic (internal evidence), the CHAIR Pareto route
+  Mechanism: teacher-force each candidate caption through the captioner with the image; take the hidden state (layers
+   20-28; E2 found 24 best) at the last token of each lexicon noun; a PCA-64 + logistic probe predicts "named by any of
+   the 5 references" (existing human labels). Train it on candidates of UNSEEN train images (the 300 dev images plus
+   750 + 750 cross-fitted images: half-A adapter on half-B images and vice versa, as in the queued xfit jobs 60-62) so
+   the labels are not memorised; add the noun's token log-probability (HaloProbe-style internal statistic) and the
+   cheap features of P-B4-1. Use the calibrated output as the veto critic of P-B4-1 (optionally also as a reward-shaping
+   veto for B1's RL).
+  Novel element: the probe's target is panel mention-worthiness at the noun's position INSIDE the candidate caption,
+   learned from existing references, and it is used as a candidate-level MBR veto; prior probes (HaloProbe, HALP,
+   TruthPrInt, 2508.04567) target presence on detailed captions and are scored on CHAIR only.
+  Closest prior: E2 (in-house, question-format, AUROC 0.807); HaloProbe 2604.06165 (Bayesian internal x external
+   posterior, beam scoring); HALP 2603.05465 (Qwen2.5-VL-7B ~0.79 visual-only).
+  Pilot (CPU simulation on test candidates, ESTIMATES): with P-B4-1's pools, a critic of AUROC 0.81 gives CHAIR_i 14.9
+   (P1 s43) / 18.6 (fuse2) at CIDEr 150.0; AUROC 0.90 gives 11.4 / 14.6 at CIDEr 151.1 / 151.8; the cheap critic sits
+   at 0.76-0.78 (15.0-15.5 / 19.6-20.0). Simulated noise is independent of the cheap features, so the real increment
+   of a probe will be smaller than the simulation at the same AUROC.
+  GPU-h: two P1 half-adapters 1.9 (0 if the queued fuse2 xfit halves are reused, at the price of an adapter mismatch)
+   + 6 short samples on 1,500 unseen train images 1.5 + teacher-forced hidden states for ~1,800 x 7 candidates 0.3 +
+   test 3 seeds 0.3 = ~2.1-4.0 GPU-h. GDINO tags for the 1,500 train images (if the tag feature is kept) 0.25.
+  Expected gain: if the combined critic reaches out-of-fold AUROC >= 0.85 on dev candidate nouns: CHAIR_i a further
+   -1.5 to -3.5 on top of P-B4-1 (3-seed mean ~13.5-14.5 vs 18.4) at CIDEr within +-1 of P-B4-1, i.e. the Pareto bar;
+   P(AUROC >= 0.85) ~0.3 (HALP's Qwen2.5-VL-7B figure and E2's 0.807 are below it). Below 0.85 the gain is <= 1 point.
+  Kill criterion: dev out-of-fold AUROC of (probe + cheap features) < 0.85, or < +0.05 over the cheap critic -> stop
+   after the 2-4 GPU-h gate; on test, CHAIR_i not >= 1.5 below P-B4-1 with CIDEr >= P-B4-1 - 1 -> drop.
+  Synthetic training data: none for the captioner (probe inputs are model states of model-generated candidates; labels
+   are existing human references). Confidence: low-medium.
+
+Not proposed (considered; reasons in section 9): tag-SFT (the orchestrator's first suggestion), retrieval-augmented SFT
+with presence-gated retrieved captions ("PE-SFT"), token-level probe gating, plan-then-caption, region crops.
+
+==========================================================================================================================
+8. GPU COST OF TAGGING THE 3,769 KTVIC TRAIN IMAGES
+==========================================================================================================================
+Measured basis: n2 (RTX 3090), queue job 25_tags_a_zeroshot: START 2026-10-12T00:41:44, tags_gdino.json written
+00:47:08.7 -> 324.7 s wall for the 558 test images with scripts/tag_images.py (Grounding-DINO base, fp32, 2 prompts of
+40 COCO classes), including interpreter start and model load -> <= 0.58 s/image.
+  GDINO-base, COCO-80 (tag_images.py as is), 3,769 images:     <= 36.6 min  = <= 0.61 GPU-h (upper bound)
+  GDINO-base, KTVIC 113-noun lexicon (3 prompts of <= 40):        ~ 0.9 GPU-h (x1.5 prompt passes; estimate)
+  UIT-ViIC train+val+test (3,850 images), COCO-80:                ~ 0.62 GPU-h (but human COCO instance labels exist)
+  YOLO-World-L (2401.17270 reports 52 FPS on a V100):            ~ 0.05-0.1 GPU-h (unmeasured estimate)
+  OWLv2-B/16 (2306.09683) or Florence-2-L (2311.06242):          ~ 0.2-0.6 GPU-h (unmeasured estimate)
+For P-B4-1 only the evaluated images need tags (dev 300 + test sets: < 0.1 GPU-h); the train set is needed only for a
+tag-SFT arm or a train-fitted tag feature. The detector can be dropped altogether (pilot 8c).
+
+==========================================================================================================================
+9. KILLED OR DEPRIORITISED B4 SUB-IDEAS
+==========================================================================================================================
+- Tags in the SFT prompt with tag dropout (tag-SFT): prior art (Tag2Text mixes parsed and recognised tags; Oscar/VinVL),
+  measured ceiling +1.3 CIDEr on COCO; here tag status is near chance for the nouns a captioner proposes (AUROC 0.58 /
+  0.48), tags add +0.007 AUROC to the critic, and removing them from EV-MBR changes nothing. Inference-time tags gave +1.1
+  (P1 s43) and +2.5 (fuse2 s42), one seed each, below the MDE. Cost of a real test: 0.61 + 3 x ~2.2 + evals ~ 8 GPU-h.
+  Prediction if run anyway: |dCIDEr| <= 1.5 vs P1, CHAIR_i within +-1.
+- Deleting mentions by tag disagreement: -0.4 CHAIR_i ceiling (section 3); deleting by any COCO-80 presence oracle
+  <= -5.5 and mostly person naming, which presence cannot fix.
+- E2 probe gating object tokens during decoding: token-level gating is the PatchGate core (2608.21819 [R4-00] §2b,
+  MIND killed); the only use with headroom is the candidate-level veto (P-B4-2).
+- Plan-then-caption: a model-generated plan adds no information (VN3 killed in R4-00, muPLAN 2305.14205 [R4-00]); an EVIDENCE plan
+  is only as good as the evidence -- presence plans are the tags above, and even perfect independent-panel object
+  knowledge buys <= +1.5 CIDEr over MBR (section 4). Kill.
+- Region crops / higher resolution for small objects: the extra objects they would surface are exactly the ones panels
+  do not name (handbag 2.6%, bottle 2.3%, bowl 10%, umbrella 8.3%, backpack 12.1% of detections named on KTVIC; chair
+  1.7%, bench 0.8%, handbag 0% of instance-present on UIT-ViIC); ViCrop's gains are on small-detail VQA. Predicted
+  |dCIDEr| < 2; job 73 (1024 visual tokens, already queued) answers it at no extra cost.
+- Independent-panel (OpenViIC) object evidence: +0.7 / +1.5 n.s. CIDEr over MBR, -5.3 on the sample pool.
+- Retrieval-augmented SFT with retrieved captions in the prompt (PE-SFT): copying retrieved evidence scores CIDEr 97-122
+  with CHAIR_i 29-37 (pilot 10), SmallCap-type models copy majority tokens (2406.02265), the prior art is dense (SmallCap,
+  EXTRA, RACap, RORPCap), and its typicality signal is already captured at decode time by P-B4-1. Keep only as a stretch
+  arm if P-B4-1's inference cost is unacceptable: ~11 GPU-h (tags 0.61, embeddings 0.05, dev 2.3, 3 seeds 6.6, evals 1.5).
+
+==========================================================================================================================
+10. RISKS, CAVEATS, OPEN QUESTIONS
+==========================================================================================================================
+- All KTVIC numbers are test-set effect-size estimates from ONE seed's sample pool per adapter. P1 s43 is a low seed
+  (143.9 vs s42's 149.8); gains may shrink on s42 (regression to the mean). Samples for s42/s44 cost 1.1 GPU-h.
+- The cross-fitted critic of pilot 8 was fitted on test labels (other folds); 8b/8c fit it on the other adapter's pool
+  (same test images, different model) and keep the gain. A dev-fitted critic is the real test.
+- Retrieval keyed on the greedy caption is a two-pass procedure; it uses only model output and train data (no leakage).
+  15 test images have a train near-duplicate; the 543-image numbers match the 558-image ones.
+- Simulated-probe numbers assume probe noise independent of the cheap features: optimistic.
+- Winner's curse: the same-reference oracles (objorc 152.5-164.3, CIDEr oracles 167-201) are NOT achievable; only the
+  independent-panel and simulated rows are realistic ceilings.
+- Power: per-seed paired CI half-width ~ +-4 CIDEr; pooling 3 seeds' image-level paired differences gives ~ +-2.5.
+  A between-seed t-test (3 per arm) detects only ~ +12.7 (R5-00), so EV-MBR claims must use the pooled paired bootstrap.
+- CHAIR-vi uses reference gold: part of the CHAIR_i and precision gain is typicality; about 60% of the precision gain
+  holds against the independent OpenViIC panel (section 5 D2). Faithfulness wording should use the two-panel numbers.
+- Overlap with B3 (decoding): the self-MBR half and the candidate pool are B3's levers; B4 contributes the retrieved
+  panel references, the presence/typicality analysis and the mention-worthiness veto.

@@ -1,0 +1,256 @@
+B3-P2 adversarial verification: "Committee-MBR distillation into one adapter on unlabeled in-domain images"
+[FLAG: synthetic training data -- model-written captions as SFT targets; user veto point]
+2026-10-13. CPU only (nice 15, <= 2 threads, bootstrap B = 2000, numpy seed 42). No GPU, no VLM/LLM loaded.
+Work dir: verify/B3-P2_work/. Repo, n2 and n3 were read only: ls/stat/head of run dirs, sample files and metrics.jsonl;
+nothing was written there and /root/queue was not touched. No OpenViIC caption text was printed or written; only scores.
+Scoring: HEAD's scripts/evaluate.py and rescap/ (git show / git archive HEAD into B3-P2_work/head/), pycocoevalcap,
+word-level VnCoreNLP-1.2 RDRSegmenter run LOCALLY (JDK 21), so no syllable proxy was needed.
+
+VERDICT: KILL.
+  Novelty   INCREMENTAL. It is MBR finetuning (Finkelstein et al., ICLR 2024) applied to captioning with an ensemble
+            teacher. The core loop (committee teacher -> pseudo-captions on unlabeled images -> student) is Self-
+            Distillation for Few-Shot Image Captioning (WACV 2021). The SFT-on-MBR-outputs arm is an explicit
+            baseline in C-GRPO (arXiv 2602.03102, 2026), and C-GRPO's RL variant beats it. In this repo, it is
+            round-2 A8 D1 (VTF self-distillation on the hidden-label OpenViIC pool, killed by V5) with a CIDEr
+            selector. The proposal itself says "incremental".
+  Gain      Realistic: 0 to +3 CIDEr over the P1 3-seed mean (point estimate about +1), inside seed noise (SD 3.0-3.4
+            per run). The closest literature analogue is a student that already has human supervision. There,
+            self-MBR adds +0.54 COMET with beam, and the greedy student (60.93) does not beat the reference-finetuned
+            model (60.95). Self-training at 130 CIDEr adds +0.2 (UCM).
+            Even the proposal's own +3 to +6 is below R6's +8 bar, so P2 cannot be the breakthrough method. At best
+            it is a cost reduction for B3-P1.
+  Gate      The go/no-go rule (dev-300, one run per arm, +3) passes a NULL effect 30% of the time. It passes a true
+            +4.5 only 62% of the time. It is also biased toward the student, because the teacher adapters were
+            trained on the dev images.
+  Cost      Fits one RTX 3090. 35 GPU-h is about right for a 3-seed, KTVIC-only run (about 36 by measured
+            throughput). A claim that meets CONTEXT_R6 (UIT-ViIC replication; enough seeds for a +3 to +6 effect)
+            needs about 60-95 GPU-h.
+  Dominated The non-synthetic MR5 run (multiref; B2 estimates +3 to +9) is already training on n3. The CIDEr-RL track
+            (CN-RLOO) is already running on n2, and C-GRPO shows RL amortises MBR better than SFT on MBR outputs.
+
+-----------------------------------------------------------------------------------------------------------
+1. PILOT RE-CHECK (lens 3): the teacher reproduces exactly; the distillation itself was never piloted
+-----------------------------------------------------------------------------------------------------------
+1a. End-to-end with the HEAD evaluator copy (out/eval_*.json):
+      P1 s42 / s43 / s44           CIDEr 149.8 / 143.9 / 143.7 (mean 145.8); B-4 45.5/45.2/44.8; CHAIR_i 19.2/17.7/18.3
+      teacher4 = P1x3+fuse2 | ev+12smp   B-4 47.0, METEOR 40.1, ROUGE-L 65.5, CIDEr 156.2, CHAIR_i 17.3, 1.88 obj/cap
+      teacher8 = all8 | ev+12smp         CIDEr 157.5, CHAIR_i 17.1
+    These equal B3's Table A and CONTEXT_R6.
+1b. Independent re-implementation (verify_p2.py):
+    - My own CIDEr-D replica equals pycocoevalcap per image (max |diff| 8.9e-16).
+    - I re-ran B3's frozen rule from the raw inputs only: 4 greedy prediction files, the 12 T=0.8 samples, and IDF
+      from the 3,769 KTVIC train reference sets.
+    - The picks are identical to B3's on 558/558 images, so the rule reads no test reference.
+    - teacher4 - P1 mean = +10.35 [6.87, 13.96] (paired image bootstrap pooled over the 3 seeds; B3 reported +10.3
+      [6.9, 14.0]).
+1c. Independent panel (UIT-OpenViIC captions of 555 test images; scoring only):
+    - teacher4 - P1 mean = +3.00 [1.60, 4.47]; fuse2 alone +1.82 [-0.69, 4.53].
+    - The chord expectation at teacher4's object count (lambda 0.32) is about +0.6, so the teacher's panel gain is
+      real quality, as B3 says.
+1d. NOT piloted: the distillation. No student exists and no teacher pass on OpenViIC images was run. Every P2 gain
+    number is an extrapolation from 1b. The "30-60% of the committee's +10" share is an assumption, not a measurement.
+
+-----------------------------------------------------------------------------------------------------------
+2. GAIN REALISM (lens 3)
+-----------------------------------------------------------------------------------------------------------
+2a. Where the teacher's gain sits (verify_p2.json, gain_by_P1_seed_agreement). Images are grouped by how many distinct
+    greedy captions the 3 P1 seeds give:
+      all 3 identical (162 images): mean gain +2.0, 5.7% of the total gain
+      2 distinct      (240 images): mean gain +8.9, 37.1%
+      3 distinct      (156 images): mean gain +21.2, 57.2%
+    => The gain is mostly variance reduction on images where the seeds disagree.
+       A single student is one more seed. It keeps this gain only to the extent that sequence-level ensemble
+       distillation transfers "pick the consensus" to unseen high-uncertainty images. Measured transfer at strong,
+       already-supervised baselines is small (2c).
+2b. Pseudo-target quality (what the student would imitate):
+    - Against KTVIC refs 3-5 (non-adjacent to caption #1; B2's chain finding), as CIDEr-D on test images:
+        human caption #1   150.0
+        teacher4 pick      132.2   (-17.8 [-28.2, -7.3] vs caption #1)
+        P1 greedy          121.8-126.9
+        fuse2              126.7
+      As KTVIC-metric targets, the pseudo-captions sit between P1's own outputs and the human target that P1
+      already trains on.
+    - Against the independent panel: caption #1 48.72, teacher4 47.92, P1 mean 44.92. The pseudo-captions are close
+      to human quality there.
+    So the extra rows dilute the human target on the primary metric. They can only help through more images.
+2c. Literature effect sizes (full text read unless noted). Students that already have human supervision:
+    - Finkelstein et al. 2309.10966, Table 2 (en-de, COMET20):
+        base beam 57.79 -> MBR decoding 59.35 (+1.56)
+        beam-finetuned 57.08 (-0.71); MBR-finetuned on the 30k finetuning sources 58.02 (+0.23)
+        self-MBR from BASE on 200k new sources 59.94 (+2.15). This is the number P2 cites, but its student has no
+        human supervision.
+        reference-finetuned 60.95; self-MBR from REF 61.49 (+0.54); self-beam from REF 60.06 (-0.89)
+      Table 4: the from-ref MBR-finetuned student decoded GREEDY scores 60.93, below 60.95.
+      P2 decodes greedy and mixes human rows, so its analogue is "from ref": about +0.5 at beam, about 0 at greedy.
+      Their own explanation: self-teacher samples "do not closely approximate the true reference distribution".
+    - C-GRPO 2602.03102, Table 1 (6 WMT24 settings, Mistral-7B/Llama-3-8B):
+        base 0.616; random-reward GRPO 0.638; SFT on MBR outputs 0.672; MBR decoding 0.711; C-GRPO 0.719 / 0.748
+      SFT recovers 59% of the MBR gain from an UNtuned base (much more headroom than P1). Consensus RL matches or
+      exceeds MBR.
+    - UCM 2201.02010, Table IV (COCO): self-training on 300k unlabeled images gives +1.6 CIDEr under XE
+      (117.8 -> 119.4) and +0.2 after CIDEr optimisation (129.9 -> 130.1).
+    - LightCap 2212.08985: ensemble KD from 3 differently initialised teachers (with ensemble heads) gives +1.7 CIDEr
+      at about 125.
+    - BLIP CapFilt (2201.12086, per round-2 A8): +1.9 COCO CIDEr from bootstrapped data.
+    => Expect 0 to +3 KTVIC CIDEr (point about +1), 0 to +1.5 panel CIDEr, CHAIR_i about unchanged.
+       The success bar is +8; P2's own target is +3 to +6.
+2d. In-repo precedents:
+    - E5 continued fuse2 for one epoch on 1,458 gold-selected DETAILED-prompt samples of SEEN images plus gold_fuse2.
+      Short CIDEr went 143.9 -> 137.9; with DPO, 123.1.
+      Different prompt, selector and image pool, so E5 is weak evidence against P2. P2's "fixes E5" claim is plausible
+      but untested.
+    - Round-2 A8 D1 (the same OpenViIC hidden-label pool, VTF selector) was killed by V5 because the inference gain to
+      distil was about 0 against greedy. P2's CIDEr inference gain is real (1b), so that specific reason does not
+      carry over.
+    - B2 stand-in: CIDEr-MBR consensus targets chosen among HUMAN refs do not beat caption #1 (-2.2 n.s. at target
+      level; -10.5 vs multiref in the generalisation stand-in).
+2e. Metric gaming in what the student would learn (verify_p2.json, diagnostics; 558 test images):
+                       words  distinct-2  "có"-initial  verbatim train ref  4-grams in train refs  repeated word
+      human caption#1  10.27   0.283        63.4%          50 (9.0%)            73.7%                 19.2%
+      P1 s42           10.49   0.177        95.9%         120                   88.4%                 22.6%
+      teacher4         10.51   0.181        96.6%         113 (20.3%)           89.0%                 23.7%
+    - No length hacking.
+    - No more templating or copying than P1 itself.
+    - BUT the pseudo-targets are far more templated than the human targets they would be mixed with: 96.6% vs 63.4%
+      "có"-initial, distinct-2 0.18 vs 0.28. A ratio-1.0 student is pushed further toward the template. That is
+      KTVIC typicality, which the panel does not reward.
+2f. Leakage:
+    - The teacher rule is clean (1b).
+    - Pool: B2-2 found about 3 FREE images that are likely crops of test images (SSCD 0.70-0.88). CLIP >= 0.93 may
+      miss crops: the KTVIC train/test audit found 3-4 same-photo crops between 0.90 and 0.95.
+    - DEV GATE BIAS: the 4 teacher adapters were trained on FULL KTVIC train, including the dev-300 images (caption #1
+      and fused targets). Their pseudo-captions of similar OpenViIC scenes can carry dev-caption phrasing into the
+      student. The P1-on-train-minus-dev baseline never saw it. The bias favours the student, with unknown size; the
+      gate margin is only +3.
+
+-----------------------------------------------------------------------------------------------------------
+3. GATE AND POWER (lens 3)
+-----------------------------------------------------------------------------------------------------------
+- Single-run null on 300 images: built from 4 same-recipe legacy-mask P1 runs (s42, s43, s44, p1mask_s42; full-test
+  pair differences 0.2 to 6.1), with 2,000 random 300-image test subsets.
+    SD of a single-run difference                 4.77 CIDEr
+    P(diff >= +3 | no effect)                     30%
+    threshold for a 5% false pass                 +7.6
+    P(pass) for a true effect of +3 / +4.5 / +6   50% / 62% / 74%
+- Panel criterion ("panel CIDEr rises"):
+    panel seed SD over the 4 runs 0.77; single-run null SD on 300 images 1.34; 5% threshold +2.2
+  A student keeping 30-60% of the teacher's +3.0 panel gain (+0.9 to +1.8) is undetectable with one run, and a null
+  "rises" half the time.
+- Final claim:
+  - With 3 seeds per arm, a between-seed test detects about +12.7 (CONTEXT).
+  - +4.5 at 80% power needs 7-9 seeds per arm (between-seed SD 3.0-3.4).
+  - A paired image bootstrap pooled over seeds ignores the dominant seed term. For example, P1 s42 - s43 =
+    +5.88 [+0.89, +10.90] (seedci.py), for the same recipe.
+  - The proposal does not say which test it will use.
+
+-----------------------------------------------------------------------------------------------------------
+4. FEASIBILITY ON ONE RTX 3090 (lens 2)
+-----------------------------------------------------------------------------------------------------------
+Measured throughput (n2, read only):
+- SFT: p1assist_s42 metrics.jsonl gives train_runtime 6,874.7 s for 942 steps (2 epochs x 3,769 rows). That is 1.096
+  samples/s, or 1.91 GPU-h per P1 run.
+- Six T=0.8 short samples: 3.64-3.74 s/image (558 images in 33.9 and 34.8 min; file birth to modification time).
+- Greedy short decode: 0.87 s/image (data/vram, 4-bit, 512 visual tokens).
+Memory: student rows have the same length as P1 rows, so peak memory equals P1 QLoRA's, which already trains on these
+3090s; sampling ran on them too. FITS.
+
+Budget by phase:
+  teacher pass, 4,000 images: 4 greedy (3.87 h) + 2 x 6 samples (8.2 h)          12.1   (proposal: 9.3)
+  dev arm: student r=1.0 (6,938 rows x 2 ep) 3.52 + r=0.5 2.64 + P1-dev 1.76
+           + decoding 0.2                                                         8.1    (p1dev_s42 exists; mask must match)
+  final: 3 students at r=1.0 on full train, 3.82 each                             11.5
+  two more p1assist seeds as the matched baseline                                 3.8
+  test + UIT-ViIC-test decoding                                                   0.6
+  => about 36 GPU-h for the proposal as written (3 seeds, KTVIC only).
+Extra needs:
+  + dev-clean teacher (3 P1-dev + fuse2-dev, plus a second teacher pass)          about 18
+  + in-domain UIT-ViIC replication (2 more UIT-ViIC P1 seeds, a COCO pool teacher
+    pass, 3 students)                                                             about 24
+    The proposal's "UIT-ViIC scoring" only evaluates the KTVIC student across datasets.
+  + 7-9 seeds per arm for a +3 to +6 claim                                        about +30
+  => about 60 GPU-h to meet CONTEXT_R6, about 85-95 powered. A COCO replication (the method is language-agnostic)
+     would add more.
+Implementation risk: low to moderate.
+- train_stage2 reads images only from KTVIC/images/<file_name>, and e5_sample.py only from a KTVIC-layout split. Both
+  need a combined image directory.
+- 2 FREE OpenViIC file names collide with KTVIC files of different photos (4,197/4,660 pairs share names).
+- An MBR selection script exists (B3 pilot.py; verify_p2.py).
+
+-----------------------------------------------------------------------------------------------------------
+5. NOVELTY / SCOOP SEARCH (lens 1)
+-----------------------------------------------------------------------------------------------------------
+Searches (raw outputs in B3-P2_work/lit/):
+- arXiv API, 10 queries, 2022-2026 where dated:
+    q01 MBR + distillation/finetuning/self-training (17 hits)
+    q02 captioning + self-training/pseudo-labels (25)
+    q03 captioning + ensemble + distillation (6)
+    q04 captioning + MBR (4)
+    q05 Vietnamese captioning (7)
+    q08 VLM self-training/self-improvement + caption (12)
+    q09 captioning + multi-teacher (5)
+    q10 MBR/consensus decoding + self-training/distill/amortise (11)
+    q11 sequence-level KD/self-distillation + captioning (15)
+    q12 CIDEr + pseudo + unlabeled (0)
+- OpenAlex (q06): BLOCKED. HTTP 429, "Insufficient budget ... free daily budget shared by everyone on your network's
+  IP ... resets at midnight UTC". Other agents used it up.
+- Semantic Scholar (q07, q13): BLOCKED. HTTP 429 after 6 back-off retries.
+- WebSearch, 7 queries: MBR distillation captioning; ensemble/multi-teacher KD captioning; consensus reranking plus
+  self-training; Vietnamese captioning self-training; SD-FSIC; MBR plus DPO for VLM captioning; select-among-
+  captioners-then-finetune.
+
+Closest prior and exactly what it already does:
+- Finkelstein et al., MBR and QE Finetuning, ICLR 2024, arXiv 2309.10966 (full text).
+  MBR-decode unlabeled sources with a self or external teacher, finetune the student on the MBR outputs, decode
+  greedy/beam at 1x cost. It covers from-base and from-ref students. This IS P2's mechanism.
+- C-GRPO, arXiv 2602.03102 (2026; full text).
+  "Distills MBR decoding into training" so that inference is a single pass. It includes "SFT (MBR decoding)" =
+  P2's arm as a baseline, and shows consensus-utility RL beats it.
+- Wang et al., Don't Throw Away Data, arXiv 2407.10456: MBR-selected teacher outputs as sequence-KD targets (MBR-n).
+- Chasing COMET, arXiv 2405.11937: finetuning on MBR-decoded outputs for domain adaptation and low-resource MT.
+- Better Instruction-Following Through MBR, arXiv 2410.02902: self-training on MBR outputs makes greedy match MBR.
+- NewsPaLM MBR/QE dataset, arXiv 2408.06537 (title only): MBR-generated training data beats web-crawled data.
+- Chen, Jiang, Zhao, Self-Distillation for Few-Shot Image Captioning, WACV 2021 (abstract; full text 403).
+  An ENSEMBLE of base captioners is the teacher. It writes confidence-weighted pseudo-captions for unpaired images and
+  the students train on them. This is the committee-teacher pseudo-captioning loop for captioning.
+- LightCap, arXiv 2212.08985 (full text): ensemble KD from 3 differently initialised captioning teachers, +1.7 CIDEr.
+- Cockatiel, arXiv 2503.09279: select among several models' synthetic captions with a scorer, train on them, then
+  distil (video captioning).
+- UCM, arXiv 2201.02010 (full text): teacher pseudo-captions on 300k unlabeled images plus labeled data, then a student.
+- BLIP CapFilt (2201.12086). Devlin et al. 2015 and ECO 2405.01028: CIDEr-consensus caption selection.
+- In repo: round-2 A8 D1 (manuscript/research_r2/A8_REPORT_final.txt). Same OpenViIC hidden-label pool, a self
+  committee/vote selector and a student; killed in R5-00 section 6.
+
+Not found: this exact instance, i.e. a supervision-policy LoRA committee with CIDEr-D MBR and samples as evidence only,
+distilled into a VLM captioner, in Vietnamese, audited on an independent human panel.
+The delta is an instance of known parts, not a new mechanism. Novelty is incremental, and the proposal itself says so.
+
+-----------------------------------------------------------------------------------------------------------
+6. IF THE USER STILL WANTS IT (minimum conditions; otherwise spend no GPU)
+-----------------------------------------------------------------------------------------------------------
+- Run it only after B3-P1 is confirmed and MR5 has landed. The baseline must be MR5 (or the best non-synthetic recipe),
+  with the same loss mask, not legacy P1.
+- Prefer the RL amortisation that the repo already runs: CN-RLOO, or a consensus-utility variant per C-GRPO.
+- Dev gate:
+  - Use a dev-clean teacher, i.e. committee members trained on train-minus-dev.
+  - Either use >= 3 seeds per arm, or a single-run threshold of >= +7.6 CIDEr.
+  - Also require the panel to rise by >= +2.2.
+- Pool:
+  - OpenViIC TRAIN images only (6,175 FREE), so no OpenViIC test/dev image is used transductively.
+  - Drop B2-2's 46 SSCD >= 0.4 images (verify/B2-2_work/free_vs_test_pairs.json).
+  - Prefix the 2 colliding file names.
+- Report:
+  - "có"-initial share, distinct-2 and verbatim-copy rate of the student vs P1 (2e).
+  - Seeds per arm and the test used.
+  - The GPU-h actually spent; budget 60-95.
+
+-----------------------------------------------------------------------------------------------------------
+7. FILES (verify/B3-P2_work/)
+-----------------------------------------------------------------------------------------------------------
+- head/                 HEAD copies of scripts/evaluate.py (as head/scripts/evaluate_head.py), rescap/, score_ci.py, object_prf.py
+- out/eval_*.json       End-to-end HEAD-evaluator re-scores (P1 x3, teacher4, teacher8)
+- verify_p2.py          Replica self-check, independent MBR re-selection, dev-gate null, gaming diagnostics,
+                        target quality, panel, gain-by-agreement -> out/verify_p2.json, out/verify_p2.log
+- verify_p2b.py         Panel-based gate noise -> out/verify_p2b.json
+- seedci.py             Paired image-bootstrap CI of P1 s42 - s43 (seed term check)
+- cache/seg.json        RDRSegmenter cache. It contains panel text (licence), so never commit it.
+- lit/search.py, lit/q*.xml|json, lit/dl/*.txt   Searches and full texts

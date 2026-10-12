@@ -1,0 +1,268 @@
+VERIFY P-B6-2  RHX-RLOO (retrieved neighbour-caption words as train-time exploration hints inside CN-RLOO, distilled into a
+hint-free captioner by importance weighting)   adversarial verifier, round R6, 2026-10-13
+Work dir: research_r6/verify/pb62/  (code, logs, out/*.json; lit/ = arXiv/WebSearch logs, abstracts, full-text txt).
+CPU only (nice 15, <= 4 threads, B = 2000, seed 0). Repo untouched. No OpenViIC caption read. No AI labels used.
+Scorer: own copy of HEAD scripts/evaluate.py (pb62/evaluate_head.py, md5 777a8561..., the same file B6 and pb61 used) and
+HEAD rescap/ + scripts/ (git archive -> pb62/head). VnCoreNLP-1.2 RDRSegmenter, run locally (own copy, JDK 21, own cache).
+My own CIDEr-D (vlib.CiderD) equals pycocoevalcap to 1e-13 per image. KTVIC segment_caption == own segmenter on 200/200.
+Exactness: p1_s43 test CIDEr 143.92 (stored 143.9); P1_dev on dev300 144.33 (stored 144.33, n2 rl/p1dev_s42-dev300-short.json).
+New evidence used here: n2 /root/ncs-data/rl/g0/dev300.jsonl = CN-RLOO's G0 step-0 file (P1_dev adapter, k = 8 at T = 1.0,
+top_p 1, plus greedy, all 300 dev images; md5 e0454417). Copied read-only after it finished. It holds the real rollouts RL
+would start from. Test sample files: md5 identical to n2.
+All KTVIC TEST numbers are effect-size ESTIMATES. Dev numbers use dev300 (held out of P1_dev).
+
+VERDICT: KILL.
+- Novelty: SCOOPED.
+  - Re3Cap (EMNLP 2026) already does retrieval-guided rollouts for LVLM captioning RL. It corrects off-policy to an
+    image-only policy and needs no retrieval at inference.
+  - The pooled hinted + plain group with importance weights back to the plain prompt is Guide-GRPO's estimator in its
+    "Always" variant (its worst ablation), and OC-GRPO's.
+  - What is left: the CIDEr-D reward, a 5-word hint format, and Vietnamese.
+- Pilot: both cited numbers reproduce exactly, and both fail the controls the pilot lacked.
+- On the real RL step-0 rollouts, plain sampling already reaches 64.5% of the useful hint words.
+- Importance correction cannot credit hint-found content above its plain-policy probability.
+- A hint-free self-consensus tilt picks better captions than the hint tilt.
+- Realistic gain over CN-RLOO: about -1 to +1 CIDEr, which cannot be detected.
+- Feasible on one 3090: about 45 GPU-h as planned (about 100+ for a paper-grade claim), on top of CN-RLOO's ~75.
+
+=========================================================================================================================
+LENS 1 - NOVELTY: scooped at the mechanism level
+=========================================================================================================================
+Searches (2026-10-13; logs in pb62/lit/):
+- arXiv API: 21 queries (arxiv_all.txt) and 2 id-list lookups (abstracts1.txt).
+- WebSearch: 2 queries.
+- OpenAlex: 3 queries. Semantic Scholar: 2 queries with backoff. All returned HTTP 429; curl re-check: 429 / 429.
+Topics:
+- retrieval x RL x caption; retrieval x GRPO x caption; retrieval x RLVR
+- hint x GRPO x off-policy; guided / hinted rollouts; hint or privileged x caption x RL
+- privileged information x RL x multimodal; privileged x GRPO x VLM
+- retrieval-augmented distillation x caption; context distillation x retrieval
+- self-critical x retrieval x caption; nearest neighbour x caption x RL
+- retrieved hints x RL; keywords x RL x caption; exploration x captioning x LVLM
+- CIDEr x GRPO / RLOO (by date); Vietnamese captioning (by date)
+- WebSearch: retrieval-guided hints in captioning RL with retrieval-free inference; retrieval or keyword-guided SCST
+Full text read (HTML -> lit/ft/*.txt):
+- Re3Cap 2608.21305 (sec. 3.1-3.3, 4.1, metrics)
+- Off-Context GRPO 2607.19313 (sec. 1, 4, Thm 2)
+- Guide 2506.13923 (Eq. 6, ablations, App. E, Lemmas)
+What prior work already does:
+1. Re3Cap. Jia et al., EMNLP 2026, arXiv 2608.21305 (FULL TEXT). This is the closest prior, and it covers the whole
+   transfer mechanism.
+   - Retrieval: image-to-image over a caption corpus (OpenCLIP ViT-H/14, top-K).
+   - CRS: a k-core over the neighbours' sentences keeps "semantic elements that consistently appear across visually
+     similar images" and "suggests LVLMs to incorporate these elements".
+   - CQA: flags hallucinations and omissions.
+   - The guidance goes into the rollout prompt.
+   - Sec. 3.3: "Re3Cap removes the initial caption and guidance used in the rollout stage from the policy input during
+     policy optimization. This creates an off-policy optimization setting ... we decouple the proximal policy from the
+     behavior policy" (decoupled-PPO importance ratios).
+   - Inference: "the optimized policy is conditioned solely on the image, eliminating the need for retrieval ... at
+     inference time."
+   - Setting: Qwen2.5-VL-7B is one of the backbones; GRPO; rewards CLIP / SC / CIM; dense captions (COCO-LN500,
+     DOCCI500); object, attribute and relation F1/QA; no CIDEr.
+   B6 summarised Re3Cap as "keep/add/remove guidance for refining rollouts". The off-policy correction to an image-only
+   policy, which is P-B6-2's claimed transfer step, is in Re3Cap's sec. 3.3.
+2. Guide-GRPO. Nath et al., arXiv 2506.13923 (FULL TEXT).
+   - One rollout group holds plain rollouts plus guided rollouts (Eq. 6).
+   - Per-token ratio pi_theta(o_t | x, o_<t) / pi_old(o_t | x_h, o_<t), "to optimize the policy for contexts in which
+     the hints are no longer present". That is P-B6-2's pooled 4 + 4 group with weight pi_theta(c|x) / pi_old(c|x_h).
+   - Ablation: "Always" guidance, which is P-B6-2's choice (4 of 8 rollouts are always hinted), "significantly impairs
+     results" compared with guiding only when all plain rollouts fail.
+   - PPO clipping on guided rows "causes training divergence at approximately 50 steps".
+   - It needs a policy-reshaping factor (App. E).
+3. Off-Context GRPO. arXiv 2607.19313 (FULL TEXT).
+   - Guided ("off-context") rollouts, importance-corrected per token to the unguided objective; unbiased.
+   - Theorem 2: "a guided success retains credit only to the extent that the model could have produced it without the
+     guidance".
+   - +3.8 absolute on hard math, where unguided groups have zero reward.
+4. Beacon. arXiv 2607.28595 (VLM agentic reasoning). Hint-guided capability expansion on all-wrong groups. Hinted
+   responses are importance-weighted and the hint is removed, so the hint-free policy learns from them.
+5. Same family:
+   - SAGE 2602.03143 (privileged hints, reward unchanged, h = empty at test)
+   - POPE 2601.18779
+   - EDGE-OPD 2605.23493 (guided rollouts inject privileged-context behaviour)
+   - PTD-PO 2606.07000 (multimodal privileged hints; the student is optimised in the hint-free context)
+   - HINT/AAPO 2510.09388
+6. The hint content itself (neighbour-caption words in an LVLM prompt): TUNA 2406.10839, DualCap 2510.24813,
+   CONCAP 2507.20411, ViECap 2307.16525 (see the P-B6-1 verifier).
+Residual delta:
+- The reward is word-level, EOS-aware CIDEr-D, with CN-RLOO's copy mask.
+- The hints are top-5 neighbour words in one prompt line, rather than k-core refinement guidance on an initial caption.
+- Vietnamese short captions.
+This is a reward / format / language swap of Re3Cap + Guide. No retrieval-hinted SCST or CIDEr RL was found, so "first
+CIDEr-D instance" is the only claim left. That is an application, not a method step beyond prior art.
+
+=========================================================================================================================
+LENS 2 - FEASIBILITY ON ONE RTX 3090: feasible, tight, not cheap; new off-policy code with a documented failure mode
+=========================================================================================================================
+- What HEAD scripts/train_rl.py does not support:
+  - one prompt only (Policy.text = the short prompt);
+  - pg_loss(lp, lp.detach(), ...) fixes the ratio at 1;
+  - generation log-probs are kept only in the dry run.
+- What P-B6-2 must add:
+  (a) A train-image retrieval datastore. B6's CLIP features exist only in a scratchpad. Twins at cos > 0.95 are
+      excluded (2.2% of train images); the pool is train minus dev while tuning.
+  (b) A hint builder.
+  (c) A second generate call on x_h with output_logits.
+  (d) The off-policy ratio and its truncation.
+  (e) An IS-aware KL term: k3 on hinted rows does not estimate KL(pi(.|x) || ref).
+  (f) The C3 log-prob-gap guard, re-validated on the x_h path.
+- Memory:
+  - Hinted responses are scored under the plain prompt, so its KV cache serves all 8 rows. The training graph is the
+    same as CN-RLOO at k = 8. The B1-P1 verifier estimates 18-22 GB reserved against the 22 GB guard.
+  - Measured now on n2: the G0 sampling job alone (k = 8, T = 1, greedy batch 8, one adapter, no gradients) holds
+    19.0 / 24.6 GB.
+  - Generation logits for 4 x 40 steps x 152K vocab add ~0.1 GB. Fits at k = 8, tightly; k = 16 does not.
+- Time: two generate calls (4 + 4) and an extra ~625-token prefill cost ~+10-20% over CN-RLOO. That is ~5.5-9 s per
+  image, or 8-13.5 GPU-h per seed for 1.5 epochs.
+- GPU-h. The proposal says 37. The plan as written:
+    G0r                               0.3-0.6
+    G1r                               2-3
+    3 seeds x (8-13.5)                24-40
+    test decodes                      0.5
+    UIT-ViIC (own datastore)          6-10
+    total                             about 35-55 (central 45)
+  - A paper-grade +1 to +3 increment needs 5+ seeds per arm or a pooled paired bootstrap, plus COCO (the method is
+    language-agnostic): about 100-130 GPU-h.
+  - All of it comes ON TOP of CN-RLOO (~75 GPU-h, B1-P1 verifier). CN-RLOO must exist and pass its own gate first.
+    Its G0 finished on n2 during this check; no G1 exists yet.
+- Implementation risk: medium-high.
+  - Guide's divergence with PPO-clipped guided rows applies: train_rl.py clips at 0.2.
+  - Sequence-level min(2, w) is not the stable recipe of either Guide (reshaping) or OC-GRPO (per token, bounded
+    correction).
+  - A ~25-token prompt change makes the weights heavy-tailed (OC-GRPO App. E: variance grows with guidance length).
+    The hinted half can have an effective sample size well below 4, giving the plain policy less signal than CN-RLOO's
+    k = 8 at the same compute.
+
+=========================================================================================================================
+LENS 3 - GAIN REALISM, GAMING, LEAKAGE
+=========================================================================================================================
+3a. Both cited pilot numbers reproduce exactly, and both fail controls (check_pilot.py -> out/check_pilot.json).
+- Hint "opportunity": test images whose top-5 retrieved hints hold a consensus content word that P1 missed.
+  - Retrieved hints: 83 / 89 / 90 of 558 images (14.9 / 16.0 / 16.1%, s42 / s43 / s44).
+  - GDINO tags: 7 / 8 / 7 (1.3 / 1.4 / 1.3%). Identical to B6.
+  - Control 1, consensus words of any frequency: tags rise to 50 / 50 / 44 (7.9-9.0%). The ratio is 1.8-2.0x, not 10x.
+    B6's "useful" filter (train DF <= 5%) drops what tags name.
+  - Control 2, placebo (another test image's retrieved hints): 8 / 7 / 6 images (1.1-1.4%), the same as the tags.
+- Pool: A = greedy + 6 T = 0.8 samples, plus the kNN consensus caption; pick on refs {0,1}, score on refs {3,4}.
+  - P1 s43: +1.64 [-0.69, +4.09] (B6: +1.6 [-0.7, +4.1]). fuse2: +0.47 (B6: +0.5).
+  - Control: add an UNTAGGED greedy from another P1 run instead.
+      p1-gold         +2.46 [+0.10, +5.00]
+      p1_s44          +0.80
+      p1assist_s42    +0.83
+      p1mask_s42      +0.59
+  - Mean over 5 disjoint splits (A01->B34, A012->B34, A234->B01, A01->B234, A34->B012):
+      kNN consensus                 +1.65
+      other P1 runs' greedy         +2.13 / +1.03 / +1.39 / +1.13 (mean +1.42)
+      fuse2: consensus +1.22, fuse2_s44 greedy +1.54, p1_s43 greedy +5.34
+  - The retrieval-specific value is about +0.2 (P1) and below 0 (fuse2). It is generic candidate diversity.
+
+3b. The real RL step-0 distribution (n2 G0: P1_dev, k = 8, T = 1.0, 300 dev images; check_g0.py ->
+    out/check_g0_300.log/.json; check_uptake.py).
+- Baseline statistics:
+  - G0 greedy: 144.41. evaluate.py greedy: 144.33. G0 uses train_rl's batched greedy.
+  - Mean sample: 76.2. Best of 8 (same refs): 172.2.
+  - 20.6% of samples beat greedy; on 34.3% of images none does.
+  - Within-group SD: mean 53.8, median 45.1. Groups with SD < 5: 0.67%. Zero-variance groups: 0%.
+    So the collapsed-group regime that Guide / OC-GRPO / SAGE / Beacon target does not exist here.
+- Opportunity on dev: 62 / 300 images (20.7%) have a useful hint word (a consensus content word, missed by greedy,
+  among the top-5 hints).
+- Plain exploration already reaches 49 / 76 = 64.5% of those words (in >= 1 of 8 samples). The mean per-sample rate
+  of a useful word is 18.1%.
+- The TRUE exploration gap (a useful hint word that no plain sample says) covers 20 / 300 = 6.7% of images. Across all
+  missed consensus content words, plain samples reach 47%.
+- Train-image proxy (RL runs on SFT'd images; ref #0, the SFT target, stands in for the plain output;
+  check_trainproxy.py): 9.8% of 3,469 pool images.
+- Value of hint words when a plain sample says them (held-out refs {3,4}, within image):
+  - any hint word: +39.1 [+28.0, +50.9]
+  - only hint words that refs 0-2 name: +65.6
+  - only wrong hint words: -10.9 [-23.7, +1.9]
+  - 24.3% of hint words are named by any of the 5 refs.
+  => On-policy RLOO already gives hint-word samples a strongly positive advantage whenever plain sampling produces them,
+     which it does for 64.5% of the useful words.
+- G0r-style proxy (hints only re-weight the plain support): per image, take the 4 samples with the most hint words,
+  pick on {0,1}, score on {3,4}, and compare with random 4-subsets.
+    hint tilt                               +6.0 [+0.2, +11.8]
+    placebo tilt (another image's hints)    -7.8 [-14.2, -1.9]
+    hint-free self-consensus tilt           +8.2 [+2.9, +12.9]   (mean CIDEr-D vs the other 7 samples, train-pool IDF)
+    hint minus hint-free                    -2.2 [-9.4, +4.9]
+  The hints carry image-specific signal, but they pick no better than the policy's own consensus, which is what RL
+  sharpening exploits.
+
+3c. Why the transfer cannot be larger (analytic; OC-GRPO Thm 2, Guide Lemma 1).
+- With q = pi_old(.|x_h) and p = pi(.|x), E_{c~q}[min(2, p/q) A grad log p] = sum_c min(2q(c), p(c)) A(c) grad log p(c).
+  Each caption's weight is <= p(c), its on-policy weight.
+- So content found under the hint is credited AT MOST at its plain-policy probability. Truncation only removes mass
+  that the plain policy prefers.
+- The only gain left is variance reduction for rare content. That matters when groups collapse; here 0% do, and 64.5%
+  of the useful words are already sampled.
+- Uptake dilemma, from the only measured hint-in-prompt decodes (GDINO tags, KTVIC test):
+  - The extra prompt line changed 275 / 277 of 558 greedy captions.
+  - It inserted a tag word in only 6-8% (P1 s43: 34-43 of 558) and 2% (fuse2: 10-13).
+  - Low uptake: hinted rollouts are mostly prompt perturbation, with little new content.
+  - High uptake: their IS weights shrink back to the plain probability.
+- G0r tests the BEHAVIOUR policy (hinted best-of-4). Importance correction does not pass that quality to the plain
+  policy, so even a G0r pass would not predict a plain-prompt gain.
+
+3d. Neither gate can resolve the claimed effect.
+- G0r (hinted best-of-4 minus plain best-of-4, pick {0,1} -> score {3,4}; pass needs >= +2 and LB > 0):
+  - Null per-image SD 92.5, so SE 5.34 at 300 images.
+  - An observed mean >= +10.5 is needed to pass.
+  - P(pass) = 2.5% at a true 0, 5.6% at +2, 15.3% at +5, 46.5% at +10. Empirical null pass: 2.5% over 200 random 4/4
+    splits.
+- G1r (">= CN-RLOO G1 + 1.0"; check_g1gate.py):
+  - P1-family greedy policies differ per image with SD 48-69, so SE 2.8-4.0 at 300 images.
+  - A null arm clears +1.0 with P = 0.36-0.40 at one checkpoint, and more often with best-checkpoint selection.
+
+3e. Effect size against noise and literature.
+- The proposal claims +1 to +3 over CN-RLOO.
+- Noise: single-seed SD ~3.4, MDE 2.5-3.8. A 3-seed t-test detects ~+12.7. Pooled paired SE is ~1.4-1.7.
+- Literature:
+  - Hint and guidance RL gains come from sparse, zero-signal regimes: Guide +3.4 pp, OC-GRPO +3.8 pp, SAGE +1.2.
+  - Re3Cap reports dense-caption F1/QA with CLIP/CIM rewards; no CIDEr.
+  - Retrieval added on top of SCST at >= 135 CIDEr: +1.1 to +1.4 (Sarto et al. 2024, arXiv 2405.13127).
+- Realistic: -1 to +1 CIDEr over CN-RLOO; B-4 about 0; CHAIR_i 0 to +1.5 (a rise is possible). CN-RLOO alone is +2 to +6
+  (B1-P1 verifier), so the total stays well below the +8 bar.
+
+3f. Gaming and leakage.
+- No test leakage: hints are used only in training, inference uses the plain prompt, test is never read, and dev is
+  outside the pool while tuning.
+- Within train: 4.2% of images keep a near-twin at cos 0.90-0.95. Its captions can carry the image's own reference
+  content into the hint.
+- Typicality:
+  - The hints are KTVIC-annotator vocabulary.
+  - B6's panel check shows retrieval-consensus gains are typicality: share gap +13.7 [+8.1, +19.2].
+  - 76% of hint words are named by no reference, and samples that say only wrong hint words score -10.9 [-23.7, +1.9].
+  - Learning to emit unverified hint vocabulary at hint-free inference (the "privilege illusion", DOPD 2606.30626)
+    would raise CHAIR.
+- Repetition, padding and truncation: word-level, EOS-aware CIDEr-D punishes repetition (-40) and padding (-60), and
+  EOS closes the truncation loophole. Hinted rollouts may raise TEMPLATE copying (P1 already copies a train caption
+  verbatim on ~20% of test images, B6). The copy mask checks only the image's own references.
+- Synthetic data: none. The hints are human captions of other train images. The rollouts are allowed RL samples.
+
+=========================================================================================================================
+REQUIRED CHANGES (none turns this into a breakthrough; recommendation: do not spend GPU)
+=========================================================================================================================
+1. Cite Re3Cap 2608.21305, Guide 2506.13923, OC-GRPO 2607.19313 and Beacon 2607.28595 as the method. Claim only
+   "a CIDEr-D / Vietnamese instance".
+2. If it is ever run as a CN-RLOO ablation:
+   - hint only groups where no plain rollout beats greedy (34% of dev images at T = 1);
+   - per-token ratios with Guide-style reshaping, and no PPO clip on guided rows;
+   - an IS-aware KL term.
+3. Controls at equal k: CN-RLOO with 8 plain rollouts; 4 plain + 4 placebo-hinted (another image's hints); and the
+   hint-free self-consensus behaviour tilt.
+4. Replace G0r with a test that has power: >= 1,000 dev images, Rao-Blackwellised best-of-k. Better, drop it, because
+   it tests the behaviour policy, not the plain-prompt result.
+5. Report OpenViIC-panel scores, CHAIR, template-copy rate and the share of hint words in outputs.
+
+FILES (pb62/):
+- vlib.py: HEAD-copy scorers, own segmentation cache, own CIDEr-D, bootstrap.
+- check_exact.py, check_cider.py: exactness checks.
+- check_pilot.py: hint opportunity with controls; pool held-out best-of-N with other-seed controls.
+- check_g0.py: exploration coverage, hint value, G0r gate power, tilt proxies.
+- check_uptake.py: tag uptake; T = 1 group spread.
+- check_g1gate.py: G1r gate noise.
+- check_trainproxy.py: train-image proxy; near-twins.
+- out/*.json, out/*.log.
+- n2/: read-only copies of the G0 dev300 file and the P1_dev dev300 scores.
+- lit/: query logs, abstracts, ft/ full texts.

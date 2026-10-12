@@ -1,0 +1,318 @@
+K3_pilot -- How much of KTVIC's n-gram metrics and CHAIR could a knowledge graph move? Upper bounds on existing data.
+Round R7, 2026-10-12. CPU only: nice -n 15, taskset to 2 cores, 1 BLAS thread, JVM -Xmx1g (peak ~1.5 GB per process).
+No GPU, no VLM/LLM, no new labels; the repo was only read. All test-set numbers are EFFECT-SIZE ESTIMATES (thresholds
+fixed in advance, nothing tuned on test). CIs: 95% paired percentile bootstrap over the 558 test images, B=2000.
+Work dir: /tmp/claude-1000/-mnt-d-vsps-image-captioning/755eae04-5e4c-4ce1-ab21-d4bc106761ee/scratchpad/research_kg/K3_pilot/
+
+==========================================================================================================
+0. BOTTOM LINE
+==========================================================================================================
+(a) Knowledge that the image does not show is a small part of KTVIC's references:
+    - named entities / encyclopedic + non-visual inference: 1.5% of word tokens and 2.8% of reference CIDEr-D mass;
+    - adding culture-specific concepts: 3.0% of tokens and 4.9% of CIDEr mass (9.7% if an n-gram counts whenever
+      it touches such a token).
+    The 2,790 test references contain NO proper name at all (train: 67 of 18,845 captions).
+    Of the 31.8-point leave-one-out CIDEr gap between a human annotator and P1, these categories account for 1.05
+    points. P1 already earns culture n-grams almost as well as a human does (6.34 vs 6.69).
+(b) Oracle KG edits of P1's captions (they peek at the test references), P1 s42:
+    - naming choice: +5.3 CIDEr [+4.1, +6.8];
+    - hypernym backoff: +1.0 [+0.4, +1.6], CHAIR_i -3.6 [-4.8, -2.4];
+    - culture-term insertion: +0.1 [-1.0, +1.2];
+    - all three: +6.2 [+4.8, +7.7], CHAIR_i -4.7 [-6.2, -3.2].
+    Seeds 43/44 agree.
+    When the decision is made on references the score never sees (disjoint halves), the CIDEr part disappears:
+    - naming: -1.3 / -2.2 / -2.5 over the three seeds (s43 and s44 below 0);
+    - backoff: 0.0 / -0.2 / -0.2;
+    - culture: -0.2 / -0.4 / -0.5.
+    Only backoff's CHAIR effect survives (-1.8 to -2.2 CHAIR_i), and that still needs an oracle gate.
+(c) Non-oracle KG operations:
+    - train top-name normalisation: +0.35 [+0.06, +0.68] / 0.00 / +0.05. P1 already uses the train top name:
+      only 3 surface types in all 1,674 P1 captions differ from it.
+    - uncertainty-gated backoff (gate: agreement among 6 T=0.8 samples): -1.1 [-2.3, -0.2] CIDEr (p1_s43) and
+      -2.6 [-4.4, -1.2] (fuse2_s42), with CHAIR_i unchanged.
+(d) RL: a KG-normalised CIDEr-D reward is the same reward (within-image r = 0.94-0.99 with plain CIDEr-D) with
+    slightly LESS validity.
+    - Split-half reference agreement: 0.393 -> 0.380 (fuse2).
+    - Agreement with the independent OpenViIC panel: 0.283 -> 0.269.
+    - Its best-of-6 pick, scored on disjoint references: -1.2 [-2.8, +0.4] vs the plain-reward pick.
+    - R_kg's mean reward is 11 points above plain CIDEr-D (8 of them from the hypernym credit), paid for vaguer
+      names. That is a hacking direction, not a denoiser.
+(e) Judgement: the realistic headroom of a KG on KTVIC's n-gram metrics is about 0. Every non-oracle variant and
+    every held-out oracle has a 95% CI upper bound of about +1 CIDEr or less.
+    On CHAIR_i it is between 0 and -2, conditional on a verifier much better than sample agreement.
+    For comparison: RL on CIDEr-D +5 to +9 (R6 B1), MR5 +3 to +9 (R6 B2). A KG is not a metrics lever here.
+
+==========================================================================================================
+1. SETUP AND VALIDITY (task 3)
+==========================================================================================================
+- Segmenter and environment: VnCoreNLP-1.2 RDRSegmenter from B2's environment
+  (research_r6/B2_targets_data/{venv,vncorenlp}, JDK 21 at /home/hoanguyen/jdk21). One JVM per process runs the
+  wseg+pos pipeline.
+- Caching: B2's cache/seg.json is reused read-only. New strings (edited captions, normalised refs and samples) go to
+  ./cache/seg_k3.json.
+- Scoring follows evaluate.py: segment(caption.strip()).lower(), then pycocoevalcap.
+  - CIDEr-D and ROUGE-L: per image.
+  - BLEU-4: corpus value rebuilt from per-image BleuScorer stats (option 'closest'). It equals pycocoevalcap Bleu(4)
+    to 1e-6, which allows bootstrapping it.
+  - CHAIR: rescap.chair.chair, unmodified, at HEAD 559c448.
+- Reproduction, data/results/p1-gold-short.preds.json: CIDEr 149.79, BLEU-4 45.55, ROUGE-L 64.24, CHAIR_i 19.16,
+  CHAIR_s 28.67. These equal the stored p1-gold-short.json row (asserted). p1_s43: 143.92; p1_s44: 143.70. 3-seed
+  mean: 145.80.
+- POS tags: VnCoreNLP wseg+pos on 3,703 strings (test refs + 3 P1 seeds). The word sequence equals the scoring
+  segmentation on 3,703/3,703.
+- Fast CIDEr-D for variant search and rewards: B2's replica (common.CiderD), which equals pycocoevalcap to 1e-9.
+  Final rows use pycocoevalcap itself.
+
+==========================================================================================================
+2. CONTENT TAXONOMY (task 1)  [taxonomy.py, lists.py -> out/taxonomy.json, out/type_categories.tsv]
+==========================================================================================================
+Classification rule:
+- Every scoring token gets one category by token-aligned longest match over phrase lists, in this priority order:
+  named entity > culture > template > scene > object > attribute > relation/action > function.
+- Unmatched tokens fall back to their VnCoreNLP POS: N/Nb -> object; V -> relation/action; A/M/Nu -> attribute;
+  everything else -> function/template.
+- A separate flag marks non-visual inference. It is an overlay, not one of the seven categories.
+
+The lists (lists.py, documented there):
+- named entity / encyclopedic: 96 phrases (places, people, brands, encyclopedic labels);
+- culture: 74 (includes all 13 top KTVIC terms from kg_plan/09);
+- template: 26 (the "ở trong bức ảnh / xuất hiện / khung cảnh" framing);
+- scene/location: 119;
+- objects: 180 (rescap NOUN_CLASSIFIER minus chair._NOT_OBJECTS, plus nap.COMPOUNDS);
+- attributes: 59 (rescap COLORS, colour modifiers, materials, patterns, gender/age);
+- spatial relations: rescap SPATIAL_RELATIONS + 31;
+- function words: rescap NUMBER_MARKERS + ~80;
+- non-visual flag: rescap NON_VISUAL_MARKERS + roles, purposes and transactions (80 phrases).
+The KTVIC test references are lowercase (POS "Np" finds nothing), so named entities come from the gazetteer only.
+
+Shares. 'mass' = the share of each reference's own CIDEr-D tf-idf mass (sum w^2 per n-gram order, IDF from the test
+references as scored, averaged over n = 1-4 and over the 2,790 references). In 'prop' an n-gram's weight is split
+over its tokens; in 'touch' it goes whole to every category the n-gram touches.
+  category                       ref tokens%  P1-s42 tokens%  ref CIDEr mass% prop  touch   refs / images with any
+  named entity / encyclopedic        0.17         0.22              0.32            0.58      49 / 19
+  culture-specific                   1.52         1.33              2.23            4.16     336 / 129 (23.1%)
+  scene / location                   6.57         6.42              8.57           15.44    1311 / 412
+  object naming                     25.57        24.39             30.26           54.84    2652 / 557
+  attributes                         4.42         2.72              5.12           10.69     910 / 369
+  relations / actions               19.76        19.52             22.45           45.66    2676 / 558
+  function words / templates        42.00        45.41             31.04           59.76    2790 / 558
+  non-visual flag (overlay)          1.37         1.01              2.47            5.19     356 / 180
+  K_strict = NE + non-visual         1.54         1.23              2.78            5.78     400 / 197
+  K_broad  = K_strict + culture      2.98         2.46              4.89            9.67     699 / 290
+  (29,805 reference tokens; P1 s42 5,856 tokens; s43/s44 within 0.5 points of s42 on every row.)
+
+What these categories contain:
+- Named entity / encyclopedic: only labels such as di tích 26, hiện vật 12, khủng long 5, ma mút 2, lịch sử,
+  tưởng niệm, khánh thành. Proper names: 0 test captions; 67/18,845 train captions in 36 images (việt nam 20,
+  bến thành 11, hồ chí minh 8, huế 7, hà nội 6; out/ne_count.json).
+- Culture: nón lá 70, đèn lồng 54, xuồng 39, áo dài 37, xích lô 23, giáng sinh 21, noel 18, đồng chí 13, chợ nổi 13,
+  tết 10.
+- Non-visual flag: bán 72, bày bán 71, mua 37, quảng cáo 22, thanh toán 16, học sinh 16, tham quan 16,
+  nhân viên 14.
+
+Earned CIDEr-D, decomposed exactly into P1's matched n-grams (prop):
+- P1 s42 vs the 5 references: 149.79 = object 59.39 + function/template 32.26 + relation/action 25.60 + scene 20.31
+  + culture 6.45 + attribute 4.65 + NE 1.13. K_broad n-grams: 10.18 (6.8%).
+- Leave-one-out: human reference k vs the other 4, and P1 vs the same 4 (IDF from those 4-ref sets), mean of 5 folds.
+                   human    P1-s42   gap
+  CIDEr-D          181.54   149.76   31.78
+    object          73.71    58.80   14.91
+    attribute        9.15     4.61    4.54
+    scene           24.07    19.88    4.20
+    function/templ  37.00    32.99    4.01
+    relation/action 29.62    26.04    3.58
+    culture          6.69     6.34    0.35
+    named entity     1.30     1.10    0.20
+    non-visual flag  3.15     2.78    0.37
+    K_broad         11.07    10.02    1.05  (touch mode: 0.85)
+Reading:
+- Knowledge a KG would add rather than what the image shows is about 3% of tokens and about 5% of CIDEr mass
+  (at most 10%).
+- It is about 1 of the 32 points by which P1 trails a human annotator.
+- The gap is in which objects are named and how (15 points), plus attributes and scene (4-4.5 each). Those are
+  visual-content choices, not world knowledge.
+
+==========================================================================================================
+3. ORACLE AND NON-ORACLE BOUNDS (task 2)  [kgedit.py, oracles.py, oracle_heldout.py -> out/oracles.json,
+   out/oracle_heldout.json]
+==========================================================================================================
+The KG is the repo's own lexical graph (409 surfaces):
+- synonyms: rescap canonical()/SYNONYMS, nap.CANON, nap.COMPOUNDS, and the 2 NEAR pairs nap.json admits by TRAIN
+  phi >= 0.9;
+- hypernyms: rescap HYPERNYMS + nap.PERSON_FIX + nap.PARENTS, plus culture term -> generic head
+  (lists.CULTURE_GENERIC).
+Mentions are found as in chair.objects_in (syllable longest match, colour phrases masked). Edits are surface
+rewrites, re-segmented with RDRSegmenter and scored as written. 'phụ nữ' and 'đàn ông' are written with 'người',
+as in 99.8% of train mentions.
+
+The edits:
+- a1 (NOT an oracle): each mention -> its train top name, ManyNames-style. Votes come from the captions of the train
+  images that name the mention. Candidates are synonyms or hypernyms attested in >= 3 train captions.
+- a2 ORACLE: per image, the candidate-name combination with the highest CIDEr-D against the test references.
+- b ORACLE: each mention CHAIR flags -> its nearest KG ancestor that is in CHAIR's gold set. Left alone if none.
+- c ORACLE: a culture term used by >= 1 reference (c2: >= 2) and absent from the caption replaces the caption's
+  generic word for it.
+- d ORACLE: c, then b, then a2.
+
+Same references (decision and score both on the 5 test references). Delta vs the unedited captions [95% CI]:
+  op  seed  imgs  CIDEr-D               BLEU-4                ROUGE-L               CHAIR_i               CHAIR_s
+  a1  s42     6   +0.35 [+0.06,+0.68]   +0.02 [+0.00,+0.05]   +0.02 [+0.00,+0.06]    0.00                  0.00
+      s43     0    0.00                  0.00                  0.00                  0.00                  0.00
+      s44     2   +0.05 [+0.00,+0.16]    0.00                  0.00                  0.00                  0.00
+  a2  s42   122   +5.34 [+4.07,+6.76]   +1.54 [+1.08,+2.02]   +0.89 [+0.63,+1.17]   -3.46 [-4.81,-2.13]   -3.94 [-6.09,-1.97]
+      s43   116   +4.32 [+3.22,+5.56]   +1.29 [+0.89,+1.72]   +0.72 [+0.47,+0.98]   -3.21 [-4.51,-1.97]   -3.94
+      s44   116   +4.43 [+3.29,+5.73]   +1.43 [+1.00,+1.87]   +0.78 [+0.53,+1.04]   -3.79 [-5.26,-2.46]   -4.48
+  b   s42    37   +0.97 [+0.43,+1.63]   +0.75 [+0.43,+1.13]   +0.28 [+0.15,+0.45]   -3.55 [-4.78,-2.41]   -4.84 [-6.81,-3.05]
+      s43    36   +0.76 [+0.26,+1.40]   +0.65 [+0.37,+0.97]   +0.24 [+0.12,+0.39]   -3.64 [-4.98,-2.51]   -4.84
+      s44    39   +0.99 [+0.42,+1.67]   +0.75 [+0.44,+1.09]   +0.25 [+0.14,+0.40]   -3.96 [-5.35,-2.76]   -5.20
+  c   s42    20   +0.13 [-0.99,+1.16]   -0.04 [-0.23,+0.13]   +0.04 [-0.09,+0.17]   -0.26 [-0.73,+0.11]   -1.08 [-1.97,-0.36]
+      s43    19   -0.06 [-1.20,+0.90]   -0.08                  0.00                 -0.22 [-0.66,+0.11]   -0.72
+      s44    18   -0.27 [-1.74,+0.85]   -0.14                  0.00                 -0.19 [-0.63,+0.14]   -0.90
+  c2  s42    11   +0.60 [-0.50,+1.65]    0.00                 +0.07                 -0.39 [-0.85,-0.04]   -1.08
+      s43/s44 11  +0.34 / +0.06 (CIs include 0)
+  d   s42   136   +6.16 [+4.78,+7.72]   +1.69 [+1.22,+2.18]   +1.01 [+0.73,+1.30]   -4.69 [-6.18,-3.22]   -6.09 [-8.60,-3.76]
+      s43   127   +5.06 [+3.76,+6.51]   +1.41 [+1.00,+1.85]   +0.84 [+0.59,+1.11]   -4.40 [-5.83,-3.06]   -5.91
+      s44   128   +5.15 [+3.84,+6.56]   +1.53 [+1.10,+1.97]   +0.89 [+0.63,+1.16]   -4.69 [-6.27,-3.28]   -6.09
+  Bases: s42 149.79 / 45.55 / 64.24 / 19.16 / 28.67; s43 143.92 / 45.15 / 63.96 / 17.68 / 26.70;
+         s44 143.70 / 44.79 / 63.80 / 18.34 / 27.60.
+
+CHAIR at stake:
+- P1 s42 has 192 CHAIR-flagged mentions out of 1,002.
+- Only 38 (20%) have a KG ancestor that the references support; that is all a hierarchy edit can reach.
+- The remaining 80% are objects the references never name, in any form the KG knows.
+- nap.json's decomposition for P1 points the same way: 50% of reference-false mentions are unrelated to any reference
+  noun, and the naming level is already the top name for 81% of named referents.
+
+Culture insertion does not pay. In the 20 edited images:
+- the references use the culture term 1.9 times out of 5 and the generic word 2.4 times;
+- the term outnumbers the generic word in only 6 of 20.
+The annotators themselves split, e.g. 'xuồng/ghe' vs 'thuyền'. So swapping the generic word for the term trades
+matches with some references for matches with others.
+
+Held out: the decision is made on reference positions A and scored on the disjoint positions B (B1's four
+non-interleaved splits, IDF from B). Deltas are averaged over the 4 splits; CHAIR is against B's 2-3 refs.
+  op           s42 CIDEr-D           s43              s44              CHAIR_i s42 / s43 / s44
+  a2 naming    -1.25 [-3.04,+0.48]   -2.20 [-3.87,-0.53]  -2.47 [-4.15,-0.84]   -0.97 [-2.15,+0.08] / -0.85 / -1.08
+  b backoff    +0.02 [-0.85,+0.92]   -0.21 [-1.04,+0.68]  -0.19 [-1.09,+0.73]   -1.90 [-2.88,-1.05] / -1.83 / -2.20
+  c culture    -0.19 [-1.23,+0.77]   -0.38 [-1.41,+0.56]  -0.46 [-1.71,+0.57]   -0.22 / -0.14 / -0.22 (n.s.)
+  a2, names chosen by the independent OpenViIC panel (555 images), scored on all 5 KTVIC refs:
+               -12.19 [-15.81,-8.92]  -11.25             -12.37                +3.04 [+1.43,+4.70] / +3.14 / +3.35
+  BLEU-4 and ROUGE-L follow CIDEr: a2 B-4 -0.44 to -0.53; b B-4 +0.12 to +0.19 (n.s.).
+Reading:
+- The +5.3 naming oracle is reference idiosyncrasy. It is the same winner's curse B1 measured for best-of-6: the name
+  one annotator subset prefers is not preferred by the others, and the other panel's names are worse still.
+- What survives is backoff's CHAIR effect, about -2 CHAIR_i at 0 CIDEr. It requires a gate that knows which
+  mentions an independent annotator set leaves out.
+
+Realistic gate, no references (u): a greedy mention backs off to its nearest KG ancestor that >= tau of the 6 T=0.8
+samples support (the ancestor or one of its hyponyms named). tau = 3 was fixed in advance.
+  p1_s43     tau=3: 31 imgs, CIDEr -1.14 [-2.25,-0.19], B-4 -0.64, CHAIR_i -0.03 [-0.78,+0.69]
+             tau=2: -0.14 [-0.90,+0.41], CHAIR_i -0.30 [-0.67,-0.02]
+             tau=4/5: -3.41 / -4.78, CHAIR_i +0.32 / +0.81 (n.s.)
+  fuse2_s42  tau=3: 52 imgs, CIDEr -2.59 [-4.41,-1.15], B-4 -0.78, CHAIR_i +0.38 [-0.73,+1.59], CHAIR_s +1.79 [+0.18,+3.58]
+             tau=2: -1.12 [-2.02,-0.36], CHAIR_i +0.29
+             tau=4/5: -3.71 / -5.58, CHAIR_i n.s.
+Reading:
+- Sample disagreement is not a usable gate. Only 12/35 (p1_s43) and 27/64 (fuse2) of the mentions it backs off
+  were CHAIR-flagged; the rest are names the references use ('cô gái' -> 'người phụ nữ', 'áo' -> 'đồ',
+  'điện thoại' -> 'đồ'). A general target such as 'đồ' can itself be flagged. Backoff therefore costs CIDEr and
+  buys no CHAIR.
+- This is ViHG-Cap's core operation (KG hierarchical backoff of uncertain entities) measured with an existing
+  uncertainty signal and no annotation. Its oracle-gated ceiling is the b row: +1.0 CIDEr and -3.6 CHAIR_i on the
+  same references, 0 CIDEr and -1.9 CHAIR_i held out.
+
+==========================================================================================================
+4. COMPATIBILITY WITH RL (task 4)  [rl_reward.py -> out/rl_reward.json]
+==========================================================================================================
+Data: 6 T=0.8 short samples per test image. fuse2_s42 is the primary policy (B2's copy is identical to
+data/results/samples/fuse2_s42-test-short.jsonl); p1_s43 is the replication. Values below are fuse2 / p1_s43.
+
+Rewards, all word-level CIDEr-D with IDF from the reference set used:
+- R0: plain.
+- R_syn: hypothesis and references rewritten to one surface per KG lemma (that lemma's most frequent train surface).
+  Changes 451/3,348 samples (fuse2).
+- R_kg: R_syn plus hypernym credit. Per (sample, reference) pair, a sample mention that is a KG ancestor of a
+  reference mention takes the reference's word: vaguer but compatible, which is what CHAIR credits. Rewrites 2,286
+  of 16,740 pairs.
+- R_root: every mention collapsed to its KG root on both sides (the strongest normalisation; a bound).
+
+Results:
+- Mean reward: R0 120.8; R_syn 123.6; R_kg 131.9; R_root 115.5.
+- Correlation with R0 (pooled within-image, all 5 refs): R_syn 0.986 / 0.988; R_kg 0.960 / 0.962;
+  R_root 0.942 / 0.943.
+- Reference noise. Within-image r between disjoint halves R(A) and R(B), mean of 4 splits. B1 measured 0.38-0.43
+  for R0.
+    R0 0.393 / 0.402; R_syn 0.388 / 0.396; R_kg 0.380 / 0.392; R_root 0.377 / 0.368. No reduction.
+- Validity vs the plain held-out reward R0(B):
+    R0 0.393 / 0.402; R_syn 0.384 / 0.394; R_kg 0.368 / 0.379; R_root 0.361 / 0.361.
+- Validity vs the independent OpenViIC panel (plain CIDEr-D, 555 images):
+    R0 0.283 / 0.310; R_syn 0.282 / 0.304; R_kg 0.269 / 0.295; R_root 0.267 / 0.286.
+- Best-of-6 picked on refs A and scored with plain CIDEr-D on refs B (mean of 4 splits).
+  Context: greedy on B is 146.5 / 146.6; the mean sample is 123.2 / 117.3.
+    R0 pick: 154.39 / 151.14.
+    Change vs the R0 pick:
+      R_syn  -0.14 [-1.20,+0.85] / -0.56 [-1.32,+0.16]   (same pick as R0: 96-97%)
+      R_kg   -1.21 [-2.76,+0.43] / -1.17 [-2.68,+0.30]   (90-92%)
+      R_root -0.25 [-2.14,+1.60] / -1.86 [-3.64,-0.14]   (84-86%)
+    On the panel every change is within +-0.32 and every CI includes 0.
+Reading:
+- KTVIC's reference noise does not live in naming variation. Synonym canonicalisation changes the pick on 3-4% of
+  images and nothing else.
+- Hypernym credit adds 8 points to the mean reward (R_kg 131.9 vs R_syn 123.6) by paying for 'người', 'xe' and 'đồ'
+  where some annotators wrote the specific word. Held-out references do not pay for that, so validity drops.
+- Do not put a KG-normalised reward into the RL lever. If anything, it adds a vagueness incentive next to the
+  regurgitation hazard B1 found.
+
+==========================================================================================================
+5. JUDGEMENT: realistic metric headroom from a KG on KTVIC
+==========================================================================================================
+- Content: what a KG could add that the image does not show is about 3% of reference tokens and about 5% of
+  reference CIDEr mass. It accounts for about 1 of the 32 CIDEr points between P1 and a human annotator. There are
+  no proper names to link in the test set.
+- Oracle ceiling, same references: +6.2 CIDEr, +1.7 BLEU-4, +1.0 ROUGE-L, -4.7 CHAIR_i (P1 s42; seeds 43/44:
+  +5.1/+5.2 and -4.4/-4.7). This is a ceiling for any KG method that rewrites names, backs off, or inserts culture
+  terms, and it is inflated by selecting on the scoring references.
+- Transferable part (decisions on disjoint references): CIDEr about 0 (from -2.5 to 0.0 across ops and seeds);
+  CHAIR_i -1.8 to -2.2 from backoff, but only with a perfect gate.
+- With today's gates (train statistics, sample agreement): CIDEr +0.35 at best, down to -2.6; CHAIR_i unchanged.
+- Expected KG contribution on KTVIC:
+    CIDEr/BLEU-4/ROUGE-L: 0, with an upper plausible bound of about +1 CIDEr;
+    CHAIR_i: 0 to -2, contingent on a verifier far better than sample self-consistency.
+  CHAIR here uses reference-derived gold (an upper bound on hallucination), and R5-01 showed that reference
+  precision measures typicality.
+- Consequence for the paper's METRICS-FIRST goal: put GPU time into RL on CIDEr-D (B1) and MR5 (B2), not a KG. A KG
+  remains defensible only as an analysis or evaluation instrument: naming-aware precision (NAP-lite exists), the
+  culture split in section 3, or the held-out-oracle protocol used here. It is not a defensible metric method.
+  Culture terms are a real content gap (kg_plan/09: P1 cultural recall 42.6%), but KTVIC's own references do not
+  reward closing it.
+
+==========================================================================================================
+6. CAVEATS
+==========================================================================================================
+- The lists are hand-built and incomplete; the per-type audit is in out/type_categories.tsv. Moving a few types
+  would shift the shares by fractions of a point. It would not change the conclusion: even K_broad in 'touch' mode
+  is under 10% of reference mass, and the edit bounds do not depend on the taxonomy.
+- Edits are rule-based surface substitutions, and some read badly (e.g. 'ghế nhựa' -> 'đồ đạc nhựa'). They are
+  scored as written, which favours the oracles: a real system would also have to produce fluent text.
+- The a2 oracle searches up to 256 variants per caption. Above that, each mention keeps its 3 most frequent train
+  candidates.
+- In held-out rows CHAIR is computed against 2-3 references, so its base is higher than the 5-reference value. Only
+  the deltas are comparable.
+- The RL analysis uses test samples from SFT policies (B1's method), not train rollouts. p1-gold (s42) has no T=0.8
+  samples, so the u rows and section 4 use p1_s43 and fuse2_s42.
+- Thresholds were fixed before scoring: >= 3 train captions per candidate, tau = 3, culture >= 1 ref (bound) with
+  >= 2 as sensitivity. Nothing was selected on test.
+- cache/*.json holds derived KTVIC text; do not commit it.
+
+==========================================================================================================
+7. FILES (work dir)
+==========================================================================================================
+code:
+- run.sh: nice 15, taskset 2 cores, JDK 21, B2 venv.
+- vn.py: VnCoreNLP wseg+pos and caches.
+- k3.py: data, scorer, paired bootstrap, reproduction check.
+- lists.py, taxonomy.py, pos_tag.py, kgedit.py (KG, mentions, rewrites, train typicality; self-check), oracles.py,
+  oracle_heldout.py, rl_reward.py, ne_count.py.
+outputs (out/):
+- taxonomy.json, type_categories.tsv, oracles.json (+ examples of every edit), oracle_heldout.json, rl_reward.json,
+  ne_count.json, *.log.

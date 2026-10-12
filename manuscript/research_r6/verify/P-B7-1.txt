@@ -1,0 +1,156 @@
+VERIFY P-B7-1  PB-RLOO (neighbour-shrunk reference centroid + reference-gold CHAIR term)     2026-10-13, adversarial verifier
+Work dir: verify/PB71_work/ (vcommon.py, v_proxy.py, v_analyse.py, v_sanitize.py, v_sanitize_nest.py, v_control.py,
+v_copy.py, v_gate.py, v_lamstar.py, v_drift.py; logs log_*.txt; outputs out_*.json; lit/ = query scripts).
+Scorer: my own CIDEr-D (fixed DF, vector cache) checked against pycocoevalcap AND HEAD scripts/rl_reward.CiderD
+(git archive HEAD 67b9b6e; p1_s43 test CIDEr 143.92 = stored 143.9, per-image equality to 1e-9). Word level:
+VnCoreNLP-1.2 RDRSegmenter + lower(); sibling caches read-only, 40/40 random entries equal the live segmenter.
+CHAIR: HEAD rescap.chair (objects_in, _gold_objects). OpenViIC captions read at run time only, never written.
+New data used: the REAL RL init. n2:/root/ncs-data/rl/g0/dev300.jsonl = G0 rollouts of P1_dev (k=8, T=1.0, top_p 1,
++ greedy) on the 300 dev images P1_dev never trained on, and the first 130 images of g0/train300.jsonl (train images it
+saw). Copied read-only with scp; nothing on n2/n3 was written or run. Test-sample numbers are ESTIMATES; nothing tuned.
+
+VERDICT: KILL (as a method proposal). Novelty INCREMENTAL. Feasible on one 3090 (inherits CN-RLOO's tight memory),
+but ~80-110 GPU-h, not 41. Realistic gain vs CN-RLOO: CIDEr about 0 (-1.5 to +1.5), CHAIR_i -1 to -3 (5-ref), the
+CHAIR part coming from a prior-art component. The novel element (neighbour-reference shrinkage, NCR) does not survive
+a leakage control on the actual RL init. Salvage: the CHAIR term alone may be one cheap arm inside B1's G1 gate,
+credited to prior art.
+
+=====================================================================================================================
+LENS 1 - NOVELTY  (incremental; not scooped as an exact combination, no element is a step beyond prior art)
+=====================================================================================================================
+Searches (2022-2026 focus): arXiv API 21 queries (several returned empty: syntax/throttling; re-run with simple
+terms), Semantic Scholar 2 and OpenAlex 4 (HTTP 429 on every attempt, as B1/B7 saw; no e-mail or ID parameter sent),
+WebSearch 8. Topics: captions of similar images as extra reward references; neighbour/kNN pseudo-references in SCST
+and semi-supervised captioning; reference-set expansion with paraphrases/retrieval under a CIDEr reward; empirical-Bayes
+/ James-Stein shrinkage in RL rewards and baselines; hallucination / object penalties in caption RL (SCST, GRPO, LVLM);
+GRPO + CIDEr captioning; retrieval-augmented rewards in LLM RL; Vietnamese captioning + RL; Re3Cap.
+Closest prior, element by element (abstracts read for all ids below):
+ - Neighbour references in the reward: CIDErBtw, Wang et al. ECCV 2020 (2007.06877; journal 2204.03938) builds the same
+   similar-image reference sets and uses them in the RL reward with the opposite sign (R = CIDEr - 0.4 CIDErBtw).
+   Flipping the sign is the only change in this element. No paper found with lam > 0 (query "captioning neighbors
+   references reward" -> 0 hits). Related: Zheng et al. 1808.09564 (pseudo-references built from the SAME example's
+   refs; +11.7 CIDEr in captioning), Chaffin et al. 2402.13936 (GT captions added to the RL reward pool), CST (Phan
+   et al. 2017, consensus of GT captions as baseline), RefAlign 2504.09895 (similarity to reference answers as reward).
+ - Empirical-Bayes shrinkage: 2511.03710 (James-Stein shrinkage baselines for RLVR), EBPO 2602.05165 (empirical-Bayes
+   shrinkage of GRPO baselines toward global statistics), PEBS 2606.27578 (Morris-James-Stein shrinkage of per-rater
+   reward calibration toward the population). Shrinking a reward TARGET is a small step from these, and in practice it
+   is decorative: the proposal's primary lam is 0.5 picked on dev, not the EB value 0.80 (and see lens 3: the EB value is
+   the worst-performing one).
+ - Reference-gold object penalty (the CHAIR term): SC-Captioner, ICCV 2025 (2508.06125): RL reward matches the caption's
+   object/attribute/relation sets against REFERENCE sets with "mistake punishments for wrong additions"; CIDEnt
+   (1708.02300) corrects CIDEr against contradicted content; MOCHa (2312.03631); FoCUS (2609.00709: negative weights
+   for out-of-scope objects in GRPO); CCCaption (2602.21655: hallucination penalty); CHAIR-DPO (2508.20181); VES-RFT
+   (CVPR 2026). The "metric-matched gold" twist is an ablation detail, not a new mechanism.
+ - Re3Cap (2608.21305): retrieval as prompt guidance (CRS/CQA), rewards SC/CLIP/CIM; does not score against retrieved
+   refs. No 2024-2026 RL or LVLM KTVIC/UIT-ViIC CIDEr paper found (arXiv "Vietnamese captioning": datasets only).
+Novelty verdict: an incremental reward recipe (sign-flipped CIDErBtw + a prior-art hallucination penalty + EB framing).
+
+=====================================================================================================================
+LENS 2 - FEASIBILITY ON ONE RTX 3090  (feasible per run; budget ~2x the claim; three implementation risks)
+=====================================================================================================================
+- Memory: unchanged from CN-RLOO (reward is CPU). n2 measurement: the G0 sampler alone (P1_dev, k=8) holds 21.5 GB of
+  the 24.6 GB 3090 (nvidia-smi compute-apps). Training at k=8 adds the ref forward and backward, so the B1-P1 fixes
+  (bf16 cast of non-quantised params, or k=4) are likely needed. Inherited risk, not PB-specific.
+- Throughput measured on n2: G0 sampling ~10-11.5 s per image (dev300: 300 images in ~49-57 min; train300: 120 images in
+  ~24 min), 2-3x B1's 3-4.5 s estimate. With the update (~1.3 s) about 12 s/image, so a G1 arm (1,000 images + 4-5 dev
+  evals) is ~4 h, and the 2-arm gate is ~8 h (claimed 5).
+- GPU-h for the claim the proposal makes: gate 8 + matched-KL tuning ~4 + KTVIC 3 seeds x ~12.5 h (3,469 images) = 38
+  (+25 for 5 seeds if a between-seed +8 claim is made) + UIT-ViIC 3 x (SFT ~1.5 + RL ~9-10 h on 2,695 images) ~ 33
+  (claimed 6) -> ~80-110 GPU-h (claimed 41). CN-RLOO's own seeds are still needed as the comparison arm.
+- Implementation risks:
+  (a) DEV LEAKAGE: HEAD rl_reward.Reward loads every train reference set. If the neighbour pool is all of train, 57.4% of
+      RL-pool images (train - dev300) get >= 1 dev300 image among their 10 neighbours (mean 0.81; 285/300 dev images
+      reached), so the PB arm is rewarded on dev references and the gate is biased in its favour. The proposal does not
+      exclude dev300 from the neighbour index.
+  (b) "Matched KL" is not a knob in train_rl.py (fixed k3 KL coefficient, no std normalisation of RLOO advantages).
+      Reward SD across the 8 rollouts: NCR 0.86x plain, PB 1.13-1.39x (dev, 4 splits), so at equal lr/beta the arms
+      move different distances. Matching needs per-arm tuning or checkpoint matching, which means more GPU-h and more
+      forking paths.
+  (c) The copy-neutral mask looks only at OWN refs and misses the cross-image copy channel that NCR strengthens (lens 3).
+
+=====================================================================================================================
+LENS 3 - GAIN REALISM, GAMING, LEAKAGE  (pilot reproduced numerically; its headline does not survive a leakage control)
+=====================================================================================================================
+A. Reproduction with independent code (my TF-IDF retrieval, KL tilt, CIDEr-D; test samples; KL 1 nat; 4-split mean with
+   a joint image bootstrap; B7 averaged the split CIs instead, which is not a CI of the mean):
+     P1 s43: NCR lam .5 +2.73 [+1.69, +3.94] (B7 +2.65); lam .25 +1.45 (B7 +1.39); lam .8 +3.60 (B7 +3.63);
+             PB lam .5 beta .25 +1.10 [-0.20, +2.53] (B7 +1.00); CHAIR term alone -1.19 [-1.82, -0.53] (B7 -1.19)
+     fuse2:  NCR lam .5 +2.79 [+1.57, +4.09] (B7 +2.71); PB +2.35 [+0.97, +3.81] (B7 +2.34)
+     OpenViIC judge (|T|=5): NCR P1 -0.39 [-0.99, +0.23] (B7 -0.13), fuse2 -1.61 [-2.63, -0.80] (B7 -1.53);
+             PB panel CHAIR P1 -1.73 [-2.59, -0.90] (B7 -1.83), fuse2 -1.41 (B7 -1.43)
+     James-Stein lam* T012/E34 0.769 [0.757, 0.781] on 1,500 train queries (B7 0.768).
+B. JUDGE LEAKAGE through neighbour references (the main refutation). In 20-30% of test image-splits (dev: 21-35%) one of
+   the 50 neighbour refs is within word edit-similarity >= 0.8 of a HELD-OUT judge ref (exact copies 5-7%; dev 3-9%).
+   These come from visually DIFFERENT images (CLIP cos median 0.72-0.73; >= 0.85 only 4-5%), i.e. reused caption
+   templates, so B7's CLIP >= 0.93 dedup cannot catch them (a 0.85 cut changes nothing: +2.73 -> +2.73; dev +2.33 ->
+   +2.33). The reward then contains (a near-copy of) the judge's own sentence.
+   - Strata (test P1, NCR .5): images clean on all 4 splits (n=314) +1.28 [+0.09, +2.52] vs leaky (n=244) +4.59
+     [+2.79, +6.63]; fuse2 +1.29 [-0.03, +2.61] vs +4.72; PB on clean P1 images -0.94 [-2.46, +0.64].
+   - Sanitized neighbours (same images; drop only neighbour images owning a near-copy of a judge ref, refill from the
+     ranking): test P1 NCR +1.97 [+0.93, +3.09], PB +0.29 [-0.99, +1.66].
+C. ACTUAL RL INIT (P1_dev G0 dev300 rollouts, T=1.0, k=8; neighbour pool = train - dev300; EOS-aware reward as HEAD):
+     NCR lam .5:  standard +2.33 [+0.87, +3.90] -> sanitized +1.18 [-0.08, +2.43]; CONTROL (remove the same number of
+                  NON-leaking neighbours at random, refill) +2.23 [+0.81, +3.78] => the drop is caused by the near-copies,
+                  not by weaker neighbourhoods. Images clean on all 4 splits (n=156): -0.47 [-2.23, +1.11].
+     PB (lam .5, beta .25): standard +1.41 [-0.30, +3.21] -> sanitized +0.26 [-1.21, +1.81]; clean images -1.78
+                  [-3.89, +0.12].
+     lam .8 (the EB value): +1.01 [-2.62, +4.16] standard, below lam .5 and not different from 0.
+   Dose-response in the number of own refs |T| (judge ref fixed = ref 0 and ref 4, contiguous T, sanitized, 1 nat):
+     NCR .5  dev  |T|=1..4: +2.30 / +1.55 / +0.43 / +1.54 [-0.62, +3.73];  test P1: +1.81 / +1.44 / +2.01 / -0.02 [-2.53, +2.31]
+     NCR .8  |T|=4: dev -0.56, test P1 -2.47.   PB |T|=4: dev +1.59 [-0.69, +3.82], test P1 -1.49 [-3.95, +0.72].
+   RL rewards with |T| = 5 own refs, where no leakage-free effect is distinguishable from 0. The MSE-optimal lam* at
+   |T|=4 is still 0.66-0.68 (my v_lamstar), while the reward-ranking optimum there is 0.25-0.5 with lam .8 < 0. The
+   James-Stein "principled value" does not predict the useful operating point.
+   Independent panel at |T|=5 (dev): NCR -0.44 [-1.40, +0.67], lam .8 -1.54: the NCR CIDEr part is KTVIC typicality
+   (B7 says so too). CHAIR: PB panel CHAIR -3.03 [-4.05, -2.19], CHAIR term alone -2.53 [-3.12, -1.98], which is the
+   real, transferable part, and it is prior art.
+D. Copy channels on the actual init (130 train images P1_dev was fine-tuned on, 1,040 rollouts; tau = 0.900 = 99th pct
+   of m on the dev300 rollouts, dev exact-copy rate 0.50%):
+     own exact copies 0.7% of rollouts (m >= tau 1.5%), 5.7% of positive RLOO advantage. B7's N5 figure (20.4%) came
+     from fuse2 DETAILED-prompt E5 rollouts, not this policy.
+     Verbatim copies of a NEIGHBOUR image's ref: 1.83% of rollouts (<= 1 edit: 4.4%), 9.3% of positive advantage
+     under the plain reward -> 12.5% under NCR (11.9% with the copy mask, which only checks own refs); mean advantage
+     of these rollouts +124 (plain) -> +143 (NCR) -> +154 (PB), n=19. NCR strengthens the template-regurgitation channel
+     the copy mask cannot see; B7's "NCR only dilutes the copy channel" holds only for own-ref copies.
+E. Drift of the 1-nat tilted distribution with all 5 own refs (dev, descriptive): nouns/caption 1.647 (plain) -> 1.569
+   (PB beta .25) -> 1.519 (beta .5); specific person nouns 0.295 -> 0.281 -> 0.270 while generic-only 'nguoi' 0.260 ->
+   0.266 -> 0.271 (CHAIR's gold includes hypernyms, so vaguer nouns are safe); 'co ...' openings 0.755 -> 0.761-0.766;
+   own-ref CIDEr of the tilted pool 155.1 -> 151.2. So CHAIR falls partly by mentioning fewer and vaguer objects.
+F. Gate cannot see the effect: paired per-image CIDEr SD between related systems is 52-83 (p1assist vs p1mask 52.5,
+   p1_s43 vs p1_s44 57.0, p1assist vs mr5assist 83.1), so the SE of a dev300 difference is 3.0-4.8. Kill rule = "kill
+   if dCIDEr < +1.0 AND dCHAIR_i > -1.5": the CHAIR term optimises dev CHAIR directly, so the rule almost never fires,
+   and a null NCR clears "+1.0" with P ~0.35-0.4. The "NCR CI > 0" component rule needs about +6, and a true +1
+   effect has ~5% power against it.
+G. Literature effect sizes for reward add-ons on top of a CIDEr reward at baselines >= ~125: MOCHa +1.2 CIDEr (BLIP-L
+   138.4 -> 139.6) and +0.0 (BLIP-2 144.3), CHAIR_i -0.2/-0.3; CIDErBtw +3.0 (125.1 -> 128.1, with GT reweighting,
+   distinctiveness sign). More references at SFT already failed here: MR5 -1.2 CIDEr vs matched P1 (single seed).
+   Nothing supports +1 to +3 CIDEr from reference augmentation at ~145-150.
+H. Stacking arithmetic. The +6.5 to +12 projection rests on B1's +5 to +9, which the B1-P1 verifier revised to +2 to +6
+   against a moved baseline (p1assist_s42 148.7; five P1 runs mean 146.8). With a PB increment of -1.5 to +1.5 CIDEr,
+   PB-RLOO vs the P1 3-seed mean is about +2 to +7 CIDEr (central ~+4) and CHAIR_i -4 to +1 (CN-RLOO -1 to +2 plus the
+   CHAIR term -1 to -3). P(+8 CIDEr bar) ~5-10%; P(Pareto bar: CIDEr >= P1 and CHAIR_i <= -4) ~10-20%. The OpenViIC
+   CIDEr goes down.
+Not re-checked: N4 (matched-count CHAIR) and the CIDErBtw-sign runs. The sign result follows mechanically from B/C
+and is not independent evidence. Test leakage: none in the final design (train refs only); the dev leak (lens 2a)
+must be fixed.
+
+=====================================================================================================================
+WHY KILL (not modify)
+=====================================================================================================================
+1. The only new element (NCR with an EB weight) gives ~0 to +1.5 on the actual init once the judge's own sentences are
+   removed from the reward (half the headline is leakage; the control rules out neighbourhood quality), tends to 0 as
+   own refs grow toward the RL setting (5), lowers the independent panel, and strengthens unmasked template copying.
+2. What remains (the CHAIR term) is prior art (SC-Captioner, CIDEnt, MOCHa, FoCUS, CCCaption). It lowers CHAIR partly
+   by fewer and vaguer nouns, and on P1 it costs CIDEr (-1.2 [-1.8, -0.5] alone on test samples).
+3. The expected increment is below single-seed MDE (2.5-3.8) and below the dev300 SE (3.0-4.8). The gate as written
+   cannot falsify the method.
+Salvage (zero novelty claim, optional, ~4 GPU-h): if B1 runs G1, add one arm "CN-RLOO + beta 0.25 x #nouns outside the
+own-ref CHAIR gold (lam = 0)", cite SC-Captioner/CIDEnt/MOCHa, report dev CHAIR_i, the OpenViIC-gold CHAIR_i,
+nouns/caption and the specific-vs-generic noun share, and keep it only if CHAIR_i falls >= 1.5 at dCIDEr >= -1 and the
+specific-noun share does not fall > 10%.
+If anyone runs PB anyway: neighbour index = train - dev300; copy mask over own + neighbour refs; sanitized-proxy
+prediction (+0 to +1.5 CIDEr) pre-registered; NCR kept only if NCR-only - CN-RLOO >= +3.0 with paired LB > 0 on
+the LAST checkpoint; 80-110 GPU-h.
+Sources: arxiv.org/abs/2007.06877, /2204.03938, /1808.09564, /2402.13936, /2504.09895, /2511.03710, /2602.05165,
+/2606.27578, /2508.06125, /1708.02300, /2312.03631, /2609.00709, /2602.21655, /2508.20181, /2608.21305, /2205.13115,
+/2409.03025, /2505.03420, /2601.06224, /2607.28509, /2401.08100, /2305.04166; iccv.thecvf.com/virtual/2025/poster/2454

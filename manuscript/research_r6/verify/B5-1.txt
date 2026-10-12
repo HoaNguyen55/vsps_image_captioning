@@ -1,0 +1,195 @@
+B5-1 VERIFICATION -- "Seed soup: exact delta-space average of K>=3 seed LoRA adapters" (lever B5_backbone_recipe)
+Adversarial verifier, 13 Oct 2026. CPU only (local, nice 15, <=4 threads). No GPU, no VLM loaded. n2/n3: ls only.
+Scorer: a copy of HEAD's evaluator (git archive HEAD scripts/evaluate.py rescap -> verify/B5-1_work/head/), RDRSegmenter
+word level (VnCoreNLP 1.2, local JDK), x100. My own code; B5's scripts were read, not imported.
+Every KTVIC-test number here is an EFFECT-SIZE ESTIMATE (nothing tuned). Bootstrap: paired over images, B=2000.
+
+VERDICT: KILL as an R6 proposal. Novelty: scooped. Feasible on one 3090 (inference only). The gain is small, unproven in
+weight space, and below both the single-seed MDE and the +8 bar.
+
+=====================================================================================================================
+1. NOVELTY (refuted: scooped)
+=====================================================================================================================
+Searches run:
+- arXiv API, 26 queries (lit/arxiv_1..4.txt), including:
+  - "model soup"+caption; "weight averaging"+"image captioning"; LoRA+seeds+merging; "LoRA soups"; "rewarded soups";
+  - ensemble+LoRA+caption; Vietnamese+"image captioning"; MBR+caption; "checkpoint averaging"+caption;
+  - "model merging"+MLLM; "weight averaging"+"vision-language"; "LoRA ensembles"; "model soup"+LoRA;
+  - SWA+caption; MBR+"system combination"; Vietnamese+VLM+LoRA; "model soups"+"vision-language";
+  - "weight averaging"+"self-critical"; LoRA stacking federated; LoRA+captioning+merging; ensemble+Qwen2.5-VL+caption.
+- Semantic Scholar: 2 queries answered, 4 refused with 429 (shared pool).
+- OpenAlex: all 4 refused with 429 ("free daily budget shared by everyone on your network's IP ... used up"). Stated, not
+  hidden.
+- WebSearch: 3 queries.
+- Full text read: SeedLoRA (PDF text, Table 2/3/4/7, Fig. 2), Rewarded soups (PDF, sec. 3.2, App. B.1, Fig. 14),
+  M2 / AoANet / X-LAN / DLCT / GRIT (PDF tables), CoTo and Gap-Init (HTML).
+
+Closest prior work, and exactly what it already does:
+- SeedLoRA (Liu et al., ICML 2025, PMLR 267:38384-38396). This is B5-1's mechanism.
+  - It trains LoRA on ONE task with different seeds and measures delta (tau = BA) cosine.
+    Math seeds: 0.28-0.30; instruct seeds: 0.20-0.24. Ours: 0.29-0.31.
+  - It reports the plain delta-space "Model Soup" of 3 seed adapters as a BASELINE:
+    - GSM8K and MATH, vs the seed mean: +2.6, +0.5, +3.3, +3.1.
+    - Tulu-v2 (Table 4), vs the best seed: average +0.1. GSM8K -2.0, TyDiQA -0.9, BBH +2.2, MMLU +1.1.
+    - HumanEval / HumanEval+ (LLaMA2): 0.0 / -0.6.
+  - B5's summary "+0.4..+3.7" quotes only the math rows. Generation-style and general tasks show about 0.
+- Exact "cat" merge:
+  - LoRA Soups CAT (Prabhakar et al., arXiv 2410.13025).
+  - FLoRA stacking aggregation, "noise-free" (arXiv 2409.05976).
+  - PEFT add_weighted_adapter(combination_type="cat").
+  - So the "self-checking numpy merger" is engineering, not novelty.
+- Weight-averaging same-objective seed runs IN CAPTIONING: Rewarded soups (Rame et al., NeurIPS 2023, arXiv 2306.04488).
+  - COCO, ExpansionNetV2, RL with BLEU1/ROUGE, 2 seeds per reward.
+  - Fig. 14(b): interpolating weights fine-tuned on a shared reward "as in model soups (MS) ... mostly reduces variance".
+- Seed ensembles in captioning are standard practice (logit fusion, "trained from different random seeds" /
+  "different parameter initialization"). COCO Karpathy test, single -> ensemble CIDEr:
+  - AoANet (1908.06954): 129.8 -> 132.0 (+2.2, 4 models).
+  - M2 Transformer (1912.08226): 131.2 -> 133.2 (+2.0, 2 models) -> 134.5 (+3.3, 4 models).
+  - X-LAN (2003.14080): 132.0 -> 133.7 (+1.7). X-Transformer: 132.8 -> 135.3 (+2.5).
+  - DLCT (2101.06462): 133.8 -> 137.5 (+3.7).
+  - GRIT (2207.09666), online c5: 138.3 -> 141.3 (+3.0, 6 models).
+  - So "seed consensus removes template variance and adds +2-3 CIDEr" is known in captioning since 2019-2020.
+- LoRA seed variance in VLM captioning is already documented and reduced: Gap-Init (arXiv 2602.01522).
+  - BLIP-2 OPT-2.7B, COCO Karpathy, rank-1 LoRA, 5 seeds: CIDEr 135.37 +- 7.10 (random init) vs 140.57 +- 1.44.
+- Other relevant prior:
+  - LoRA seed ensembles: Wang et al., arXiv 2310.00035.
+  - VLM model soups: POINTS (2409.04828), SoupLM (2407.08196).
+  - AdapterSoup (2302.07027).
+- The proposal's only claimed novelty is "evidence for small-data VLM captioning" and "variance reduction". Both are covered
+  by the work above. Nothing method-level is new. Verdict: scooped.
+
+=====================================================================================================================
+2. FEASIBILITY ON ONE RTX 3090 (holds; the cost is statistical, not memory)
+=====================================================================================================================
+- The pilot needs no training, so train_stage2.py is not involved.
+  - evaluate.py loads the base in bf16 (no --four-bit in the queue scripts, e.g. logs/n2/34_p1_assist_s42.sh): about
+    16.6 GB.
+  - The soup adapter is rank 48, about 121M fp32 parameters (0.48 GB). Peak is about 17.5-18 GB at the 512-token cap.
+    It fits 24 GB.
+- Adapter checks (verify/B5-1_work/out_v_delta.json):
+  - Config: r 48, alpha 96, so scaling = 2.0 = 32/16. No rslora, DoRA or rank_pattern. Base is
+    Qwen/Qwen2.5-VL-7B-Instruct, so check_adapter_base passes. Written by the same PEFT 0.21.2 as the members. 196
+    modules.
+  - Soup vs the exact mean delta: relative error 1.6e-8. Dense check on 3 q_proj modules: max abs error 2e-11.
+  - Trajectory adapter: relative error 3.2e-8.
+  - The adapters are correct.
+- GPU-h: about 0.25 h per mode for the soup (rank 48 adds little), so 0.5 for short + detailed, plus about 0.25 for the
+  trajectory adapter in short mode. Total about 0.8.
+- Logit-ensemble fallback: no code exists. It needs a custom greedy loop with K adapters and K KV caches, at about 3x
+  decode time (about 0.7 GPU-h per mode). It is an inference-time K-model ensemble and must be disclosed as one.
+- Hidden production cost:
+  - A deployed soup turns 3 seeds into ONE model (n=1 per arm).
+  - "Gains must survive 3 seeds" then needs 3 soups per arm, i.e. 9 seeds per arm.
+  - Any between-soup-SD / MDE claim needs at least 3-4 independent soups per arm, i.e. 6-9 extra seeds per arm:
+    - about 12-17 GPU-h for P1 at 1.92 h per run (plus eval);
+    - about 27-40 GPU-h for fuse2;
+    - more for RL arms.
+  - "0 extra training" holds only if the soup is an extra table row, and then it does not shrink the MDE of the 3-vs-3
+    comparison (still about 12.7 CIDEr).
+
+=====================================================================================================================
+3. GAIN REALISM (proxy reproduced exactly; the claimed mechanism is weaker than stated)
+=====================================================================================================================
+3a. Reproduction (verify/B5-1_work/v_mbr.py -> out_v_mbr.json)
+- My scorer reproduces data/results/*.json for every member: B-4, METEOR, ROUGE-L and CIDEr match within 0.01.
+- MBR over the 4 legacy P1 runs: CIDEr 149.06. Vs the seed mean 146.27: +2.79 [+0.62, +5.15]. B5's number, exactly.
+- The 3-of-4 subsets: 148.42 / 148.27 / 149.75 / 147.86, i.e. +2.61 / +1.14 / +2.69 / +2.77. Exactly B5's.
+- Soup member set (s43, s44, p1mask_s42), MBR proxy:
+  - CIDEr 147.86 vs member mean 145.10: +2.77 [+0.74, +4.84].
+  - B-4 45.83 (+0.87), METEOR 39.58 (+0.44), ROUGE-L 64.81 (+0.74), CHAIR_i 17.31 (member mean 18.02).
+  - Vs the BEST member (p1mask_s42, 147.67): +0.19 [-3.53, +3.59]. The ensemble reaches the lucky-seed level; it does
+    not exceed it.
+- The gain does not depend on the utility: n-gram F1 gives +2.20 [+0.24, +4.29]; CIDEr-D with DF from the candidate pool
+  gives +2.63.
+- Delta cosines (pilot7) reproduced: 0.3095 / 0.3052 / 0.2936. Soup norm 0.7315x a member's.
+
+3b. What the proxy actually measures (out_v_decomp.json, soup member set)
+- Unanimous on 163/558 images: contributes 0.
+- 2-1 split on 240 images: MBR picks the majority 239/240 times, contributing +0.54.
+- All three different on 155 images: MBR's n-gram medoid contributes +2.22, i.e. 80 % of the +2.77.
+- Utility-free plurality vote (exact-string majority, random tie-break): +0.54 [-0.97, +1.96].
+- So the robust "consensus" part is about +0.5. The rest is medoid selection among three different captions, which a
+  weight soup (one model, one greedy caption) need not reproduce.
+
+3c. The weight-space story is weaker than reported (v_delta2.py -> out_v_delta2.json)
+- The global norm-weighted cosine 0.30 hides a per-module median of 0.08-0.09 (5-95 %: 0.02-0.49).
+- The seed-shared part sits in layers 19-27 (cosine 0.405, 55 % of squared norm) and in gate/o/down projections (0.33-0.39).
+- Layers 0-18 have cosine 0.16-0.19; q/k/v have 0.07-0.11.
+- In the soup, the TOP singular values of early-layer q_proj deltas are about 55 % of the members' (layer 0: 0.125 vs
+  0.230). So "keeps the shared component in full" holds only for an assumed global decomposition, not module by module.
+- First-order (linearised) theory says the soup equals the average of the members' function changes, which is fine.
+  But the KTVIC style shift is large (zero-shot CIDEr 29 -> 146), so nonlinearity is the open risk: drift toward the
+  longer base-model style would be punished by CIDEr-D's length penalty. Only a GPU run can settle this.
+- Other evidence:
+  - CoTo (2506.05713) does not say whether its vanilla-LoRA seed midpoint (79 % -> 39 %) interpolates factors or deltas.
+    It is not evidence either way.
+  - SeedLoRA's delta soups help on math and are about 0 on general and generation tasks.
+- B5 says trajectory averaging "moves the delta by only about 5 %". The measured relative Frobenius change vs epoch 2 is
+  16.7 % (cos 0.989; epoch-1 norm 0.85x).
+
+3d. Replicates are not 4 independent seeds
+- p1-gold (s42) and p1mask_s42 share seed 42's data order: identical captions on 347/558 images.
+- p1mask vs p1assist: 320. Different seeds: 213-254.
+- The "4 seeds agree on only 144/558" and the K=4 +2.79 therefore include a near-duplicate pair. The soup member set
+  avoids it: 163/558 unanimous.
+- "Overlapping 3-of-4 subsets span 147.9-149.8" is NOT a between-soup SD: the subsets share 2 of 3 members.
+
+3e. Metric gaming and leakage: none found in the proxy
+- MBR (soup set) vs members s43 / s44 / p1mask:
+  - length 11.88 vs 11.91 / 11.87 / 11.95 syllables;
+  - verbatim train-caption copies 21.1 % vs 20.6 / 19.9 / 21.3 %;
+  - images sharing an identical caption 99 vs 100 / 96 / 89;
+  - captions with a repeated bigram 7 vs 6 / 8 / 8;
+  - mentions per caption 1.77 vs 1.76 / 1.79 / 1.80.
+- CHAIR_i: -0.38 / -1.03 / -0.72 vs each member, all CIs crossing 0.
+- The MBR utility uses TRAIN-reference document frequencies only. The soup touches no test label.
+- The weight soup's own length and CHAIR are unmeasured.
+
+3f. Realistic gain
+- Literature at >= 130 CIDEr:
+  - 4-model logit seed ensembles of SCST models: +1.7 to +3.7 (2 models: +2.0). These cost K-fold inference.
+  - Weight soups are <= ensembles.
+  - SeedLoRA vanilla soups: -2 to +3.3 depending on the task.
+- Realistic for the K=3 weight soup vs the mean of its own members:
+  - CIDEr +0.5 to +2.5 (central about +1.5), with a tail risk below 0; about 0 vs the best member.
+  - B-4 +0.3 to +0.9; ROUGE-L +0.3 to +0.7; METEOR +0.2 to +0.4; CHAIR_i -1 to +1.
+- Against noise:
+  - Single-seed SD 3.0-3.4; paired MDE 2.5-3.8.
+  - The pilot's paired-bootstrap SE is about 1.05. A true +1.5 fails the "+1.0" kill rule about 30 % of the time.
+  - The image bootstrap ignores seed sampling.
+- Additivity with B1 / B2 is not established:
+  - Ensembles of SCST models still gain at the logit level, but soups of RL policies started from different SFT seeds
+    are untested.
+  - Multi-reference targets and CIDEr-RL act on the same typicality mechanism (P4 headroom), so overlap is likely.
+- Best case: SFT seed mean 145.8 -> about 147-148, i.e. far from the +8 bar (153.8). Novelty adds nothing to the paper's
+  claim.
+
+=====================================================================================================================
+4. WHY KILL, AND THE ONLY ACCEPTABLE RESCOPE
+=====================================================================================================================
+Why kill:
+- The user asked for a method with breakthrough novelty that raises the key metrics. B5-1 has no method novelty (SeedLoRA,
+  model soups, rewarded soups, captioning seed ensembles, Gap-Init).
+- Its realistic gain (about +1.5) is below the MDE and unproven in weight space.
+- 80 % of its CPU evidence is medoid selection that a soup need not reproduce.
+- As the deployed system it complicates every comparison: arms must be souped with equal K, and n=1 per arm defeats the
+  3-seed rule.
+- Default to kill under uncertainty.
+
+If the synthesis still wants a free engineering polish (NOT a proposal or contribution):
+- Run the existing soup_p1x3_uniform once, short + detailed, about 0.5 GPU-h.
+- Pre-register: vs the member mean AND vs the best member, plus length, copy rate and CHAIR. Label it an engineering
+  estimate.
+- Apply it identically to every arm at the end, from the SAME seeds. Report per-seed numbers beside it.
+- Pick any norm-preserving weight only on the 300-image train dev split.
+- Never pair p1assist_s42 with p1mask_s42 (same init and data order).
+- Drop the MDE / variance claim unless at least 3-4 independent soups per arm are trained.
+
+Files (verify/B5-1_work/):
+- v_mbr.py -> out_v_mbr.json, v_mbr.log, mbr_*-short.preds.json.
+- v_decomp.py -> out_v_decomp.json.
+- v_delta.py -> out_v_delta.json.
+- v_delta2.py -> out_v_delta2.json.
+- lit/ (search logs, abstracts).
+- dl/ (downloaded PDFs and text: 1912.08226, 2003.14080, 1908.06954, 2101.06462, 2207.09666, 2306.04488).
+- head/ (HEAD evaluator copy).

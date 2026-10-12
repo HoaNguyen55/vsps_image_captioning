@@ -1,0 +1,188 @@
+VERIFY B1-P2  EHX-RLOO (detector tags as train-time exploration hints, distilled into a tag-free captioner)   2026-10-12
+Adversarial verifier. Work dir: verify/B1-P2_work/ (verify_p2.py -> verify_p2.json/.log; tag_cover.py; lit/ = query logs,
+abstracts and full-text PDFs of 2506.13923, 2602.03143, 2601.18779, 2112.05230).
+Scorer: my own copy of HEAD scripts/evaluate.py + rescap/ + data/coco_probe (git archive HEAD), VnCoreNLP-1.2 RDRSegmenter
+(JDK21), pycocoevalcap; segment(c.strip()).lower() as evaluate.py. Exactness: p1_s43-short 143.92, tags_p1_s43-short 144.96
+(stored 143.92 / 144.96). Samples: my own read-only scp of n2 samples/{p1_s43,fuse2_s42}-test-short.jsonl (md5 identical to B1's).
+All KTVIC numbers are on TEST predictions/samples = effect-size ESTIMATES. CIs: 95% paired bootstrap over images, B=2000.
+
+VERDICT: KILL.  Novelty: SCOOPED (mechanism identical to Guide-GRPO; residual delta = swap the hint source to a COCO-80
+detector and the task to captioning). Pilot numbers reproduce exactly, but the pilot's inference fails the missing control:
+an UNTAGGED greedy caption from another P1 seed adds as much to the pool as the tagged one. Realistic gain over CN-RLOO:
+about 0 to +1 CIDEr, which cannot be detected. Feasible on one 3090, but costlier than claimed and with a documented
+instability.
+
+=====================================================================================================================
+LENS 1 - NOVELTY (verdict: scooped at the mechanism level)
+=====================================================================================================================
+Searches (2022-2026 unless noted):
+ arXiv API, 16 queries:
+   ti:"Adaptive Guidance Accelerates RL"; hint x "importance sampling" x reinforcement; hints x GRPO x off-policy;
+   "privileged information" x caption*; "privileged information" x RL x language model; "context distillation";
+   "object tags" x caption x distill; hint x GRPO x multimodal/VLM/visual; privileged x VLM/multimodal x RL;
+   "Grounding DINO" x RL/GRPO/policy optimization; detector x caption x GRPO/PO/self-critical;
+   "object tags" x self-critical/CIDEr x caption; off-policy x captioning x self-critical; "importance sampling" x
+   "image captioning"; Vietnamese x caption x detector/tags/RL; exploration x hint x caption/VLM.
+ WebSearch, 3 queries: detector tags as train-time hints distilled into a tag-free captioner; VLM GRPO with privileged
+   detector hints and hint-free inference; "privileged information" captioning teacher with tags.
+ OpenAlex and Semantic Scholar: HTTP 429 on every attempt, including retries with backoff (B1 and the B1-P1 verifier saw the same).
+What the closest prior already does (full text read where marked FT):
+ - Guide-GRPO, Nath et al., arXiv 2506.13923 (FT). Puts a hint in the context, samples guided rollouts, and puts them in
+   ONE group-normalised advantage with the plain rollouts. The off-policy correction is per token,
+   pi_theta(r_t | x_q, r_<t) / pi_old(r_t | s_q, r_<t), where s_q is the prompt that generated r (Eq. 6), so the policy is
+   optimised for the NO-hint context. This is exactly EHX's
+   w = pi_theta(c|x) / pi_old(c|x_h) with a pooled hinted+plain baseline.
+   Guide also reports that:
+   - hinting only when all plain rollouts fail beats or matches always-hinting (Lemma 2); EHX always hints;
+   - PPO clipping on guided trajectories "causes training divergence at approximately 50 steps", so they removed it.
+     EHX inherits train_rl.py's clip 0.2;
+   - they need a policy-reshaping factor f(w) = 1/(P90(w) + w).
+   Gain: +3.39 pp macro pass@1 (56.26 vs 52.87), "up to 4%".
+ - SAGE, arXiv 2602.03143 (FT): "the task reward R(x, tau) is unchanged ... At test time, we set h = empty and deploy the no-hint
+   policy". That is EHX's "reward untouched, detector-free at test" claim. SAGE says hinting is useful "precisely when it
+   increases the effective success probability so that mixed-outcome groups become common" and activates hints only when
+   groups collapse. +1.2 on Qwen2.5-7B-Instruct.
+ - POPE, arXiv 2601.18779 (FT). Privileged oracle prefixes guide exploration; on-policy RL on guided prompts; the behaviour
+   transfers back to unguided prompts. This is EHX's on-policy pi(.|x_h) term with a shared adapter.
+ - pi-Distill / OPSD, arXiv 2602.04942. A privileged-information-conditioned teacher and an unconditioned student in one
+   model, trained jointly.
+ - Multimodal, privileged visual evidence used at training time only:
+   - PTD-PO, 2606.07000: privileged spatial-attention hints; the student is optimised in the hint-free context.
+   - EASE, 2605.30912: annotated evidence regions as privileged RL signals; inference without them; +2.5 to +3.1 over DAPO
+     on Qwen2.5-VL-7B.
+   - 2608.21811: hints in VLM RL; they help in the sparse regime (85-97% zero-gradient groups).
+ - DOPD, arXiv 2606.30626 (LLM + VLM): "privilege illusion". The information-asymmetry gap "can only be mimicked but never
+   replicated".
+ - Captioning:
+   - Oscar 2004.06165 / VinVL 2101.00529: tags as inputs at train and test.
+   - ViTCAP 2112.05230 (FT): "adopt the object tags from the detector as the pseudo ground-truth, and empirically observe no
+     further improvement".
+   - ECOL-R (EACL 2021, aclanthology 2021.eacl-main.104): SCST reward for mentioning detected objects.
+   - Off-policy SCST with importance sampling, 2006.11714.
+   - 2609.08300: detector-derived spatial hints used to build captioning data, plus GRPO.
+ - No paper was found that applies hint-guided RL to captioning with detector tags. That application is the only residual
+   delta. The proposal cites QuestA/LUFFY/ADHint/SEG but misses Guide, SAGE, POPE, pi-Distill/OPSD, PTD-PO and EASE.
+ - Factual error in the proposal: the tagger is NOT open-vocabulary. scripts/tag_images.py queries Grounding-DINO with the
+   80 COCO class names and maps them through the COCO-80 Vietnamese lexicon.
+
+=====================================================================================================================
+LENS 2 - FEASIBILITY ON ONE RTX 3090 (verdict: feasible if built carefully; claimed cost too low; known instability)
+=====================================================================================================================
+- Current code: HEAD scripts/train_rl.py.
+  - It runs the ~600-token prompt WITH gradients and without checkpointing, then uses the KV cache for the k responses.
+  - It fixes the PPO ratio at exactly 1 (old = lp.detach()).
+  - It keeps generation log-probs only in the dry run.
+  - No RL measurement exists yet: on n2, runs/p1dev_s42 has just started and r6/smoke* are stubs.
+- What EHX adds:
+  (a) a second generate on x_h with logits retained;
+  (b) a second prompt graph (x_h) plus 4 response rows for the on-policy x_h term, and its ref forward for the KL;
+  (c) a per-token off-policy ratio on the 4 hinted rows under x;
+  (d) a new clipping policy.
+  So "no extra pass is needed" holds only for the IS numerator. Per image this is about 1.3-1.5x CN-RLOO, not "+0.3 s".
+- Memory: this is only safe with TWO backward passes per image (x graph, then x_h graph). Peak memory then equals CN-RLOO
+  at k=8, which the B1-P1 verifier estimates at 18-22 GB (fp32 upcast by prepare_model_for_kbit_training, no
+  checkpointing). A single joint graph would likely exceed 24 GB.
+- Time: about 6.5-9 s/image, or 9.4-13 GPU-h per seed at 1.5 epochs.
+  - Measured anchor: P1 SFT, 2 epochs = 1.93 GPU-h on n2's 3090.
+  - Tagging is ~1 GPU-h each for KTVIC and UIT-ViIC, ~2.5 GPU-h for a 10K COCO subset.
+- GPU-h: the proposal says 37. The plan as written costs 33-44: tags 1 + G0h 0.5-1 + G1h 2.5-3.5 + 3 seeds x 9.4-13.
+  Meeting the R6 success bar (UIT-ViIC replication, COCO for a language-agnostic method, 5 seeds or pooled bootstrap)
+  brings it to about 65-100. That is ON TOP of CN-RLOO's own ~75, which is the required comparator.
+- Implementation risk: medium-high.
+  - Guide's published divergence with PPO-clipped guided rows applies here.
+  - The truncated-IS form min(2, w) is not Guide's stable recipe.
+  - The dry-run log-prob-gap guard must be re-validated on the x_h path.
+- Synthetic training data: YES (detector outputs and tag-prompted rollouts). It stays flagged for the user's veto.
+
+=====================================================================================================================
+LENS 3 - GAIN REALISM, GAMING, LEAKAGE (verdict: pilot reproduced; its inference does not hold)
+=====================================================================================================================
+Reproduced exactly (my scorer):
+- Tagged greedy minus greedy (5 refs): p1_s43 +1.04 [-3.4, +5.5]; fuse2_s42 +2.50 [-2.4, +7.5].
+- Equal to greedy on 50.7% / 50.2% of images. Beats greedy on 27.1% / 24.9%. Beats the best of 6 samples on 18.1% / 15.2%.
+- Pool +tagged (8 vs 7), picked on refs A, scored on disjoint refs B:
+  - p1: A012->B34 +0.78, A234->B01 +1.96 (B1: +0.8, +2.0)
+  - fuse2: +3.11, +1.19 (B1: +3.1, +1.2)
+  - The splits B1 did not report: p1 A01->B234 +1.85, A34->B012 +1.38; fuse2 +2.16, +2.91.
+Controls the pilot lacked (they decide the question):
+ 1. The "beats best of 6 on 15-18%" figure is not about the hint. An untagged greedy from another seed beats the best of 6
+    on 17.4-19.0% (p1_s44, s42, p1mask_s42, p1assist_s42), and p1_s43's own greedy on 17.2%. fuse2_s44: 14.2%.
+    Greedy decoding simply beats T=0.8 samples.
+ 2. Adding an untagged greedy from another seed, contiguous splits (mean of 4):
+    - p1: +1.08 / +2.04 / +1.27 / +1.53 (mean +1.48), against +1.49 [+0.40, +2.88] for the tagged candidate. Over all 20
+      splits: tagged +2.05 against +1.11 / +2.20 / +1.98 / +1.43.
+    - fuse2: s44 +1.55 against tagged +2.34. Over all 20 splits: +1.89 against +2.65.
+    => For P1, which the proposal builds on, the tag-specific exploration value is about 0. For fuse2 it is at most ~+0.8 in
+       best-of-N terms. Each extra distinct greedy-quality candidate adds ~1.5 (tagged on top of another seed's greedy:
+       +1.36 to +1.84). That is generic diversity.
+ 3. At equal pool size (the tagged greedy replaces one sample), the CIs include 0: p1 +1.25 [-0.21, +2.80];
+    fuse2 +1.70 [-0.12, +3.73].
+ 4. How tagging changes the greedy caption lies inside the seed-to-seed spread. Another seed's greedy minus p1_s43's greedy:
+    -0.22 / +5.88 / +3.75 / +4.75.
+What COCO-80 tags can name (matcher v2, test refs):
+- Tags per image: 2.39, of which 1.51 non-person.
+- Only 20.6% of non-person tags are named by >= 1 of the 5 refs (15.8% by >= 2). By class:
+  handbag 3/116, bottle 1/43, umbrella 3/36, backpack 4/33, bowl 4/40, motorcycle 34/105, boat 35/41.
+- Tag recall of consensus non-person classes is 88%. But only 183/558 images have any non-person COCO-80 object in a
+  reference, at 0.19 such classes per reference.
+- p1: a consensus tag is missed by greedy on 19.5% of images.
+  - 67.9% of those already appear in one of the 6 plain T=0.8 samples, so plain exploration reaches them.
+  - The tagged greedy names it on only 20.2%.
+  - On exactly those images, tagged minus greedy = -3.14 [-12.6, +5.5].
+  - fuse2: 13.4%, 54.7%, 13.3%, +4.97 [-4.4, +14.0].
+  - The real exploration gap is about 6% of images (missed by greedy AND by all 6 samples).
+- Transferable oracle wins (pick on refs 012, gain >= +50 over greedy on refs 34):
+  - p1, 114 images: 10.5% add a COCO-80 class, 9.6% add a TAGGED class. Images that add a tagged class carry 9.9% of the
+    positive transferable gain.
+  - fuse2: 6.4%, 3.7%, 4.1%.
+  - The content that drives CIDEr (lanterns, an eatery queue, sunglasses on stairs: B1 section 2.7) is outside COCO-80.
+Mechanism arithmetic:
+- With unbiased importance weights, the hinted rows estimate the SAME tag-free gradient as plain rows. Guide's Lemma 1:
+  "projects off-policy trajectories onto the on-policy gradient direction".
+- Truncation min(2, w) only caps captions that the plain policy prefers. It cannot raise the weight of hint-specific content
+  above its on-policy weight.
+- So the only gains available are variance reduction and the transfer channel of the x_h term. Variance reduction matters
+  for rare high-reward content, and hint RL is shown to help where groups collapse. Here 0% of groups have zero variance
+  and 0.7-1.4% have SD < 5 (B1 section 2.2).
+Gate noise (the proposal's own kill rules):
+- G0h: the per-image SD of a null "best-of-3 minus best-of-3" on disjoint refs is 107 (p1) / 102 (fuse2).
+  - SE on 300 images is 6.2 / 5.9, so "LB > 0" needs an observed mean >= 12.2 / 11.6.
+  - P(pass) is 2.5% (null), 5% (true +2) and 12-13% (true +5). Empirical null pass: 3.8% / 0.9%.
+  - The gate kills EHX whatever the truth, so it is not a test.
+- G1h: two P1-family greedy policies differ per image with SD 57-69, so SE on 300 images is 3.3-4.0. A null EHX clears
+  "CN-RLOO + 1.0" with P = 0.38-0.40 at one checkpoint. This gate cannot resolve +1.
+Effect size against noise:
+- P1 runs 149.8 / 143.9 / 143.7 / 147.7 / 148.7: SD 2.8-3.4; single-seed MDE 2.5-3.8.
+- A 3-seed t-test detects about +12.7; pooled paired bootstrap on test has SE ~1.4-1.7 per arm-pair.
+- A 0 to +1 increment is invisible. The literature fits this: ViTCAP saw no gain from detector tags as a training signal;
+  Guide gains +3.4 pp and SAGE +1.2 even in the sparse regime they target.
+CHAIR claim (-1 to -2):
+- For P1, tags at inference moved CHAIR_i 17.7 -> 17.5 and CHAIR_s 26.7 -> 26.7. The -2.4 is fuse2's, and it was measured
+  WITH tags at test.
+- At tag-free inference, DOPD's privilege illusion predicts mimicry: the model would learn to mention detector-salient
+  classes that it cannot verify, which can RAISE hallucination. There is no evidence for a decrease.
+Gaming: no length or list hacking in tag-conditioned greedy captions.
+- Syllables 11.82 vs 11.91 (p1), 12.16 vs 12.38 (fuse2).
+- Commas or "và": 2.9% vs 2.2%; 4.3% vs 4.3%.
+- Two or more tag strings: 5.0% vs 3.2%; 4.3% vs 5.2%.
+- Under RL, the truncation loophole that the B1-P1 verifier found still applies.
+Leakage: none found. The tag vocabulary is a fixed COCO-80 list; the detector is not trained on KTVIC; gates use the dev
+split; test tags are used only for the secondary tagged row.
+Realistic gain: about 0 to +1 CIDEr over CN-RLOO at tag-free inference. CN-RLOO alone is +2 to +6 over P1 (B1-P1 verify),
+so the combined total is still well below the +8 bar. CHAIR effect: unknown, with a plausible rise.
+
+=====================================================================================================================
+WHAT WOULD HAVE TO CHANGE TO REVIVE IT (no change makes it a breakthrough)
+=====================================================================================================================
+1. Cite Guide 2506.13923, SAGE 2602.03143, POPE 2601.18779, pi-Distill/OPSD 2602.04942, PTD-PO 2606.07000, EASE
+   2605.30912 and DOPD 2606.30626. Claim only "Guide-style hint RL applied to captioning". This is an application.
+2. Hints would have to name non-COCO content. That needs an open-vocabulary Vietnamese tagger, which the repo lacks
+   (tag_images.py rejected RAM++ for want of a translation lexicon).
+3. Use selective hinting (Guide Lemma 2), no PPO clip on guided rows, and reshaped weights.
+4. G0h would need a Rao-Blackwellised E[best-of-k] per arm (8+8 samples) on >= 1,000 dev images, and a control arm of
+   extra PLAIN samples at equal k.
+Even then, the measured ceiling (about 6% of images with a true exploration gap, about 10% of the transferable gain) puts
+it under +1 CIDEr. Recommendation: do not spend GPU on it. At most, keep the 0-GPU diagnostic "detector hints add only
+generic candidate diversity" as an analysis line.
+Sources: arxiv.org/abs/2506.13923, /2602.03143, /2601.18779, /2602.04942, /2606.07000, /2605.30912, /2608.21811, /2606.30626,
+/2112.05230, /2004.06165, /2101.00529, /2006.11714, /2609.08300, /2504.14945, /2507.13266; aclanthology.org/2021.eacl-main.104

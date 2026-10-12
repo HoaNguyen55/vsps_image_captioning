@@ -1,0 +1,204 @@
+P-B4-2 PM-Probe (hidden-state panel-mention probe as the veto critic of EV-MBR)
+Adversarial verification, round R6, 2026-10-13. Work dir: research_r6/verify/pb42/ (code, logs, literature).
+CPU only (nice 15, <= 4 threads, B = 2000). Repo untouched. HEAD d0c349c copies of evaluate.py, object_prf.py,
+score_ci.py, score_coco_probe.py, rescap/, data/coco_probe/ are in pb42/head. Word-level RDRSegmenter (VnCoreNLP-1.2,
+local OpenJDK 21) runs locally. The P-B4-1 verifier's independent re-implementation (evmbr_check.py, own CIDEr-D
+asserted equal to pycocoevalcap) is reused as a module. Every KTVIC number below comes from TEST pools (greedy + 6 T0.8
+samples of P1 s43 and fuse2 s42), so each one is an EFFECT-SIZE ESTIMATE, not a result.
+
+VERDICT: KILL.
+(1) The claimed novel element (a learned confidence on the captioner's own states at object-word positions, trained
+on held-out images with labels taken from existing references and used as a candidate-level veto, reported with CIDEr)
+was published as TLC-L (Petryk et al., arXiv 2305.07021, 2023).
+(2) The simulation behind the expected gain reproduces exactly, but it does not survive matched operating points.
+The label-free vote veto that P-B4-1 already has matches the simulated AUROC-0.81 probe.
+(3) The 0.85 gate is very likely out of reach. A perfect reader of the model's own sampling distribution extrapolates
+to about 0.79. An independent 5-person human panel describing the same image, stacked on vote + prior, reaches only
+0.834 / 0.809.
+(4) Whatever extra CHAIR_i reduction a KTVIC-mention critic buys is mostly KTVIC-panel naming. Only 25-43% of it
+survives an independent panel, against 53-88% for the label-free veto.
+(5) It has no CIDEr upside, and CIDEr is the user's primary metric.
+
+==========================================================================================================================
+LENS 1 -- NOVELTY: scooped for the claimed element; incremental at best as a system
+==========================================================================================================================
+Searches (2026-10-13; logs in pb42/lit):
+- arXiv API: 23 keyword queries (arxiv_1-4, 5-9, 10-15, 16-20, 21-23.txt). Topics: probes / hidden states for object
+  hallucination; probes plus reranking or best-of-N; captioning with internal states; rejection sampling with detectors;
+  semantic-entropy probes; RL reward with probes; token-level confidence for captions; caption reranking with
+  confidence; Vietnamese captioning (KTVIC, UIT-OpenViIC); content selection and mention; MBR with verifiers;
+  self-consistency against hallucination; hallucination-detection classifiers; verifier best-of-N; salient-object
+  mention; caption QE; confidence estimation.
+- arXiv id_list lookups for 25 ids (ids_1-4.txt).
+- Semantic Scholar: 1 query succeeded (s2_1-2.txt). 5 others returned HTTP 429 after retries.
+- OpenAlex: HTTP 429 on all 4 queries (quota exhausted, retry-after 21,961 s). Logged in openalex_1-4.txt.
+- Full text read: 2305.07021 (PDF, sections 3.2-4.4 and Table 4); 2603.05465 HALP (HTML, Table 1); 2604.06165
+  HaloProbe (HTML: detection table, ablation, mitigation); 2502.16842 (HTML: method).
+Closest prior:
+ 1. TLC-L. Petryk, Whitehead, Gonzalez, Darrell, Rohrbach, Rohrbach, "Simple Token-Level Confidence Improves Caption
+    Correctness", arXiv 2305.07021 (2023). Full text read. It has every element P-B4-2 claims as new:
+    - a learned confidence estimator g on the FINE-TUNED captioner's own encoder and decoder features (the decoder
+      state just before the vocabulary projection, i.e. a hidden state), at each token of a teacher-forced candidate;
+    - trained on a HELD-OUT split (the captioner's val set), "a better estimate of the captioning model's performance
+      on test data" (the same reason for P-B4-2's cross-fitting);
+    - labels from EXISTING REFERENCE CAPTIONS, not presence: a token is correct if it matches a reference token at that
+      step given the reference prefix;
+    - used as a CANDIDATE-LEVEL VETO: among B = 25 beams, reject any whose COCO-object tokens have confidence < gamma,
+      with gamma chosen on val, and fall back to likelihood order;
+    - reported with CIDEr/SPICE as well as CHAIR. Table 4, OFA-Large: CHAIR_s/CHAIR_i/CIDEr 2.79/1.78/144.4 ->
+      1.74/1.17/141.8. OFA-Base: 3.78/2.39/142.9 -> 2.05/1.48/137.5. At baselines >= 140 CIDEr the learned veto cuts
+      CHAIR_i by 34-38% (relative) and COSTS 2.6-5.4 CIDEr. Training the captioner on the held-out data instead
+      (Standard-Aug) gives 153.3 CIDEr (+8.9).
+    This contradicts the proposal's novelty sentence ("prior probes ... target presence ... and are scored on CHAIR
+    only").
+ 2. HaloProbe, 2604.06165. Token-level posterior combining internal signals (attention, logits) with a learned prior
+    on external statistics. AUROC 93.5 on LLaVA-1.5 (internal-only 92.1; external-only 81.7). Used to score
+    candidates in hallucination-aware beam search and to remove hallucinated objects after decoding. Also run on
+    Qwen3-VL and InternVL3.5. Reports CHAIR and F1, no CIDEr.
+ 3. Sun et al., 2502.16842. Token-level hallucination classifier on hidden representations from parallel with-image
+    and without-image passes. Labels come from an automated object-hallucination pipeline. Drives a decoding strategy
+    that controls the hallucination rate in image captioning.
+ 4. SelfVal, 2601.22451: validates objects in sampled candidate captions, then selects or aggregates captions (the
+    veto-over-samples form). Petryk et al. 2305.07021 and B4's own "cheap critic" are the reference-label versions.
+ 5. HALP, 2603.05465: Qwen2.5-VL-7B probe AUROC is 0.787 with visual-only features (VF), 0.668 with VT and 0.915 with
+    query-token states (QT). B4's "~0.79 for Qwen2.5-VL-7B" quotes the weakest family. The label there is VQA
+    hallucination, not panel mention.
+ 6. Context. Obeso et al. 2509.03531 (entity-token linear probes beat semantic entropy, AUC 0.90 vs 0.71; long-form
+    LLM output). Semantic Entropy Probes 2406.15927 (probes approximate sampling-based uncertainty). Lookback Lens
+    2407.07071 (linear classifier guides candidate selection at decode time). Quality-aware decoding 2205.00978 (MBR
+    plus learned-QE reranking: the "MBR x learned critic" structure). MetaToken 2405.19186. TruthPrInt 2503.10602.
+    In-house E2 already used "named by any reference" as the probe label.
+ 7. Vietnamese: KTVIC 2401.08100 and UIT-OpenViIC 2305.04166. No Vietnamese probe or veto work was found.
+Remaining delta, all incremental:
+- the label is "any of 5 refs names the noun anywhere" (bag of nouns) rather than TLC's prefix-conditional token match;
+- the veto sits inside MBR with retrieved pseudo-references rather than likelihood-ranked beams;
+- PCA-64 + logistic regression on layer 20-28 states of a 7B LVLM, with cross-fitted half adapters;
+- Vietnamese.
+None of these is a step beyond the prior art.
+
+==========================================================================================================================
+LENS 2 -- FEASIBILITY on one RTX 3090: yes (not the blocker); ~4.4 GPU-h, medium implementation risk
+==========================================================================================================================
+- Extraction. train_rl.token_logprobs (HEAD) already teacher-forces k candidates through the 4-bit LoRA policy on a
+  shared ~600-token prompt KV cache. Adding output_hidden_states to the continuation pass gives every layer:
+  29 x 7 x 40 x 3584 x 2 B ~ 58 MB per image. Peak memory stays well under 24 GB (4-bit 7B ~5.5 GB).
+- GPU-h, using the repo's measured unit costs:
+    two P1 half-adapters (~1,735 images each; 6,938 s per full-train P1 SFT)          ~1.8
+    greedy + 6 samples on 1,500 cross-fitted train images (1.4 + 3.6 s per image)       ~2.1  (B4 counted samples only)
+    teacher-forced states for ~1,800 dev/xfit pools and 3 x 558 test pools              ~0.5
+  Total ~4.4 GPU-h. A further ~1.5 h of dev300 and s42/s44 test pools is shared with P-B4-1. Reusing the queued fuse2
+  xfit halves (jobs 60-63) brings it to ~2.6, at the price of a fuse2-vs-P1 candidate and feature mismatch.
+- Risks:
+  (a) aligning lexicon nouns (multi-syllable, canonicalised by objects_in/canonical) to byte-level BPE offsets;
+  (b) feature shift: the probe is fitted on half-adapter or p1dev states but applied to full-train seed adapters.
+      Either read every candidate through one fixed critic adapter, or show the transfer on dev;
+  (c) labels are per (image, noun) while states are per occurrence;
+  (d) the train set is ~7k (image, noun) keys: enough for PCA-64 + logistic regression with image-grouped CV.
+
+==========================================================================================================================
+LENS 3 -- GAIN REALISM: pilot reproduces exactly; the expected gain does not survive scrutiny
+==========================================================================================================================
+3a. Reproduction (pb42/probe_sim.py -> out/probe_sim.log). B4's pilot8 numbers match exactly (CIDEr / CHAIR_i):
+      P1 s43:    PE-MBR 151.4 / 17.0; cheap veto 152.3 / 15.5; sim 0.81 150.0 / 14.9; sim 0.90 151.1 / 11.4
+      fuse2 s42: PE-MBR 149.8 / 20.9; cheap veto 149.9 / 19.6; sim 0.81 150.0 / 18.6; sim 0.90 151.8 / 14.6
+    Oracle veto: 156.3 / 3.0 and 158.7 / 6.6.
+    Cheap critic: cross-fitted AUROC 0.782 / 0.765; vote+prior 0.775 / 0.762; tags add +0.007. All confirmed.
+
+3b. Matched operating points: the veto threshold tau is a CIDEr-vs-CHAIR knob, and the simulation compared critics at
+    different points.
+    P1 s43 (CIDEr / CHAIR_i / object R):
+      label-free vote veto (no labels, no probe):
+        tau 0.3: 151.1 / 14.4 / R 41.0
+        tau 0.5: 147.4 / 12.8 / R 38.5
+      sim 0.81 at tau 0.5: 150.0 / 14.9   -> DOMINATED by the label-free vote veto at tau 0.3
+    Lowest CHAIR_i each critic family reaches with CIDEr >= PE-MBR - 1 (thresholds picked on test for every family):
+                            vote-only   cheap (other pool)   sim 0.81   sim 0.85   sim 0.90
+      P1 s43                  14.4           14.9               15.6       13.4       10.5
+      fuse2 s42               19.6           19.4               17.2       14.5       12.7
+    Gain over the label-free knob: on P1 s43, nothing at AUROC 0.81 and -1.0 at 0.85, even under B4's
+    independent-noise assumption. fuse2 gains more because its extra objects are consistent across samples
+    (see 3e for what that gain is).
+
+3c. Is the 0.85 gate reachable? Very unlikely (my estimate P <= 0.1-0.15; B4 said ~0.3).
+    - Self-distribution ceiling (K-extrapolation). AUROC of the vote computed from K' of the 6 samples, on a fixed key
+      set:
+        K' = 1 .. 6   P1: 0.637  0.690  0.718  0.737  0.751  0.763
+        fit a + b/K'  P1: K' -> inf 0.794 (vote + prior 0.795); fuse2: 0.772 (0.778)
+      A probe that reads the model's own mention distribution perfectly gets about 0.79 / 0.78. To reach 0.85 it must
+      carry information that never reaches the model's own outputs.
+    - Independent human ceiling (pb42/panel_ceiling.py -> out/panel_ceiling.log). Use the count (0-5) of the 5
+      OpenViIC captions of the SAME test image that name the noun. These are humans who saw the image:
+                                      P1      fuse2
+        count alone                  0.776    0.750
+        vote + prior + count         0.834    0.805-0.809
+      Five independent human descriptions of the image do not lift the critic to 0.85. The probe would have to know
+      more about the KTVIC panel's naming than a second human panel does. That knowledge is KTVIC naming convention,
+      and the SFT model's vote and the train prior already carry it.
+    - Caveats on the literature figures:
+      - E2's 0.807 was on Stage-1 proposition objects, base model, where the class prior alone reached 0.710. On the
+        captioner's own candidate nouns the prior reaches only 0.608 / 0.620, so the task is harder.
+      - HaloProbe 93.5 and HALP 0.915 are truth labels on detailed captions or VQA, where position and question-level
+        cues help.
+      - TLC-L's labels are reference-derived like ours, and its veto lowers CIDEr.
+
+3d. A realistic probe has noise correlated with the vote. Combined critic = cross-fitted logistic(vote, prior, z),
+    z = D*y + rho*vote_noise + sqrt(1 - rho^2)*e, veto at tau 0.5, mean of 3 seeds:
+                                             combined AUROC          P1 CIDEr / CHAIR_i
+      probe 0.75, rho 0.0 / 0.3 / 0.6       0.849 / 0.820 / 0.797    151.1 / 13.6 | 150.7 / 14.6 | 151.3 / 15.5
+      probe 0.80, rho 0.0 / 0.3 / 0.6       0.874 / 0.845 / 0.822    150.7 / 12.3 | 151.1 / 13.9 | 150.9 / 14.7
+      probe 0.85, rho 0.6                   0.856                    151.1 / 13.7
+    Against the label-free vote veto (151.1 / 14.4) at the same CIDEr:
+      combined 0.845-0.856 -> CHAIR_i -0.5 to -0.7
+      combined ~0.875      -> -2.0
+      combined 0.90        -> -3.0 to -3.6
+    The proposal's "-1.5 to -3.5 on top of P-B4-1" needs a combined AUROC of about 0.87-0.90, above the human-panel
+    ceiling in 3c. Even at a combined 0.85 the P1 gain is -0.5 to -1.0. That is below the per-seed paired CI
+    half-width for CHAIR_i (~1.2-1.6; ~0.8-0.9 pooled over 3 seeds).
+
+3e. What the extra CHAIR_i reduction measures. The probe's label IS CHAIR-vi's gold rule: _gold_objects of the same
+    5 KTVIC refs. Noun precision gain vs PE-MBR, 555 images, KTVIC refs vs the INDEPENDENT OpenViIC panel:
+                                    KTVIC panel   OpenViIC panel   share that survives
+      P1 s43
+        vote tau 0.3                    +2.6          +2.1               81%
+        vote tau 0.5                    +4.2          +3.7               88%
+        sim 0.85                        +2.8          +0.7               25%   (OpenViIC CI includes 0)
+        sim 0.90                        +4.9          +1.8               37%
+        oracle                         +14.1          +4.5               32%
+      fuse2 s42
+        vote tau 0.5                    +3.4          +1.8               53%
+        sim 0.85                        +4.9          +1.9               39%
+        sim 0.90                        +7.5          +3.2               43%
+    A critic that predicts KTVIC mention lowers CHAIR-vi mostly by matching the panel's naming (typicality, which is
+    the paper's own verified finding 1), not by removing false objects. On P1 s43 the label-free veto at tau 0.5
+    raises independent-panel precision MORE (+3.7) than the simulated 0.90 probe (+1.8). Caveat: the simulated probe
+    is y + noise, so it also "knows" the test refs' idiosyncrasies; a real probe would transfer somewhat better, but it
+    cannot beat the 3c ceiling.
+
+3f. Metrics, gaming, leakage.
+    - CIDEr: at tau 0.5 the simulated probe changes CIDEr vs PE-MBR by -1.4 to +2.0 (every CI spans 0). There is no
+      CIDEr upside, and CIDEr is the user's primary metric. In the literature at >= 140 CIDEr (TLC-L, Table 4), a
+      learned veto costs 2.6-5.4 CIDEr.
+    - Mention count: the veto lowers mentions/cap from 1.77 to 1.62-1.71, part of the classic CHAIR lever.
+    - The proposed RL reward-shaping use would optimise the evaluation's own gold definition (Goodhart): no.
+    - Leakage: the design uses train refs only. The pilot uses test labels by construction (simulation, cross-fitted
+      critic), so it can only estimate effect sizes.
+
+3g. "The only B4 route to the CHAIR Pareto bar" is refuted. On P1 s43 the label-free vote veto at tau 0.3 already
+    gives CIDEr 151.1 / CHAIR_i 14.4 (-4.0 vs the 3-seed mean 18.4; single seed, threshold picked on test). Projected
+    to 3 seeds, it is about -3.3 from each seed's greedy, i.e. ~15.1. A probe at combined 0.85 would add -0.5 to -1.0,
+    so the bar stays borderline even if the gate passes, and most of the gain would be panel typicality.
+
+==========================================================================================================================
+REQUIRED CHANGES (only if someone revives it; not recommended)
+==========================================================================================================================
+1. Cite TLC-L 2305.07021 as the method. Claim at most an MBR-integrated, Vietnamese replication.
+2. Gate at MATCHED operating points. Compare the whole CIDEr / CHAIR_i / R curve against the dev-tuned label-free vote
+   veto, not against a fixed tau 0.5 cheap critic. A threshold change alone moves CHAIR_i by 1-2 points.
+3. Run a 0.5 GPU-h dev300-only measurement on P-B4-1's dev pools: p1dev_s42 states, image-grouped CV. Stop unless
+   out-of-fold AUROC >= vote + prior + 0.07 AND the dev curve gains >= 1.5 CHAIR_i at equal CIDEr. Skip the half
+   adapters until then.
+4. Report two-panel precision (OpenViIC) and recall for every veto. No faithfulness claim from CHAIR-vi alone. No RL
+   reward use.
+
+Files: pb42/probe_sim.py (+ out/probe_sim.log), pb42/panel_ceiling.py (+ out/panel_ceiling.log), pb42/evmbr_check.py
+(P-B4-1 verifier's module, copied), lit/ (search logs, TLC PDF text, HALP / HaloProbe / 2502.16842 HTML text).

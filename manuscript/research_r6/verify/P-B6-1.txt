@@ -1,0 +1,207 @@
+P-B6-1 RMH (Retrieved Mention Hints in the detector-tag prompt slot; Stage A inference probe -> Stage B hint-dropout SFT)
+Adversarial verification, round R6, 2026-10-13. Verifier work dir: research_r6/verify/pb61/ (code, logs, outputs).
+CPU only (nice 15, <= 4 threads, B = 2000, seed 0). Repo untouched. HEAD copies: pb61/evaluate_head.py, pb61/head/{rescap,scripts}.
+Word level: VnCoreNLP-1.2 RDRSegmenter run locally (own copy pb61/vncorenlp, JDK 21, own cache pb61/out/seg_cache.json).
+Every KTVIC number below is computed on TEST refs = EFFECT-SIZE ESTIMATE, not a result. No OpenViIC caption was read.
+
+VERDICT: KILL. Low novelty (TUNA EMNLP 2024, DualCap 2025, CONCAP 2025, VLCAP 2025 and ViECap 2023 cover every element).
+The empirical basis does not hold: the "+1.1 / +2.5 from tags" is not significant and did not come from tag content.
+Every CPU proxy I could build gives the retrieved-hint CONTENT a contribution <= 0 at P1's level. Even a perfect
+(test-ref) hint checker gives a ceiling below +8. Expected gain: about 0 (Stage A), +0 to +2 (Stage B), against a +8 bar.
+
+==========================================================================================================================
+LENS 1 - NOVELTY: incremental (closest to scooped for the core element)
+==========================================================================================================================
+Searches (2026-10-13):
+- arXiv API: 18 relevance queries (pb61/lit/arxiv_all.txt) and 7 date-sorted queries (lit/arxiv_recent.txt).
+- One id-list lookup of 10 abstracts (lit/abstracts1.txt).
+- WebSearch: 4 queries.
+- OpenAlex: 4 queries, all HTTP 429 (daily quota spent for this IP, retry-after 21,925 s).
+- Semantic Scholar: HTTP 429.
+- Full text read (HTML) for TUNA, VLCAP, DualCap, CONCAP, ViECap (ar5iv) and EVCap.
+Topics covered: RA captioning with keywords or concepts; RA with an LVLM or Qwen; object tags in the prompt; entity-aware
+prompts; Vietnamese captioning; noisy or irrelevant retrieval training; hints in captioning; similar-image keywords;
+multilingual concept retrieval; retrieval and hallucination; dropout of retrieved items; counterfactual retrieval.
+
+Closest prior, and exactly what it already does:
+1. TUNA. Qi et al., EMNLP 2024, arXiv 2406.10839 (FULL TEXT).
+   - Datastore: CC3M + CC12M + COCO train (~15M pairs). Keys are CLIP image embeddings. Values are TAGS MINED FROM
+     CAPTIONS (FACTUAL scene-graph parser + spaCy NER; object names and attributes).
+   - Image-to-image retrieval, k = 5. The tags feed a 7B MLLM (LLaVA-1.5 / Vicuna-7B) through a tag encoder, with a
+     similarity-based tag weight. It is trained end to end.
+   - Ablations include "w/ random tags" (the counterfactual control) and "w/ captions" (tags vs retrieved captions).
+   - This is P-B6-1's "mention-worthiness evidence = words from the human captions of visual neighbours, for a 7B LVLM".
+   - TUNA lacks: captioning CIDEr, the text-slot format, Vietnamese, and a detector-tag head-to-head.
+2. DualCap. arXiv 2510.24813 (FULL TEXT).
+   - POS-filtered keywords and phrases (up to 12) from the captions of the top-3 image-to-image neighbours, fused into
+     the visual features of a GPT-2 captioner.
+   - COCO 120.0 -> 123.6 CIDEr (+3.6) from this component.
+3. CONCAP. COLM 2025, arXiv 2507.20411 (FULL TEXT).
+   - Concepts (unique training-caption tokens, mSigLIP image-to-text, m = 10) in the prompt of LoRA-trained mBLIP,
+     trained with them.
+   - CONCEPTS ALONE IN-DOMAIN HURT: COCO-35L NoRAG 99.2 vs ConRAG 95.1 (-4.1). They help only out-of-domain
+     (XM3600 L36 26.9 -> 30.3; Vietnamese XM3600 31.8 -> 36.8). KTVIC train -> KTVIC test is the in-domain case.
+4. VLCAP. arXiv 2510.03295 (FULL TEXT).
+   - Arabic, a low-resource language. CLIP-retrieved labels from a training-caption vocabulary (+ Visual Genome) are
+     written into the text prompt of Qwen-VL / Gemini, with no fine-tuning.
+   - This is Stage A's "inference-only retrieved words in an LVLM prompt, non-English" (no CIDEr reported).
+5. ViECap. ICCV 2023, arXiv 2307.16525 (ar5iv full text).
+   - Entity hard prompts with random entity MASKING at rate 0.4 in training: P-B6-1's "hint dropout".
+   - Without masking, in-domain COCO collapses 92.7 -> 53.2 (copy shortcut). With 40% masking: 92.9 (+0.2).
+     With 60%: 94.6 (+1.9). In-domain gain from entity hints is about 0 to +2.
+6. Counterfactual / irrelevant-retrieval training:
+   - RoRA-VLM (arXiv 2410.08876): swaps in an unrelated entity's image and knowledge as adversarial noise.
+   - RetRobust (2310.01558), RAFT (2403.10131).
+   - Li et al. ACL 2024 (2406.02265): sample-k robustness for RA captioning.
+7. Also in this family: EVCap (2311.15879; retrieved object names into a frozen Vicuna-13B), MeaCap (2403.03715),
+   IFCap (2409.18046), VRAP (2412.11396; retrieval-augmented tags in LVLM prompts, evaluated on COCO).
+   Re3Cap (2608.21305) is the RL relative (P-B6-2).
+What remains:
+- The KTVIC / Vietnamese / QLoRA setting.
+- The source-controlled comparison "neighbour-panel words vs Grounding-DINO tags in the same slot". That is an ablation,
+  not a method step.
+The proposer's own rating ("novelty is low") stands. Nothing here is a step beyond prior art.
+
+==========================================================================================================================
+LENS 2 - FEASIBILITY on one RTX 3090: yes. GPU-h understated by about 5. Two implementation traps.
+==========================================================================================================================
+Stage A:
+- Zero new code: HEAD scripts/evaluate.py --tags takes {image_id: [words]} and appends
+  " Các đối tượng có thể có trong ảnh: w1, w2, ...".
+- Tag decodes logged at 0.23-0.32 h per adapter and mode (queue: 25_b 0.64 h for 2 modes, 32 0.45 h).
+- 4 adapters x (retrieved + required placebo) + an OR-tags arm (tags for s42/s44 do not exist yet) = 9-11 decodes,
+  about 2.5-3.5 GPU-h (proposal: 1.5).
+Stage B:
+- train_stage2.py reads a per-row "prompt" from sft.jsonl, so only a data builder (~60 lines) is needed.
+- Memory: +~25 prompt tokens on the existing 4-bit batch-1 recipe, no issue.
+- Cost: P1 SFT 6,938 s train (~2.0 h; 2.39 h with eval, R5-00 sec. 8).
+Trap 1: the default --loss-mask legacy measures the prompt length before image-token expansion, so the instruction text
+  stays IN the loss (train_stage2.py VLCollator). A hint SFT run with legacy masking trains the model to GENERATE the hint
+  line, including the 20% counterfactual words taken from random images. Both arms must use --loss-mask assistant.
+  The method-track baseline is p1assist_s42, the only assistant-mask P1 seed so far.
+Trap 2: SFTTrainer rows are static (Dataset.from_list). "Hint dropout 0.3" and "20% counterfactual" are therefore drawn
+  once per row, not per epoch, unless rows are duplicated or resampled.
+Budget:
+- The proposer's 23 GPU-h omits the matched assistant-mask no-hint seeds s43/s44 (+~4.8 GPU-h) and the placebo arm.
+- Realistic full plan: ~28 GPU-h, each run within one 3090.
+
+==========================================================================================================================
+LENS 3 - GAIN REALISM
+==========================================================================================================================
+3a. The basis ("tags gave +1.1 / +2.5") is not significant, and not content-driven (pb61/check_tags.py, out/check_tags.json).
+- HEAD rescoring reproduces the table: tags_p1_s43 CIDEr 144.96, tags_fuse2_s42 146.40.
+- Paired bootstrap vs plain:
+    P1 s43  +1.04 [-3.31, +5.47]   dCHAIR_i -0.20 [-1.78, +1.37]
+    fuse2   +2.50 [-2.39, +7.65]   dCHAIR_i -2.43 [-4.15, -0.76]
+- Uptake: the extra prompt line changed 275 / 277 of 558 captions. A tag word was actually inserted in only 34 (P1) and
+  10 (fuse2) of them:
+    insertions with >= 1 correct word: +12.6 / +33.9 CIDEr per image (n = 24 / 4)
+    wrong-only insertions:             -48.8 / -34.4 per image (n = 10 / 6)
+    net corpus contribution of tag content: -0.33 (P1) and -0.13 (fuse2)
+- The whole +1.0 / +2.5 came from captions that changed WITHOUT using any tag (241 / 267 images; +1.37 / +2.63). That is
+  prompt perturbation, not tag content. For fuse2 the captions also got shorter (10.84 -> 10.68 words; mentions
+  2.09 -> 2.02), which is where its CHAIR_i drop comes from.
+- So Stage A without a placebo arm measures prompt perturbation, and "only the hint source differs" does not isolate content.
+- Further confound: the slot says "objects that may be in the image", but 77% of retrieved hint words are not objects.
+
+3b. Hint-quality pilot: reproduced exactly; the headline contrast is a definitional artifact (check_hints.py).
+- Own kNN over B6's CLIP features: top-10 lists identical to B6's for 98.7% of test images. Own DF/IDF and own metrics:
+    retrieved top-5: precision 24.1% / 16.3% (>= 1 / >= 2 refs), recall of consensus 37.8%, P1-missed recall 23.3%
+    useful images 83 / 89 / 90 (s42 / s43 / s44)
+    GDINO tags: 39.3% / 32.2%, 4.4%, 2.0%, 7 / 8 / 7
+  All identical to B6.
+- But "useful" counts only consensus words with train DF <= 5%, the same filter that defines the hints, and it excludes
+  the frequent objects tags name.
+  - With consensus words of ANY frequency: retrieved 14.9-16.1% vs tags 7.9-9.0% (about 1.8x, not 11x)
+    (out/check_steer.json).
+  - A placebo (top-5 hints of a RANDOM train image's neighbours) scores 1.1-1.3% on the original definition, the same
+    as the tags.
+- Hint composition:
+  - Only 23.3% of hint words are CHAIR-lexicon objects (tags: 90.4%). Examples of non-object hints: "nào", "khác",
+    "dưới", "ban_ngày".
+  - CHAIR-gold precision of the hint objects is 39.5% (tags 44.9%), so roughly 60% of hint objects count as
+    hallucinations if mentioned.
+- Rare-word claim re-check: the 10-NN refs contain 52.1% of rare consensus words (train DF 1-20; B6 47.7% with DF-0
+  words included); random 10 train images 0.7%; P1 3-seed recall 31.5%. Reproduced in substance.
+- Train / dev / test hint quality match (check_trainhints.py): precision 23.6% (train LOO), 24.3% (dev300; the file
+  matches the Random(0) rule), 24.1% (test). This one is in the proposal's favour: no train/test hint shift.
+
+3c. What the hint content is worth in CIDEr when the model FOLLOWS it.
+Proxy (check_steer.py, check_switch.py, check_ceiling.py): candidates = the model's greedy caption + its 6 T = 0.8
+samples (P1 s43, fuse2 s42; md5-identical to the n2 files). Pick the candidate with the most hint words; greedy wins ties.
+- Blind following:
+    retrieved -10.5 [-16.0, -5.2] (P1), -9.8 [-15.3, -4.4] (fuse2), CHAIR_i +2.9 / +2.6
+    tags      -11.0 / -12.6
+- Against a SWITCH-MATCHED random sample (separates the cost of leaving greedy from hint content), the hint content
+  contributes -0.42 (P1) and -2.72 (fuse2) corpus CIDEr. Per switched image: -1.2 [-10.8, +9.1] and -7.5 [-16.9, +2.0].
+- Gated following (only hint words that >= 2 of the 7 candidates contain, i.e. "check the hint against the image"):
+    -0.3 [-3.9, +3.3] (P1)    0.0 [-3.0, +2.9] (fuse2)
+- Ceiling with a PERFECT checker (keep only hint words that the test refs confirm; an upper bound):
+    consensus-missed filter: +5.6 [+2.2, +9.4] (P1)   +3.1 [+0.6, +5.8] (fuse2)
+    any-ref filter:          +6.7 / +5.4
+    Full missed-consensus oracle with no retrieval: +14.2 / +12.2. The retrieved hints hold 25-40% of that headroom.
+- Caveat: the proxy over-states obedience (the real adapters inserted tags on 34 / 10 images, the proxy switched
+  137 / 124). In-prompt realisation could be better than a T = 0.8 sample. It still shows no positive content signal
+  short of an oracle checker, and the oracle ceiling is below +8.
+
+3d. Seed noise and power.
+- Per-seed paired SE of a prompt change is about 2.2-2.6 CIDEr (from the tag CIs).
+- The Stage A gate (pooled 3-seed dCIDEr >= +1.0 with LB > 0) needs an observed mean of about +2.5 (independent seeds)
+  to +3.6 (cross-seed correlation 0.5).
+- P(pass) is about 8-12% at the proposer's midpoint +1, and about 2.5% at a true 0. A pass without a placebo arm would
+  still be uninterpretable (3a).
+- Stage B's +1 to +3 is below one seed SD (3.4). With 3 seeds the between-seed MDE is about 12.7, so only a pooled paired
+  bootstrap could detect it.
+
+3e. Literature at baselines >= 130 CIDEr (full text):
+- Sarto et al. 2024 (2405.13127): kNN memory after SCST, 135.3 -> 136.4-136.7 (+1.1 to +1.4).
+- EVCap: 134.4 -> 140.1 (+5.7), but with a frozen Vicuna-13B, 3.97M trainable parameters and a new fusion module added
+  at the same time. That is capacity compensation; a LoRA-tuned 7B already holds the in-domain vocabulary (SmallCap
+  Fig. 6: the gap shrinks with trainable capacity).
+- In-domain concept or entity hints: CONCAP -4.1, ViECap +0.2 to +1.9, DualCap +3.6 at 120.
+- No source supports +8 from in-domain word hints at P1's ~146.
+
+3f. Leakage and gaming.
+- No test leakage found. Retrieval pool and DF are train only; query twins at cos > 0.95 are excluded (11 test images).
+  Opportunity is not concentrated on near-duplicates (useful share by top-1-cos tercile: 12.9 / 17.7 / 17.2%; 39 test
+  images keep a neighbour at cos > 0.90).
+- Minor: m = 5 and k = 10 were "fixed" after B6 computed hint-quality grids (m in {3, 5, 8}) on TEST refs. Label Stage A
+  as test-informed.
+- Gaming risk: hints are annotator-typical vocabulary. B6's own panel check shows retrieval consensus gains are
+  typicality (KTVIC-vs-panel share gap +13.7 [+8.1, +19.2]). Any CIDEr gain needs the independent-panel and verbatim-copy
+  checks; the proposer expects 0 to +1 on the panel.
+
+==========================================================================================================================
+REQUIRED CHANGES (only if something is salvaged; I do not recommend GPU for it in R6)
+==========================================================================================================================
+1. Not a method candidate.
+   - At most a ~3 GPU-h Stage A DIAGNOSTIC, if a GPU is idle.
+   - Add a placebo arm: random-train-image hints, same slot, same m.
+   - Gate on retrieved minus placebo, not retrieved minus plain.
+   - Report insertion counts, length, mentions/cap, and two-panel precision.
+2. Make the head-to-head clean.
+   - Either reword the slot (hints are 77% non-objects) or restrict hints to CHAIR-lexicon nouns.
+   - Report the "useful hint" contrast on consensus words of any frequency (1.8x, not 11x).
+3. Stage B, if ever run:
+   - --loss-mask assistant in BOTH arms.
+   - Dropout and counterfactuals resampled per epoch (duplicate rows).
+   - HARD counterfactuals (plausible wrong hints, e.g. neighbour ranks 11-30 or same-cluster images). Random-image hints
+     are trivially rejectable (placebo precision 1.9%), so they do not teach the checker that 3c shows is missing.
+   - Matched assistant-mask no-hint seeds s43/s44; m tuned on dev300 only.
+   - UIT-ViIC with its verbatim train-copy rate.
+4. Cite TUNA 2406.10839, VLCAP 2510.03295, ViECap 2307.16525 (entity masking 0.4) and RoRA-VLM 2410.08876 as closest
+   prior, together with CONCAP's in-domain concepts-only -4.1.
+
+Files (pb61/):
+- vlib.py: HEAD-copy scorers, own segmentation cache, bootstrap.
+- check_tags.py: reproduction of the tag rows, paired CIs, uptake.
+- show_ins.py: insertion examples.
+- check_hints.py: independent hint-quality recomputation, placebo, CHAIR objects, terciles.
+- check_steer.py: hint-following proxy, any-DF useful share.
+- check_switch.py: switch-matched control.
+- check_ceiling.py: oracle-filtered ceiling.
+- check_trainhints.py: train-LOO and dev300 hint quality.
+- check_rare.py: rare-word coverage.
+- out/*.json, out/check_rare.log.
+- lit/: arXiv logs, abstracts.
+- Helper scripts: arxq.py, arxq_date.py, arxid.py, oaq.py, s2q.py.
