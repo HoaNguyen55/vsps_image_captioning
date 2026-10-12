@@ -15,6 +15,10 @@ is the entire value of this file):
 3. Object detection in the VIETNAMESE caption: the coco80_vi.json lexicon
    (committed beforehand), longest-phrase-first matching, boundaries are
    non-letter characters; `_rui_ro` notes in the lexicon are skipped when matching.
+   Fixed 2026-10-12 (it only ever removed classes): a matched phrase is consumed, so
+   a term inside or overlapping a more specific one adds no second class (VI `ô tô`
+   gave bowl too, `ngựa vằn` horse, `gấu bông` bear; EN `hot dog` gave dog), and
+   "longest" ignores a leading classifier (`chiếc ô tô` is a car, not an umbrella).
 4. Metrics per (system × mode): classes mentioned/caption · CHAIR_i (invented
    classes / mentioned classes, pooled over the set) · CHAIR_s (% captions with
    ≥1 invented class) · absolute invented objects/caption (mean distinct
@@ -33,6 +37,9 @@ from collections import defaultdict
 from pathlib import Path
 
 import os
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 NCS_DATA = Path(os.environ.get("NCS_DATA", Path.home() / "ncs-data"))
 PROBE_DATA = Path(__file__).resolve().parents[1] / "data" / "coco_probe"
 ANN = NCS_DATA / "datasets" / "coco_probe" / "annotations"
@@ -57,7 +64,14 @@ def load_synonyms() -> dict[str, str]:
 
 
 def load_vi_terms() -> list[tuple[str, str]]:
-    """[(VI phrase, COCO class)] — longest phrases first; skip _rui_ro notes."""
+    """[(VI phrase, COCO class)], most specific first: longest without a leading classifier
+    (`ngựa vằn` before `con ngựa`, `ô tô` before `chiếc ô`), then longest; skip _rui_ro notes."""
+    from rescap.vi.lexicon import CLASSIFIERS
+
+    def head(term: str) -> str:
+        first, _, rest = term.partition(" ")
+        return rest if rest and first in CLASSIFIERS else term
+
     d = json.loads((PROBE_DATA / "coco80_vi.json").read_text(encoding="utf-8"))
     pairs = []
     for cls, terms in d.items():
@@ -66,30 +80,32 @@ def load_vi_terms() -> list[tuple[str, str]]:
         for t in terms:
             if isinstance(t, str) and not t.startswith("_rui_ro"):
                 pairs.append((t.lower(), cls))
-    return sorted(pairs, key=lambda x: -len(x[0]))
+    return sorted(pairs, key=lambda x: (-len(head(x[0])), -len(x[0])))
 
 
 def vi_classes(caption: str, vi_terms) -> set[str]:
+    """Classes named in a VI caption, phrases tried in load_vi_terms' order and each matched span
+    consumed: `ô tô` (car) no longer also yields `tô` (bowl), nor `ghế dài` (bench) `ghế` (chair)."""
     text = " " + unicodedata.normalize("NFC", caption.lower()) + " "
     found: set[str] = set()
     for term, cls in vi_terms:
-        if cls in found:
-            continue
-        for m in re.finditer(re.escape(term), text):
-            a, b = m.start() - 1, m.end()
-            if not re.match(f"[{_LETTER}]", text[a]) and not re.match(f"[{_LETTER}]", text[b]):
-                found.add(cls)
-                break
+        spans = [m.span() for m in re.finditer(re.escape(term), text)
+                 if not re.match(f"[{_LETTER}]", text[m.start() - 1]) and not re.match(f"[{_LETTER}]", text[m.end()])]
+        for a, b in spans:
+            text = text[:a] + "\0" * (b - a) + text[b:]
+        if spans:
+            found.add(cls)
     return found
 
 
 def en_classes(caption: str, syn: dict[str, str]) -> set[str]:
     text = " " + re.sub(f"[^{_LETTER}]", " ", caption.lower()) + " "
     found: set[str] = set()
-    # multi-word phrases first
+    # multi-word phrases first, consumed (Rohrbach's double words): `hot dog` does not also yield `dog`
     for phrase, cls in syn.items():
         if " " in phrase and f" {phrase} " in text:
             found.add(cls)
+            text = re.sub(rf"(?<= ){re.escape(phrase)}(?= )", " ", text)
     for tok in text.split():
         if tok in syn:
             found.add(syn[tok])
@@ -171,7 +187,21 @@ def main() -> int:
     return 0
 
 
-if __name__ == "__main__":
-    import sys
+def _check() -> None:
+    terms = load_vi_terms()
+    assert vi_classes("Một chiếc ô tô đỗ trên đường.", terms) == {"car"}
+    assert vi_classes("Hai người ngồi trên ghế dài.", terms) == {"person", "bench"}
+    assert vi_classes("Cậu bé cầm ván trượt tuyết.", terms) == {"person", "snowboard"}
+    # overlaps: a leading classifier makes a term longer, not more specific
+    assert vi_classes("Con ngựa vằn bên chiếc ô tô.", terms) == {"zebra", "car"}
+    assert vi_classes("Con gấu bông trên cái bàn phím.", terms) == {"teddy bear", "keyboard"}
+    # every occurrence is consumed; a standalone shorter term still counts
+    assert vi_classes("ô tô, ô tô và một cái tô", terms) == {"car", "bowl"}
+    syn = load_synonyms()
+    assert en_classes("A teddy bear and hot dogs on a motor bike.", syn) == {"teddy bear", "hot dog", "motorcycle"}
+    assert en_classes("A dog eats a hot dog.", syn) == {"dog", "hot dog"}
 
+
+if __name__ == "__main__":
+    _check()
     sys.exit(main())

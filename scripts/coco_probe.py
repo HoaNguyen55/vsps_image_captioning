@@ -5,6 +5,8 @@
     python scripts/coco_probe.py --images-dir /root/coco_images --out-dir /root/probe_out
     # distilled system
     python scripts/coco_probe.py --adapter /root/off4090_sft_slim ...
+    # any other adapter: output files are named after --name (p1_s43-short.shard0of1.jsonl, ...)
+    python scripts/coco_probe.py --adapter $NCS_DATA/runs/p1_s43 --name p1_s43 ...
     # split across 2 machines
     ... --shard 0 --of 2   |   ... --shard 1 --of 2
 
@@ -59,11 +61,38 @@ def load_model(adapter: str | None):
     return model, processor
 
 
+def read_jsonl(path: Path, repair: bool = False) -> list[dict]:
+    """Complete rows of a resumable jsonl output. With `repair` (the writer, before appending),
+    a last line cut short by a killed run is also cut from the file."""
+    if not path.exists():
+        return []
+    raw = path.read_text(encoding="utf-8")
+    if repair and raw and not raw.endswith("\n"):
+        path.write_text(raw[: raw.rfind("\n") + 1], encoding="utf-8")
+    return [json.loads(line) for line in raw.splitlines()[: raw.count("\n")]]
+
+
+def generate(model, processor, image, prompt: str, max_new_tokens: int) -> str:
+    """Greedy reply of the model to one image and one text prompt."""
+    import torch
+
+    messages = [{"role": "user", "content": [
+        {"type": "image"}, {"type": "text", "text": prompt}]}]
+    text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+    inputs = processor(text=[text], images=[image], return_tensors="pt").to(model.device)
+    with torch.no_grad():
+        ids = model.generate(**inputs, max_new_tokens=max_new_tokens, do_sample=False)
+    return processor.batch_decode(
+        ids[:, inputs["input_ids"].shape[1]:], skip_special_tokens=True)[0].strip()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--manifest", default="data/coco_probe/manifest.json")
     ap.add_argument("--images-dir", required=True)
     ap.add_argument("--adapter", default=None, help="leave empty = zero-shot")
+    ap.add_argument("--name", default=None,
+                    help="output file stem, e.g. p1_s43 (default: distill with --adapter, else zeroshot)")
     ap.add_argument("--modes", default="short,detailed")
     ap.add_argument("--out-dir", required=True)
     ap.add_argument("--shard", type=int, default=0)
@@ -71,10 +100,9 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=0)
     args = ap.parse_args()
 
-    import torch
     from PIL import Image
 
-    system = "distill" if args.adapter else "zeroshot"
+    system = args.name or ("distill" if args.adapter else "zeroshot")
     man = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     images = sorted(man["images"], key=lambda x: x["cocoid"])[args.shard:: args.of]
     if args.limit:
@@ -87,13 +115,7 @@ def main() -> int:
 
     for mode in modes:
         out = out_root / f"{system}-{mode}.shard{args.shard}of{args.of}.jsonl"
-        done = set()
-        if out.exists():
-            for line in out.read_text(encoding="utf-8").splitlines():
-                try:
-                    done.add(json.loads(line)["cocoid"])
-                except Exception:
-                    pass
+        done = {r["cocoid"] for r in read_jsonl(out, repair=True)}
         todo = [i for i in images if i["cocoid"] not in done]
         print(f"[{system}/{mode}] {len(done)} already present, {len(todo)} to generate", flush=True)
         t0 = time.time()
@@ -101,18 +123,7 @@ def main() -> int:
             for k, img in enumerate(todo):
                 path = Path(args.images_dir) / img["filename"]
                 image = Image.open(path).convert("RGB")
-                messages = [{"role": "user", "content": [
-                    {"type": "image"}, {"type": "text", "text": PROMPTS[mode]}]}]
-                text = processor.apply_chat_template(
-                    messages, tokenize=False, add_generation_prompt=True)
-                inputs = processor(text=[text], images=[image],
-                                   return_tensors="pt").to(model.device)
-                with torch.no_grad():
-                    ids = model.generate(**inputs, max_new_tokens=MAX_NEW[mode],
-                                         do_sample=False)
-                caption = processor.batch_decode(
-                    ids[:, inputs["input_ids"].shape[1]:],
-                    skip_special_tokens=True)[0].strip()
+                caption = generate(model, processor, image, PROMPTS[mode], MAX_NEW[mode])
                 fh.write(json.dumps({"cocoid": img["cocoid"], "caption": caption},
                                     ensure_ascii=False) + "\n")
                 fh.flush()
