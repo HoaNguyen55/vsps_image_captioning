@@ -8,6 +8,9 @@
     python scripts/evaluate.py --model qwen2.5-vl-7b --prompt short --name "Qwen zero-shot"
     python scripts/evaluate.py --model qwen2.5-vl-7b --adapter ~/ncs-data/runs/dpo --prompt detailed
 
+    # another dataset laid out like KTVIC under $NCS_DATA/datasets
+    NCS_DATASET=uitviic python scripts/evaluate.py --model qwen2.5-vl-7b --prompt short --name uitviic_zeroshot-short
+
 `--predictions` takes `{image_id: "caption"}` or `{image_id: ["caption"]}`.
 
 **Two things here exist to stop a wrong table being printed.**
@@ -47,7 +50,10 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 DATA = Path(os.environ.get("NCS_DATA", Path.home() / "ncs-data"))
-KTVIC = DATA / "datasets" / "ktvic"
+#: The dataset every split name refers to: KTVIC, unless NCS_DATASET names another
+#: directory under DATA/datasets with the same layout (e.g. `uitviic`). Read here so
+#: the scoring subprocess and every script importing KTVIC/references follow it.
+KTVIC = DATA / "datasets" / os.environ.get("NCS_DATASET", "ktvic")
 #: Two prompts, because the reference style decides what a metric can reward.
 #: KTVIC references are ONE short sentence (~12 words); a detailed caption is
 #: 8x longer and CIDEr's length penalty removes it entirely. Which prompt was
@@ -108,6 +114,19 @@ def _self_check() -> None:
         except SystemExit:
             continue
         raise AssertionError((flag, path))
+    assert model_id(None) == model_id("qwen2.5-vl-7b") == "Qwen/Qwen2.5-VL-7B-Instruct"
+    assert model_id("qwen2.5-vl-3b") == "Qwen/Qwen2.5-VL-3B-Instruct"
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as adapter:
+        (Path(adapter) / "adapter_config.json").write_text(
+            json.dumps({"base_model_name_or_path": model_id("qwen2.5-vl-3b")}), encoding="utf-8")
+        check_adapter_base(adapter, model_id("qwen2.5-vl-3b"))
+        try:
+            check_adapter_base(adapter, model_id(None))
+            raise AssertionError("a 3B adapter was accepted on the 7B")
+        except SystemExit as refused:
+            assert "Qwen2.5-VL-3B-Instruct" in str(refused)
     print("self-check ok")
 
 
@@ -128,13 +147,36 @@ def file_names(split: str) -> dict[str, str]:
     }
 
 
+def model_id(name: str | None) -> str:
+    """HF id of a `--model` short name (rescap/vlm/registry.py); None is the 7B main backbone."""
+    from rescap.vlm import get_vlm
+
+    return get_vlm(name or "qwen2.5-vl-7b").model_id
+
+
+def check_adapter_base(adapter: str, base_id: str) -> None:
+    """Refuse an adapter trained on another backbone, before a 15 GB load.
+
+    PEFT records the base in adapter_config.json. Without this a 3B adapter on the 7B
+    dies inside PEFT as a wall of size mismatches, and a wrong `--model` with no
+    adapter would score the wrong backbone under the requested name.
+    """
+    base = json.loads((Path(adapter) / "adapter_config.json").read_text(
+        encoding="utf-8")).get("base_model_name_or_path")
+    if base != base_id:
+        raise SystemExit(f"adapter {adapter} was trained on {base}, not {base_id}")
+
+
 def load_model(args):
-    """Qwen2.5-VL-7B (+ `args.adapter`) in eval mode, and its processor."""
+    """Qwen2.5-VL `args.model` (default 7B; + `args.adapter`) in eval mode, and its processor."""
     import torch
     from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
 
     from rescap.vlm.base import dtype_kwarg
 
+    base_id = model_id(getattr(args, "model", None))  # e5_sample's args have no --model
+    if args.adapter:
+        check_adapter_base(args.adapter, base_id)
     P = 28 * 28
     load_kw = dict(attn_implementation="sdpa", device_map={"": 0},
                    **dtype_kwarg(torch.bfloat16))
@@ -145,8 +187,7 @@ def load_model(args):
             load_in_4bit=True, bnb_4bit_quant_type="nf4",
             bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
 
-    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-        "Qwen/Qwen2.5-VL-7B-Instruct", **load_kw)
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(base_id, **load_kw)
     if args.adapter:
         from peft import PeftModel
 
@@ -154,8 +195,7 @@ def load_model(args):
         print(f"  adapter: {args.adapter}")
     model.eval()
     processor = AutoProcessor.from_pretrained(
-        "Qwen/Qwen2.5-VL-7B-Instruct",
-        min_pixels=256 * P, max_pixels=args.max_vision_tokens * P)
+        base_id, min_pixels=256 * P, max_pixels=args.max_vision_tokens * P)
     return model, processor
 
 
@@ -197,7 +237,8 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--split", default="test_data.json")
     parser.add_argument("--predictions", default=None)
-    parser.add_argument("--model", default=None)
+    parser.add_argument("--model", default=None,
+                        help="backbone short name from rescap/vlm/registry.py: qwen2.5-vl-7b or qwen2.5-vl-3b")
     parser.add_argument("--adapter", default=None)
     parser.add_argument("--name", default="system")
     parser.add_argument("--limit", type=int, default=0)
@@ -343,9 +384,10 @@ def main() -> int:
     print(f"    ⚠ CHAIR_s scales with caption LENGTH — only compare systems "
           f"of the SAME length ")
 
-    print(f"\n  reference — GRIT (KTVIC Table 3, same 558 images):")
-    # Source: KTVIC paper (arXiv 2401.08100), Table 3, row "3) GRIT".
-    print(f"    CIDEr 136.0 · BLEU-1 74.7 · BLEU-4 40.6 · METEOR 36.6 · ROUGE-L 59.7")
+    if KTVIC.name == "ktvic":
+        print(f"\n  reference — GRIT (KTVIC Table 3, same 558 images):")
+        # Source: KTVIC paper (arXiv 2401.08100), Table 3, row "3) GRIT".
+        print(f"    CIDEr 136.0 · BLEU-1 74.7 · BLEU-4 40.6 · METEOR 36.6 · ROUGE-L 59.7")
     for r in rows:
         for w in r["warnings"]:
             print(f"  ! {w}")

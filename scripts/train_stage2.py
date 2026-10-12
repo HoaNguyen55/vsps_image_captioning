@@ -116,9 +116,9 @@ def build_model(args, *, for_training: bool = True):
             bnb_4bit_compute_dtype=torch.bfloat16, bnb_4bit_use_double_quant=True)
     elif use_8bit:
         load_kw["quantization_config"] = BitsAndBytesConfig(load_in_8bit=True)
-    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(MODEL_ID, **load_kw)
+    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(args.base_model, **load_kw)
     processor = AutoProcessor.from_pretrained(
-        MODEL_ID, min_pixels=MIN_PIXELS, max_pixels=max_pixels
+        args.base_model, min_pixels=MIN_PIXELS, max_pixels=max_pixels
     )
 
     if not for_training:
@@ -526,6 +526,8 @@ def main() -> int:
     parser.add_argument("--no-4bit", dest="no_4bit", action="store_true")
     parser.add_argument("--use-8bit", dest="use_8bit", action="store_true")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--base-model", default=MODEL_ID,
+                        help="HF id of the backbone; PEFT records it in adapter_config.json")
     parser.add_argument(
         "--pair-types", default="",
         help=(
