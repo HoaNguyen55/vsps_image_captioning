@@ -191,10 +191,15 @@ class VLCollator:
     text we never want generated.
     """
 
-    def __init__(self, processor):
+    def __init__(self, processor, assistant_only: bool = False):
         self.processor = processor
         tok = processor.tokenizer
         self.pad_id = tok.pad_token_id if tok.pad_token_id is not None else tok.eos_token_id
+        # legacy (default, what every run before 12/10 used): the prompt length is measured on the template
+        # with ONE image placeholder, before the processor expands it, so the instruction text and the
+        # assistant header stay in the loss. assistant_only masks everything up to the assistant header.
+        self.assistant_only = assistant_only
+        self.header = tok("<|im_start|>assistant\n", add_special_tokens=False)["input_ids"]
 
     def __call__(self, features: list[dict]):
         import torch
@@ -224,6 +229,8 @@ class VLCollator:
         )
         labels = batch["input_ids"].clone()
         labels[labels == self.pad_id] = -100
+        if self.assistant_only:
+            prompt_lengths = [response_start(row, self.header) for row in batch["input_ids"].tolist()]
         for i, n in enumerate(prompt_lengths):
             labels[i, :n] = -100
         # Image placeholder tokens are inputs, never targets.
@@ -239,6 +246,15 @@ class VLCollator:
             if token:
                 ids.append(self.processor.tokenizer.convert_tokens_to_ids(token))
         return [i for i in ids if isinstance(i, int) and i >= 0]
+
+
+def response_start(ids: list[int], header: list[int]) -> int:
+    """Index of the first token after the LAST assistant header in `ids`."""
+    k = len(header)
+    for i in range(len(ids) - k, -1, -1):
+        if ids[i:i + k] == header:
+            return i + k
+    raise ValueError("no assistant header in the tokenised example")
 
 
 def image_for(row: dict):
@@ -270,6 +286,9 @@ def run_sft(args) -> int:
         rows = rows[: args.limit]
     print(f"SFT: {len(rows)} examples")
 
+    # Before the model is built: the Trainer seeds itself only after LoRA's random init.
+    from transformers import set_seed
+    set_seed(args.seed)
     model, processor = build_model(args)
 
     # `Dataset.from_generator` caches by a hash of the generator FUNCTION, and
@@ -529,6 +548,9 @@ def main() -> int:
     parser.add_argument("--no-4bit", dest="no_4bit", action="store_true")
     parser.add_argument("--use-8bit", dest="use_8bit", action="store_true")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--loss-mask", choices=("legacy", "assistant"), default="legacy",
+                        help="SFT: 'assistant' supervises only the response; 'legacy' (all runs before 12/10) also "
+                             "supervises the instruction text and the assistant header")
     parser.add_argument("--resume", action="store_true",
                         help="SFT: continue from the newest checkpoint-* in --out")
     parser.add_argument("--base-model", default=MODEL_ID,
