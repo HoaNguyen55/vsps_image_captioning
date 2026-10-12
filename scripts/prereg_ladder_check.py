@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 """Pre-registered predictions for the KTVIC target-policy ladder (V4), and their check once preds land.
 
-    python3 make_predictions.py                     # op_train.json + observed_runs.json -> PREDICTIONS.json
-    cd /mnt/d/vsps_image_captioning && NCS_DATA=data python3 <dir>/make_predictions.py --check   # score landed runs
+    NCS_DATA=data python3 scripts/prereg_ladder_check.py --check   # score landed runs against
+                                         # manuscript/prereg/2026-10-12_ladder_predictions.json (repo root)
+    python3 scripts/prereg_ladder_check.py   # rebuild the predictions: needs V4's op_train.json and
+                                         # observed_runs.json next to this file (not in the repo) -> PREDICTIONS.json
 
 Two models of where a trained captioner operates (counts = unique lexicon classes per caption, objects_in):
   L (length + learner frontier): count = the target rows' object count (training captions, operating_points.py)
@@ -199,7 +201,7 @@ if __name__ == "__main__":
     ap.add_argument("--check", action="store_true")
     a = ap.parse_args()
     if a.check:
-        check(json.loads((HERE / "PREDICTIONS.json").read_text()))
+        check(json.loads((HERE.parent / "manuscript/prereg/2026-10-12_ladder_predictions.json").read_text()))
     else:
         out = build()
         (HERE / "PREDICTIONS.json").write_text(json.dumps(out, ensure_ascii=False, indent=1))
