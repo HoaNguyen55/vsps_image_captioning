@@ -177,3 +177,16 @@ Với cùng số đối tượng mỗi ảnh như SUPPORTED, P tăng +18,1 và R
 - Theo AI-silver, phần lớn mức "mất P" của fuse2 detailed là đối tượng có thật mà 5 caption không nhắc: khoảng 56% mention sai theo tham chiếu được AI-silver xác nhận, và khoảng cách với P1 co từ −8,0 xuống −2,4 điểm dưới gold hợp. Phần còn lại (~2–4 điểm) vẫn tách khỏi 0, nên có một phần ảo giác thật, nhỏ.
 - Cùng hiện tượng nhưng mạnh hơn ở zero-shot và VSPS: P tham chiếu 33,7 / 42,1 nhưng hợp 62,3 / 73,9. Nghĩa là P theo tham chiếu phạt nặng caption dài vì gold không đầy đủ, không riêng gì fuse2.
 - Giới hạn: (1) đây là nhãn của một mô hình AI, không phải người; annotator có thể chia sẻ thiên lệch với VLM sinh caption (nhìn thấy cùng thứ "thường có" trong ảnh), nên "cứu" là cận trên của tỉ lệ đối tượng có thật. (2) AI-silver cũng bỏ sót: P1 chỉ đạt 69,1 theo AI-silver, thấp hơn 76,9 theo tham chiếu. (3) n = 300, một annotator, không có độ đồng thuận; mẫu phân tầng theo số đối tượng tham chiếu nên P (a) lệch nhẹ so với số trên toàn test (76,9 so với 78,3; 68,8 so với 68,0). Kết luận chỉ chắc khi có gold người 2 annotator (B1).
+
+**E5 vòng 1, DPO (12/10/2026): gần như không có tác dụng.** DPO chạy từ e5_s42 trên 1.327 cặp tốt nhất/tệ nhất (lr 5e-6).
+
+| hệ | mode | P | R | F1 [CI] | CIDEr | CHAIR_i |
+|---|---|---|---|---|---|---|
+| e5_s42 | detailed | 67,2 | 62,2 | 64,6 [62,6; 66,6] | 19,0 | 29,9 |
+| e5dpo_s42 | detailed | 69,3 | 60,8 | 64,8 [62,8; 66,7] | 18,0 | 26,6 |
+| e5_s42 | short | 75,0 | 46,3 | 57,3 | 137,9 | 22,5 |
+| e5dpo_s42 | short | 73,1 | 43,9 | 54,8 | 123,1 | 23,0 |
+
+- Ở detailed: P +2,1, CHAIR_i −3,3, R −1,4. Đây là đánh đổi nhỏ, F1 không đổi.
+- Ở short: cả F1 lẫn CIDEr đều giảm, tức DPO làm hỏng văn phong ngắn vì các cặp đều sinh từ prompt detailed.
+- Không đưa vào hệ chính. Chờ cross-fit (60–63).
