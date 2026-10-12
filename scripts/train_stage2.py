@@ -304,7 +304,9 @@ def run_sft(args) -> int:
             seed=args.seed,
         ),
     )
-    trainer.train()
+    # --resume continues from the newest checkpoint-* in --out (optimizer, scheduler and RNG state included),
+    # e.g. after a machine restart; without it a rerun starts from step 0.
+    trainer.train(resume_from_checkpoint=bool(args.resume) or None)
     trainer.save_model(args.out)
 
     # Training curves are a required figure in the paper (leader's decision,
@@ -527,6 +529,8 @@ def main() -> int:
     parser.add_argument("--no-4bit", dest="no_4bit", action="store_true")
     parser.add_argument("--use-8bit", dest="use_8bit", action="store_true")
     parser.add_argument("--seed", type=int, default=42)
+    parser.add_argument("--resume", action="store_true",
+                        help="SFT: continue from the newest checkpoint-* in --out")
     parser.add_argument("--base-model", default=MODEL_ID,
                         help="HF id of the backbone; PEFT records it in adapter_config.json")
     parser.add_argument(
