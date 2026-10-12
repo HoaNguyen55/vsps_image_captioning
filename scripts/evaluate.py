@@ -77,6 +77,10 @@ PROMPTS = {
         "người trong ảnh, dùng từ trung tính \"người\". Không đoán màu sắc "
         "khi không nhìn rõ. Không dùng từ rào đón như \"có vẻ\", \"dường như\"."
     ),
+    # English replication on the same images (scripts/crosslingual_gap.py): a `-<mode>_en` result is
+    # scored as English -- PTB tokenizer, SPICE, CHAIR over the 80 COCO classes (chair_en).
+    "short_en": "Describe this image in ONE short English sentence, like a caption. Do not list items or explain.",
+    "detailed_en": "Describe this image in detail in English.",
 }
 PROMPT = PROMPTS["detailed"]
 
@@ -108,6 +112,11 @@ def _self_check() -> None:
     assert resolve_prompt(None, "main_s44re-detailed.preds.json") == "detailed"
     assert resolve_prompt("short", "roundA-short.preds.json") == "short"
     assert resolve_prompt("short", "preds.json") == "short"
+    assert resolve_prompt(None, "x/uitviic_en_p1_s42-short_en.preds.json") == "short_en"
+    assert resolve_prompt(None, "coco_en_zeroshot-detailed_en.preds.json") == "detailed_en"
+    c = chair_en({"1": "A dog and a man on a motor bike near a hot dog stand."},
+                 {"1": ["A man rides a motorcycle.", "A person with a dog."]})
+    assert (c.n_mentions, c.n_hallucinated_mentions, dict(c.top_hallucinated)) == (4, 1, {"hot dog": 1}), c
     for flag, path in ((None, "preds.json"), ("detailed", "a-short.preds.json"), (None, None)):
         try:
             resolve_prompt(flag, path)
@@ -128,6 +137,28 @@ def _self_check() -> None:
         except SystemExit as refused:
             assert "Qwen2.5-VL-3B-Instruct" in str(refused)
     print("self-check ok")
+
+
+def chair_en(predictions: dict[str, str], references: dict[str, list[str]]):
+    """rescap.chair's CHAIR for English captions: mentions are the 80 COCO classes (score_coco_probe.en_classes,
+    Rohrbach's synonyms) and gold is what the references name, so like CHAIR-vi it is an UPPER BOUND."""
+    import score_coco_probe as sc
+    from rescap.chair import ChairResult
+
+    syn = sc.load_synonyms()
+    result = ChairResult(notes=["English: 80 COCO classes (score_coco_probe.en_classes); gold drawn from "
+                                "the reference captions, an UPPER BOUND"])
+    for image_id, caption in predictions.items():
+        gold = set().union(*(sc.en_classes(r, syn) for r in references[image_id]))
+        mentioned = sorted(sc.en_classes(caption, syn))
+        invented = [c for c in mentioned if c not in gold]
+        result.n_captions += 1
+        result.n_mentions += len(mentioned)
+        result.n_hallucinated_mentions += len(invented)
+        result.n_captions_with_hallucination += bool(invented)
+        result.top_hallucinated.update(invented)
+        result.per_caption.append({"image_id": image_id, "n_mentions": len(mentioned), "hallucinated": invented})
+    return result
 
 
 def references(split: str) -> dict[str, list[str]]:
@@ -272,12 +303,15 @@ def main() -> int:
     args.prompt_text = PROMPTS[args.prompt]
 
     refs = references(args.split)
-    image_ids = sorted(refs)
+    # A split with no captions at all (coco_vi: COCO has no Vietnamese references) is captioned, never scored.
+    image_ids = sorted(refs or file_names(args.split))
     if args.limit:
         image_ids = image_ids[: args.limit]
     print(f"{args.split}: {len(image_ids)} images")
 
     if args.predictions:
+        if not refs:
+            raise SystemExit(f"{KTVIC.name}/{args.split} has no reference captions: nothing to score")
         raw = json.loads(Path(args.predictions).read_text(encoding="utf-8"))
         preds = {str(k): (v if isinstance(v, list) else [v]) for k, v in raw.items()}
     elif args.model:
@@ -291,6 +325,9 @@ def main() -> int:
             json.dumps({i: preds[i][0] for i in image_ids}, ensure_ascii=False, indent=1),
             encoding="utf-8")
         print(f"\n  saved predictions -> {pred_path}")
+        if not refs:
+            print("  no reference captions in this split: predictions only, nothing scored")
+            return 0
 
         if not args.score_here:
             # A fresh interpreter, so the JVM starts in a process with no CUDA
@@ -326,9 +363,12 @@ def main() -> int:
 
     gt = {i: refs[i] for i in image_ids}
     rows = []
+    english = args.prompt.endswith("_en")
     modes = [("word-level", args.segmenter)]
     if args.also_syllable:
         modes.append(("syllable (whitespace)", "whitespace"))
+    if english:
+        modes = [("PTB", "ptb")]
 
     for label, segmenter in modes:
         # `tokenize` stays True for both: syllable level is a segmenter that
@@ -339,9 +379,9 @@ def main() -> int:
         # reading — 558 DETAILED captions overflow the pipe buffer and deadlock
         # (measured 19/08: scoring short passes, scoring detailed hangs identically
         # on two different machines). Short captions still get METEOR normally.
-        use_meteor = args.prompt != "detailed"
-        scorer = CaptionMetrics(language="vi", use_meteor=use_meteor, tokenize=True,
-                                segmenter=segmenter)
+        use_meteor = not args.prompt.startswith("detailed")
+        scorer = CaptionMetrics(language="en" if english else "vi", use_meteor=use_meteor,
+                                use_spice=english, tokenize=True, segmenter=segmenter)
         scores = scorer.compute(gt, {i: preds[i] for i in image_ids})
         if use_meteor and scores.get("METEOR") is None:
             raise SystemExit("METEOR was requested but not computed; refusing to write a "
@@ -362,7 +402,7 @@ def main() -> int:
     print(f"\n{'='*72}\n  {args.name}   ({len(image_ids)} images, ×100 scale as KTVIC publishes)\n{'='*72}")
     header = f"  {'metric':<12}" + "".join(f"{r['tokenization']:>24}" for r in rows)
     print(header + "\n  " + "-" * (len(header) - 2))
-    for key in ("BLEU-1", "BLEU-4", "METEOR", "ROUGE-L", "CIDEr"):
+    for key in ("BLEU-1", "BLEU-4", "METEOR", "ROUGE-L", "CIDEr") + (("SPICE",) if english else ()):
         line = f"  {key:<12}"
         for r in rows:
             v = r["scores_scaled_x100"].get(key)
@@ -374,7 +414,8 @@ def main() -> int:
     # object no annotator mentioned counts as invented (`rescap/chair.py`).
     from rescap.chair import chair
 
-    chair_result = chair({i: preds[i][0] for i in image_ids}, gt, strict_ids=False)
+    captions = {i: preds[i][0] for i in image_ids}
+    chair_result = chair_en(captions, gt) if english else chair(captions, gt, strict_ids=False)
     print(f"\n  object hallucination (CHAIR — gold drawn from captions, an UPPER BOUND):")
     print(f"    CHAIR_s {chair_result.chair_s*100:>5.1f}%   "
           f"CHAIR_i {chair_result.chair_i*100:>5.1f}%   "

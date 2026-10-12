@@ -100,9 +100,12 @@ def main() -> int:
     parser.add_argument("--unfused", action="store_true",
                         help="write the fusion captions as separate short rows instead of one detailed row "
                              "(control: the same captions without concatenation)")
-    parser.add_argument("--objects", choices=("ktvic", "coco80"), default="ktvic",
+    parser.add_argument("--objects", choices=("ktvic", "coco80", "coco80en"), default="ktvic",
                         help="object extractor for consensus and fusion: the KTVIC lexicon, or the 80 COCO classes "
-                             "named in Vietnamese (COCO-image datasets such as UIT-ViIC)")
+                             "named in Vietnamese (COCO-image datasets such as UIT-ViIC) or in English (CHAIR's "
+                             "synonyms, for English captions such as uitviic_en)")
+    parser.add_argument("--lang", choices=("vi", "en"), default="vi",
+                        help="prompt language of the rows: evaluate.py's short/detailed prompts, or short_en/detailed_en")
     parser.add_argument("--images-file", default=None,
                         help="keep only the image_ids listed in this file (one per line)")
     parser.add_argument("--write-halves", default=None, metavar="DIR",
@@ -146,6 +149,14 @@ def main() -> int:
         from score_coco_probe import load_vi_terms, vi_classes
         terms = load_vi_terms()
         objects = lambda c: vi_classes(c, terms)  # noqa: E731
+    elif args.objects == "coco80en":
+        from score_coco_probe import en_classes, load_synonyms
+        syn = load_synonyms()
+        objects = lambda c: en_classes(c, syn)  # noqa: E731
+    prompt, prompt_short, names = PROMPT, PROMPT_SHORT, ("PROMPT_SHORT", "PROMPT")
+    if args.lang == "en":
+        from evaluate import PROMPTS
+        prompt, prompt_short, names = PROMPTS["detailed_en"], PROMPTS["short_en"], ("short_en", "detailed_en")
     pick = (lambda cs: cs[0]) if args.select != "consensus" else (lambda cs: consensual(cs, objects))
     fuse_rng = random.Random(args.seed) if args.fuse_order == "random" else None
     rows = []
@@ -155,13 +166,13 @@ def main() -> int:
         base = {"image_id": image_id, "file_name": file_names[image_id]}
         short = cs if args.select == "all" else [pick(cs)]
         for c in short:
-            rows.append({**base, "prompt": PROMPT_SHORT, "response": c, "variant": "gold"})
+            rows.append({**base, "prompt": prompt_short, "response": c, "variant": "gold"})
         if args.fuse > 1 and args.unfused:
             for c in fusion_set(cs, args.fuse, fuse_rng, objects):
                 if c not in short:
-                    rows.append({**base, "prompt": PROMPT_SHORT, "response": c, "variant": f"gold_unfused{args.fuse}"})
+                    rows.append({**base, "prompt": prompt_short, "response": c, "variant": f"gold_unfused{args.fuse}"})
         elif args.fuse > 1:
-            rows.append({**base, "prompt": PROMPT, "response": fused(cs, args.fuse, fuse_rng, objects),
+            rows.append({**base, "prompt": prompt, "response": fused(cs, args.fuse, fuse_rng, objects),
                          "variant": f"gold_fused{args.fuse}"})
     dropped = len(captions) - len({r["image_id"] for r in rows})
     if args.limit:
@@ -182,10 +193,10 @@ def main() -> int:
         "images_with_caption": len(captions),
         "captions_total": n_captions,
         "captions_used": len(rows),
-        "policy": (f"short row: {args.select} caption, PROMPT_SHORT; "
+        "policy": (f"short row: {args.select} caption, {names[0]}; "
                    + (f"up to {args.fuse} {args.fuse_order} fusion captions as separate short rows"
                       if args.fuse > 1 and args.unfused else
-                      f"detailed row: up to {args.fuse} {args.fuse_order}-fused captions, PROMPT" if args.fuse > 1
+                      f"detailed row: up to {args.fuse} {args.fuse_order}-fused captions, {names[1]}" if args.fuse > 1
                       else "no detailed variant")),
         "dropped_no_file_name": dropped,
     }
@@ -212,6 +223,10 @@ def _check() -> None:
     a, b = halves(ids, 42)
     assert not set(a) & set(b) and sorted(a + b) == sorted(ids) and abs(len(a) - len(b)) <= 1
     assert (a, b) == halves(reversed(ids), 42) and a != halves(ids, 43)[0]
+    from score_coco_probe import en_classes, load_synonyms
+    syn = load_synonyms()
+    en = ["A man standing.", "A man and his dog on a bench.", "A dog next to a motorcycle."]
+    assert fused(en, 2, objects=lambda c: en_classes(c, syn)) == "A man and his dog on a bench. A dog next to a motorcycle."
 
 
 if __name__ == "__main__":
