@@ -3,6 +3,7 @@
 
     python scripts/object_prf.py                       # KTVIC test split, all *.preds.json in data/results
     python scripts/object_prf.py --coco-preds data/results/coco5000   # add the COCO-2014 block
+    python scripts/object_prf.py --mode short --vs p1-gold            # paired bootstrap of each system vs P1
 
 Definitions (Section IV-C of the paper): with M_i the set of object classes mentioned
 in the caption of image i and G_i its gold classes, precision = sum|M_i & G_i| / sum|M_i|,
@@ -75,30 +76,60 @@ def bootstrap(rows: list[tuple], keys=("F1", "F1_spec", "F1_vague"), n: int = 10
     return {k: (sorted(v)[int(0.025 * n)], sorted(v)[int(0.975 * n) - 1]) for k, v in draws.items()}
 
 
-def ktvic_block(results_dir: Path, split: str, ci: bool = False) -> None:
+def paired(rows_a: list[tuple], rows_b: list[tuple], keys=("P", "R", "F1"), n: int = 5000, seed: int = 0):
+    """B - A on the SAME resampled images: {key: (point, ci_lo, ci_hi, two-sided p)}, p floored at 2/n."""
+    import random
+    rng = random.Random(seed)
+    sa, sb = scores(rows_a), scores(rows_b)
+    draws = {k: [] for k in keys}
+    for _ in range(n):
+        idx = [rng.randrange(len(rows_a)) for _ in rows_a]
+        a, b = scores([rows_a[i] for i in idx]), scores([rows_b[i] for i in idx])
+        for k in keys:
+            draws[k].append(b[k] - a[k])
+    out = {}
+    for k, v in draws.items():
+        v.sort()
+        p = min(1.0, 2 * min(sum(d <= 0 for d in v), sum(d >= 0 for d in v)) / n)
+        out[k] = (sb[k] - sa[k], v[int(0.025 * n)], v[int(0.975 * n) - 1], max(p, 2 / n))
+    return out
+
+
+def ktvic_block(results_dir: Path, split: str, ci: bool = False, mode: str = "detailed",
+                vs: str | None = None) -> None:
     from evaluate import references
     from rescap.chair import _ancestors, objects_in
 
     refs = references(split)
     gold = {str(k): set().union(*[set(objects_in(r)) for r in rs]) for k, rs in refs.items()}
-    print(f"KTVIC ({split}, {len(gold)} images) -- object precision / recall / F1 (%)")
+    print(f"KTVIC ({split}, {len(gold)} images, {mode} mode) -- object precision / recall / F1 (%)")
     print("  exact match | CHAIR-vi hypernym rule: P_h, R_spec (F1), R_vague (F1)")
-    for f in sorted(results_dir.glob("*-detailed.preds.json")):
+    per_system = {}
+    for f in sorted(results_dir.glob(f"*-{mode}.preds.json")):
         preds = json.loads(f.read_text(encoding="utf-8"))
         preds = {str(k): (v[0] if isinstance(v, list) else v) or "" for k, v in preds.items()}
-        rows = []
-        for k, cap in preds.items():
-            m, g = set(objects_in(cap)), gold.get(k, set())
-            rows.append(image_counts(m, g, _ancestors))
+        by_id = {k: image_counts(set(objects_in(cap)), gold.get(k, set()), _ancestors) for k, cap in preds.items()}
+        rows = list(by_id.values())
         s = scores(rows)
         tp = sum(r[0] for r in rows)
-        name = f.name.removesuffix("-detailed.preds.json")
+        name = f.name.removesuffix(f"-{mode}.preds.json")
+        per_system[name] = by_id
         line = (f"  {name:26s} true/cap={tp/len(preds):.2f}  P={s['P']:5.1f}  R={s['R']:5.1f}  F1={s['F1']:5.1f}"
                 f" | P_h={s['P_h']:5.1f}  R_spec={s['R_spec']:5.1f} ({s['F1_spec']:5.1f})"
                 f"  R_vague={s['R_vague']:5.1f} ({s['F1_vague']:5.1f})")
         if ci:
             line += "  CI95 " + " ".join(f"{k}=[{a:.1f},{b:.1f}]" for k, (a, b) in bootstrap(rows).items())
         print(line)
+    if vs:
+        base = per_system[vs]
+        print(f"  paired bootstrap vs {vs} (B=5000, same images): delta [95% CI] p")
+        for name, by_id in per_system.items():
+            if name == vs:
+                continue
+            ids = sorted(base.keys() & by_id.keys())
+            d = paired([base[i] for i in ids], [by_id[i] for i in ids])
+            print(f"  {name:26s} n={len(ids)}  " + "  ".join(
+                f"d{k}={pt:+.1f} [{lo:+.1f},{hi:+.1f}] p={p:.4f}" for k, (pt, lo, hi, p) in d.items()))
 
 
 def coco_block(preds_dir: Path, manifest: Path) -> None:
@@ -148,8 +179,10 @@ def main() -> int:
     ap.add_argument("--coco-preds", default=None, help="directory with {zeroshot,distill}-detailed.shard*.jsonl")
     ap.add_argument("--coco-manifest", default=str(ROOT / "data" / "coco_probe" / "manifest_full5000.json"))
     ap.add_argument("--ci", action="store_true", help="add 95%% bootstrap CIs over images")
+    ap.add_argument("--mode", choices=("detailed", "short"), default="detailed")
+    ap.add_argument("--vs", default=None, help="baseline stem (e.g. p1-gold): paired bootstrap of every system against it")
     args = ap.parse_args()
-    ktvic_block(Path(args.results).expanduser(), args.split, args.ci)
+    ktvic_block(Path(args.results).expanduser(), args.split, args.ci, args.mode, args.vs)
     if args.coco_preds:
         coco_block(Path(args.coco_preds).expanduser(), Path(args.coco_manifest))
     return 0
@@ -161,6 +194,9 @@ def _check() -> None:
     # caption says người, gold has phụ nữ (and người from another annotator)
     c = image_counts({"người", "chó"}, {"phụ nữ", "người"}, ancestors)
     assert c[:4] == (1, 2, 1, 0.5) and c[4] == 0.0 and c[5] == 1.0, c
+    a, b = [(1, 2, 1, 0.5, 0.5, 0.5)] * 20, [(2, 2, 2, 1.0, 1.0, 1.0)] * 20
+    assert paired(a, b, n=200)["F1"][0] > 0 and paired(a, b, n=200)["F1"][3] <= 0.01
+    assert paired(a, a, n=50)["F1"] == (0.0, 0.0, 0.0, 1.0)
 
 
 if __name__ == "__main__":

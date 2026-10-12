@@ -195,3 +195,30 @@ Với cùng số đối tượng mỗi ảnh như SUPPORTED, P tăng +18,1 và R
 - Short: P 52,4 / R 37,7 / F1 43,9, so với zero-shot 52,3 / 32,5 / 40,1. R tăng 5,2, P giữ nguyên; CIDEr 27,9 so với 29,0.
 - Detailed: không đổi (F1 40,6 so với 40,7; CHAIR_i 65,0 so với 65,1).
 - Cả hai mode vẫn rất xa P1 và fuse2. Kết quả trên fuse2_s42 đang chạy.
+
+**Gắn tag vào prompt trên fuse2_s42, kiểm định ghép cặp với P1 (12/10/2026, 1 seed).** Mô hình fuse2_s42 không huấn luyện lại; tag Grounding DINO chỉ thêm vào prompt lúc suy luận. Kiểm định bootstrap ghép cặp: cùng 558 ảnh lấy mẫu lại, B = 5000. P/R/F1 tính bằng `object_prf.py --mode {short,detailed} --vs p1-gold`; CIDEr và CHAIR_i tính bằng `score_ci.py`.
+
+| hệ | mode | P | R | F1 | CIDEr | CHAIR_i |
+|---|---|---|---|---|---|---|
+| P1 | short | 77,9 | 41,4 | 54,1 | 149,8 | 19,2 |
+| fuse2_s42 | short | 75,7 | 47,1 | 58,1 | 143,9 | 21,9 |
+| tags_fuse2_s42 | short | 77,9 | 46,7 | 58,4 | 146,4 | 19,5 |
+| fuse2_s42 | detailed | 68,0 | 61,2 | 64,4 | 23,9 | 29,0 |
+| tags_fuse2_s42 | detailed | 70,7 | 59,7 | 64,8 | 48,6 | 25,6 |
+
+Δ so với P1, short:
+
+| hệ | ΔP | ΔR | ΔF1 | ΔCIDEr | ΔCHAIR_i |
+|---|---|---|---|---|---|
+| fuse2_s42 | −2,2 [−4,8; +0,4], p = 0,10 | +5,7 [+3,9; +7,7] | +4,0 [+2,1; +6,1] | −5,9 [−13,2; +1,4], p = 0,11 | +2,8 [+0,3; +5,3], p = 0,03 |
+| tags_fuse2_s42 | −0,0 [−2,5; +2,6], p = 0,99 | +5,3 [+3,3; +7,3], p = 0,0004 | +4,3 [+2,3; +6,4], p = 0,0004 | −3,4 [−10,7; +3,8], p = 0,35 | +0,3 [−2,2; +2,8], p = 0,78 |
+
+Δ so với P1, detailed (P1 không học văn phong detailed nên chỉ để tham khảo):
+- fuse2_s42: ΔP −10,4, ΔR +18,5, ΔF1 +9,1.
+- tags_fuse2_s42: ΔP −7,6, ΔR +17,0, ΔF1 +9,5.
+- e5_s42: ΔF1 +9,3. e5dpo_s42: ΔF1 +9,5.
+- Mọi Δ ở trên đều có p = 0,0004.
+
+- Ở short, fuse2 kèm tag nằm trên biên Pareto so với P1. Recall và F1 tăng có ý nghĩa thống kê, còn P, CIDEr và CHAIR_i không khác P1. Riêng fuse2 thì CHAIR_i tệ hơn P1 có ý nghĩa (p = 0,03); tag kéo phần này về lại (19,5 so với 21,9).
+- Ở detailed, tag tăng P 2,7 điểm và giảm CHAIR_i 3,4 điểm nhưng mất 1,5 điểm R, nên F1 gần như không đổi.
+- Kết luận còn chờ thêm: (1) mới một seed, cần tags trên fuse2_s43/s44 (đang chạy trên n3); (2) cần đối chứng tags_p1_s43 (job 32) để biết lợi ích đến từ tag hay từ việc kết hợp tag với fuse2; (3) Grounding DINO là mô hình thứ hai lúc suy luận, nên bài phải báo cả chi phí của nó, dù vẫn chạy trên 1 GPU.
