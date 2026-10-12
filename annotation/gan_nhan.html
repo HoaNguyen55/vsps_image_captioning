@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gán nhãn vật thể</title>
+<!-- Offline annotator. Reads ./tasks.js (window.KIT) and ./images/; no server, no network.
+     Section kinds: "exhaustive" (tick every class of an image: yes / unsure / blank) and
+     "verify" (one image + "Trong ảnh có X không?": yes / no / unsure). Built by
+     scripts/build_annotation_kit.py; exports are scored by scripts/score_human_gold.py. -->
+<style>
+:root{--line:#d0d7de;--mut:#57606a;--acc:#0969da;--yes:#1a7f37;--yesbg:#dafbe1;--uns:#9a6700;--unsbg:#fff3b0;--no:#cf222e;--nobg:#ffebe9}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{display:flex;flex-direction:column;font:14px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:#1f2328;background:#fff}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:6px 10px;border-bottom:1px solid var(--line);background:#f6f8fa}
+header input{font:inherit;padding:3px 6px}
+button,.btn{font:inherit;padding:4px 10px;border:1px solid var(--line);border-radius:6px;background:#fff;color:inherit;cursor:pointer}
+button:hover,.btn:hover{border-color:var(--acc)}
+.tab.on,.primary{background:var(--acc);border-color:var(--acc);color:#fff}
+#warn{color:var(--no);font-weight:600}
+main{flex:1;display:flex;min-height:0}
+#view{flex:1.5;min-width:0;position:relative;overflow:auto;background:#1f2328;color:#fff}
+#view img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;cursor:zoom-in}
+#view.zoom img{position:static;width:200%;height:auto;cursor:zoom-out}
+#panel{flex:1;min-width:300px;max-width:560px;overflow:auto;padding:10px 12px;border-left:1px solid var(--line)}
+.pos{color:var(--mut);margin-bottom:8px}
+.done{color:var(--yes);font-weight:600}
+.q{font-size:22px;margin:18px 0 4px}
+.forms{color:var(--mut)}
+.gloss{margin:8px 0 14px;padding:6px 8px;border-radius:6px;background:#f6f8fa}
+.answers{display:flex;flex-direction:column;gap:8px;margin:14px 0}
+.ans{padding:10px 12px;font-size:18px;text-align:left}
+.ans.yes.on{background:var(--yesbg);border-color:var(--yes)}
+.ans.no.on{background:var(--nobg);border-color:var(--no)}
+.ans.unsure.on{background:var(--unsbg);border-color:var(--uns)}
+.nav{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 8px}
+#filter{width:100%;margin-bottom:6px;padding:5px 8px;font:inherit}
+fieldset{margin:0 0 6px;padding:2px 6px 6px;border:1px solid var(--line);border-radius:6px}
+legend{padding:0 4px;font-weight:600}
+.chip{margin:2px;padding:2px 8px;border-radius:12px;font-size:13px}
+.chip small{color:var(--mut)}
+.chip.yes{background:var(--yesbg);border-color:var(--yes);font-weight:600}
+.chip.yes::before{content:"\2713 "}
+.chip.unsure{background:var(--unsbg);border-color:var(--uns)}
+.chip.unsure::before{content:"? "}
+.chip.hide{display:none}
+textarea{width:100%;min-height:3em;font:inherit}
+#help{position:fixed;inset:0;z-index:9;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.45)}
+#help[hidden]{display:none}
+#help>div{width:94%;max-width:900px;max-height:90%;overflow:auto;padding:12px 18px;border-radius:8px;background:#fff}
+#helpText{white-space:pre-wrap;font-size:13px}
+#helpText code{padding:0 3px;border-radius:3px;background:#f6f8fa;font:inherit}
+@media (max-width:900px){main{flex-direction:column}#view{flex:none;height:52vh}#panel{max-width:none;border-left:0;border-top:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<header>
+ <b id="title"></b>
+ <label>Mã người gán: <input id="who" size="10" autocomplete="off"></label>
+ <span id="tabs"></span>
+ <button id="exp" title="Tải bài làm về máy (file JSON)">Xuất file</button>
+ <label class="btn" title="Nạp lại bài làm từ file JSON đã xuất">Nhập file<input id="imp" type="file" accept=".json,application/json" hidden></label>
+ <button id="helpBtn">Hướng dẫn (H)</button>
+ <span id="warn"></span>
+</header>
+<main>
+ <div id="view"><img id="img" alt=""></div>
+ <div id="panel"></div>
+</main>
+<div id="help" hidden><div><button id="helpClose">Đóng (Esc)</button><div id="helpText"></div></div></div>
+<script src="tasks.js"></script>
+<script>
+'use strict';
+const K = window.KIT;
+const $ = id => document.getElementById(id);
+if (!K) {
+  document.body.textContent = 'Không đọc được tasks.js. Hãy giải nén toàn bộ thư mục, rồi mở file gan_nhan.html trong thư mục đã giải nén.';
+  throw new Error('tasks.js missing');
+}
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); return true; } catch (e) { return false; } },
+};
+const ANSWERS = [['yes', '1', 'Có'], ['no', '2', 'Không'], ['unsure', '3', 'Không chắc']];
+const NEXT_STATE = {'': 'yes', yes: 'unsure', unsure: ''};
+const MAX_MS = 300000;  // one view of an item never counts for more than 5 minutes
+let who = '', S = null, sec = K.sections[0], t0 = Date.now(), chips = new Map();
+let storageOk = true, exported = false;
+
+const el = (tag, cls, text) => {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+};
+const add = (parent, tag, cls, text) => parent.appendChild(el(tag, cls, text));
+const plain = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+const others = c => (K.forms[c] || []).filter(f => f !== c);
+function spent() {
+  const ms = Math.min(Date.now() - t0, MAX_MS);
+  t0 = Date.now();
+  return ms;
+}
+
+const units = s => s.kind === 'verify' ? s.items.map(x => x.id) : s.images;
+const labels = s => S.sections[s.key];
+function isDone(s, u) {
+  const l = labels(s)[u];
+  return !!l && (s.kind === 'verify' ? !!l.answer : !!l.done);
+}
+const nDone = s => units(s).filter(u => isDone(s, u)).length;
+const firstOpen = () => units(sec).findIndex(u => !isDone(sec, u));
+
+function load() {
+  let d = null;
+  try { d = JSON.parse(store.get(K.id + '::' + who) || 'null'); } catch (e) { d = null; }
+  S = d && d.sections && typeof d.sections === 'object' ? d : {sections: {}};
+  S.pos = S.pos || {};
+  for (const s of K.sections) S.sections[s.key] = S.sections[s.key] || {};
+}
+function save() {
+  storageOk = store.set(K.id + '::' + who, JSON.stringify(S));
+  exported = false;
+  $('warn').textContent = storageOk ? '' : 'Trình duyệt không tự lưu được: hãy bấm Xuất file thường xuyên!';
+}
+function setWho(v) {
+  who = v.trim();
+  $('who').value = who;
+  store.set(K.id + '::who', who);
+  if (who) load(); else S = null;
+  render();
+}
+
+function render() {
+  renderTabs();
+  const p = $('panel');
+  p.replaceChildren();
+  if (!who) {
+    $('img').removeAttribute('src');
+    add(p, 'p', '', 'Nhập mã người gán (ví dụ: nguoi1) vào ô phía trên để bắt đầu. Dùng đúng một mã cho mọi buổi làm.');
+    return;
+  }
+  const n = units(sec).length;
+  const i = S.pos[sec.key] = Math.max(0, Math.min(S.pos[sec.key] || 0, n - 1));
+  const file = K.images[sec.kind === 'verify' ? sec.items[i].image : sec.images[i]];
+  $('img').src = 'images/' + file;
+  $('img').alt = 'Không tải được ảnh images/' + file;
+  $('view').classList.remove('zoom');
+  t0 = Date.now();
+  if (sec.kind === 'verify') renderVerify(p, i); else renderExhaustive(p, i);
+}
+function renderTabs() {
+  const t = $('tabs');
+  t.replaceChildren();
+  for (const s of K.sections) {
+    const b = add(t, 'button', 'tab' + (s === sec ? ' on' : ''), s.title + (S ? ' (' + nDone(s) + '/' + units(s).length + ')' : ''));
+    b.onclick = () => openSection(s);
+  }
+}
+function openSection(s) {
+  const prev = K.sections[K.sections.indexOf(s) - 1];
+  if (S && prev && nDone(prev) < units(prev).length &&
+      !confirm('Nên làm xong "' + prev.title + '" trước. Vẫn mở phần này?')) return;
+  sec = s;
+  render();
+}
+function nav(p) {
+  const n = add(p, 'div', 'nav');
+  if (sec.kind === 'exhaustive') add(n, 'button', 'primary', 'Xong & tiếp (Ctrl+Enter)').onclick = finish;
+  add(n, 'button', '', '← Trước').onclick = () => go(-1);
+  add(n, 'button', '', 'Tiếp →').onclick = () => go(1);
+  add(n, 'button', '', 'Đến mục chưa làm').onclick = () => {
+    const k = firstOpen();
+    if (k < 0) { alert('Đã làm hết phần này.'); return; }
+    S.pos[sec.key] = k;
+    save();
+    render();
+  };
+}
+function go(d) {
+  if (sec.kind === 'exhaustive') { const l = cur(); l.ms = (l.ms || 0) + spent(); }
+  const i = S.pos[sec.key] + d;
+  if (i >= units(sec).length) {
+    const k = firstOpen();
+    if (k < 0) {
+      save();
+      render();
+      alert('Đã làm hết phần này. Hãy bấm Xuất file và gửi file cho người phụ trách.');
+      return;
+    }
+    S.pos[sec.key] = k;
+  } else {
+    S.pos[sec.key] = Math.max(0, i);
+  }
+  save();
+  render();
+}
+
+function renderVerify(p, i) {
+  const it = sec.items[i], l = labels(sec)[it.id] || {};
+  add(p, 'div', 'pos', 'Câu ' + (i + 1) + ' / ' + sec.items.length + ' · đã trả lời ' + nDone(sec));
+  add(p, 'div', 'q').append('Trong ảnh có ', el('b', '', it.class), ' không?');
+  if (others(it.class).length) add(p, 'div', 'forms', '(cũng gọi là: ' + others(it.class).join(', ') + ')');
+  if (K.gloss[it.class]) add(p, 'div', 'gloss', K.gloss[it.class]);
+  const box = add(p, 'div', 'answers');
+  for (const [a, key, text] of ANSWERS) {
+    add(box, 'button', 'ans ' + a + (l.answer === a ? ' on' : ''), key + '   ' + text).onclick = () => answer(a);
+  }
+  nav(p);
+}
+function answer(a) {
+  const it = sec.items[S.pos[sec.key]], L = labels(sec), old = L[it.id] || {};
+  L[it.id] = {image: it.image, class: it.class, answer: a, ms: (old.ms || 0) + spent()};
+  go(1);
+}
+
+function cur() {
+  const id = sec.images[S.pos[sec.key]], L = labels(sec), l = L[id] = L[id] || {};
+  l.classes = Array.isArray(l.classes) ? l.classes : [];
+  l.unsure = Array.isArray(l.unsure) ? l.unsure : [];
+  l.other = typeof l.other === 'string' ? l.other : '';
+  l.done = !!l.done;
+  return l;
+}
+function stateOf(c) {
+  const l = cur();
+  return l.classes.includes(c) ? 'yes' : l.unsure.includes(c) ? 'unsure' : '';
+}
+function setState(c, st) {
+  const l = cur();
+  l.classes = l.classes.filter(x => x !== c);
+  l.unsure = l.unsure.filter(x => x !== c);
+  if (st === 'yes') l.classes.push(c);
+  if (st === 'unsure') l.unsure.push(c);
+  save();
+  const b = chips.get(c);
+  b.className = 'chip ' + st + (b.classList.contains('hide') ? ' hide' : '');
+}
+function finish() {
+  cur().done = true;
+  go(1);
+}
+function renderExhaustive(p, i) {
+  const l = cur();
+  const pos = add(p, 'div', 'pos', 'Ảnh ' + (i + 1) + ' / ' + sec.images.length + ' · đã xong ' + nDone(sec));
+  if (l.done) pos.append(el('span', 'done', ' · ✓ ảnh này đã xong'));
+  nav(p);
+  const f = add(p, 'input');
+  f.id = 'filter';
+  f.autocomplete = 'off';
+  f.placeholder = 'Lọc lớp (phím /): Enter = Có, Shift+Enter = Không chắc, Esc = xoá';
+  chips = new Map();
+  for (const [group, cs] of Object.entries(K.groups)) {
+    const fs = add(p, 'fieldset');
+    add(fs, 'legend', '', group);
+    for (const c of cs) {
+      const b = add(fs, 'button', 'chip ' + stateOf(c), c);
+      if (others(c).length) b.append(' ', el('small', '', '(' + others(c).join(', ') + ')'));
+      b.title = K.gloss[c] || '';
+      b.onclick = () => setState(c, NEXT_STATE[stateOf(c)]);
+      chips.set(c, b);
+    }
+  }
+  f.oninput = () => {
+    const q = plain(f.value.trim());
+    for (const [c, b] of chips) b.classList.toggle('hide', !!q && !plain([c, ...others(c)].join(' | ')).includes(q));
+  };
+  f.onkeydown = e => {
+    if (e.key === 'Escape') {
+      f.value = '';
+      f.oninput();
+      f.blur();
+      e.preventDefault();
+    } else if (e.key === 'Enter' && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      const q = plain(f.value.trim());
+      const shown = [...chips.keys()].filter(c => !chips.get(c).classList.contains('hide'));
+      const c = shown.find(x => plain(x) === q) || shown.find(x => plain(x).startsWith(q)) || shown[0];
+      if (!c) return;
+      const want = e.shiftKey ? 'unsure' : 'yes';
+      setState(c, stateOf(c) === want ? '' : want);
+      f.select();
+    }
+  };
+  add(p, 'div', '', 'Vật thể khác (không có lớp phù hợp, cách nhau bằng dấu phẩy):');
+  const o = add(p, 'textarea');
+  o.value = l.other;
+  o.oninput = () => { cur().other = o.value; save(); };
+}
+
+function mdLite(text) {
+  const esc = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return esc.replace(/^#+ (.*)$/gm, '<b style="font-size:15px">$1</b>')
+    .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/`([^`]+)`/g, '<code>$1</code>');
+}
+function openHelp() {
+  $('helpText').innerHTML = mdLite(K.guide || '');
+  $('help').hidden = false;
+}
+
+document.addEventListener('keydown', e => {
+  if (!$('help').hidden) {
+    if (e.key === 'Escape' || e.key === 'h' || e.key === 'H') { $('help').hidden = true; e.preventDefault(); }
+    return;
+  }
+  if (!S) return;
+  if (sec.kind === 'exhaustive' && e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); finish(); return; }
+  if (/^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName) || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key, a = ANSWERS.find(x => x[1] === k);
+  if (k === 'z' || k === 'Z') $('view').classList.toggle('zoom');
+  else if (k === 'h' || k === 'H') openHelp();
+  else if (k === 'ArrowLeft') go(-1);
+  else if (k === 'ArrowRight') go(1);
+  else if (sec.kind === 'verify' && a) answer(a[0]);
+  else if (sec.kind === 'exhaustive' && k === '/') $('filter').focus();
+  else return;
+  e.preventDefault();
+});
+
+$('exp').onclick = () => {
+  if (!S) { alert('Nhập mã người gán trước.'); return; }
+  const data = {kit: K.id, annotator: who, exported_at: new Date().toISOString(), sections: S.sections, pos: S.pos};
+  const a = el('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 1)], {type: 'application/json'}));
+  a.download = K.id + '_' + (who.replace(/[^A-Za-z0-9._-]+/g, '_') || 'nguoi') + '.json';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  exported = true;
+};
+$('imp').onchange = e => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  const r = new FileReader();
+  r.onload = () => {
+    let d = null;
+    try { d = JSON.parse(r.result); } catch (err) { d = null; }
+    if (!d || d.kit !== K.id || !d.annotator || !d.sections || typeof d.sections !== 'object') {
+      alert('File này không phải bài làm của bộ "' + K.id + '".');
+      return;
+    }
+    if (!confirm('Nạp bài làm của "' + d.annotator + '" từ file? Bài của mã này đang lưu trong trình duyệt sẽ bị thay thế.')) return;
+    who = String(d.annotator).trim();
+    $('who').value = who;
+    store.set(K.id + '::who', who);
+    S = {sections: d.sections, pos: d.pos || {}};
+    for (const s of K.sections) S.sections[s.key] = S.sections[s.key] || {};
+    save();
+    render();
+  };
+  r.readAsText(file);
+};
+window.addEventListener('beforeunload', e => {
+  if (!storageOk && S && !exported) { e.preventDefault(); e.returnValue = ''; }
+});
+$('who').onchange = () => setWho($('who').value);
+$('img').onclick = () => $('view').classList.toggle('zoom');
+$('helpBtn').onclick = openHelp;
+$('helpClose').onclick = () => { $('help').hidden = true; };
+$('title').textContent = K.title;
+if (!store.set(K.id + '::probe', '1')) $('warn').textContent = 'Trình duyệt không tự lưu được: hãy bấm Xuất file thường xuyên!';
+setWho(store.get(K.id + '::who') || '');
+</script>
+</body>
+</html>
