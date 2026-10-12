@@ -300,12 +300,12 @@ def run_sft(args) -> int:
     # in the collator instead of held in the dataset, so memory does not grow
     # with the training set either.
     dataset = Dataset.from_list([dict(row, _key="response") for row in rows])
-    print(f"  training set: {len(dataset)} examples")
+    print(f"  training set: {len(dataset)} examples, loss mask: {args.loss_mask}")
     trainer = SFTTrainer(
         model=model,
         train_dataset=dataset,
         processing_class=processor.tokenizer,
-        data_collator=VLCollator(processor),
+        data_collator=VLCollator(processor, assistant_only=args.loss_mask == "assistant"),
         args=SFTConfig(
             output_dir=args.out,
             per_device_train_batch_size=1,
