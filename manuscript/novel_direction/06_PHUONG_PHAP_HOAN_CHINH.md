@@ -190,3 +190,8 @@ Với cùng số đối tượng mỗi ảnh như SUPPORTED, P tăng +18,1 và R
 - Ở detailed: P +2,1, CHAIR_i −3,3, R −1,4. Đây là đánh đổi nhỏ, F1 không đổi.
 - Ở short: cả F1 lẫn CIDEr đều giảm, tức DPO làm hỏng văn phong ngắn vì các cặp đều sinh từ prompt detailed.
 - Không đưa vào hệ chính. Chờ cross-fit (60–63).
+
+**Baseline gắn tag vào prompt, zero-shot (12/10/2026).** Tag lấy từ Grounding DINO base trên 80 lớp COCO (`tags_gdino.json`), trung bình 2,39 tag/ảnh, 23/558 ảnh không có tag nào.
+- Short: P 52,4 / R 37,7 / F1 43,9, so với zero-shot 52,3 / 32,5 / 40,1. R tăng 5,2, P giữ nguyên; CIDEr 27,9 so với 29,0.
+- Detailed: không đổi (F1 40,6 so với 40,7; CHAIR_i 65,0 so với 65,1).
+- Cả hai mode vẫn rất xa P1 và fuse2. Kết quả trên fuse2_s42 đang chạy.
