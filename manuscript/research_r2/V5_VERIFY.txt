@@ -1,0 +1,446 @@
+V5 - ADVERSARIAL VERIFICATION: METHOD TRIAGE FOR THE NEXT 48 GPU-HOURS
+Candidates: A1 ART (annotator-resampled rows); A2 CNC (consensus-naming contrast) and CMPC (certified minimal pairs);
+A3 policy-diverse committee and LoRA coverage arithmetic; A5 instance-gated cross-lingual fusion (xl-fuse);
+A6 references-vs-images exchange-rate grid (+ its free checks); A8 vote-then-fuse (VTF) self-distillation, D1 and D2.
+2026-10-12. CPU only (local, nice 15). Read-only ls/scp of result files on n2/n3. No GPU, no /root/queue, no model.
+Scripts, logs and derived preds: research_r2/V_V5/ (section 8).
+
+====================================================================================================================
+0. VERDICT
+====================================================================================================================
+Recommendation: run NO training or inference method on the GPUs in the next 48 h.
+- Every candidate is either killed by a check below, dominated by a run already in the queue, or blocked behind a
+  queued result.
+- The only method whose gain survives an independent human panel is the A3 policy-diverse committee. It needs 0 GPU-h
+  on KTVIC: the queued seeds and target-policy ladder supply its members.
+
+Three reasons, all measured this session on existing data:
+
+(a) Little TRUE precision headroom is left.
+  - Method: panel-sensitivity-corrected precision. Protocol 1v4, KTVIC test, 555 images.
+    - A held-out KTVIC caption calibrates how often the UIT-OpenViIC panel confirms real but unmentioned objects.
+    - The calibration is class-adjusted.
+
+  | system | corrected P [95% CI] |
+  |---|---|
+  | P1-short | 98.3 [95.8, 100] |
+  | fuse2-short | 97.6 [95.0, 100] |
+  | fuse2-detailed | 95.5 [93.2, 98.2] |
+  | zero-shot short | 89.8 [86.0, 93.6] |
+
+  - The metric still separates systems: zero-shot short sits well below the trained models.
+  - The "12-point precision gap to one human" against the KTVIC references is almost entirely reference
+    incompleteness.
+  - Remaining true headroom: about 2.4 P in short mode and about 4.5 P in detailed mode. Both are at or below the
+    single-seed MDE (object P: 2.7 same recipe, 3.8 different recipes; reproduced).
+
+(b) "Typicality inflation". Inference-time selections that raise precision against the KTVIC references lose most of
+  that gain against the KTVIC+OpenViIC union, and almost all of it under corrected P.
+
+  | method | gold / mode | KTVIC-ref dP | union dP | corrected dP |
+  |---|---|---|---|---|
+  | Grounding-DINO tags | short | +2.1 | +0.8 n.s. | — |
+  | Grounding-DINO tags | detailed | +2.8 | — | +0.2 [-1.5, +1.8] |
+  | VTF over 6 samples | short | +2.4 | +1.2 n.s. | +0.1 [-1.8, +2.1] |
+  | 10-caption committee, MBR-F1 | short | +3.5 | +2.3 | +1.6 [0.0, +3.0] |
+  | 10-caption committee, sentence cover | detailed | +4.7 | +2.8 | +2.1 [+0.4, +3.7] |
+
+  The committee's detailed gain comes with fewer objects (2.91 vs 3.16 per caption).
+
+(c) Each training candidate fails a specific check:
+  - CNC: the naming "errors" are human-like naming variants that the second panel confirms (section 2.4).
+  - ART: in the proxy learner, its short-row gain is dominated by the queued multiref arm, and its detailed row
+    reverses against the independent panel (section 2.5).
+  - A8 self-distillation (D1/D2): the inference gain it would distil is about 0 against greedy (2.1, 2.7).
+  - CMPC, merging, xl-fuse: bounds or priors (section 3).
+
+====================================================================================================================
+1. REPRODUCTION OF THE REPORTS' KEY NUMBERS (lens 1)
+====================================================================================================================
+| report | quantity | here | the report |
+|---|---|---|---|
+| A1 | proxy, cross-fit, bagged consensus - cons, mP | +1.33 [0.89, 1.82] | +1.36 |
+| A1 | multiref - cons | +2.31 | +2.34 |
+| A1 | bagged fusion - fuse2 | +0.36 | +0.37 |
+| A2 | P1 naming excess over a held-out human, FP per caption (1v4) | +0.095 | +0.094 |
+| A5 (P-D) | fuse2-short total excess | +0.313 | +0.310 |
+| A3 | cover FT10 (k>=3, <=2 sentences), P / R, 555 images | 72.5 / 60.8 | 72.7 / 60.8 on 558 |
+| A3 | MBR-F1 FT10, short, P / R | 79.1 / 47.4 | 79.2 / 47.4 |
+| A5 | xl_fuse2i - vi_fuse2, instance gold, dP / dR (repro_a5_crossling.json) | +0.54 [0.39, 0.70] / +21.76 | exact |
+| A5 | instance gate | +1.29 | exact |
+| A6 | object-P MDE, short (same / different recipe) | 2.7 / 3.8 | same |
+| A6 | object-P MDE, detailed | 2.5 / 3.8 | same |
+| A6 | CIDEr MDE | 9.6-13 | 13.9-16.0 |
+| A8 | VTF k=3 <=2 on 1,500 seen train images, P / R / F1 | 72.2 / 67.1 / 69.6 | exact |
+| A8 | VTF vs one sample, dP / dR | +8.3 / +4.9 | exact |
+
+- The CIDEr MDE is now lower than A6's because p1_s44 exists.
+- A6/power.py writes next to itself, so it was re-run from a copy in V_V5/repro_a6. A6's own files were not touched.
+- No bug, leakage or wrong denominator was found in the re-run pilots.
+
+====================================================================================================================
+2. NEW ADVERSARIAL CHECKS (lens 1, with an independent gold)
+====================================================================================================================
+
+Independent gold: the UIT-OpenViIC panel of the same images.
+- Source: data/ktvic_openviic_refs.json; 555 test images and 3,724 train images.
+- It was written by a different team under a different guideline, and it was never used in any training target.
+
+Primary gold: the union of KTVIC and OpenViIC.
+- That union is the most complete presence proxy.
+- OpenViIC alone is biased the other way: it counts KTVIC-typical objects that OpenViIC omitted as false.
+
+"mix" (A3's test): the excess over the per-image coin-flip mixture of P1 and fuse2 at the same total object count.
+
+----------------------------------------------------------------------------------------------------
+2.1 Sample voting vs GREEDY on UNSEEN test images (v5_eval.py, v5_eval.log)
+----------------------------------------------------------------------------------------------------
+Data: job 35's 6 short samples per test image (T 0.8, top-p 0.95) for fuse2_s42 and p1_s43, copied read-only from
+n2:/root/ncs-data/samples. The n2 self_fuse file equals build_gold_sft.consensual() over these samples on 558/558
+images, up to a trailing full stop.
+
+fuse2_s42, short mode. Pre-registered A8 rule: VTF k=3, <= 1 sentence. Deltas are paired against fuse2 greedy.
+
+| gold | VTF dP | VTF dR | VTF mix dP / dR | MBR k=1 (self_fuse) dP / dR |
+|---|---|---|---|---|
+| KTVIC 5 refs | +2.4 [+0.3, +4.6] | +1.3 [-0.4, +3.1] | +2.1 [+0.2, +4.1] / +2.0 | -4.9 / +6.0 |
+| OpenViIC only | +0.7 [-1.4, +2.8] | +0.2 | +0.6 [-1.3, +2.6] | -3.3 / +4.8 |
+| union | +1.2 [-0.3, +2.9] | +0.6 | +1.0 [-0.4, +2.6] / +1.0 [+0.3, +1.7] | -2.6 / +5.3 |
+
+1v4 protocol:
+
+| gold | human P | fuse2 greedy P | VTF P | VTF vs greedy dP |
+|---|---|---|---|---|
+| other 4 KTVIC captions | 85.4 | 72.8 | 75.1 | +2.3 [+0.2, +4.3] |
+| 4 KTVIC + OpenViIC | 94.1 | 88.3 | 89.5 | +1.2 [-0.3, +2.9] |
+
+Corrected P: VTF - greedy +0.1 [-1.8, +2.1] (2.7).
+
+Conclusions:
+- Single-adapter sample voting is a weak dial. About half of its KTVIC-reference gain is agreement with KTVIC
+  conventions, and none of it shows in corrected precision.
+- A8's headline "+7.0 P, +5.2 R vs one sample on held-out annotators" compares against a T=0.8 sampling strawman.
+  Greedy decoding already removes most sampling errors: here VTF - one sample = +7.0 P against KTVIC references, but
+  only +2.4 P against greedy.
+
+----------------------------------------------------------------------------------------------------
+2.2 The A3 committee against the independent gold (v5_eval.log, v5_committee.log)
+----------------------------------------------------------------------------------------------------
+| committee | gold | dP | dR | mix dP | mix dR |
+|---|---|---|---|---|---|
+| FT10, MBR-F1, short | KTVIC | +3.5 [+1.6, +5.2] | — | +2.9 | — |
+| FT10, MBR-F1, short | union | +2.3 [+1.1, +3.6] | -0.2 | +2.0 [+1.0, +3.0] | +0.5 [+0.1, +1.0] |
+| FT10, MBR-F1, short | OpenViIC only | — | — | +1.2 [-0.1, +2.6] | — |
+| FT10, cover k3, detailed | union | +2.8 [+1.4, +4.1] | -1.9 | +2.2 [+1.0, +3.3] | +0.9 |
+| FT10, cover k3, detailed | OpenViIC only | — | — | +1.3 [-0.1, +2.5] | — |
+| SEED8, MBR, short | union | — | — | +1.7 [+0.6, +2.7] | +0.6 |
+| SEED8, cover k3, detailed | union | — | — | +1.9 [+0.9, +2.8] | +0.7 |
+
+- FT10 is A3's 10-caption committee (5 adapters including E5 and E5-DPO, two prompts).
+- SEED8 drops the E5 family: P1 s42/s43/s44 + fuse2 s42, two prompts each, 8 captions.
+- With FT10, the 1v4 + OpenViIC gold gives P 90.6 vs 88.3 for fuse2. That closes 2.3 of the 5.7-point residual gap to
+  a human (94.1) at equal recall.
+- So the E5 family is not needed, and policy and seed diversity suffice.
+- But SEED8 is P1-heavy and therefore operates at P1's recall. The ladder's fuse2 seeds and variants are what would
+  move a committee to fuse2's recall.
+- Cost: K times inference. It is free on KTVIC because the queued runs produce the members.
+
+----------------------------------------------------------------------------------------------------
+2.3 A8's VTF on the 1,500 SEEN train images, scored by the independent panel (v5_vtf_train.py)
+----------------------------------------------------------------------------------------------------
+VTF k=3 <=2 vs one sample:
+
+| gold | dP | dR | dF1 |
+|---|---|---|---|
+| KTVIC refs | +8.2 | +4.9 | +6.4 |
+| OpenViIC | +6.2 [+5.1, +7.3] | +1.7 [+0.8, +2.5] | +3.0 |
+| union | +7.3 | +1.6 | — |
+
+- The vote does remove sampling noise, and that survives the independent panel.
+- But the baseline is a temperature sample, not greedy (see 2.1).
+
+----------------------------------------------------------------------------------------------------
+2.4 CNC premise (A2): are the model's naming "errors" real errors? (v5_naming.py)
+----------------------------------------------------------------------------------------------------
+Protocol 1v4. "Reference-false" means not named by the other 4 KTVIC captions. Naming-type uses A2's relation(), and
+"confirmed" means the OpenViIC panel names the same noun.
+
+| source | naming-type confirmed | unrelated confirmed |
+|---|---|---|
+| held-out human | 67.5% [60.6, 74.6] | 56.2% |
+| P1-short | 68.7% [59.4, 78.2] | 50.4% |
+| fuse2-short | 68.1% [59.6, 76.7] | 51.0% |
+| fuse2-detailed | 66.7% | 51.1% |
+
+Excess over the human, per caption:
+
+| system | naming FP | naming UNCONFIRMED |
+|---|---|---|
+| P1 | +0.095 | +0.029 |
+| fuse2-short | +0.128 | +0.040 |
+
+- Top P1 naming "errors" against all 5 KTVIC references, with how often OpenViIC confirms them:
+
+  | noun | confirmed by OpenViIC |
+  |---|---|
+  | người | 17 of 22 |
+  | phụ nữ | 14 of 18 |
+  | đàn ông | 13 of 18 |
+
+- So the naming share of the gap (A2: 41-50%) consists of legitimate alternative names, confirmed by a second team as
+  often as a human's.
+- Even a perfect CNC could raise union-gold P by at most about 0.029/1.80 = 1.6 P (P1) or 2 P (fuse2-short).
+- Its exact-match gain against KTVIC (A2's bound: +4-6 P) would be convention fitting. The paper's naming-aware
+  precision discounts exactly that.
+- Verdict: KILLED as a precision method. The analysis itself belongs in the evaluation section.
+
+----------------------------------------------------------------------------------------------------
+2.5 ART premise (A1): does the proxy-learner gain survive an independent gold? (v5_proxy.py, v5_proxy.log)
+----------------------------------------------------------------------------------------------------
+Same learner, ViT-B/32 features, 56 classes, alphas and folds as A1. Only the gold changes. Values are mP at
+R = 30/40/50/60, paired.
+
+| contrast | cross-fit KTVIC | cross-fit OpenViIC | cross-fit union | test OpenViIC | test union |
+|---|---|---|---|---|---|
+| bagged cons - cons (ART short row) | +1.33 | +1.34 [1.00, 1.68] | +1.24 | +1.28 [0.39, 2.02] | +1.97 |
+| multiref - cons (QUEUED ladder arm) | +2.31 | +2.76 [2.39, 3.11] | +2.81 | +2.71 | +3.39 |
+| bagged fusion - fuse2 (ART detailed row) | +0.36 | -0.87 [-1.17, -0.55] | -1.03 | -0.30 | -0.25 |
+| uok2 - fuse2 | +0.74 | -0.64 | -0.73 | — | — |
+| fuse2 - cons | +1.64 | +3.53 | +3.92 | — | — |
+
+- ART's short row survives, but the queued multiref arm dominates it on every gold. This agrees with 2605.20642: with
+  full vote counts, "multipass" (= multiref) is the recommended default over per-epoch label sampling (= ART).
+- ART's detailed row REVERSES against the independent panel.
+- Verdict: DEFER/KILL for this window. The queued multiref and cons runs test the mechanism for free. Revisit only if
+  trained multiref beats P1 and cons at matched recall against the union gold and ART's short row is expected to add
+  something.
+- Side result for the paper: against the independent panel, the fuse2-target learner is the most precise at matched
+  recall (+3.5 mP over cons). The fused targets' extra mentions are real.
+
+----------------------------------------------------------------------------------------------------
+2.6 How much true headroom is left? (v5_headroom.py, v5_headroom_cls.py)
+----------------------------------------------------------------------------------------------------
+- Estimator: hallucinated mentions = rf - confirmed / s, where s is the panel's sensitivity to real but unmentioned
+  objects.
+- s is estimated from the held-out human's reference-false mentions: 59.4% [55.5, 63.0] globally. It is then
+  class-adjusted to each system's own class mix: 61.5-64.8%, because system extras sit in classes the panel names more
+  often.
+
+Corrected P (class-adjusted):
+
+| system | corrected P | objects per caption |
+|---|---|---|
+| P1-short | 98.3 [95.8, 100] | — |
+| fuse2-short | 97.6 [95.0, 100] | — |
+| P1-detailed | 98.5 [96.0, 100] | — |
+| fuse2-detailed | 95.5 [93.2, 98.2] | — |
+| zero-shot short | 89.8 [86.0, 93.6] | — |
+| FT10 MBR (short) | 99.1 [96.8, 100] | — |
+| SEED8 MBR (short) | 99.1 | — |
+| FT10 cover (detailed) | 97.6 [95.2, 100] | 2.91 |
+| tags, detailed | 95.7 [93.5, 98.0] | — |
+
+Paired deltas:
+
+| contrast | corrected dP |
+|---|---|
+| fuse2-short - P1-short | -0.7 [-3.0, +1.5] (fusion buys R +5.7 at no detectable true-P cost) |
+| FT10 cover - fuse2-detailed | +2.1 [+0.4, +3.7] |
+| tags - fuse2-detailed | +0.2 [-1.5, +1.8] |
+
+The global (unadjusted) version is more optimistic: fuse2-short 98.9, fuse2-detailed 98.2.
+
+Caveat (the strongest objection to (a)):
+- The estimator assumes equal within-class detectability of system extras and human extras.
+- KTVIC's 5 captions may come from one writer, so the human calibration uses "same-writer extras".
+- Existing-data fix: validate the estimator where presence is known.
+  - On UIT-ViIC (5 Vietnamese captions plus the English COCO captions = two panels) and COCO-Karpathy, compute the
+    two-panel corrected P of the queued transfer outputs (jobs 36/38/59).
+  - Compare it with instance-gold P.
+  - CPU only, after those jobs land.
+
+====================================================================================================================
+3. RANKED LIST (effect against the independent gold, MDE, scoop, GPU, dependencies)
+====================================================================================================================
+
+1. A3 policy-diverse committee (inference, extractive cover / object-F1 MBR).
+   - Evidence:
+     - union-gold mix dP +2.0 (short) and +2.2 (detailed), CIs exclude 0;
+     - corrected dP +1.6 [0.0, 3.0] (short) and +2.1 [0.4, 3.7] (detailed);
+     - holds without E5 (SEED8: +1.7 / +1.9).
+   - Scoop:
+     - Graphene 2110.09131 (k-of-m graph voting);
+     - ROVER;
+     - UA-MBR 2503.05318 (MBR over an ensemble of fine-tuned models);
+     - ATED 2510.18321 (token-level LVLM ensemble).
+     - Delta: members differ only in reference->target policy; the equal-object-count chord/hull test; two-gold
+       scoring. Method novelty is low; the evaluation novelty is moderate.
+   - GPU: 0 on KTVIC; members come from the queued ladder and seeds.
+   - Status: RUN ON CPU when the ladder lands. Pre-register the rule now:
+     - cover: k = round(0.3 x captions), <= 2 sentences;
+     - short: MBR-F1 over the pool, short candidates only;
+     - script: v5_committee.py <stems>.
+   - Instance-gold check (CPU) from jobs 36/38: p1_s43, fuse2_s42 and zero-shot, x 2 prompts.
+
+2. Single-adapter sample voting (A8 VTF as an inference rule; R4's I1 MBR).
+   - Short mode, measured here: +2.4 P against KTVIC references, +1.2 n.s. against the union, +0.1 corrected.
+   - Detailed mode: unknown. That is where the true headroom is (about 4.5 P), but the plausible effect is about
+     +1-1.5, below the within-model MDE of about 2.2.
+   - Scoop:
+     - ASC 2405.13131: sentences clustered across samples with support >= Theta; extractive for list tasks, LLM merge
+       for long form.
+     - SelfVal 2601.22451: same backbone; Best-of-10 by object confidence lowers Qwen2.5-VL-7B F1 from 74.4 to 72.7;
+       its aggregation is an LVLM rewrite.
+     - IC3 2302.01328.
+     - Delta: object-level frequency vote plus extractive set cover, with no verifier and no LLM. Incremental.
+   - GPU: about 1.1 h for 6 detailed samples on test (job S1, section 6).
+   - Status: NOT SELECTED. If R4's job 72 is kept, add VTF to its CPU analysis for 0 extra GPU.
+
+3. A6 exchange-rate grid (analysis, 9.25 GPU-h) and its free checks (1.65 GPU-h).
+   - Not a precision method, and not a reviewer demand. The queued multiref, unf2, cons and p1ep4 arms already answer
+     the "more captions / more steps" confound.
+   - Status: DEFER.
+   - Conditional: if p1ep4 (job 56) moves short R by >= 2.5 over P1, evaluate fuse2_s42/checkpoint-943 (0.75 GPU-h,
+     job S2).
+
+4. A1 ART: DEFER/KILL (2.5).
+   - GPU 7.4 h, plus new code (--bag-subsets, about 20 lines).
+   - Scoop: SLS/multipass 2605.20642 (classification); VBCS (Nagasawa 2021); Zheng et al. 2018 "Sample One".
+
+5. A5 xl-fuse: DEFER.
+   - It covers COCO-domain recall only and does not touch KTVIC (A5's own bound).
+   - It needs an LLM translation step, which breaks the paper's "human text only, extractive" recipe.
+   - Reference P against Vietnamese annotators falls by 15. It depends on the 59a/59b two-gold audit.
+   - About 5 GPU-h plus about 40 lines of code.
+
+6. A8 D1, VTF self-distillation on de-duplicated OpenViIC images: KILL for now.
+   - The gate quantity (VTF - greedy on unseen images) is about 0 against independent gold in short mode (2.1).
+   - A distilled student keeps at most part of that, and E5 was null.
+   - Arm H (SFT on OpenViIC captions) would teach OpenViIC style and CONTAMINATE the paper's second-panel evaluation.
+   - Pool: OpenViIC contains all 558 test and 3,768 train KTVIC images plus 335 internal duplicate pairs, so the pool
+     must exclude every match under the two-signal rule and SSCD >= 0.5.
+   - 8.5 GPU-h; a P(beat fuse2) of 0.2 is optimistic.
+
+7. A8 D2 (cross-fitted VTF vs gold RFT): DEFER.
+   - The CPU gate becomes available when jobs 60/61 land.
+   - Training only if the gold cross-fitted RFT beats fuse2.
+
+8. A3 LoRA coverage arithmetic: KILL.
+   - P1<->fuse2 interpolation is predicted to sit on the chord (rewarded soups 2306.04488). The ensemble of the same
+     two endpoints is already on the hull: 2.2 (PF4) and A3.
+   - The UIT->KTVIC analogy has 0.35 confidence and needs 59a/59b. 9.1 GPU-h.
+
+9. A2 CNC: KILL (2.4).
+   - About 8 GPU-h for 2 seeds, plus about 100 lines of custom loss inside SFTTrainer (risky).
+   - Prior: Equalizer 1803.09797; Bhargava & Forsyth 1912.00578; HALVA 2405.18654.
+
+10. A2 CMPC: KILL.
+   - A2's own estimate: 20% confidence, <= 1.2 P on KTVIC.
+   - Prior: mDPO, S-VCO, V-DPO. 7 GPU-h and a paired-image training loop.
+
+====================================================================================================================
+4. NOVELTY (lens 2): closest prior per surviving item
+====================================================================================================================
+Read for this verification:
+- full method sections of SelfVal (2601.22451) and ASC (2405.13131);
+- the results section of 2605.20642;
+- the abstract of ATED (2510.18321).
+4 WebSearch queries, 13 arXiv-API queries, 1 Semantic Scholar query (then 429). The reports' own literature
+(26+ searches in A8, 13 in A3, 14 in A1) was not repeated.
+
+| item | closest prior | delta |
+|---|---|---|
+| Committee | Graphene (k-of-m over parser outputs); UA-MBR (ensembles of fine-tuned models for MBR); ATED | members differ only in how references became targets; equal-object-count chord/hull test; two-gold and corrected-P scoring. No captioning paper evaluates ensembles at matched object count (A3) |
+| VTF | ASC (support-thresholded sentence clusters); SelfVal (object confidence) | object-level vote, admissibility of every object, extractive cover, no LLM. Incremental |
+| ART | SLS/multipass (2605.20642): per-epoch label sampling equals soft labels in expectation; multipass recommended | union-level constructions resampled per epoch, for generation. The proxy says multipass (multiref) is better, so no reason to prefer ART |
+
+No new scoop was found that kills the committee's evaluation framing. Searches for "object voting + extractive cover"
+and "ensemble of captioners trained on different reference policies" returned nothing closer.
+
+====================================================================================================================
+5. REVIEWER LENS (lens 3)
+====================================================================================================================
+Objection 1: "A Q1 method paper with no new training method is thin."
+- Fix, all on existing data and 0 GPU:
+  - (i) Fusion is the method. Its recall gain (R +5.7) costs no detectable true precision (corrected dP -0.7
+    [-3.0, +1.5]).
+  - (ii) The committee is the training-free precision variant, verified against an independent panel (+1.6 / +2.1
+    corrected P).
+  - (iii) A "typicality inflation" table (section 0b) shows why precision methods tuned on one reference panel look
+    1.5-3x better than they are. That is a methodological contribution, and no extra method run adds to it.
+
+Objection 2: "Corrected P rests on equal panel sensitivity."
+- Fix: the class-adjusted estimator (done), plus validating the estimator against COCO instance gold with two panels
+  (Vietnamese and English) on UIT-ViIC/COCO, after jobs 36/38/59. CPU only.
+
+Objection 3: "The committee costs K x inference."
+- Fix: report cost per caption. In the paper, the committee is an analysis of how decorrelated policy errors behave,
+  not the deployed system.
+
+====================================================================================================================
+6. JOBS NOT SELECTED (exact, ready if the coordinator overrides)
+====================================================================================================================
+
+S1. Optional, about 1.1 GPU-h, inference only, on n2 (holds runs/fuse2_s42 and ran job 35).
+- Skip it if R4's job 72 already samples the test set in detailed mode.
+
+  cd /root/vsps && . .venv/bin/activate && export NCS_DATA=/root/ncs-data JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+  set -e
+  # V5-S1: 6 DETAILED samples per KTVIC test image from fuse2_s42 (e5_sample defaults: T 0.8, top-p 0.95, top-k 0,
+  # seed 42). CPU scoring: V_V5/v5_eval.py <file> (adds VTF k=2/3/4 <=2 sentences and MBR k=1 over these samples).
+  S=$NCS_DATA/samples; mkdir -p $S
+  python scripts/e5_sample.py --adapter $NCS_DATA/runs/fuse2_s42 --split test_data.json --limit 0 --prompt detailed --n 6 --out $S/fuse2_s42-test-detailed-v5.jsonl
+  test "$(wc -l < $S/fuse2_s42-test-detailed-v5.jsonl)" -eq 558
+
+- Pre-registered rule: VTF k=3, <= 2 sentences, compared with fuse2 detailed greedy. Keep it as a paper item only if
+  both hold:
+  - union-gold mix dP >= +1.5 with the CI excluding 0;
+  - class-adjusted corrected dP >= 0.
+  Otherwise report it as a null.
+
+S2. Conditional, 0.75 GPU-h, on n3 (holds runs/fuse2_s42/checkpoint-943). Trigger: p1ep4 (job 56) short R >= P1 + 2.5.
+
+  cd /root/vsps && . .venv/bin/activate && export NCS_DATA=/root/ncs-data JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
+  set -e
+  # fuse2 at P1's step count (943; LR not annealed, 5e-5 at save) -> the other half of the compute-matched 2x2 with p1ep4
+  for p in short detailed; do timeout 5400 python scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/fuse2_s42/checkpoint-943 --split test_data.json --prompt $p --name fuse2_s42ep1-$p || echo "WARN fuse2_s42ep1-$p exit $?"; done
+
+====================================================================================================================
+7. SIDE FINDINGS THAT AFFECT THE GPU PLAN
+====================================================================================================================
+- R4's tag jobs (71 placebo/oracle 1.4 h; 79a tag-SFT 5.5 h; 79b 1.0 h): the tag channel's precision gain is
+  typicality.
+
+  | tag effect | KTVIC refs | OpenViIC | union | corrected (detailed) |
+  |---|---|---|---|---|
+  | short | +2.1 | -0.6 | +0.8 n.s. | — |
+  | detailed | +2.8 | — | — | +0.2 |
+
+  Deprioritise them, or require two-gold scoring before scaling.
+- Never train on OpenViIC captions (A8 arm H; round-1 VN2 PoolSFT) while the paper uses the OpenViIC panel as
+  independent gold.
+- On n3, fuse2_s42/checkpoint-943 exists (needed for S2). fuse2_s43 has only checkpoint-943 (resume job 51 queued).
+  fuse2_s44 is training now (job 50).
+- n2 is running job 36 (COCO transfer). Job 35's samples and self_fuse outputs are there and were not yet copied into
+  the repo's data/results.
+
+====================================================================================================================
+8. FILES (research_r2/V_V5/)
+====================================================================================================================
+Run from the repo root with NCS_DATA=data; v5_proxy.py runs from V_V5/.
+
+| script | what it does |
+|---|---|
+| v5_eval.py | sample voting vs greedy on unseen test images, 3 golds + 1v4 (+/- panel), mix test; optional detailed-samples argument (job S1) -> v5_eval.log/.json |
+| v5_committee.py | A3 rules on any member stems (default SEED8) vs KTVIC and union -> v5_committee.log |
+| v5_naming.py | CNC premise -> v5_naming.log |
+| v5_proxy.py | A1 proxy learner against OpenViIC/union gold (A1's labels, embeddings and alphas) -> v5_proxy.log/.json |
+| v5_vtf_train.py | A8 VTF on seen train images against the OpenViIC panel -> v5_vtf_train.log |
+| v5_headroom.py | corrected-precision headroom, global sensitivity -> v5_headroom.log |
+| v5_headroom_cls.py | corrected-precision headroom, class-adjusted, with paired deltas -> v5_headroom_cls.log |
+| repro_a5_crossling.* | A5 reproduction |
+| repro_a6/ | A6 reproduction (copy of power.py) |
+| n2/ | job-35 samples and self_fuse preds (read-only copies) |
+| lit/ | axq.sh, s2q.sh (search helpers) |
+
+Derived preds: fuse2vtf3-short, fuse2vtf2two-from-short, seed8mbr-short, seed8cover3-detailed (.preds.json).

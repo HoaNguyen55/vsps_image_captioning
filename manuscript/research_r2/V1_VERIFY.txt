@@ -1,0 +1,218 @@
+V1 -- adversarial verification of A4 / IFCR ("imitator-family capture-recapture precision")
+2026-10-12. CPU only (local, nice -n 15). No VLM/LLM, no GPU, nothing written to the repo.
+Code and outputs: research_r2/V_V1/ (a4copy/ = A4's code, only the A7 path changed; check_drop.py, boot_audit.py,
+collinear.py, exch.py, band.py, sim.py, plasmode.py, ifcr_panel2.py; out_*.txt, out/*.json; scoop/, lit/).
+
+VERDICT: KILLED as an estimator and as a paper contribution. It survives only as an appendix cautionary result,
+together with a KTVIC caption-exchangeability diagnostic. The independent second panel (UIT-OpenViIC, coordinator's
+R5_01 / scripts/second_panel.py) replaces it for KTVIC. On COCO and UIT-ViIC, instance labels already measure what
+IFCR estimates.
+
+=====================================================================================================================
+1. REPRODUCE
+=====================================================================================================================
+1.1 tilt.py self-checks pass. KTVIC coarse point estimates reproduce A4 exactly: P1-gold-short 80.2 -> 90.0,
+    fuse2-short 77.5 -> 88.4, fuse2-detailed 67.5 -> 80.0. The K = 5 exact-level P equals the paper's
+    (77.9 / 75.7 / 68.0 / 52.3 / 31.6).
+
+1.2 Bug: wrong denominator (A4 ktvic.py and gof.py). mention_arrays drops every mention whose class no KTVIC test
+    reference names ("if c not in cls_ix: continue"), from both numerator and denominator (check_drop.py).
+    - P1 and fuse2: <= 0.6% of mentions, <= 0.4 P. Negligible.
+    - zero-shot-detailed: 7.4-7.6% of mentions; P@K5 reads 34.2 instead of 31.6 (exact).
+    - vsps-detailed: 5.8-6.3% of mentions; reads 45.7 instead of 42.9.
+    Fixed in ifcr_panel2.py: those mentions are kept and get no hidden mass.
+
+1.3 Bootstrap. The corrected estimator is biased downward in resamples (mean(boot) - point = -0.4 to -1.7; raw has
+    no bias). The cause is the per-class cap hidden <= f0 plus the nonlinear fit.
+    - Exact level: HUM KT 1, HUM KT 2 and HUM KT 1+2 have their point estimate OUTSIDE their own 95% percentile CI.
+    - Use basic or BCa intervals (boot_audit.py).
+
+1.4 Prop. 1's identification condition fails. 1-(1-p)^2 = 2p - p^2, so the union-2 weight is a linear combination
+    of the single and consensus-2 weights. The computed components are exactly collinear within every class
+    (sigma3/sigma1 = 1.3e-16; centred truncated profiles have rank 1; collinear.py).
+    - The family is w(p) = a*p + b*p^2: ONE shape parameter per class, tied across classes only through
+      class-specific normalisations.
+    - lambda is not identified within a class. Readings such as "fuse2-short = consensus" or "fuse2-detailed =
+      union" are unsupported. lambda jumps between runs: P1-short (0.13, 0.29, 0.58) vs (0.14, 0.00, 0.86).
+    - The corrected precision itself is identified, under the model.
+
+1.5 The KTVIC headline "fuse2-short - P1-short: -2.7 -> -1.6, no longer significant" does not hold (A4's npz,
+    paired):
+    a) It uses an estimate A4's own fit test rejects (fuse2-short pooled p = .005). By A4's rule that value is only
+       a lower bracket.
+    b) It is seed-fragile. With P1 seed 43 the corrected difference is -2.4 [-4.7, +0.1] (coarse; basic CI
+       [-4.8, +0.0]). At exact level it is -2.7, basic CI [-5.7, -0.2], which is significant.
+    c) The shift the correction makes is real: +1.08 [+0.46, +2.14] (coarse) and +0.69 [-0.04, +1.82] (exact).
+       "Becomes n.s." mostly reflects added variance, on a raw gap that was barely significant to begin with.
+
+1.6 COCO "24 systems: MAE 11.6 -> 1.9" (A4's out/coco5000_k3_b200.json, regrouped).
+    - No instance-label leakage: calibration uses train+restval, evaluation uses Karpathy test, and the two image
+      sets are disjoint.
+    - The basis, the shrinkage, the "tilt" combination and the "flag if either p < .05" rule were chosen on these
+      same 24 systems, so 1.9 is an in-sample number.
+    - 1.9 is "tilt", which needs instance labels (calibration set). Only Ufit and U1 are label-free. KTVIC uses Ufit.
+    - Group MAE:
+
+      group                     raw    ipw0   Ufit   Ucal   tilt
+      humans + pairs (10)       6.8    3.9    2.6    0.4    0.4
+      synthetic (3)            34.0    1.2   25.6   27.8    2.6
+      VLM, all (11)             9.9    7.3    3.4    5.1    3.0
+      VLM, full captions (5)   13.1    8.4    5.8    7.7    5.3
+      VLM, short + prefixes (8) 7.1    6.0    1.3    2.7    1.4
+
+    - Human systems are circular for the label-free version: their own caption is one of the 5 references that
+      build the components.
+    - UIT-ViIC validation has a ceiling: truth is 98-100%, so it can only detect under-correction. There, plain
+      class IPW (ipw0) wins: MAE 1.19 vs Ufit 9.43.
+
+=====================================================================================================================
+2. ATTACKS (a)-(d)
+=====================================================================================================================
+(a) Dependence between captures. KTVIC fails here; COCO does not.
+
+  Measurement: caption-index Jaccard of object sets (exch.py, band.py).
+  - KTVIC has a lag-1 band:
+    - test: adjacent 0.525 vs non-adjacent 0.404, difference +0.121 [+0.108, +0.134];
+    - train: +0.090 [+0.084, +0.096];
+    - lags 2-4 are flat at about 0.41.
+  - COCO is flat (0.61-0.62). UIT-ViIC is nearly flat (0.43-0.47).
+  - P1 is confirmed by caption index 0 (its SFT target) +0.087 [+0.049, +0.121] more than by the other indices.
+    zero-shot shows +0.053, so part of P1's affinity is system-specific.
+  - The captions are not exchangeable, and adjacent captions are positively dependent. Both break the
+    hypergeometric/U-statistic components.
+
+  KTVIC plasmode (plasmode.py).
+  - Built from KTVIC's real (image, class) pairs, with salience drawn from the posterior given each pair's observed
+    t (zero-truncated beta-binomial per class).
+  - Synthetic references copy the previous caption with rho = 0.45. This reproduces the band ratio (1.28 vs 1.30)
+    and, with eps = .05 extra naming on index 4, the per-index confirmation profile.
+  - IFCR error vs truth (40 replicates, se 0.1-0.2):
+
+      references                       single    union-2   single + affinity to ref 0
+      independent                       -0.9      -1.8       0.0
+      KTVIC band (rho = 0.45)           -9.2     -12.7      -7.5
+      band + idiosyncratic index 4      -7.5     -10.4      -5.9
+
+  - Averaging over all 10 K-subsets instead of the 5 cyclic ones improves this by only about 1.2.
+  - Positive dependence makes held-out references look as if they confirm each other, so IFCR under-corrects.
+    This is the classical list-dependence bias of capture-recapture and the conditional-dependence bias of
+    latent-class models (Vacek 1985; Torrance-Rynard & Walter 1997; Albert & Dodd 2004).
+
+(b) Leakage, and the "label-free" claim. See 1.6.
+  - Ucal, tilt and ipw0 are NOT label-free; they use COCO / UIT-ViIC train instance labels. Only Ufit and U1 are.
+  - The paper must quote Ufit's validation for KTVIC: 3.4 MAE on COCO VLMs, 5.8 on full captions.
+
+(c) Identification and fit-test power (sim.py; COCO-calibrated world; truth known; A4's estimator and gof
+    unchanged; 100 sims).
+  - Size: systems that are in-family and independent of the references are flagged far above any nominal rate.
+
+      system         flagged, n = 558 (100 reps)   flagged, n = 5000 (25 reps)
+      single              44%                           44%
+      union-2             54%                           80%
+      consensus-2         23%                           56%
+
+    The test treats components estimated from the same references as fixed. A4's humans passed only because their
+    own captions are inside the components.
+  - Power against salience-blind true mentions (Prop. 2's non-identified mass). A system that also names each
+    present object with probability q:
+
+      q       IFCR error n = 558   flagged     IFCR error n = 5000   flagged
+      0.05         -3.7              48%            -3.3               64%
+      0.10         -6.7              54%            -6.0               76%
+      0.20        -11.7              69%           -11.0              100%
+
+    At KTVIC scale the flag rate equals the in-family false-flag rate: no discrimination.
+  - Union-3 (fusion of 3 captions) is outside the degree-2 family: -3.4 / -2.4.
+
+(d) Naming. The corrected value depends on lexicon granularity (555 images, K = 3):
+  - P1-short: 84.0 (exact) vs 89.6 (coarse); fuse2-detailed: 74.6 vs 79.4.
+  - Under-correction against the second panel is larger at exact level (P1 -4.0 vs -2.9).
+  - Naming variants act as capture-recapture misidentification ("tag loss"), which CR estimators assume away
+    (Link et al., Biometrics 2010; from memory, not re-fetched).
+  - "Corrected precision" is therefore defined only after a fixed naming merge, and that merge becomes part of the
+    metric.
+
+=====================================================================================================================
+3. OUT-OF-SAMPLE TEST WITH THE SECOND PANEL (UIT-OpenViIC, 555 KTVIC test images; ifcr_panel2.py; B = 300)
+=====================================================================================================================
+Setup: IFCR is fitted on KTVIC references only (A4's estimator; K = 3; 5 cyclic choices).
+- LB_ov = precision against (K scoring KTVIC refs OR the OpenViIC panel). This is a hard LOWER bound on true
+  precision.
+- P2cal = raw + f0 * (OpenViIC-confirmed share / OpenViIC sensitivity). Sensitivity is measured on held-out KTVIC
+  annotators' unreferenced mentions: 69.6% coarse, 63.2% exact.
+
+coarse (IFCR - LB_ov with [95% CI]; "flag" = A4's fit test):
+
+  system                raw    IFCR   LB_ov   P2cal   IFCR - LB_ov          flag
+  P1-gold-short         79.9   89.6   92.5    98.0    -2.9 [-5.5, -1.9]     ok
+  P1 s43-short          80.8   90.3   92.8    98.1    -2.6 [-5.2, -1.6]     ok
+  fuse2-short           77.2   87.9   91.3    97.4    -3.4 [-5.8, -1.9]     FLAG
+  fuse2-detailed        67.0   79.4   87.0    95.7    -7.6 [-10.1, -5.8]    FLAG
+  zero-shot-short       61.0   70.9   82.8    92.3   -11.9 [-14.4, -10.1]   ok
+  vsps-short            54.4   63.7   76.6    86.3   -12.9 [-15.9, -10.7]   ok
+  KTVIC human 4         79.6   90.9   93.0    98.9    -2.1 [-4.9, -0.8]     -
+
+- All 18 model systems fall significantly below the lower bound at both levels. At exact level: P1 -3.3 to -4.8,
+  fuse2-detailed -8.6, zero-shot / vsps -17 to -18.
+- Restricting the bound to the KTVIC class inventory moves it by <= 0.5, so the gap is not an estimand mismatch.
+- The fit test does not track the failure. Among the largest errors are unflagged systems (zero-shot-short,
+  vsps-short); the smallest error belongs to a flagged one (tags-fuse2-short, -2.7).
+
+Paired differences (coarse):
+
+  comparison                      raw                   IFCR                  LB_ov                 P2cal
+  fuse2-detailed - P1-short       -12.8                 -10.1 [-12.1, -6.9]   -5.5 [-7.2, -3.9]     -2.3 [-4.3, 0.0]
+  fuse2-short - P1-short          -2.7 [-4.7, -0.7]     -1.7 [-3.6, +0.7]     -1.2 [-2.8, +0.4]     -0.6
+
+- IFCR's detailed gap lies outside the second-panel bound's CI. A4's pre-registered criterion (b), with the panel
+  standing in for gold, FAILS.
+- Its short-mode "n.s." agrees with the panel only qualitatively.
+- The plasmode in 2(a) predicts both the direction and the size of this under-correction.
+
+=====================================================================================================================
+4. NOVELTY (arXiv API and OpenAlex, about 22 queries, then both rate-limited; Semantic Scholar returned nothing (429). Full text read: Jain-White-Radivojac
+   AAAI 2017 (1702.00518); Claesen et al. 1504.06837; VCap 2605.28023 abstract)
+=====================================================================================================================
+No paper applies "system as an extra capture occasion + imitator-family selection" to caption precision.
+Closest priors:
+- Latent-class / no-gold-standard test evaluation: Dawid & Skene 1979; Hui & Walter 1980; Vacek, Biometrics 1985
+  (10.2307/2530967); Torrance-Rynard & Walter, Stat Med 1997; Albert & Dodd, Biometrics 2004
+  (10.1111/j.0006-341x.2004.00187.x): dependence biases the estimates, and goodness-of-fit cannot detect it.
+  2024 BMC MRM 10.1186/s12874-024-02432-x: detecting conditional-independence departures.
+  IFCR is a one-sided (perfect-specificity references) special case. Its failure mode is exactly this
+  literature's warning.
+- Crowd species estimation: Trushkowsky et al. ICDE 2013 / CACM 2015 (10.1145/2845644); Chung et al. SIGMOD 2016
+  (1507.05591); Chung, Krishnan, Kraska, VLDB 2017 (DQM, 1611.04878); crowdtesting (1805.03218); Luggen et al.
+  ISWC 2019 (KG class completeness).
+- PU performance recovery: Jain, White & Radivojac AAAI 2017 (class prior plus SCAR); Claesen 2015; PSP
+  (Jain 2016); Schultheis KDD 2022.
+- Capture-recapture for literature search: Kastner et al., J Clin Epidemiol 2009 (from memory, not re-fetched).
+- VCap 2605.28023 is not a scoop: "hypergeometric" there describes an RL reward with a VLM adjudicator.
+Delta: replicate-annotator U-statistic components and a system-specific selection family. This is real but small,
+and its key assumption is refuted on the paper's main dataset.
+
+=====================================================================================================================
+5. REVIEWER
+=====================================================================================================================
+Strongest objection: the correction assumes five exchangeable, conditionally independent KTVIC captions.
+- The data refute this (lag-1 band).
+- An independent human panel shows IFCR under-corrects every model by 3-8 points (short / detailed) and up to 18
+  (zero-shot).
+- The fit test cannot see the failure.
+- Where instance labels exist, direct measurement makes the estimator unnecessary.
+Fix: drop IFCR as a contribution and use the two-panel evidence (existing human captions only).
+
+=====================================================================================================================
+6. DELIVERABLE FOR THE PAPER
+=====================================================================================================================
+- Main: the existing scripts/second_panel.py tables, already run (R5_01).
+  - P against KTVIC refs, the OpenViIC panel, and their union (union = lower bound).
+  - The human-calibrated real fraction.
+  - Delta-P fuse2 - P1 under each gold.
+- Optional appendix ("why not correct from one panel?"): one table of raw / IFCR / LB_ov / P2cal with CIs for
+  P1-short, fuse2-short and fuse2-detailed, plus the caption-index Jaccard matrices for KTVIC and COCO.
+  - Implementation: port V_V1/ifcr_panel2.py and A4's tilt.py components into scripts/second_panel.py as --ifcr
+    (about 80 lines). CPU about 2 min. GPU 0.
+- No scripts/ifcr.py as a method.
+- Jobs 59a/59b (UIT-ViIC in-domain, COCO instance gold) remain useful for the precision story directly. They are
+  no longer needed as IFCR's kill test.

@@ -1,0 +1,545 @@
+# A8: label-free self-training on unlabelled images (pilot, literature, designs)
+
+Direction: pseudo-label images that have no Vietnamese caption with our own adapters, keep only what a
+gold-free filter accepts, and train a student that beats fuse2 on KTVIC and transfers better.
+Date: 2026-10-12. Every number comes from existing artifacts; no GPU was used.
+Code and raw outputs are in this folder (section 7). The write tool blocks .md report files from sub-agents,
+so this report is .txt.
+
+## 0. Bottom line
+
+### 0.1 Agreement between DIFFERENT systems cannot manufacture labels better than the teacher
+
+"Different systems" here means different prompts, adapters, models, a detector, or a gold-free label model.
+k-of-n agreement among them slides along a fixed precision/recall frontier.
+
+- **COCO-5000, judged by human instance labels.** Keep the teacher's mentions that another source confirms:
+  - dP +6.5 [+6.1, +7.0]
+  - dR -3.8 [-4.1, -3.4]
+  - dF1 +0.3 [-0.0, +0.6]
+- **KTVIC test, human-parity protocol (1v4).** Same filter: dF1 -6.1 [-7.9, -4.4].
+- **Machine vs human ceiling.** The best machine construct stays about 5 F1 and 12 P below a fuse2-style
+  target built from two human references: COCO 86.0/73.2, vs at most 83.9/66.5 for any machine consensus.
+- **Systematic errors survive voting.** 25.7% of the teacher's false positives survive at least-3-of-5
+  agreement. They are mainly "dining table" and "chair", plus a matcher artifact: bare "kéo" (to pull) is
+  read as scissors.
+- **Label model.** Dawid-Skene ranks items worse than plain vote counting (AUROC 0.779 vs 0.798).
+
+Committee, co-training and detector-agreement designs are therefore killed.
+
+### 0.2 Voting over temperature samples of ONE adapter improves P and R together
+
+This is the only construct that did. Data: 1,500 seen train images, 6 fuse2 samples each.
+
+- **"Vote-then-fuse" (VTF).** VTF keeps the sample sentences whose every object has at least 3 of 6 votes,
+  then takes at most 2 by greedy set cover.
+  - VTF: P 72.2 [70.9, 73.6] / R 67.1 [65.5, 68.5] / F1 69.6.
+  - One sample: F1 63.0.
+  - Object-consensus MBR pick: F1 66.2.
+  - VTF vs MBR pick: dF1 +3.3 [+2.5, +4.2]. VTF is also shorter (17.6 vs 24.6 words).
+- **This is not memorisation of the trained references.** Against the annotators that never entered any
+  training target for that image, VTF beats one sample by:
+  - dP +7.0 [+5.9, +8.1]
+  - dR +5.2 [+3.9, +6.5]
+  - dF1 +6.4 [+5.4, +7.4]
+
+  The samples themselves score 18 F1 below the targets they were trained on, and only 3.1% of their sentences
+  are verbatim copies of that image's references.
+- **Two warnings.**
+  - Greedy committees of training seeds on unseen images gain about 0 from voting: +0.3 [-0.5, +1.2].
+  - E5 (gold-selected self-samples on seen images, retrained) was null:
+    - short dF1 -0.8 [-2.4, +0.7]
+    - detailed dF1 +0.2 [-1.2, +1.6]
+
+  The open quantity is VTF vs GREEDY on unseen images. Both designs below are gated on it.
+
+### 0.3 Critical literature fact
+
+UIT-OpenViIC is the natural in-domain pool: 13.1k Vietnam images with 61k human captions. It contains near
+duplicates (SSCD >= 0.8) of:
+- 401 of the 558 KTVIC test images (71.9%)
+- 2,464 of the 3,769 KTVIC train images (65.4%)
+
+Source: ViCLIP-OT, arXiv 2602.22678, App. B.
+
+- Any pool must be de-duplicated.
+- Side benefit: about 400 KTVIC test images also have independent, existing human captions. That is a second
+  annotator panel for the paper's evaluation.
+
+### 0.4 Recommendation and confidence
+
+| Design | Cost | Probability the gate passes | Probability of beating fuse2 on KTVIC |
+|---|---|---|---|
+| D1 (hidden-label OpenViIC pool) | about 8.5 GPU-h; first 2.2 GPU-h are a decisive gate | about 50% | about 20% |
+| D2 (cross-fitted, label-free twin of the queued RFT) | gate about 0.5 GPU-h | — | about 10% |
+
+D2 is valuable mainly as the "selection with vs without gold" ablation.
+
+## 1. Data and protocol
+
+### COCO-5000 (Karpathy test, val2014)
+
+Existing Vietnamese caption sources, one caption per image each (data/results/coco5000, coco5000_vcd):
+- zero-shot Qwen2.5-VL-7B, short prompt
+- zero-shot, detailed prompt
+- zero-shot, detailed prompt with VCD decoding
+- old VSPS adapter, short prompt
+- old VSPS adapter, detailed prompt
+
+Scoring:
+- Mentions: `score_coco_probe.vi_classes`, mapping text to the 80 COCO classes.
+- Main gold: instance classes only, from the human boxes. The frozen instances + English-references gold is
+  also in `pilot_coco.txt`.
+- Human calibration: one English reference (Rohrbach synonyms) scored against the same instance gold.
+- P = sum|M&G| / sum|M| (micro); R = per-image mean; F1 = harmonic mean (`object_prf.py` definitions).
+- CIs: 95% percentile bootstrap over images, B = 2000, one shared index matrix, so paired deltas use the same
+  draws.
+
+### KTVIC test (558 images that no adapter trained on)
+
+- Objects: the KTVIC lexicon (`rescap.chair.objects_in`).
+- The 1v4 protocol of `human_parity.py`: each source is scored against the union of 4 of the 5 references,
+  averaged over 5 folds.
+- Reimplementation check: one held-out human gives 85.3 / 46.9, identical to
+  `data/results/human_parity.json`.
+
+### Within-model samples
+
+- File: `/root/ncs-data/e5_round1/samples.jsonl` on n3.
+- Contents: fuse2 s42, detailed prompt, T 0.8, top-p 0.95, 6 samples per image, 1,500 train (seen) images.
+- No multi-sample file exists for unseen images. The queued cross-fitted RFT and the
+  "object-consensus MBR over 6 samples" control will be the first ones.
+
+## 2. Pilot results
+
+### 2.1 COCO-5000, human instance gold (`pilot_coco.py`, `calib_coco_fused_humans.py`, `pilot_ds.py`)
+
+| Label source | P [95% CI] | R [95% CI] | F1 | obj/cap |
+|---|---|---|---|---|
+| zero-shot detailed (teacher-like) | 78.6 [77.9, 79.3] | 67.5 [66.6, 68.3] | 72.6 | 2.22 |
+| zero-shot short | 89.8 [89.0, 90.6] | 48.0 [47.0, 49.0] | 62.6 | 1.19 |
+| one English human reference | 92.5 [91.8, 93.1] | 56.5 [55.6, 57.5] | 70.2 | 1.37 |
+| two human references, fuse2 rule | 86.0 [85.4, 86.7] | 73.2 [72.3, 74.0] | 79.1 | 2.03 |
+| named by >= 1 of 5 sources | 72.6 | 75.4 | 74.0 | 2.75 |
+| >= 2 of 5 | 83.9 [83.3, 84.7] | 66.5 [65.7, 67.4] | 74.2 | 2.01 |
+| >= 3 of 5 | 90.9 [90.2, 91.6] | 53.8 [52.9, 54.7] | 67.6 | 1.40 |
+| >= 4 of 5 | 95.3 | 41.3 | 57.6 | 0.97 |
+| teacher, kept if >= 1 of 4 others agree | 85.1 | 63.7 | 72.9 | 1.89 |
+| object-consensus MBR pick of the 5 captions | 80.7 | 68.2 | 73.9 | 2.18 |
+| greedy fusion of 2 of the 5 captions | 73.6 | 74.5 | 74.0 | 2.67 |
+
+**Paired deltas vs the teacher (zero-shot detailed)**
+- Keep only confirmed mentions: dP +6.5 [+6.1, +7.0], dR -3.8 [-4.1, -3.4], dF1 +0.3 [-0.0, +0.6].
+  - The 1,637 of 11,084 unconfirmed mentions are 40.9% correct [38.4, 43.3].
+  - Requiring 2 confirmers: dF1 -5.6.
+  - Same-model confirmers only: dF1 -0.6.
+  - VSPS as the only confirmer: dF1 -10.3.
+- MBR pick: dF1 +1.3 [+1.0, +1.6].
+- Fusion of 2: dF1 +1.4 [+1.0, +1.8], at dP -5.0.
+
+**Dawid-Skene**
+- It misestimates the source reliabilities: estimated P(mention | present) is 0.98-0.99, the true value
+  0.60-0.87.
+- It ranks items worse than vote count (AUROC 0.779 vs 0.798) and its frontier is dominated. The sources share
+  a base model, so conditional independence fails.
+- The vote-count AUROC (0.798) equals the hidden-state existence probe (0.807), which was killed for showing
+  no selection effect.
+- External reference: CapMAS (arXiv 2412.15484) measures 73.5 AUROC for "object in m of 40 samples", 81.4 for
+  a per-object yes/no probe and 61.5 for a detector.
+
+**Systematic errors (`audit_classes.py`)**
+- 610 of the teacher's 2,376 false positives (25.7%) survive at least-3-of-5 agreement.
+- Top survivors: dining table 198, chair 103, scissors 36, laptop 35.
+- **Matcher artifact (`audit_keo.py`).** Every one of the teacher's 253 "scissors" mentions comes from bare
+  "kéo" (the verb "to pull", or "ngăn kéo" = drawer). 217 are false, and they understate P by:
+  - 2.0 points for zero-shot detailed
+  - 2.0 points for VCD
+  - 0.6 points for VSPS detailed
+
+  This also inflates the paper's COCO CHAIR_i for zero-shot detailed.
+- **Fix:** drop bare "kéo" from the scissors entry of `coco80_vi.json`, keeping "cái kéo" and "cây kéo", or
+  mark it `_rui_ro`.
+
+**Reading.** The first confirmer buys about 1.7 P per point of R, which is a better rate than shortening the
+caption (detailed to short buys 0.57 P per R). F1 does not move. The best machine construct stays 5 F1 and
+12 P below a fused-two-human target.
+
+### 2.2 KTVIC test, unseen images, 1v4 (`pilot_ktvic.py`)
+
+| Label source | P [95% CI] | R [95% CI] | F1 |
+|---|---|---|---|
+| one human caption | 85.3 [84.1, 86.6] | 46.9 [45.2, 48.7] | 60.5 |
+| fuse2 short | 72.9 [70.4, 75.4] | 48.5 [46.0, 50.9] | 58.2 |
+| fuse2 detailed (teacher) | 64.7 [62.5, 67.0] | 62.3 [60.0, 64.6] | 63.5 |
+| short: >= 2 of 3 adapters (P1 s42, P1 s43, fuse2) | 77.7 | 44.1 | 56.2 |
+| short: 3 of 3 adapters | 84.6 | 34.8 | 49.3 |
+| teacher kept if a P1 adapter agrees | 77.2 | 45.7 | 57.4 |
+| teacher kept if Grounding-DINO (COCO-80) agrees | 70.9 | 17.8 | 28.5 |
+| greedy fusion of 2 of the 6 adapter captions | 62.4 | 66.6 | 64.4 |
+
+**Paired deltas vs the teacher (fuse2 detailed)**
+- Adapter confirmation: dP +12.5 [+10.4, +14.6], dR -16.6, dF1 -6.1 [-7.9, -4.4]. The 733 of 1,760
+  unconfirmed mentions are 47.2% correct against the references (a lower bound: reference gold is partial).
+- Committee fusion: dF1 +0.9 [+0.1, +1.8], dP -2.3.
+- Grounding-DINO's COCO-80 vocabulary misses KTVIC objects, so a detector veto is useless in this domain.
+
+**Homogeneous greedy committees (`pilot_seeds.py`, unseen images, scored against all 5 references).**
+Three seeds of the old VSPS recipe:
+- at least 2 of 3: dF1 +0.3 [-0.5, +1.2]
+- VTF at k=2: dF1 +0.2 [-0.7, +1.1]
+
+**E5, retrained on gold-selected self-samples of seen images (paired vs fuse2):**
+- short: dF1 -0.8 [-2.4, +0.7]
+- detailed: dF1 +0.2 [-1.2, +1.6]
+
+### 2.3 Within-model temperature samples, 1,500 SEEN train images
+
+Scripts: `pilot_samples.py`, `vote_fuse.py`, `pilot_vtf_1v4.py`, `pilot_heldout.py`, `memo_check.py`.
+
+**Against all 5 references**
+
+| Construct | P [95% CI] | R [95% CI] | F1 [95% CI] | obj/cap | words |
+|---|---|---|---|---|---|
+| one sample (T 0.8) | 63.9 [62.5, 65.3] | 62.1 [60.7, 63.6] | 63.0 [61.8, 64.2] | 3.04 | 22.8 |
+| object in >= 3 of 6 samples (a set, not a caption) | 71.3 | 68.5 | 69.9 | 3.01 | – |
+| object-consensus MBR pick (round-1 ablation) | 60.9 | 72.6 | 66.2 [65.1, 67.2] | 3.77 | 24.6 |
+| fuse2 rule on the samples, no vote | 49.9 | 82.0 | 62.1 | 5.33 | 46.7 |
+| VTF, k=3, at most 2 sentences | 72.2 [70.9, 73.6] | 67.1 [65.5, 68.5] | 69.6 [68.3, 70.7] | 2.89 | 17.6 |
+| VTF, k=4, at most 2 sentences | 78.5 | 58.4 | 67.0 | 2.27 | 14.4 |
+
+VTF vs MBR pick: dP +11.4, dR -5.5, dF1 +3.3 [+2.5, +4.2].
+
+**Under 1v4**
+
+| Construct | P | R | F1 |
+|---|---|---|---|
+| one human | 85.1 | 49.3 | 62.4 |
+| one sample | 61.1 | 63.6 | 62.3 |
+| VTF, k=3, at most 2 sentences | 69.1 | 68.6 | 68.8 |
+| VTF, k=4, 1 sentence | 77.0 | 56.0 | 64.8 |
+
+VTF k=3 vs one sample: dF1 +6.5 [+5.5, +7.4]. VTF beats one human on F1 through recall, but stays 8-16 P
+below a human.
+
+**Against the 3.32 annotators per image never used in any training target**
+- One sample: 52.0 / 68.4 / 59.1.
+- VTF k=3: 59.0 / 73.6 / 65.5, i.e. dP +7.0 [+5.9, +8.1], dR +5.2 [+3.9, +6.5], dF1 +6.4 [+5.4, +7.4].
+- The fuse2 detailed training target scores 77.5 F1 here. This is optimistic, because `consensual()` read
+  those captions, but it is 18 F1 above the samples, so the samples are not copies of their targets.
+
+**Diversity and copying**
+- Mean pairwise Jaccard of the object sets: 0.509.
+- All 6 samples share one object set on only 1.9% of images.
+- 3.1% of sampled sentences are verbatim copies of that image's references, against 0.00% for a random other
+  image's references. For VTF sentences the figure is 4.6%.
+
+**Why 2.1-2.2 and 2.3 differ.**
+- Temperature samples of one adapter make mostly independent, random errors that a vote removes.
+- Different systems differ systematically, mostly in how many objects they name, so their intersection keeps
+  the least verbose source's recall.
+- Greedy seed-replicas are nearly identical.
+
+Cross-image estimate, NOT a paired measurement: VTF on seen images is 69.6 F1, against 64.4 for greedy fuse2
+detailed on test images, a gap of about +5. The gate measures it on the same unseen images.
+
+## 3. Literature (full texts read by two sub-agents and me; at least 26 searches; arXiv IDs)
+
+### 3.1 Self-training for captioning and VLMs: small gains; selection beats imitating the mode
+
+**BLIP CapFilt (2201.12086)**
+- +1.9 COCO CIDEr at 14M images.
+- Nucleus sampling beats beam once filtered.
+- A filter that shares the captioner's parameters flags 8% instead of 25% and scores lower (Table 4):
+  confirmation bias.
+- A new model trained from scratch is about as good as continuing the old one (Table 13).
+
+**UCM (2201.02010)**
+- +1.6 CIDEr from 280k unlabelled images.
+- A second round adds 0.
+
+**Self-Distillation FSIC (WACV 2021)**
+- Committee of 3 captioners trained on re-randomised batch splits (not cross-fitted), with
+  confidence-weighted pseudo-captions.
+- +2.5 CIDEr at 1% COCO labels.
+
+**MBR and QE finetuning (2309.10966): the closest analogue**
+- Self-training on the base model's own beam output HURTS: COMET20 57.79 -> 57.08.
+- Self-MBR over 256 samples on 200k unlabelled sentences helps: 59.94, +2.15 over beam.
+- It even beats MBR decoding on COMET20 (59.94 vs 59.35), but not on BLEURT or MetricX.
+
+**Noisy Student (1911.04252)**
+- A student warm-started from the teacher stalls: 86.4 vs 86.9 trained from scratch.
+- Noise matters.
+- ReST-EM (2312.06585) restarts from the base model every round.
+
+**Self-labelling for captioning (2305.02297)**
+- In-distribution unlabelled images: +12.5 CIDEr with 10 labels.
+- Out-of-distribution unlabelled images (CC12M): -0.5.
+- Likelihood filtering hurts because it favours short captions.
+
+**Model collapse**
+- Gerstgrasser et al. (2404.01413): accumulating synthetic data with the real data keeps error bounded;
+  replacing real data does not.
+- Shumailov et al. (Nature 2024): keeping 10% original data mostly prevents degradation.
+- Recap-DataComp-1B: all-synthetic CLIP training collapses ImageNet accuracy (36.0 vs 69.7).
+
+### 3.2 Consistency and voting signals
+
+**FactTune-MC (2311.08401)**
+- DPO from the consistency of atomic claims across samples.
+- Llama-2 error rate 0.252 -> 0.154, but correct facts fall 19.03 -> 11.31: the precision-for-coverage trade
+  seen in 2.1.
+
+**Atomic Self-Consistency (2405.13131)**
+- 50 samples, sentence clusters kept by support count, then an LLM rewrite. Inference only.
+- QAMPARI F1 18.07 (USC) -> 19.46.
+
+**IC3 (2302.01328)**
+- An LLM summarises 10 samples of one captioner. Inference only. K=10 ≈ K=100.
+
+**Self-Validation (2601.22451, Jan 2026)**
+- Filter-then-aggregate over N=3 samples on Qwen2.5-VL-7B: CHAIR_I 9.9 -> 3.1, but F1 74.4 -> 70.6.
+- Inference only; aggregation by LVLM rewriting.
+
+**Voting rewards and RL**
+- TTRL (2504.16084) and MM-UPT (2505.22453) work for discrete answers. MM-UPT fails on hard data
+  (49.47 -> 44.11).
+- TTRV (2510.06783): binary majority votes hurt 4 of 5 VLM benchmarks; frequency-weighted votes helped.
+- SRT (2505.21444): vote-based RL collapses after about 1,000 steps unless items with under 60% majority are
+  dropped.
+- RubiCap (2603.09160): majority of K=5 external VLMs as rubric elements, then GRPO. Win rate rises with
+  committee size: 58.2 -> 65.2 -> 67.6.
+
+**Bias of self-judging**
+- HalDec-Bench (2511.20515): models judge their own captions worse. Gemini-3-Pro: AUROC 54.2 on its own
+  captions vs 79.8 on average.
+
+### 3.3 Detector- and agreement-filtered pseudo-captions that already exist (partial scoops)
+
+**SENTINEL (2507.12455)**
+- Self-sampled captions; an object is labelled only when two detectors agree; uncertain objects are ignored;
+  used for DPO.
+- Object HalBench response hallucination: two detectors 6.6, vs 12.3-14.3 with one.
+- Qwen2.5-VL-7B: 15.0 -> 4.7.
+
+**CAPTURE self-loop (2405.19092)**
+- OWLv2 filter plus LLM merge, then SFT.
+- The filter adds little: 56.68 with it vs 56.43 without.
+
+**Other close work**
+- HalluciDoctor (2311.13614): cross-MLLM consistency on GPT-written instruction data. Over-filtering kills
+  MME: threshold 0.9 gives 739 vs 1207 at 0.5.
+- Embodied captioning LD-CPS (2504.08531): LLM consensus over multi-view captions, then fine-tuning.
+- Visual Fact Checker (2404.19752): multiple captioners, then detector/VQA checks, then LLM fusion.
+  Training-free.
+- Image Textualization (2406.07502) and Woodpecker (2310.16045): detector verification.
+- OVFact (2507.19262): detector-grounded precision filter.
+- RLAIF-V (2405.17220): claim-level yes/no checks by a labeller model.
+
+### 3.4 Scoop verdicts
+
+| Idea | Verdict |
+|---|---|
+| object-level k-of-n vote over one adapter's own samples as the SFT pseudo-label filter for captioning on unlabelled images | not found |
+| deterministic, extractive, LLM-free fusion restricted to voted objects | not found (ASC, IC3, VFC and Self-Validation merge with an LLM or LVLM at inference) |
+| committee of adapters trained on disjoint halves, for captioning | open, but the pilot shows little to gain |
+| object-majority RL for captioning | open but risky (TTRV, SRT); RubiCap uses external committees |
+| self-training for low-resource-language captioning | open |
+| detector-verified self-training (English) | scooped (SENTINEL, CAPTURE, OVFact) |
+
+### 3.5 Resources a reviewer will raise
+
+- **UIT-OpenViIC (2305.04166).** 13,100 Vietnam images (train 9,088 / val 2,011 / test 2,001), 61,241 human
+  captions of 17.6 words each, open Google-Drive download, "non-commercial research". It contains about 72%
+  of KTVIC test and 65% of KTVIC train (above).
+- **UIT-EVJVQA.** About 4.9k images; KTVIC is a subset of it (about 550 unused).
+- **OpenViVQA.** 11.2k images from the same lab and crawl, so high overlap risk.
+- **COCO-35L (2205.12522).** Public machine-translated Vietnamese captions, 5 per COCO Karpathy-train image
+  (`coco_mt_train.jsonl.bz2`). A COCO pool would need this MT baseline. MT trails native Vietnamese by about
+  11 BLEU on UIT-ViIC (2402.05512).
+- **XM3600.** 7,350 human Vietnamese captions, CC BY 4.0, no overlap with OpenViIC. 1,855 of its images have
+  dense Open Images V7 human-verified positive AND negative labels (about 9.9 positives and 5.5 negatives
+  each). That makes it a federated, instance-like out-of-domain judge, but it needs a vocabulary map from
+  Vietnamese to Open Images classes.
+
+## 4. Designs (at most 2)
+
+### 4.0 Shared mechanism, pre-registered from 2.3 before any unseen-image data is seen
+
+- Sample n=6 detailed captions with T 0.8, top-p 0.95, top-k 0 (the `e5_sample.py` defaults).
+- Votes are counted per KTVIC-lexicon object.
+- A sentence is admissible only when all its objects have at least k=3 votes.
+- Greedy set cover over admissible sentences: at most 2 sentences for the detailed target, at most 1 for
+  the short target.
+- Fallback when nothing is admissible: the object-consensus MBR pick.
+- VTF only ever reuses sentences the teacher wrote; it cannot add content.
+- Implementation: `vote_fuse.py`, which has a `_check()`.
+
+### 4.1 D1: VTF self-distillation on a hidden-label pool (UIT-OpenViIC)
+
+**Pool**
+- OpenViIC train de-duplicated against KTVIC train+test with `scripts/near_dup.py`. Use a conservative
+  threshold, CLIP cosine >= 0.90, CPU on n3. Expect about 6k of the 9,088 images to remain.
+- Draw 800 images; their captions stay hidden during training.
+- Teacher: the existing fuse2_s42, which never saw these images.
+- These are in-distribution images (same crawl as KTVIC); the self-labelling literature reports -0.5 for
+  out-of-distribution pools.
+
+**Step 0: label and gate (2.2 GPU-h)**
+- Per image (3090): 6 samples (about 6 s, batched) + greedy detailed (about 3 s) + greedy short (about 1 s).
+  800 x 10 s = 2.2 h.
+- On CPU, compare VTF, greedy, MBR pick and one held-out human against the hidden OpenViIC references:
+  1v4 object P/R/F1, paired bootstrap B=2000, plus CIDEr-D as a check independent of the object extractor.
+- **KILL** if any of these holds, and report a negative result:
+  - VTF minus greedy < +1.5 F1;
+  - the CI includes 0;
+  - P(VTF) < P(greedy).
+
+**Step 1: three students with matched data and steps (2.4 GPU-h)**
+- Each student continues fuse2_s42 (`train_stage2.py --adapter`) for 1 epoch on:
+  - 1,600 pseudo rows (detailed VTF k=3 with at most 2 sentences, and short VTF with 1 sentence);
+  - plus 1,600 replayed KTVIC fuse2 rows.
+- 400 steps x 7.3 s = 0.8 h per arm.
+- Arms:
+  - V: VTF labels.
+  - G: the teacher's greedy captions. Plain self-training / confirmation-bias control; the MBR-finetuning
+    literature predicts G <= fuse2.
+  - H: OpenViIC's human captions with the fuse2 recipe (consensual + fused 2). Supervised skyline; report
+    the fraction of H's gain that V recovers.
+
+**Step 2: evaluation (about 3.4 GPU-h plus 0.45 h for fuse2 baselines)**
+- KTVIC test, both prompts: object P/R/F1, CIDEr-D, CHAIR-vi.
+- OpenViIC test: 300 images, de-duplicated against KTVIC train, both prompts.
+- COCO Karpathy-test: 500 images, short prompt, instance gold. The vote uses the KTVIC lexicon and the judge
+  uses COCO-80, so selection and judge do not share an extractor.
+- UIT-ViIC test: 231 images, short prompt, instance gold.
+
+**Total: about 8.5 GPU-h.** First extension if V > G: a V student trained from the base model (3.8 h,
+step-matched to fuse2), as Noisy Student and ReST-EM recommend.
+
+**Success requires all of:**
+- V - fuse2 on KTVIC object-F1 exceeds the seed spread (fuse2 s42 vs s43), paired p < 0.05;
+- V does not lose precision on COCO or UIT-ViIC instance gold;
+- V > G.
+
+**Confirmation-bias controls**
+- Unseen images only (the fix for E5).
+- The selection (vote over 6 samples) differs from the student's decoding (greedy), and arm G isolates
+  imitation.
+- Human data is replayed in every arm (accumulate, never replace), and there is one round only.
+- External judges: hidden OpenViIC human references, COCO/UIT-ViIC instance labels, CIDEr.
+- k, n and the sentence budget are pre-registered.
+- A per-class audit on COCO checks whether voting removed only random errors (2.1 shows systematic ones
+  survive).
+- No LLM rewriting step.
+
+**Closest prior and delta**
+- Closest prior: MBR finetuning (2309.10966), which selects one whole output by a string utility, for NMT.
+- ASC, IC3, Self-Validation and VFC fuse with an LLM or LVLM at inference.
+- SENTINEL and CAPTURE filter with detectors; our pilot shows detectors are useless on KTVIC objects.
+- D1's delta: an object-level vote over one adapter's own samples, realised by extractive set cover, used as
+  SFT pseudo-references on unseen images in a low-resource language, gated by hidden human references and
+  judged by instance labels.
+
+**Confidence**
+- The gate gives a clean answer: high.
+- The gate passes: about 50%.
+- The student beats fuse2 on KTVIC: about 20%. E5's null result and UCM/FSIC-sized gains (1-3 points) keep
+  this low.
+
+### 4.2 D2: cross-fitted VTF on KTVIC train, the label-free twin of the queued cross-fitted RFT
+
+**Inputs**
+- The 6 samples the queued fuse2-A adapter (trained on half A) draws on the unseen half B.
+- Plus greedy fuse2-A captions on 600 half-B images (about 0.5 GPU-h). This is also the cheapest early read
+  of D1's gate quantity: VTF vs greedy on unseen KTVIC images, scored against half B's own references.
+
+**Gate (CPU)**
+- Compare VTF vs RFT's gold-selected pick vs one sample vs MBR vs greedy (1v4).
+- **KILL** if VTF scores more than 3 F1 below the gold-selected rows, or does not beat greedy.
+
+**Training**
+- Only if the gate passes AND the gold cross-fitted RFT itself beats fuse2.
+- Needs fuse2-B samples on half A (1,884 x 6 s = 3.1 h).
+- One student trained from base on the fuse2 rows plus one VTF detailed row per image: 2,827 steps, 5.7 h.
+- Plus evaluation, 0.6 h. Total about 9.9 GPU-h.
+
+**Value:** on identical samples, it measures how much selection needs gold.
+
+**Closest prior and delta.** Tri-training (2-of-3 agreement), DRST and cross-prediction (cross-fitted
+estimation) exist, but nobody uses cross-fitted teachers for captioning.
+
+**Confidence that it beats fuse2:** about 10%. High value as an ablation.
+
+### 4.3 Rejected by the pilot or the literature
+
+- **Cross-adapter or co-training agreement:** KTVIC dF1 -6.1; COCO +0.3, not significant.
+- **Detector agreement on KTVIC:** R 17.8.
+- **Dawid-Skene weighting:** dominated by the vote count.
+- **VTF on seen train images, zero labelling cost:** E5 shows retraining on gold-selected seen-image samples
+  is null.
+- **A COCO pool without the COCO-35L MT baseline.**
+- **Object-majority RL (TTRL for captions):** collapse risk (SRT, TTRV); revisit only after D1 succeeds
+  offline.
+
+## 5. Caveats
+
+- On KTVIC and OpenViIC, the KTVIC-lexicon extractor both selects (votes) and scores, which risks metric
+  targeting. MBR finetuning raises the same caveat for BLEURT. Use CIDEr-D and the COCO-80/instance judge.
+- VTF captions are about 25% shorter than fuse2 detailed (17.6 vs 24.0 words). This interacts with the
+  Gaussian length penalty of detailed-mode CIDEr-D, so report length. k=2 gives 21.2 words.
+- OpenViIC has no explicit licence: release IDs and annotations only. Its captions are longer (17.6 vs 12.1
+  words), which matters only for arm H.
+- The COCO human calibration matches English references with synonyms and Vietnamese captions with
+  `coco80_vi.json`; matcher differences enter the human-vs-machine gap (see the "kéo" artifact).
+- The 6-second, 6-sample throughput is an estimate. It comes from 0.87 s per short caption on 3090 4-bit
+  (`data/vram`) and 2.06 s per detailed caption on a 4090 (`latency_main_s42.json`). Training uses
+  7.3 s/step.
+
+## 6. Side findings for the paper
+
+1. **Second annotator panel.** About 400 KTVIC test images have independent human captions in UIT-OpenViIC
+   train. This existing second panel can test whether fuse2's precision gap to humans (about 12 points)
+   comes from KTVIC annotators' choice of objects.
+2. **The "kéo" artifact.** It understates zero-shot detailed precision on COCO-5000 by about 2.0 points
+   (CHAIR_i inflated).
+3. **Extra references for training images.** About 65% of KTVIC train images have about 4.7 more human
+   captions in OpenViIC: existing extra partial references for the fusion story.
+
+## 7. Files in this folder
+
+| Script | Output |
+|---|---|
+| `coco_gold_cache.py` | `coco5000_gold.json` |
+| `pilot_coco.py` | `pilot_coco.txt` |
+| `pilot_ds.py` | `pilot_ds.txt` |
+| `calib_coco_fused_humans.py` | `calib_coco_fused_humans.txt` |
+| `audit_classes.py` | `audit_classes.txt` |
+| `audit_keo.py` | `audit_keo.txt` |
+| `pilot_ktvic.py` | `pilot_ktvic.txt` |
+| `pilot_seeds.py` | `pilot_seeds.txt` |
+| `pilot_samples.py` | `pilot_samples.txt` |
+| `vote_fuse.py` (VTF + `_check`) | `pilot_vote_fuse.txt` |
+| `pilot_vtf_1v4.py` | `pilot_vtf_1v4.txt` |
+| `pilot_heldout.py` | `pilot_heldout.txt` |
+| `memo_check.py` | `memo_check.txt` |
+
+Inputs copied read-only from n3: `e5_samples_train.jsonl` (`/root/ncs-data/e5_round1/samples.jsonl`) and
+`xfit_A.txt`.
+
+Run from this folder:
+```
+NCS_DATA=/mnt/d/vsps_image_captioning/data nice -n 15 python3 <script> [coco5000_gold.json | e5_samples_train.jsonl]
+```
+
+## Sources (arXiv IDs unless noted)
+
+- **Self-training and confirmation bias:** 2201.12086, 2212.13563, 2201.02010,
+  WACV 2021 Self-Distillation for Few-Shot Image Captioning, 2309.10966, 1911.04252, 2312.06585, 2305.02297,
+  1908.02983, 2202.07136, 2306.00265, 2309.16598, 1911.01986
+- **Model collapse:** 2404.01413, 2305.17493 (Nature 2024), 2406.08478
+- **Consistency and voting:** 2311.08401, 2405.13131, 2302.01328, 2601.22451, 2412.15484, 2504.16084,
+  2505.22453, 2510.06783, 2505.21444, 2603.09160, 2511.20515
+- **Filtered pseudo-captions:** 2507.12455, 2405.19092, 2311.13614, 2504.08531, 2404.19752, 2406.07502,
+  2310.16045, 2507.19262, 2405.17220, 2310.20550, 2407.08303, 2405.19716, 2405.15973, 2405.14622
+- **Data and resources:** 2205.12522, 2402.05512, 2305.04166, 2305.04183, 2302.11752, 2401.08100, 2602.22678

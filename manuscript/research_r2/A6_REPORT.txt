@@ -1,0 +1,573 @@
+A6 — Data and compute efficiency of multi-reference SFT on one RTX 3090
+Round-2 novelty research, direction A6, 12 Oct 2026. Markdown in a .txt file: the subagent harness refuses
+REPORT.md, so the coordinator asked for this name instead.
+
+Scope and inputs. Only existing KTVIC labels and existing runs are used. There are no new labels and no AI-silver
+labels; the stated constraints hold throughout. Pilot code and raw outputs sit next to this file (section 8).
+
+Incident note.
+- My n3 job (open_clip ViT-H/14 in fp32, 12 threads, CPU only) contributed to the RAM exhaustion that crashed n3 at
+  08:09 UTC. It was killed together with a training run.
+- Only the 558 test embeddings survived (/root/r2/A6/emb).
+- The surrogate pilot was re-run locally with an ONNX export of CLIP ViT-B/16 (clip_embed_onnx.py, 3 threads,
+  about 0.35 s/image).
+- No further work was run on n2/n3.
+
+
+## 0. Bottom line
+
+1. One idea survives: "What is a second reference worth in images?" It is an analysis contribution, not a new
+   method: a budget-matched, metric-dependent references-vs-images exchange rate for SFT of a pretrained VLM on
+   partial human references.
+   - Part (a): the number of references fused into a target sets the recall operating point.
+   - Two independent pilots support (a):
+     - the trained models inherit their targets' offline P/R ratios;
+     - a frozen-feature surrogate reproduces the trained fuse2-detailed vs P1 deltas almost exactly
+       (dP -10.4 vs -10.4, dR +19.7 vs +18.5).
+   - Part (b): the open quantity is the 7B's image elasticity of precision.
+     - In the surrogate (an upper bound) precision is data-limited: +2.75 +/- 0.5 points per doubling.
+     - A within-model proxy puts the 7B at about +0.8 (P1) to +2.2 (fuse2).
+     - P1's false mentions sit in classes with at least 63 training mentions (77 % [72, 83]).
+   - In the surrogate, at an equal caption budget, references win recall by a lot: P1 would need 5-34x more images.
+     Images win precision. For threshold-free ranking quality the two are roughly interchangeable (a second random
+     reference is worth about 0.8 images).
+   - The decisive grid costs 9.25 GPU-h. Of that, 1.5 GPU-h only evaluates the fuse2 half-data adapters that the
+     cross-fit E5 jobs already train; their data already sits at /root/ncs-data/xfit/gold_fuse2_{A,B}.
+
+2. Q2, adapter variants (rank, targets, DoRA, PiSSA, rsLoRA, LoRA+): a well-founded negative. Do not run them.
+   - The current setup is all LM linear layers, r=16, lr 1e-4, with about 0.06-0.2 M target tokens. That is
+     LoRA's "low-regret" regime:
+     - QLoRA, App. A.1: rank is irrelevant when LoRA sits on all layers.
+     - Zhang et al., ICLR 2024: scaling PET parameters is ineffective.
+     - LoRA Without Regret, 2025: LoRA matches full fine-tuning at this scale.
+   - Published variant gains on vision-language tasks are 0.7-1.9 points (DoRA, r=128) and 1-2 % (LoRA+).
+     "Which LoRA?" (2026) finds no significant advantage in multilingual tuning.
+   - Our single-seed minimum detectable effect (MDE) is 2.5-3.8 points, so any sweep would be uninformative.
+
+3. Q2, epochs and vision tokens: two inference-only checks, 1.65 GPU-h in total. Both are good engineering, not
+   novelty.
+   - The free epoch-1 checkpoint of fuse2_s42 (942 steps, the same count as P1).
+   - fuse2_s42 with the vision cap at 1,024 tokens. KTVIC images are near native size at 512, so this changes
+     only 271 of 545 test images (mean 417 -> 593 tokens).
+
+4. Q3, curriculum (single-reference rows first, then fused rows): a well-founded negative. Do not run it.
+   - Sequential multi-skill SFT risks forgetting; mixing is the safer default (Dong et al., ACL 2024).
+   - Captioning curricula gave about 1-2 CIDEr to from-scratch captioners (Dual-GCN, ACM MM 2021; arXiv
+     2212.07075). That is far below our MDE.
+   - It would also need a custom sampler in the HF trainer.
+
+5. The power analysis changes how A6-style comparisons must be read.
+   - On 558 test images, a single-seed paired comparison detects only effects of 2.5-3.8 points or more in
+     object P/R/F1/CHAIR_i.
+   - CIDEr is seed-dominated. With P1 at three seeds:
+     - Corpus CIDEr is 149.8 / 143.9 / 143.7 (mean 145.8, sd 3.5).
+     - Object F1 is 54.1 / 54.5 / 55.2 (sd 0.56).
+     - Two of the three same-recipe seed pairs differ "significantly" in CIDEr under the repo's paired image
+       bootstrap: s42->s43 -5.9 [-11.1, -1.0], z -2.29; s42->s44 -6.1 [-10.7, -1.4], z -2.52.
+     - Their object P/R differ by 1.0 point or less (|z| <= 1.6).
+     - The P1-only seed s.d. of CIDEr is about 3.0. This puts the CIDEr MDE at about 16 for a single-seed
+       recipe comparison and about 13 with 3 seeds per arm.
+   - The published fuse2-vs-P1 gap of -5.9 CIDEr is therefore seed noise. fuse2_s42 (143.9) falls inside P1's
+     seed range; it is -1.9 against the 3-seed P1 mean.
+   - CIDEr cannot be a decision metric for recipe comparisons in this paper. Object P/R can.
+
+
+## 1. Evidence already in the repo and logs (CPU only)
+
+### 1.1 Power of a single-seed comparison on KTVIC test (pilot 1: power.py -> power.json, power.out)
+
+Method.
+- Paired image bootstrap (B=2000) over the 558 test images, counting per image exactly as object_prf.py and
+  CHAIR-vi do.
+- The image bootstrap cannot see seed-level variance. We estimate it from 9 same-recipe seed pairs:
+  - P1: seeds 42/43/44.
+  - VSPS-main: seeds 42/43/44.
+  - VSPS-SFT: off4090sft / seed43 / seed44.
+- Under the null hypothesis, z = d / SE_boot ~ N(0,1). Hence 2*sigma_u^2 = mean(d^2) - mean(SE^2).
+- MDE (alpha .05 two-sided, power .8) = 2.80 * sqrt(SE_boot^2 + 2*sigma_u^2/k), with k seeds per arm.
+- Two cases are reported:
+  - "similar": SE_boot of a P1 seed pair, e.g. P1-50 % vs P1-100 %.
+  - "different": SE_boot of P1 vs fuse2, e.g. fuse2-50 % vs P1-100 %.
+
+Short mode:
+
+| metric | mean z^2 (all 9 pairs / P1's 3 pairs) | sigma_u (P1) | SE_boot similar / different | MDE k=1 similar / different | MDE k=3 different |
+|---|---|---|---|---|---|
+| object P | 0.68 / 0.54 | 0.0 | 0.97 / 1.36 | 2.7 / 3.8 | 3.8 |
+| object R | 2.22 / 1.31 | 0.25 (0.54 over all families) | 0.66 / 0.99 | 2.8 / 3.5 | 3.0 |
+| object F1 | 1.83 / 1.31 | 0.25 | 0.69 / 1.05 | 3.0 / 3.7 | 3.2 |
+| CHAIR_i | 0.94 / 1.18 | 0.31 | 0.95 / 1.33 | 2.7 / 3.7 | 3.7 |
+| CIDEr-D | 1.40 / 3.86 | 2.98 | 2.49 / 3.85 | 13.9 / 16.0 (P1 sigma_u) | 12.7 |
+
+Detailed mode:
+- Object P / R / F1: 2.5 / 3.4 / 1.9-3.2.
+- CHAIR_i: 3.5 / 4.6. P1 has sigma_u 1.3 here: s42->s43 z -3.07, s43->s44 z +2.56.
+
+Reading the table.
+- Pooling two replicate models per arm lowers SE_P (different recipes) only from 1.37 to 1.15-1.26, because
+  image sampling dominates. The levers are more test images (SE ~ 1/sqrt(n)) and, for CIDEr, more seeds.
+- The paper's fuse2-vs-P1 short-mode deltas, against these MDEs:
+  - dR +5.7: 1.6 x MDE, robust.
+  - dF1 +4.0: 1.05 x MDE.
+  - dP -2.2: 0.6 x MDE.
+  - dCIDEr -5.9: 0.4 x MDE.
+- The two P1 seeds write the identical short caption for only 234 of 558 images. Which template the model locks
+  onto varies with the seed, and CIDEr rewards template agreement with the references.
+
+### 1.2 Training logs (pilot 2: n3 runs/fuse2_s42/metrics.jsonl and fuse2_s43/checkpoint-943/trainer_state.json; copies in n3logs/)
+
+Cost.
+- fuse2_s42: 13,798 s for 1,884 steps (7.32 s/step) = 3.83 GPU-h.
+- LR decays linearly from 1e-4 with no warm-up; it is 5.0e-5 at checkpoint-943.
+
+Prequential (fresh-data) learning curve. In epoch 1 every row is new, so the training loss is a held-out loss.
+- Loss is about 0.638 nats/token at 1,884 rows, 0.58-0.59 at 3,768 and 0.53-0.54 at 7,536.
+- That is about -0.05 per doubling, in both s42 and s43 (mean curve difference 0.005).
+- Style is acquired in the first 100-200 steps: loss falls from 1.18 to 0.67.
+- LR decays over the same window, so this is an upper bound on the pure data effect.
+
+Memorisation.
+- Across the epoch boundary the loss drops 0.543 -> 0.469, i.e. -0.074 nats/token.
+- That is larger than the gain from a doubling of fresh data, so epoch 2 mostly memorises. This fits the 21.5 %
+  verbatim-copy rate of P1 that the round-1 reviewers measured.
+
+### 1.3 Offline target statistics vs data fraction (pilot 3: offline_stats.py -> offline_stats.json, offline_stats.out)
+
+At an equal human-caption budget of 3,769 captions:
+
+| arm | images | trained rows (steps at 2 ep) | captions that must exist | object mentions in targets | classes with >=5 mentions |
+|---|---|---|---|---|---|
+| P1-100 % | 3,769 | 3,769 (942) | 3,769 | 6,099 | 72 |
+| pair2-50 % (budget-honest) | 1,884 | 3,768 (942) | 3,768 | 7,729 | 66 / 69 |
+| fuse2-50 % (reads 5, trains on 2) | 1,884 | 3,768 (942) | 9,420 | 9,610 | 67 / 72 |
+
+- At the same budget, fusion carries 27 % (pair2) to 58 % (fuse2) more object supervision.
+- It loses only 3-6 of the classes that have at least 5 mentions.
+
+Leakage-free target quality (build from 3 captions, score against the other 2, 3,769 train images; the
+human_parity.py "offline" protocol):
+
+| target | P | R | F1 |
+|---|---|---|---|
+| p1 | 71.8 | 52.4 | 60.6 |
+| cons | 71.0 | 56.5 | 62.9 |
+| pair2, short row (richer of 2) | 68.1 | 58.8 | 63.1 |
+| pair2, detailed row (2 joined) | 65.2 | 66.6 | 65.9 |
+| fuse2 | 62.9 | 73.5 | 67.7 |
+
+Two captions per image reach 97 % of fuse2's F1 without reading five.
+
+KTVIC caption positions are not exchangeable. On train:
+- Adjacent captions share more lexicon objects: Jaccard 0.48-0.55, against 0.38-0.41 for non-adjacent pairs.
+- An adjacent second caption adds 0.61-0.76 new objects, a non-adjacent one 0.83-0.92.
+- The budget-honest arm therefore draws its second caption at random from positions 2-5. "Caption 2" would
+  under-sell a second annotator.
+
+### 1.4 Where the trained models' object errors are (pilot 4: class_freq.py -> class_freq.out)
+
+Test-time true positives, false mentions and misses are binned by how often their class occurs in the model's own
+training targets. The 95 % CIs come from an image bootstrap (B=2000).
+
+| model | share of false mentions in classes with >=63 train mentions | share in classes with <15 | P by frequency bin (bins with >=7 mentions) | top false mentions (train mentions) |
+|---|---|---|---|---|
+| P1 s42, short | 77.4 % [71.8, 82.5] | 5 % | 75-84, flat | người (946), đường (333), quầy hàng (203), phụ nữ (444), đàn ông (322) |
+| P1 s43, short | 77.5 % [71.4, 83.0] | 4 % | 71-80, flat | same five classes |
+| fuse2 s42, short | 86.2 % [82.3, 89.7] | 3 % | 65-80 | người, đàn ông, phụ nữ, áo (591), đường |
+| fuse2 s42, detailed | 91.8 % [89.6, 93.9] | 1.5 % | 58-76 | người (1,522), áo (895), phụ nữ (773), đàn ông (589) |
+
+- Misses follow the same pattern: 69-82 % are in classes with at least 63 training mentions.
+- Deleting every false mention in classes with fewer than 15 training mentions would raise P1's precision by only
+  0.9 points (77.9 -> 78.8).
+- P1's precision gap to a human under the parity protocol (75.2 vs 85.3) is therefore not a class-coverage gap.
+  It lies in person naming and in low-salience background classes the model has seen hundreds of times.
+- More images from the same distribution add mentions of exactly these classes. That is the CPU-level reason to
+  expect a small image elasticity.
+
+### 1.4b A within-model proxy for the image elasticity (pilot 4b: class_elasticity.py -> class_elasticity.out)
+
+Idea: doubling the images doubles every class's training count. So the cross-class slope of per-class P (or R) on
+log2(training mentions) approximates the points gained per doubling. The fit is weighted, uses classes with >= 7
+mentions, and gets 95 % CIs from an image bootstrap.
+
+| model | P slope (pts per doubling) | R slope (pts per doubling) |
+|---|---|---|
+| P1 s42 | +0.77 [-0.88, +2.26] | +4.2 [+2.9, +5.3] |
+| P1 s43 | +0.56 | +4.2 |
+| P1 s44 | +0.99 | +4.2 |
+| fuse2 short | +2.16 [+0.75, +3.68] | +3.9 |
+| fuse2 detailed | +1.62 [+0.34, +3.09] | +5.3 |
+
+The recall slope is not a valid proxy. Frequent classes are frequent because annotators find them salient, so the
+slope mostly measures the salience the mention policy learned, not sample size.
+
+The precision slope is less confounded. It bounds the data effect at about 1 P point per doubling for P1 (CI
+includes 0) and about 2 for fuse2. Fused targets add low-salience objects, which plausibly need more examples.
+- This weakens hypothesis (b) for fuse2: about -2 P at 50 % data is possible, which is below the MDE.
+- It keeps hypothesis (b) plausible for P1.
+
+### 1.5 The target sets the operating point (pilot 5: ratio transfer, offline -> trained)
+
+If the trained model inherits its target's operating point, the trained fuse2/P1 P and R ratios should match the
+offline ratios of their targets. Image-bootstrap CIs:
+- Detailed mode:
+  - offline fuse2/p1: P x0.876, R x1.401.
+  - trained fuse2-det/P1-det: P x0.868 [0.838, 0.898], R x1.433 [1.369, 1.498].
+  - Both offline ratios fall inside the trained CIs.
+- Short mode:
+  - offline cons/p1: R x1.078.
+  - trained fuse2-short/P1-short: R x1.138 [1.089, 1.189].
+  - The excess (about +5 % relative) is cross-task transfer from the fused rows. The queued cons-only ladder run
+    measures it directly.
+- The same rule gives pre-registered predictions for the ladder runs already queued (trained, 5-ref, test):
+  - cons-short: P 77.0, R 44.6.
+  - unf2-short: P 73.5, R 45.1.
+  - multiref-short: P 75.4, R 40.4.
+  - rnd2-detailed: P 70.8, R 54.3.
+  - pair2-detailed (100 %, first-two-captions version): P 71.1, R 54.3.
+
+### 1.6 Vision-token arithmetic (data/image_sizes.json; Qwen2.5-VL smart_resize with 28-px merged tokens)
+
+KTVIC test (545 images with known size; median native size 506 tokens):
+
+| cap | images affected | mean tokens |
+|---|---|---|
+| 512 | 266 downscaled; 40 upscaled to the 256-token floor | 417 |
+| 1,024 (min_pixels unchanged) | only the 271 larger images change, at native resolution | 593 |
+| forced 1,024 (min = max) | all images | 1,046 |
+| 256 | all images | 240 |
+
+- Train images behave the same way: 1,867 of 3,654 are downscaled at 512.
+- Training at 256 tokens would cut the sequence by about 35 % and save about 1.1 GPU-h per fuse2 run.
+- At one seed, a non-inferiority test of that cut can only exclude losses above about 3.8 points.
+
+
+## 2. Literature
+
+How each entry was read:
+- "full": read in full text (pdftotext or arXiv HTML).
+- "abstract": the claim comes from the abstract or listing only.
+- "search": the claim comes from a search summary only.
+- Venues the source page did not confirm are marked.
+
+| work | what it measured | numbers | relation to A6 |
+|---|---|---|---|
+| Hessel, Savva, Wilber, "Image Representations and New Domains in Neural Image Captioning", EMNLP 2015 Vision+Learning workshop, arXiv 1508.02091 (full) | Flickr30k NIC at an equal number of image-caption pairs: 5 captions on 20 % of images vs 1 caption on all images | "More captions" wins on all 7 metrics, but by little: B-1 55.2 vs 54.2, CIDEr 21.4 vs 20.4, CIDEr-D 16.4 vs 15.6. Significant only for BLEU-1/2 (CIDEr p < .15). More unique captions. "The number of additional images one needs to gather to compensate ... is likely greater than the number of captions one would need to add" | Closest prior to the exchange rate. From-scratch LSTM, n-gram metrics only, no object P/R, captions as separate rows, no fusion |
+| Chen, Wu, Zhao, Jin, "Language Resource Efficient Learning for Captioning", Findings EMNLP 2021 (full) | COCO with K = 1..5 captions per image, all images kept | 5 -> 1 caption/image costs 11.8 CIDEr (XE) and 21.9 (SCST), almost linearly. The GPC loss recovers this with half the captions | Captions per image matter at a fixed image count. No budget trade against images |
+| Santurkar, Dubois, Taori, Liang, Hashimoto, "Is a Caption Worth a Thousand Images?", arXiv 2207.07635; ICLR 2023 per mlanthology (full) | CLIP transfer: more captions per image vs more pairs | Sampling from 5 captions (CLIP_S) adds +2-5 % transfer. With BLIP captions, "scaling up the overall number of image-caption pairs appears to be far more effective than incorporating more captions per image" (Fig. 5b). One COCO caption is worth 5 YFCC captions | The opposite verdict, but for contrastive representation learning with synthetic captions |
+| Muennighoff et al., "Scaling Data-Constrained Language Models", arXiv 2305.16264; NeurIPS 2023, venue not on page (HTML) | Effective data under repetition: D' = U + U*R*(1 - exp(-R/R*)) | R*_D = 15.39; up to 4 epochs is about as good as unique data | The formalism reused here. A second reference is "partially repeated" data (same image, new text); we fit its exchange constant gamma the same way |
+| Zhou et al., LIMA, arXiv 2305.11206; NeurIPS 2023 (HTML) | SFT quantity vs quality | "Despite an up to 16-fold increase in data size, performance ... plateaus"; "doubling the training set does not improve response quality" | Superficial-alignment prior for hypothesis (b) |
+| Dong et al., "How Abilities in LLMs are Affected by SFT Data Composition", ACL 2024, arXiv 2310.05492 (abstract) | Data amount, mixing, ordering | General abilities level off after about 1k samples. "Sequentially learning multiple skills risks catastrophic forgetting". Proposes DMT | Prior for (b) and for the Q3 negative |
+| Farajidizaji, Gupta, Raina, "Probing the Limits of Stylistic Alignment in VLMs", arXiv 2509.25568 (HTML) | Qwen2.5-VL-3B caption-style alignment vs data | "as little as 10% of preference data sufficient to reach peak performance" | Same backbone family. Caption-style alignment saturates early |
+| Zhang, Liu, Cherry, Firat, "When Scaling Meets LLM Finetuning", ICLR 2024, arXiv 2402.17193 (HTML) | Joint law L = A*X^-alpha * D_f^-beta + E for full fine-tuning (FMT), LoRA and prompt tuning | LoRA's data exponent beta is 0.025-0.081 (FMT 0.087-0.15). "Scaling PET parameters is ineffective" | Small data elasticity for LoRA. Rank sweeps are pointless |
+| Khetan, Lipton, Anandkumar, "Learning From Noisy Singly-labeled Data", ICLR 2018, arXiv 1712.04577 (abstract) | Fixed labelling budget: label once vs repeatedly | It is better to label many examples once when worker quality is above a threshold | Classification analogue. Our references are partial views rather than noisy copies, so the answer can flip for recall |
+| Song et al., "Scaling Data Diversity for Fine-Tuning LMs in Human Alignment", LREC-COLING 2024, arXiv 2403.11124 (abstract) | Fixed sample count: more prompts vs more responses per prompt | "instead of numerous prompts, more responses but fewer prompts better trigger LLMs for human alignment" | LLM analogue of favouring references over images |
+| Shen et al., "Chain-of-Talkers (CoTalk)", arXiv 2505.22627; EMNLP 2025 per ACL Anthology listing (abstract) | Fixed annotation time: sequential "residual" dense-caption annotation | 0.42 vs 0.30 units/s; retrieval 41.13 vs 40.52 % | Changes how references are collected; no study of SFT captioners |
+| Yu et al., CapsFusion, CVPR 2024, arXiv 2310.20550 (abstract) | LLM-fused captions for large multimodal model pretraining | 11-16x less compute than baselines | Fusion as a sample-efficiency lever, at pretraining scale |
+| Zheng et al., EMNLP 2018, arXiv 1808.09564; Nagasawa et al., MAI workshop 2021 (search) | Multi-reference training: pseudo-references; validity-weighted sampling | +11.7 CIDEr (COCO); +2.6 CIDEr | Methods for using several references; no budget question (already prior art for fusion) |
+| Liu et al., DoRA, arXiv 2402.09353; ICML 2024 (HTML) | Vision-language fine-tuning at r=128 | LLaVA-1.5 average: LoRA 66.9 -> DoRA 67.6 (+0.7). VL-BART: image +0.9, video +1.9 | Gain is below our MDE |
+| LoRA+, arXiv 2402.12354 (ICML 2024, venue not on page); PiSSA, arXiv 2404.02948 (NeurIPS 2024 spotlight); rsLoRA, arXiv 2312.03732 (abstracts) | LoRA variants | LoRA+: 1-2 %, up to about 2x faster. PiSSA: +5.2 on GSM8K (Mistral-7B) and lower QLoRA initialisation error. rsLoRA: matters at high rank | Only the convergence speed of LoRA+/PiSSA could save compute; no object-hallucination evidence |
+| Dettmers et al., QLoRA, arXiv 2305.14314; NeurIPS 2023 (ar5iv) | LoRA hyper-parameters | "LoRA r is unrelated to final performance if LoRA is used on all layers" | Our setup puts LoRA on all LM layers |
+| Schulman et al., "LoRA Without Regret", Thinking Machines blog, 29 Sep 2025 | LoRA vs full fine-tuning | Equal on small and medium SFT data. Use all layers, especially MLP; the optimal LR is about 10x the full fine-tuning LR | Our lr 1e-4 at r=16 is in range |
+| Wijewardhana et al., "Which LoRA?", arXiv 2606.10428 (abstract) | LoRA variants in multilingual instruction tuning | "no significant advantage in using more complex LoRA variants" | Supports the Q2 negative |
+| Zhou et al., "An Empirical Study on PEFT for MLLMs", Findings ACL 2024, arXiv 2406.05130 (HTML) | LoRA, IA3, Adapter and Prefix on LLaVA-1.5, ShareGPT4V and Qwen-VL-Chat | LoRA r16 vs r128: OKVQA 56.1 vs 56.6, SQA 85.7 vs 85.4. Adapter hallucinates least (manual count 13.3 vs LoRA 16.8 per 100 Flickr30k captions). More data helps all methods (1k -> 10k) | Only the adapter type moves hallucination, by about 3 per 100 captions; rank does not |
+| Gekhman et al., EMNLP 2024, arXiv 2405.05904 (abstract) | SFT examples carrying unknown knowledge | They are learned later and, once learned, "linearly increase the model's tendency to hallucinate" | Motivates the free epoch-1 check |
+| Zhang et al., ViCrop ("MLLMs Know Where to Look"), ICLR 2025, arXiv 2502.17422 (abstract) | Small visual details | Accuracy falls with detail size (causal); cropping or zooming helps | The only route by which a 1,024-token cap could help on KTVIC |
+| Li et al., ICLR 2025, arXiv 2411.03312; FastV, ECCV 2024, arXiv 2403.06764; SparseVLM, ICML 2025, arXiv 2410.04417; AgilePruner, ICLR 2026, arXiv 2603.01236 (abstracts) | Visual-token budgets | Reasoning tolerates heavy token cuts; pruning about 50 % costs roughly 0-3 %; the pruning strategy shifts hallucination | Token budget is not a first-order lever on everyday scenes |
+| ICONS, arXiv 2501.00654; Self-Filter, arXiv 2402.12501 (abstracts) | Selecting VLM instruction data | 20 % of LLaVA-665K keeps 98.6 % of performance; about 15 % beats the full data | VLM SFT data is highly redundant |
+| Zhang, Yu et al., "Scaling Law for Multimodal Large Language Model Supervised Fine-Tuning", ACL 2026 long paper 603 (ACL Anthology listing) | Scaling laws over model size, LLM pre-training tokens and MLLM SFT tokens; 60 models (50 M-8 B), 1,560 checkpoints, over 10 benchmarks | Training loss vs downstream performance R^2 = 0.98 | The general MLLM-SFT scaling law. It does not split captions per image vs images and has no object P/R |
+| Yanuka et al., KnowAda, NAACL 2025, arXiv 2411.09018 (abstract) | Fine-tuning VLMs (up to 7B) on dense captions whose details the model cannot perceive | Simple complexity reduction or curation does not fix it; adapting captions to the model's knowledge "minimizes hallucinations while preserving high descriptiveness" | The fused second caption adds low-salience objects; motivates the epoch-1 check and the 4b caveat for fuse2 |
+| Captioning curricula: Dual-GCN, ACM MM 2021, arXiv 2108.02366; cross-modal-similarity curriculum, arXiv 2212.07075 (search) | Easy-to-hard ordering for from-scratch captioners | Modest CIDEr gains | Supports the Q3 negative |
+
+Scooping searches. The WebSearch budget is shared by all agents and ran out three times.
+- Twelve searches returned results:
+  1. Captions per image vs more images at a fixed budget.
+  2. "More captions / fewer images" under a fixed annotation budget.
+  3. Multi-reference supervision and data efficiency / coverage / hallucination.
+  4. Single vs multiple references, object recall and coverage ceiling in VLM fine-tuning.
+  5. Superficial alignment and data-size plateau for VLM captioning.
+  6. Curriculum learning for captioning with multiple references.
+  7. Seed variance vs image bootstrap in captioning.
+  8. Vietnamese VLM captioning data efficiency.
+  9. Resolution / visual tokens vs object hallucination.
+  10. Relabel-vs-unilabel theory (Lin, Mausam and Weld, HCOMP 2014; the paper itself was not retrieved).
+  11. 2026 scaling studies of SFT for VLM captioning, images vs captions per image.
+  12. The title search for the ACL 2026 MLLM-SFT scaling law.
+- Three hit the limit: the first images-vs-captions query, annotation-budget allocation, and data size vs
+  hallucination. Direct reads of known papers replaced them.
+- Result: no paper measures, for a fine-tuned pretrained VLM, how the image-vs-reference split of a fixed caption
+  budget affects object recall, precision or CHAIR.
+- Hessel et al. 2015 is the only budget-matched captioning study found: from scratch, n-gram metrics only, effects
+  of about 1 CIDEr.
+
+
+## 3. Idea 1 — "What is a second reference worth in images?": a budget-matched, metric-dependent exchange rate for multi-reference SFT
+
+### 3.1 Mechanism
+
+SFT on a target policy pi makes the model reproduce two properties of its targets.
+- The mention budget, i.e. how many objects a caption names. Targets per row become trained mentions per caption:
+  P1 1.62 -> 1.80, cons 2.03 -> 2.09, fused 3.07 -> 3.15.
+- The P/R ratios between policies (section 1.5).
+
+So the number of fused references per target sets the recall operating point, whatever the number of images.
+- Images only refine which objects cross the mention threshold.
+- On a pretrained 7B whose false mentions sit in classes with hundreds of training mentions (section 1.4), that
+  refinement should be small; this is what the grid measures:
+  - style is learned within about 150 steps;
+  - the prequential loss improves only about 0.05 nats/token per doubling (section 1.2).
+- Prediction: a fused second reference on half the images beats one reference on all images in recall.
+- Precision either stays within the MDE (7B elasticity of 1 point per doubling or less; LIMA regime) or drops about
+  2.5-3 points per halving (if the 7B behaves like the surrogate). The grid measures which.
+- In Muennighoff's effective-data form, D' = n_img * (1 + gamma * (k - 1)) for k references per image. The exchange
+  constant gamma should be much larger than 1 for R, at most 1 for P, and about 1 for threshold-free ranking
+  quality (surrogate: 0.77 for a random second reference).
+- gamma = 1 means a second caption is worth exactly one new image (budget-neutral).
+
+### 3.2 Closest prior and delta
+
+Closest prior:
+- Hessel et al. 2015 (budget-matched; NIC from scratch; Flickr30k n-grams; "more captions" wins by about 1 CIDEr).
+- Chen et al. 2021 (captions per image at a fixed image count; COCO).
+- Santurkar et al. ICLR 2023 (CLIP; more pairs beat more synthetic captions per image).
+- Superficial alignment: LIMA; Dong et al. 2024; 2509.25568.
+
+Delta:
+1. A pretrained 7B VLM with QLoRA SFT, where superficial alignment predicts a different answer than from-scratch
+   training.
+2. References fused into one coverage target, not added as rows.
+3. The effect decomposed into object recall, precision and CHAIR against human-parity ceilings, with n-gram metrics
+   reported but not used for decisions (section 1.1).
+4. A budget-honest arm that never reads more than 2 captions.
+5. Falsifiable predictions written down before training: elasticities, gamma, and ratio-transfer predictions for
+   the queued ladder (section 1.5).
+
+I found no paper that reports the image elasticity of object P/R for VLM captioning SFT.
+
+### 3.3 CPU pilots behind the prediction
+
+(i) Error location (section 1.4). Of P1's false mentions:
+- 77 % [72, 83] sit in classes with at least 63 training mentions (fuse2: 86 % short, 92 % detailed).
+- Under 5 % sit in classes with fewer than 15.
+- Precision is flat across frequency bins.
+
+(i-b) Cross-class proxy (section 1.4b): precision slope about +0.8 points per doubling for P1 (CI includes 0) and
++2.2 for fuse2.
+
+(ii) Ratio transfer (section 1.5). The target's offline P/R ratios reappear in the trained models:
+- detailed R x1.401 offline vs x1.433 [1.37, 1.50] trained;
+- detailed P x0.876 offline vs x0.868 [0.84, 0.90] trained.
+
+(iii) Prequential loss (section 1.2): -0.05 nats/token per doubling, smaller than the 0.074 memorisation drop of
+epoch 2.
+
+(iv) Offline budget table (section 1.3). At 3,769 captions, pair2-50 % carries 27 % more object supervision than
+P1-100 %, and its targets score F1 63.1 / 65.9 (short / detailed rows) vs P1's 60.6.
+
+(v) Surrogate learning curves (surrogate.py -> surrogate_b16.out, surrogate_b16.json; surrogate_fit.py ->
+surrogate_fit_b16.out).
+Setup.
+- The surrogate learns each policy's per-image object targets from frozen CLIP ViT-B/16 image embeddings. The model
+  is a ridge linear-probability model with GCV-chosen lambda; cosine kNN (k = 10) is a robustness check.
+- Training sets are random subsets of KTVIC train: 118 to 3,769 images, 8 replicates per size below 100 %.
+- Decoding: each test image mentions the classes above one global threshold, chosen so that mentions per caption
+  equal the policy's targets per row.
+- Scoring is exactly object_prf's: exact match against the union of the 5 test references.
+- The surrogate learns grounding from scratch, so its sensitivity to data is an upper bound for the VLM.
+
+Calibration at 100 %. The surrogate reproduces the trained VLM's policy deltas:
+
+| arm minus P1 | surrogate dP / dR / dF1 | trained VLM dP / dR / dF1 |
+|---|---|---|
+| fuse2-detailed | -10.4 / +19.7 / +11.2 | -10.4 / +18.5 / +9.1 |
+| cons-short (vs fuse2-short) | -1.4 / +8.1 / +6.5 | -2.2 / +5.7 / +4.0 |
+
+A linear probe on frozen features and the fine-tuned 7B shift P and R by the same amounts. That is direct evidence
+for part (a): the target, not the learner, sets the operating point.
+
+Image elasticity (ridge; points per doubling over 471-3,769 images, +/- 1.96 x replicate SE):
+
+| policy | P | R | F1 |
+|---|---|---|---|
+| P1 | +2.75 +/- 0.52 | +1.23 +/- 0.26 | +1.70 +/- 0.34 |
+| cons | +3.12 | +2.00 | |
+| fuse2-detailed | +2.52 | +2.32 | |
+| pair2r-detailed | +3.09 | +2.19 | |
+
+kNN gives P1 P +1.83 and R +2.50. In this weak learner precision is data-limited, so part (b) is not supported here.
+The open question for the GPU grid is how much of that elasticity survives a pretrained 7B. Pilot 4b bounds it at
+about +0.8 (P1) and +2.2 (fuse2).
+
+Budget-matched comparison (arm at 1,884 images vs P1 at 3,769; same number of trained captions):
+
+| arm at 1,884 | dP | dR | dF1 | P1 images needed to match the arm's R |
+|---|---|---|---|---|
+| cons-short | -3.9 | +6.3 | +4.4 | x34 (kNN: dR +5.6, dP -6.7, x4.7) |
+| pair2-short (richer of 2) | -3.8 | +2.9 | +1.7 | x5.1 |
+| pair2r-detailed (the GPU job's budget-honest target) | -6.9 | +10.4 | +6.6 | (vs P1 short) |
+
+- Recall: gamma_R >> 1 (more images cannot buy the recall that references give).
+- Precision: gamma_P < 1.
+- Threshold-free ranking quality (AUROC of the class scores against the 5-reference union):
+  - pair2r at 1,884 images scores 93.98 +/- 0.23 vs P1 at 3,769 scores 94.27, so gamma_AUROC = 0.77. A second
+    random reference is worth about 0.8 of a new image for ranking.
+  - fuse2 gives gamma 1.48 and unf2 gives 1.17.
+
+So, before any GPU run, the pilot already shows the exchange rate is metric-dependent:
+- references buy recall;
+- images buy precision;
+- for ranking quality the two are roughly interchangeable.
+The GPU grid measures the one number the surrogate cannot give: the 7B's precision elasticity, which sets the
+budget-matched P and F1 verdict.
+
+### 3.4 GPU grid
+
+All arms use 2 epochs, seed 42, r16/alpha32, lr 1e-4 and 512 vision tokens, exactly as P1/fuse2. Exact scripts are
+in jobs/. Anchors already exist or are queued: P1 s42/s43/s44, fuse2 s42/s43/s44, P1-4ep (job 56), and p1_s43-two /
+p1_s43selffuse-two (job 35) as the detailed-mode comparators.
+
+| order | job | arm | images | rows / steps | GPU-h | what it decides |
+|---|---|---|---|---|---|---|
+| 1 | A6_2 | fuse2-50 % on halves A, B (cross-fit adapters) | 1,884 / 1,885 | 3,768 / 942 each | 1.5 (eval only; 5.4 if training is needed) | compute-matched (942 steps) vs P1-100 %: a fused 2nd reference vs 2x images |
+| 2 | A6_1 (A) | P1-50 % on A | 1,884 | 1,884 / 471 | 1.25 | image elasticity, single reference |
+| 3 | A6_3 | pair2-50 % on A (caption 1 + one random other) | 1,884 | 3,768 / 942 | 2.7 | budget-matched: 3,768 vs 3,769 human captions, same steps |
+| 4 | A6_4 | P1-25 %, fuse2-25 % on A1 | 942 | 942 / 236; 1,884 / 471 | 2.5 | knee and elasticity |
+| 5 | A6_1 (B) | P1-50 % on B | 1,885 | 1,885 / 471 | 1.25 | data-subset replicate |
+| - | A6_5 | epoch-1 checkpoint; 1,024-token cap (engineering) | - | - | 1.65 | section 4 |
+| - | A6_7 | scoring of the A-trained arms on held-out half B (optional power upgrade) | - | - | 3.2 | MDE for object P about 3.8 -> 1.8 |
+
+- Core grid (orders 1-5): 9.25 GPU-h.
+- If the cross-fit adapters do not exist, train fuse2 on A only (+1.95). Drop the B replicates (A6_1(B) and
+  fuse2-B) to stay at about 9.3.
+
+### 3.5 Pre-registered decision rules and kill criteria
+
+Settings: short mode unless stated, 5-reference object P/R as in Table IV, paired bootstrap, seed-inflated CIs
+printed by exchange.py.
+
+H1 (references set recall).
+- Pass: R(fuse2-50 %) - R(P1-100 %, 3 seeds pooled) >= +3.5, and R(pair2-50 %) - R(P1-100 %) >= 0.
+- Detailed mode: R(pair2-50 %) >= R(p1_s43-two) + 3.5.
+- Kill H1 if fuse2-50 % does not beat P1-100 % in short-mode R by >= 3.5. The detailed-mode version is near
+  certain and is not counted as evidence.
+
+H2 (images barely move precision or recall).
+- Pass: P and R of P1-25 %, P1-50 % and fuse2-50 % each lie within +/-3 of their 100 % anchor (TOST, margin 3), and
+  the fitted |elasticity| is < 1 point per doubling.
+- Kill H2 if any 25 % arm loses >= 3 P outside its CI. Precision is then data-limited. Even that is useful: it
+  prices the human precision gap (about 10 points) at 2^(10/b) times more images.
+
+Exchange constant.
+- Report gamma_R, gamma_P and gamma_F1 with bootstrap CIs from exchange.py.
+- Claim "a second reference is worth more than an image" only if the CI of gamma_R excludes 1 while gamma_P <= 1.
+
+Side test (free; depends on the queued ladder). Ratio-transfer predictions:
+- cons-short P 77.0 / R 44.6;
+- unf2 73.5 / 45.1;
+- multiref 75.4 / 40.4;
+- rnd2-detailed 70.8 / 54.3.
+Each should hold within the MDE (3.5 R / 3.8 P). If two or more miss, part (a) of the mechanism is wrong.
+
+### 3.6 Confidence and value
+
+- Confidence: H1 about 80 %. H2 about 45 %: the surrogate's precision elasticity of about 2.75 per doubling is an
+  upper bound, and pilot 4b puts the 7B at about 0.8 (P1) to 2.2 (fuse2).
+- Whichever way H2 falls, the result is a metric-dependent exchange rate, and that is the deliverable.
+- Novelty: moderate. It is an analysis result with a clean protocol, not a method.
+- Value for the paper:
+  - It turns "fusion is a data-selection heuristic" into a dataset-design statement for low-resource languages:
+    collect 2 captions per image before adding images.
+  - It answers the 2x-steps confound with compute-matched arms.
+  - It localises the human precision gap: not data-limited if H2 holds.
+
+
+## 4. Questions 2 and 3: what to run, and what not to
+
+| question | verdict | why | cheapest useful action |
+|---|---|---|---|
+| LoRA rank or targets (r 8/16/64; attention-only vs all) | do not run | QLoRA App. A.1 found r irrelevant with LoRA on all layers. Zhang et al. (ICLR 2024) found PET-parameter scaling ineffective. LoRA Without Regret found attention-only worse than MLP/all, and we already use all. Zhou et al. (Findings ACL 2024) found r16 = r128 on VL. Expected effect is under 1 point against an MDE of 3.8 | none |
+| DoRA / PiSSA / rsLoRA / LoRA+ | do not run | Published VL gains are 0.7-1.9 points at r=128 (DoRA) and 1-2 % (LoRA+). rsLoRA matters only at high rank. "Which LoRA?" (2026) finds no reliable multilingual advantage. None has a CHAIR or object-P/R result on captioning SFT | If SFT compute ever binds: LoRA+ (B-matrix LR x16) for 1 epoch, after the free epoch-1 check below |
+| Fewer epochs (1 vs 2) | free check | Epoch 2 mostly memorises: the boundary drop of 0.074 nats/token is larger than a doubling of fresh data. Gekhman et al. find late-fitted "unknown" examples drive hallucination | A6_5(a): evaluate fuse2_s42/checkpoint-943 in both modes (0.75 GPU-h). This is also the fuse2 side of the compute-matched 2x2 with P1-4ep (job 56). Caveat: that checkpoint is un-annealed (LR 5e-5) |
+| Test-time vision tokens 512 -> 1,024 | cheap check | Only 271/545 test images change (mean 417 -> 593 tokens). ViCrop finds small details are resolution-limited, but our false mentions are frequent-class naming and salience errors (section 1.4) | A6_5(b): fuse2_s42 with --max-vision-tokens 1024 (about 0.9 GPU-h). Same weights, so the within-model SE is small (about 0.7-0.9 for P, like the tags check) and the MDE is about 2-2.5 |
+| Training at 256 tokens (about 35 % shorter sequences) | not now | It saves about 1.1 GPU-h per fuse2 run, but at one seed it can only exclude losses above about 3.8 points | Only if an efficiency section is wanted, with 2 seeds |
+| Forced upscaling to about 1,045 tokens (zoom) | not now | Needs a min-pixels flag in evaluate.py; it adds no information to the 274 small images | none |
+| Curriculum (single-reference rows first, then fused; or the reverse) | do not run | Sequential SFT forgets (Dong et al., ACL 2024). Captioning curricula give about 1-2 CIDEr to from-scratch models. The current trainer shuffles rows (RandomSampler), so a curriculum needs code. Expected effect is below the MDE | none |
+| Batched evaluation (engineering) | recommend, before the COCO and UIT-ViIC evaluations | Generation runs at batch 1, about 1.5 s/image short and 3.2 s/image detailed. Batching 8-16 images with left padding should give several-fold throughput | Patch evaluate.py and check that it matches batch 1 on 100 images (object P/R within noise). Never mix batch settings inside one comparison |
+
+
+## 5. Exact job specs (jobs/; house style of the n2/n3 queues)
+
+| file | GPU-h | content |
+|---|---|---|
+| A6_0_lists.sh | 0 (CPU, seconds) | Writes xfit/A1.txt (seeded half of A.txt via build_gold_sft.halves); xfit/train_pair2.json (caption 1 + one random other, seed 42); datasets/ktvic/trainB_data.json (half B with 5 captions, for A6_7) |
+| A6_2_fuse2_halves.sh | 1.5 (eval only) or 5.4 | fuse2 on A and on B (gold_fuse2_{A,B}, 942 steps), short + detailed on test. Set XFIT_RUN_A / XFIT_RUN_B to the cross-fit run dirs to skip training |
+| A6_1_p1_halves.sh | 2.5 | P1 on A and on B (--select first --images-file, 471 steps), short on test |
+| A6_3_pair2_A.sh | 2.7 | pair2 on A: build_gold_sft on train_pair2.json with --select first --fuse 2 --fuse-order random (942 steps), short + detailed |
+| A6_4_quarter.sh | 2.5 | P1 on A1 (236 steps, short) and fuse2 on A1 (471 steps, both modes) |
+| A6_5_free_checks.sh | 1.65 | fuse2_s42/checkpoint-943 in both modes; fuse2_s42 at --max-vision-tokens 1024 in both modes |
+| A6_7_heldout_B.sh (optional) | 3.2 | Scores the A-trained arms (p1hA, p1qA1, f2qA1, f2hA) on the 1,885 unseen half-B images, short mode. This shrinks the image term of the MDE by 0.48x (object-P MDE about 3.8 -> 1.8) and replicates the key contrasts at half scale |
+| A6_6_score.sh | 0 (local CPU) | object_prf --vs p1-gold (both modes); human_parity parity on the new stems; score_ci for CIDEr; exchange.py |
+
+Build-check run locally on CPU:
+- pair2-A has 3,768 rows from exactly 3,768 human captions.
+- All 1,884 short rows equal P1's caption 1, and all 1,884 detailed rows start with caption 1.
+- The trainB split has 1,885 images and 9,425 captions; A and B are disjoint.
+- exchange.py --demo runs on the existing predictions.
+
+
+## 6. What would be novel and what is only good engineering
+
+Novel (moderate; an analysis, not a method):
+- The budget-matched exchange rate for SFT of a pretrained VLM.
+- Its split into "references set the recall operating point" and "images mainly buy precision", with the 7B's
+  own precision elasticity measured rather than assumed.
+- Supporting evidence: per-metric image elasticities, the exchange constant gamma, the class-frequency account of
+  the precision gap, and the ratio-transfer predictions validated on the ladder.
+
+Methodological, partly known (Bouthillier et al. 2021; Picard 2021 for seeds; sample-variance work on CIDEr):
+- The seed-dominated CIDEr finding for LoRA SFT of a VLM captioner. Two of three same-recipe P1 seed pairs are
+  "significant" under the image bootstrap.
+- The MDE table.
+- The prequential learning curve read from training logs.
+- Worth one methods paragraph and a footnote on every CIDEr comparison.
+
+Engineering, not novel:
+- the epoch-1 checkpoint check and the compute-matched 2x2;
+- the 1,024-token check;
+- batched evaluation;
+- the decision not to sweep LoRA variants or curricula;
+- held-out half-B evaluation (plain 2-fold cross-validation).
+
+
+## 7. Practical consequences for the paper
+
+- Stop citing "fuse2 -5.9 CIDEr vs P1". Use the 3-seed P1 mean (145.8 +/- 3.5). fuse2 is -1.9 against it.
+- Make object P/R (seed-stable) the decision metrics.
+- Add P1 at 1 epoch / fuse2 at 1 epoch, or the free checkpoint, to answer the 2x-steps confound from both sides
+  (P1-4ep already covers one side).
+- If H1 and H2 hold, a single sentence carries the dataset-design message: "for low-resource captioning, a second
+  caption for half the images is worth more than the other half of the images."
+- The UIT-ViIC in-domain runs (59a/59b) could replicate the result with COCO instance gold. They would need extra
+  half-data runs (about 5 GPU-h), outside this budget.
+
+
+## 8. Files (all under research_r2/A6/)
+
+- Shared helpers:
+  - a6lib.py: per-image counting identical to object_prf/CHAIR-vi, vectorised bootstrap, per-image CIDEr loader.
+  - targets.py: target policies as object sets.
+- Pilot 1: power.py -> power.out, power.json. cider_n3.py (run on n3 with the RDRSegmenter scorer) ->
+  cider_p1.json, cider_p1s44.json.
+- Pilot 2: n3logs/ holds the training logs.
+- Pilot 3: offline_stats.py -> offline_stats.out, offline_stats.json.
+- Pilot 4: class_freq.py -> class_freq.out.
+- Pilot 4b: class_elasticity.py -> class_elasticity.out.
+- Surrogate pilot:
+  - clip_embed_onnx.py (local) wrote emb_b16/, the CLIP ViT-B/16 embeddings for train + test.
+  - surrogate.py emb_b16 surrogate_b16.json -> surrogate_b16.out.
+  - surrogate_fit.py -> surrogate_fit_b16.out.
+  - clip_embed.py (ViT-H/14 on n3) left only the test half in emb/ before the crash.
+  - The ONNX model (Xenova/clip-vit-base-patch16, onnx/vision_model.onnx, 329 MB) was deleted after use;
+    re-download it to re-run.
+- Grid analysis: exchange.py, pre-registered contrasts plus elasticities. Run it via A6_6_score.sh.
+- jobs/: A6_0 ... A6_7. xfit/ holds copies of A.txt/B.txt; xfit_dry/ is the local build check.
+- lit/: extracted full texts of Hessel 2015, Santurkar 2022 and Chen 2021.

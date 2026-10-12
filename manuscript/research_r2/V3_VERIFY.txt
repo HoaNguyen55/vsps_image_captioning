@@ -1,0 +1,235 @@
+V3 -- ADVERSARIAL VERIFICATION of the central claim
+"reference-based precision measures typicality, not truth"
+(candidates: research_r2/A5/REPORT.md Idea 1 "two-gold target audit"; research_r2/A1/REPORT.md sec. 3c and 4)
+Date 2026-10-12. CPU only (nice -n 15, local; n3 read-only listing). No VLM, no GPU, no new labels, no AI labels.
+All scripts/outputs: research_r2/V_V3/. Bootstrap = images resampled, B = 1000-2000, 95% percentile CIs.
+
+======================================================================================================
+0. VERDICT: SURVIVES-WITH-CHANGES (major). The slogan is killed; a narrower, better-supported claim survives.
+======================================================================================================
+KILLED as stated:
+  * "typicality, NOT truth", "+0.0 instance precision", "singletons 98.1% present", "tau_P = 0.14" as general facts.
+    They are artefacts of UIT-ViIC's image SELECTION, not of human truthfulness:
+    sports ball is present in 100.0% of UIT-ViIC images and person in 97.5%. These two classes are 83.9% of all
+    COCO-80 mentions; a class drawn from the mention mix is instance-present 87.6% of the time BY CHANCE.
+  * On unhinted, unselected general COCO scenes (Karpathy test 5,000, English captions) the same leakage-free
+    target audit gives fuse2-p1 dP_ref -7.67 [-8.06,-7.30] but dP_inst -4.00 [-4.30,-3.68] (truth share tau = 0.54
+    [0.52,0.58], an upper bound), and singletons are only 59.2% instance-present (n = 2,356).
+SURVIVES (and is stronger than the candidate on the paper's own data):
+  * UIT-ViIC, classes other than the two selection classes: dP_ref -7.38 [-9.25,-5.60] vs dP_inst +0.63 [-0.46,+1.73];
+    singletons 93.3% present (chance 30.9%). Not a hint artefact: unhinted English COCO captions on the SAME images
+    give dP_ref -6.08 [-7.88,-4.40] vs dP_inst -0.38 [-1.40,+0.62].
+  * KTVIC itself, full 113-noun lexicon, independent second panel (UIT-OpenViIC), existing labels only:
+    - targets (KTVIC train, 3,724 images): fuse2-p1 dP -8.88 [-9.42,-8.34] vs held-out KTVIC refs,
+      -4.74 [-5.21,-4.21] vs OpenViIC, -4.47 [-4.86,-4.08] vs union. Half of the cost is reporting typicality.
+    - models vs their own fused references (KTVIC test, same 555 images, same gold = 2 KTVIC refs + OpenViIC):
+      fuse2-detailed - P1: -4.87 / -5.44 / -5.98 (P1 seeds 42/43/44); fused-pair - first-caption HUMAN targets:
+      -3.61 [-4.57,-2.67]; model-specific residual (difference-in-differences) -1.26 [-3.44,+0.84] /
+      -1.83 [-3.99,+0.37] / -2.36 [-4.45,-0.28]. Short mode residual -0.68 / -1.25 / -1.78 (all n.s.).
+Defensible headline (replaces the slogan): "Most of the precision that fusion costs against a dataset's own
+references is a property of the references, not of the model: an independent human panel halves it, and the
+fused human references themselves lose about as much as the model trained on them (residual ~1-2 points)."
+
+======================================================================================================
+1. REPRODUCE
+======================================================================================================
+1a. Reproduced exactly (pilot_uitviic.py logic, my v3_family.py run, B=1000):
+  common protocol, UIT-ViIC train 2,687 images, COCO-80 Vietnamese matcher:
+    vs held-out: p1 76.13, fuse2 70.39, dP -5.74 [-6.41,-5.01]; dR +26.84.
+    vs instances: p1 98.98 / R 30.30, fuse2 98.99 / R 48.65; dP +0.01 [-0.16,+0.19]; dR +18.36 [17.84,18.95].
+  singletons by k (98.11 / 99.30 / 99.39 / 98.67 / 99.01 %) reproduced.
+  A1 3c (p1 98.98 / 30.3, fuse2 98.98 / 48.7) and A1 sec.4 unsupported mentions (human 0.26, P1 0.45,
+  fuse2-short 0.57 per caption) reproduced (scripts/second_panel.py 1v4: 0.256 / 0.447 / 0.569).
+  scripts/second_panel.py re-run outside the repo (B=1000): every R5-01 number reproduced (P 67.8 -> 85.3;
+  dP detailed -10.4 [-13.16,-7.56] -> -5.2 [-7.08,-3.16]; short -2.2 -> -1.1; confirmed 54.4-57.3% vs human 58.8%;
+  unconfirmed +0.30 [0.24,0.34]).
+
+1b. Problems found (code, data, denominators):
+  P1 SELECTION-CLASS CEILING (critical). instance_gold: sports ball 3,850/3,850 images, person 97.5%, then
+     tennis racket 44.9, baseball glove 28.1, bat 23.0, chair 15.6, bench 10.3, rest < 7%.
+     Mention mix (UIT train, 5 captions/image): selection classes 83.9%, racket/glove/bat 12.1%, other 4.0%.
+     -> "99% instance precision" and "+0.0" are guaranteed by construction for 84% of mentions.
+     By family (common protocol, fuse2 - p1):
+        family                 dP_ref                dP_inst               dR_inst   singletons present
+        all COCO-80            -5.74 [-6.41,-5.01]   +0.01 [-0.16,+0.19]   +18.36    98.1% (n=1,323)
+        non-selection          -7.38 [-9.25,-5.60]   +0.63 [-0.46,+1.73]   +9.35     93.3% (n=356; chance 30.9%)
+        rare (<20% base rate)  -8.76 [-11.9,-5.8]    -5.25 [-8.43,-2.25]   +0.92     47.5% (n=40; chance 2.1%)
+     The "rare" loss is mostly matcher noise (P2), not human error.
+  P2 LEXICON (coco80_vi.json) bugs that also hit jobs 59a/59b scoring:
+     - person terms missing: "cau thu" (player; 2,791 train captions), "van dong vien" (athlete; 2,830), thu mon,
+       trong tai, khan gia, VDV. Person mentions written this way are invisible; "nguoi dan ong" in one caption
+       becomes reference-false against held-out "cau thu". Fixing it halves human p1 reference-false mentions on
+       UIT val+test (0.224 -> 0.121 per caption) but leaves dP_ref almost unchanged (-5.9 -> -5.4).
+     - "ban" (table) matched inside "bong ban" (table tennis; 14 train / 13 val captions), "ghi ban"/"ban thang"
+       (score a goal): 44 dining-table mentions, all instance-absent. Typos "gau bong" -> bear; "cho bong"
+       (stuffed dog) -> dog; "man hinh may tinh" (desktop monitor) -> laptop.
+     - sports ball is triggered by sport names (bong da 961, bong ro 125, bong chuyen 50 train captions).
+  P3 GATE G3 IS VACUOUS ON UIT-ViIC (critical for pre-registration). Human targets on the 1,155 val+test images of
+     59a/59b: share of fuse2's reference-false mentions that are instance-present = 98.6% [97.8,99.3] (all classes),
+     93.7% (non-selection); gate threshold 50%; chance ~88%. The ref-union-instance dP condition is likewise near
+     ceiling (human targets: 99.69 vs 99.59). A5's kill rule (CI upper of dP_inst < -2, all classes) cannot fire
+     for the same reason. Both must be restated on non-selection classes BEFORE 59a/59b are scored (sec. 4).
+  P4 "tau_P = 0.14" ranks noise: instance P of the 6 policies spans 98.98-99.05 (0.07 points). F1/R agreement
+     (tau = 1) is partly mechanical (more merged captions -> more classes under any gold). On COCO-5000 the
+     golds AGREE that fuse2 is least precise (ref 79.5 vs 86.95-87.2; inst 88.35 vs 92.35-92.43).
+  P5 Calibration in R5-01 ("real fraction ~96%"): it divides by a held-out human's confirmed share, i.e. assumes a
+     human's unsupported mentions are real. COCO check (v3_panel_validate.py; panel A = 3 English captions,
+     panel B = the other 2, truth = instances, systems = existing zero-shot/VSPS captions):
+       - a held-out caption's unsupported mentions are only 70.4% instance-present (1v2); 59.2% as 1v4 singletons;
+       - B-confirmed mentions 83-94% present, B-unconfirmed 44-59% present -> confirmation tracks truth;
+       - the estimator UNDER-credits systems: est - true ratio = -10.7 [-16.9,-4.2] (zero-shot short) to
+         -46.3 (zero-shot detailed), i.e. it is conservative (cross-lingual matching contributes).
+     -> keep the number but word it "as attested as a held-out reference caption's unsupported mentions", never
+        "96% real". "Unconfirmed per caption" is a fair upper bound on hallucination (about half of unconfirmed
+        mentions were instance-present on COCO).
+  P6 Scene-default nouns (A1 sec.4 reads them as language-prior hallucination). Per-class OpenViIC confirmation of
+     unsupported mentions (1v4): duong (road) models 37-41% vs human 44%; quay hang (stall) 19-32% vs 21%;
+     nguoi 70-83% vs 80%. Models over-MENTION them (duong 0.038-0.061 vs 0.012 per caption) at the human
+     confirmation rate: evidence of over-typical mention, not of hallucination; do not call them hallucinations.
+
+======================================================================================================
+2. ATTACKS (a)-(e)
+======================================================================================================
+(a) COCO category hints. Verified in Lam et al. 2020 (arXiv 2002.00175) sec. 3.1: the tool showed "categories hints
+    for each image, displaying as friendly icon" (the image's COCO categories) and the English captions on request;
+    sec. 3.1 also lets writers browse "the others'" captions (5 writers for the whole dataset), so captions of an
+    image are not independent. Effect estimate with the unhinted control (English COCO captions, AMT, same 2,687
+    images; Chen et al. 2015 sec. 2 lists no category display):
+       non-selection classes   singletons present   fuse2 - p1 dP_ref      dP_inst
+       Vietnamese (hinted)     93.3% (n=356)        -7.38 [-9.25,-5.60]    +0.63 [-0.46,+1.73]
+       English (unhinted)      87.3% (n=741)        -6.08 [-7.88,-4.40]    -0.38 [-1.40,+0.62]
+    Hints may add a few points of singleton presence (English also carries more matcher artefacts) but do not
+    create the null. The real artefact is image selection (P1), not hints.
+
+(b) Generalisation to KTVIC. COCO-80 is 44-48% of KTVIC gold classes and 14.5% of fuse2's excess false mentions
+    (A5). The UIT-ViIC result does not transfer: on general COCO the same target protocol gives
+       COCO test-5000, all 80 classes:      dP_ref -7.67 [-8.06,-7.30]  dP_inst -4.00 [-4.30,-3.68]  tau 0.54 [0.52,0.58]
+       36 "reliable" classes (chosen on Karpathy VAL: >=99% present when named by 5/5): dP_ref -6.22, dP_inst
+       -3.33 [-3.66,-2.99]; singletons 57.9%.
+       tau by scene complexity (instance classes per image): 1-2: 0.86; 3-4: 0.43; 5+: 0.29; UIT (EN): 0.07.
+    tau is an upper bound: the instance-absent extras are dominated by known artefacts (sparse images: person in
+    pictures/signs 21%, unlabelled tables 15%, "orange" as a colour 8%, train/subway "car", toilet "bowl";
+    dense images: dining table 37%); RePOPE (2504.15707) finds 1.7% of COCO "absent" labels wrong + 4.3%
+    ambiguous (2.2% + 7.3% for co-occurring objects). LVIS v1 val cannot adjudicate: of 1,238 fusion-extra
+    COCO-absent mentions on the 1,114 overlapping images, 97.8% are unverified in LVIS (v3_lvis.py).
+    => On KTVIC the only defensible evidence is KTVIC's own second panel, which now exists and is the central result:
+       target level (train, 3,724): dP -8.88 (held-out KTVIC) -> -4.74 (OpenViIC) -> -4.47 (union);
+                                     confirmed share p1 66.1% vs fuse2 62.1% (d -3.9 [-5.0,-2.9]);
+                                     unconfirmed +0.222 [0.21,0.23] per target.
+       model vs targets (test, same gold per fold):
+                              gold = 2 KTVIC refs                    gold = 2 KTVIC refs + OpenViIC panel
+         two-sentence model   -11.19 / -12.23 / -11.76               -4.87 / -5.44 / -5.98     (P1 seed 42/43/44)
+         human targets        -8.36 [-9.76,-6.94]                    -3.61 [-4.57,-2.67]
+         DiD                  -2.83 [-5.28,-0.47] / -3.87 / -3.40    -1.26 [-3.44,+0.84] / -1.83 [-3.99,+0.37] /
+                                                                     -2.36 [-4.45,-0.28]
+         short model          -2.51 / -3.55 / -3.08                  -0.89 / -1.46 / -1.99
+         targets (cons-p1)    -1.70 [-2.91,-0.50]                    -0.21 [-0.83,+0.45]
+         DiD                  -0.81 / -1.85 / -1.38 (n.s.)           -0.68 / -1.25 / -1.78 (n.s.)
+       unconfirmed mentions/caption, two-sentence: model +0.335 [0.281,0.394], targets +0.208 [0.182,0.235],
+       model-specific +0.127 [0.070,0.187] (upper bound on fusion-induced hallucination beyond the references).
+    Defensible wording: "half of fusion's precision cost on KTVIC is the reporting typicality of one annotator team;
+    most of the rest is carried by the fused human references themselves; the trained model adds 1-2 points".
+    Do NOT write "typicality, not truth"; do not extrapolate the UIT-ViIC "+0.0" to KTVIC.
+
+(c) Leakage / overlap (verified by id): UIT-ViIC train = Karpathy train 1,545 / restval 885 / val 132 / test 133;
+    133 UIT-ViIC train images are in the test-5000 manifest (59 in job 36's 2,500 manifest.json, 74 in rest2500);
+    all 924 val and 231 test images are Karpathy TRAIN; the three UIT-ViIC splits are disjoint.
+    Consequences: drop the 59/133 only for UIT-ViIC-TRAINED models on the COCO probe (KTVIC-trained models: none);
+    never mix COCO-train or translate-train data with a UIT-ViIC evaluation; Qwen2.5-VL pre-training likely saw
+    COCO train images + English captions (UIT val/test) -> affects absolute levels, not paired P1/fuse2 contrasts
+    (state as limitation). The target audit has no construction leakage, but in UIT-ViIC the TRUTH gold itself was
+    shown to the writers (hint icons) -> the English control is required next to every UIT-ViIC instance number.
+
+(d) Target -> model. Target-level identity does not imply model-level identity (models add unsupported
+    scene-default mentions: 0.45-0.57 vs 0.26 per caption). The DiD above is the right bridge: on KTVIC the model
+    inherits its references' precision profile with a 1-2 point residual. For 59a/59b the registered G3 cannot fail
+    (P3). Amended, pre-registered criterion (commit BEFORE scoring; sec. 4).
+
+(e) Novelty (full texts read: Chen et al. 2015 1504.00325 sec. 4.2; Rohrbach et al. 2018 1809.02156 sec. 2.1;
+    Feng, Tang, Zhang, Xu 2024 2406.12663; Neuhaus & Hein 2025 RePOPE 2504.15707; Tang et al. 2026 CCCaption
+    2602.21655; Petryk et al. 2024 ALOHa 2404.02904; Lam et al. 2020 UIT-ViIC 2002.00175; abstract: Misra et al.
+    2016 1512.06974; screened: Cheng et al. 2024 2411.05079, HalDec-Bench 2511.20515 -- no overlap).
+    - Chen 2015 sec. 4.2 ASSUMES P(word | object absent) = 0 and derives human precision vs k references
+      = pk/(pk+(1-p)^k): reference precision of human text depends only on mention propensity p and rises with k.
+      This IS "reference precision measures typicality" as a modelling assumption (plus PHR).
+    - CHAIR sec. 2.1: reference-only and segmentation-only golds both inflate hallucination ("frequently humans
+      will not mention all objects"; "table" vs "dining table").
+    - Misra 2016: "what's in the image" vs "what's worth saying" from human-centric labels.
+    - Feng et al. 2024: >55% of CHAIR-flagged hallucinations (LLaVA-1.5, 500 COCO val) unjustified: rigid
+      extraction + detail-poor human ground truth.
+    - RePOPE: COCO-derived labels 9.3% wrong (+13.8% ambiguous) for "yes", 1.7% (+4.3%) for "no"; rankings shift.
+    - CCCaption: asserts human references are incomplete/incorrect (motivation; no measurement).
+    Closest prior: Chen 2015 (concept, untested) + CHAIR 2018 (two-gold for model outputs).
+    Remaining delta (incremental, analysis-level): (i) measured with human-only evidence at the level of TRAINING
+    TARGETS and annotator panels, leakage-free; (ii) the truth share of fusion's precision cost is domain-dependent
+    (~0.1 sports scenes, <=0.54 general COCO) -- Chen's assumption holds for salient-object scenes, not generally;
+    (iii) on Vietnamese KTVIC an independent-team panel + DiD shows the model inherits its references' precision
+    profile. No prior found doing (i)-(iii); Vietnamese is first by default.
+
+======================================================================================================
+3. REVIEWER LENS
+======================================================================================================
+Strongest objection: "Your truth evidence comes from a sports subset where 84% of the scored mentions are two
+classes present in every image and the annotators were shown the labels; on general COCO your own protocol shows
+about half of the precision drop is also an instance drop. 'Typicality, not truth' is selected evidence, and the
+idea is Chen et al. 2015 / CHAIR anyway."
+Fix (existing data only, done here, 0 GPU): (1) make the KTVIC two-panel DiD the central table; (2) report UIT-ViIC
+on non-selection classes with the unhinted English control, and general COCO as the opposite bound; (3) cite Chen
+2015 sec. 4.2, CHAIR sec. 2.1, Misra 2016, Feng 2024, RePOPE, CCCaption and claim only the measured deltas;
+(4) amend G3 before 59a/59b. Would a Q1 reviewer accept it? As an analysis section supporting the fusion recipe:
+yes. As the paper's principal contribution: no (incremental over Chen 2015 / CHAIR).
+Remaining weaknesses to state: the second panel is another human panel, not truth (two panels cover ~84% of
+mentionable classes); one fuse2 seed (s43/s44 queued -> two-level seed x image bootstrap); KTVIC's 5 captions may
+come from one writer (R4-00), so "held-out annotator" = held-out caption.
+
+======================================================================================================
+4. DELIVERABLE
+======================================================================================================
+Script: scripts/two_gold_audit.py (port of V_V3 prototypes; ~250 lines; CPU ~30-40 min total at B=2000; 0 GPU-h).
+  targets  --dataset ktvic|uitviic|coco  : 3-build/2-held-out policies (p1, cons, fuse2, rnd2, unf2, multiref);
+           gold A = held-out refs; gold B = OpenViIC panel (ktvic, data/ktvic_openviic_refs.json) or instances
+           (uitviic: data/uitviic/instance_gold.json; coco: instances_val2014); families all | nosel (UIT: minus
+           sports ball, person) | reliable (COCO: 36 classes frozen from Karpathy val); outputs dP_A, dP_B, dR_B,
+           tau = d(B-false)/d(A-false), confirmed shares, singleton presence by k, legacy G3 share.
+  models   --dataset ... --pairs A:B : same quantities for preds + DiD vs human targets on the same images/gold;
+           P1 seeds 42/43/44 and fuse2 seeds (when s43/s44 land) with a two-level bootstrap.
+  table / figure : Table X (LaTeX + JSON) and Figure Y.
+  Lexicon: coco80_vi.json v2 (person: cau thu, van dong vien, VDV, thu mon, trong tai, khan gia; consumed
+  non-object spans: bong ban, ghi ban, ban thang; typo gau bong) -- commit BEFORE scoring 59a/59b; v1 in appendix.
+  Prototypes: v3_ktvic_did.py, v3_ktvic_targets_panel.py, v3_family.py, v3_english.py, v3_english_clean.py,
+  v3_gate.py, v3_tau_buckets.py, v3_panel_validate.py, v3_lvis.py.
+
+Table X (central): "Precision cost of fusing human references under independent human evidence."
+  Panel A -- KTVIC test (555), full lexicon, gold = 2 KTVIC refs vs 2 KTVIC refs + OpenViIC: rows two-sentence and
+    short; columns dP model (3 P1 seeds), dP human targets, DiD, unconfirmed/caption. [carries the claim]
+  Panel B -- KTVIC train targets (3,724): dP vs held-out KTVIC / OpenViIC / union; confirmed share p1 vs fuse2.
+  Panel C -- truth-anchored bounds, human targets: UIT-ViIC non-selection (VI hinted, EN unhinted) and COCO-5000
+    (all, reliable): dP_ref, dP_inst, dR_inst, tau, singleton presence.
+  Panel D -- model level, pending: UIT-ViIC test+val (59a/59b) and COCO-2,500 (job 36).
+Figure Y: "typicality-truth plane": x = dP vs the dataset's own references, y = dP vs the independent gold;
+  lines y = x (all truth) and y = 0 (all typicality); one point per Table X row with 2-D CIs.
+
+Pre-registered criterion for 59a/59b (replace G3; UIT-ViIC test+val 1,155 images, non-selection COCO-80 classes,
+lexicon v2, paired bootstrap B = 5000):
+  G3'a  short: fuse2-short - P1-short, 90% CI of dP_inst inside [-3, +3]; dR_inst 95% CI > 0.
+  G3'b  two-sentence: DiD_inst = [P_inst(fuse2-detailed) - P_inst(P1)] - [P_inst(fused human target) -
+        P_inst(single human caption)] on the same images (targets from 3 of 5 captions): pass if the 95% CI lower bound
+        > -3; kill ("model-specific truth loss") if the CI upper bound < -3.
+  G3'c  tau_model = d(instance-absent/caption) / d(reference-false/caption): "mostly typicality" if 95% CI upper < 0.5,
+        "mostly truth" if lower > 0.5; benchmark tau_human = 0.09 [0.04, 0.15] (same images, classes, lexicon v2).
+  Job 36 (COCO 2,500, KTVIC-trained; no overlap to drop): tau_model vs tau_human = 0.54 [0.50, 0.59] (all) /
+        0.51 [0.45, 0.57] (reliable); "no worse than human fusion" if (tau_model - tau_human) 95% CI upper < +0.15.
+  Report legacy G3 numbers only with the note "uninformative on UIT-ViIC: human targets 98.6%, chance ~88%".
+
+Second panel integration: done (R5-01). Use it as Panel A/B; reword "phan that ~96%" as "as attested as a held-out
+reference caption's unsupported mentions"; add the DiD and the train-target panel (this file); rerun Panel A with
+fuse2 s43/s44 when they land; keep data/ktvic_openviic_refs.json out of any public release (licence unclear).
+
+Suggested paper wording: "Against the dataset's own references, training on fused references costs 11 points of
+object precision in two-sentence mode. Against an independent second panel of the same images the cost falls to
+5-6 points, of which 3.6 are already present in the fused human references; the trained model adds 1-2 points
+(significant for one of three P1 seeds). On exhaustively labelled COCO-80 objects, fused references lose no instance
+precision in sports scenes (UIT-ViIC, excluding the two classes present in every image) and at most about half of
+their reference-precision loss in general scenes (COCO)."
+
+Files: V_V3/*.py, *.json, *.log, second_panel_repro.json, papers/ (texts), dl_lvis/ (LVIS v1 val, parsed only).

@@ -1,0 +1,240 @@
+V2 -- ADVERSARIAL VERIFICATION OF A7 "NAP" (naming- and segmentation-aware object P/R for Vietnamese captions)
+=====================================================================================================
+All numbers CPU-only, existing data/labels only. Bootstrap B=1000 (paired, images resampled) unless stated.
+Code + outputs: research_r2/V_V2/{code/*.py, *.out, *.json}. VnCoreNLP segmentation ran on n3 (nice 19, cores 12-15,
+-Xmx2g, 12 s, /root/r2/V2 only). No GPU, no VLM/LLM, /root/queue untouched.
+
+0. VERDICT: SURVIVES-WITH-CHANGES -- as a secondary (evaluation-protocol / analysis) contribution, not a headline one.
+   The measurement is reproducible and mostly sound; several headline sentences overstate or depend on hand lists;
+   phi is a better-validated statistic than A7 claimed (Flickr30k Entities coreference AUROC 0.961) but is the wrong
+   instrument for PRECISION credit; NAP changes no ranking; the CHAIR-vi bugs it found DO move published FAIR numbers.
+
+-----------------------------------------------------------------------------------------------------
+1. REPRODUCE
+-----------------------------------------------------------------------------------------------------
+1.1 Reproduced exactly (point estimates; deterministic): every number of A7 Sec. 2.1-2.2 and the 1v4 block
+    (repro_decompose_B2.out), the naming-level table 2.6 (naming_level_repro.out, diff = identical), COCO phi AUROC
+    0.872 (phi>=0.9 -> 94.6% same class), UIT-ViIC AUROC 0.817, chair_person_fix numbers. naming._check() passes.
+    No leakage of held-out images into phi (train refs only). Bootstrap/pairing code is correct.
+
+1.2 Errors / overstatements in A7's REPORT (corrected statements):
+  (i) Wrong baseline. The repo ALREADY has a hypernym rule: object_prf.py P_h (= CHAIR-vi gold expansion), and the
+      published CHAIR_i (19.2 for P1-short) already includes it. A7's "CHAIR_i equivalent (100-P) 22.1 -> 15.6" and
+      "77.9 -> 84.4" use exact-match P as the 'before'. Against the paper's own rule:
+        P1-short   P_h 80.4 -> NAP 84.4 (+4.0)     fuse2-short 77.5 -> 80.9 (+3.4)   tags_fuse2-short 79.8 -> 83.0 (+3.2)
+        zero-shot-short 55.5 -> 66.3 (+10.8)       fuse2-det 70.2 -> 74.0 (+3.8)     zero-shot-det 33.4 -> 42.5 (+9.1)
+      => "naming+segmentation inflate CHAIR_i by 5-7 points (fine-tuned) / 11-14 (zero-shot)" should read
+         3-4 points / 9-11 points relative to the published CHAIR-vi.
+      Of NAP's +4.0 for P1-short, +2.2 comes from completing the person tree in HYPERNYMS alone (8 entries;
+      gain_sources.out); person-only hypernym credit reaches 83.7 of 84.4.
+ (ii) "About half of what CHAIR-vi calls hallucination is not a wrong object" overstates. A7's "naming-level" share
+      includes hyponyms (a MORE specific name than any reference -- an invented detail under CHAIR-vi's own doctrine
+      and NOT credited by A7's own rule R4), group members and person-sibling gender conflicts (which A7 itself calls
+      "not a naming variant"). Share actually credited by R4 (S + syn + near + hyper):
+        P1-short 43.0 [36.3,49.5]  fuse2-short 33.6 [28.3,39.1]  tags_fuse2-short 35.3  zero-shot-short 43.7
+        P1-det 38.5  fuse2-det 28.9 [25.2,32.9]  zero-shot-det 32.0  held-out human 26.8 [23.5,30.1]
+      => "29-44% of reference-false mentions are segmentation artefacts or synonym/hypernym names" is the defensible line.
+(iii) "fuse2-short recalls more referenced objects than a held-out human (+3.2 [0.8,5.4])" is NOT robust: it holds only
+      for A7's R_ref, which credits a more specific name (hypo) as a recall hit while the precision side counts the same
+      mention as an unsupported detail. fuse2-short minus human (B=1000): Rex +1.7 [-0.7,3.9]; R_ref +3.3 [0.9,5.5];
+      R_ref without hypo credit +1.7 [-0.9,3.9]; list-free cluster recall (phi>=0.9 clusters, VnCoreNLP) +2.0 [-0.8,4.4],
+      (pyvi) +1.3 [-1.3,3.8]. Safe claim: "fuse2-short matches a held-out human's recall".
+ (iv) Minor bug: A7's referent clusters are union-find without a co-mention check across merged groups; 34/1698
+      clusters (2.0%) contain two names co-mentioned in one caption (e.g. {người, phụ nữ, đàn ông} chained through a
+      vague 'người'). Non-transitive fix moves R_ref by <= 0.9 and no gap by > 0.5. Harmless, but fix it.
+  (v) Self-validation circularity in Sec. 2.5: the NEAR list was SELECTED by train phi >= 0.9 and then "validated" by
+      median phi 1.00; the KTVIC per-relation validation covers only 42 pairs with enough data (6 syn, 3 near, 5 member,
+      28 hyper/hypo). UIT-ViIC AUROC 0.817 rests on 22 positive pairs: pair-bootstrap CI [0.671, 0.928].
+ (vi) N_phi uses phi >= 0.5. On referent-level gold (1.5 below) only 44% of pairs with phi >= 0.5 are mostly
+      co-referent (78% at phi >= 0.9), so N_phi (30-38%) is weak support.
+
+1.3 ATTACK (a): hand-built lists as researcher degrees of freedom  (ktvic_checks.out)
+  - Provenance confirmed: enum_artefacts.py built the compound/classifier table from TEST references + the 8 scored
+    prediction files. Restricting it to entries attested in TRAIN references (66/88 compounds, 19/39 classifier pairs)
+    changes nothing: P1-short 84.4 vs 84.4, zero-shot-short 66.1 vs 66.3, every gap within 0.5. The test-derived
+    entries are inert -> ship the train-only table and say so.
+  - List-free extractors bracket the table: E0 = shipped syllable matcher (always splits compounds); EV / EW = 113-noun
+    lexicon matched only over WHOLE VnCoreNLP / pyvi words + POS-Nc classifier rule (never splits; loses endocentric
+    heads such as mũ bảo hiểm, bàn ghế, áo dài). Fine-tuned precision is insensitive (P1-short NAP 84.4 / EV 84.6 /
+    EW 85.0) but zero-shot is not (66.3 / 70.9 / 70.9).
+  - phi-only relations (no hand lists; train phi with the same extractor; symmetric, so it also credits hyponyms):
+        rule             P1-sh  fuse2-sh  ZS-sh   ZS-P1 short      fuse2-P1 short P    P1-sh minus human P
+        R0 exact          77.9   75.7     52.3   -25.7            -2.2 [-4.8,+0.6]    -10.0
+        P_h (CHAIR-vi)    80.4   77.5     55.5   -24.9            -2.9 [-5.5,-0.1]     -8.2
+        A7 NAP R4         84.4   80.9     66.3   -18.1            -3.5 [-5.9,-0.9]     -5.8
+        EV + A7 rels      84.6   81.3     70.9   -13.7            -3.3 [-5.7,-0.7]     -5.0
+        EV + phi>=0.5     88.0   86.9     74.7   -13.2            -1.1 [-3.4,+1.1]     -4.7
+        EV + phi>=0.9     79.6   78.0     57.3   -22.2            -1.6 [-4.2,+1.1]     -9.2
+        E0 + phi>=0.9     80.8   79.2     56.4   -24.4            -1.7 [-4.3,+0.9]     -8.6
+    Answer: phi alone is NOT enough. At tau=0.9 (the threshold referent gold supports) phi misses the main person
+    hypernyms (người~phụ nữ 0.82, người~đàn ông 0.80 on KTVIC train) and recovers only ~P_h; at tau=0.5 it over-credits
+    (constant caption "người" -> 81.5-84.1% precision). No tau reproduces R4's semantics: hypernym credit is ENTAILMENT
+    (a girl is a person), which a taxonomy gives and phi (referent identity) does not.
+  - Consequences for A7's claims: "~30% of SFT's apparent hallucination reduction is naming" is rule-dependent:
+    share of the short-mode zero-shot-P1 gap removed = 3% (P_h), 29% (A7), 47% (EV + A7 rels), 5-48% (phi-only);
+    detailed mode 0-22%. The fuse2-P1 short precision deficit is significant under hierarchy rules (P_h, A7, EV+A7) and
+    NOT under exact or phi-only rules.
+
+1.4 ATTACK (b): hypernym credit rewards vague captions
+  - Hypernymising P1-short's mentions one level up (A7 PARENTS): NAP precision RISES 84.4 -> 87.8, R_ref falls
+    50.5 -> 31.7, F1(NAP-P, R_ref) falls 63.2 -> 46.6, naming 'above' share jumps 9.8 -> 49.0 (fuse2: 80.9 -> 85.5,
+    56.9 -> 35.3, 66.8 -> 49.9, 9.2 -> 49.0). So the R_ref + naming-share pairing DOES catch it -- but only if NAP
+    precision / CHAIR_i is never reported alone, and the paper's headline hallucination metric is precision-type.
+  - Constant captions (no image): "người" -> NAP precision 78.7% (exact 43.7, P_h 65.6), above zero-shot's 66.3 and
+    equal to P1's exact 77.9; "người + đồ" -> 68.1% (P_h 38.4): A7's 'đồ' (thing) root is credited in ~57% of images.
+    Real systems barely use these roots (removing root credit: P1 84.4 -> 84.3, zero-shot-det 42.5 -> 40.8), so drop
+    'đồ', 'vật', 'con vật', '+quần áo', '+giày dép', '+tàu thuyền' from creditable hypernyms -- it costs nothing and
+    closes the exploit.
+  - Verdict on (b): the guard is sufficient for F1 and for a reader who sees all three numbers; insufficient for a
+    CHAIR_i-style headline. Report NAP-P only as a pair with R_ref and the 'above' share; include the stress test.
+
+1.5 ATTACK (c): phi circularity and scene dependence  (phi_f30ke.out, code/phi_f30ke.py)
+  - Circularity broken with EXISTING referent-level human labels: Flickr30k Entities (Plummer et al. 2015) links the NPs
+    of an image's 5 captions to entity ids. Over 31,783 images, 1,119 head lemmas, 17,542 pairs: phi predicts "the two
+    names usually denote the same entity" with AUROC 0.961 (coref>=0.5; 0.924 at >=0.3, 0.981 at >=0.7). Precision:
+    phi>=0.5 -> 44% such pairs; phi>=0.9 -> 78%. On COCO, excluding CHAIR's person class (which merges man/woman/
+    boy/girl into one 'synonym' class) raises A7's AUROC from 0.872 [0.846,0.899] to 0.938. So phi is validated as a
+    referent-identity statistic; CHAIR's list understated it.
+  - Scene dependence is real and is exactly what referent identity predicts (Flickr, phi / coref rate):
+        man~person   1 people entity 0.99 / 1.00    >=3 people entities 0.46 / 0.54
+        person~woman                 1.00 / 1.00                        0.40 / 0.42
+        boy~child                    1.00 / 1.00                        0.77 / 0.53
+    => người~đàn ông 0.80 (KTVIC) vs 0.28 (UIT-ViIC, players + crowds) is phi measuring how often the names co-refer,
+    not noise. Implication: phi belongs in RECALL clustering (are these one referent?) and in admitting near-synonyms;
+    it must NOT gate PRECISION credit for hypernyms (existence is entailed regardless of crowd size). A7 conflates the two.
+  - Caveat: phi cannot tell a naming variant from an attribute disagreement. In Flickr images with ONE people entity,
+    man~woman has phi 0.735 (annotators disagree on the gender of the one person). So phi must never license
+    person-sibling credit; A7 correctly leaves sib_person uncredited.
+  - Pending A7 kill criterion (UIT-ViIC naming-level mentions >= 95% instance-present): UIT-ViIC P1/fuse2 predictions do
+    not exist yet (checked local, n2, n3). For person hypernyms the test is near-tautological (a COCO person exists
+    whenever the other annotators name one); Flickr30k Entities is the informative label check and passes.
+
+1.6 ATTACK (d): does NAP change any substantive conclusion?  (19 precision rules x 7 recall definitions)
+  - Rankings: unchanged under every rule (P1 >= tags_fuse2 >= fuse2 >> zero-shot on P; fuse2 > P1 on R).
+  - Fusion's recall gain: robust everywhere (short +5.5..+6.8, detailed +17.7..+18.8; all CIs exclude 0).
+  - Fusion's precision cost: detailed robust (-6.9..-11.2, all significant); short significant only under hierarchy
+    rules (P_h -2.9 [-5.5,-0.1], NAP -3.5 [-5.9,-0.9]), n.s. under exact or phi-only rules (-1.1..-2.7).
+  - tags_fuse2 vs P1 precision: n.s. under every rule (-1.5..+1.0).
+  - SFT vs zero-shot precision gap: sign robust (>= 13 points short, >= 36 detailed); magnitude rule-dependent.
+  - Human parity: P1-short precision below the held-out human under every rule (-3.5..-10.6, all significant); fuse2
+    recall = human (see 1.2 iii).
+  - Shape of the shift: near-constant across fine-tuned systems (NAP - exact: +5.1..+6.5; differences between
+    fine-tuned systems move <= 1.4), but NOT constant for zero-shot (+14.0 short) or humans (+2.8). So NAP is a
+    near-constant offset for the paper's main P1-vs-fuse2 comparison and a real correction for zero-shot / human gaps.
+
+1.7 PUBLISHED FAIR NUMBERS (fair_rescore.out; Table I/II systems = zeroshot, p1-gold, p2-noverif4090, vsps (Untrained),
+    main_s42 (VSPS); shipped run reproduces every published CHAIR number and CI)
+  - Paper Sec. IV-C says captions are word-segmented with RDRSegmenter/VnCoreNLP and objects detected with the
+    113-entry lexicon; rescap/chair.objects_in actually matches over SYLLABLES (VnCoreNLP is used only for CIDEr/BLEU
+    in rescap/metrics.py). Hence cửa hàng -> door, trái cây -> tree, cổ kính -> glasses etc. in published numbers.
+  - Detailed mode (primary): every headline contrast keeps sign and significance under all 5 matchers
+    (shipped / A7-seg / seg+person / VnCoreNLP words / pyvi words):
+        VSPS - ZS  dCHAIR_i  -15.0 [-16.9,-13.1] | -13.2 | -14.2 | -9.8 [-11.9,-7.7] | -10.1
+        VSPS - P2  dCHAIR_i   -3.8 [-5.7,-2.0]   | -3.1  | -2.9  | -2.4 [-4.5,-0.4]  | -2.6
+        VSPS - ZS  dh/cap    -2.69               | -2.55 | -2.47 | -1.49             | -1.63
+    but magnitudes in the abstract change: "4.26 -> 1.57 hallucinated objects per detailed caption (-63%)" becomes
+    2.95 -> 1.46 (-51%) with VnCoreNLP words (4.17 -> 1.62 with A7's table); CHAIR_s 98.0 -> 79.2 becomes 92.7 -> 78.0.
+  - Short mode: the sentence "VSPS lowers hallucinated objects from 0.93 to 0.84 per caption" does not survive:
+    A7-seg 0.89 vs 0.88 (n.s.); VnCoreNLP 0.59 vs 0.77, VSPS WORSE +0.18 [0.10,0.26]; CHAIR_i VSPS - ZS becomes
+    +5.0 [1.4,8.2] (A7-seg) / +7.9 [3.9,11.7] (VnCoreNLP), i.e. significantly worse, vs published +1.7 n.s.
+  - The A7-seg column is unchanged with the TRAIN-attested table (VSPS det CHAIR_i 52.4 vs 52.4; zero-shot det h/cap
+    4.17 vs 4.28), so the revision does not depend on the test-derived entries.
+  - Action: FAIR text must either describe the matcher as syllable-level (one sentence) or be re-scored; the short-mode
+    0.93 -> 0.84 sentence should be dropped. The Q1 paper must use the fixed matcher for every CHAIR number it reuses.
+
+-----------------------------------------------------------------------------------------------------
+2. NOVELTY  (42 scoop queries: arXiv API 14, WebSearch 20, OpenAlex 8; Semantic Scholar 429. Full texts read and
+   key quotes re-checked in lit/<paper>/paper_raw.txt; details in lit/NOVELTY_NOTES.txt)
+-----------------------------------------------------------------------------------------------------
+  Component-by-component (closest prior -> exact delta):
+  (1) Vietnamese extractor (tone, compounds, classifiers). Prior: CHAIR's released chair.py already hard-codes
+      compound/qualifier rules (hot dog, teddy bear, baby bird -> bird). No Vietnamese CHAIR-type metric exists
+      (KTVIC, UIT-ViIC, UIT-OpenViIC, ViTextCaps: none; ViHallu is text-only). Delta: a port plus an artefact audit.
+      This is engineering, not a method; and V2 shows a list-free VnCoreNLP word-boundary matcher does most of it.
+  (2) Precision crediting more general names: SCOOPED. HalCECE (Lymperaiou et al., 2025, arXiv 2503.00436, Sec. 4):
+      WordNet-LCA edits; "underspecialized objects ... do not constitute hallucinations", over-specialisation does.
+      VALOR-EVAL (Qiu et al., Findings ACL 2024, arXiv 2404.13874, Sec. 4): D_M (same meaning) and D_B ("broader
+      conceptual matches", clothes for dress) both count for faithfulness. Hierarchical P/R (Kiritchenko et al. 2006;
+      Taxonomy-Aware Evaluation of VLMs, CVPR 2025, arXiv 2504.05457). The repo's own CHAIR-vi gold expansion
+      already does it.
+  (3) phi: the only genuinely new element. Closest: Hodosh et al. (CoNLL 2010, W10-2920) cross-caption coreference over
+      an image's captions, which "assume[s] that two words cannot be coreferent within a sentence" and groups NPs via
+      WordNet (MUC F1 85.2); Young et al. TACL 2014 / Lai & Hockenmaier EACL 2017 denotational probabilities (no
+      within-caption term); Berger & Ponti NAACL 2025 (arXiv 2409.16646): per-image name shares k_a/n from XM3600
+      (Vietnamese included) via MT into WordNet, descriptive, no pairwise statistic; Cattuto et al. ISWC 2008
+      (tags related when they share contexts but do not co-occur). Delta: an image-stratified observed/expected
+      co-mention ratio, label-free, now validated against REFERENT gold (Flickr30k Entities AUROC 0.961, V2).
+  (4) Recall per referent cluster: mechanism SCOOPED. The cluster rule (linked names never used together in one
+      caption) is Hodosh 2010's within-sentence constraint plus WordNet grouping; "broader names earn precision, not
+      recall" is VALOR-EVAL's Coverage = |D_M| / |F_G| and hierarchical hR. Delta: clusters induced from the 5
+      references with phi instead of WordNet. Modest.
+  (5) Naming agreement vs a held-out human: ManyNames v2 (Silberer, Zarriess, Westera, Boleda, COLING 2020) scores
+      top name / adequate alternative / error (Bottom-Up 73.4 / 87.9); Ordonez et al. ICCV 2013 1-vs-2 human ceiling;
+      Testoni et al. ACL 2024. Delta: modal name from free captions, scored per mention, 1-vs-4 ceiling. Small.
+  No 2025-26 "naming-aware CHAIR" and no Vietnamese caption-hallucination metric found. Novelty claimable: (i) phi as
+  a label-free referent-identity statistic validated on coreference gold; (ii) the measured Vietnamese decomposition
+  and its effect on a held-out-human calibration. Must cite HalCECE, VALOR-EVAL, hierarchical P/R (CVPR 2025),
+  Hodosh 2010, Young 2014, ManyNames v1/v2, Berger & Ponti 2025, and Chen et al. 2015 for the 1-vs-k human protocol.
+
+-----------------------------------------------------------------------------------------------------
+3. REVIEWER (Q1: Pattern Recognition / Neurocomputing / TMM)
+-----------------------------------------------------------------------------------------------------
+  Accept as the paper's MAIN contribution? No. It changes no ranking, and on the paper's central P1-vs-fuse2
+  comparison it is a near-constant offset. As a SECONDARY contribution it fits the story (referent-level evaluation
+  from multiple partial references, calibrated against a held-out annotator), provided it is a priori, validated
+  on referent gold, and reported as a band.
+
+  STRONGEST OBJECTION: "Your metric's effects come from resources you hand-built while looking at the test
+  references and the very outputs you score (90 compounds, 16 synonym sets, 7 near pairs, a parent map). Make them
+  list-free and three of your claims move: fuse2's short-mode precision cost loses significance, fuse2's super-human
+  recall disappears, and 'naming explains ~30% of SFT's hallucination reduction' spans 3-48%. And it changes no
+  ranking -- it is a tuned re-scoring."
+  MINIMAL FIX (existing data only; most of it already computed here):
+   1. Freeze resources a priori and say where they come from: shipped syllable matcher plus an exception table of
+      exocentric compounds attested in TRAIN references (A7's 66; identical numbers), with VnCoreNLP whole-word
+      matching (the tool Sec. IV-C already names) as the list-free bound; the person tree completed in HYPERNYMS
+      (8 entries, linguistically uncontroversial); synonyms from the shipped svp.matching.canonical; no root
+      superordinates (đồ, vật, con vật, +quần áo, +giày dép, +tàu thuyền).
+   2. Use phi only where it is the right construct: referent clusters for recall and admission of near-synonyms
+      at tau = 0.9, justified by Flickr30k Entities coreference (AUROC 0.961; 78% co-referent at phi >= 0.9).
+      Never use it to gate hypernym precision credit.
+   3. Add an appendix sensitivity band: each claim under exact / CHAIR-vi / NAP / list-free, and claim only what
+      holds across it (rankings, fusion's recall gain, fusion's detailed-mode precision cost, P1 below human
+      precision, fuse2 = human recall).
+   4. Add the vagueness stress test (hypernymised captions, constant captions) and the reporting rule that
+      NAP-P always appears with R_ref and the 'above' share.
+  SECOND OBJECTION: "CHAIR-vi in your FAIR paper had segmentation bugs and the text claims word segmentation."
+  Disclose it, re-score, and show the detailed-mode conclusions survive (1.7). This is a credibility gain if
+  pre-empted and a desk-reject risk if a reviewer finds it.
+
+-----------------------------------------------------------------------------------------------------
+4. DELIVERABLE FOR THE PAPER  (cost: 0 GPU-h; < 5 CPU-min per full run; ~1 engineering day)
+-----------------------------------------------------------------------------------------------------
+  Code
+   - rescap/chair.py -> CHAIR-vi v2: norm_tone (old/new tone placement, 112 zero-shot captions affected);
+     syllable longest match + the 66-entry train-attested exocentric-compound table + classifier rule (POS Nc before
+     a lexicon noun, or A7's 19 train-attested pairs); HYPERNYMS person tree: cô gái->phụ nữ, chàng trai->đàn ông,
+     học sinh/công nhân->người, em bé/đứa trẻ/bé trai/bé gái->trẻ em (replacing the shipped bé trai->đàn ông and
+     bé gái->phụ nữ, which credit 'man' for a boy). Keep a --matcher v1 flag to reproduce the FAIR numbers; offer
+     --matcher vncore (whole-word, list-free bound).
+   - scripts/nap.py (port of A7 naming.py/naming_level.py + V2 ktvic_checks.py): precision R0 / CHAIR-vi / NAP
+     (syn+near+hyper, roots excluded); recall exact / R_ref (non-transitive clusters; with and without hyponym
+     credit); naming agreement 1v4 (top/above/below); decomposition of reference-false mentions; paired bootstrap vs a
+     base system; --band (sensitivity band) and --stress (vague/constant captions). Must have a _check() self-test.
+   - scripts/phi_validate.py: V2 code/phi_f30ke.py (Flickr30k Entities AUROC + scene strata) + A7 phi_coco_en.py
+     (+ person-class exclusion) + phi_uitviic.py.
+  Tables / figure
+   - Main text, 1 table: zero-shot / P1 / fuse2 / tags_fuse2 (short and detailed) + held-out human (1v4):
+     P exact | P CHAIR-vi | P NAP ; R exact | R_ref ; naming top / above ; paired delta vs P1 with 95% CI.
+   - Appendix A: decomposition of reference-false mentions (S / syn+near+hyper / hypo+sib / O), with the corrected
+     wording "29-44% credited".
+   - Appendix B: sensitivity band (5 matchers x 4 relation sources) for the claims of 1.6, plus the stress test.
+   - Appendix C (or a small figure): phi validation (Flickr30k Entities 0.961; COCO 0.872 / 0.938 without the person
+     class; UIT-ViIC 0.817 [0.67,0.93]) and phi vs coreference rate by number of people (scene dependence).
+   - Appendix D: FAIR systems re-scored (shipped / fixed / VnCoreNLP), stating which published sentences change.
+
+5. FILES (research_r2/V_V2/)
+  code/v2_common.py (A7 layers + list-free extractors; pyvi / VnCoreNLP whole-word matcher), code/ktvic_checks.py
+  (attacks a-d; ktvic_checks.out / .json), code/fair_rescore.py (fair_rescore.out), code/gain_sources.py
+  (gain_sources.out), code/phi_f30ke.py (phi_f30ke.out / .json; data in dl_f30ke/), code/vncore_seg.py (n3 run;
+  vncore_out.json), phi_train_{E0,E1,EW,EV}.json, naming_level_repro.out, repro_decompose_B2.out, lit/ (novelty).

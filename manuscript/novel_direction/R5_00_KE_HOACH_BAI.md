@@ -12,11 +12,11 @@ Khi viết file này không dùng GPU, không nạp mô hình, không sửa gì 
 - Khi V1–V5 khác báo cáo ứng viên A1–A8 hoặc khác R4-00, theo V1–V5.
 
 **Nguồn**
-- `R2` = `/tmp/claude-1000/-mnt-d-vsps-image-captioning/755eae04-5e4c-4ce1-ab21-d4bc106761ee/scratchpad/research_r2`. Đây là scratchpad: không nằm trong repo và có thể mất. Số lấy từ `R2` phải được tái lập bằng script trong repo trước khi vào bài (quy tắc của R4-00).
+- `R2` = `manuscript/research_r2/` trong repo (bản chép từ scratchpad ngày 12/10, commit sau 61e405b; đã quét: không có câu caption OpenViIC, không có mật khẩu). Code và file phụ của từng agent vẫn chỉ nằm trong scratchpad. Số lấy từ `R2` phải được tái lập bằng script trong repo trước khi đưa vào bài.
 - Mã trích dẫn:
   - [R4-00], [R4-01], [R5-01], [06]: các file cùng thư mục này.
   - [PRE] = `manuscript/prereg/2026-10-12_ladder_predictions.json`. [PRE-V4] = `manuscript/prereg/2026-10-12_frontier_invariance_V4.txt` (bản sao của V4).
-  - [Vk] = `R2/V_Vk/VERIFY.txt`. [A6] = `R2/A6/REPORT.txt`.
+  - [Vk] = `R2/Vk_VERIFY.txt`. [Ak] = `R2/Ak_REPORT.*` (A8 có thêm `A8_REPORT_final.txt`).
   - [Q-n2], [Q-n3] = `/root/queue/queue.log` và `/root/queue/*.sh` trên n2 (`ssh -p 2022 root@n2.ckey.vn`) và n3 (`ssh -p 2241 root@n3.ckey.vn`).
   - [res] = `data/results/<tên>.json`: điểm n-gram word-level (RDRSegmenter, VnCoreNLP-1.2), thang ×100; CHAIR-vi bản đang dùng.
 - Số trong ngoặc vuông là CI 95% bootstrap theo ảnh, trừ khi ghi khác. "chưa có" nghĩa là chưa chạy hoặc chưa về.
@@ -399,7 +399,7 @@ Kết quả của hàng đợi mà R6 cần:
 | Bootstrap 2 tầng seed × ảnh trong `object_prf.py` (`--seeds`) | Claim 3 seed, Bảng X, mọi so sánh của R6 | R4-00 C-2 |
 | CHAIR-vi v2, `scripts/nap.py`, `scripts/phi_validate.py`; giữ `--matcher v1` | Mọi số CHAIR_i trong bài; phụ lục FAIR | V2 §4 |
 | Port `R2/V_V5/v5_committee.py` vào `scripts/` | Đóng góp 6 | V5 |
-| Chép `R2/V_V1`, `V_V2`, `V_V3`, `V_V5/VERIFY.txt` vào repo (chỉ V4 đã có trong `manuscript/prereg/`) | Truy vết số | file này |
+| ~~Chép V1, V2, V3, V5 vào repo~~ Đã làm: `manuscript/research_r2/` | Truy vết số | file này |
 | Bỏ phần AI-silver và khung LSC của 06 khỏi bản thảo | Wording | R4-00 §6 |
 
 ### 7e. Job của R4-00 (70–83) chưa xếp: trạng thái sau V1–V5
@@ -524,7 +524,7 @@ Dữ liệu dự kiến (đã có sẵn, cùng ảnh, hai ngôn ngữ):
 | **Ước lượng "phần thật" và P hiệu chỉnh** | Giả định panel nhạy với mention thừa của hệ như với của người. Trên COCO, bộ ước lượng tính thiếu cho hệ: −10.7 đến −46.3 điểm [V3 P5] | Không viết "96% là thật". Viết "as attested as a held-out reference caption's unsupported mentions" |
 | **Panel thứ hai không phải sự thật** | Hai panel phủ khoảng 84.4% [83.0, 85.6] lớp nhắc được, và đây là cận trên [R5-01 §6] | Ghi cạnh Bảng X |
 | **Lexicon COCO-80 v1** | Thiếu từ chỉ người (cầu thủ, vận động viên…); "bàn" khớp trong "bóng bàn" [V3 P2] | Lexicon v2 trước khi chấm 36, 38, 52 (§7d) |
-| **Nguồn số nằm ngoài repo** | V1, V2, V3, V5 chỉ có trong scratchpad | Chép vào repo (§7d) |
+| **Nguồn số nằm ngoài repo** | Đã chép báo cáo vào `manuscript/research_r2/`; code của agent vẫn ở scratchpad | Port script cần dùng vào `scripts/` |
 
 ## 11. Venue và lịch
 
