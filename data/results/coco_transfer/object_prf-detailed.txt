@@ -1,0 +1,28 @@
+KTVIC (test_data.json, 558 images, detailed mode) -- object precision / recall / F1 (%)
+  exact match | CHAIR-vi hypernym rule: P_h, R_spec (F1), R_vague (F1)
+  no p1_s43 preds: paired bootstrap skipped
+
+COCO-2014 (2500 images, detailed mode, Vietnamese lexicon v2) -- object precision / recall / F1, CHAIR_i = 100 - P, CHAIR_s = captions with an invented class (%)
+  gold = instances + references
+  VSPS                       n=2500  true/cap=1.23  P= 89.1  R= 45.5  F1= 60.2  CHAIR_i= 10.9  CHAIR_s= 14.2
+  zero-shot                  n=2500  true/cap=1.80  P= 84.0  R= 62.8  F1= 71.8  CHAIR_i= 16.0  CHAIR_s= 27.7
+  fuse2_s42                  n=2500  true/cap=1.29  P= 92.4  R= 48.2  F1= 63.3  CHAIR_i=  7.6  CHAIR_s= 10.5
+  p1_s43                     n=2500  true/cap=1.02  P= 93.0  R= 40.6  F1= 56.5  CHAIR_i=  7.0  CHAIR_s=  7.6
+  gold = instances only
+  VSPS                       n=2500  true/cap=1.19  P= 86.4  R= 49.5  F1= 63.0  CHAIR_i= 13.6  CHAIR_s= 17.7
+  zero-shot                  n=2500  true/cap=1.73  P= 80.5  R= 67.5  F1= 73.4  CHAIR_i= 19.5  CHAIR_s= 32.1
+  fuse2_s42                  n=2500  true/cap=1.24  P= 88.9  R= 52.3  F1= 65.8  CHAIR_i= 11.1  CHAIR_s= 14.8
+  p1_s43                     n=2500  true/cap=0.98  P= 89.8  R= 44.4  F1= 59.4  CHAIR_i= 10.2  CHAIR_s= 10.6
+  classes no reference names, per caption: in the instances (reference gap) | not in the instances (hallucination)
+  VSPS                       0.27/cap  present 0.12 (44.2%)  absent 0.15 (55.8%)
+  zero-shot                  0.68/cap  present 0.34 (49.6%)  absent 0.34 (50.4%)
+  fuse2_s42                  0.20/cap  present 0.10 (47.1%)  absent 0.11 (52.9%)
+  p1_s43                     0.11/cap  present 0.04 (31.7%)  absent 0.08 (68.3%)
+  paired bootstrap vs p1_s43, gold = instances + references (B=5000, same images): delta [95% CI] p
+  distill                    n=2500  dP=-3.8 [-5.0,-2.7] p=0.0004  dR=+4.9 [+3.7,+6.0] p=0.0004  dF1=+3.7 [+2.6,+4.9] p=0.0004
+  zeroshot                   n=2500  dP=-9.0 [-10.2,-7.8] p=0.0004  dR=+22.2 [+21.0,+23.3] p=0.0004  dF1=+15.3 [+14.2,+16.5] p=0.0004
+  fuse2_s42                  n=2500  dP=-0.6 [-1.6,+0.3] p=0.1928  dR=+7.6 [+6.6,+8.6] p=0.0004  dF1=+6.8 [+5.8,+7.8] p=0.0004
+  paired bootstrap vs p1_s43, gold = instances only (B=5000, same images): delta [95% CI] p
+  distill                    n=2500  dP=-3.4 [-4.7,-2.2] p=0.0004  dR=+5.2 [+3.9,+6.4] p=0.0004  dF1=+3.6 [+2.4,+4.8] p=0.0004
+  zeroshot                   n=2500  dP=-9.3 [-10.6,-8.0] p=0.0004  dR=+23.1 [+21.9,+24.4] p=0.0004  dF1=+14.0 [+12.9,+15.2] p=0.0004
+  fuse2_s42                  n=2500  dP=-0.9 [-1.9,+0.1] p=0.0968  dR=+7.9 [+6.8,+9.0] p=0.0004  dF1=+6.4 [+5.5,+7.5] p=0.0004
