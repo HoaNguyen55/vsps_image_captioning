@@ -1,0 +1,351 @@
+V4 - adversarial verification of A1 Idea 2 ("implicit-threshold calibration")
+Date 2026-10-12. CPU only (local, nice 15). No VLM/LLM loaded, no GPU, n2/n3 and /root/queue untouched.
+All paths relative to research_r2/V_V4/ unless absolute.
+
+==========================================================================================================
+VERDICT: SURVIVES-WITH-CHANGES (major). The threshold MECHANISM is killed; two parts survive.
+==========================================================================================================
+Killed. The mechanism "each target policy fixes an implicit threshold tau_T, and greedy decoding keeps o iff the learned
+mention marginal > 1/2" does not describe the trained captioner.
+  - P1 (tau = 0.505) should name E#{pi > 0.505} = 1.24 objects per test image. It names 1.78 (3 seeds), +44%.
+  - "Longer targets -> more objects" (Prop. 3 below) predicts every observed count within 4.4%.
+  - A1's claim that tau = 0.5 "explains P1's low recall" is false. At 1v4, P1 names MORE objects than one human (1.80 vs
+    1.74). It loses recall (-4.1) only through precision (-10.1).
+  - The pilot evidence for the theory is tautological, guaranteed by calibration, or implied by target length (section 1).
+Survives, after the changes in section 6:
+  (i) A short decision-theoretic appendix: Props 1-3 with the assumptions stated, and their failures measured.
+  (ii) FRONTIER INVARIANCE as an empirical law of the learner. It already holds on existing data and is now
+       pre-registered for the queued ladder (PREDICTIONS.json, 0 GPU-h):
+       - every trained run on human or self-sampled targets lies on one precision-vs-count curve;
+       - per-run residuals: -0.44 to +1.21 P;
+       - pooled residual over 7 non-anchor runs: 95% CI [-0.59, +1.07];
+       - only detector tags sit off the curve (+1.87, CI [-0.27, +3.90]).
+
+==========================================================================================================
+1. REPRODUCE
+==========================================================================================================
+1a. Reruns
+  - I reran A1's dial unchanged (lambda_ident.py imports A1/pilot_targets.py) and got identical curves:
+    - KTVIC lr: F* 68.30 at lambda 0.35;
+    - UIT-ViIC lr: 74.85 at 0.35.
+  - Baselines match data/results/policy_offline.json: p1 60.6, cons 62.9, fuse2 67.7, rnd2 65.7, unf2 61.9, multiref 58.9.
+  - The +0.61 P dial gain is reproduced from A1's own log. I did not re-bootstrap it, but the curve it rests on is
+    identical.
+  - Code audit: no leakage. The q models are cross-fitted over 5 image folds; the features use only the kept captions
+    and the file position.
+
+1b. "Best lambda 0.35 vs F*/2 = 0.34" is not evidence for the target theory.
+  - Lipton et al. 2014 (Dinkelbach form) guarantees argmax = F*/2 for ANY calibrated q. The lr q is calibrated
+    (mean q 0.462 = base rate 0.462), so the match is a calibration check.
+  - The F1 surface is flat.
+    - KTVIC lr: within 0.25 F1 of the maximum for lambda in [0.175, 0.375].
+    - Keeping everything (lambda = 0, the union of the 3 kept captions) loses only 0.27 F1 (UIT-ViIC: 0.11).
+  - Bootstrap of the argmax (B = 300; lam_ktvic.json, lam_uit.json):
+
+    | dataset, q model | argmax CI | F*/2 | gap argmax - F*/2 |
+    |---|---|---|---|
+    | KTVIC lr | [0.325, 0.375] | 0.341 | [-0.019, +0.036] |
+    | KTVIC cls | [0.25, 0.40] | 0.341 | — |
+    | UIT-ViIC lr | [0.16, 0.375] | 0.374 | [-0.21, 0.00] |
+    | UIT-ViIC cls | [0.375, 0.475] | 0.374 | — |
+
+  - Read: the match holds on KTVIC and is weakly identified elsewhere. It is worth <= 0.3 F1 everywhere.
+
+1c. "Operating points ordered as predicted" (proxy) is tautological. The proxy is a logistic regression decoded at
+    t = 0.5, so it thresholds the learned marginal at 1/2 by construction. That is assumption A3 imposed, not tested.
+
+1d. Annotator exchangeability fails on KTVIC (assumption A1). Adjacent file positions (12, 23, 34, 45) vs non-adjacent
+    pairs:
+
+    | | shared objects, adjacent - non-adjacent | Jaccard, adjacent - non-adjacent |
+    |---|---|---|
+    | train | +0.172 [0.161, 0.183] | +0.115 [0.109, 0.122] |
+    | test | +0.237 [0.207, 0.268] | +0.142 [0.125, 0.159] |
+
+  - A union with an adjacent caption adds 22% fewer new objects: 2.29 vs 2.47 objects, against 1.63 for one caption.
+  - Consistent with 3 annotators writing 5 captions (pigeonhole) plus 2 revising reviewers.
+  - The same dependence inflates the "one human" parity point. The held-out 4 usually contain a same-author caption.
+
+1e. Bug found and fixed in my own check code: the bootstrap re-seeded the RNG on every draw. No candidate numbers
+    changed.
+
+==========================================================================================================
+2. THE THEORY AS A FORMAL PROPOSITION (paper appendix text) AND WHERE EACH STEP BREAKS
+==========================================================================================================
+Setting
+  - Image x; object vocabulary V; K captions per image; caption j names the set S_j; C_o = sum_j 1[o in S_j].
+  - A target policy T maps the captions to m training rows. SFT uses all of them, so the MLE target is their uniform
+    mixture.
+  - Inclusion function: g_T(c) = E[(1/m) sum_rows 1[o in row] | C_o = c].
+    - It is exact for separable policies (single caption, multiref, random unions).
+    - It is a first-order summary for consensus and greedy fusion, whose inclusion also depends on the other objects.
+
+Assumptions
+  (A1) Given x, S_1..S_K are i.i.d. (exchangeable, conditionally independent annotators), with
+       pi_o(x) = P(o in S | x). Hence C_o | x ~ Bin(K, pi_o(x)).
+  (A2) Population-optimal learner. The model distribution equals the target mixture, so its mention marginal is
+       mu_T(o|x) = sum_c g_T(c) Bin(c; K, pi_o(x)).
+  (A3) Set-MAP decoding of a product-form mention distribution. The output names o iff mu_T(o|x) > 1/2.
+
+Prop 1 (implicit threshold)
+  - Statement: under A1-A3, with g_T non-decreasing and non-constant, the decoded set is {o : pi_o(x) > tau_T}, where
+    mu_T(tau_T) = 1/2.
+  - Proof sketch: the binomial family is stochastically increasing in pi, so mu_T is strictly increasing.
+  - Values:
+    - single caption and multiref (g = c/K): tau = 1/2;
+    - union of k i.i.d. captions: mu = 1 - (1 - pi)^k by A1, so tau = 1 - 2^(-1/k);
+    - union of all K: tau = 1 - 2^(-1/K) = 0.129.
+  - Actual ladder rows (operating_points.py, exact build_gold_sft rows, KTVIC train):
+
+    | policy | tau | g(1) | g(2) | g(3) |
+    |---|---|---|---|---|
+    | p1 | 0.505 | | | |
+    | multiref | 0.500 | | | |
+    | unf2 | 0.383 | | | |
+    | cons | 0.352 | 0.11 | 0.74 | 0.87 |
+    | rnd2 | 0.269 | | | |
+    | fuse2 | 0.181 | 0.70 | 0.95 | 0.99 |
+
+Prop 2 (F1-optimal set; Lipton et al. 2014 in Dinkelbach form)
+  - Setting: the gold is the union of h fresh annotators, q_o = 1 - (1 - pi_o)^h, and F = 2E[TP] / (E|M| + E|G|)
+    (micro P and R).
+  - Statement: the optimal set is {o : q_o > F*/2}.
+  - Proof: max_M 2E[TP] - F*(E|M| + E|G|) = 0 at the optimum, and this decomposes over objects.
+  - Corollary: the matching union size is k* = h ln2 / (-ln(1 - F*/2)).
+    - Offline gold (h = 2, F* = 0.683): k* = 3.3.
+    - Test gold (h = 5, F* = 0.64): k* = 8.9, i.e. more than the 5 captions that exist.
+  - Remark (the repo metric): micro P with macro R (the mean of tp_i/|G_i|) makes the break-even probability
+    image-dependent:
+    - q*_i = P / (1 + (P/R)^2 (M/N) / |G_i|); verified numerically to 4 decimals;
+    - it reduces to F/2 when |G_i| is constant;
+    - on KTVIC offline (P 0.63, R 0.75, about 3.2 objects per target) it ranges from about 0.19 (|G| = 1) to 0.40
+      (|G| = 4).
+  - Not covered here: instance-wise F (Dembczynski et al. 2011, GFM).
+
+Prop 3 (length matching; needs only A1-A2)
+  - Statement: a decoder that returns a sample from the model names E|M| = sum_o mu_T(o|x) = E[|row| | x] objects, and
+    E[TP_h] = sum_o mu_T q_o.
+  - So an ideal sampler sits at the target's own offline operating point (human_parity.py offline).
+  - No threshold appears. This is the known null (Eikema & Aziz 2020: samples reproduce data statistics, MAP does not).
+
+Corollary 4 (frontier invariance for an ideal learner)
+  - Under A1-A3, monotone policies differ only in tau_T, so they trace one curve.
+  - This is Menon et al. 2015 (the optimal classifier thresholds the corrupted class-probability at a shifted threshold;
+    AUC is immune to corruption), with the corruption map pi -> mu_T(pi).
+
+Where it breaks, with numbers
+  A1 breaks. See 1d: positions are not exchangeable.
+    - The 1 - 2^(-1/k) values overstate the effective k for unions.
+    - The empirical g(c) avoids the binomial step for g, but mu_T(pi) still assumes Bin(5, pi).
+  A3 breaks for the trained captioner.
+
+    | system | ideal-threshold count | length model (same construction on the same test images) | observed |
+    |---|---|---|---|
+    | P1 | 1.24 (plug-in c >= 3: 1.42) | 1.715-1.743 | 1.783 |
+    | fuse2-short (consensus rows) | 1.92-1.97 | 2.188 | 2.091 |
+    | fuse2-detailed | 2.91-3.26 | 3.285 | 3.154 |
+
+    - Only the tau ~ 0.5 policies discriminate the two models. There the threshold model misses by 44%; the length
+      model by 2-4%.
+    - Majority amplification happens at the TEMPLATE level instead:
+      - fuse2 detailed targets are two-sentence in 72% of rows (75% on the same test images);
+      - outputs average 1.914 sentences, about 91% two-sentence;
+      - so thresholding at 1/2 describes the template choice, not the objects.
+  Multi-row targets.
+    - unf2: objects named in only one of its two rows sit exactly at mu = 1/2, a knife edge where Prop 1 is undefined.
+    - multiref: the per-image marginal is exactly c/5. Under A3 it should emit the majority set: 1.19 objects per train
+      image, 1.28-1.42 per test image, against 1.63-1.74 for a typical caption. This is the sharpest queued
+      discriminator (D1).
+  Length and sentence constraints. One-sentence prompts give about 12 words and 1.8-2.1 objects whatever tau is. Count
+    follows the targets' object density per sentence.
+  F1 decomposition is approximate under macro recall (see the Remark) and flat (1b).
+  "Consensus selection and greedy fusion are special cases" holds only with added constraints:
+    - one caption, or exactly two with consensus forced;
+    - without them, the Bayes rule with uniform q > lambda keeps the union of all captions, not fuse2.
+
+==========================================================================================================
+3. IS "OPERATING POINTS ORDERED AS PREDICTED" A STRONG TEST?  No.
+==========================================================================================================
+- Object counts per training row (exact ladder rows):
+
+  | policy | objects per row |
+  |---|---|
+  | p1 | 1.618 |
+  | multiref | 1.634 |
+  | cons | 2.033 |
+  | unf2 | 2.073 (1.72 rows per image) |
+  | rnd2-detailed | 2.512 |
+  | fuse2-detailed | 3.068 |
+
+- The tau order equals this length order, except a cons/unf2 swap and a p1/multiref near-tie.
+- So a model with NO thresholds ("count follows target length") predicts A1's order. It passes A1's kill rule
+  (Kendall tau-b < 0.6 kills) by construction, with tau-b between 0.73 and 1.0.
+- Likewise for human_parity.py rank:
+  - the length model's points give trained F1 fuse2 64.4 > rnd2 61.2 > unf2 58.5 >= cons 58.1 > p1 54.6 >= multiref
+    54.2;
+  - Kendall tau-b 0.87 against the offline order (p = 0.017);
+  - so a "pass" is predicted by length alone.
+
+==========================================================================================================
+4. PRE-REGISTERED PREDICTIONS (PREDICTIONS.json, timestamp 2026-10-12)
+==========================================================================================================
+Status. Written before any ladder prediction was in data/results; I checked that no cons, unf2, rnd2, multiref, p1ep4 or
+fuse2 s43/s44 file existed, and did not look at n2/n3.
+
+Metric. object_prf.py against the union of the 5 test references, 558 KTVIC images. M = unique lexicon classes per
+caption.
+
+Model L = length + learner frontier.
+  - Count: M = (training rows' objects per row) x r, with r between the two observed regimes (P1 1.102, fuse2 1.028),
+    +-0.035 (2 seed SD).
+  - P and R come from one frontier fitted on P1 (3 seeds, short) and fuse2_s42-detailed:
+    - TP(M) = 1.3996 (M/1.7826)^0.7468;
+    - P = TP/M;
+    - R = 5.486 + 25.982 TP.
+  - Tolerance: +-1.0 P and R. Seed SD is P 0.50, R 0.53; frontier residual SD over existing runs is 0.48.
+  - Frontier slopes near P1: dP/dM = -11.2 and dR/dM = +15.2 per object.
+
+Predictions (point [lo, hi]; dP and dR vs P1, the 3-seed mean: M 1.783, P 78.52, R 41.85)
+
+| run | M | P | R | dP / dR | F1 |
+|---|---|---|---|---|---|
+| p1ep4_s42-short | 1.72 [1.63, 1.82] | 79.2 [77.1, 81.3] | 40.9 [38.5, 43.4] | +0.7 / -0.9 | 54.0 |
+| multiref_s42-short | 1.74 [1.65, 1.84] | 79.0 [76.9, 81.1] | 41.2 [38.7, 43.7] | +0.5 / -0.6 | 54.2 |
+| cons_s42-short | 2.17 [2.06, 2.28] | 74.7 [72.8, 76.7] | 47.5 [44.9, 50.1] | -3.8 / +5.7 | 58.1 |
+| unf2_s42-short | 2.21 [2.10, 2.32] | 74.4 [72.5, 76.4] | 48.2 [45.5, 50.8] | -4.1 / +6.3 | 58.5 |
+| rnd2_s42-detailed | 2.58 [2.46, 2.71] | 71.5 [69.6, 73.4] | 53.4 [50.7, 56.2] | -7.0 / +11.6 | 61.2 |
+| rnd2_s42-short | 2.09 [2.03, 2.15] | 75.7 [74.2, 77.2] | 47.1 [45.6, 48.6] | (= fuse2-short) | |
+| fuse2_s43/s44-detailed | 3.15 [3.05, 3.25] | 68.0 [66.5, 69.5] | 61.2 [59.7, 62.7] | | |
+| fuse2_s43/s44-short | 2.09 [2.03, 2.15] | 75.7 [74.2, 77.2] | 47.1 [45.6, 48.6] | | |
+
+Structural predictions
+- rnd2-detailed writes >= 1.95 sentences per caption (all its targets are two sentences).
+- rnd2-detailed count / fuse2-detailed count is in [0.78, 0.86] under both models.
+- cons, unf2, multiref and p1ep4 answer the detailed prompt in one sentence (<= 1.03 sentences), with M within +-0.08
+  of their short mode.
+
+Discriminators between L and T (A1's threshold model with an ideal learner)
+  D1 multiref count. L: 1.65-1.84. T: 1.28-1.42 (majority set). A1's own stated prediction: recall <= P1's - 2.0.
+  D2 p1ep4 count. L: 1.63-1.82. T: falls toward 1.24 as the learner fits better.
+  D3 cons count / P1 count. L: 1.15-1.28. T: >= 1.40 (ideal ratio 1.47 on train, 1.55 on test).
+  D4 unf2 count / cons count. L: 0.97-1.06. T: 0.93-0.95.
+
+A1-specific hypotheses, tested by the frontier residual (P minus the frontier's P at the run's own count)
+  - H0, frontier invariance:
+    - each run's point residual is within +-1.0;
+    - the pooled mean over landed runs has a CI containing 0, with its point in [-0.8, +0.8].
+  - H1-variance, A1's Idea 1 premise: the multiref residual is >= +1.0 with a CI excluding 0 (A1's proxy says +3 mP).
+  - H1-bleed: both of the following hold.
+    - cons-short has <= 0.52 unsupported mentions per caption (fuse2-short: 0.57; A1 unsupported.py);
+    - cons-short's residual is >= fuse2-short's (+0.34) + 1.0, with a CI excluding 0.
+  - Resolution: the per-run residual CI is about +-2 P at 558 images (paired with the anchors, which are refitted on
+    each draw). Single-run H1 claims of 1-2 P cannot be resolved; the pooled residual can.
+
+Check when the runs land (CPU, about 1 min):
+  cd /mnt/d/vsps_image_captioning && NCS_DATA=data python3 <V_V4>/make_predictions.py --check
+
+Already observed (not predictions), from the same check code:
+
+| run | frontier residual P [95% CI] |
+|---|---|
+| fuse2_s42-short | +0.34 [-1.58, +2.29] |
+| e5_s42-short | -0.44 [-2.46, +1.59] |
+| e5_s42-detailed | -0.29 [-1.82, +1.16] |
+| p1_s43-two | +0.25 [-0.95, +1.56] |
+| P1-detailed, 3 seeds | +0.31, +1.21, +0.26 |
+| tags_fuse2-short | +1.87 [-0.27, +3.90] |
+| zero-shot short | -22.5 (a different learner) |
+
+Implications:
+  - fuse2's +4 F1 over P1 is a move ALONG the curve (more objects), not a better learner.
+  - Precision-selected targets did not move the curve. E5 (rejection-sampling SFT on the model's own samples) sits on
+    it.
+  - Prediction: the A1 Bayes-selected short row and ART will too, unless they change visual evidence.
+
+==========================================================================================================
+5. NOVELTY
+==========================================================================================================
+I read the relevant sections of 8 papers in full text (PDFs in lit/). Searches: 4 WebSearch and 9 OpenAlex queries.
+The arXiv API returned 429; OpenAlex and Semantic Scholar hit their budgets later. No direct scoop was found of
+"caption-level target policy -> inclusion function -> implicit threshold". Every component is textbook.
+
+Closest prior work and the delta that remains
+- Chen et al. 2015, COCO Captions (arXiv 1504.00325), Sec. 4.2. Model: p = P(w|o) with no image saliency, independent
+  subjects, human P = pk/(pk + (1-p)^k), human R = p, and the Precision-at-Human-Recall (PHR) metric. Delta:
+  image-level pi and the mapping from training targets to thresholds.
+- Fang et al. 2015 (arXiv 1411.4952). MIL word detectors trained on words in ANY caption (union labels). Outputs are
+  calibrated to precision on held-out data and thresholded at a global tau; evaluated with PHR. Delta: caption-level SFT
+  targets instead of detectors, and a threshold implied by the target rather than chosen at inference.
+- Elkan & Noto 2008. A PU classifier equals c x the true posterior, so the threshold is 0.5c. Menon et al. 2015 (ICML):
+  the corrupted class-probability is a monotone transform of the clean one; F-score-optimal classifiers threshold it at
+  a shifted threshold; AUC is immune. Prop 1 and Corollary 4 are this result with the corruption map pi -> mu_T(pi).
+- Lipton et al. 2014; Narasimhan et al. 2014; Koyejo et al. 2014 (F*/2 and plug-in consistency); Dembczynski et al.
+  2011 (GFM, instance-wise F). Delta: only the image-dependent threshold under the repo's hybrid micro-P/macro-R metric
+  (Remark), which is minor.
+- Wei et al., KDD 2023 (arXiv 2206.07181), "To Aggregate or Not?": theory of aggregated vs separate labels; separate
+  labels win when noise is high or annotators few. Also Sheng, Provost & Ipeirotis, KDD 2008. These are the theory
+  prior for multiref vs consensus.
+- Zheng et al., EMNLP 2018; Nagasawa et al., MAI 2021 (VBCS, WCS); consensus-oriented captioning, IJCAI 2020;
+  Phan et al. 2017 (CST). Multi-reference training policies; none relate a target to a threshold or a frontier.
+- IC3 (arXiv 2302.01328): beam outputs keep only what references share. A qualitative version of "multiref decodes
+  consensus content".
+- Eikema & Aziz, COLING 2020; Stahlberg et al., ACL 2022: the mode vs sampling; samples match the data's length
+  statistics. Prop 3 and model L are this known null.
+- "The Devil is in the EOS" (arXiv 2507.20077, COLM 2025) and "Less is More" (arXiv 2402.14545): caption length vs
+  hallucination. The precision-count frontier is their trade-off. The new part is a pre-registered invariance test
+  across SFT target policies.
+
+Assessment
+- The theory as stated: low novelty (a re-application of Menon/Elkan-Noto plus Lipton plus Chen).
+- The empirical frontier-invariance law with a pre-registered ladder test: moderate-low, but cheap and honest.
+
+==========================================================================================================
+6. REVIEWER LENS
+==========================================================================================================
+Strongest objection
+  - "Your principled account does not describe your model. The decoder is not a marginal thresholder (P1 count +44%
+    over the prediction).
+  - The only predictions it gets right are the ones 'longer targets -> more objects' also makes.
+  - Its theorems are textbook. Its supporting evidence (lambda = F*/2, the ordering) is guaranteed by calibration or by
+    length."
+
+Minimal fix using existing data and labels only (0 GPU-h; the ladder is already queued)
+  (1) Drop the tau = 0.5 explanation of P1, and drop "fusion lowers the threshold". Say: fusion lengthens the target,
+      and the learner moves along its frontier.
+  (2) State frontier invariance as the empirical claim and test it pre-registered:
+      - the predicted count from training captions (L vs T, D1-D4);
+      - per-policy frontier residuals with paired CIs, plus the pooled residual.
+  (3) Appendix: Props 1-3, the Remark, and the assumption audit (exchangeability, 1d; the count test, section 2).
+  (4) Repeat the frontier and count test on UIT-ViIC in-domain (jobs 59a/b, P1 vs fuse2, with COCO instance precision).
+      This gives a second dataset at no extra GPU cost.
+  (5) Report F1 against 1v4 human parity as well. F1 against the 5-reference union rewards length: k* = 8.9 > 5, and
+      the frontier F1 keeps rising past fuse2's count.
+Optional: a union-of-5 run (about 4.7 GPU-h). Both models predict it beats fuse2 on 5-reference F1, so it does not
+  discriminate L from T; skip unless that claim is needed.
+
+==========================================================================================================
+7. DELIVERABLES AND COST
+==========================================================================================================
+- Repo script: copy operating_points.py to scripts/target_operating_points.py. It finds the repo by itself and
+  self-checks tau(c/5) = 1/2 and tau(union k) = 1 - 2^(-1/k). For each policy and mode it outputs, from TRAINING
+  captions alone:
+  - rows per image, objects per row, sentences per row;
+  - g_T(c) and tau_T;
+  - the ideal-threshold count (beta-binomial posteriors, with unnamed objects reported separately).
+  About 3 CPU-min.
+- Frozen pre-registration: PREDICTIONS.json, to go to data/results/ladder_predictions.json. Its check is
+  make_predictions.py --check (or fold it into human_parity.py rank). About 1 CPU-min per landing; B = 1000.
+- Paper:
+  - Table: training-target length, tau_T, predicted vs observed count, P, R, frontier residual with CI, for 7 policies
+    plus P1 and fuse2 seeds.
+  - Figure: P vs objects per caption, with the frontier curve, every trained run, tags off the curve, the 1v4 human
+    point, and iso-F1 lines.
+  - Appendix: Props 1-3 and the assumption audit.
+- GPU: 0. CPU: about 25 min total.
+
+Files (V_V4/)
+- operating_points.py, op_train.json, op_test.json (the test version is a diagnostic only)
+- make_predictions.py, PREDICTIONS.json
+- observed_runs.json (M, TP, P, R, sentences for 16 existing runs)
+- lambda_ident.py, lam_ktvic.json/.log, lam_uit.json/.log
+- lit/ (PDFs and text of the papers checked)
