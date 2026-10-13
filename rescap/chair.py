@@ -31,7 +31,9 @@ Hypernyms resolve one way only: a caption saying `người` when the reference s
 
 from __future__ import annotations
 
+import os
 import re
+import unicodedata
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Iterable, Sequence
@@ -50,11 +52,38 @@ _NOT_OBJECTS = frozenset({
 
 _TOKEN = re.compile(r"[^\W\d_]+", re.UNICODE)
 
+#: Tone placement on the open clusters oa / oe / uy: old style (hòa, khỏe, thủy) -> new style (hoà, khoẻ, thuỷ). New
+#: style because 5 of the 9 matcher-lexicon entries with such a cluster use it, among them the KTVIC lexicon's only one
+#: (`toà nhà`, classifier `toà`). Only before a non-letter: a closed syllable (hoàng, thoại, buýt) is written the same
+#: in both styles. Judge D10 (iv)(a); scripts/nap.py's `_TONE` is the same table.
+_TONE = dict(zip("òa óa ỏa õa ọa òe óe ỏe õe ọe ùy úy ủy ũy ụy".split(),
+                 "oà oá oả oã oạ oè oé oẻ oẽ oẹ uỳ uý uỷ uỹ uỵ".split()))
+_TONE_RE = re.compile("(" + "|".join(_TONE) + r")(?![^\W\d_])")
+
+
+def norm_tone(text: str, *, raw_tone: bool = False) -> str:
+    """NFC, then one tone placement, so `tòa nhà` and `toà nhà` name one object.
+
+    Takes lowercase text. Both object matchers, objects_in here and vi_classes in
+    scripts/score_coco_probe.py, pass their lexicon and the caption through it.
+
+    >>> norm_tone("tòa nhà, khỏe, thủy; hoàng, thoại, quý")
+    'toà nhà, khoẻ, thuỷ; hoàng, thoại, quý'
+    """
+    s = unicodedata.normalize("NFC", text)
+    if raw_tone or os.environ.get("RESCAP_RAW_TONE") == "1":
+        return s
+    return _TONE_RE.sub(lambda m: _TONE[m.group(1)], s)
+
+
+#: NOUN_CLASSIFIER keyed by norm_tone: either tone placement in a caption finds the entry, returned as written.
+_NOUNS = {norm_tone(k): k for k in NOUN_CLASSIFIER}
+
 #: Colour phrases that contain a noun. `xanh lá cây` is "green" and was being
 #: read as a TREE; `xanh nước biển` would give a sea. Removed before object
 #: extraction, longest first so `xanh lá cây` goes before `xanh lá`.
 _COLOUR_PHRASES = tuple(sorted(
-    (XANH_BLUE | XANH_GREEN | {c for c in COLORS if " " in c}),
+    {norm_tone(c) for c in XANH_BLUE | XANH_GREEN | {c for c in COLORS if " " in c}},
     key=len, reverse=True,
 ))
 
@@ -118,7 +147,7 @@ class ChairResult:
         }
 
 
-def objects_in(text: str) -> list[str]:
+def objects_in(text: str, *, raw_tone: bool = False) -> list[str]:
     """Object head nouns mentioned in a Vietnamese caption.
 
     Longest lexicon match wins, so `xe máy` is one object rather than `xe`
@@ -133,8 +162,13 @@ def objects_in(text: str) -> list[str]:
     ['chó', 'bàn']
     >>> objects_in("chiếc áo màu xanh lá cây")   # a colour, not a tree
     ['áo']
+    >>> objects_in("một tòa nhà cao")             # old-style tone placement
+    ['toà nhà']
     """
-    tokens = [t for t in _TOKEN.findall(_strip_colour_phrases(text))]
+    raw = raw_tone or os.environ.get("RESCAP_RAW_TONE") == "1"
+    s = _strip_colour_phrases(text if raw else norm_tone(text.lower()))
+    nouns = NOUN_CLASSIFIER if raw else _NOUNS
+    tokens = [t for t in _TOKEN.findall(s)]
     found: list[str] = []
     i = 0
     while i < len(tokens):
@@ -143,8 +177,8 @@ def objects_in(text: str) -> list[str]:
             if i + length > len(tokens):
                 continue
             candidate = " ".join(tokens[i : i + length])
-            if candidate in NOUN_CLASSIFIER and candidate not in _NOT_OBJECTS:
-                hit = (candidate, length)
+            if candidate in nouns and candidate not in _NOT_OBJECTS:
+                hit = (candidate if raw else _NOUNS[candidate], length)
                 break
         if hit:
             found.append(hit[0])
@@ -378,3 +412,33 @@ def supported_propositions_per_image(records: Sequence[dict]) -> dict:
         "median_supported": sorted(counts)[len(counts) // 2],
         "images_with_none": sum(1 for c in counts if c == 0),
     }
+
+
+def _check() -> None:
+    import doctest
+    import sys
+
+    r = doctest.testmod(sys.modules[__name__])
+    assert r.failed == 0 and r.attempted >= 6, r
+    assert objects_in("một tòa nhà") == objects_in("một toà nhà") == ["toà nhà"]
+    assert objects_in("một tòa nhà cao") == objects_in("một toà nhà cao") == ["toà nhà"]
+    assert objects_in("một tòa nhà cao", raw_tone=True) == ["nhà"]
+    assert len(_NOUNS) == len(NOUN_CLASSIFIER)
+    inv = {v: u for u, v in _TONE.items()}
+    old_re = re.compile("(" + "|".join(inv) + r")(?![^\W\d_])")
+    clusters = [k for k in NOUN_CLASSIFIER if old_re.search(k) or _TONE_RE.search(k)]
+    assert clusters == ["toà nhà"], clusters
+    for k in clusters:
+        old_k = old_re.sub(lambda m: inv[m.group(1)], k)
+        new_k = norm_tone(k)
+        assert old_k != new_k and objects_in(old_k) == objects_in(new_k) == [k], (k, old_k, new_k)
+    for w in ("hoàng", "thoại", "buýt", "quý"):
+        assert norm_tone(w) == w
+    assert norm_tone(unicodedata.normalize("NFD", "tòa nhà, khỏe, thủy")) == "toà nhà, khoẻ, thuỷ"
+    assert objects_in(unicodedata.normalize("NFD", "một tòa nhà cao")) == ["toà nhà"]
+
+
+if __name__ == "__main__":
+    _check()
+    print("rescap.chair _check ok")
+

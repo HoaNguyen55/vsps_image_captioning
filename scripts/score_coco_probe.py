@@ -21,6 +21,8 @@ is the entire value of this file):
    "longest" ignores a leading classifier (`chiếc ô tô` is a car, not an umbrella).
    2026-10-12: every score uses matcher v2 (VI_LEXICON): LEX_V2's rewrites of the lowercased caption, then
    this lexicon; v1 = the lexicon alone. The version is written into the output.
+   2026-10-13 (D10 (iv)(a)): tone-mark placement on open oa/oe/uy clusters is normalised via
+   `rescap.chair.norm_tone` in both `load_vi_terms` and `vi_classes` (`tàu hỏa` == `tàu hoả`).
 4. Metrics per (system × mode): classes mentioned/caption · CHAIR_i (invented
    classes / mentioned classes, pooled over the set) · CHAIR_s (% captions with
    ≥1 invented class) · absolute invented objects/caption (mean distinct
@@ -34,7 +36,6 @@ from __future__ import annotations
 import argparse
 import json
 import re
-import unicodedata
 from collections import defaultdict
 from pathlib import Path
 
@@ -42,6 +43,8 @@ import os
 import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from rescap.chair import norm_tone  # noqa: E402
+
 NCS_DATA = Path(os.environ.get("NCS_DATA", Path.home() / "ncs-data"))
 PROBE_DATA = Path(__file__).resolve().parents[1] / "data" / "coco_probe"
 ANN = NCS_DATA / "datasets" / "coco_probe" / "annotations"
@@ -65,7 +68,7 @@ def load_synonyms() -> dict[str, str]:
     return mapping
 
 
-def load_vi_terms() -> list[tuple[str, str]]:
+def load_vi_terms(*, raw_tone: bool = False) -> list[tuple[str, str]]:
     """[(VI phrase, COCO class)], most specific first: longest without a leading classifier
     (`ngựa vằn` before `con ngựa`, `ô tô` before `chiếc ô`), then longest; skip _rui_ro notes."""
     from rescap.vi.lexicon import CLASSIFIERS
@@ -81,7 +84,7 @@ def load_vi_terms() -> list[tuple[str, str]]:
             continue
         for t in terms:
             if isinstance(t, str) and not t.startswith("_rui_ro"):
-                pairs.append((t.lower(), cls))
+                pairs.append((norm_tone(t.lower(), raw_tone=raw_tone), cls))
     return sorted(pairs, key=lambda x: (-len(head(x[0])), -len(x[0])))
 
 
@@ -97,20 +100,20 @@ LEX_V2 = [(r"\b(bóng|ghi) bàn\b", r"\1 _"), (r"\bbàn thắng\b", "_ thắng")
 VI_LEXICON = "v2"
 
 
-def vi_objects(caption: str, vi_terms, lexicon: str = VI_LEXICON) -> set[str]:
+def vi_objects(caption: str, vi_terms, lexicon: str = VI_LEXICON, *, raw_tone: bool = False) -> set[str]:
     """COCO-80 classes a Vietnamese caption names under lexicon v2 (LEX_V2 rewrites, then vi_classes) or v1."""
     if lexicon not in ("v1", "v2"):
         raise ValueError(f"unknown COCO-80 Vietnamese lexicon {lexicon!r}")
     text = caption.lower()
     for pattern, repl in LEX_V2 if lexicon == "v2" else ():
         text = re.sub(pattern, repl, text)
-    return vi_classes(text, vi_terms)
+    return vi_classes(text, vi_terms, raw_tone=raw_tone)
 
 
-def vi_classes(caption: str, vi_terms) -> set[str]:
+def vi_classes(caption: str, vi_terms, *, raw_tone: bool = False) -> set[str]:
     """Classes named in a VI caption, phrases tried in load_vi_terms' order and each matched span
     consumed: `ô tô` (car) no longer also yields `tô` (bowl), nor `ghế dài` (bench) `ghế` (chair)."""
-    text = " " + unicodedata.normalize("NFC", caption.lower()) + " "
+    text = " " + norm_tone(caption.lower(), raw_tone=raw_tone) + " "
     found: set[str] = set()
     for term, cls in vi_terms:
         spans = [m.span() for m in re.finditer(re.escape(term), text)
@@ -138,13 +141,20 @@ def en_classes(caption: str, syn: dict[str, str]) -> set[str]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--preds-dir", required=True)
+    ap.add_argument("--preds-dir", required=False)
     ap.add_argument("--manifest", default=str(PROBE_DATA / "manifest.json"))
     ap.add_argument("--out", default="data/results/coco_probe_scores.json")
+    ap.add_argument("--raw-tone", action="store_true")
+    ap.add_argument("--self-check", action="store_true")
     args = ap.parse_args()
+    if args.self_check:
+        print("score_coco_probe _check ok")
+        return 0
+    if not args.preds_dir:
+        ap.error("--preds-dir is required")
 
     syn = load_synonyms()
-    vi_terms = load_vi_terms()
+    vi_terms = load_vi_terms(raw_tone=args.raw_tone)
     man = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     want = {i["cocoid"] for i in man["images"]}
 
@@ -180,7 +190,7 @@ def main() -> int:
             men_total = hal_total = hal_caps = 0
             hal_per_cap = []
             for cid, cap in rows.items():
-                mentioned = vi_objects(cap, vi_terms)
+                mentioned = vi_objects(cap, vi_terms, raw_tone=args.raw_tone)
                 halluc = mentioned - gold[cid]
                 men_total += len(mentioned)
                 hal_total += len(halluc)
@@ -212,6 +222,8 @@ def main() -> int:
 
 
 def _check() -> None:
+    from rescap.chair import _TONE, _TONE_RE
+
     terms = load_vi_terms()
     assert vi_classes("Một chiếc ô tô đỗ trên đường.", terms) == {"car"}
     assert vi_classes("Hai người ngồi trên ghế dài.", terms) == {"person", "bench"}
@@ -225,6 +237,24 @@ def _check() -> None:
     assert vi_objects("Cầu thủ đang ghi bàn", terms) == {"person"}
     assert vi_objects("Cầu thủ đang ghi bàn", terms, "v1") == {"dining table"}
     assert vi_objects("Khán giả xem bóng bàn", terms) == {"person"} and vi_objects("bóng bàn", terms, "v1") == {"dining table"}
+    assert vi_objects("một tòa nhà cao", terms) == vi_objects("một toà nhà cao", terms)
+    assert vi_objects("tàu hỏa", terms) == vi_objects("tàu hoả", terms) == {"train"}
+    assert vi_objects("vòi cứu hỏa", terms) == vi_objects("vòi cứu hoả", terms) == {"fire hydrant"}
+    inv = {v: u for u, v in _TONE.items()}
+    old_re = re.compile("(" + "|".join(inv) + r")(?![^\W\d_])")
+    raw = json.loads((PROBE_DATA / "coco80_vi.json").read_text(encoding="utf-8"))
+    clusters = [(t.lower(), cls) for cls, ts in raw.items() if not cls.startswith("_")
+                for t in ts if isinstance(t, str) and not t.startswith("_rui_ro")
+                and (old_re.search(t.lower()) or _TONE_RE.search(t.lower()))]
+    assert len(clusters) == 7, clusters
+    for t, cls in clusters:
+        old_t = old_re.sub(lambda m: inv[m.group(1)], t)
+        new_t = norm_tone(t)
+        assert old_t != new_t
+        for lex in ("v1", "v2"):
+            s_old = vi_objects(old_t, terms, lex)
+            s_new = vi_objects(new_t, terms, lex)
+            assert s_old == s_new and cls in s_new, (t, cls, lex, s_old, s_new)
     syn = load_synonyms()
     assert en_classes("A teddy bear and hot dogs on a motor bike.", syn) == {"teddy bear", "hot dog", "motorcycle"}
     assert en_classes("A dog eats a hot dog.", syn) == {"dog", "hot dog"}
@@ -233,3 +263,4 @@ def _check() -> None:
 if __name__ == "__main__":
     _check()
     sys.exit(main())
+
