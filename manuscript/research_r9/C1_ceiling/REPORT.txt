@@ -1,0 +1,211 @@
+R9 / C1_ceiling: MEASURED CEILINGS of KTVIC object P/R/F1 and COCO object F1 (2026-10-13)
+==========================================================================================================
+Scope: measurement only. Metric code reused unchanged: scripts/object_prf.py (image_counts/scores),
+rescap/chair.py (objects_in, 113-entry lexicon), scripts/human_parity.py (join), scripts/score_coco_probe.py (vi_objects
+matcher v2, en_classes). Existing datasets and human labels only; no new labels; nothing from an AI is used as gold.
+Scripts and raw outputs (all in this directory):
+  ktvic_ceiling.py -> ktvic_ceiling.json   human k-vs-j matrix, 71 systems, GDINO inventory, |M| curves, OpenViIC panel
+  noise_ceiling.py -> noise_ceiling.json   exchangeable-annotator model of the 5-reference union, validated on humans
+  coco_ceiling.py  -> coco_ceiling.json    COCO instance gold with box areas, EN/VI humans, matcher round trip, systems
+  cider_in/*.preds.json + n2:/root/r9/C1_ceiling/*.json   CIDEr/BLEU of inventory outputs (evaluate.py, RDRSegmenter)
+  pdf_<arxiv id>/paper.txt                  text of the 7 multi-label papers the literature numbers come from
+Cost: all CPU, local runs <= 43 s and <= 0.48 GB RSS (nice 15, 1 thread); n2 CIDEr scoring 6 x ~3 s, <= 0.28 GB.
+
+----------------------------------------------------------------------------------------------------------
+0. THE TABLE  (KTVIC: 558 test images, gold = union of the 5 references; COCO: 2,500 Karpathy-test images,
+   gold = COCO-2014 instance classes). "Model" = the annotator-noise model of section 3 (validated, see there).
+----------------------------------------------------------------------------------------------------------
+metric   | current best (system)          | human                                  | oracle / matcher / noise ceiling           | literature SOTA bound            | >= 90?
+---------+--------------------------------+----------------------------------------+--------------------------------------------+----------------------------------+--------
+KTVIC P  | 79.9 (p1_s43-detailed, R 42.3) | 1 caption vs other 4: 85.3 (measured)  | noise ceiling: P >= 90 forces R <= 80      | none published (KTVIC paper      | P alone yes, but only
+         | ~79 for all P1 variants        | 1 caption vs a fresh 5-union: 87.7-89.3| (Beta) / <= 84 (mixture); oracle top-4    | reports n-gram metrics only)     | at R ~ 12 (vote >= .8:
+         |                                | (model)                                | gold list: 100 (uses test labels)          |                                  | P 92.2 / R 11.8)
+KTVIC R  | 64.7 (fuse2_s42selffuse-two,   | 1 caption 46.9 (vs 4); 4 fused vs the  | oracle top-4 gold classes: 90.4 (P 100,     | none published                   | only with the test
+         | P 60.7); 62.4 fuse2_s43-det    | 5th: 85.9; 4 humans vs a fresh 5-union:| CIDEr 30.7); noise ceiling: R >= 90 forces  |                                  | labels (oracle)
+         |                                | 78.0-80.6 (model)                      | P <= 83.5 (Beta) / <= 87.5 (mixture)        |                                  |
+KTVIC F1 | 64.8 (e5dpo_s42-detailed       | 60.5 (1v4), 70.9 (2v3), 69.9 (3v2);    | noise ceiling (perfect propensity oracle):  | none published                   | NO: max F1 86.5 (Beta)
+         | [62.8,66.7]; tags_fuse2_s42-det | vs a fresh 5-union (model): 1 human    | max F1 86.5 (Beta) / 89.4 (mixture);       |                                  | / 89.4 (mixture); max
+         | [62.7,66.7])                   | 59-60, 2 fused 72-73, 4 fused 79.5-82.4| best P=R point 86.2 / 88.2                  |                                  | min(P,R) 86-88
+COCO F1  | 73.4 (zero-shot detailed,      | EN, 1 caption 70.3, union of 5: 79.5   | matcher: 100.0 (gold rendered in VI, all    | Q2L CvT-w24 OF1 86.8 (OP 89.2,   | NO as a caption.
+         | P 80.5/R 67.5); 75.4 = vote>=2 | (P 85.3/R 74.3); VI (UIT-ViIC, other   | 224 terms read back); oracle medium+large   | OR 84.6, mAP 91.3) -> 87.7-87.9  | Only a COCO-trained
+         | of the 9 COCO outputs          | COCO images): 1 caption 59.2, union    | classes 91.5 (R 84.3); zero-shot det. +    | on this metric; ADDS mAP 93.4    | recognizer listing its
+         |                                | 72.6                                   | oracle medium+large: 87.3                   | (no F1 reported)                 | classes: ~88 (Q2L-level),
+         |                                |                                        |                                             |                                  | <= ~90 (ADDS, extrap.)
+
+Bottom line.
+- KTVIC: P, R and F1 >= 90 at once is ABOVE THE NOISE CEILING OF THE METRIC ITSELF. A predictor that knew the exact
+  probability with which a KTVIC annotator names each object (no image-only system can know more) scores at best F1
+  86.5-89.4 against one 5-reference union, and its balanced point is P = R = 86-88. The only 90/90 point is the
+  oracle that reads the test references (top-4 gold classes: P 100 / R 90.4), whose text is an object list
+  (CIDEr 30.7 vs 143.9 for fuse2-short). Realistic headroom: from F1 64.8 to the 2-4-human band, 72-82.
+- COCO: F1 >= 90 is above everything measured (best 75.4) and at the edge of class-level recognition SOTA. The best
+  F1-reporting multi-label classifier (Q2L, OF1 86.8) maps to 87.7-87.9 here even if its labels were written into
+  the caption verbatim (the matcher is lossless). Five English annotators together reach 79.5.
+
+----------------------------------------------------------------------------------------------------------
+1. KTVIC: anatomy of the gold (what bounds recall)
+----------------------------------------------------------------------------------------------------------
+- |G| (classes in the 5-reference union) per image: mean 3.72, median 4; histogram 0:3 1:55 2:95 3:116 4:106 5:87 6:65
+  7:20 8:8 9:2 10:1. One reference names 1.74 classes.
+- Support (how many of the 5 annotators name a class): s=1: 717, 2: 566, 3: 361, 4: 220, 5: 210 (2,074 image-class
+  pairs). SINGLETONS = 34.6% of gold classes (30.2% averaged per image).
+- Singletons are mostly real, not annotator errors: the independent UIT-OpenViIC panel names 59.4% of them (78.5% of
+  classes with s >= 2). So recall against the union is bounded by which real-but-minor objects ONE annotator chose.
+- Oracle consensus (uses the test labels): naming exactly the classes >= 2 annotators named gives P 100 / R 69.8 /
+  F1 82.2; >= 3: R 44.1. A perfect "consensus" captioner still misses 30% of the gold.
+- Oracle top-n (the n most-supported gold classes, all correct): R = 36.1, 62.2, 79.8, 90.4, 96.2 for n = 1..5
+  (|M| = 0.99, 1.89, 2.62, 3.13, 3.46). R >= 90 needs ~3.1 correct classes per caption; a reference has 1.74.
+- Recall of the best systems by support s = 1..5: fuse2_s42-detailed 40.0 / 58.1 / 65.4 / 76.4 / 83.8;
+  e5dpo_s42-detailed 40.4 / 57.6 / 63.4 / 76.8 / 84.8; p1_s43-short 17.7 / 34.8 / 43.2 / 63.6 / 73.8.
+  Even classes all 5 annotators name are missed 16% of the time (mostly exact-match person nouns: `người` vs `phụ nữ`).
+- "Visually small": KTVIC has NO boxes, so size cannot be measured. HEURISTIC proxy (my own fixed list of 25
+  handheld / worn / small-item lexicon classes: bút, chén, cốc, ly, bát, đĩa, dao, dép, giày, kính, mũ, nón, nón lá,
+  túi, điện thoại, đồng hồ, sách, báo, quả, bóng, chổi, mái chèo, ong, bướm, cọc neo; NOT evidence-grade): 10.1% of gold
+  classes; singleton rate 39.7% (others 34.0%); fuse2-detailed recall 43.1 on them vs 59.3 on the rest.
+  The measured size share is on COCO (section 4).
+
+----------------------------------------------------------------------------------------------------------
+2. KTVIC: humans, systems, inventories, operating curves
+----------------------------------------------------------------------------------------------------------
+2a. Human matrix: k captions joined (human_parity.join) vs the union of j OTHER captions, fold-averaged
+    (all index combinations). P / R / F1, |M|:
+      1v1 52.2/54.1/53.1  1v2 70.0/50.7/58.7  1v3 79.5/48.4/60.1  1v4 85.3/46.9/60.5   (|M| 1.7)
+      2v1 47.3/71.3/56.8  2v2 65.7/68.6/67.0  2v3 76.1/66.6/70.9                      (|M| 2.6)
+      3v1 44.6/80.4/57.4  3v2 63.2/78.4/69.9                                          (|M| 3.1)
+      4v1 42.9/85.9/57.2  ("four fused against the 5th")                              (|M| 3.5)
+    1v4 and 2v3 reproduce human_parity.json exactly. Note each cell's gold is smaller than the 5-union systems face;
+    the model of section 3 puts humans on the systems' footing (vs a fresh 5-union): 1 human 87.7/44.4/58.9 (Beta) or
+    89.3/45.0/59.8 (mixture); 2 fused 84.9/62.1/71.7 or 87.0/63.2/73.3; 4 fused 81.1/78.0/79.5 or 84.3/80.6/82.4.
+2b. Systems (71 KTVIC test preds files in data/results, gold = 5-union; bootstrap B=1000 CIs):
+      best P   p1_s43-detailed        79.9 / 42.3 / 55.3   (every P1 variant sits at P 79-80, R ~42)
+      best R   fuse2_s42selffuse-two  60.7 / 64.7 / 62.7   (|M| 3.75)
+      best F1  e5dpo_s42-detailed     69.3 / 60.8 / 64.8 [62.8, 66.7];  tags_fuse2_s42-detailed 70.7 / 59.7 / 64.8 [62.7, 66.7]
+               fuse2_s42/43/44-detailed 64.4 / 64.6 / 63.7;  fuse2_s42mbr-short 70.9 / 53.1 / 60.7 [58.8, 62.9]
+    No system has P >= 80. Systems sit between 1 and 2 humans on F1.
+2c. Grounding-DINO object inventory (data/results/tags_gdino.json, COCO-80 classes in Vietnamese, 2.39 tags/image ->
+    2.12 KTVIC lexicon classes; 10.7% of tags have no lexicon class: chai, ba lô, cà vạt, tivi ...):
+      tag list alone                P 34.3 / R 22.0 / F1 26.8   (hypernym-credited P_h 44.7)
+      top-1 / top-2 / top-3 tags    45.8/13.1/20.3, 42.3/20.0/27.2, 37.9/21.5/27.4
+      fuse2_s42-detailed + tags     51.2 / 65.6 / 57.5   (vs 68.0 / 61.2 / 64.4 alone: dF1 -6.9)
+      fuse2_s42mbr-short + tags     50.8 / 61.0 / 55.4;  p1_s43-short + tags 50.6 / 50.6 / 50.6
+    Why: `người` is wrong under exact match in 258 of 491 tagged images (the references say phụ nữ / đàn ông ...), and
+    detected background objects are not what KTVIC annotators mention (túi false in 107/116, ghế 58/69, xe máy 71/105).
+    Inventory recall by support s=1..5: 16.2 / 22.8 / 20.5 / 25.9 / 14.3. Presence evidence is the wrong evidence for
+    KTVIC (agrees with research_r6/B4).
+2d. P/R as a function of |M| (classes named):
+    - Within fuse2_s42-detailed, by images' |M| = 1, 2, 3, 4, 5, 6+: P 81.6, 71.8, 71.3, 66.3, 64.7, 57.0;
+      R 50.2, 61.4, 63.2, 63.2, 65.7, 64.0. P falls steadily with |M|; R saturates near 65.
+    - Vote ensemble of all 71 systems (class kept if >= t of systems name it): t .02: 30.0/89.8 (|M| 11.0);
+      .1: 46.9/78.0 (6.0); .2: 57.9/66.9 (4.1); .3: 69.5/57.1/62.7 (2.8, the max F1, below the best single system);
+      .5: 81.3/33.0; .8: 92.2/11.8; .9: 93.0/7.4. Adding GDINO tags lowers every point.
+    - Independent human panel (UIT-OpenViIC, 555 images, 5.39 captions/image) vs the KTVIC 5-union:
+      1 caption 56.6/37.1/44.8, 2 fused 52.3/53.7/53.0, 3: 49.0/63.0/55.2, 4: 46.5/69.2/55.6, all 44.5/74.0/55.6;
+      classes named by >= 2 OpenViIC captions 60.2/51.5/55.5, >= 3: 71.6/36.2/48.1.
+      Five independent humans score F1 ~56 against KTVIC's union, BELOW our KTVIC-trained systems (64.8): the metric
+      rewards KTVIC's naming conventions, not only visual truth.
+    - Operating point with P >= 90 AND R >= 90: none among humans (any k), systems, ensembles, the GDINO inventory or
+      the independent panel; only the test-label oracle (top-4: 100 / 90.4). Highest R with P >= 90: 11.8.
+
+----------------------------------------------------------------------------------------------------------
+3. KTVIC: annotator-noise ceiling (noise_ceiling.py)
+----------------------------------------------------------------------------------------------------------
+Model: per image, each nameable class has a naming propensity p; each of the 5 annotators names it independently with
+probability p; p ~ Beta(a, b) fitted by ML to the zero-truncated support counts. Beta: a 0.448, b 1.315 (chi2 24 on 3
+df). 2-component Beta mixture: w .50, (3.73, 8.53) and (0.30, 0.62), saturated on the 5 support cells (chi2 0 is not
+evidence by itself). Parametric bootstrap: observed classes get p from their posterior, unseen classes are added
+(46% / 33% of nameable classes are unseen by 5 annotators), and a FRESH annotator panel is drawn (40 replicates).
+VALIDATION (the reason to trust it): both models reproduce all 10 measured human k-vs-j cells (P, R, F1) within
+1.6 (Beta) / 1.0 (mixture) points, e.g. 1v4 84.8/46.2 and 85.4/46.3 vs 85.3/46.9 measured, 4v1 42.5/85.7 and
+43.0/86.2 vs 42.9/85.9.
+Ceiling: the oracle that knows every p exactly names {c : P(c in the 5-union) >= tau}. Against a fresh 5-union:
+   tau     Beta P / R / F1 / |M|           mixture P / R / F1 / |M|
+   .40     81.6 / 91.6 / 86.3 / 4.10       82.7 / 96.8 / 89.2 / 4.33
+   .45     83.5 / 89.7 / 86.5 / 3.91       83.7 / 95.9 / 89.4 / 4.23
+   .50     85.2 / 87.6 / 86.4 / 3.73       84.7 / 94.6 / 89.4 / 4.11
+   .55     86.9 / 85.2 / 86.0 / 3.54       85.8 / 92.9 / 89.2 / 3.97
+   .60     88.6 / 82.6 / 85.5 / 3.34       87.0 / 90.7 / 88.8 / 3.81
+   .65     90.1 / 79.8 / 84.6 / 3.16       88.4 / 87.7 / 88.0 / 3.61
+   .70     91.6 / 76.5 / 83.4 / 2.96       89.8 / 83.8 / 86.7 / 3.37
+   .80     94.7 / 68.4 / 79.4 / 2.51       93.0 / 72.1 / 81.3 / 2.75
+Sensitivity to the unseen-class count (Beta): x0.5 -> max F1 89.0 (but the model then overshoots the human matrix,
+1v4 87.0/48.6); x2 -> 83.0; x3 -> 80.1 (both contradict the measured human matrix: 1v4 P 81.0 and 78.2).
+Mixture with x0.5 / x0.25 unseen classes: max F1 90.5 / 91.4, max min(P,R) 88.8 / 89.9, but these overshoot the
+measured humans (1v4 P 86.3 / 87.6 vs 85.3; 2v3 P 77.4 / 79.1 vs 76.1), i.e. the data reject them.
+Reading: no tau gives P >= 90 and R >= 90 in any variant (best 89.9, in a rejected one); F1 >= 90 is not reached by
+either validated model and needs assumptions the human matrix rejects. The ceiling is an upper
+bound for any image-only system: real systems must ESTIMATE p from pixels. Assumptions that could move it: annotator
+independence (annotators share a ~1.7-class budget per caption; the human-matrix fit says the effect on P/R is small)
+and exchangeability (one Beta for all classes and images). The oracle uses one global tau; a per-image
+expected-F1 set choice could add a little (not computed; P is pooled over images, so the rule is not separable).
+
+----------------------------------------------------------------------------------------------------------
+4. COCO (2,500 Karpathy-test images, gold = COCO-2014 instance classes; coco_ceiling.py)
+----------------------------------------------------------------------------------------------------------
+Gold check: instances_val2014.json parsed by regex (291,875 annotations); 2,500/2,500 images equal
+data/coco_probe/instance_gold.json; zero-shot detailed reproduces 80.5 / 67.5 / 73.4.
+- |G| mean 2.82, median 2 (27 empty). By the LARGEST instance of each gold class (COCO area bins, segmentation area):
+  small (< 32^2 px) 20.2%, medium 32.2%, large 47.6%; 32.6% of gold classes have their largest instance under 1% of
+  the image. If small-only classes are never named, image-mean R <= 84.3 (F1 <= 91.5 even at P 100).
+- Humans in English (Karpathy references, Rohrbach synonyms): 1 caption P 92.6 / R 56.6 / F1 70.3; union of 2: 76.2;
+  3: 78.1; 4: 79.0; 5: 85.3 / 74.3 / 79.5 (pooled R 62.8). 37.2% of instance classes are named by none of the 5.
+  Union-of-5 recall by size: small 25.7, medium 53.1, large 85.1.
+- Humans in Vietnamese (UIT-ViIC, 3,850 COCO sports images; matcher v2): 1 caption 99.4 / 42.2 / 59.2; all 5:
+  99.1 / 57.3 / 72.6. The English COCO captions of the same images: 1 caption 62.0, all 5: 98.0 / 69.5 / 81.3.
+- Matcher ceiling: each image's gold classes rendered with the first coco80_vi.json term and re-matched: 100.0 / 100.0
+  / 100.0; all 224 lexicon terms read back as their own class. The matcher is not a bottleneck.
+- Systems (P / R / F1): zero-shot detailed 80.5 / 67.5 / 73.4; zero-shot short 90.8 / 48.5 / 63.3; VCD zero-shot
+  detailed 82.0 / 63.5 / 71.6; fuse2_s42-detailed 88.9 / 52.3 / 65.8; distill detailed 86.4 / 49.5 / 63.0; P1 ~59.4.
+  Recall by size: zero-shot detailed 27.5 / 54.0 / 80.2 (small / medium / large); fuse2-detailed 12.6 / 32.0 / 65.4.
+  Union of all 9 outputs 73.1 / 76.8 / 74.9; kept if >= 2 of 9 name it: 83.0 / 69.1 / 75.4 (best measured).
+- By |M| (zero-shot detailed): |M| = 1: P 93.3 / R 65.4; 2: 83.6 / 71.4; 3: 77.0 / 72.7; 4: 74.9 / 70.3; 6+: 72.1 / 74.2.
+  Oracle top-n by area: R 49.4, 77.4, 89.9, 95.2 for n = 1..4 correct classes (|M| 0.99, 1.77, 2.24, 2.50).
+- Oracle add-ons: zero-shot detailed + every medium/large gold class (a perfect detector above 32^2 px): 85.3 / 89.5 /
+  87.3 (the caption's own false mentions keep P down); the medium/large gold classes alone: 100 / 84.3 / 91.5.
+- "Zero-shot detailed + GDINO tags" on COCO: NOT MEASURABLE: no COCO Grounding-DINO tags exist (checked
+  data/results and n2:/root/ncs-data/results; tags_gdino.json covers the 558 KTVIC test images only). Making them:
+  tag_images.py on the 2,500 images, <= 0.58 s/image on the 3090 (research_r6/B4 timing) = <= 25 min.
+- Literature, class-level multi-label recognition on MS-COCO 2014 (train2014 -> val2014, 80 classes, threshold 0.5,
+  "All" protocol; numbers read from the papers' tables; ids checked on arXiv API / Semantic Scholar / OpenAlex):
+    ML-GCN      CVPR 2019  arXiv 1904.03582  R101 448          mAP 83.0  CF1 78.0  OF1 80.3 (OP 85.8, OR 75.4)
+    C-Tran      CVPR 2021  arXiv 2011.14027  R101 576          mAP 85.1  CF1 79.9  OF1 81.7 (OP 87.7, OR 76.5)
+    ASL         ICCV 2021  arXiv 2009.14119  TResNet-L 448     mAP 86.6  CF1 81.4  OF1 81.8 (OP 88.2, OR 79.2)
+    CSRA        ICCV 2021  arXiv 2108.02456  ViT-L16 + RandAug mAP 86.9  CF1 81.0  OF1 82.9 (OP 89.6, OR 77.1)
+    Query2Label arXiv 2021 arXiv 2107.10834  CvT-w24-22k 384   mAP 91.3  CF1 85.9  OF1 86.8 (OP 89.2, OR 84.6)
+    ML-Decoder  WACV 2023  arXiv 2111.12933  TResNet-XL 640    mAP 91.4  (F1 not reported; TResNet-L 448: 90.0)
+    ADDS        arXiv 2022 arXiv 2208.09562  ViT-L-336 640/1344 mAP 93.41 / 93.54 (F1 not reported)
+  Translation to THIS metric (P pooled as OP; R is the image mean, not OR): with Q2L's per-class recall following the
+  size profile measured above and shifted until pooled R = 84.6, image-mean R = 86.3-86.5 and F1 = 87.7-87.9
+  (flat profile: 86.8). ASL maps to 83.5-84.8. ADDS's +2.1 mAP over Q2L might give ~88-90 here (extrapolated from
+  the shallow mAP->OF1 slope at the top of Q2L's Table 1: mAP 89.2 -> OF1 84.9, 90.5 -> 86.6, 91.3 -> 86.8; ADDS reports
+  no F1).
+  These recognizers are trained on COCO instance labels at 384-1344 px; a captioner writing everything it recognises
+  is an inventory (see section 5).
+
+----------------------------------------------------------------------------------------------------------
+5. CIDEr / BLEU cost of reaching high object scores (KTVIC test, scripts/evaluate.py --predictions on n2,
+   RDRSegmenter word level, METEOR off for all rows so the rows are comparable)
+----------------------------------------------------------------------------------------------------------
+   output                                              object P / R / F1      CIDEr   BLEU-4  ROUGE-L
+   fuse2_s42-short (one sentence)                      75.7 / 47.1 / 58.1     143.9    42.3    63.7
+   fuse2_s42-detailed (two sentences)                  68.0 / 61.2 / 64.4      23.9    27.2    49.5
+   fuse2_s42-detailed + "Trong ảnh có <GDINO tags>."   51.2 / 65.6 / 57.5       5.7    19.9    41.2
+   "Trong ảnh có <GDINO tags>." alone                  34.3 / 22.0 / 26.8       8.1     0.0    21.2
+   "Trong ảnh có <top-4 gold classes>." (ORACLE)      100.0 / 90.4 / 95.0      30.7     0.0    30.4
+   "Trong ảnh có <all gold classes>." (ORACLE)        100.0 /100.0 /100.0      26.9     0.0    29.9
+   Even the perfect object list keeps CIDEr near 27-31 against KTVIC references: object scores >= 90 and a
+   KTVIC-style caption are incompatible, and any proposal near 90 must report this cost.
+
+----------------------------------------------------------------------------------------------------------
+6. What this means for R9 proposals
+----------------------------------------------------------------------------------------------------------
+- Ask "fraction of the ceiling", not ">= 90": on KTVIC F1 the defensible bands are 1 human 59-60, 2 humans 72-73,
+  4 humans 79.5-82.4, noise ceiling 86.5-89.4 (vs a fresh 5-union). Current 64.8 is above 1 human, below 2.
+- The KTVIC lever with the most measured headroom is RECALL at high |M| WITH calibrated selection: the Bayes rule above
+  names classes whose probability of being in the 5-union is >= ~0.5, i.e. ~3.7 classes at P ~85. Existing systems
+  at |M| ~4 give P ~58 (vote ensemble) to ~66 (fuse2-detailed bin). That is the UPE-MBR direction of R8 (union-
+  propensity expected F1); its ceiling, if propensities were perfect, is the table in section 3.
+- Detector/presence tags do not help KTVIC (-6.9 F1 when appended) but are what COCO instance gold rewards: on COCO the
+  only route toward 90 is a COCO-trained multi-label recognizer (Q2L/ML-Decoder-class, released checkpoints) whose
+  classes are written out (~88 predicted), paid for in CIDEr (inventory text: 26.9-30.7 on KTVIC vs 143.9).
+- Kill rule for any proposal claiming >= 90 on KTVIC: it must beat the noise ceiling, so it is reading the
+  references (leak) or gaming the matcher; check for both.

@@ -1,0 +1,281 @@
+R8 / T2_train -- TRAIN-TIME objectives and targets for INDEPENDENT TRUTH (CPU pilots, one round). 13/10/2026.
+Work dir: scratchpad/research_r8/T2_train/ (code, out/, PREREG.txt). n2: /root/r8/T2_train (MLAION CLIP job only).
+Scale x100. Word-level CIDEr-D (RDRSegmenter + pycocoevalcap replica, asserted equal). 95% CIs = paired bootstrap over
+images, B = 2000. "Panel" = UIT-OpenViIC captions of the same images: read at run time, held in memory, never written,
+never seen by any reward, target or selection rule.
+
+======================================================================================================================
+0. BOTTOM LINE
+======================================================================================================================
+- TARGET (judge D7 plus the coordinator's bar: beat the K2 lexicon-term baseline on the panel): NOT MET by any new
+  train-time variant. The pre-registered primary family (PREREG.txt, written before any confirmatory scoring) fails.
+  Pooled KTVIC test, P1 s43 + fuse2 s42 pools, 555 panel images, all vs LEX-z = CIDEr-D + lexicon-F1 term:
+    H1  F-LC (CIDEr + lexicon F1 + multilingual CLIP-S):  panel CIDEr-D +0.31 [-0.69, +1.34], p = 0.55
+    H2  F-CC (CIDEr + CLIP-S):                            panel CIDEr-D -0.22 [-1.49, +1.02], p = 0.73
+    H3  F-C  (CIDEr + chain-aware consensus objects):     panel object F1 -1.63 (wrong sign), p = 0.001
+  Holm rejects none. KILL applies to this lever.
+- The literal D7 target (vs P1 greedy) does not discriminate in the one-step proxy. At T = 0.8 (test pools), EVERY
+  rule meets it, including the plain R6 reward R0: panel CIDEr-D +5.27 [+3.45, +7.15] at KTVIC cross-fit +2.8.
+  The K2 baseline is the best truth term found:
+  - vs greedy: panel F1 +3.3 [+2.3, +4.2], panel CIDEr-D +5.90 [+4.25, +7.78], panel CHAIR_i -2.8 [-4.3, -1.4].
+  - vs R0: panel F1 +2.9 [+2.2, +3.6], CHAIR_i -1.6 [-2.7, -0.6], KTVIC cross-fit -2.1 [-4.4, +0.2].
+  It is K2's result, not new; my confirmation reproduces K2's ~-1.4 CHAIR_i on the panel.
+- New findings worth keeping (analysis, not methods):
+  (a) F4's "KTVIC reward buys only typicality" depends on the sampling temperature. The same plain-CIDEr selection
+      gives panel CIDEr-D +0.92 [-2.45, +4.54] on dev at T = 1.0 but +5.27 [+3.45, +7.15] on test at T = 0.8.
+      Split and model differ as well, so this is a confound to resolve with dev samples at T = 0.8 (job 50_f).
+  (b) Self-consensus (MBR-in-the-reward) separates benchmark from truth. Pooled test, vs R0: KTVIC cross-fit
+      +6.5 [+2.0, +10.9], but panel CIDEr-D -1.92 [-3.41, -0.44]. It also makes captions more template-like
+      (distinct-2 down, train-copy and "có"-initial rates up).
+  (c) Typicality-debiased CIDEr (visual-lift/PMI weights, random-image subtraction), discriminative terms (CIDErBtw,
+      CLIP contrastive) and CLIP-only rewards do not raise panel truth. CLIP-only shows the documented hack.
+  (d) COCO route (UIT-ViIC, kNN stand-in): targets picked by the TRAINING images' COCO instance labels beat the
+      lexicon target on the non-circular instrument (COCO-80 classes in the 5 English COCO captions). Test:
+      +2.6 [+2.0, +3.3] F1 (k=10), +1.1 [+0.6, +1.8] (k=30). But they cost UIT-ViIC CIDEr -7.9 [-16.6, +1.2] /
+      -11.5 [-23.6, +0.5] against first-caption targets, so the cost clause fails.
+- Proposals: none clears the bar. Two conditional, low-novelty options are in section 7 for the judge.
+
+======================================================================================================================
+1. PROTOCOL AND INDEPENDENCE
+======================================================================================================================
+- Clean pools (rewards read KTVIC refs, CLIP, lexicon or training labels only):
+  - dev300: P1_dev greedy (evaluate.py, CIDEr 144.33) + 8 G0 rollouts at T = 1.0. Panel = OpenViIC "train" key;
+    296/300 images.
+  - train300: P1_dev on 300 of its own SFT images (seen), NF4 greedy + 8 rollouts at T = 1.0. Confirmation only.
+  - Test pools P1 s43 and fuse2 s42: evaluate.py greedy + 6 samples at T = 0.8, top_p 0.95 (B4's files). Panel =
+    "test" key, 555 images. FINAL REPORT ONLY; nothing was selected on them.
+- One-step RL proxy (B1/S0 style):
+  - Per image, pick argmax_k U_k + d * 1[k = greedy], with d in mean-SD units of U (a KL stand-in).
+  - U is a sum of within-image z-scored terms.
+  - KTVIC is reported in-sample (U reads the same refs) and CROSS-FIT: choose with refs {0,1}, score on {3,4}, and
+    swapped. Non-adjacent halves, because of the paraphrase chain.
+- SFT-target stand-in (B2's kNN consensus, but with CLIP ViT-B/32 image retrieval so the panel stays independent):
+  - A query retrieves its k nearest training images (cos >= 0.93 near-duplicates dropped).
+  - Output = consensus caption of the neighbours' TARGETS (max mean CIDEr-D vs the rest of the pool).
+- Panel metrics: panel CIDEr-D (DF = the pool's panel sets; also without the length penalty, because panel captions
+  are 17.8 syllables vs KTVIC's 12.7), panel object P/R/F1 (second_panel.py definitions), panel CHAIR_i.
+- Not counted as truth: precision-only gains bought with a recall loss. R0 already shows them on dev
+  (P +1.9 [+0.7, +3.3], F1 -0.5); this is the CHAIR knob.
+- Reproduced exactly:
+  - S0 dev: greedy 144.3; KTVIC-oracle best-of-9 +44.7 [+38.5, +51.7] on KTVIC, +0.07 [-3.66, +4.11] on the panel.
+  - B4/K2 test pool: member CIDEr 143.9 / 117.7 ... (K2 self-check).
+- Panel headroom inside the dev pool (panel-oracle, NOT a method): +24.9 [+21.4, +29.0] panel CIDEr-D at
+  -25.5 [-37.5, -14.1] KTVIC. The two panels' preferences among samples are nearly orthogonal.
+- Pre-registration: PREREG.txt, 20:30 UTC 12/10, with sha256 of the code.
+  - Disclosure: an exploratory UIT-ViIC run printed UIT-ViIC TEST numbers vs first-caption targets before the
+    prereg (nothing was selected on them). The pre-registered LEX-target comparisons had not been computed.
+
+======================================================================================================================
+2. RL-REWARD FAMILY (one-step proxy)
+======================================================================================================================
+2.1 Dev exploration, full move (d = 0), vs greedy. All 19 rules listed in proxy.py.
+| rule | KTVIC in-sample | KTVIC cross-fit | panel CIDEr-D | panel object result |
+|---|---|---|---|---|
+| R0 CIDEr (R6 reward) | +44.2 | -7.4 | +0.81 [-2.97, +4.78] | F1 -0.5 |
+| R1 VL-CIDEr (IDF -> visual-PMI weights) | +31.4 | -15.1 [-23.8, -6.0] | -0.41 [-4.23, +3.32] | F1 +0.7 [-0.1, +1.5] |
+| R2b CIDEr - 3 x random-image CIDEr | | -12.1 | +2.66 [-1.59, +7.13] | |
+| R3 CIDErBtw (-0.5 x CLIP-kNN refs) | | -14.5 | +1.72 [-2.66, +6.35] | |
+| R4 chain-aware consensus-object recall | | -8.1 | -0.06 | F1 +1.2 [+0.4, +2.1], R +0.9 |
+| R4c -unsupported objects | | -17.0 | | P +5.7, R -2.2, F1 -1.9 |
+| S1 self-MBR (ref-free) | -4.7 | | -0.13 | |
+| S2 low-vote veto | -15.5 | | -2.36 | P +4.1, F1 -2.8 |
+| K1-K5 Bayes policy under CLIP-kNN refs | | | all < 0; K1 -8.49 [-13.24, -4.55] | |
+
+Greedy-bonus sweep (d = 0.5, 1, 2) and the declared grid (grid.py; mixes of z(CIDEr) with self-consensus or
+consensus objects): dev favourites were S-mix lambda=1 (panel CIDEr-D +2.25 [+0.16, +4.68], d = 0.5) and C-mix mu=1
+(panel F1 +1.7 [+1.0, +2.4]).
+
+2.2 Coordinator baseline LEX = K2's term('lex'), replicated in common.lex_f1, in two forms: z-form LEX-z and K2's raw
+CIDEr + 100*F1. Dev, d = 0.5:
+- LEX-z vs greedy: panel F1 +2.1 [+1.3, +3.0], CHAIR_i -3.2 [-5.9, -0.3], panel CIDEr-D +1.53 [-1.75, +4.72].
+- Against LEX-z:
+  - F-C: F1 -0.4 [-0.8, +0.1].
+  - F-S: panel CIDEr-D +0.72 [-2.11, +3.78].
+  - F-SC: F1 -0.8 [-1.3, -0.2].
+- CLIP rules (MLAION xlm-roberta-large-ViT-H-14, the model of scripts/clip_score.py):
+  - CLIP-S alone: KTVIC -31.0 [-39.5, -22.0], panel CIDEr-D -4.41, F1 -2.5, +0.44 syllables (the documented hack).
+  - CLIP contrastive alone (own image vs 10 visual neighbours): KTVIC -26.0, panel -2.36.
+  - F-LC (d = 1) vs LEX-z: panel CIDEr-D +1.98 [+0.13, +4.47], F1 -0.3 [-0.7, +0.1], cross-fit +2.2.
+  - F-CC (d = 1) vs LEX-z: +2.64 [+0.38, +5.63], F1 -1.4.
+  These two were frozen as H1 and H2 (about 80 dev looks in total; this is why confirmation was needed).
+
+2.3 Confirmation
+- train300 (seen images, T = 1.0):
+  - LEX-z itself fails here: vs greedy, panel CIDEr-D -1.78 [-5.19, +1.47], CHAIR_i +1.7.
+  - F-LC (d = 1) vs greedy: panel CIDEr-D -0.37 [-3.35, +2.42] (dev gain not reproduced).
+  - F-C vs R0: F1 +1.5 [+1.1, +1.9].
+  - F-S vs greedy: panel CIDEr-D +2.34 [+0.18, +4.36], cross-fit +10.4.
+- Pooled test (T = 0.8; pre-registered):
+| rule | vs greedy: panel CIDEr-D, F1, cross-fit | vs R0: F1, panel CIDEr-D, cross-fit |
+|---|---|---|
+| R0 (d 0.5) | +5.27 [+3.45, +7.15], +0.4 [-0.6, +1.3], +2.8 | - |
+| LEX-z (d 0.5) | +5.90 [+4.25, +7.78], +3.3 [+2.3, +4.2], +0.7 | +2.9 [+2.2, +3.6], +0.63 [-0.54, +1.89], -2.1 [-4.4, +0.2] |
+| F-C (d 0.5) | +4.61, +1.7 [+0.6, +2.6], +1.9 | +1.3 [+0.7, +1.8], -0.66, -0.9 |
+| F-S (d 0.5) | +3.36, +0.5, +9.3 [+5.6, +12.9] | +0.1, -1.92 [-3.41, -0.44], +6.5 [+2.0, +10.9] |
+| F-SC (d 0.5) | +4.10, +2.0, +8.2 | +1.6 [+1.0, +2.3], -1.17, +5.3 [+1.0, +9.6] |
+| F-LC (d 1) | +5.24, +2.6, +2.8 | +2.2, -0.19, -0.0 |
+| F-CC (d 1) | +4.71, +0.7, +5.4 | +0.2, -0.72, +2.6 |
+  vs LEX-z: H1-H3 as in section 0. F-C vs LEX-z also loses panel CIDEr-D: -1.29 [-2.34, -0.28].
+- Guards (dev, d = 0.5; train300 shows the same direction). Self-consensus pushes toward the KTVIC template.
+| rule | distinct-2 | verbatim train copies | "có"-initial |
+|---|---|---|---|
+| greedy | 0.258 | 21.3% | 97.0% |
+| R0 | 0.301 | 16.7% | 87.7% |
+| LEX-z | 0.305 | 16.3% | 86.7% |
+| F-C | 0.308 | 16.3% | 85.0% |
+| F-S | 0.273 | 19.3% | 93.0% |
+
+======================================================================================================================
+3. SFT-TARGET FAMILY (CLIP-kNN stand-in)
+======================================================================================================================
+Each policy picks, for every training image, which of its 5 human captions is the training target.
+
+KTVIC dev, k = 10, vs first caption (pos0):
+| target policy | KTVIC | panel CIDEr-D | panel object result |
+|---|---|---|---|
+| multiref (MR5) | +8.7 [+0.5, +17.3] | +0.07 | F1 -0.1 (typicality, as R6 found) |
+| MBR CIDEr medoid | | -3.46 [-6.67, -0.40] | |
+| VL-medoid | | -2.72 | |
+| least-typical | -21.9 | | |
+| chain-aware consensus objects | -1.8 | | F1 +1.5 [+0.6, +2.4] |
+| LEX target (K2 F1 vs the other 4 refs) | +2.1 | | F1 +3.0 [+2.1, +3.8] |
+
+KTVIC test (database = all 3,769 train images; FINAL):
+- LEX target, k = 10: panel F1 +5.4 [+4.7, +6.3], panel CIDEr-D +2.27 [+0.55, +4.17], KTVIC +1.8 [-3.7, +7.1].
+- LEX target, k = 30: F1 +3.7 [+3.0, +4.5], KTVIC -3.0.
+- H4 (consensus minus LEX target) FAILS: F1 -3.1 [-3.8, -2.3] (k = 10), -2.3 [-3.0, -1.7] (k = 30).
+- The repo already has this target: build_gold_sft.py `consensual`, = B2's objcons.
+- Real-VLM check: fuse2 (= consensual + the caption adding the most new objects) vs P1 s42/43/44 on the panel:
+  F1 +4.5 [+3.0, +6.0] / +4.3 [+2.7, +5.9] / +4.1 [+2.5, +5.7], R +3.9 to +4.1, P -0.3 to -1.0 (n.s.).
+  KTVIC 143.9 and 142.2 vs the P1 mean of 145.8. Truth-side gains from object-complete targets therefore already
+  exist in the paper.
+
+UIT-ViIC (database = train 2,695; truth = COCO instance labels and the COCO-80 classes of the 5 English captions):
+- val, k = 10, vs pos0:
+  - consensus target (picks IDENTICAL to the COCO-80 LEX target, so H5 = 0): instance F1 +9.0 [+8.3, +9.7],
+    English-caption F1 +6.9 [+6.1, +7.7], CIDEr -0.8.
+  - label-F1 target (TRAIN instance labels): instance F1 +12.5, English-caption F1 +8.7, CIDEr +1.0 [-4.5, +6.4].
+- test, k = 10 / 30:
+  - label-F1 vs pos0: instance F1 +12.0 / +13.4, English-caption F1 +6.6 / +7.3, CIDEr -7.9 [-16.6, +1.2] /
+    -11.5 [-23.6, +0.5].
+  - H6 (label-F1 vs LEX target) HOLDS: English-caption F1 +2.6 [+2.0, +3.3] / +1.1 [+0.6, +1.8], instance F1
+    +3.8 / +3.7, CIDEr +1.3 [-5.0, +7.5] / -4.9 [-12.3, +1.9].
+- Object-presence "RL" stand-in (Bayes policy, neighbours' labels): val instance F1 +1.8; test -0.5 / +1.2. Weak.
+- Circularity. Training on train-image instance labels and scoring on test instance labels is a clean split, but it
+  uses the same instrument: COCO's 80-class ontology, its exhaustive labelling of small objects, and the same VI
+  matcher on both sides. Instance-F1 gains therefore partly measure learning the instrument; here 3.8 points over the
+  lexicon target on instances shrink to 1.1-2.6 on English captions. Only the English-caption number is evidence of
+  truth; even it shares the COCO-80 class list. Training on the English captions themselves would make that
+  instrument circular too.
+
+======================================================================================================================
+4. LITERATURE (sub-agent, 64 scoop queries; every ID checked via arXiv API, ACL Anthology, Crossref, S2 or the CVPR
+   page; 4 unverifiable items dropped)
+======================================================================================================================
+- Self-consensus reward: close to scooped.
+  - C-GRPO 2602.03102 (EMNLP 2026): mean utility vs its own group as the GRPO reward.
+  - MBR-BoN 2404.01054 (NAACL 2025): exact form R + beta * mean U(y, y'), used for best-of-N and DPO.
+  - Also TTRL 2504.16084, Semantic Voting 2509.23067.
+  - Collapse is documented: SRT 2505.21444; CoVerRL 2603.17775 ("consensus trap"; reward accuracy ~95% -> ~80%).
+  - In captioning, CIDEr-RL already shrinks vocabulary (Wang & Chan CVPR 2019; Luo & Shakhnarovich 2002.11848).
+- Consensus objects: incremental.
+  - SPIDEr 1612.00370 (SPICE scores against the union of the references).
+  - VIFIDEL (ACL 2019) weights objects by how many references name them, in evaluation only.
+  - The only new element is consensus over NON-ADJACENT references; no reward models reference dependence.
+- CLIP-S reward: scooped.
+  - Cho 2205.13115: CLIP-S alone gives COCO CIDEr 11.2; CIDEr + CLIP-S gives 124.6.
+  - DiCO 2408.14547, Self-Cap 2408.16827, VLRM 2404.01911: hacking and length growth.
+  - Multilingual CLIP has not been used as an RL reward; that is the only new element.
+- Visual-PMI CIDEr: incremental vs DisCIDEr 2207.11118, CIDErBtw 2007.06877, M3ID 2403.14003. Kornblith 2307.16686:
+  specificity guidance costs CIDEr 126.1 -> 78.6.
+- Discriminative rewards: scooped (CIDErBtw, Show-Tell-Discriminate 1803.08314, Dai & Lin 1710.02534).
+- Object-presence / detector rewards: incremental (ECOL-R EACL 2021, ViGoR 2402.06118, VES-RFT CVPR 2026,
+  FGAIF 2404.05046). No reward built directly from COCO ground-truth instance labels was found.
+- Vietnamese: only SCST on VieCap4H; no large-VLM RL.
+
+======================================================================================================================
+5. WHY NOTHING BEATS THE LEXICON TERM (reading of sections 2-3)
+======================================================================================================================
+- Every truth gain found is OBJECT-level. Panel CIDEr-D moves with the sampling regime (T = 0.8 vs 1.0), not with
+  the objective: no term changed panel CIDEr-D vs R0 with a CI excluding 0 in the right direction on the pooled test.
+- Among object terms, the plain lexicon F1 (precision against all-ref support, recall of all ref objects) beats
+  every refinement tried:
+  - chain-aware consensus: F1 -1.6 on test;
+  - adding CLIP-S: +0.0;
+  - adding self-consensus: panel CIDEr-D -1.9.
+- The KTVIC refs already hold the panel-transferable object information. Extra sources either repeat it (consensus),
+  add style (self-consensus, typicality) or add visual-model preference that the panel does not share (CLIP-S on
+  train300 and test).
+
+======================================================================================================================
+6. GPU COST of the options below (estimates; unit prices from R6 S5)
+======================================================================================================================
+- G1-size RLOO run (1,000 images, k = 8): ~3.2-3.5 GPU-h.
+- Dev samples at T = 0.8 (job 50_f, already planned): 0.4 GPU-h.
+- UIT-ViIC SFT seed (2 epochs): ~1.5 GPU-h + 0.3 h eval.
+
+======================================================================================================================
+7. PROPOSALS (at most 2). NEITHER meets the bar; listed for the judge as conditional options.
+======================================================================================================================
+P-T2-1  Instance-label-consistent SFT targets (COCO-image datasets only; UIT-ViIC)
+  Mechanism: for each training image, the SFT target is the human caption with the highest COCO-80 F1 against that
+    image's COCO instance labels. No model text, no detector, no new labels.
+  Novel element vs closest prior: ECOL-R (EACL 2021) and ViGoR use detector labels as an RL reward plus image
+    filtering. Here, HUMAN instance labels choose WHICH human caption is imitated. Incremental.
+  Pilot (stand-in, test 231 images):
+    - vs the lexicon target: English-caption F1 +2.6 [+2.0, +3.3] (k = 10), +1.1 [+0.6, +1.8] (k = 30);
+      instance F1 +3.8 / +3.7.
+    - vs first-caption targets: instance F1 +12.0 / +13.4, English-caption F1 +6.6 / +7.3, CIDEr -7.9 [-16.6, +1.2]
+      and -11.5 [-23.6, +0.5]. Fails the <= 3 cost clause on test; meets it on val at k = 10 (+1.0 [-4.5, +6.4]).
+  GPU: 1 seed vs uitviic_p1assist ~3.6 GPU-h (2 SFTs + eval).
+  Kill:
+    - val UIT-ViIC CIDEr cost > 3 vs P1-assist;
+    - val English-caption F1 gain over a consensual-target SFT with CI including 0;
+    - CHAIR_i on instance labels not lower.
+P-T2-2  (Operational, not novel) LEX-guarded CN-RLOO, with the rollout temperature settled first
+  Mechanism: CN-RLOO reward + the K2 lexicon F1 term (z-mix, weight 1). Run the R6 dev T = 0.8 sample job first to test
+    whether F4 is a T = 1.0 artefact: R0's panel transfer is +0.92 (dev, T = 1.0) vs +5.27 (test, T = 0.8).
+  Novel element: none beyond K2 and R6's T = 0.8 fallback. The new part is the evidence (pooled test, pre-registered
+    comparator).
+  Pilot (pooled test, vs R0): panel F1 +2.9 [+2.2, +3.6], CHAIR_i -1.6 [-2.7, -0.6], cross-fit -2.1 [-4.4, +0.2].
+  GPU: 0.4 (dev T = 0.8 samples) + 2 x 3.5 (G1 with and without LEX) = ~7.4 GPU-h.
+  Kill:
+    - dev (evaluate.py greedy) panel F1 of LEX-RLOO minus plain RLOO with CI including 0;
+    - KTVIC dev CIDEr cost > 3;
+    - panel CIDEr-D of the RL policy minus P1_dev with CI including 0 at the chosen temperature
+      (truth claim dropped, typicality label kept).
+  Explicitly NOT proposed:
+    - self-consensus reward: scooped, and it lowers panel CIDEr-D on test;
+    - CLIP-S rewards: not reproduced on train300 or test;
+    - chain-aware consensus objects: lose to LEX on test;
+    - visual-PMI or typicality-subtracted CIDEr;
+    - discriminative rewards.
+
+======================================================================================================================
+8. CAVEATS
+======================================================================================================================
+- One-step selection is not RL. Real RL generalises across images and can amplify hacks. Effect sizes are proxy
+  sizes, not VLM deltas.
+- The kNN stand-in imitates neighbours' human captions. Absolute CIDEr is 74-120. It ranks target policies; it does
+  not size them.
+- Dev (T = 1.0, P1_dev) and test (T = 0.8, P1 s43 / fuse2 s42) differ in temperature, model and split at once.
+  train300 uses seen images (memorised refs).
+- About 80 dev looks; that is why the confirmation (train300 + pooled test, Holm) is binding and dev CIs are not.
+- Cross-fit KTVIC uses 2 + 2 refs; its scale is not the 5-ref scale.
+- The K2 term is the 113-entry lexicon. K2 reports that it sees 42% of noun mentions; the panel object metric uses the
+  same lexicon, which favours LEX somewhat.
+- The UIT-ViIC test vs-pos0 numbers were printed before PREREG (disclosure in section 1).
+
+======================================================================================================================
+9. FILES (work dir; run with ../../research_r6/B3_decoding/venv/bin/python, nice -n 15)
+======================================================================================================================
+- common.py: loaders, CIDEr-D replica, lexicon F1 (= K2), CHAIR counts, bootstrap.
+- pool_metrics.py, vl.py, rewards.py, proxy.py, grid.py, clip_rules.py, confirm.py, pooled.py, guards.py,
+  knn_targets.py, make_pools.py, clip_job.py (ran on n2).
+- PREREG.txt.
+- out/*.log, *.json, *_arrays.npz: numbers only. No panel caption is stored anywhere; data/clip_*.npz hold
+  embeddings only.
+- lit/: sub-agent scratch.
+- String probe (all 21,485 panel captions of >= 8 words vs every text file here): verbatim matches only inside
+  MODEL-OUTPUT files copied from n2/B4 (dev300.jsonl 1, the two test sample files 2 + 3, pools.json 6). These are
+  generated captions that coincide with a panel caption; no file contains panel text written by this work.

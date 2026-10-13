@@ -1,0 +1,323 @@
+T3_theory REPORT -- R8 (judge D7, option b): a principled, panel-robust formulation that raises INDEPENDENT truth.
+Round R8, 2026-10-13. Agent T3_theory. CPU only (local, nice 15, <= 2 threads; n2 only listed, nothing run there).
+Repo read-only. No VLM/LLM loaded. No new labels; no AI-made labels used as evidence.
+Work dir: research_r8/T3_theory/ (code *.py, outputs out/, literature lit/).
+
+==========================================================================================================================
+0. BOTTOM LINE
+==========================================================================================================================
+TARGET (D7): MET on dev by ONE variant, UPE-MBR, a decode-time rule that reads no reference of the captioned image.
+  UPE-MBR = "Unseen-Panel Expected-object-F1 MBR".
+  - Dev300, P1_dev pool (greedy + 8 T=1.0 rollouts), cross-fitted (choose on one half, score on the other):
+    - panel object R +3.8 [+2.7, +5.0], F1 +4.3 [+2.9, +5.7], P +1.4 [-0.6, +3.6];
+    - KTVIC CIDEr-D -2.9 [-8.0, +2.2].
+  - Frozen config (lam 2, m 5, margin 0.5, PE base, E|G| 6):
+    - panel R +3.5 [+2.5, +4.7], F1 +4.0 [+2.6, +5.4], P +1.3 [-0.8, +3.4];
+    - KTVIC CIDEr 144.3 -> 143.9 (-0.4 [-5.0, +4.1]).
+  - Panel CIDEr-D is not significant on dev (+0.3 [-1.7, +2.2]).
+  - Evidence, not count: at the SAME 2.00 classes per caption, a vote-blind count control loses panel precision
+    (-3.5 [-5.8, -1.5]); UPE minus that control = panel P +4.8 [+2.5, +7.2]. The rule moves OFF the precision-count
+    frontier on the independent panel.
+  - Test replication, frozen rule, ESTIMATES only:
+    - P1 s43: panel F1 +3.7 [+2.7, +4.9], panel CIDEr +1.9 [+0.6, +3.2], KTVIC CIDEr 143.9 -> 147.7;
+    - fuse2 s42: panel F1 +2.5 [+1.4, +3.6], but panel P -2.1 [-3.6, -0.7]; KTVIC CIDEr 143.9 -> 143.3.
+COORDINATOR'S LEXICON BASELINE (K2 section 3; reproduced exactly: P1 A012 panel CHAIR_i 16.7 -> 15.5, i.e.
+-1.2 [-2.3, -0.2]):
+  - As a decision rule, UPE beats the same lexicon term moved to decode time, at a KTVIC cost matched on dev.
+    UPE minus lexicon term, panel object F1:
+    - dev +1.3 [+0.3, +2.2];
+    - test P1 +1.5 [+0.7, +2.3];
+    - test fuse2 +0.8 [+0.1, +1.6].
+  - On panel CHAIR_i it does NOT beat it:
+    - dev -0.8 [-2.3, +0.8]; P1 -0.2 [-1.0, +0.6]; fuse2 +1.0 [+0.0, +2.0];
+    - in absolute terms, the K2 reward buys -1.2 CHAIR_i, while UPE buys -0.1 (P1 test).
+    UPE is a recall method with evidence; the lexicon term is a precision method.
+  - As an RL reward, my unseen-panel object term (UPR) does NOT beat K2's lexicon term in K2's own protocol: it ties on
+    panel F1 and is worse on panel CHAIR_i. UPR is withdrawn.
+FALSIFIED: every n-gram "panel-robust" reward is <= plain CIDEr-D on the panel in the one-step RL proxy:
+  - DRO over non-adjacent reference subsets: panel CIDEr -1.0 [-2.2, +0.1], obj P -0.9 [-1.6, -0.1];
+  - jackknife-min: no panel gain, held-out KTVIC CIDEr -1.5 [-2.6, -0.4];
+  - lineage ("births not copies") counting: no panel gain, held-out KTVIC CIDEr -1.3 [-2.7, -0.0];
+  - chain-GLS weights and style-residual: within 0.1 of plain CIDEr-D.
+  Prop 1 below predicts this: one panel's selection effect is shared by all of its references.
+CROSS-LINGUAL THIRD PANEL: UIT-ViIC val+test, 1,155 COCO images. There are no model samples on COCO images, so the rule
+was applied to HUMAN Vietnamese candidates and scored against COCO instances and the ENGLISH COCO captions.
+  - Against CIDEr-consensus selection: COCO-instance R +6.8 [+5.8, +7.7], P -0.1; English-panel R +8.4 [+7.2, +9.6].
+  - Against the count-matched control: instance F1 +0.8 [+0.1, +1.5]; English-panel P +1.3 [+0.7, +2.0].
+  - Against the lexicon term: tie (+0.2 / +0.3, n.s.).
+  The formulation transfers across language. Its edge over the lexicon term appears only on noisy MODEL candidates.
+NOVELTY: moderate-low. UPE is a principled MBR utility, and every component has prior art (section 7).
+  - New: the derivation from a two-panel model of references, with a recall-seeking union-of-describers inclusion and
+    an unseen-panel normaliser.
+  - New: a measured off-frontier recall gain on an independent human panel that same-panel metrics penalise. KTVIC-ref
+    CHAIR_i RISES: +0.7 on dev, +1.6 / +2.4 on test.
+  This is not a breakthrough. Honest headline: "+3.5 to +4.3 independent-panel object F1 at ~0 KTVIC CIDEr, at decode
+  time".
+
+==========================================================================================================================
+1. SETUP AND VALIDITY
+==========================================================================================================================
+- Clean dev assets: the local copies in research_r6/S0_synthesis/g0/ of n2:/root/ncs-data/rl/g0/dev300.jsonl and
+  p1dev_s42-dev300-short.preds.json.
+  - P1_dev never saw the 300 dev images.
+  - Pool = evaluate.py greedy + 8 rollouts (T = 1.0). The NF4 G0 greedy is an optional 10th candidate.
+- Panel: OpenViIC captions of the dev images (key "train", 296/300 images, 5.08 captions per image), read at run time
+  only. The test panel (key "test", 555 images) was used only for the frozen-rule replication; nothing was selected on
+  it.
+- Scorers: B7's CIDEr-D replica, imported and not copied. It is asserted equal to pycocoevalcap (1e-9) on the dev greedy
+  for both the KTVIC and the panel DF.
+  - KTVIC CIDEr uses evaluate.py's DF (dev300 reference sets).
+  - Panel CIDEr uses the panel's own DF.
+  - Object P/R/F1 follow object_prf.py: exact lexicon classes, micro P, macro R.
+  - Panel CHAIR_i uses rescap.chair against the panel captions (K2's metric).
+  - Full metrics come from the HEAD CaptionMetrics (RDRSegmenter).
+- Reproductions: greedy dev 144.3 / B-4 42.5 / CHAIR_i 23.3 (= S0); KTVIC-oracle best-of-9 panel +0.1 [-3.7, +4.0]
+  (= F4); K2's k2lex@1.0 panel CHAIR_i 16.7 -> 15.5 [-2.3, -0.2] (= K2 table). K2's test sample files are md5-identical
+  to the ones used here.
+- Selection DF and retrieval index: KTVIC train minus dev300 (dev); all KTVIC train (test).
+- Statistics: paired image bootstrap, B = 2000, percentile 95% CIs.
+- Licence: no OpenViIC caption is written anywhere. A string probe found 0 of 21,535 panel captions in out/, *.py and
+  cache/.
+
+==========================================================================================================================
+2. THEORY: A TWO-PANEL MODEL OF REFERENCES AND WHAT IT PRESCRIBES
+==========================================================================================================================
+Model. For image x and class o, let d_o(x) be a latent describability.
+  - Panel p's caption j mentions o with probability h_p(d_o): a panel-specific monotone selection link. KTVIC names 3.7
+    classes per image over 5 captions; OpenViIC names 6.0 over 5.4.
+  - Surface form follows panel style.
+  - Captions inside a panel are dependent: the KTVIC paraphrase chain.
+  - In CIDEr's tf-idf space (B7 T1 centroid identity): phi(r_pj) = a(x) + s_p + b_p(x) + e_pj, with
+    content a(x), panel style s_p, panel-image selection b_p(x) shared by ALL of panel p's captions of x, and
+    caption noise e (AR(1) along the chain).
+Prop 1 (non-identifiability).
+  - From panel K alone, a(x) and b_K(x) are confounded.
+  - Every subset, reweighting, minimum or variance penalty over K's references keeps b_K with weight 1.
+  - So n-gram robustifications cannot remove the panel-specific part; they only lose efficiency.
+  - Prediction: no such reward beats plain CIDEr-D on an unseen panel. CONFIRMED (section 3a).
+Prop 2 (unseen-panel Bayes rule).
+  - Let panel O have n_O captions and expected class count E|G_O|, and let q_o = P(o in G_O) = 1 - E(1 - h_O(d_o))^n_O.
+  - The expected object F1 of caption c is ~ 2 sum_{o in M(c)} q_o / (|M(c)| + E|G_O|) (ratio of expectations).
+  - The model's samples estimate h_K(d_o) by the vote share v_o of the other candidates. With h_O >= h_K,
+    q_o ~ 1 - (1 - v_o)^m, where m is about n_O.
+  - Since E|G_O| (~6) >> |M| (~1.8), the rule SEEKS RECALL WITH EVIDENCE: a supported class adds ~ 2q/(|M| + E|G|);
+    an unsupported class only enlarges the denominator.
+  - The same expected F1, with q from the references and a PU credit for unnamed classes (KTVIC names only ~44.5% of
+    mentionable classes), is the training-side reward UPR.
+Prop 3 (frontier). A vote-blind increase in class count moves along the precision-count frontier, so P falls; an
+  evidence-weighted increase moves off it. Tested with count-matched controls (3c).
+Prop 4 (typicality blind spot). Classes added with evidence are mostly ones panel K did not name. So K-reference CHAIR_i
+  rises while independent-panel P does not fall. Tested (3b, 3d).
+
+==========================================================================================================================
+3. RESULTS
+==========================================================================================================================
+3a. RL-objective proxy: one KL-matched softmax step on RLOO advantages over the 8 on-policy rollouts (B1's proxy).
+    Effects are measured vs the plain CIDEr-D reward (the CN-RLOO reward), paired, KL 0.5 nat; held-out KTVIC uses the
+    4 contiguous chain splits (p5, p6).
+    | reward | panel CIDEr | held-out KTVIC | panel obj P | panel obj F1 |
+    |---|---|---|---|---|
+    | DRO min over non-adjacent pairs | -1.0 [-2.2, +0.1] | -0.1 [-1.0, +0.8] | -0.9 [-1.6, -0.1] | -0.1 [-0.6, +0.4] |
+    | jackknife-min (leave-one-out) | +0.0 [-0.6, +0.5] | -1.5 [-2.6, -0.4] | -0.1 [-0.5, +0.4] | +0.2 [-0.0, +0.4] |
+    | lineage counting | +0.1 [-0.6, +0.9] | -1.3 [-2.7, -0.0] | +0.0 [-0.5, +0.6] | -0.2 [-0.6, +0.1] |
+    | cider + 0.25 * objq(alpha 0) | +0.3 [-0.4, +1.0] | -0.7 [-1.8, +0.3] | +1.7 [+1.0, +2.4] | +2.5 [+2.0, +2.9] |
+    | UPR, cross-fitted lam/alpha | +0.7 [-0.0, +1.3] | -1.5 [-2.6, -0.4] | -0.5 [-1.2, +0.2] | +2.8 [+2.4, +3.2] |
+    - KL 1.0 gives the same picture: cross-fitted UPR has panel F1 +2.4 [+1.9, +2.9] and KTVIC -1.3 [-2.5, -0.3].
+    - BUT in K2's own protocol (best-of-7 on test T=0.8 samples, pick on refs A, score on refs B and the panel), UPR
+      ties K2's lexicon term:
+      - P1 A012: k2lex@1 F1 +1.1 [+0.4, +1.7], CHAIR_i -1.2 [-2.3, -0.2];
+      - P1 A012: upr0@2 F1 +1.5 [+0.8, +2.2], CHAIR_i -0.6 [-1.7, +0.6];
+      - fuse2 behaves the same way.
+      => UPR withdrawn. The lexicon term is the right object term on the RL side (prior in-house work).
+3b. Decode-time rules on dev (p7, p8). Effects are vs greedy (KTVIC CIDEr on all 5 refs; the panel on 296 images).
+    - Headroom: the panel oracle in this pool gives +24.9 panel CIDEr; restricted to candidates no worse than greedy on
+      KTVIC, it still gives +13.8 [+10.7, +17.2]. Within-image Spearman(KTVIC CIDEr, panel CIDEr) = 0.47.
+    | rule | KTVIC CIDEr | panel CIDEr | panel obj P | panel obj R | panel obj F1 | classes/cap |
+    |---|---|---|---|---|---|---|
+    | PE-MBR (S0) | +4.2 [+1.0, +8.0] | +0.3 [-0.7, +1.5] | +0.6 | -0.2 | -0.2 [-0.9, +0.5] | 1.74 |
+    | self-MBR | -4.7 [-11.7, +2.6] | -0.1 | +1.2 | -1.3 | -1.3 [-2.7, +0.1] | 1.69 |
+    | UPE cross-fitted (pool 9) | -2.9 [-8.0, +2.2] | +0.2 [-2.0, +2.2] | +1.4 [-0.6, +3.6] | +3.8 [+2.7, +5.0] | +4.3 [+2.9, +5.7] | 2.02 |
+    | UPE cross-fitted (pool 10) | -2.4 [-7.4, +2.5] | +0.8 [-1.3, +3.0] | +1.0 [-1.1, +3.1] | +4.2 [+3.2, +5.4] | +4.6 [+3.4, +6.0] | 2.05 |
+    | UPE frozen | -0.4 [-5.0, +4.1] | +0.3 [-1.7, +2.2] | +1.3 [-0.8, +3.4] | +3.5 [+2.5, +4.7] | +4.0 [+2.6, +5.4] | 2.00 |
+    - Frozen, full HEAD metrics, dev (greedy -> UPE): B-4 42.5 -> 41.1; METEOR 37.5 -> 37.1; ROUGE-L 62.3 -> 62.1;
+      CIDEr 144.3 -> 143.9; KTVIC CHAIR_i 23.3 -> 24.0; CHAIR_s 34.7 -> 38.7; panel CHAIR_i -1.4 [-3.4, +0.6];
+      KTVIC object F1 +3.0 [+1.2, +4.9].
+    - Sensitivity (dev):
+      | change | panel F1 | KTVIC |
+      |---|---|---|
+      | E|G| 4 | +4.1 | -2.2 |
+      | E|G| 8 | +3.4 | -0.8 |
+      | lam 1 | +2.3 | +2.3 (panel CIDEr +1.0 [-0.2, +2.3]) |
+      | lam 3 | +4.4 | -4.4 |
+3c. Evidence vs count (p8, p10). Controls matched to UPE's 2.00 classes per caption.
+    | control | panel P | panel R | panel F1 |
+    |---|---|---|---|
+    | count-bonus (q = 1) | -3.5 [-5.8, -1.5] | +2.1 | +1.7 |
+    | max-count | -3.4 [-5.2, -1.7] | +2.3 | +2.0 |
+    - Paired UPE minus count-bonus:
+      - dev: panel P +4.8 [+2.5, +7.2], R +1.4 [+0.5, +2.4], F1 +2.2 [+1.0, +3.5];
+      - test P1: P +2.6 [+1.1, +4.1], F1 +1.3 [+0.3, +2.3];
+      - test fuse2: P +0.1 [-1.2, +1.2], i.e. no evidence effect on the model that already names 2.1+ classes.
+3d. Test replication (frozen rule; ESTIMATES; P1 s43 and fuse2 s42 with greedy + 6 T=0.8 samples; p8, p10, p11).
+    | system | KTVIC CIDEr | panel CIDEr | panel obj P | panel obj R | panel obj F1 | panel CHAIR_i | KTVIC CHAIR_i |
+    |---|---|---|---|---|---|---|---|
+    | P1 s43 | +3.8 [-0.4, +8.1] | +1.9 [+0.6, +3.2] | +0.7 [-0.8, +2.2] | +3.3 [+2.4, +4.3] | +3.7 [+2.7, +4.9] | -0.1 [-1.5, +1.3] | 17.7 -> 19.3 |
+    | fuse2 s42 | -0.6 [-4.3, +3.1] | +1.2 [-0.5, +2.9] | -2.1 [-3.6, -0.7] | +2.7 [+1.9, +3.7] | +2.5 [+1.4, +3.6] | +2.2 [+0.8, +3.8] | 21.9 -> 24.3 |
+    - P1 full metrics (greedy -> UPE): B-4 45.2 -> 45.3, METEOR 39.1 -> 39.5, ROUGE-L 64.0 -> 64.6, CIDEr 143.9 -> 147.7.
+    - PE-MBR alone on P1: CIDEr 150.4, KTVIC CHAIR_i 17.1, panel F1 -0.1. So relative to PE-MBR, UPE pays 2.7 KTVIC
+      CIDEr and 2.2 KTVIC CHAIR_i for +3.8 panel F1.
+3e. Race against the coordinator's lexicon baseline (p11, p12).
+    - Same footing (decode time). dlex = PE-MBR + lam * lexicon object-F1 against the other candidates; lam = 0.7 was
+      matched on dev to UPE's KTVIC cost, then frozen. UPE minus dlex:
+      | split | panel F1 | panel R | panel CHAIR_i | panel CIDEr | KTVIC |
+      |---|---|---|---|---|---|
+      | dev | +1.3 [+0.3, +2.2] | +1.1 [+0.4, +1.8] | -0.8 [-2.3, +0.8] | +1.1 [-0.5, +2.9] | -0.2 |
+      | test P1 | +1.5 [+0.7, +2.3] | +1.3 [+0.6, +1.9] | -0.2 [-1.0, +0.6] | +0.7 [-0.3, +1.7] | -0.6 |
+      | test fuse2 | +0.8 [+0.1, +1.6] | +1.0 [+0.4, +1.6] | +1.0 [+0.0, +2.0] | +0.4 [-0.9, +1.7] | -1.8 |
+    - K2's footing (ref-reading reward proxy): UPR ties the lexicon term (3a). K2-lex as an RL reward and UPE as a
+      decoder act at different stages; the CPU data cannot say whether they stack.
+3f. Cross-lingual third panel (p9). UIT-ViIC val+test, 1,155 COCO-2014 images; human Vietnamese candidates; COCO-80
+    classes through the repo's matcher v2 and Rohrbach's EN synonyms.
+    - The rule is frozen from KTVIC dev (lam 2, m 5, E|G| 6), with only the other 4 Vietnamese captions as evidence.
+    | UPE minus | instance P | instance R | instance F1 | EN-panel P | EN-panel R | EN-panel F1 |
+    |---|---|---|---|---|---|---|
+    | CIDEr-MBR | -0.1 [-0.3, +0.1] | +6.8 [+5.8, +7.7] | +6.3 [+5.4, +7.2] | -0.2 [-0.9, +0.5] | +8.4 [+7.2, +9.6] | +5.9 [+5.0, +6.8] |
+    | count control | +0.0 | +0.9 [+0.1, +1.7] | +0.8 [+0.1, +1.5] | +1.3 [+0.7, +2.0] | +1.3 [+0.3, +2.3] | +1.3 [+0.6, +2.0] |
+    | lexicon F1 term | -0.0 | +0.2 [-0.2, +0.7] | +0.2 [-0.2, +0.6] | +0.3 [+0.0, +0.7] | +0.2 [-0.3, +0.7] | +0.3 [-0.1, +0.6] |
+    - Human candidates are 99% precise, so count dominates; the evidence edge is small and the lexicon term ties.
+
+==========================================================================================================================
+4. VERDICT ON THE PRE-REGISTERED TARGET
+==========================================================================================================================
+- Clause (i), panel object P/R/F1 with CI > 0 at a cost of <= ~3 KTVIC CIDEr on dev: MET by UPE-MBR, on recall and F1.
+  - cross-fitted: R +3.8 [+2.7, +5.0], F1 +4.3 [+2.9, +5.7], KTVIC CIDEr -2.9 (point; CI [-8.0, +2.2]);
+  - frozen: R +3.5 [+2.5, +4.7], F1 +4.0 [+2.6, +5.4], KTVIC -0.4;
+  - panel P alone and panel CIDEr-D: NOT significant on dev.
+- Clause (ii), COCO-instance P/R with MODEL outputs: NOT TESTABLE on CPU, because no model samples exist on COCO
+  images. The human-candidate check supports the direction (3f).
+- Coordinator's lexicon-baseline condition:
+  - met on panel F1 and R when both are decision rules (3e);
+  - NOT met on panel CHAIR_i;
+  - not met by the RL-reward variant (withdrawn).
+- Judge's call: the kill rule's literal condition is not triggered. Any GPU follow-up is a new decision (section 5).
+
+==========================================================================================================================
+5. PROPOSAL (one method; the second candidate, UPR-RLOO, is withdrawn: it ties the lexicon baseline)
+==========================================================================================================================
+M1  UPE-MBR: Unseen-Panel Expected-object-F1 MBR (decode time, training-free, reads no reference of the image).
+  Rule. Candidates are the greedy decode plus k samples.
+    - U(c) = selfMBR_CIDEr-D(c) + CIDEr-D(c, refs of the 10 train images retrieved by the greedy caption)
+             + lam * 10 * 2 sum_{o in M(c)} q_o / (|M(c)| + E|G|);
+    - q_o = 1 - (1 - v_o)^m, where v_o = share of the OTHER candidates naming class o;
+    - keep greedy unless max U - U(greedy) > margin;
+    - frozen: lam 2, m 5, margin 0.5, E|G| 6. Cost: k + 1 decodes, as PE-MBR.
+  Falsifiable predictions (pre-register before any new decode):
+    F1 KTVIC test, 3 P1-assist seeds; samples at T* in {0.5, 0.8} chosen on dev300 with the P1_dev adapter.
+       - Pooled vs greedy: panel object F1 >= +2.5 with CI > 0, panel P >= -1.5, KTVIC CIDEr >= -3.
+       - Vs the decode-time lexicon term at dev-matched cost: panel F1 >= +0.8 with CI > 0.
+    F2 UIT-ViIC test + val (1,155 images), P1 UIT-ViIC adapter, 6 samples:
+       - COCO-instance R >= +2.0 with CI > 0 and instance P >= -1.0 vs greedy;
+       - vs the count-matched control: instance P >= +1.0 (the evidence effect on truth).
+    F3 KTVIC-reference CHAIR_i does not fall (delta >= -0.5): the gain is invisible to panel-K metrics.
+    Kill if any of these holds:
+       - F1's panel-F1 CI contains 0;
+       - the count-matched control equals UPE on panel P (CI contains 0) on 2 of 3 seeds;
+       - F2's instance P falls by more than 1.
+  GPU (needs a new judge decision), at R6's measured 3.6 s per image for 6 short samples:
+    - P1_dev dev samples at T in {0.5, 0.8}: ~0.6 GPU-h;
+    - test samples for 3 P1-assist seeds: ~1.7 GPU-h;
+    - UIT-ViIC val + test samples for one adapter (needs the job-52_a adapter): ~1.2 GPU-h.
+    Total ~3.5 GPU-h.
+  Novelty delta (closest prior; section 7):
+    - vs Misra CVPR'16 (reporting bias): a decision rule for an unseen panel, built on Misra's mentioned-vs-present
+      model.
+    - vs Nan Ye ICML'12 (expected-F optimisation): a union-of-describers inclusion model from sample votes, plus an
+      unseen-panel normaliser.
+    - vs SelfVal (arXiv 2601.22451): no extra verification queries; recall-seeking rather than CHAIR-only filtering;
+      validated against an independent human panel with count-matched controls.
+    - vs IC3 / AMBR / range-voting MBR: a content utility on top of consensus (PE-MBR alone: panel F1 -0.2).
+    - vs in-house B4 veto and K2 lexicon term: +0.8 to +1.5 panel F1 at matched cost, but not better on panel CHAIR_i.
+    Assessment: moderate-low novelty. The publishable part is the method together with the off-frontier measurement on
+    a second human panel and the KTVIC-CHAIR blind spot.
+  Recommended configuration if RL runs: CN-RLOO with K2's lexicon term on the RL side (precision, in-house) plus UPE at
+    decode time (recall). Stacking is UNMEASURED.
+
+==========================================================================================================================
+6. FORMULATIONS TESTED AND KILLED (each with the prediction it failed)
+==========================================================================================================================
+- DRO / worst case over non-adjacent reference subsets.
+  Predicted: better panel transfer than plain CIDEr-D. Measured: panel CIDEr -1.0 [-2.2, +0.1], obj P -0.9 [-1.6, -0.1].
+- Variance-penalised (mean - sd) and dro_single.
+  Measured (one-step proxy, p2): panel CIDEr +7.8 and +6.7 vs +10.0 for plain CIDEr; held-out KTVIC -4.9 and
+  -4.5 vs plain CIDEr.
+- Jackknife-min (R6 B1). Measured on the PANEL: 0.0; held-out KTVIC -1.5 [-2.6, -0.4].
+- Chain-GLS reference weights (AR(1); rho 0.36 from train chains). Within 0.1 of plain CIDEr-D.
+- Lineage counting ("births not copies"): panel +0.1 [-0.6, +0.9], KTVIC -1.3.
+- KTVIC style-residual CIDEr: within 0.1 of plain CIDEr-D.
+- UPR reward (unseen-panel object term with a PU credit for RL). It beats plain CIDEr-D in the proxy (3a) but ties K2's
+  lexicon term in K2's protocol. Withdrawn.
+
+==========================================================================================================================
+7. LITERATURE (sub-agent scoop, 80 queries: 61 WebSearch, 12 arXiv API, 7 Semantic Scholar citation scans)
+==========================================================================================================================
+Every item below was confirmed by the arXiv API, Semantic Scholar, CVF or the ACL Anthology (lit/verified.txt). No
+outright scoop was found.
+- Partial overlaps to cite:
+  - Misra et al., CVPR 2016 (1512.06974): reporting bias, mentioned vs present.
+  - Coste et al., ICLR 2024 (2310.02743): worst-case and variance-penalised reward ensembles (the B family; it failed
+    here anyway).
+  - Chan et al., CVPRW 2022 (2205.06253) and Freitag et al., EMNLP 2020 (2004.06063): reference and dataset-style bias.
+  - Kovacs et al., WMT 2024 (2411.03524): metric bias in MBR.
+  - Berger & Ponti, NAACL 2025 (2409.16646): cross-panel description differences.
+- Decision rule:
+  - Nan Ye et al., ICML 2012 (1206.4625);
+  - SelfVal, Liu et al. 2026 (2601.22451; venue unconfirmed). The abstract was read via the arXiv API: it validates
+    object existence with extra LVLM queries, then selects or aggregates captions for CHAIR.
+- Consensus/MBR: IC3 (2302.01328); AMBR (2401.02749); Borgeaud & Emerson (1908.06288).
+- PU / incomplete gold: Cole CVPR 2021 (2106.09708); Elkan & Noto KDD 2008; ALOHa (2404.02904); MOCHa (2312.03631).
+- arXiv queries with zero hits:
+  - "positive-unlabeled" AND caption;
+  - "distributionally robust" AND captioning;
+  - jackknife AND caption;
+  - "multiple annotators" AND "text generation".
+- No paper evaluates across KTVIC and UIT-OpenViIC.
+- Privacy: no e-mail was sent in any request. OpenAlex returned 429.
+
+==========================================================================================================================
+8. CAVEATS
+==========================================================================================================================
+- Dev candidates are T = 1.0 rollouts (72.9 to 79.6 CIDEr each).
+  - The frozen config was chosen on dev halves. The cross-fitted numbers are the honest dev estimates.
+  - Test pools are T = 0.8 samples of models that trained on all train images, so they are estimates only.
+- Panel object metrics use the 113-class lexicon. "Confirmed by the panel" does not mean "present"; COCO truth exists
+  only for human candidates (3f).
+- The rule raises KTVIC-reference CHAIR_i (+0.7 dev, +1.6 / +2.4 test) and CHAIR_s (+4.0 dev).
+  - This is consistent with R5-01: ~55% of KTVIC-reference-false mentions are confirmed by the panel.
+  - It is still a cost on a headline metric of the paper.
+- fuse2 (2.1+ classes per caption already) gets recall at a panel-precision cost, with no evidence effect (3c). The
+  method suits short, precise captioners.
+- Vote evidence is model-generated. It is used only inside the decision rule; it is never a label or an evaluation
+  signal.
+- One-step RL proxies bound one update, not a full RL run. Real RL can drift beyond the sample support.
+
+==========================================================================================================================
+9. FILES (run with research_r6/B3_decoding/venv/bin/python from this directory; nice -n 15, OMP_NUM_THREADS=2)
+==========================================================================================================================
+- t3common.py: loaders. It reuses B7's CIDEr-D, bootstrap and HEAD copies by import, and has a self-check.
+- Pilots:
+  | script | what it does | output (out/) |
+  |---|---|---|
+  | p1_landscape.py | per-candidate KTVIC/panel scores, oracles | dev_mats.npz, p1_landscape.log |
+  | p2_rewards.py | first reward-proxy pass | p2_rewards_kl0.5.* |
+  | p3_headroom.py | constrained oracles | p3_headroom.log |
+  | p4_reward_mats.py | reward matrices (self-check) | p4_mats.npz |
+  | p5_reward_analysis.py | one-step proxy and best-of-9 | p5_kl0.5.* |
+  | p6_crossfit.py | cross-fitted UPR | p6_crossfit_kl{0.5,1.0}.log |
+  | p7_decode.py | UPE build, pick, cross-fit (self-check) | p7_decode_pool{9,10}.log |
+  | p8_controls_test.py | frozen rule, controls, sensitivity, full metrics, test | p8_{dev,test}.* |
+  | p9_uitviic.py | cross-lingual check | p9_uitviic.* |
+  | p10_evidence.py | paired evidence contrasts; build caches | p10_evidence.log, build_*.pkl |
+  | p11_k2_race.py | K2 reproduction and race | p11_{dev,test}.* |
+  | p12_matched.py | UPE vs decode-time lexicon term at matched cost | p12_matched.log |
+- lit/: verified.txt, searches.txt, api_raw/, selfval_abs.xml.
+- cache/seg_t3.json: 103 strings, none from OpenViIC.

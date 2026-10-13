@@ -1,0 +1,452 @@
+R9 / C3_halluc_decode -- THE PRECISION LEVER: training-free and light object-hallucination mitigation
+2026-10-13. Agent C3_halluc_decode. CPU only (local, nice 15, 1 thread, < 1 GB, every run < 2 min); n2 only listed.
+Repo read-only (python -B, imports only). No VLM loaded. No new labels, no AI labels used as evidence.
+Work dir: research_r9/C3_halluc_decode/ (lib.py, p0..p11*.py, out/*.log, lit/).
+
+==========================================================================================================================
+0. VERDICT
+==========================================================================================================================
+Can the precision lever reach >= 90? KTVIC P: NO. KTVIC R and F1: NO. COCO F1: NO. The ceilings below are measured on our data.
+
+(1) On KTVIC, precision is not a hallucination problem.
+  - The OpenViIC panel confirms 56.5% [49.2, 63.6] of P1's KTVIC false positives as real (test, second_panel.json).
+    On clean dev300 it confirms 56.6%.
+  - A PERFECT, free remover of every mention neither human panel names (recall unchanged) gives:
+    - P1_s43-short: P 78.7 -> 86.7 (test, from the published aggregates);
+    - P1_dev: 74.0 -> 83.4 (dev300, measured).
+  - Removing only P1's excess over a held-out human (4.1 points of mentions, same 1v4 gold) gives P 82.1.
+  - One human caption scores P 85.3 against the other 4 KTVIC annotators.
+(2) Error anatomy of P1-short's KTVIC false positives (21.2% of mentions):
+  - 12.3 points are scene or stuff nouns no reference names (đường, quầy hàng, cửa, vỉa hè, sông ...);
+  - 5.5 points are a different person noun from the one the references chose;
+  - 1.2 points are other granularity mismatches;
+  - 1.7 points are COCO-80 objects (the error class that CHAIR/POPE/AMBER methods target);
+  - 0.6 points are a person when no reference names one.
+  A Grounding-DINO verifier (Woodpecker/HALC style) has almost nothing to remove: 9 of 1,017 mentions, dP +0.0 [-0.2, +0.3].
+(3) The best label-free veto (support among the model's own samples, AUROC 0.71-0.73 against KTVIC refs):
+  - +1.8 P at F1 +0.0 (frozen rule, test);
+  - +6.1 P at -3.0 F1 (majority rule).
+  - Reaching KTVIC P >= 90 needs every sample to agree: P 90.5 at R 16.4, F1 27.8 (P1_s43); P 90.6 at R 21.9 (fuse2).
+  - The F1-optimal veto (Lipton 2014: drop iff calibrated p < F/2 = 0.27-0.29) removes only the support-0 bin, about 3% of mentions.
+(4) VCD as already run in the repo (zero-shot Qwen2.5-VL-7B) gives no KTVIC precision:
+  - short: dP -1.4 [-4.0, +1.2], dR -4.9, dF1 -4.3, CIDEr 29.0 -> 26.1;
+  - detailed: dP +0.3 [-0.7, +1.4].
+  On COCO it buys precision with recall: detailed P +1.5 [+0.5, +2.4], R -4.0, F1 -1.9 (instance gold).
+(5) COCO (instance gold):
+  - P is already 89.5 (P1-short) / 90.9 (fuse2-short).
+  - 56-62% of the remaining false positives are two furniture classes (bàn -> dining table, ghế -> chair). This is lexical
+    scope and label gaps, not hallucination.
+  - A perfect hallucination remover gives P 95.9-96.6 and F1 +1.3 to +2.0.
+  - F1 at P = 100 would still be only 61.4 (P1-short), 68.6 (fuse2-detailed) or 80.6 (zero-shot detailed).
+    Recall (44-67) decides COCO F1, not precision.
+(6) Literature on Qwen2.5-VL-7B: training-free methods cut CHAIR_i by 0-2.8 points (relative 0-30%).
+  - They often cost recall or AMBER Cover: OPERA derived R 58.2 -> 48.5; PAI Cover -6.3; ICT Cover -2.1.
+  - Sample-validate pipelines cut more (SelfVal CHAIR_i 9.9 -> 4.1) but lose CHAIR-F1 (-1.7).
+  - On short-caption models the CIDEr cost is real: VCD NoCaps CIDEr 103.9 -> 69.0; LURE COCO CIDEr 138.4 -> 0.0.
+  Applied to our setting, these methods can at best touch the 1.7 + (unknown share of 12.3) points above.
+Recommendation: do not spend GPU on hallucination decoding for the R9 targets.
+- If a recall lever is adopted (UPE-MBR, CC-ADD, fusion), add proposal A as a free precision-repair stage. It reuses the
+  UPE-MBR sample jobs.
+- Proposal B only matters if COCO precision is itself a claimed result.
+
+==========================================================================================================================
+1. SETUP
+==========================================================================================================================
+- KTVIC: scripts/object_prf.py definitions re-implemented in lib.py (exact rule; asserted on a toy case), 558 test images.
+  Mentions = rescap.chair.objects_in (113-entry lexicon). All P/R/F1 x100.
+  Paired bootstrap over images: B = 2000, 95% percentile CI.
+- KTVIC dev300 (clean for P1_dev): P1_dev greedy + 8 G0 rollouts (T 1.0), from the research_r6/S0_synthesis/g0 copies.
+  The dev UIT-OpenViIC panel is the "train" key of data/ktvic_openviic_refs.json; it was used for analysis only, nothing was
+  tuned on it. The TEST panel captions were NOT read: test two-panel numbers are the published aggregates in
+  data/results/second_panel.json (R5_01).
+- KTVIC test sample pools: R8 B4 files (p1_s43, fuse2_s42; evaluate.py greedy + 6 samples, T 0.8 / top_p 0.95). R8 marked
+  them "final reporting only". Here, test was used only for (a) rules frozen on dev before reading test and (b) descriptive
+  threshold curves. No rule was chosen on test.
+- COCO: 2,500 Karpathy-test images (data/coco_probe), matcher v2 (score_coco_probe.vi_objects).
+  - Gold = data/coco_probe/instance_gold.json (instances only).
+  - Karpathy EN refs (R8's extract) are used only to split false positives.
+  - Systems: coco_transfer/{p1_s43, fuse2_s42}-{short, detailed}; coco5000/{zeroshot, distill}-*; coco5000_vcd/zeroshot-detailed
+    (= VCD).
+- Set-level simulation caveat: a veto removes a class from M_i; the caption rewrite is not simulated. For its CIDEr cost see R8
+  T1 3b: the same drop-only veto realised by switching to the nearest sample cost KTVIC dev CIDEr -0.5 [-2.6, +1.6].
+
+==========================================================================================================================
+2. MEASURED ON OUR DATA (out/*.log)
+==========================================================================================================================
+2a. VCD (alpha 1, beta 0.1, T 500, greedy; zero-shot Qwen2.5-VL-7B; scripts/baselines.py). p1_ktvic.log, p3_coco.log, repo JSONs.
+  KTVIC short:
+    - P 52.3 -> 50.9: dP -1.4 [-4.0, +1.2], dR -4.9 [-7.0, -2.9], dF1 -4.3 [-6.5, -2.3];
+    - mentions 2.17 -> 1.87 per caption; CHAIR_s 62.0 -> 57.0, CHAIR_i 42.9 -> 44.9;
+    - CIDEr 28.98 -> 26.10, BLEU-4 5.48 -> 2.78.
+  KTVIC detailed: P 31.6 -> 31.9 (+0.3 [-0.7, +1.4]), dR -1.2 [-3.2, +0.9], dF1 0.0.
+  COCO detailed (2,500, instance gold):
+    - P 80.5 -> 82.0 (+1.5 [+0.5, +2.4]), R 67.5 -> 63.5 (-4.0 [-4.9, -3.0]), F1 73.4 -> 71.6 (-1.9 [-2.6, -1.1]);
+    - 5,000-image file: CHAIR_i (instances plus refs) 19.5 -> 17.9.
+  coco_probe_scores_vcd.json (2,500; system slot "distill"; provenance undocumented, mentions close to zero-shot):
+    short CHAIR_i 8.2 -> 7.6, mentions -15%; detailed 19.5 -> 18.1.
+  VCD was never run on P1/fuse2. Third-party Qwen2.5-VL tables (sec. 3) predict about 0 (sign varies by setup).
+
+2b. KTVIC false-positive anatomy (p2_fp_anatomy.log; no panel read). Share of all mentions:
+  | system         | KTVIC-FP | scene/other | person noun mismatch | other granularity | COCO-80 non-person | person, refs name none |
+  |----------------|----------|-------------|----------------------|-------------------|--------------------|------------------------|
+  | P1 (p1assist)  | 21.2     | 12.3        | 5.5                  | 1.2               | 1.7                | 0.6                    |
+  | fuse2-short    | 24.3     | 13.8        | 6.0                  | 1.7               | 2.2                | 0.5                    |
+  | fuse2-detailed | 32.0     | 17.7        | 7.4                  | 1.8               | 3.4                | 1.8                    |
+  Top P1 false positives: người 28, đường 22, quầy hàng 21, đàn ông 18, phụ nữ 16, quả 9, cửa 8, thuyền 8.
+  Side finding (lexicon): rescap/vi HYPERNYMS has no link cô gái / chàng trai / đứa trẻ / em bé / cậu bé -> người. The hypernym
+  rule (P_h, R8's hedge) therefore under-credits these nouns. The exact rule is unaffected. Not changed (repo read-only).
+
+2c. Two-panel decomposition and oracle ceilings.
+  - Test, from published aggregates (555 images, exact rule). Unconfirmed = 100 - P(union of both panels).
+    "Oracle" removes every unconfirmed mention; "human-level" removes only the excess over a held-out human on the 1v4 gold
+    (human unconfirmed 5.95%).
+    | system             | P_KTVIC | unconfirmed | oracle P | human-level P |
+    |--------------------|---------|-------------|----------|---------------|
+    | p1_s43-short       | 78.7    | 9.3         | 86.7     | 82.1          |
+    | fuse2_s42-short    | 75.7    | 10.9        | 85.0     | 80.3          |
+    | fuse2_s42-detailed | 67.8    | 14.7        | 79.5     | 75.0          |
+    The p1_s43-short oracle raises F1 by +1.8, since recall is unchanged.
+  - Dev300, measured (p4_dev.log; 296 images with panel captions):
+    - KTVIC false positives are 26.0% of mentions; the panel confirms 56.6% of them; 11.3% of mentions are unconfirmed;
+    - oracle P 74.0 -> 83.4, F1 54.5 -> 56.8.
+  - The panels jointly cover about 84% of nameable classes (capture-recapture, R5_01), so "unconfirmed" is an UPPER bound on
+    hallucination. The human-level column is the more realistic truth ceiling.
+
+2d. Detector verification (Woodpecker-lite).
+  - Tags: data/results/tags_gdino.json (Grounding-DINO base, COCO-80, box >= 0.35; model-generated, flagged).
+  - Rule: drop a judgeable mention if no detected class is it, its ancestor or its descendant. Any person noun counts as
+    verified by a person box. Strict class map. (p1b_gdino_strict.log)
+  - Results:
+    - P1: 9 dropped (22% were FP), dP +0.0 [-0.2, +0.3], dR -0.4;
+    - fuse2-short: dP +0.0, dR -0.5;
+    - zero-shot short: dP +0.4 [+0.0, +0.8].
+  - A naive class map (judging cây/hoa/quả through COCO's "potted plant") vetoes 205 mentions, 83% of them KTVIC-correct:
+    dP -1.2, dR -8.6 (p1_ktvic.log). Detector verification is useless here: fine-tuned captioners rarely name a COCO object that
+    is not there.
+
+2e. Self-consistency veto (p4_dev.log, p5_test_frozen.log, p9_bins.log, p10_unanimous.log). Delta vs greedy, KTVIC refs:
+  - dev300, 8 samples:
+    | rule             | dP    | dR    | dF1  | CI note    | panel             |
+    |------------------|-------|-------|------|------------|-------------------|
+    | drop support 0/8 | +2.9  | -0.9  | -0.0 |            | dP +2.2, dF1 -1.0 |
+    | support < 2/8    | +5.0  | -3.9  | -2.1 |            |                   |
+    | support < 4/8    | +10.8 | -11.5 | -8.5 |            |                   |
+    | support < 6/8    | +14.1 | -23.7 | -22.8| P 88.4     |                   |
+  - test, rules frozen on dev:
+    | system           | rule              | dP                | dR   | dF1               | P after |
+    |------------------|-------------------|-------------------|------|-------------------|---------|
+    | P1_s43-short     | drop support 0/6  | +1.8 [+1.0, +2.6] | -0.4 | +0.0 [-0.3, +0.4] | 80.6    |
+    | P1_s43-short     | majority (< 3/6)  | +6.1              | -4.7 | -3.0              | 84.9    |
+    | fuse2_s42-short  | drop support 0/6  | +1.0              | -0.7 | -0.3              | 76.7    |
+    | fuse2_s42-short  | majority (< 3/6)  | +6.2              | -5.0 | -2.5              | 82.0    |
+  - KTVIC precision by support bin, test p1_s43: 0/6 25%, 1/6 51%, 2/6 64%, 3/6 73%, 4/6 85%, 5/6 84%, 6/6 91%.
+    The F1-optimal threshold is F/2 = 0.273, so only the 0/6 bin (32 of 984 mentions) qualifies. Even unanimous mentions are
+    only 91% KTVIC-precise. Hence P >= 90 forces "keep only 6/6": P 90.5, R 16.4, F1 27.8 (fuse2: P 90.6, R 21.9, F1 35.3;
+    dev at 7/8: P 90.0, R 11.3).
+  - AUROC for "mention in KTVIC refs" (p6b_auc.log, p11_salience.log):
+    | signal                               | AUROC       |
+    |--------------------------------------|-------------|
+    | sample support, dev                  | 0.716       |
+    | sample support, test p1_s43          | 0.713       |
+    | sample support, test fuse2           | 0.730       |
+    | rank in the zero-shot detailed caption | 0.53-0.58 |
+    | KTVIC-train class frequency          | 0.51-0.54   |
+    Neither of the last two adds to support (equal-weight combinations are worse).
+
+2f. Precision repair of RECALL-HEAVY outputs (p7_repair.log; cross-system pools, descriptive curves). Here dF1/dP is larger.
+  - KTVIC fuse2-detailed (P 68.0 / R 61.2), pool of 10 other detailed systems:
+    - named by at least one other system: P +1.3 [+0.9, +1.8], R -0.3, F1 +0.4 [+0.2, +0.7];
+    - support >= 0.3: P +5.2, R -2.8, F1 +0.5 [-0.2, +1.2].
+  - The veto needs evidence of the same style. On the object-consensus MBR output, a pool of P1-style systems costs -1.9 F1.
+    On COCO zero-shot detailed, a short-style pool costs -2.4 F1.
+
+2g. COCO (p3_coco.log, p8_coco_fpclass.log). Instance gold.
+  | system             | P    | R    | F1   | FP: ref-confirmed | FP: neither | oracle P | oracle F1 | F1 at P=100 |
+  |--------------------|------|------|------|-------------------|-------------|----------|-----------|-------------|
+  | p1_s43-short       | 89.5 | 44.3 | 59.3 | 3.8               | 6.7         | 95.9     | 60.6      | 61.4        |
+  | fuse2_s42-short    | 90.9 | 44.2 | 59.4 | 3.6               | 5.5         | 96.2     | 60.5      |             |
+  | fuse2_s42-detailed | 88.9 | 52.3 | 65.8 | 3.4               | 7.6         | 96.3     | 67.8      | 68.6        |
+  | zero-shot detailed | 80.5 | 67.5 | 73.4 | 3.4               | 16.0        | 95.9     | 79.2      | 80.6        |
+  FP shares are % of mentions.
+  - dining table + chair are 56% (P1-short), 62% (fuse2-short) and 58% (fuse2-detailed) of the instance false positives.
+    Without these two classes (on both sides), P1-short P = 94.7 and fuse2-short P = 96.1. Diagnostic only: dropping classes
+    changes the metric.
+  - Instances plus refs gold (the Rohrbach protocol): P1-short P is already 93.3 and fuse2 94.5 (repo object_prf-short.txt).
+  - Support veto on p1_s43-short (pool of 7 other outputs):
+    - t >= 0.20: P +1.9 [+1.4, +2.4] -> 91.4, R -0.4, F1 +0.0;
+    - t >= 0.50: P +4.4 -> 93.9, R -2.9, F1 -1.8.
+  - Support veto on fuse2-short:
+    - t >= 0.20: P +1.3 -> 92.2, R -0.5.
+
+2h. What a detector of a given AUROC can buy (equal-variance binormal; recall falls with the share of true mentions dropped).
+    p6_sim.log.
+  | system (base P/R)              | AUROC | best P at dR >= -2 | R at target P | F1 at target P |
+  |--------------------------------|-------|--------------------|---------------|----------------|
+  | KTVIC P1-short (78.8/42.9), target 90 | 0.70 | 81.1        | 18.1          | 30.1           |
+  |                                | 0.75  | 82.2               | 26.2          | 40.6           |
+  |                                | 0.80  | 83.7               | 32.5          | 47.8           |
+  |                                | 0.85  | 85.8               | 37.0          | 52.5           |
+  |                                | 0.90  | 88.8               | 40.2          | 55.5           |
+  | COCO P1-short (89.5/44.3), target 95 | 0.80 | 92.1         | 35.2          |                |
+  |                                | 0.90  | 94.7               | 42.0          |                |
+  - A "P >= 90 with <= 2 points of recall" KTVIC veto needs AUROC of about 0.92 on salience (named by annotators).
+  - Measured salience signals reach 0.71-0.73 (samples) and 0.807 (E2 probe; Stage-1 proposals of the zero-shot model, label
+    = named by any reference, class prior 0.710, no-image probe 0.708). R6 P-B4-2 found the probe equal to the vote veto.
+  - Cross-check: the simulation at AUROC 0.70 predicts +2.3 P at -2 R. The measured frozen veto (AUROC 0.713) gives +1.8 P at
+    -0.4 R.
+
+2i. POPE on our models (data/results/pope_vi/scores.txt, landed 07:43 today; 500 val2014 images, random split, POPE labels;
+    rows are acc / P / R / F1):
+  | system          | VI                        | EN                        |
+  |-----------------|---------------------------|---------------------------|
+  | zero-shot       | 85.0 / 98.6 / 70.9 / 82.5 | 88.0 / 99.0 / 76.8 / 86.5 |
+  | P1_s43          | 89.1 / 95.7 / 81.8 / 88.2 |                           |
+  | fuse2_s42       | 86.2 / 97.5 / 74.4 / 84.4 |                           |
+  - "yes" is right 96-99% of the time. Existence errors are misses, not inventions.
+  - A model-self-verification veto (Woodpecker/LURE/VOLCANO style "Trong ảnh có X không?") would reject 18-29% of present
+    objects (POPE R 71-82). This agrees with E2: P(có) AUROC is 0.709.
+
+==========================================================================================================================
+3. LITERATURE (each id resolved via the arXiv API, lit/verify_ids.txt; venues from the arXiv comment or OpenAlex DOI;
+   numbers read from each paper's arXiv-HTML tables, lit/html/*.tables.txt)
+==========================================================================================================================
+Format: method (venue; id) | base | CHAIR_s/CHAIR_i | POPE | AMBER (CHAIR/Cover/Hal) | Qwen or 7B | recall/CIDEr cost.
+Derived R = F*P/(2P-F), with P = 100 - CHAIR_i where a paper reports CHAIR-F1.
+- VCD (CVPR 2024, DOI 10.1109/cvpr52733.2024.01316; 2311.16922)
+  - Own results: POPE MSCOCO random F1 LLaVA-1.5-7B 81.3 -> 87.2 and Qwen-VL 82.7 -> 87.8. POPE precision FALLS
+    (92.1 -> 91.4 and 95.6 -> 94.6): the gain is in yes-recall. No CHAIR. Baseline is sampling, not greedy.
+  - Qwen2.5-VL-7B:
+    - ReWEIGH: 31.6/9.58 -> 33.8/9.65 (worse); AMBER Hal 20.3 -> 27.0;
+    - ReVisiT: 8.43 -> 9.07;
+    - ResDec (128 tokens): 30.6/8.4 -> 27.9/7.8;
+    - SIRA (512): AMBER 5.3/47.2 -> 4.7/45.9.
+  - Costs:
+    - MemVR Table A5, Qwen-VL short captions: CHAIR_i 5.3 -> 12.3, R 53.4 -> 47.9, length 17.6 -> 115.7;
+    - VGD Table 2, NoCaps: CIDEr 103.9 -> 69.0;
+    - 2.0-2.4x latency.
+- OPERA (CVPR 2024; 2311.17911)
+  - Own results, LLaVA-1.5-7B:
+    - 512 tokens: 45.0/14.7 -> 44.6/12.8;
+    - 64 tokens: 20.6/6.2 -> 14.2/5.2;
+    - POPE average F1 82.2 -> 85.4.
+  - Qwen2.5-VL-7B (ReWEIGH): 31.6/9.58 -> 20.2/7.01, but CHAIR-F1 70.8 -> 63.8 (derived R 58.2 -> 48.5); latency 8.0x.
+  - SAKED (2602.09825) says OPERA "cannot be applied" to Qwen2.5-VL; ResDec reports 28.4/7.6.
+- M3ID (CVPR 2024; 2403.14003)
+  - Own results, LLaVA-7B: CHAIR_i/CHAIR_s/Cover 8.1/17.5/53.3 -> 5.9/13.8/55.1; POPE accuracy (all splits) 64.9 -> 70.3.
+  - AMBER (CAAC 2505.21472, LLaVA-1.5 average): 9.6/47.5/39.5 -> 6.6/53.1/33.7.
+  - Qwen-VL-7B (MaskCD): 50.8/17.4 -> 39.8/8.8.
+  - Qwen2.5-VL-7B (ReVisiT T3): CHAIR_i 8.43 -> 9.80 (worse), F1 79.9 -> 78.8.
+- HALC (ICML 2024; 2403.00425)
+  - Own results, 64 tokens, LLaVA-1.5: 20.8/6.77, BLEU 15.9 -> 13.8/5.50, BLEU 16.1.
+  - Needs a detector. No Qwen result.
+  - SelfVal re-run (long captions): 50.0/15.4 -> 32.2/10.9, but length 100.6 -> 72.4 and CHAIR-F1 75.1 -> 69.0.
+- PAI (ECCV 2024, DOI 10.1007/978-3-031-73010-8_8; 2407.21771)
+  - Own results, LLaVA-1.5 greedy: 46.6/13.4 -> 24.8/6.9; POPE F1 85.5 -> 86.0.
+  - Qwen2.5-VL-7B (ReWEIGH): 31.6/9.58 -> 26.2/9.61, F1 70.8 -> 67.0, AMBER Cover 55.8 -> 49.5 (-6.3).
+- AGLA (CVPR 2025; 2406.12718)
+  - Own results, LLaVA-1.5: 51.0/15.2, R 75.2 -> 43.0/14.1, R 78.9; POPE random F1 82.3 -> 87.7.
+  - No Qwen result. Needs BLIP-ITM.
+- DeCo (ICLR 2025; 2410.11779)
+  - Own results:
+    - Qwen-VL greedy: 46.0/12.5 -> 42.2/10.7;
+    - LLaVA-1.5: 45.0/14.7 -> 37.8/11.1;
+    - AMBER LLaVA-1.5: 8.2/48.9 -> 6.6/47.5 (Cover -1.4).
+  - Qwen2.5-VL (SAKED): 40.0/9.8 -> 38.8/9.4.
+- ICD (Findings ACL 2024; 2403.18715)
+  - Own results, InstructBLIP: CHAIR_i/CHAIR_s 10.7/20.0 -> 8.0/15.2; POPE random F1 80.4 -> 85.6.
+  - Qwen2.5-VL-7B (ResDec): 30.6/8.4 -> 30.9/8.3 (no gain).
+  - MemVR A5, Qwen-VL short captions: R 53.4 -> 37.6.
+- VTI (ICLR 2025 per research_wall/01; OpenAlex lists arXiv only; 2410.15778)
+  - Own results, LLaVA-1.5, 512 tokens: 51.0/15.2/R 75.2/length 102.2 -> 35.8/11.1/76.8/93.8.
+  - POPE average F1: Qwen-VL 81.2 -> 84.1.
+- ICT (CVPR 2025, DOI 10.1109/cvpr52734.2025.00398; 2411.15268)
+  - Own results: POPE +6.27% average and MME +67.4 (LLaVA-1.5 and Qwen-VL). No CHAIR. Latency 1.0x.
+  - Qwen2.5-VL (SIRA): 512 tokens 35.5/24.5 -> 31.9/22.1; AMBER 5.3/47.2 -> 4.9/45.1 (Cover -2.1).
+- Nullu (CVPR 2025; 2412.13817)
+  - Own results, 64 tokens, LLaVA-1.5: 20.4/7.08, BLEU 15.72 -> 15.2/5.30, BLEU 15.69.
+  - Weight edit, 1.0x. No Qwen result.
+  - SelfVal re-run (long captions): 50.0/15.4 -> 49.4/13.5.
+- MemVR (ICML 2025; 2410.03577)
+  - Own results:
+    - LLaVA-1.5: 50.0/15.4/R 77.1/length 100.6 -> 46.6/13.0/80.8/99.6;
+    - Qwen-VL short captions (length 17.6, our regime): 6.8/5.3/R 53.4 -> 4.8/3.3/R 52.3, length 15.0;
+    - GLM-4V: R 72.7 -> 70.7.
+  - Latency 1.04x.
+- Woodpecker (Sci China Inf Sci 2024; 2310.16045)
+  - Own POPE results, random split, LLaVA: P 87.5 -> 95.9, R 84.0 -> 78.7.
+  - CHAIR, LLaVA-1.5:
+    - HALC/Nullu re-runs, 64 tokens: 20.4/7.08 -> 23.9/7.50 (worse);
+    - REVERSE/VGD tables: 50.0/15.4 -> 45.8/14.8.
+  - AMBER Cover 51.0 -> 48.9.
+  - Pipeline: GDINO + BLIP-2 VQA + GPT rewrite.
+- LURE (ICLR 2024; 2310.00754)
+  - Own results:
+    - LLaVA: 54.0/11.3 -> 27.1/6.4;
+    - MiniGPT-4: 26.8/7.3 -> 19.7/4.9;
+    - POPE LLaVA random F1 68.7 -> 85.8.
+  - MOCHa (2312.03631, EMNLP 2024) T2, on short-caption models: BLIP-L CIDEr 138.4 -> 0.0, CHAIR_i 2.3 -> 12.1. The revisor
+    rewrites caption style.
+- VOLCANO (NAACL 2024, DOI 10.18653/v1/2024.naacl-long.23; 2311.07362)
+  - Fine-tuned self-feedback revision, 7B.
+  - MMHal 2.42 -> 2.60 and Hal rate 0.55 -> 0.49 (vs LLaVA-1.5-7B); POPE accuracy/F1 86.1/85.1 -> 88.2/87.7.
+  - No CHAIR.
+- SelfVal (arXiv 2026; 2601.22451)
+  - Qwen2.5-VL-7B (length 175): 35.6/9.9/F1 74.4 -> 16.6/4.1/72.7 (BoN, N = 10) and 8.4/3.1/70.6 (FtA, N = 3).
+  - Derived R 63.4 -> 58.5 / 55.5.
+  - Verifier AUROC 0.85 vs 0.69 for raw mention probability.
+- VGD (arXiv 2026; 2607.27823)
+  - Qwen2-VL-7B: 27.4/8.6, length 86.4 -> 15.8/4.7, length 86.1 (@rec90).
+  - AMBER CHAIR/Cover 7.4/68.4 -> 1.9/55.6 (Cover -12.8).
+  - NoCaps CIDEr (LLaVA-1.5): 103.9 -> 101.6 (@rec90) and 86.4 (@rec70).
+  - Verifier AUROC 0.935.
+- Other Qwen2.5-VL-7B rows:
+  - ResDec (CVPR 2026; 2602.01047): 30.6/8.4 -> 25.8/6.8; POPE average F1 84.7 -> 89.6. No recall reported.
+  - SAKED (arXiv 2026): 40.0/9.8 -> 32.2/7.6; POPE average F1 81.4 -> 87.2; AMBER CHAIR 3.7 -> 3.8, Hal 16.1 -> 14.4.
+  - SPIN (EMNLP 2025, DOI 10.18653/v1/2025.emnlp-main.631; 2505.16411): 34.8/7.9/F1 75.7 -> 28.6/7.0/74.0 (derived R 64.3 -> 61.4).
+  - ReVisiT (ACL 2026; 2506.09522):
+    - own results: 35.2/8.43/F1 79.85 -> 29.8/7.04/81.16;
+    - ReWEIGH re-run: 31.6/9.58 -> 24.0/6.75, F1 70.8 -> 67.0, AMBER Cover 55.8 -> 62.3 but Hal 20.3 -> 24.9.
+  - SIRA (arXiv 2026; 2605.14621): AMBER 5.3/47.2/23.6 -> 4.6/47.8/20.2.
+  - ReWEIGH (arXiv 2026; 2608.19075): 31.6/9.58/F1 70.8 -> 25.4/7.54/71.8; Cover -1.2.
+  - MaskCD (Findings EMNLP 2025; 2510.02790):
+    - Qwen-VL-7B: 50.8/17.4, P 68.3, F1 63.0 -> 12.4/8.6, P 88.5, F1 64.3 (derived R 58.5 -> 50.5);
+    - Qwen2.5-VL (SIRA): AMBER 5.3/47.2 -> 4.8/47.4.
+  - MOCHa (EMNLP 2024, RL): BLIP-2 COCO CIDEr 144.3 -> 144.3, CHAIR_i 1.7 -> 1.4.
+    On short, in-domain captioners CHAIR is already near floor.
+- Supporting evidence: RePOPE (2504.15707) finds 9.3% of POPE "yes" labels and 1.7% of "no" labels wrong. About half of the
+  random-split false positives are omitted ground-truth objects. This matches our COCO split (ref-confirmed 33-40% of
+  instance false positives).
+Reading: on Qwen2.5-VL-7B the best training-free methods take CHAIR_i down 1-3 points with recall or Cover risk. Only
+sample-and-validate pipelines (SelfVal) and verifier rollback (VGD) cut more than 40% relative, and both pay recall
+(-5 to -8 R; Cover -12.8).
+
+==========================================================================================================================
+4. FEASIBILITY FOR OUR 4-bit QLoRA Qwen2.5-VL-7B, VIETNAMESE OUTPUT
+==========================================================================================================================
+- Logit-contrast methods (VCD, ICD, M3ID, MaskCD amateur):
+  - These run today in the scripts/baselines.py step loop (two KV-cached streams, M-RoPE-safe), at 2-2.4x cost.
+  - Our run and third-party Qwen2.5-VL tables say about 0. Rethinking-CD (research_wall A20) says greedy already beats most
+    CD on Qwen2.5-VL.
+- Attention and hidden-state interventions (PAI, SPIN, ICT, VTI, MemVR, ReVisiT): need forward hooks or eager attention.
+  Memory is fine with max_pixels capped.
+  - ReVisiT ships Qwen2.5-VL code and costs 1.0x.
+  - VTI, Nullu and ICT steering vectors must be recomputed on merged weights.
+- OPERA: 6-8x cost; portability to Qwen2.5-VL is contested (SAKED vs ResDec). Do not run.
+- Detector-based (HALC, Woodpecker): GDINO tags already exist for KTVIC test. Measured: nothing to remove (2d).
+- Self-verification (LURE, VOLCANO, Woodpecker-style VQA):
+  - LURE's revisor rewrites short captions into long ones (CIDEr 138 -> 0 in MOCHa).
+  - Our model's POPE yes-recall of 71-82% means many true mentions would be vetoed.
+- Vietnamese specifics:
+  - Token-level methods are language-agnostic.
+  - Mention-level methods need spans. rescap.chair.objects_in gives them but covers only the 113-class lexicon (about 42% of
+    noun mentions, K2). Multi-syllable classes need span-to-token alignment for rollback.
+  - NF4 and bf16 greedy differ on 55% of images (R6 F5), so every comparison must use the deployed quantisation.
+- E2 probe:
+  - AUROC 0.807 measures SALIENCE (named by references), not existence, on the zero-shot model's Stage-1 proposals.
+  - Its edge over the class prior is +0.10.
+  - On P1's own mentions the comparable label-free signal reaches 0.71-0.73 (2e), and R6 found the probe equal to the vote veto.
+
+==========================================================================================================================
+5. REALISTIC GAINS
+==========================================================================================================================
+- KTVIC object P (P1-short 78.8; fuse2-short 75.7):
+  | lever                                   | dP                                            | F1 cost   | source        |
+  |-----------------------------------------|-----------------------------------------------|-----------|---------------|
+  | hallucination-decoding family           | +0 to +2 (VCD measured -1.4/+0.3; GDINO +0.0) |           |               |
+  | self-consistency veto                   | +1.8                                          | 0         | test, frozen  |
+  | self-consistency veto, majority         | +6                                            | -3        |               |
+  | precision repair on recall-heavy output | +1.3 to +5                                    | 0 to +0.5 | fuse2-detailed |
+  Ceilings: 86.7 (oracle, all unconfirmed removed), 82.1 (human-level truthfulness), 85.3 (one human vs 4 annotators).
+  P >= 90 is reachable only at R about 16-22, keeping unanimous mentions.
+- COCO object P (instances; P1-short 89.5, fuse2-short 90.9):
+  - support veto: +1.3 to +1.9 at F1 0 (-> 91.4 / 92.2); +4.4 at -1.8 F1;
+  - VCD-type: +1.5 at -4 R (detailed);
+  - oracle 95.9-96.6;
+  - more than half of the residual false positives are bàn / ghế lexical scope, not hallucination.
+- F1: a precision lever is worth at most +1.3 to +2.3 F1 even as a perfect oracle. Measured, realistic: 0 to +0.5.
+
+==========================================================================================================================
+6. PROPOSALS (two at most; neither is a breakthrough)
+==========================================================================================================================
+A. FOPR -- F1-optimal precision repair, a salience-calibrated mention veto stacked on the chosen recall lever.
+  Mechanism:
+  - For each lexicon class the caption names, estimate q = P(named by the KTVIC annotators | image, class) from support among
+    k same-model samples. Calibrate with isotonic regression on dev300, using KTVIC-train refs as labels (training labels,
+    allowed). Optionally add the E2 probe and the class prior.
+  - Veto iff q < F_hat/2, where F_hat is the system's dev F1. This is the F1-optimal decision rule (Lipton et al., 1402.1892).
+    There is no tuned operating point.
+  - Realise the veto by switching to the nearest candidate (CIDEr-D similarity) that lacks the class. If none exists, roll back
+    and ban the class (bad_words_ids) and re-decode.
+  - Apply after UPE-MBR, CC-ADD or fusion. Their recall-seeking edits lower KTVIC precision: UPE on fuse2 gives panel P -2.1
+    and KTVIC CHAIR_i +1.6/+2.4 (R8 T3).
+  Novel element vs closest prior:
+  - TLC (2305.07021) uses a validation-tuned threshold on token confidence for existence.
+  - SelfVal (2601.22451) validates existence with extra LVLM queries and selects or aggregates; on Qwen2.5-VL-7B it costs
+    CHAIR-F1 -1.7 to -3.8.
+  - VGD (2607.27823) uses tuned @rec operating points. SelfCheckGPT (2303.08896) does sample consistency on text.
+  - New here:
+    (i) the posterior is SALIENCE, not existence, justified by the two-panel measurement (56% of KTVIC false positives are real);
+    (ii) a closed-form F/2 threshold with a falsifiable prediction, already confirmed: on precision-heavy P1 only about 3% of
+        mentions fall below F/2 (F1-neutral), while recall-heavy outputs carry more such mass (F1-positive);
+    (iii) evidence of matched style is required (2f).
+  - It is the precision complement of UPE-MBR, not a replacement. Novelty: moderate-low.
+  Evidence (CPU):
+  - test frozen rule: P +1.8 [+1.0, +2.6], R -0.4, F1 +0.0;
+  - fuse2-detailed repair: P +1.3, F1 +0.4 [+0.2, +0.7] (cross-system pool);
+  - COCO: P +1.9 [+1.4, +2.4], F1 0.0;
+  - realised-caption cost on dev (R8 T1 3b): KTVIC CIDEr -0.5 [-2.6, +1.6].
+  Expected effect:
+  - KTVIC P +1.5 to +3 on P1-type output and +3 to +5 after a recall lever; R -0.3 to -2; F1 0 to +0.5;
+  - COCO P +1.5 to +2, F1 +/-0.3;
+  - CIDEr -0.5 to -1.5.
+  GPU: 0 extra if it reuses the UPE-MBR sample jobs (36_z dev, T 0.5/0.8; 50_f KTVIC test; 52_c UIT-ViIC). Otherwise about
+  3.5 h on one 3090 (6 samples at ~0.6 s each: 558 + 300 KTVIC, 2,500 COCO).
+  Kill (pre-register before any output):
+  - on dev300 (36_z, T 0.8), FOPR on greedy AND on the UPE-MBR pick: KTVIC-ref F1 delta lower CI < -0.3, or dP < +1.5;
+  - realised KTVIC CIDEr cost worse than -1.5;
+  - on 52_c (UIT-ViIC, instance gold): F1 lower CI < -0.5;
+  - FOPR minus a matched random veto (same count): dP CI includes 0.
+B. VGD-vi -- instance-supervised mention verifier with rollback, for COCO precision only.
+  Mechanism:
+  - Fit an L1-logistic verifier on features read at Vietnamese COCO-80 mention spans: image-attention mass, sink mass, token
+    entropy, layer-24 hidden state.
+  - Labels are COCO-2014 instance presence on train2014 images (existing human labels; training only). Choose tau on a
+    train2014 hold-out, never on test.
+  - At decode, if risk > tau, roll back to the mention start, ban the class lemma and its coco80_vi synonyms, and continue.
+  Novel element vs VGD (2607.27823; English; LLaVA and Qwen2-VL):
+  - transfer to a Vietnamese 4-bit QLoRA captioner with multi-syllable span alignment;
+  - an evaluation that separates lexical-scope false positives (bàn / ghế, 56-62%) from hallucinations.
+  - Novelty: low.
+  Expected effect:
+  - COCO P +1.5 to +2.5 (oracle 95.9; non-furniture "neither" false positives are about 4% of mentions), R -0.5 to -1,
+    F1 +/-0.5;
+  - KTVIC P +0 to +0.5 (COCO-type false positives are 1.7% of mentions; GDINO veto +0.0);
+  - CIDEr about -2 (VGD @rec90, NoCaps).
+  GPU: about 2 h (features on about 2k train2014 images, 0.5 h; rollback decoding on 2,500 COCO + 558 KTVIC at 1.3x greedy,
+  about 1.2 h).
+  Kill: COCO instance dP < +1.5, F1 CI < 0, or KTVIC CIDEr worse than -1.
+Not proposed:
+- VCD, ICD or M3ID on P1 (expected about 0; measured on zero-shot).
+- OPERA (cost, portability).
+- Woodpecker, LURE or VOLCANO (style-destroying rewrite; no COCO-object errors to fix).
+- GDINO veto (measured +0.0).
+- Person-noun choice by annotator mode (greedy already picks the mode; gaming risk).
+- Mention-order salience (AUROC 0.53-0.58).
+
+==========================================================================================================================
+7. CAVEATS
+==========================================================================================================================
+- Test two-panel ceilings come from published aggregates. "Unconfirmed" is an upper bound on hallucination, because the panels
+  cover about 84% of nameable classes. The human-level ceiling assumes the human's unconfirmed 6% is real objects.
+- The test veto rows use R8's "final reporting only" pools with a dev-frozen rule. Test curves are descriptive, not selections.
+- The cross-system pools in 2f and 2g are ensembles of trained systems, not same-model samples. The same-model sample effect
+  (2e) is smaller.
+- The binormal simulation is a model: its AUROC-0.70 row (+2.3 P at -2 R) matches the measured veto only roughly.
+- The COCO furniture analysis is diagnostic. Changing the matcher or dropping classes would be metric gaming.
+- Literature numbers are not comparable across papers (tokens, prompts, CHAIR implementations). Compare rows only within one
+  table.
+
+Files:
+- out/: p0_systems, p1_ktvic, p1b_gdino_strict, p2_fp_anatomy, p3_coco, p4_dev, p5_test_frozen, p6_sim, p6b_auc, p7_repair,
+  p8_coco_fpclass, p9_bins, p10_unanimous, p11_salience (.log).
+- lit/: verify_ids.txt (35 resolved ids), html/*.tables.txt (27 papers), arx.py, tables.py, clean.py, oa.py, search.py.

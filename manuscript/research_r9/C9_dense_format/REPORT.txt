@@ -1,0 +1,460 @@
+R9 / C9_dense_format -- CAPTION FORMAT AND LENGTH CONTROL: CAN THEY PUSH OBJECT P / R / F1 TO 90?
+2026-10-13. CPU only (local, nice 15, 1 thread, peak RSS 129 MB, every script under 90 s). The repo was read-only.
+No new labels and no AI labels. The KTVIC test set and the 2,500 COCO test images were used only to MEASURE existing outputs:
+nothing was selected or tuned on them. The OpenViIC panel captions were not read (I reuse R5_01's published numbers only).
+Work dir: research_r9/C9_dense_format/
+  pilot.py (KTVIC/COCO length and format tables)      -> out/pilot.log, out/pilot.json
+  pilot2.py (gaming baselines, dual output, pooled recall, oracle gap)   -> out/pilot2.log
+  ceiling.py (Bayes ceiling under 5-annotator sampling)                  -> out/ceiling.log
+  out/coco_curve_humans.log (COCO length curve against human captions)
+  dl_html/*.txt (full text of the 23 papers cited in sec. 3)
+All numbers are x100. "M" is the number of distinct object classes per caption; "TP" is the number of correct ones per caption.
+P, R and F1 are object_prf.py's: P pooled over images, R averaged per image.
+
+======================================================================================================================
+0. VERDICT
+======================================================================================================================
+- Format and length move a system ALONG a fixed precision-vs-count curve. They do not move the curve.
+  - KTVIC: every competent adapter (P1, fuse2, e5, MR5, tags; short or detailed) sits within -2.0..+1.6 F1 of the
+    pre-registered frontier, except selffuse (-3.8 / -4.2).
+  - COCO: every Qwen2.5-VL-7B output (zero-shot, P1, fuse2; short, detailed, any prefix) sits within -1.7..+1.6 F1 of ONE
+    curve fitted on the prefixes of the zero-shot paragraph. The only exception is VSPS-short (-4.5).
+  - So the F1 differences between our systems on COCO, from 59 to 73, are almost entirely differences in how many objects
+    the output names.
+- KTVIC >= 90 is out of reach for ANY output format or method, by a measured Bayes argument (sec. 2c).
+  - The gold is the union of 5 short captions: 34.6% of gold classes are named by 1 of the 5 annotators and 27.3% by 2.
+  - Consider an oracle that knows every object's exact propensity to be named by an annotator. Against a fresh 5-annotator
+    union it reaches at most F1 84.3 (P 84.0, R 84.6). This uses a beta-binomial fitted on TRAIN and validated on the 1v4 and
+    2v3 human splits. Matching the tail to the TEST splits instead gives 86.7 (P 84.9, R 88.7).
+  - At P >= 90 the oracle's R is at most 75-82. At R >= 90 its P is at most 78-83.
+- At the length of fuse2-detailed (M 3.15), the distance to that oracle is almost all ranking (choosing which objects to
+  name), not length:
+  - ranking gap +18.9 to +21.8 F1;
+  - length gap +0.6 to +1.3;
+  - gold noise +3.2 to +5.4 to reach 90.
+  The format/length lever on KTVIC is therefore already used up by the 2-sentence description.
+- COCO >= 90 is out of reach for any CAPTION or DESCRIPTION format.
+  - Five human English captions, pooled, reach F1 79.5 (P 85.3, R 74.3) against the instance gold.
+  - Our model's curve ends at 73.4 (the full zero-shot paragraph). Humans sit +5.9 to +7.5 above it at equal length.
+  - Only an object-INVENTORY output (multi-label tagging), at the level of supervised multi-label SOTA, is near 90: Q2L-CvT
+    on COCO reaches OP 89.2 / OR 84.6 / OF1 86.8. That would be a tagger result, not a captioning result.
+- Dual output (a short caption scored by CIDEr plus a description scored by object P/R/F1) is principled and defensible
+  if it is declared and reported as two outputs with two golds (sec. 4). Its cost is measured: zero.
+  - The first sentence of the existing fuse2-detailed output is as good a KTVIC caption as fuse2's short-mode output. Over
+    seeds 42/43/44: syllable CIDEr-D +1.3 / +1.9 / +2.2 (CIs include 0); F1 -0.1 / -0.4 / -0.1.
+  - The full description adds F1 +6.0..+6.6 (CI > 0) on KTVIC and +6.1 on COCO.
+  - It becomes metric gaming when the description's or inventory's object F1 is reported as the caption's, or when the
+    description is tuned against the KTVIC union gold without that gold's ceiling.
+- Proposals (sec. 5):
+  - A: prefix-consistent dual output with gold-aware F1-optimal stopping. Novelty is low to moderate. Expected effect:
+    KTVIC description +1..+3 F1, COCO description +4..+7, KTVIC caption unchanged.
+  - B: a declared object inventory. Low novelty. It is the only route on COCO toward 85-90, and it does not help KTVIC.
+
+======================================================================================================================
+1. SETUP
+======================================================================================================================
+- KTVIC test: 558 images, 5 references each.
+  - Gold = union of objects_in over the 5 references: 3.72 classes per image. One reference names 1.74 classes.
+  - Gold classes by how many of the 5 references name them: 1/5 34.6%, 2/5 27.3%, 3/5 17.4%, 4/5 10.6%, 5/5 10.1%.
+- COCO: the 2,500 Karpathy-test images of data/coco_probe/manifest.json.
+  - Gold = COCO-2014 instance classes only: 2.82 per image; 27 images have none.
+  - Vietnamese matcher v2.
+  - English human captions are scored with Rohrbach's synonyms (score_coco_probe.en_classes), taken from
+    research_r8/T1_decode/coco/coco_probe_refs_en.json.
+- Truncation = the first k sentences of an existing output. This is length control by stopping, with no new decoding.
+- CIDEr:
+  - "word" = the stored evaluate.py number (RDRSegmenter).
+  - "syl" = syllable-level CIDEr-D from rl_reward.CiderD, with DF from the 558 test reference sets. It is used because no
+    segmenter runs on CPU here.
+  - Over 65 stored systems the two correlate at Pearson r = 0.996.
+
+======================================================================================================================
+2. MEASURED RESULTS (CPU pilot)
+======================================================================================================================
+2a. KTVIC: length vs P/R/F1 and CIDEr (out/pilot.log [K1], [K2], [K3])
+
+| system | syllables | sentences | M | P / R / F1 | CIDEr word (syl) | dF1 vs frontier |
+|---|---|---|---|---|---|---|
+| p1_s43-short | 11.9 | 1.0 | 1.76 | 78.8 / 41.7 / 54.5 | 143.9 (160.2) | +0.1 |
+| fuse2_s42-short | 12.4 | 1.0 | 2.09 | 75.7 / 47.1 / 58.1 | 143.9 (160.2) | +0.6 |
+| fuse2_s42mbr-short | 13.0 | 1.0 | 2.53 | 70.9 / 53.1 / 60.7 | 98.0 (141.5) | -0.1 |
+| tags_fuse2_s42-detailed | 21.5 | 1.7 | 2.97 | 70.7 / 59.7 / 64.8 | 48.6 (72.2) | +1.3 |
+| fuse2_s42-detailed | 24.0 | 1.9 | 3.15 | 68.0 / 61.2 / 64.4 | 23.9 (37.4) | +0.0 |
+| e5_s42-detailed | 24.5 | 1.9 | 3.25 | 67.2 / 62.2 / 64.6 | 19.0 (29.7) | -0.2 |
+| fuse2_s42selffuse-two | 23.6 | 1.8 | 3.75 | 60.7 / 64.7 / 62.7 | 32.2 (47.4) | -4.2 |
+| zeroshot-detailed | 117.4 | 6.1 | 6.54 | 31.6 / 57.1 / 40.7 | 0.0 (0.0) | -31.5 |
+
+- CIDEr cost of length: a second sentence drops CIDEr from about 140-150 (word) to 18-24.
+  - This is CIDEr-D's Gaussian length penalty (sigma 6), not a quality judgment. A paragraph scores 0.0.
+  - LaBERT (ECCV 2020, sec. 3) shows the same on COCO: CIDEr 118.2 -> 39.9 from 10-14 to 20-25 words, with SPICE flat
+    (21.8 -> 22.2).
+  - So CIDEr cannot score a description, and any length lever needs a separate caption output.
+- Truncating the zero-shot paragraph (the same text, cut after k sentences):
+
+  | k | P / R / F1 |
+  |---|---|
+  | 1 | 47.4 / 22.0 / 30.1 |
+  | 2 | 44.0 / 35.6 / 39.4 |
+  | 3 | 40.5 / 44.1 / 42.2 |
+  | 4 | 37.1 / 50.3 / 42.7 (maximum) |
+  | 5 | 34.1 / 54.9 / 42.1 |
+  | full | 31.6 / 57.1 / 40.7 |
+
+  Against the KTVIC union gold, the F1-optimal stop is at about 4 sentences.
+- Precision of the j-th distinct class named falls monotonically, so outputs are salience-ordered and prefix truncation is
+  a natural length control:
+
+  | output | j=1 | j=2 | j=3 | j=4 | j=5 | j=6 | j=7 | j=8+ |
+  |---|---|---|---|---|---|---|---|---|
+  | fuse2-detailed | 80.7 | 67.2 | 60.3 | 57.5 | 54.7 | | | |
+  | zero-shot paragraph | 47.8 | 41.9 | 38.5 | 33.6 | 26.3 | 23.1 | 13.2 | 12.1 |
+
+- The pre-registered frontier is TP = 1.3996 (M / 1.7826)^0.7468, P = 100 TP / M, R = 5.486 + 25.98 TP. It was fit on
+  M 1.76-3.15, so values outside that range are extrapolation:
+  - P = 90 needs M 1.04 and gives R 29.8 (F1 44.8);
+  - R = 90 needs M 5.52 and gives P 59.0 (F1 71.3);
+  - F1 peaks at 72.4 at M 6.4 (P 56.8), and only because R is capped at 100.
+  No point on the frontier is near 90/90.
+
+2b. Single-decode dual output (out/pilot2.log [D1]; paired bootstrap over the 558 images)
+
+| | fuse2_s42 | fuse2_s43 | fuse2_s44 |
+|---|---|---|---|
+| CIDEr-syl, sentence 1 of detailed minus short-mode | +1.3 [-2.3, +4.9] | +1.9 [-2.2, +6.3] | +2.2 [-1.5, +6.1] |
+| object F1, sentence 1 minus short-mode | -0.1 [-1.1, +1.0] | -0.4 [-1.4, +0.8] | -0.1 [-1.3, +1.0] |
+| full description minus sentence 1: dP | -8.3 | -8.8 | -8.5 |
+| full description minus sentence 1: dR | +14.3 | +15.4 | +14.2 |
+| full description minus sentence 1: dF1 | +6.3 [+4.8, +7.9] | +6.6 [+5.0, +8.3] | +6.0 [+4.4, +7.6] |
+| CIDEr-syl of the full description | 37.4 | 34.5 | 32.5 |
+| sentence 1 identical to the short-mode output | 367/558 | 346/558 | 367/558 |
+
+- The same holds on COCO: fuse2_s42-detailed sentence 1 scores 91.2 / 44.4 / 59.7, and the full output scores
+  88.9 / 52.3 / 65.8 (dF1 +6.1 [+5.5, +6.7]).
+- Conclusion: one decode yields both outputs. The caption costs no CIDEr, and the description buys about +6 F1 on both
+  datasets.
+
+2c. Bayes ceiling of KTVIC object metrics under 5-annotator sampling (out/ceiling.log, out/pilot2.log [O1])
+- Model:
+  - each lexicon class of an image has a propensity p ~ Beta(a, b) of being named by one annotator;
+  - the 5 annotators draw independently;
+  - a zero-truncated beta-binomial MLE on TRAIN (3,769 images) gives a = 0.102, b = 0.950, P(k=0) = 0.792;
+  - fitted vs observed shares of k = 1..5: 39.3/38.1, 21.9/24.9, 15.6/15.6, 12.4/9.6, 10.7/11.8;
+  - on test, observed classes get the posterior Beta(a+k, b+5-k), and the unseen classes Beta(a, b+5) with a Poisson count.
+- Validation: my split code reproduces scripts/human_parity.py exactly (test 1v4 P 85.3 / R 46.9; 2v3 76.1 / 66.7).
+
+| unseen-class tail | simulated 1v4 (P / R) | simulated 2v3 (P / R) | real |
+|---|---|---|---|
+| as fitted (x1.0; train rmse 0.60, the best) | 83.0 / 46.0 (train) | 73.6 / 65.0 (train) | train 83.6 / 47.0 and 73.9 / 65.3 |
+| x1.0, simulated on test | 82.8 / 45.2 | 73.3 / 64.4 | test 85.3 / 46.9 and 76.1 / 66.7 |
+| x0.6, simulated on test | 85.5 / 48.1 | 76.7 / 67.6 | test (as above) |
+
+  - At x1.0 the simulation is about 2 points pessimistic on test; a tail of x0.6 matches the test splits.
+  - Simulated classes per caption: 1.74 (real 1.74).
+- The ORACLE knows every class's true p and predicts {o : 1 - (1-p_o)^5 >= tau}. The gold is a fresh 5-annotator union.
+
+| tail | best F1 (P / R, M) | best P with R >= 90 | best R with P >= 90 |
+|---|---|---|---|
+| train-calibrated x1.0 | 84.3 (84.0 / 84.6, M 3.66; sd over 20 worlds 0.8) | 77.6 | 75.3 |
+| test-matched x0.6 | 86.7 (84.9 / 88.7, M 3.45) | 83.3 | 81.8 |
+| x0.5 | 87.5 | | |
+| x0.7 | 85.9 | | |
+| x2 (pessimistic) | 79.6 | | |
+| no tail | 90.9 | | |
+
+  - The no-tail world is REJECTED by the data: its 1v4 P is 89.4, against 83.6 / 85.3 measured.
+  - So P, R and F1 >= 90 on KTVIC are jointly unreachable even with perfect knowledge of human salience. This applies to
+    every lever in R9, not only to format.
+- Gap decomposition: the oracle at the SAME M as each system.
+
+| system | system F1 | oracle F1 at same M | ranking gap | length gap | gold noise to 90 |
+|---|---|---|---|---|---|
+| P1 short (M 1.78) | 54.5 | 67.4-71.9 | +12.9..+17.4 | +14.9..+17.2 | |
+| fuse2 short (M 2.09) | 58.1 | 73.4-77.1 | +15.3..+19.0 | +9.7..+11.3 | |
+| fuse2 detailed (M 3.15) | 64.4 | 83.3-86.2 (P 88-89, R 78-84) | +18.9..+21.8 | +0.6..+1.3 | +3.2..+5.4 |
+
+  - A one-sentence caption is length-bound: it cannot hold the F1-optimal 3.5-3.7 classes.
+  - The 2-sentence description is not length-bound. Only ranking can still move it.
+- Consistent external evidence:
+  - capture-recapture (R5_01) estimates 8.35 nameable lexicon classes per image, of which the KTVIC panel names 44.5%;
+  - so an "object-complete" description scored against the KTVIC gold must lose precision (P at most about 45% if complete).
+  - The F1-optimal description against KTVIC is salience-complete, not object-complete.
+
+2d. Inventories and gaming baselines on KTVIC (out/pilot.log [K5], out/pilot2.log [G1])
+- Prior-only inventories: the train top-k classes (người, áo, phụ nữ, đàn ông, đường, ...) for every image give F1 21.1
+  (top-1) to 31.2 (top-6). Listing all 83 gold classes gives P 4.5 / R 100 / F1 8.6. The metric is not trivially gamed.
+- Detector tags as an inventory: GDINO COCO-80 tags mapped to the lexicon give 34.3 / 22.0 / 26.8. The label spaces do not
+  match.
+
+| combination | P / R / F1 | compared with |
+|---|---|---|
+| fuse2-short U GDINO | 50.7 / 55.1 / 52.8 | fuse2-short: -5.3 F1 |
+| fuse2-detailed U GDINO | 51.2 / 65.6 / 57.5 | fuse2-detailed: dF1 -6.9 [-7.9, -5.8] |
+| fuse2-detailed U (zero-shot paragraph & GDINO) | 62.0 / 63.9 / 62.9 | fuse2-detailed: -1.5 [-2.1, -0.8] |
+
+  Appending an inventory sentence LOSES F1 on KTVIC.
+- Oracle filters (perfect precision on existing content):
+  - fuse2-detailed: R 61.2, F1 75.9;
+  - zero-shot paragraph: R 57.1, F1 72.7;
+  - union of all stored outputs + GDINO: R 92.9, F1 96.3.
+  The objects are already in what we generate. Choosing them is the bottleneck.
+
+2e. COCO (out/pilot.log [C1]-[C5], out/pilot2.log [P1], out/coco_curve_humans.log)
+
+| output | syllables | M | P / R / F1 |
+|---|---|---|---|
+| zero-shot short | 14.3 | 1.19 | 90.8 / 48.5 / 63.3 |
+| zero-shot paragraph | 109 | 2.14 | 80.5 / 67.5 / 73.4 |
+| fuse2 short | 11.6 | 1.11 | 90.9 / 44.2 / 59.4 |
+| fuse2 detailed | 21.8 | 1.40 | 88.9 / 52.3 / 65.8 |
+| P1 short | 11.5 | 1.09 | 89.5 / 44.3 / 59.3 |
+| VSPS (distill) detailed | 29.1 | 1.38 | 86.4 / 49.5 / 63.0 |
+
+- Truncating the zero-shot paragraph: F1 rises at every added sentence. COCO's instance gold rewards length.
+
+  | k | P / R / F1 | vs full: dF1 |
+  |---|---|---|
+  | 1 | 91.7 / 40.1 / 55.8 | -17.6 |
+  | 2 | 88.7 / 49.3 / 63.4 | -10.0 |
+  | 3 | 85.9 / 56.4 / 68.1 | -5.4 |
+  | 4 | 83.3 / 62.0 / 71.0 | -2.4 [-2.9, -1.9] |
+  | 5 | 81.6 / 65.6 / 72.7 | |
+  | full | 80.5 / 67.5 / 73.4 | |
+
+  - Precision of the classes each sentence names for the first time: s1 91.7, s2 80.4, s3 74.0, s4 67.9, s5 66.9, s6 60.4.
+  - The same paragraph's F1-optimal stop is 4 sentences against the KTVIC gold, and "never stop" against the COCO gold.
+    The F1-optimal length depends on the gold.
+- One length curve, fitted on the zero-shot prefixes: TP = 0.913 M^0.840, R = 14.79 + 30.72 TP.
+  - Every system's residual is -1.7..+1.6, except VSPS-short (-4.5).
+  - The KTVIC-trained adapters lose COCO F1 only by naming fewer objects (M 1.09-1.11 vs 1.19).
+- Human captions against the same instance gold:
+
+  | human output | M | P / R / F1 | residual vs the model's curve |
+  |---|---|---|---|
+  | one caption | 1.35 | 92.9 / 56.8 / 70.5 | +6.3 |
+  | union of 2 | 1.68 | 89.9 / 66.1 / 76.2 | +7.5 |
+  | union of 5 | 2.08 | 85.3 / 74.3 / 79.5 | +6.3 |
+
+  - At equal length, humans choose objects better by about 6 F1. That is the recognition/ranking gap.
+  - Committee votes over our 8 outputs move above the curve: classes named by >= 2 of 8 give 85.6 / 62.8 / 72.5 (+2.6);
+    by >= 3 of 8, 89.8 / 55.9 / 68.9 (+3.3).
+- Oracle filters:
+  - zero-shot paragraph: R 67.5, F1 80.6;
+  - union of all 8 outputs: R 74.0, F1 85.1;
+  - all 8 outputs + 5 English references: R 84.8, F1 91.8.
+- Baselines: always {person} gives 52.1 / 18.6 / 27.4; listing all 80 classes gives 3.5 / 100 / 6.8.
+- Our recall is a per-image MEAN. It is 6-12 points more lenient than pooled multi-label OR for caption-like outputs:
+  - zero-shot paragraph R 67.5 vs OR 61.2;
+  - one human caption 56.8 vs 44.5;
+  - 5 humans 74.3 vs 62.8.
+  For a recall-uniform tagger the gap should be small, so published OF1 values translate to roughly our F1 + 0..3.
+
+======================================================================================================================
+3. LITERATURE
+======================================================================================================================
+Each paper was confirmed on its arXiv abs/HTML page and with OpenAlex or Semantic Scholar. Numbers are quoted from the
+paper's own tables, read in the full text. "arXiv" = no peer-reviewed venue found.
+
+Dense and detailed data (lengths; few report object P/R):
+- Localized Narratives (Pont-Tuset et al., ECCV 2020; 1912.03098): 36.5 words and 10.8 nouns per caption, against COCO
+  captions' 10.5 words and 3.6 nouns.
+- DOCCI (Onoe et al., ECCV 2024; 2404.19753): 136 words; 17.7 objects per description, nested objects included.
+- ImageInWords (Garg et al., EMNLP 2024; 2405.02793): 217.2 tokens and 52.5 nouns. Human side-by-side: +66% vs DCI/DOCCI,
+  +48% vs GPT-4V. Fine-tuning on IIW: +31%.
+- DCI (Urbanek et al., CVPR 2024; 2312.08578): 1,111 words per image, median 941. It ships summarized sDCI to fit CLIP's
+  77 tokens, a dense-plus-short precedent.
+- ShareGPT4V (Chen et al., ECCV 2024; 2311.12793): GPT-4V captions averaging 942 characters.
+- PixelProse (Singla et al., arXiv 2406.10328): 16M Gemini-generated dense captions; no object metric.
+
+Detailed-caption metrics (object precision/recall/coverage):
+- CAPTURE / DetailCaps (Dong et al., arXiv 2405.19092): LLaVA-1.5-7B, own vs synthesized detail captions on
+  DetailCaps-4870: P 65.77 -> 64.35, R 43.04 -> 50.79, CAPTURE 51.05 -> 56.25. Recall gains at a small precision cost.
+- DCScore / DeCapBench / FeedQuill (Ye et al., ICLR 2025; 2503.07906):
+  - LLaVA-1.5-7B + FeedQuill: DeCapBench 24.50 -> 34.52, CHAIR_S 47.8 -> 5.1, CHAIR_I 25.3 -> 2.6.
+  - A recall-only reward "yields poorer results ... due to the absence of a precision constraint".
+- CompreCap (Lu et al., CVPR 2025; 2412.08614), object coverage on 560 densely annotated images:
+
+  | describer | words | object coverage (%) |
+  |---|---|---|
+  | InstructBLIP-7B | 70 | 56.20 |
+  | ShareGPT4V-13B | 156 | 67.88 |
+  | GPT-4o | 108 | 72.78 |
+  | LLaVA-Next-34B | 179 | 72.86 |
+  | human | 134 | 77.62 |
+
+  Even human dense descriptions cover less than 80% of annotated objects.
+- AMBER (Wang et al., arXiv 2311.07397), generative CHAIR / Cover: GPT-4V 4.6 / 67.1, InstructBLIP 8.8 / 52.2,
+  Qwen-VL 5.5 / 49.4.
+
+Controllable detail and length (hallucination vs length, and the CIDEr cost):
+- Length-Controllable Captioning / LaBERT (Deng et al., ECCV 2020; 2007.09580), COCO Karpathy test:
+
+  | length level | CIDEr | SPICE |
+  |---|---|---|
+  | 10-14 words | 118.2 | 21.8 |
+  | 15-19 words | 90.5 | 22.3 |
+  | 20-25 words | 39.9 | 22.2 |
+
+  The CIDEr collapse comes with flat semantic content.
+- CaptionSmiths (Saito et al., ICCV 2025; 2507.01409): continuous length and descriptiveness conditioning; length-control
+  error reduced by 506%. It states that hallucination in long captions is not addressed.
+- Florence-2 (Xiao et al., CVPR 2024; 2311.06242): brief / detailed / more-detailed granularities plus <OD> in one model.
+  COCO CIDEr 135.6 zero-shot, 143.3 generalist.
+- Less is More / selective EOS (Yue et al., ACL 2024; 2402.14545), LLaVA-1.5-7B on 500 COCO images:
+  - length 100.6 -> 76.2 words;
+  - CHAIR_S 50.0 -> 36.8 and CHAIR_I 15.4 -> 11.3;
+  - object recall 77.1 -> 74.3.
+  - Implied object F1 (1 - CHAIR_I against recall) is about 80.7 -> 80.9: stopping earlier moves along the frontier.
+  - The authors also report that truncation and length-penalty baselines lose more recall.
+- HallE-Control (Zhai et al., arXiv 2310.01779), CCEval on 100 Visual Genome images:
+  - LLaVA-7B, control +1 -> -1: CHAIR_S 89.0 -> 76.0, CHAIR_I 26.6 -> 20.9, coverage 32.8 -> 33.9;
+  - at about 100 words and 9 objects, every model reaches only about 30-34% coverage.
+- LURE (Zhou et al., ICLR 2024; 2310.00754): hallucination concentrates in the later part of descriptions (object position
+  factor). Our position-precision tables confirm it on KTVIC and COCO.
+- CCCaption (CVPR 2026; 2602.21655), completeness (QA) + correctness (atomic-claim judge) rewards with GRPO:
+  - Qwen3-VL-2B correctness +0.38 (+0.54%);
+  - the hybrid reward beats single-reward ablations by +2.51 and +4.13;
+  - each single reward degrades the other metric.
+- RubiCap (arXiv 2603.09160): rubric-guided RL for dense captioning; reported as CapArena win rates, no object P/R.
+- Precision or Recall? (Cheng et al., EMNLP 2024 Findings; 2411.05079): for text-to-image training captions, precision
+  matters more than recall.
+
+Dual output, and the inventory format:
+- Tag2Text (Huang et al., ICLR 2024; 2303.05657), one model, COCO zero-shot recognition:
+
+  | output paradigm | F1 | P / R |
+  |---|---|---|
+  | Tag2Text caption | 62.7 | 93.2 / 47.2 |
+  | Tag2Text tagging (14M) | 71.5 | 80.1 / 64.5 |
+  | BLIP-2 caption | 59.1 | 95.5 / 42.8 |
+
+  - Format alone is worth about +9 F1 on COCO, matching our short -> paragraph +10.1.
+  - Tag guidance changes caption P / R by +2.9 / +6.7 and COCO CIDEr 123.3 -> 124.6. In our repo, GDINO tags in the prompt
+    gave KTVIC CIDEr 143.9 -> 146.4 and P +2.2, R -0.4.
+- Query2Label (Liu et al., arXiv 2107.10834), supervised COCO multi-label:
+  - Q2L-CvT-w24 (384 px): mAP 91.3; CP / CR / CF1 88.8 / 83.2 / 85.9; OP / OR / OF1 89.2 / 84.6 / 86.8;
+  - ML-GCN (CVPR 2019): mAP 83.0, OF1 80.3.
+  This is the bar any "inventory reaches 90 on COCO" claim must clear.
+
+Scoop status:
+- Dual outputs from one model: Florence-2, Tag2Text, DCI-sDCI.
+- User-chosen length control: LaBERT, CaptionSmiths.
+- Stop-at-perception-limit: Less is More, HallE-Control.
+- Recall + precision rewards for dense captions: CCCaption, DCScore/FeedQuill, RubiCap.
+- I found NO paper that chooses a description's length by an expected-F1 rule tied to how the evaluation gold was built
+  (union of K annotators vs exhaustive instances). None makes the short caption a CIDEr-free prefix of the description,
+  and none reports a Bayes ceiling for a multi-annotator union gold. Those three items are the only openings in this lever.
+
+======================================================================================================================
+4. IS THE DUAL-OUTPUT PROTOCOL PRINCIPLED, OR METRIC GAMING?
+======================================================================================================================
+Principled, and acceptable to Q1 reviewers, if all of the following hold:
+1. It is DECLARED as two outputs of one model: a caption (here, sentence 1) and a description (the full decode). Each output
+   is scored only with its own metrics.
+   - Caption: CIDEr/BLEU/METEOR against the KTVIC references, plus object P/R/F1 of the caption itself.
+   - Description: object P/R/F1, CHAIR_i/CHAIR_s, a length-matched comparison, and a description-quality measure in the
+     CAPTURE / DCScore / CompreCap family.
+   - CIDEr is never applied to descriptions: our 2-sentence outputs score 18-24 word-level CIDEr purely from the length
+     penalty.
+   - Precedents: Tag2Text (ICLR 2024), Florence-2 (CVPR 2024), DCI-sDCI (CVPR 2024).
+2. The description is evaluated mainly against EXHAUSTIVE gold (COCO instances). On KTVIC the gold is a salience gold
+   (the union of 5 short captions; 8.35 nameable classes, 44.5% named). The KTVIC description F1 must therefore be shown
+   with its Bayes ceiling (84-87) and its frontier residual. Otherwise a gain may be a move along the precision-vs-count
+   curve, which reviewers know as the CHAIR-vs-coverage trade-off (HallE-Control, AMBER, Less is More).
+3. Gaming baselines are reported alongside: prior top-k (KTVIC F1 21-31), list-all (8.6 / 6.8), detector tags as text
+   (GDINO 26.8; caption U tags -5.3 F1).
+It is gaming if any of these happens:
+- (a) the description's or inventory's F1 is put in the caption row next to the caption's CIDEr;
+- (b) the description length or content is tuned against the KTVIC union gold on test;
+- (c) an "objects:" inventory sentence is appended to the caption.
+  Case (c) also fails on its own: on KTVIC it loses 5-7 F1 (sec. 2d).
+
+======================================================================================================================
+5. PROPOSALS
+======================================================================================================================
+A. PCD-GAFS: prefix-consistent dual output with gold-aware F1-optimal stopping.
+- Mechanism.
+  - SFT on consensus-ordered fusion targets with k up to 5 references. build_gold_sft.py --fuse already orders the
+    sentences: the consensual caption first, then the caption adding the most new objects. No new labels.
+  - At decode, generate sentence by sentence. Sentence 1 is the caption. Continue while the expected marginal object-F1 of
+    the next sentence is positive, i.e. while its new classes have mean q_o > F_hat / 2 (the plug-in F-measure rule).
+  - q_o depends on the gold:
+    - q = 1 - (1 - v_o)^5 for the 5-annotator union gold (KTVIC), with v_o = sample support (R8: AUROC 0.755);
+    - q = calibrated presence probability for the exhaustive instance gold (COCO).
+  - Cheap version: one long greedy decode, then a dataset-level stop k chosen on dev. Because the output is
+    prefix-consistent, every k comes from the same decode for free.
+- Novel element vs closest prior:
+  - LaBERT (ECCV 2020) and CaptionSmiths (ICCV 2025) take the length from a user knob. Less is More (ACL 2024) and
+    HallE-Control stop at the perception limit. Florence-2 and Tag2Text use separate task prompts.
+  - Here the length is set by the EVALUATION GOLD's sampling model, and the caption is a CIDEr-free prefix of the
+    description. The prefix part is measured here: +1.3..+2.2 syllable CIDEr, F1 -0.1..-0.4, 3 seeds.
+  - It overlaps R8's UPE-MBR, which uses the same q transform for selection rather than stopping.
+  - Honest novelty: low to moderate. Mostly a protocol plus a decision rule.
+- Expected effect:
+  - KTVIC caption P / R / F1 unchanged (58.0 vs 58.1).
+  - KTVIC description 68.0 / 61.2 / 64.4 -> about 63-65 / 67-71 / 65.5-67.7, i.e. +1 to +3 F1. Evidence: the frontier at
+    M 4 gives 67.7; marginal precision of the 4th-5th class is 55-58%, above F1/2 = 32%; but the oracle says the length gap
+    at M 3.15 is only +0.6..+1.3.
+  - COCO description 65.8 -> about 70-73 (+4 to +7). Evidence: the model curve at M 1.8-2.1 gives 70.4-73.6; the paragraph
+    reaches 73.4; 5 humans reach 79.5.
+- CIDEr cost: 0 on the caption (by construction, measured). The description is not scored with CIDEr.
+- GPU-h on one 3090: about 10-14.
+  - fuse-k SFT, 1 seed: 4-6 (P1 2 epochs = 1.93; targets about 2.5x longer).
+  - Greedy long decode on KTVIC dev300 + test: about 1.
+  - Greedy long decode on COCO dev (Karpathy val, else rest2500) + test 2,500: about 4.
+  - Optional 4 samples on KTVIC for per-image stopping: about 2.
+  - Two more seeds: about 10.
+- Kill (decided on KTVIC dev300 and the COCO dev set only), if any of:
+  - (i) sentence-1 word CIDEr falls more than 2.0 below the short-mode output;
+  - (ii) the dev-chosen description gains < +1.0 F1 (CI includes 0) over the 2-sentence fuse2 description on KTVIC AND
+    < +3.0 on COCO;
+  - (iii) the description's COCO CHAIR_i exceeds the zero-shot paragraph's 19.5.
+
+B. Declared object inventory: a text multi-label output, calibrated per gold.
+- Mechanism.
+  - The same VLM emits a third output: a list of canonical class names.
+  - Zero-shot: an inventory prompt.
+  - Supervised: QLoRA on COCO-train2014 instance labels in Vietnamese COCO-80 names (allowed: train images only) plus the
+    KTVIC train 5-reference unions over the 113-entry lexicon.
+  - The threshold per gold is the F1-optimal one on dev.
+  - Optionally, the caption is conditioned on the inventory (Tag2Text-style).
+- Novel element vs Tag2Text (ICLR 2024), RAM, Florence-2 <OD>: the inventory is plain generated text from the captioning VLM,
+  with a gold-aware threshold. Novelty is low; the value is diagnostic.
+- Expected effect:
+  - COCO inventory zero-shot about 73-76. Evidence: Tag2Text tagging minus caption +8.8; our paragraph already gives 73.4.
+  - COCO supervised about 80-88. Evidence: Q2L-CvT OF1 86.8, OP 89.2 / OR 84.6.
+  - 90 is borderline at best and requires SOTA-tagger recognition.
+  - KTVIC: no gain expected (about 64-68), because of the same ranking gap. COCO-80 tags score 26.8 against KTVIC gold.
+- CIDEr cost: 0 as a separate output. Inventory-conditioned captions in prior evidence: +1.3 CIDEr (Tag2Text); +2.5 CIDEr and
+  P +2.2 (our GDINO-tag run).
+- GPU-h: about 10.
+  - Zero-shot inventory on COCO dev + test and KTVIC dev300 + test: about 2.
+  - QLoRA on 20k COCO-train2014 images plus 3.8k KTVIC rows, 1 epoch: about 6-7.
+  - Evaluation: about 1.5.
+- Kill:
+  - zero-shot inventory COCO dev F1 < 75.0: format alone adds nothing over the paragraph;
+  - supervised inventory COCO dev F1 < 85.0: drop every ">= 90 on COCO" claim, and report it as the recognition ceiling.
+  - A reviewer will compare it with Q2L / ML-Decoder, so it must be reported as tagging.
+
+======================================================================================================================
+6. CAN THIS LEVER REACH >= 90?
+======================================================================================================================
+| metric | reachable? | the number that decides it |
+|---|---|---|
+| KTVIC P >= 90 | Only with a short output | The frontier puts P 90 at R 29.8. The Bayes oracle at P >= 90 has R <= 75-82. |
+| KTVIC R >= 90 | No, not jointly with P | The frontier gives P 59.0 at R 90; the oracle at most 78-83. |
+| KTVIC F1 >= 90 | NO | Bayes ceiling F1 84.3 (train-calibrated) to 86.7 (test-matched); the measured best is 64.4-64.8. |
+| COCO F1 >= 90, caption/description formats | NO | All 5 human captions pooled: 79.5. Our model's curve ends at 73.4. |
+| COCO F1 >= 90, inventory (tagger) format | Borderline at best | Needs supervised-SOTA multi-label recognition (Q2L-CvT OF1 86.8). |
+
+======================================================================================================================
+7. CAVEATS
+======================================================================================================================
+- CIDEr-syl is a proxy (r = 0.996 against the word-level score over 65 systems). It disagrees on the two stored MBR
+  files (word 96.7-98.0 vs syl 140.0-141.5), so the dual-output CIDEr claim should be re-checked with evaluate.py on dev.
+- The ceiling model assumes class-independent annotators with beta-distributed propensities. It is validated on the two
+  human splits (1v4, 2v3) and on classes per caption. The unseen tail is not identified by the data, so I report the range
+  over tail scales; only the no-tail world, which fails validation, reaches 90.
+- The frontier and the COCO curve are empirical. Beyond their fit ranges (KTVIC M 1.76-3.15; COCO M 0.84-2.14) they are
+  extrapolations.
+- The COCO numbers depend on matcher v2 (Vietnamese) and on Rohrbach synonyms (English). The pooled-vs-mean recall gap
+  makes OF1 values from the literature only roughly comparable with ours.

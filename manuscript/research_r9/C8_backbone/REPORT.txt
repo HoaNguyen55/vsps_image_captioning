@@ -1,0 +1,451 @@
+C8_backbone -- a stronger open backbone for object-level recognition and low hallucination (R9 lever C8)
+Agent C8, 13 Oct 2026.
+- CPU only: local nice 15, 1 thread, < 0.2 GB RAM. n2 read-only, plus one scoring run of EXISTING POPE-vi replies
+  copied to /root/r9/C8_backbone (nice 19, taskset 12-15). No GPU, nothing under /root/queue, repo read-only.
+- No new labels; no AI-made labels used as evidence. Every number computed here uses existing predictions and existing
+  human labels (COCO instances, COCO/KTVIC/OpenViIC references).
+- HF: model info, cards, configs and safetensors HEADERS only (HTTP range requests). No weights were downloaded.
+
+=====================================================================================================================
+0. BOTTOM LINE
+=====================================================================================================================
+1. ">= 90" is NOT reachable through this lever on any of the four targets, and the backbone is not what limits them.
+   KTVIC (gold = union of the 5 KTVIC references):
+   - The SFT systems' "false" objects are real objects.
+     - Against the independent OpenViIC panel, the real fraction of P1-short's reference-false mentions is
+       97.3 % [85.6, 109.6]; fuse2-detailed 95.7 % [87.6, 104.6] (data/results/second_panel.json).
+     - So even a PERFECT perceiver adds at most P +0.5 [0, +2.9] (P1-short) or +1.1 [0, +3.1] (fuse2-detailed).
+   - Recall is lost to mention policy, not vision: 81.6 % of P1-short's misses are named by >= 2 of the 70 other
+     outputs of the SAME backbone (69.9 % by >= 5).
+   - Perception injection is already measured: Grounding-DINO tags in the prompt move fuse2 KTVIC F1 by only
+     +0.3 [-1.0, +1.6] (short) and +0.4 [-0.9, +1.7] (detailed).
+   - Human ceilings on the same metric: one caption 85.3 / 46.9 / 60.5; two fused 76.1 / 66.6 / 70.9.
+   COCO (gold = instances only, 2,500 probe images):
+   - An ORACLE that names exactly the instance classes some of the 5 COCO annotators named, and nothing else, scores
+     P 100 / R 74.3 / F1 85.3.
+   - The union of the 5 human captions scores 85.3 / 74.3 / 79.5 [78.7, 80.2]; one human caption 92.6 / 56.6 / 70.3.
+   - F1 >= 90 needs R >= 81.8 even at P = 100, i.e. naming objects that NO human mentioned. That is an object
+     inventory, which is metric gaming.
+2. R6-B5 ("about 0 CIDEr from a backbone swap") re-evaluated for OBJECT metrics:
+   - It carries over to KTVIC object P/R/F1: expected F1 +0 to +1 (central +0.3).
+   - It only PARTLY carries over to COCO F1, where some real perception and naming errors remain after SFT:
+     - 14.8 % of the human-salient instance classes are never named by any of 8 Qwen2.5-VL-7B outputs. Examples:
+       kites described as "cờ bay ... hình cá" / "lồng đèn", a fire hydrant as "van nước màu đỏ", a surfboard as
+       "thuyền paddleboard".
+     - 5.5-7.6 % of SFT mentions are named by neither the instances nor any reference.
+   - Expected effect of a stronger backbone: COCO F1 +1 to +3 after SFT, and +1 to +4 zero-shot detailed (projection,
+     section 4c).
+   - CIDEr 0 to +2 (B5), so there is no caption-quality cost and nothing is gamed.
+3. Literature agrees, and the gains are a few points in FREE-FORM description (numbers in section 4a):
+   - Same protocol, Qwen3-VL 2B -> 8B -> 32B: CHAIR_i 13.2 -> 11.2 -> 10.9; caption recall 72.1 -> 75.4 -> 76.5
+     (VISE, ECCV 2026).
+   - Object HalBench CHAIR_i: Qwen2.5-VL-7B 7.7 -> InternVL3-8B 6.5 -> MiniCPM-V 4.5 5.2.
+   - POPE: 86.4 -> 88.7-91.1.
+4. Proposals: C8-A Qwen3-VL-8B (primary) and C8-B InternVL3.5-8B (alternate).
+   - Both go through ONE pre-registered zero-shot object-truth screen: 2.5 GPU-h per backbone, inference only.
+   - Then a 1-seed dev-split gate against the existing p1dev_s42 (4.2 GPU-h), then 3 fuse2 seeds (about 21 GPU-h).
+   - Novelty: none (engineering). The value is diagnostic:
+     - The paper can state that object metrics are reference- and policy-bound, not backbone-bound.
+     - It gains an Apache-2.0 8B second backbone in place of the "qwen-research"-licensed Qwen2.5-VL-3B.
+
+=====================================================================================================================
+1. WHAT WAS RUN (everything is in this directory)
+=====================================================================================================================
+- hf/ (16 repos) via fetch_cards.py (B5's script) and ids.txt: HF API info (licence, gated, safetensors parameter
+  counts), README, config and processor configs.
+- st_headers.py -> out_param_breakdown_c8.json: 4-bit resident weights from safetensors headers.
+  - Covers: Ovis2.5-9B, Gemma-3-12B (unsloth mirror of the gated repo), LLaVA-OV-2-8B, MiniCPM-V-4.7 1B and 35B-A3B,
+    Vintern-1B.
+  - The other backbones reuse B5's research_r6/B5_backbone_recipe/out_param_breakdown.json.
+- papers/ (21 arXiv HTML files), fetch_html.py, tables.py, both.py: keyword table extraction. Every paper was confirmed
+  on the arXiv API or abs page (section 6).
+- pilots/pilot_coco_ceilings.py -> out_coco_ceilings.json (P1): COCO human ceilings and error decomposition.
+  - Its scorer reproduces object_prf.py exactly: zero-shot short 90.8/48.5/63.3, detailed 80.5/67.5/73.4;
+    fuse2_s42-detailed 88.9/52.3/65.8; p1_s43-short 89.5/44.3/59.3.
+- pilots/pilot_coco_classes.py -> out_coco_classes.txt (P1b): which classes are never named and which are "absent".
+- pilots/pilot_ktvic_backbone.py -> out_ktvic_backbone.json and pilots/pilot_ktvic_strict.py ->
+  out_ktvic_strict.txt (P2): what the backbone ever names on KTVIC.
+- pilots/tagspair/: scripts/object_prf.py paired bootstrap of the existing G-DINO-tag systems (P3).
+- pilots/out_pope_vi_scores.json: scripts/pope_vi.py --score over the EXISTING POPE-vi replies (P4).
+- pilots/qlora_mem.py -> out_qlora_mem.txt (P5): QLoRA memory estimates.
+
+=====================================================================================================================
+2. BACKBONE SURVEY (HF API checked 13 Oct 2026)
+=====================================================================================================================
+Conventions:
+- "n/r" = not reported in the card or technical report.
+- POPE = average F1 over the 3 splits, English, original labels. RefCOCO = mean of the 8 RefCOCO/+/g splits.
+- QLoRA = estimated SFT peak at bs 1 with gradient checkpointing (P5), +-1.5 GB.
+- Same-table comparisons are marked [same table]. Comparisons ACROSS papers are only indicative.
+
+A. Qwen/Qwen2.5-VL-7B-Instruct (CURRENT; reference). Apache-2.0, Jan 2025, 8.29B.
+   - POPE 86.4 (InternVL3.5 report, Table 6). Measured here (P4): 85.6 EN, 81.4 VI; RePOPE labels 90.9 EN, 87.3 VI.
+   - Object HalBench CHAIR_s / CHAIR_i: 13.7 / 7.7 (MiniCPM-V 4.5 report, Table 1, re-evaluated by its authors).
+   - AMBER and the VISE-protocol CHAIR: n/r in the sources read.
+   - HallusionBench 52.9 (card); 51.9 under OpenCompass (Ovis2.5 report, Table 3).
+   - RefCOCO 86.6 (val/testA/testB 90.0/92.5/85.4; Qwen2.5-VL report, Table 6).
+   - CountBench 86.4; PixmoCount 63.3 (LLaVA-OV-1.5 report, Table 1).
+   - Vietnamese:
+     - Of the 9 backbone reports searched, the only one that names Vietnamese (in its multilingual OCR data).
+       MTVQA 29.2.
+     - Zero-shot detailed Vietnamese captions leak CJK characters in 5.2 % of captions (KTVIC and COCO). After SFT this
+       is 0-0.2 % on KTVIC and 0.6-2.2 % on COCO.
+   - QLoRA: MEASURED 11.7-12.7 GB at a 512 cap; estimated 13.5 GB at 1,024.
+B. Qwen/Qwen3-VL-8B-Instruct. Apache-2.0, 11 Oct 2025, 8.77B, Qwen3-8B LM. Needs transformers >= 4.57.
+   - POPE 88.61 [same table as InternVL3-8B 90.83, Gemma3-12B 80.65] (VISE arXiv 2606.27373, Table 4).
+   - COCO CHAIR, VISE protocol (Table 3): CHAIR_i 11.2, CHAIR_s 43.4, caption object recall 75.4.
+     - Same family: 2B 13.2 / 45.96 / 72.1; 4B 12.9 / 44.6 / 74.9; 32B 10.9 / 42.6 / 76.5.
+   - AMBER CHAIR / Cover:
+     - 7.66 / 73.59 [same table: InternVL3.5-8B 7.49 / 74.24; LLaVA-NeXT-7B 7.83 / 63.87] (SAVAA arXiv 2602.13600,
+       Table 3).
+     - 7.5 / 73.7 (HalluScope arXiv 2607.21105, Table 5).
+     - 5.9 / 62.3 (INFUSE arXiv 2608.29924, Table 1; a different generation length).
+   - Object HalBench response / mention rates: 11.1 / 6.3 (INFUSE, Table 1, re-run).
+   - HallusionBench 61.1 (card). RefCOCO n/r for the 8B; the card lists ODinW-13 44.7.
+   - CountBench 89.8 (LLaVA-OV-2 report, Table 2).
+   - Vietnamese: OCR in 32 languages (card); Vietnamese not named. Same tokenizer as Qwen2.5 (13.72 tokens per
+     caption, B5).
+   - 32 px per token: mean 382 / 506 tokens per KTVIC image at a 512 / 1,024 cap.
+   - QLoRA 12.8 / 14.2 GB.
+C. Qwen/Qwen3.5-9B (B5's pick; listed for completeness). Apache-2.0, 27 Feb 2026, 9.65B. Needs transformers 5.x.
+   - Card: HallusionBench 69.3, RefCOCO(avg) 89.7, CountBench 97.2, MMStar 79.7. POPE, CHAIR and AMBER n/r.
+   - 201 languages; the most efficient tokenizer on Vietnamese (12.43 tokens per caption, B5).
+   - QLoRA 15.2 / 17.3 GB.
+D. OpenGVLab/InternVL3-8B. Apache-2.0, 10 Apr 2025, 7.94B.
+   - POPE 91.1; CRPE 76.3; MMHal 3.61 (InternVL3 report, Table 5; InternVL3.5 report, Table 6).
+   - Object HalBench 11.3 / 6.5 (MiniCPM-V 4.5 report, Table 1). COCO CHAIR_i 11.43 (VISE, Table 4).
+   - HallusionBench 49.9. RefCOCO 89.6.
+   - Vietnamese: MTVQA 30.2. MMMB covers 6 languages, without Vietnamese.
+   - QLoRA 11.4 GB (1 tile, 256 tokens) / 14.0 GB (<= 4 tiles + thumbnail).
+E. OpenGVLab/InternVL3_5-8B (-HF variant). Apache-2.0, 25 Aug 2025, 8.53B, Qwen3-8B LM.
+   - POPE 88.7; HallusionBench 54.5; CRPE 75.1 (InternVL3.5 report, Table 6).
+   - AMBER 7.49 / 74.24 (SAVAA, Table 3).
+   - CHAIR benchmark CHAIR_s / CHAIR_i / F1 41.4 / 10.8 / 74.7 [same table: Qwen3-VL-8B 58.8 / 10.57 / 75.3]
+     (SAVAA, Table 1).
+   - RefCOCO 89.7. CountBench 75.6 (LLaVA-OV-2 evaluation).
+   - Vietnamese: MTVQA 35.2, the best 8B in its Table 8.
+   - QLoRA 12.0 GB (1 tile) / 14.8 GB (<= 4 tiles). The default 12 tiles cost 2,134 tokens per image (B5): cap it.
+F. openbmb/MiniCPM-V-4_5 (8B). Apache-2.0 (API), 24 Aug 2025, 8.70B. Remote code.
+   - Best object-hallucination numbers in its table (MiniCPM-V 4.5 report, Table 1). They are reported in hybrid/thinking
+     mode (mean of 3 runs):
+     - Object HalBench CHAIR_s / CHAIR_i 9.3 / 5.2, against Qwen2.5-VL-7B 13.7 / 7.7.
+     - MMHal score 5.0, rate 19.4 (vs 4.1, 31.6).
+     - HallusionBench 61.2.
+   - POPE and RefCOCO n/r.
+   - Languages: "30+" (card). Qwen3 tokenizer.
+   - 64 tokens per 448-px slice (mean 271 on KTVIC). QLoRA 13.2 GB.
+   - MiniCPM-V-4.7 (6-7 Oct 2026) exists only as a 1B dense model and a 35B-A3B MoE. The MoE's expert tensors hold
+     32.2B parameters: not QLoRA-able on 24 GB.
+G. ATH-MaaS/Ovis2.5-9B. The AIDC-AI repo now redirects here. Apache-2.0, 15 Aug 2025, 9.17B. Remote code.
+   - HallusionBench 65.1 [same table: Qwen2.5-VL-7B 51.9, InternVL3-8B 49.0] (Ovis2.5 report, Table 3, OpenCompass).
+   - RefCOCO 90.1: the highest of the 8-9B group (Table 7).
+   - POPE, CHAIR, AMBER and Vietnamese n/r. Its predecessor Ovis2-8B tops RePOPE (mean F1 94.1, RePOPE Table 6).
+   - 32 px per token (patch 16, stride 2). QLoRA 13.0 / 14.5 GB.
+H. lmms-lab/LLaVA-OneVision-1.5-8B-Instruct. Apache-2.0, 16 Sep 2025, 8.53B.
+   - CountBench 88.2 vs Qwen2.5-VL-7B 86.4; PixmoCount 62.2 vs 63.3 (LLaVA-OV-1.5 report, Table 1).
+   - POPE, HallusionBench and RefCOCO n/r. CRPE 74.8 (LLaVA-OV-2 evaluation). Vietnamese n/r.
+   - 28 px per token, the same budget as Qwen2.5-VL. QLoRA 12.7 / 14.1 GB.
+   - Successor: lmms-lab-encoder/LLaVA-OneVision-2-8B-Instruct (11 May 2026, Apache-2.0, arXiv 2605.25979).
+     CountBench 89.0, CRPE 77.3, V* 85.9. No POPE or CHAIR.
+I. google/gemma-3-12b-it. Gemma terms, gated (manual approval), 1 Mar 2025, 12.19B.
+   - POPE 85.2 (InternVL3.5 report, Table 6) and 80.65 (VISE, Table 4). COCO CHAIR_i 13.57 (VISE).
+   - HallusionBench 47.2. MTVQA 24.4. RefCOCO n/r.
+   - 140 pre-training languages.
+   - A fixed 256 tokens at 896x896 squashes 3:2 photos unless pan&scan is on.
+   - QLoRA 14.5 GB (256 tokens) / 17.9 GB (pan&scan, 1,024 tokens).
+   - Fine-tuned COCO captioning: Gemma 3 4B / 12B / 27B score 143 / 143 / 144 CIDEr, PaliGemma 2 143 / 145 / 145
+     (Gemma 3 report, Table 12). After fine-tuning, backbone size buys about 0 CIDEr.
+J. 5CD-AI/Vintern-1B-v3_5 and Vintern-3B-R-beta (Vietnamese-specialised). MIT, Jan / Mar 2025, 0.94B / 3.71B.
+   - vi-MTVQA 41.9 (1B v3.5, vs InternVL2.5-1B 24.8; card).
+   - No hallucination, grounding or captioning numbers. Their 0.5B and 3B LMs are weaker perceivers than any 8B model.
+   - QLoRA about 10.8 GB (3B).
+   - LEAKAGE RISK, unverified:
+     - Vintern-1B's fine-tuning data includes "Viet-OpenViVQA-gemini-VQA": Gemini-written descriptions of OpenViVQA
+       images (Vintern-1B paper, arXiv 2408.12480, Tables 1-2).
+     - KTVIC test shares the UIT image pool with UIT-OpenViIC (401/558 images).
+     - Hash-check OpenViVQA against KTVIC test before any use.
+Absent from HF (checked): no InternVL4. Ovis2.6 is MoE-only (30B-A3B, 80B-A3B).
+
+=====================================================================================================================
+3. MEASURED ON OUR DATA (CPU)
+=====================================================================================================================
+P1. COCO probe (2,500 images; gold = COCO-2014 instance classes).
+    Setup:
+    - Gold averages 2.82 classes per image; 47 % of images have >= 3.
+    - The English references were mapped with Rohrbach's synonyms; the cached gold is research_r2/A8/coco5000_gold.json.
+    Human ceilings against the instance gold (same scorer as object_prf.py), P / R / F1:
+      one reference caption (mean of 5)                     92.6 / 56.6 / 70.3
+      two references fused (mean of 10 pairs)               90.0 / 66.0 / 76.2
+      all five (union)                                      85.3 / 74.3 / 79.5  [F1 CI 78.7, 80.2]
+      oracle: exactly the instance classes some ref names  100  / 74.3 / 85.3
+    - 25.7 % of instance classes are named by none of the 5 humans.
+    - The union of all 8 Qwen2.5-VL-7B outputs scores 75.7 / 74.0 / 74.8: together they name about as many instance
+      classes as 5 humans do.
+    Error decomposition. Definitions:
+    - absent = a mentioned class with no instance AND no reference.
+    - never named = a human-salient instance class that none of the 8 outputs ever names.
+    - R_fix = recall if every never-named salient miss were also mentioned. This is an upper bound: it adds mentions.
+      system              P / R / F1          mentions/cap  absent % of mentions  P if absent removed  salient miss named elsewhere  R_fix
+      zero-shot short     90.8 / 48.5 / 63.3  1.19           5.4                  95.9                 64 %                           59.3
+      zero-shot detailed  80.5 / 67.5 / 73.4  2.14          16.0                  95.9                 31 %                           78.2
+      p1_s43 short        89.5 / 44.3 / 59.3  1.09           6.7                  95.9                 68 %                           55.1
+      fuse2_s42 short     90.9 / 44.2 / 59.4  1.11           5.5                  96.2                 67 %                           54.9
+      fuse2_s42 detailed  88.9 / 52.3 / 65.8  1.40           7.6                  96.3                 58 %                           63.0
+    Reading:
+    - About half of the absent mentions are "dining table" (86 of 267 for fuse2-detailed) and "chair" (50).
+      - "bàn" and "ghế" name any table or seat, and COCO's table boxes are incomplete.
+      - "dining table" is also the top label-gap class: 77 of the 119 mentions that a reference names but no instance
+        has.
+      - So true hallucination sits below the "P if absent removed" bound of about 96.
+    - The never-named classes are a mix of two causes:
+      (a) Vietnamese naming and matcher gaps:
+          - surfboard is never named in 69 of 74 cases: the model writes "ván lướt", the lexicon wants "ván lướt sóng";
+          - skis 47 of 47: "trượt tuyết" without "ván";
+          - stop sign: 'biển báo "stop"'.
+      (b) Real misrecognition:
+          - kites described as "cờ bay ... hình cá" and "lồng đèn";
+          - a fire hydrant as "van nước màu đỏ";
+          - a surfboard as "thuyền paddleboard".
+      A stronger backbone can fix only (b).
+P2. KTVIC test (gold = the 5 KTVIC references, 113-entry lexicon; 3.74 gold classes per image).
+    - The 71 existing Qwen2.5-VL-7B outputs together name 92.7 % of gold classes. Only 8.0 % are never named by any
+      output.
+    - Those never-named classes are wording, not vision:
+      - person-noun granularity: cô gái, nam thanh niên, chàng trai, phụ nữ, đôi bạn, cặp đôi;
+      - "toà nhà" (section 7);
+      - stalls: sạp hàng, quầy hàng.
+    - P1-short (p1-gold) misses: 47.6 % are named by zero-shot-detailed alone, 81.6 % by >= 2 other outputs and 69.9 % by
+      >= 5. fuse2_s42-short: 46.6 / 80.0 / 67.4 %.
+    - R_fix: P1-short (6-run mean) 42.2 -> 49.4; fuse2-detailed 61.5 -> 68.8.
+      - That is the bound if every never-named gold class were ADDED.
+      - At the current caption length, only the 13-19 % of misses that are never named are open to a perceiver, and
+        those are mostly wording.
+    - Precision, with the OpenViIC panel as independent evidence (second_panel.json):
+      - Real fraction of reference-false mentions:
+        - SFT: p1-gold-short 97.3 % [85.6, 109.6]; fuse2_s42-short 96.9 % [86.4, 107.9]; fuse2_s42-detailed
+          95.7 % [87.6, 104.6];
+        - zero-shot: short 87.8 % [79.4, 97.1], but zero-shot-detailed only 57.0 % [52.6, 61.9].
+      - SFT has already removed the hallucinations that a better backbone would remove.
+      - Bounds from removing every unreal mention: P1-short +0.5 [0, +2.9]; fuse2-detailed +1.1 [0, +3.1].
+P3. Perception injection, already measured: tags = Grounding-DINO detections in the prompt, a model-made signal
+    (flagged). KTVIC test, object_prf.py paired bootstrap, B = 5000:
+    - tags_fuse2_s42 - fuse2_s42, short: dP +2.2 [+0.5, +3.9], dR -0.4 [-1.6, +0.9], dF1 +0.3 [-1.0, +1.6].
+    - tags_fuse2_s42 - fuse2_s42, detailed: dP +2.8 [+1.3, +4.3], dR -1.5 [-2.9, -0.0], dF1 +0.4 [-0.9, +1.7].
+    - tags_p1_s43 - p1_s43, short: P -0.2, R +0.5, F1 +0.4.
+    - Zero-shot short (contrast): dR +5.2, dF1 +3.8.
+    Reading: telling an SFT captioner what a strong detector sees buys about +0.3 F1 on KTVIC. Better perception helps
+    only a captioner that has not yet learned the KTVIC mention policy.
+P4. POPE-vi. Existing replies, 500 val2014 images, 5,127 questions; mean F1 over random / popular / adversarial:
+    - Zero-shot Qwen2.5-VL-7B: POPE EN 85.6, which reproduces the published 86.4. POPE VI 81.4. RePOPE EN 90.9, VI 87.3.
+    - P1 s43: POPE VI 85.7, RePOPE VI 89.8. fuse2 s42: POPE VI 82.9, RePOPE VI 89.3.
+    - Best published RePOPE mean F1 (17 models, RePOPE arXiv 2504.15707, Table 6): 94.2 (Ovis2-4B); 94.1 (Ovis2-8B,
+      InternVL2.5-78B).
+    Reading:
+    - Object-existence headroom under corrected labels is about +3 F1.
+    - The zero-shot Vietnamese penalty (-4.2 F1 vs English) is closed by in-language SFT (P1: VI 85.7 > EN 83.0).
+P5. QLoRA memory on 24 GB.
+    Method:
+    - Anchor: the MEASURED Qwen2.5-VL-7B SFT peak at a 512 cap (11.7-12.7 GB; B5, P6). Error +-1.5 GB.
+    - Added deltas: 4-bit weights; LoRA r16 on all LM linear layers (16 B per parameter); logits
+      (sequence x vocab x 14 B); activations.
+      Qwen2.5-VL-7B 12.2 / 13.5 (cap 512 / 1,024)   Qwen3-VL-8B 12.8 / 14.2       Qwen3.5-9B 15.2 / 17.3
+      InternVL3-8B 11.4 / 14.0 (1 / <=4 tiles)       InternVL3.5-8B 12.0 / 14.8    MiniCPM-V-4.5 13.2 (<= 9 slices)
+      Ovis2.5-9B 13.0 / 14.5                         LLaVA-OV-1.5-8B 12.7 / 14.1   Gemma-3-12B 14.5 (256) / 17.9 (P&S)
+      Vintern-3B-R 10.8 (<= 4 tiles)
+    - Everything fits under 22 GB at 512-1,024 vision tokens.
+    - Exclude: InternVL's default 12 tiles, and MiniCPM-V-4.7-35B-A3B (W4 >= 18 GB even with its experts quantized).
+
+=====================================================================================================================
+4. RE-EVALUATION OF B5: does a stronger backbone raise object P and R even if CIDEr stays flat?
+=====================================================================================================================
+(a) Zero-shot, free-form description: YES, by a few points. Each comparison below is within one table.
+    - Qwen3-VL 2B -> 4B -> 8B -> 32B (VISE, ECCV 2026, Table 3):
+      - COCO CHAIR_i 13.2 -> 12.9 -> 11.2 -> 10.9;
+      - caption object recall 72.1 -> 74.9 -> 75.4 -> 76.5;
+      - POPE 88.4 -> 88.5 -> 88.6 -> 89.5.
+    - Object HalBench CHAIR_i (MiniCPM-V 4.5 report, Table 1): Qwen2.5-VL-7B 7.7 -> InternVL3-8B 6.5 -> MiniCPM-V 4.5
+      5.2 (thinking mode).
+      - Qwen2.5-VL-72B scores 8.9, so a bigger model does NOT always hallucinate less: it writes more.
+    - AMBER (SAVAA, Table 3): LLaVA-NeXT-7B 7.83 / 63.87 -> Qwen3-VL-8B 7.66 / 73.59 -> InternVL3.5-8B 7.49 / 74.24.
+      Coverage +10, CHAIR flat.
+    - POPE (InternVL3.5 report, Table 6): Qwen2.5-VL-7B 86.4 -> InternVL3.5-8B 88.7 -> InternVL3-8B 91.1.
+    - Our zero-shot detailed output does hallucinate: 57 % real fraction on KTVIC and 16 % absent mentions on COCO.
+      Zero-shot is where a better backbone has room.
+(b) After KTVIC SFT, scored against KTVIC gold: NO measurable room (P2, P3).
+    - Perfect perception would add P <= +0.5 [0, +2.9] (P1-short) or +1.1 [0, +3.1] (fuse2-detailed).
+    - A realistic backbone that removes 16-32 % of hallucinations realises only about +0.1 to +0.3 of that.
+    - Recall: 70-82 % of misses are seen by the same backbone; the remainder is mostly wording.
+    - Expected: KTVIC P +0 to +0.5, R +0 to +1, F1 +0 to +1 (central +0.3), consistent with the measured G-DINO-tag
+      effect. B5's "about 0 CIDEr" therefore carries over to the object metrics.
+(c) After KTVIC SFT, on COCO transfer: SMALL room (P1). PROJECTION, not a measurement.
+    Inputs:
+    - Hallucination reduction r_h in [8, 32] % of the absent pool. Basis: CHAIR_i -16 % for InternVL3-8B and -32 % for
+      MiniCPM-V 4.5 vs Qwen2.5-VL-7B; the lower end allows for half the pool being table/chair class-definition errors.
+    - Recovery r_f in [8, 30] % of the never-named salient misses. Basis: same-protocol recall gains close 12 % (VISE
+      2B -> 8B) to 27 % (AMBER, LLaVA-NeXT -> Qwen3-VL-8B) of the miss pool.
+    Projected results:
+    - fuse2-detailed: P 88.9 -> 89.4-91.1, R 52.3 -> 53.2-55.5, F1 65.8 -> 66.7-69.0 (central 67.4, +1.6).
+    - fuse2-short: F1 59.4 -> 60.3-62.7 (central 61.1).
+    - Zero-shot detailed: F1 73.4 -> 74.4-77.1 (central 75.3).
+    - Zero-shot short: F1 63.3 -> 64.1-66.3 (central 64.8, +1.5). That central value sits exactly on S0's short-mode
+      pass bar, so S0 is a fair test, not a formality.
+    - Arithmetic: P' = P / (1 - absent share x r_h); R' = R + r_f x (R_fix - R); both from P1's table.
+    - The recall lost to KTVIC style (zero-shot detailed 67.5 vs fuse2-detailed 52.3) is a style effect. It reappears
+      with ANY backbone fine-tuned on the same targets.
+(d) CIDEr and BLEU: 0 to +2 CIDEr, B-4 within +-1 (B5: PaliGemma 1 -> 2 changed COCO CIDEr by -0.6 and COCO-35L by
+    -1.9; LM size 3B -> 10B added +1.4 to +2.4; fine-tuned Gemma 3 4B / 12B / 27B scored 143 / 143 / 144).
+    - No caption-quality cost, and no metric gaming: the captions stay the same length and style.
+
+=====================================================================================================================
+5. PROPOSALS (novelty: none; engineering with pre-registered gates; ranked by information per GPU-h)
+=====================================================================================================================
+SHARED GATE S0: zero-shot object-truth screen. Inference only. Pre-register before any output.
+  Runs:
+  - Code: coco_probe.py and pope_vi.py, with only the model loader swapped.
+  - Settings: bf16, greedy, 60 / 160 new tokens, the evaluate.PROMPTS Vietnamese prompts, 256-1,024 vision tokens
+    (InternVL: <= 4 tiles + thumbnail).
+  - Data:
+    - COCO probe short on all 2,500 images;
+    - COCO probe detailed on a fixed 1,000-image subset: random.Random(0).sample(sorted(cocoid), 1000);
+    - POPE-vi, Vietnamese only, 5,127 questions.
+  Comparison:
+  - Against the EXISTING Qwen2.5-VL-7B zero-shot outputs on the same images (no rerun).
+  - Scoring: object_prf.py COCO block (instances-only gold, matcher v2) plus pilot_coco_ceilings.py (absent share and
+    never-named share); paired image bootstrap, B = 5000.
+  Guards:
+  - Report the share of captions that are Vietnamese and the CJK leakage rate.
+  - Report the same deltas on the probe images that lie in COCO val2017: about 300 of the 2,500 expected, not counted
+    here.
+    - train2017 = train2014 + val2014 - val2017, so about 88 % of Karpathy-test images are expected to be in COCO-2017
+      train, which the newer backbones' grounding data (COCO, Objects365) likely covers.
+    - If a pass vanishes on the val2017 subset (CI includes 0 and the point estimate is below half the full-set point),
+      call it contamination-driven.
+  GPU-h on one 3090: about 2.5 per backbone (5.0 for both).
+  - Short: 0.85. Detailed (1,000 images): 1.25. POPE-vi: 0.35.
+  - Basis: measured 4090 latency of 0.86 s (short) and 2.06 s (detailed) per image, x1.4 for a 3090; zero-shot detailed
+    output runs to the 160-token cap.
+  PASS (per backbone):
+  - COCO detailed dF1 >= +2.0 with CI lower bound > 0, OR COCO short dF1 >= +1.5 with CI lower bound > 0;
+  - AND the absent share does not rise;
+  - AND mentions per caption stay within +-15 % of Qwen2.5-VL-7B. Otherwise judge on the absent and never-named shares
+    only, and call the F1 change style-confounded.
+  KILL the lever if no backbone passes. Then keep Qwen2.5-VL-7B and use the better candidate only as the
+  second-backbone replication (C8-B's fallback).
+
+GATE G1 (S0 winner only). Dev split, P1 recipe, 1 seed. The comparator already exists: n2 runs/p1dev_s42 (Qwen2.5-VL-7B,
+  gold_p1dev = train minus dev300).
+  - Train the winner on the same rows with p1dev_s42's mask, LR and epochs.
+  - Score both adapters: KTVIC dev300 object P/R/F1 and CIDEr (short), plus the COCO probe short (2,500 images).
+  - GPU-h: train about 2.2 (1.15 x 1.92 h) + eval 2 x (0.15 + 0.85) = about 4.2.
+  - PASS:
+    - COCO short dF1 >= +1.5 with CI lower bound > 0;
+    - AND dev300 object F1 drops by no more than 1.5 (point estimate);
+    - AND dev300 CIDEr drops by no more than 3;
+    - AND peak memory <= 22 GB and step time <= 1.6x Qwen2.5-VL-7B's.
+  - Otherwise KILL.
+STAGE 3 (only after G1 passes): fuse2 with the assistant mask, 3 seeds, full train.
+  - Test on KTVIC test and on the COCO probe (short 2,500, detailed 1,000).
+  - GPU-h: about 3 x (4.4 + 0.5 + 2.1) = about 21.
+  - Claim only paired deltas whose pooled CI excludes 0.
+  - Report CIDEr, B-4 and METEOR next to every object number.
+
+C8-A  Qwen/Qwen3-VL-8B-Instruct (PRIMARY)
+  Mechanism: same QLoRA recipe on the newer Qwen generation.
+  - SigLIP2 vision tower + DeepStack, 32 px per token: about 20 % more pixels at fewer tokens (B5).
+  - Same BPE tokenizer as now, so Vietnamese tokenisation is unchanged.
+  - Smallest port: AutoModelForImageTextToText, transformers >= 4.57.
+  Evidence: POPE 88.6; COCO CHAIR_i 11.2 and caption recall 75.4 (VISE); AMBER CHAIR 7.5-7.7 / Cover 73.6-73.7;
+    HallusionBench 61.1 vs 52.9; CountBench 89.8 vs 86.4.
+  Closest prior: VISE arXiv 2606.27373 (backbone comparison, English CHAIR); B5; PaliGemma 2 arXiv 2412.03555 and
+    Gemma 3 arXiv 2503.19786 (Table 12) for fine-tuned captioning.
+  Expected:
+  - S0: COCO short F1 63.3 -> 64.1-66.3; detailed 73.4 -> 74.4-77.1; RePOPE-vi 87.3 -> 88-90.
+  - After SFT (fuse2):
+    - COCO detailed 65.8 -> 66.7-69.0; short 59.4 -> 60.3-62.7.
+    - KTVIC short F1 58.1 -> 58.1-59.1; detailed 64.4 -> 64.4-65.4.
+  - CIDEr 0 to +2.
+  GPU-h: 2.5 (S0) + 4.2 (G1) + 21 (stage 3). The lever stops at 2.5 if S0 kills it.
+  Kill: S0 / G1 rules above. Engineering kills: peak > 22 GB at a 512 cap, or step time > 1.6x.
+C8-B  OpenGVLab/InternVL3_5-8B-HF (ALTERNATE; screen it in S0 only if C8-A fails or produces poor Vietnamese)
+  Evidence:
+  - POPE 88.7. AMBER 7.49 / 74.24, the best Cover of the 8B models compared.
+  - RefCOCO 89.7. MTVQA 35.2 (text VQA in 9 languages, Vietnamese included), the best 8B in its table.
+  - Weaker: HallusionBench 54.5 vs 61.1, CountBench 75.6.
+  Risks:
+  - 448-px square tiles distort 3:2 photos unless >= 2 tiles are used.
+  - A different chat template and processor mean a larger port.
+  Expected: same ranges as C8-A, with slightly more precision and slightly less counting.
+  GPU-h and kill: as C8-A.
+  Fallback value if both fail S0: use the better of the two as the Apache-2.0 second backbone (3 P1 seeds, about
+  10 GPU-h). Its expected object delta vs Qwen2.5-VL-7B is 0 +- 1.5 F1, and that null result is itself the paper's
+  robustness evidence.
+Not proposed:
+- Qwen3.5-9B: strongest card, but needs transformers 5.x, uses Gated-DeltaNet layers and 15-17 GB. Add it to S0 only if
+  the 5.x environment exists.
+- MiniCPM-V 4.5: best Object HalBench score, but only in thinking mode, and remote code.
+- Ovis2.5-9B: best RefCOCO and HallusionBench 65.1, but remote code and no POPE/CHAIR numbers.
+- Gemma-3-12B: gated, the lowest POPE of the group, 256 squashed tokens.
+- Vintern: 0.5-3B LMs, plus the unverified leakage risk.
+- LLaVA-OV-1.5/2: no hallucination numbers.
+
+Can this lever reach >= 90?  NO, on every target.
+- KTVIC P: best case about 79-82 (P1-short 78.8 + 0.5 [0, 2.9]). Human 85.3.
+- KTVIC R: about 43-44 short, about 62-63 detailed. Human 46.9 (1 caption) / 66.6 (2 fused). Recall is bounded by the
+  number of objects a caption names.
+- KTVIC F1: about 56 short, about 65-66 detailed. Human 60.5 / 70.9.
+- COCO F1: about 67-69 after SFT, about 74-77 zero-shot.
+Deciding numbers:
+- KTVIC: the 97.3 % [85.6, 109.6] real fraction of P1's false mentions, and 81.6 % of its misses named by the same
+  backbone elsewhere.
+- COCO: the salient-only oracle reaches F1 85.3 (R 74.3), so >= 90 needs objects no human named.
+
+=====================================================================================================================
+6. SOURCES (all confirmed on the arXiv API or abs pages, HF API, 13 Oct 2026; tables read in the HTML)
+=====================================================================================================================
+Backbones:
+- Qwen2.5-VL TR, arXiv 2502.13923 (Table 3 MTVQA; Table 6 RefCOCO).
+- Qwen3-VL TR, arXiv 2511.21631: no 8B object tables in the HTML; card benchmark image read.
+- Qwen3.5-9B card (HTML table).
+- InternVL3, arXiv 2504.10479 (Tables 5-7).
+- InternVL3.5, arXiv 2508.18265 (Tables 2, 6-8).
+- MiniCPM-V 4.5, arXiv 2509.18154 (Table 1).
+- Ovis2.5 TR, arXiv 2508.11737 (Tables 3, 7).
+- LLaVA-OneVision-1.5, arXiv 2509.23661 (Table 1).
+- LLaVA-OneVision-2, arXiv 2605.25979 (Table 2).
+- Gemma 3 TR, arXiv 2503.19786 (Tables 11-12).
+- Vintern-1B, arXiv 2408.12480 (Tables 1-2); Vintern cards.
+Hallucination and benchmark papers:
+- POPE (Li et al., EMNLP 2023).
+- RePOPE, arXiv 2504.15707 (Tables 1, 6-9; arXiv).
+- AMBER, arXiv 2311.07397 (Table 2; arXiv).
+- CHAIR (Rohrbach et al., EMNLP 2018).
+Same-protocol multi-backbone comparisons:
+- VISE "Paying More Attention to Visual Tokens in Self-Evolving LMMs", arXiv 2606.27373 (arXiv comment: ECCV 2026),
+  Tables 3-4.
+- SAVAA, arXiv 2602.13600 (Tables 1, 3; arXiv preprint).
+- HalluScope, arXiv 2607.21105 (Table 5; arXiv preprint).
+- INFUSE, arXiv 2608.29924 (Table 1; arXiv preprint).
+- Spectral QK steering, arXiv 2606.20419 (Table 2: POPE F1 Qwen2.5-VL-7B 86.18 vs InternVL3-8B 90.85; arXiv preprint).
+In-house:
+- manuscript/research_r6/B5_backbone_recipe_REPORT.txt.
+- data/results/second_panel.json, human_parity.json, coco_transfer/object_prf-*.txt.
+- scripts/object_prf.py, score_coco_probe.py, pope_vi.py, second_panel.py.
+
+=====================================================================================================================
+7. SIDE FINDINGS (outside this lever; found while measuring)
+=====================================================================================================================
+- KTVIC lexicon orthography:
+  - objects_in("một tòa nhà") gives ['nhà'], while objects_in("một toà nhà") gives ['toà nhà'].
+  - KTVIC test references write "toà nhà" 82 times and never "tòa nhà". The SFT systems learned "toà"; zero-shot
+    detailed writes "tòa" 67 times.
+  - This penalises every zero-shot or new-backbone comparison on KTVIC. Normalise tone-mark placement (òa/oà, óa/oá,
+    ủy/uỷ, ...) in canonical() before matching, or screen backbones on COCO only (as S0 does).
+- COCO-probe contamination: about 88 % of the Karpathy test images are expected to be in COCO-2017 train
+  (train2017 = train2014 + val2014 - val2017; the overlap was not counted here). The candidates' grounding data covers
+  COCO (Qwen3-VL: COCO, Objects365, OpenImages, RefCOCO). Hence S0's val2017 check.
+- Vintern / OpenViVQA image overlap with KTVIC test: unverified (2J). Check it before any use.
+- CJK leakage (Qwen2.5-VL-7B Vietnamese captions):
+  - zero-shot detailed 5.2 %;
+  - COCO after KTVIC SFT 0.6-2.2 %;
+  - KTVIC after SFT 0-0.2 %.
+  When a leaked token replaces an object word, the matcher misses it.

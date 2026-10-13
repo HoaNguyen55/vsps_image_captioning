@@ -1,0 +1,327 @@
+R9 / C4_rl_object -- RL THAT DIRECTLY OPTIMISES OBJECT PRECISION / RECALL / F1 (KTVIC union metric, COCO instance F1)
+2026-10-13. CPU only (local, nice -n 15, 1 thread, < 1 GB; n2 used only to copy tags_gdino.json). Repo read-only. No VLM loaded.
+Work dir: scratchpad/research_r9/C4_rl_object/ (c4lib.py, k1-k10 *.py, out/*.log|json, lit/). Run with
+research_r6/B3_decoding/venv/bin/python. Scale x100. CIs: paired percentile bootstrap over images (B = 1000).
+Panel = UIT-OpenViIC captions, read at run time for truth-side reporting only; never used by any rule; no panel text written.
+
+======================================================================================================================
+0. BOTTOM LINE
+======================================================================================================================
+- >= 90 IS NOT REACHABLE by this lever on any of KTVIC R, KTVIC F1 or COCO F1; KTVIC P >= 90 only by giving up recall.
+  Deciding numbers (all measured here, section 2):
+  - KTVIC R: the policy's own support (greedy + 6 samples, all classes they name) covers R 71.1 (fuse2) / 65.3 (P1);
+    an oracle that KNEW 3 of the 5 test references and said exactly their classes reaches R 85.4 (4 of 5: 94.0);
+    34.6% of gold classes are named by only 1 of the 5 annotators.
+  - KTVIC F1: the in-sample oracle best-of-7 (reads the test refs) caps at 72.4 (fuse2) / 69.3 (P1).
+  - KTVIC P: a precision-only reward reaches P 91.6 / 94.2 in-sample, but at R 52.5 / 45.0.
+  - COCO F1 (instances only): the union of the 5 human EN captions gets 79.4; the oracle best-of-8 model outputs 80.5;
+    the best published 80-class multi-label CLASSIFIER gets OF1 86.8 (Query2Label). Only appended object lists pass 90.
+- The only route to >= 90 F1 is an object inventory: greedy + the missing GOLD classes appended gives KTVIC F1 93.2
+  (P 88.0) at CIDEr 143.9 -> 95.2; on UIT-ViIC, first caption + missing instance classes gives instance F1 99.9 at
+  syllable CIDEr 180.5 -> 95.4. That is metric gaming and needs the test gold; no reward can make a policy learn it.
+- Realistic RL effect (cross-fit, transfer-scaled to the 5-ref metric, both pools agree):
+  - CIDEr + object-F1 reward, z-weight 1-2: KTVIC F1 +1.6 to +2.7 over the CIDEr-only CN-RLOO arm (both moves, both
+    pools), at CIDEr -1 to -5 vs that arm. Vs the SFT greedy (best-of-7 proxy): P +1.3 to +2.0, R +1.6 to +2.5,
+    F1 +1.5 to +2.2 (policy-level KL step: F1 +4.3 to +5.3). In-sample upper bound F1 +11 to +15.
+  - COCO short captions with an instance-label reward: about +4 to +7 instance F1 (fuse2 59.4 -> ~63-66); a selector
+    learned from half the images' labels only matches zero-shot detailed (73.2 vs 73.3).
+- Reward hacking (injection tests, section 4): with object F1 alone, a support inventory ("có A, B và C") is the group
+  argmax on 30-34% of images; at z-weight 1 on 1.6-2.0%; at 2 on 8.8-9.3%; at 4 on 16.5-18.5%. Recall rewards couple to
+  length (within-group Spearman +0.15 to +0.17). A list guard (>= 2 commas or > max-ref classes + 1) flags 58-67% of
+  inventories, 0.84% of KTVIC refs and 0.7-2.6% of model outputs, but only 3-8% of single-object appends.
+- Detector-evidence reward (Grounding-DINO COCO-80 tags, FLAGGED): harmful on KTVIC (tags vs union P 34.3 / R 22.0;
+  selection F1 -2.7 to -2.9, CIDEr -13). Killed.
+- Proposals (section 8): P-A union-F1 CN-RLOO (KTVIC; low novelty, ~4 GPU-h on top of gate v2's control);
+  P-B instance-label verifiable-reward RLOO (COCO domain; moderate-low novelty, ~12.5 GPU-h). Neither reaches 90.
+
+======================================================================================================================
+1. SETUP
+======================================================================================================================
+- Pools (TEST; estimates only, nothing selected or tuned on them): evaluate.py greedy + 6 samples at T = 0.8 for fuse2_s42
+  (data/results/samples, md5 = B4 copy) and P1 s43 legacy (B4). Greedy reproduces the R9 numbers exactly: fuse2
+  75.7 / 47.1 / 58.1, CIDEr 143.9; P1 s43 legacy 78.8 / 41.7 / 54.5.
+- Metric: exact CHAIR-vi classes (objects_in) vs the union of the 5 references; micro P, image-mean R (object_prf.py).
+  Word-level CIDEr-D = R8/T2 replica (asserted == pycocoevalcap), RDRSegmenter caches (no JVM started).
+- Rewards (computed from the image's own refs, as an RL reward reads its training image's refs):
+  C = CIDEr-D; F = per-image exact F1 vs the ref union; F2 = F-beta 2; R / P = recall / precision only;
+  C+lam F = z(C) + lam z(F) within the group; C+1lex = R8's LEX-z (K2 term, hypernym credit); LIN = corpus-F1
+  linearised at the greedy operating point.
+- Moves: (i) KL step over the 6 on-policy samples, pi' ∝ exp(eta z(U)), KL = 1 nat per image, vs uniform sampling;
+  (ii) best-of-7 argmax z(U) + 0.5 * 1[greedy] vs greedy (a greedy-decode proxy).
+- Settings: in-sample (reward and score on all 5 refs: an UPPER bound, winner's curse included) and cross-fit (reward on
+  refs {0,1}, score on {3,4}, and swapped; non-adjacent halves). Cross-fit deltas live on a 2-ref-union scale, so they
+  are mapped to the 5-ref metric by the surviving fraction f = xf / in-sample(2-ref): est5 = f * in-sample(5-ref).
+  For F1, f = 0.30-0.40 for the KL step and 0.11-0.21 for best-of-7 for every object rule, in both pools.
+  Calibration: R6/B1 found the same pattern for CIDEr (in-sample best-of-k +57, held-out ~+8, SCST literature median
+  +8.5), so cross-fit is the realistic estimate and in-sample the ceiling.
+
+======================================================================================================================
+2. MEASURED CEILINGS (out/k1_*.log, out/k4_ceiling.log, out/k2_hack.log)
+======================================================================================================================
+KTVIC test (558 images; gold 3.72 classes/img):
+| describer | P | R | F1 | classes/img |
+|---|---|---|---|---|
+| oracle that knows 1 / 2 / 3 / 4 of the 5 refs (says exactly their classes) | 100 | 50.9 / 72.4 / 85.4 / 94.0 | 67.4 / 84.0 / 92.1 / 96.9 | 1.74-3.46 |
+| one human vs the union of the other 4 (= R4 human parity) | 85.3 | 46.9 | 60.5 | 1.74 |
+| independent OpenViIC panel, classes named by >= 1 / 2 panel captions (555 imgs) | 44.5 / 60.2 | 74.0 / 51.5 | 55.6 / 55.5 | 6.00 / 3.01 |
+| fuse2 support: every class named by greedy + 6 samples | 57.7 | 71.1 | 63.7 | 4.41 |
+|   perfect filter on that support | 100 | 71.1 | 83.1 | |
+|   ORACLE best-of-7 by per-image F1 (reads test refs) | 89.7 | 60.7 | 72.4 | 2.30 |
+|   oracle best F1 with CIDEr >= greedy | 88.8 | 56.3 | 68.9 | |
+| P1 support / perfect filter / oracle best-of-7 | 58.7 / 100 / 92.1 | 65.3 / 65.3 / 55.5 | 61.8 / 79.0 / 69.3 | 3.94 |
+| union of 32 systems' greedy + 12 samples | 35.4 | 87.8 | 50.5 | 9.07 |
+| greedy + missing GOLD classes appended (oracle, fuse2 / P1) | 88.0 / 90.9 | 99.1 / 99.0 | 93.2 / 94.8 | CIDEr 95.2 / 92.9 |
+| pure GOLD inventory "có A, B và C" | 100 | 97.6 | 98.8 | CIDEr 30.3 |
+- Gold classes by how many of the 5 refs name them: 1/5 34.6%, 2/5 27.3%, 3/5 17.4%, 4/5 10.6%, 5/5 10.1%.
+- Outside the support (out/k9_missed.log): 31.6% (fuse2) / 37.7% (P1) of gold classes. That is 45% / 55% of the
+  single-annotator classes and 9% / 10% of the 5/5 classes. Most missed: áo, người, cây, cô gái, cửa, phụ nữ,
+  quầy/sạp hàng, đồ, nhà, đàn ông, đường. Many are naming variants of one referent; with the lexicon's own hypernym
+  links, naming each family once caps R at 93.3 (out/k10_variants.log; a weak bound, since cô gái is not linked to người).
+- Reading: the union metric rewards guessing which classes THESE 5 annotators chose. Five independent human describers
+  (the panel) predict it worse (F1 55.6) than fuse2 greedy (58.1). R >= 90 needs the choices of more than 3 of the 5
+  annotators; no describer that has not seen them can get there, and RL only reinforces what the policy samples (R 71.1).
+COCO (gold = COCO-2014 instance classes; 2.82 classes/img on coco_probe):
+| describer | P | R | F1 |
+|---|---|---|---|
+| one EN human caption (2,441 clean Karpathy-test images) | 92.4 | 56.9 | 70.5 |
+| union of the 5 EN human captions | 85.0 | 74.4 | 79.4 |
+| UIT-ViIC val+test (1,155): one VI caption / union of 5 VI / one EN / union of 5 EN | 99.3 / 99.0 / 99.2 / 98.1 | 42.0 / 56.4 / 44.1 / 68.1 | 59.0 / 71.8 / 61.1 / 80.4 |
+| zero-shot detailed (best system) | 80.5 | 67.5 | 73.4 |
+| support of the 8 outputs (4 systems x 2 prompts) / perfect filter | 75.7 / 100 | 74.0 / 74.0 | 74.8 / 85.1 |
+| ORACLE best-of-8 by instance F1 (reads test labels; 2,500 / clean 2,441 imgs) | 92.7 | 71.2 | 80.6 / 80.5 |
+| best published 80-class multi-label classifier (Q2L-CvT, OF1; section 7) | 89.2 | 84.6 | 86.8 |
+
+======================================================================================================================
+3. RL-REWARD PROXIES ON KTVIC (out/k1_*.log, k3_scale.log, k7_lin.log)
+======================================================================================================================
+3a. In-sample (upper bound), best-of-7 vs greedy, fuse2 | P1 (F1 delta [95% CI]; CIDEr delta; panel F1 delta):
+| reward | fuse2 F1 | fuse2 CIDEr | fuse2 panel F1 | P1 F1 | P1 CIDEr | P1 panel F1 |
+|---|---|---|---|---|---|---|
+| C (CN-RLOO reward) | +5.7 [+4.4,+7.0] | +54.1 | -0.3 | +5.4 [+4.2,+6.6] | +55.7 | +1.2 |
+| F | +14.2 [+12.9,+15.6] | +10.1 | +3.6 | +14.5 [+13.2,+15.8] | +9.9 | +5.8 |
+| C+1F | +11.6 [+10.4,+12.9] | +43.5 | +2.3 | +11.2 [+9.8,+12.5] | +46.0 | +3.6 |
+| C+2F | +13.4 [+12.1,+14.8] | +33.9 | +3.1 | +13.8 [+12.5,+15.0] | +34.2 | +5.2 |
+| C+1lex (R8 LEX-z) | +11.1 | +43.2 | +2.5 | +10.5 | +44.1 | +3.8 |
+| P only | +8.7 (P 91.6, R 52.5) | +11.1 | -0.9 | +6.4 (P 94.2, R 45.0) | +7.2 | -0.8 |
+3b. Cross-fit (realistic), best-of-7 vs greedy, on the 2-ref scale (F1 [95% CI]; CIDEr; panel F1):
+  fuse2: C +0.1 [-1.8,+2.0], CIDEr +3.5; F +3.0 [+0.5,+5.4], CIDEr -6.0; C+1F +2.2 [-0.2,+4.3], +1.9, panel +0.7;
+         C+2F +2.7 [+0.4,+4.8], -0.4, panel +0.9; C+1lex +2.0 [-0.3,+3.9]; R +2.9 [+0.2,+5.4] (CIDEr -5.5).
+  P1:    C -0.1 [-2.8,+2.5], CIDEr +0.7; F +3.2 [+0.3,+5.8], -7.3; C+1F +2.2 [-1.0,+5.1], -0.6, panel +2.2;
+         C+2F +2.8 [-0.1,+5.5], -2.9, panel +2.8; C+1lex +1.6 [-1.7,+4.8].
+  KL step (1 nat, vs uniform sampling; 2-ref scale): C +3.2 / +3.9, C+1F +5.3 / +5.9, C+2F +5.7 / +6.5, F +5.7 / +6.8
+  (fuse2 / P1); panel F1 C+2F +1.8 / +3.3 vs C +1.1 / +2.0.
+3c. Mapped to the 5-ref R9 metric (est5 = f * in5; dP / dR / dF1 / dCIDEr), fuse2 | P1:
+  best-of-7: C      +0.4 / -0.1 / +0.1 / +2.5   |  -0.1 / -0.0 / -0.1 / +0.5
+             C+1F   +1.7 / +1.7 / +1.7 / +1.2   |  +1.3 / +1.6 / +1.5 / -0.4
+             C+2F   +2.0 / +2.3 / +2.2 / -0.3   |  +1.4 / +2.5 / +2.2 / -1.9
+             F      +2.1 / +2.7 / +2.5 / -2.6   |  +1.4 / +3.1 / +2.6 / -3.1
+  KL step:   C      +3.3 / +1.8 / +2.3 / +17.1  |  +3.0 / +2.4 / +2.6 / +19.1   (vs uniform sampling)
+             C+1F   +4.9 / +3.8 / +4.3 / +16.0  |  +4.5 / +4.6 / +4.8 / +16.6
+             C+2F   +5.1 / +4.5 / +4.8 / +13.8  |  +4.9 / +5.2 / +5.3 / +14.1
+  => The object term adds +1.6 to +2.7 F1 over CIDEr-only RL on the R9 metric (both moves, both pools), at -1 to -5
+     CIDEr relative to the CIDEr-only arm. CIDEr-only RL itself barely moves object F1 at the greedy level (+0.1/-0.1).
+3d. Refinements that tie: LEX-z (hypernym credit) is 0.2-0.7 F1 below exact-union F; F2 (recall-weighted) = F; the
+    corpus-F1-linearised LIN reward = F within +-0.3 (dF/dR = 0.76-0.86 vs dF/dP = 0.24-0.29 at the operating point, but
+    the within-group ranking hardly changes). Truth side: object terms raise the independent panel's F1 too
+    (cross-fit KL: C+2F +1.8 / +3.3 vs C +1.1 / +2.0), consistent with R8 (LEX-z vs R0: panel F1 +2.9 [+2.2, +3.6]).
+
+======================================================================================================================
+4. REWARD HACKING: OBJECT LISTS AND LENGTH (out/k2_hack.log, k8_guard.log)
+======================================================================================================================
+Hack captions injected as an 8th group member; reward from the image's 5 refs. "argmax%" = share of images where the
+hack beats every real candidate and the greedy, for z(C) + lam z(F), lam = 0 / 0.5 / 1 / 2 / 4 / F-only (fuse2; P1 alike):
+| hack | CIDEr | P / R / F1 | syl | argmax% |
+|---|---|---|---|---|
+| H1 support inventory "có A, B và C" | 18.5 | 57.6 / 69.9 / 63.1 | 8.2 | 0 / 0 / 1.6 / 9.3 / 16.5 / 30.3 |
+| H2 GOLD inventory (oracle) | 30.3 | 100 / 97.6 / 98.8 | 7.2 | 1.1 / 2.7 / 17.6 / 58.4 / 76.2 / 88.9 |
+| H3 greedy + all extra support classes | 83.5 | 57.8 / 70.5 / 63.5 | 16.6 | 0.2 / 1.8 / 7.0 / 13.3 / 20.6 / 30.6 |
+| H4 greedy + 1 extra class (support >= 2) | 130.7 | 71.5 / 56.9 / 63.4 | 13.9 | 0.4 / 4.8 / 7.5 / 11.6 / 12.4 / 19.7 |
+| H5 greedy + missing GOLD classes (oracle) | 95.2 | 88.0 / 99.1 / 93.2 | 16.3 | 1.3 / 7.5 / 29.0 / 62.5 / 73.7 / 80.8 |
+(greedy: CIDEr 143.9, 58.1 F1, 12.4 syllables)
+- Object F1 alone is hackable: inventories win on ~30% of images. At z-weight 1 the reachable inventory (H1) wins on
+  1.6-2.0%; at 2 on 9%. The append-one-object drift (H4) wins on 7.5% at weight 1 and costs -13 CIDEr per object.
+- Length: within-group Spearman(reward, syllables) = -0.06/+0.02 for CIDEr, +0.02/+0.08 for F1, +0.17/+0.15 for recall.
+- List guard (advantage capped at 0, like the fragment guard): >= 2 commas or more classes than max over the image's refs
+  + 1. Flags 0.84% of 18,845 KTVIC train refs (leave-one-out), 1.97 / 0.72% of greedy, 2.63 / 1.02% of samples;
+  H1 67.4 / 57.9%, H3 58.6 / 50.2%, H4 7.5 / 2.7%. It stops lists, not the one-object drift: lam <= 1 and the CIDEr term
+  must do that, and mentions/caption must be monitored (train_rl.py already logs it).
+
+======================================================================================================================
+5. COCO DOMAIN: AN INSTANCE-LABEL REWARD (out/k5_coco.log, k4_ceiling.log)
+======================================================================================================================
+- Leakage: 59 UIT-ViIC TRAIN images are coco_probe test images (they are exactly the 59 images outside the 2,441 clean
+  set). Any COCO-domain RL must drop them; UIT-ViIC val/test do not overlap the probe.
+- Label-learned selector (fit P(class in instances | which of the 8 outputs name it, class) on half the probe images,
+  pick the output with the highest expected F1 on the other half, swap): P 78.0 / R 69.0 / F1 73.2. That is
+  zero-shot detailed (73.3; dF1 -0.1 [-0.7, +0.4]); it beats fuse2-short by +13.9 [+12.7, +15.1] only by switching to
+  detailed outputs (picks: distill-detailed 1,108, zeroshot-detailed 906, fuse2-detailed 306). Oracle best-of-8 80.5.
+  => An instance-label preference, learned from labels, mostly says "be object-rich like the detailed prompt".
+- Human candidates (UIT-ViIC val+test, 5 VI captions): best-of-5 by instance F1 vs the first caption:
+  P +0.5 [+0.2, +0.8], R +12.8 [+11.8, +13.8], F1 +11.7 [+10.8, +12.7] (58.9 -> 70.6), EN-caption F1 72.2 -> 81.6,
+  syllable CIDEr-D vs the 4 sibling captions -1.1. Choosing the object-richer human-style sentence is nearly free.
+- Append hack on human captions: + 1 missing instance class: F1 +22.6, syllable CIDEr -52.5; + all missing: F1 99.9,
+  CIDEr -85.0. Instance F1 >= 90 on COCO is an inventory.
+- Estimate for RL with an instance-label reward (short prompt, KTVIC adapter): the in-sample headroom over fuse2-short is
+  +21.2 F1 (oracle best-of-8); KTVIC's surviving fractions 0.18-0.35 give +4 to +7 (59.4 -> ~63-66). R8/T2's kNN
+  stand-in for label-F1 SFT targets: instance F1 +12.0 / +13.4, EN-caption F1 +6.6 / +7.3, UIT-ViIC CIDEr -7.9 / -11.5
+  (vs first-caption targets). Detailed prompt: 65.8 -> ~70-74 (bounded by 73.4 zero-shot and the 80.5 oracle).
+- Circularity (R8/T2): reward and metric share the instrument (COCO-80 ontology, exhaustive small objects, the same VI
+  matcher). Report EN-caption F1 next to instance F1.
+
+======================================================================================================================
+6. DETECTOR-EVIDENCE REWARD (FLAGGED: model-generated; out/k6_dino.log)
+======================================================================================================================
+- Grounding-DINO tags (COCO-80 queries, n2 results/tags_gdino.json, KTVIC test) as a caption vs the union: P 34.3 /
+  R 22.0 / F1 26.8; 31 images with no tag class. The COCO-80 vocabulary misses most KTVIC lexicon classes.
+- As the reward, best-of-7 vs greedy: F1 -2.9 [-4.0, -1.6] / -2.7 [-3.8, -1.6], CIDEr -13.3 / -13.8. Added to the
+  in-sample CIDEr term it LOWERS the object gain (C alone +5.7 / +5.4 -> C + D +4.6 / +2.9). KL step: F1 -0.2 / +0.1.
+- Killed for KTVIC. (EHX tag-hint RL is already scooped per R6.)
+
+======================================================================================================================
+7. LITERATURE (sub-agent, 62 scoop queries; every id confirmed via arXiv API / ACL Anthology / OpenReview / CVF / the
+   PDF's venue line; raw notes lit/notes.txt). I re-checked against the extracted tables: PS-NOC, SC-Captioner, Q2L,
+   ECOL-R, CHAIR, BalCapRL, CHAIR-DPO (all match).
+======================================================================================================================
+7a. Object-set rewards against references or labels (closest prior art)
+- PS-NOC, 2109.05115 (BMVC 2022): SCST + an object-F1 term over 8 held-out classes; targets built from COCO boxes and
+  detector pseudo-labels. Out-of-domain object F1 70.8 -> 84.8 as the F1 weight goes 0 -> 20, at in-domain CIDEr
+  113.4 -> 104.4; final model F1 86.1 at CIDEr 110.1. Captions ended in "in / a / with" until post-processing.
+  => an object-F1 SCST reward and its CIDEr cost are already published (classic captioner, 8 classes).
+- SC-Captioner, 2508.06125 (ICCV 2025): RL on self-correction edits, reward from object / attribute / relation sets
+  parsed from references. Qwen2-VL-7B, DOCCI500 object P/R/F1 80.46 / 62.19 / 69.32 -> 80.20 / 66.00 / 71.63 (+2.3 F1);
+  COCO-LN500 F1 75.43 -> 76.37; BLEU-4 38.93 -> 44.88. Without its mistake penalty: P 77.52, R 67.56.
+- ECOL-R, 2101.09865 (EACL 2021): SCST with CIDEr x (1 + 0.3 x copied detector labels). Held-out COCO out-of-domain
+  object F1 58.2 -> 66.3, CIDEr 95.5 -> 99.2. Multiplying by CIDEr is its anti-list guard.
+- SPIDEr, 1612.00370 (ICCV 2017): 0.5 SPICE + 0.5 CIDEr; SPICE alone produced repeated phrases.
+- BalCapRL, 2605.07394 (arXiv): GRPO with precision, recall-vs-reference and a length-gated fluency reward,
+  Qwen2.5-VL-3B: DCScore 43.3 -> 52.0. Dropping the recall term costs only 0.2 (51.8). Dropping the fluency gate:
+  length 131 -> 375 and CapArena -51.
+- CCCaption, 2602.21655 (CVPR 2026): GRPO with QA recall + judge precision; single-sided rewards trade off
+  (precision-only -9.7 on OCR Prism).
+- Perception-R1, 2504.07954 (NeurIPS 2025): GRPO detection reward with an F1 term over Hungarian-matched GT COCO
+  instances. COCO AP 16.1 -> 31.9 (the F1 term: 20.2 -> 27.6). GT-instance reward, but for box outputs.
+- Visual-RFT, 2503.01785 (ICCV 2025): IoU / confidence rewards; COCO open-vocabulary novel mAP 9.8 -> 31.3.
+- CHAIR-DPO, 2508.20181 (BMVC 2025): DPO, winner = lower CHAIR_i against DETR-detected COCO-80 gold. AMBER CHAIR
+  7.6 -> 3.0, but Cover 51.7 -> 46.6; CHAIR-COCO C_s 50.6 -> 14.4, C_i 13.9 -> 3.6.
+- Video: VideoCap-R1 2506.01725 (arXiv), entity F1 reward: object F1 27.4 -> 34.3. 2604.01460 (COLM 2026): one-to-one
+  matched Dice over reference units ("blocks the main reward-hacking case").
+7b. Precision / hallucination rewards in LVLMs (all precision-side)
+- FGAIF 2404.05046 (TMLR 2025): CHAIR_i 9.1 -> 3.9, CHAIR_s 22.0 -> 6.2, POPE F1 66.4 -> 83.4; length 216 -> 60.
+- RLAIF-V 2405.17220 (CVPR 2025): Object HalBench response 54.5 -> 10.5, mention 27.8 -> 5.2; AMBER F1 77.7 -> 84.5.
+- RLHF-V 2312.00849 (CVPR 2024): Object HalBench 50.5 -> 12.2 / 24.5 -> 7.5.
+- FeedQuill 2503.07906 (ICLR 2025): CHAIR_s 47.8 -> 5.1; a count-only reward collapses (DeCapBench 24.5 -> 10.0).
+- MOCHa 2312.03631 (EMNLP 2024): CHAIR_i 2.3 -> 2.1 at CIDEr 138.4 -> 139.6; without KL, CIDEr 98.9.
+- ViGoR 2402.06118 (ECCV 2024): POPE F1 67.8 -> 83.8. ViCrit 2506.10128 (NeurIPS 2025): CHAIR_s 28.0 -> 25.2.
+- CapRL 2509.22647 (ICLR 2026): Prism 39.9 -> 48.3, with very long outputs (403 words).
+- Coverage cost of precision DPO (AMBER Cover from 51.0): HSA-DPO 47.3, HA-DPO 49.8, POVID 49.5; HALVA 53.0 the exception.
+7c. Classic SCST
+- Rohrbach et al. 1809.02156 (EMNLP 2018): CIDEr-SCST raises hallucination. TopDown CIDEr 107.6 -> 117.2,
+  CHAIR_s 8.4 -> 13.6, CHAIR_i 6.1 -> 8.8.
+- Dai et al. 2210.07688 (EACL 2023): VinVL SCST CHAIR_s 10.0 -> 10.9; NoCaps out-of-domain 21.2 -> 32.1.
+- Cho et al. 2205.13115 (NAACL-F 2022): CLIP-S reward, CIDEr 110.3 -> 11.2 while object-word recall 13.0 -> 26.4.
+7d. Scoop verdict (62 queries; arXiv only after S2 / OpenAlex rate limits, so a venue-only paper could be missed)
+- No caption RL / SCST reward built from GT COCO INSTANCE labels was found.
+- No reward of the form "closed-lexicon object F1 against the UNION of an image's references" was found.
+- Nearest: PS-NOC (object-F1 SCST, box-derived targets), Perception-R1 (GT-instance F1 for detection), CHAIR-DPO
+  (detector gold, precision only), SC-Captioner and BalCapRL (reference-unit P/R).
+7e. Ceiling for COCO instance F1: the best verified 80-class multi-label classifier, Query2Label CvT-w24 22k 384 px
+  (2107.10834, arXiv only), OF1 86.8 (OP 89.2 / OR 84.6, CF1 85.9); ASL TResNet-L (ICCV 2021) OF1 81.8. RAM (CVPRW 2024)
+  tag P/R on COCO-80: Grounding-DINO 83.1 / 86.9 (~85.0 F1); caption-derived BLIP tags 67.0 / 39.0.
+7f. Published object-reward gains vs ours: SC-Captioner +2.3 F1 on a strong LVLM; ECOL-R +8.1; PS-NOC +14 to +15
+  (8 held-out classes, at -3 to -9 in-domain CIDEr). Our realistic KTVIC estimate (+1.6 to +2.7 over CIDEr-only RL)
+  sits in SC-Captioner's range. Every recall-side reward needs a list / length guard (SPIDEr, BalCapRL, FeedQuill, CapRL).
+
+======================================================================================================================
+8. PROPOSALS
+======================================================================================================================
+P-A  Union-F1 CN-RLOO (KTVIC). An ablation arm of gate v2, low novelty.
+  Mechanism: train_rl.py unchanged (copy mask, EOS-aware CIDEr-D, fragment guard, KL 0.03, T and images as the gate v2
+    first look). Reward r = CIDEr-D / s_C + lam * F1_union / s_F, lam = 1. F1_union = per-image F1 of the rollout's exact
+    CHAIR-vi classes against the union of the TRAINING image's 5 refs (the R9 metric itself). s_C, s_F = mean
+    within-group SDs on the G0 dev300 rollouts. List guard: advantage capped at 0 (like the fragment guard) when the
+    caption has >= 2 commas or more classes than max over the image's refs + 1. The CIDEr-only first look is the control.
+    Flag: the on-policy rollouts are model-generated (inside the method only); every reward label is a human reference.
+  Novel element vs closest prior: vs PS-NOC 2109.05115 (object-F1 SCST on 8 held-out classes, box-derived targets),
+    SC-Captioner 2508.06125 (reference-parsed set reward on self-correction edits), BalCapRL 2605.07394 (recall against
+    reference units), SPIDEr 1612.00370, in-house K2 / R8 LEX-z: (i) F1 against the UNION of the references in the
+    metric's own closed lexicon (not found in that form, 7d); (ii) lam set by a measured injection test (inventories
+    win on 1.6-2.0% of groups at lam 1, 30-34% with F1 alone); (iii) a list guard inside the copy-neutral advantage.
+    The reward family is published and in-house: say "ablation", not "contribution".
+  Expected (sec. 3c; transfer-scaled cross-fit, both pools): KTVIC F1 +1.6 to +2.7 over the CIDEr-only arm. Vs the SFT
+    greedy: P +1.3 to +2.0, R +1.6 to +2.5, F1 +1.5 to +2.2 (policy-level KL estimate up to +4.3 to +5.3). fuse2 ->
+    ~77.5 / ~49 / ~60; P1 legacy -> ~80 / ~44 / ~56.5. Upper bound 72.4 F1. Truth side: object terms also raise the
+    independent panel's F1 (cross-fit +0.5 to +1.3 over CIDEr-only; R8: LEX-z vs R0 +2.9 [+2.2, +3.6]). COCO: no direct
+    effect; KTVIC-style drift may cut COCO recall further (measure it).
+  CIDEr cost: -1 to -5 vs the CIDEr-only arm; syllables +0.0 to +0.3.
+  GPU (one 3090): 1,000 images x k = 8 ~3.5 GPU-h (gate v2 unit cost) + ~0.4 h greedy eval = ~4 GPU-h per seed;
+    2 seeds ~8. Full 3,469 images ~11 GPU-h per seed. The control is gate v2's first look (already budgeted).
+  Kill (pre-register; dev300 only, evaluate.py greedy, gold = union of the dev images' 5 train refs):
+    (1) object F1 of this arm minus the CIDEr-only arm < +1.5, or its 95% CI includes 0;
+    (2) dev CIDEr-D more than 3 below the CIDEr-only arm;
+    (3) mentions/caption above the refs' mean + 0.3, syllables +1.5, or list-guard hits on > 3% of dev greedy outputs;
+    (4) dev panel object F1 below the CIDEr-only arm (CI < 0): then report it as typicality only.
+
+P-B  Instance-label verifiable reward, ILV-RLOO (COCO domain). Moderate-low novelty.
+  Mechanism: the same engine on COCO-2014 images with EXISTING human instance labels: UIT-ViIC train minus the 59
+    coco_probe images (2,636 images; Vietnamese refs exist). r = CIDEr-D (UIT-ViIC refs) / s_C + lam * F1_inst / s_F,
+    lam = 1, where F1_inst = F1 of the caption's COCO-80 classes (matcher v2) against the image's instance classes.
+    List guard, KL to the SFT anchor. Option: mixed batches with KTVIC images under the P-A reward, so one adapter serves
+    both benchmarks. No new labels and no detector; the matcher is the verifier. Flag: the on-policy rollouts are
+    model-generated (inside the method only); every reward label is human.
+  Novel element vs closest prior: Perception-R1 2504.07954 and Visual-RFT 2503.01785 use GT instances as verifiable
+    rewards for BOX outputs; PS-NOC uses box-derived synthetic captions (8 classes); CHAIR-DPO 2508.20181 uses DETR gold
+    for precision-only DPO; ECOL-R uses detector labels. New: human instance labels as a two-sided (P and R) verifiable
+    reward for free-form captions, verified cross-lingually (Vietnamese caption, COCO-80 labels). None found in 62 queries.
+  Expected: COCO instance F1, short prompt, +4 to +7 (fuse2 59.4 -> ~63-66). Detailed: 65.8 -> ~70-74. Evidence: the
+    in-sample headroom over fuse2-short is +21.2 (oracle best-of-8) and KTVIC's surviving fractions are 0.18-0.35. R8/T2
+    kNN stand-in for label-F1 SFT targets: instance F1 +12.0 / +13.4, EN-caption F1 +6.6 / +7.3. A selector learned from
+    labels only reaches zero-shot detailed (73.2 vs 73.3). Bounds: the human one-sentence ceiling is 70.6 (VI best-of-5)
+    / 70.5 (EN); the 5 EN captions together reach 79.4. KTVIC object F1: ~0 expected.
+  CIDEr cost: UIT-ViIC budget -3 to -8. Object-richer human-style sentences are nearly free (-1.1 syllable CIDEr for
+    +11.7 F1), but label-F1 SFT targets cost -7.9 / -11.5 (R8/T2) and one appended class costs -52.5. If mixed with
+    KTVIC: the KTVIC CIDEr risk is unknown (kill 5).
+  GPU: 2,636 images x k = 8 ~9.2 GPU-h; eval ~3.5 GPU-h (coco_probe short + detailed ~2.7, UIT-ViIC val+test ~0.4,
+    KTVIC dev/test ~0.4). Total ~12.5 GPU-h; a 1,000-image first look ~4 GPU-h with UIT-ViIC val eval.
+    Prep: instances_train2014.json is not on n2; UIT-ViIC's labels (data/uitviic/instance_gold.json) suffice.
+  Kill (UIT-ViIC VAL only; coco_probe scored once, at the end):
+    (1) val instance F1 minus SFT < +3, or its CI includes 0;
+    (2) val EN-caption F1 gain with CI including 0 (it only learned the instrument);
+    (3) val UIT-ViIC CIDEr-D cost > 3 at lam 1;
+    (4) list-guard hits > 3%, or syllables +3;
+    (5) if mixed with KTVIC: KTVIC dev CIDEr cost > 3.
+
+Not proposed: object F1 alone (inventory hack, 30-34% of groups); precision-only (P 91-94 only at R 45-53);
+recall-weighted F2 or corpus-linearised F1 (tie F1); detector-tag rewards (harmful, sec. 6); KG or synonym credit (R7).
+Stacking: P-A at train time plus UPE-MBR at decode time (R8/T3, on GPU now) is unmeasured.
+
+======================================================================================================================
+9. CAN THIS LEVER REACH >= 90?
+======================================================================================================================
+- KTVIC P: only alone; P-only reward reaches 91.6 / 94.2 in-sample but at R 52.5 / 45.0. With an F1 reward the realistic
+  P is ~77-80 (fuse2 75.7 +1.7 to +2.0; P1 78.8 +1.3 to +1.4); in-sample ceiling 89.7 / 92.1. Jointly with R: NO.
+- KTVIC R: NO. Own support 71.1 / 65.3; an oracle that knew 3 of the 5 refs 85.4; R >= 90 needs > 3 annotators' choices.
+- KTVIC F1: NO. In-sample oracle within support 72.4 / 69.3; realistic ~60 (fuse2) / ~56.5 (P1 legacy).
+- COCO F1: NO. Union of 5 human EN captions 79.4; oracle best-of-8 80.5; best multi-label classifier OF1 86.8; realistic
+  RL ~63-66 short, ~70-74 detailed.
+
+======================================================================================================================
+10. CAVEATS
+======================================================================================================================
+- Proxies are one-step moves on test pools; real RL compounds over many steps and can drift beyond the sample support
+  (that is where both the extra recall and the inventory hack live). Effect sizes are proxy sizes.
+- The surviving fraction f is estimated with a 2-ref chooser; a 5-ref training reward is less noisy (f may be higher),
+  while train-to-test generalisation is weaker than same-image cross-fit (f may be lower).
+- P1 pool = legacy seed 43 adapter (78.8 / 41.7 / 54.5), not the response-only P1.
+- Hack captions are segmented by joining lexicon compounds, not by RDRSegmenter (no JVM): CIDEr of hacks is approximate.
+- COCO pools are cross-system greedy outputs; no single-model COCO sample pool exists, so the COCO transfer fraction is
+  borrowed from KTVIC.
+- KTVIC test numbers are estimates; nothing was selected on test. Any GPU run must select on dev300 / UIT-ViIC val only.
+
+======================================================================================================================
+11. FILES
+======================================================================================================================
+c4lib.py (pools, refs, KL step, self-check), k1_proxy.py (RL proxies, ceilings), k2_hack.py (injection tests),
+k3_scale.py (transfer fractions), k4_ceiling.py (KTVIC + COCO ceilings), k5_coco.py (COCO selector, UIT-ViIC),
+k6_dino.py (detector reward), k7_lin.py (linearised corpus F1), k8_guard.py (list guard), k9_missed.py,
+k10_variants.py; out/*.log, k1_*.json;
+data/tags_gdino.json (copied from n2); lit/notes.txt (literature sub-agent's raw notes).

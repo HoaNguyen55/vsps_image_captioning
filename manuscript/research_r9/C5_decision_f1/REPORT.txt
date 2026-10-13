@@ -1,0 +1,513 @@
+C5_decision_f1 REPORT -- R9, lever: DECISION THEORY (which and how many objects to mention, to maximise expected object F1)
+2026-10-13. Agent C5_decision_f1. CPU only (local, nice 15, 1 thread, <= 360 MB RSS, every script < 80 s; n2 used read-only
+to copy two dev sample files). Repo untouched (HEAD-identical copies: rescap/chair.py, rescap/vi/lexicon.py, object_prf.py,
+score_coco_probe.py, coco80_vi.json all sha256-equal to the frozen instrument of the UPE pre-registration). No VLM loaded.
+No new labels; no AI-made label used as evidence; model samples/votes are used only inside decision rules (flagged).
+Work dir: research_r9/C5_decision_f1/ (c5lib.py, p*.py, out/*.log|json, lit/).
+
+==========================================================================================================================
+0. BOTTOM LINE
+==========================================================================================================================
+- The >= 90 target is NOT reachable with this lever, on any of the four metrics. The deciding numbers are ceilings measured
+  on our data (section 4):
+  - KTVIC F1: the best calibrated decision reaches 64.9 (test, fuse2 pool, frozen from dev). The oracle subset of the pool
+    reaches 83.1 (P 100, R 71.1). An independent HUMAN panel used as evidence predicts the KTVIC object set at F1 <= 54.8.
+    KTVIC's own held-out annotators reach F1 60.5 (one caption) and 70.9 (two fused) [R4_01].
+  - KTVIC P >= 90 exists on the decision's PR curve only at R <= 22-26. R >= 90 is impossible from any pool we have: they
+    cover 62-71% (6 samples), 74% (20 samples) and 81% (30-system committee) of the gold classes.
+  - COCO F1: the class union of the 5 human English captions scores F1 79.5 against the instance labels. The oracle subset
+    of the committee scores 86.9. The best decision scores:
+    - 75.4 at set level;
+    - 75.2 realised, with k picked on these images;
+    - 74.3 on fresh images with the rule frozen.
+- What the lever DOES give (KTVIC, against the 5-reference union, exact lexicon classes):
+  (a) Set level (a calibrated object PLAN, not yet a caption). Test estimates, everything frozen from dev:
+      - P1 s43: F1 54.5 -> 62.9 (+8.3 [+6.5, +10.3]);
+      - fuse2 s42: F1 58.1 -> 64.9 (+6.8 [+5.1, +8.6]);
+      - cost: P falls by 10-12; R rises by 17-18;
+      - vs UPE-MBR (frozen): +5.2 [+3.6, +6.9] and +4.6 [+3.1, +6.1] F1;
+      - capped at 3 classes per caption (one KTVIC-style sentence): +6.8 and +4.9 F1, +3.7 and +2.6 over UPE;
+      - dev, cross-fitted: +5.2 to +6.8 F1 (cap 3: +3.7).
+  (b) Realisable now, by choosing ONE existing candidate per image: calibrated expected-F1 MBR is no better than UPE at
+      matched KTVIC CIDEr. On the F1-vs-CIDEr frontier the difference is -0.9 to +1.1 F1. Classic MBR with an object-F1
+      utility gives +1.2 to +1.9.
+  So the gain sits in the PLAN. Cashing it needs a faithful realiser. The current adapters IGNORE an object list in the
+  prompt: on the G-DINO tag runs a tag is named 18.1% -> 17.7% of the time (fuse2) and 17.4% -> 19.5% (P1).
+- Proposal: PLAN-F1. Its parts:
+  - a calibrated union-of-describers object posterior;
+  - the metric's own Bayes act (closed-form plug-in rule for micro-P / macro-R F1, label-free fixed point);
+  - a control-SFT realiser (section 5).
+  Expected KTVIC test effect: F1 +4.9 to +8.3 at plan level, P -5 to -12; the realised effect is unmeasured.
+  COCO: <= +2 F1. CIDEr cost unmeasured; a cap of 3 classes keeps the target in-distribution.
+  Novelty: moderate-low (section 6). It is not a route to 90.
+
+==========================================================================================================================
+1. SETUP AND VALIDITY
+==========================================================================================================================
+- Metric: scripts/object_prf.py, applied exactly.
+  - P = sum|M & G| / sum|M| (micro);
+  - R = mean over images with G != {} of |M & G| / |G| (macro);
+  - F1 = 2PR / (P + R);
+  - KTVIC gold = union of objects_in over the 5 references (113-entry lexicon, exact classes);
+  - COCO = score_coco_probe.vi_objects (matcher v2) against COCO-2014 instance classes only.
+- Pools (all with per-candidate KTVIC CIDEr-D, evaluate.py convention):
+  - Dev300, clean (P1_dev never saw these images): the evaluate.py greedy plus
+    - 8 rollouts at T=1.0 (G0, n2 rl/g0/dev300.jsonl, md5 e0454417...; T3's cached matrices);
+    - 6 samples at T=0.5 and 6 at T=0.8: n2 samples/p1dev_s42-dev300-short-T{0.5,0.8}.jsonl, the 36_z step-A outputs, md5
+      d61cf31a... / bc47ae89...; copied read-only after the job finished. Only KTVIC-reference endpoints are computed here.
+      The UPE pre-registration's panel endpoints were never touched, and its frozen T* rule is unaffected.
+  - Test (ESTIMATES): p1_s43 and fuse2_s42, each greedy + 6 samples at T=0.8 (md5 = n2).
+  - COCO: no single-model sample pool exists. The committee is the greedy captions of 9 systems on the 2,500 manifest images.
+- Segmentation: RDRSegmenter + lower(), with the sibling caches. 2,166 + 626 new strings were segmented into
+  cache/seg_c5.json (VnCoreNLP-1.2, JVM capped at 384 MB). Greedy dev CIDEr-D was recomputed as 144.3, which equals S0/T3.
+- Calibrator:
+  - L2 logistic regression on 6 features: vote share among samples v, greedy flag g, v*g, logit class prior (KTVIC train
+    minus dev300 reference unions), v*prior, intercept;
+  - target y = class in the union of the 5 references;
+  - unseen-gold rate lam = mean |G \ pool| per image.
+- Dev numbers are 5-fold cross-fitted over images. The calibrator, lam, the EUM threshold and the (lam_u, margin) of the
+  selection rules are fitted on 4 folds and applied to the 5th.
+- Test numbers use everything fitted on the matched dev pool (P1_dev, 6 samples, T=0.8), frozen. Nothing is chosen on test.
+- Statistics: paired image bootstrap, B = 2000, 95% percentile CIs (T3's boot_prf / boot_mean_diff, imported).
+
+==========================================================================================================================
+2. THEORY: THE BAYES ACT FOR THIS METRIC (micro precision, macro recall)
+==========================================================================================================================
+- Plug-in rule (linearisation at the operating point, exact as N grows).
+  - Adding class o to image i changes TP by y, sum|M| by 1, and R by y / (N |G_i|).
+  - With F_P = 2R^2/(P+R)^2 and F_R = 2P^2/(P+R)^2, the expected gain has the sign of
+        R^2 (q_o - P) / m  +  P^2 E[y_o / |G_i|],    m = mentions per image.
+  - So the Bayes act is: include o iff
+        q_o + kappa * E[y_o / |G_i|] >= P*,    kappa = P*^2 m / R*^2.
+  - (P*, R*, m) are the EXPECTED operating point under the posterior, found by a fixed-point iteration (no labels).
+  - E[y_o / |G_i|] is computed exactly: independent classes plus Poisson(lam) gold outside the pool, by Poisson-binomial
+    convolution.
+- Special cases:
+  - If recall were micro, the rule collapses to q_o >= F*/2, which is Lipton et al.'s threshold. The per-image 1/|G| term
+    is what the paper's MACRO recall adds: images with few gold classes get a lower threshold.
+  - The exact expected-F maximisers are exact for ONE F computed over ONE label set: Chai 2005, Jansche 2007, Ye et al.
+    2012 (DTA: a top-k set under independence) and Dembczynski et al. 2011 (GFM, no independence needed). Applied per
+    image they optimise INSTANCE-averaged F1, not this corpus metric. Measured: the per-image exact rule is <= the corpus
+    plug-in on all 5 pools, by 0.2-0.7 F1 (3c).
+- What the theory predicts, and what was confirmed:
+  - The F1-optimal operating point names ~3 classes per image (fixed point m = 2.9-3.4), against 1.76 (P1 greedy) and
+    2.09 (fuse2). fuse2-detailed (3.15) already sits there.
+  - At the optimum P* ~ 0.61-0.66: the optimum TRADES precision for recall. CONFIRMED (3c).
+  - The macro term changes F1 by -0.3 to +0.3 (n.s.) but raises P by +1.1 to +2.3 (CI > 0) at equal F1 (p14). It is
+    correct, and empirically neutral on F1.
+  - UPE-MBR is an instance of the same decision restricted to ONE existing candidate per image. It uses a
+    ratio-of-expectations EF1 and an uncalibrated union-transform posterior (q = 1 - (1 - v)^5, E|G| = 6). The theory
+    predicts that the candidate restriction, not the posterior, binds; calibrating UPE's posterior should therefore not
+    move the selection frontier much. CONFIRMED (3d).
+
+==========================================================================================================================
+3. RESULTS
+==========================================================================================================================
+3a. Ceilings (p1_dev, p4_sets_test, p5, p11; P/R/F1).
+  | pool | covers gold classes | SET oracle (pool & G) | SELECTION oracle (1 caption/img) | greedy |
+  |---|---|---|---|---|
+  | dev P1_dev T1.0 x8 | 67.2% | 100 / 71.3 / 83.2 | 94.6 / 57.4 / 71.5 | 74.3 / 43.1 / 54.5 |
+  | dev T0.5 x6 / T0.8 x6 | 55.8% / 60.0% | F1 75.0 / 78.4 | F1 67.6 / 68.9 | same |
+  | dev, all 20 samples | 74.2% | - | - | - |
+  | test p1_s43 x6 | 62.3% | 100 / 65.3 / 79.0 | 93.3 / 55.4 / 69.5 | 78.8 / 41.7 / 54.5 |
+  | test fuse2_s42 x6 | 68.4% | 100 / 71.1 / 83.1 | 90.5 / 60.5 / 72.5 | 75.7 / 47.1 / 58.1 |
+  | test, 12 KTVIC adapters (committee) | 62.6% | F1 79.4 | F1 71.5 | - |
+  | test, all 30 short systems | 81.2% | 100 / 83.3 / 90.9 | 94.5 / 65.6 / 77.5 | - |
+  Only perfect knowledge on the most diverse committee would pass 90 F1, and even then R stays at 83.3.
+3b. Calibration.
+  - AUROC for "class in gold":
+    - raw vote share: 0.732-0.764 (dev pools), 0.742 (12-adapter committee), 0.791 (30 systems);
+    - calibrated q: 0.794 (dev T1.0), 0.732 (T0.5), 0.764 (T0.8);
+    - after transfer to test: 0.774 (P1), 0.763 (fuse2).
+  - ECE of q: 0.021-0.034 (dev, cross-fitted), against 0.12-0.15 for raw vote share; 0.055 / 0.029 on test (mean q 0.534 vs
+    rate 0.587 on P1: slightly under-confident).
+  - More evidence helps, logarithmically (p5; greedy + k of the 20 dev samples, cross-fitted):
+    | k | coverage | AUROC | plug-in F1 |
+    |---|---|---|---|
+    | 2 | 49.9% | 0.744 | 57.9 |
+    | 6 | 60.5% | 0.769 | 60.2 |
+    | 12 | 68.3% | 0.802 | 62.2 |
+    | 20 | 74.2% | 0.811 | 63.1 |
+  - A retrieval class prior (class shares in the reference unions of the 10 nearest train images, by the greedy caption):
+    +0.4 to +1.0 F1 on the 6-sample pool, about 0 with 20 samples.
+  - In-house hidden-state probe (data/results/e2_probe.log, other candidates): layer-24 AUROC 0.807; with prior + Vintern
+    votes 0.817. It is the same class of signal as the votes, not a step change.
+  - Detector (existing Grounding-DINO tags of the test images; p20; nothing fitted, because no dev tags exist):
+    - inside the pool, tagged classes are gold 70-73% of the time vs 55-56% untagged, but AUROC barely moves
+      (0.762 -> 0.765);
+    - outside the pool, tags add 1.7 classes per image at 6.6-7.3% gold precision. Coverage rises only 62.3 -> 65.7% (P1)
+      and 68.4 -> 71.5% (fuse2).
+    Detectors see objects that KTVIC annotators do not name. They do not help this metric.
+3c. Set-level decisions (the PLAN). Dev numbers are cross-fitted. Test numbers are frozen from dev_T0.8 (EUM t = 0.36,
+    lam 1.40).
+  | pool | rule | P / R / F1 | m/c | dF1 vs greedy |
+  |---|---|---|---|---|
+  | dev T1.0 | EUM threshold | 62.5 / 57.9 / 60.1 | 2.97 | +5.6 [+3.2, +8.0] |
+  | dev T1.0 | corpus plug-in (label-free) | 62.8 / 58.0 / 60.3 | 2.91 | +5.8 [+3.4, +8.2] |
+  | dev T1.0 | exact per-image EF1 | 59.6 / 60.5 / 60.1 | 3.25 | +5.5 [+3.1, +8.1] |
+  | dev T0.5 | corpus plug-in | 64.2 / 58.7 / 61.3 | 2.97 | +6.8 [+4.4, +9.2] |
+  | dev T0.8 | corpus plug-in | 61.3 / 58.2 / 59.7 | 3.07 | +5.2 [+2.8, +7.6] |
+  | dev T0.8 | corpus plug-in, cap 3 | 64.5 / 53.0 / 58.2 | 2.57 | +3.7 [+1.5, +5.8] |
+  | TEST p1_s43 | EUM t 0.36 | 71.7 / 54.6 / 62.0 | 2.65 | +7.5 [+5.8, +9.1] |
+  | TEST p1_s43 | corpus plug-in | 66.5 / 59.6 / 62.9 | 3.13 | +8.3 [+6.5, +10.3] |
+  | TEST p1_s43 | exact per-image EF1 | 64.7 / 60.6 / 62.6 | 3.27 | +8.1 [+6.3, +10.0] |
+  | TEST p1_s43 | corpus plug-in, cap 3 | 71.1 / 53.9 / 61.3 | 2.55 | +6.8 [+5.1, +8.6] |
+  | TEST fuse2_s42 | EUM t 0.36 | 68.6 / 61.7 / 65.0 | 3.13 | +6.9 [+5.2, +8.6] |
+  | TEST fuse2_s42 | corpus plug-in | 65.5 / 64.3 / 64.9 | 3.41 | +6.8 [+5.1, +8.6] |
+  | TEST fuse2_s42 | exact per-image EF1 | 63.4 / 66.0 / 64.7 | 3.65 | +6.6 [+4.8, +8.5] |
+  | TEST fuse2_s42 | corpus plug-in, cap 3 | 70.6 / 56.8 / 63.0 | 2.67 | +4.9 [+3.3, +6.5] |
+  - Against UPE-MBR (frozen), paired (p16):
+    - plug-in: dev +2.8 / +4.5 / +3.6; test P1 +5.2 [+3.6, +6.9], fuse2 +4.6 [+3.1, +6.1];
+    - cap 3: dev +1.3 [-0.5, +3.2] / +2.4 / +2.1; test +3.7 [+2.2, +5.3] / +2.6 [+1.3, +4.0];
+    - P falls by 3-11 against UPE.
+  - PR curve of the calibrated plan (p9): best F1 63.5 (P1) and 65.2 (fuse2) at q >= 0.30. The threshold is picked
+    in-sample, so these are optimistic by 0.2-0.6 against the frozen rules.
+  - Robustness (p19). The test plan gain is +6.1 to +8.3 F1 whichever dev pool calibrates it (T 0.5 / 0.8 / 1.0). Dropping
+    the class prior costs 0.1 to 1.2 F1. The gain comes from the decision, not from a lucky calibration.
+  - Existing runs, rescored (CIDEr is the run's own):
+    | run | P / R / F1 | CIDEr |
+    |---|---|---|
+    | fuse2_s42mbr | 70.9 / 53.1 / 60.7 | 98.0 |
+    | p1_s43mbr | 74.7 / 47.2 / 57.8 | 96.7 |
+    | fuse2_s42-detailed | 68.0 / 61.2 / 64.4 | 23.9 |
+    The plan matches fuse2-detailed's F1 in ~3 classes. It needs ONE sentence to be worth it.
+3d. Realisable decisions: one existing candidate per image (p3_sel, p8_frontier, p17).
+  - CL = calibrated corpus gain sum (q + kappa w - P), added to UPE's consensus base (selfm + ret).
+  - CEF1 = the exact per-image expected F1 under q, in the same slot. "pure" = no consensus term, margin 0.
+  - Dev T0.8, cross-fitted:
+    | rule | dF1 vs greedy | KTVIC CIDEr | vs UPE |
+    |---|---|---|---|
+    | UPE | +1.6 [+0.2, +3.0] | -3.8 [-9.9, +2.1] | - |
+    | CL + consensus | +2.1 [+0.8, +3.5] | -0.4 [-4.8, +3.7] | F1 +0.5 [-0.5, +1.6]; P +3.6 [+2.1, +5.2] |
+    | CL pure | +2.0 | -17.9 | - |
+  - Dev T1.0 / T0.5:
+    - CL + consensus +3.4 / +3.6 at CIDEr -4.0 / -3.3;
+    - UPE +3.0 / +2.2;
+    - CL - UPE +0.4 / +1.4 [-0.1, +2.9].
+  - TEST, frozen (lam_u 0.1, margin 0):
+    | system | rule | dF1 vs greedy | KTVIC CIDEr | vs UPE |
+    |---|---|---|---|---|
+    | P1 | UPE | +3.1 [+1.9, +4.3] | +3.8 | - |
+    | P1 | CL + consensus | +1.5 [+0.6, +2.5] | +7.5 [+4.5, +11.2] | F1 -1.6; CIDEr +3.7 |
+    | P1 | CL pure | +4.5 [+2.9, +6.0] | -9.4 | F1 +1.4 [+0.1, +2.6] |
+    | P1 | CEF1 pure | +4.4 [+2.8, +5.9] | -9.8 | - |
+    | fuse2 | UPE | +2.2 [+0.9, +3.5] | -0.6 | - |
+    | fuse2 | CL + consensus | +1.4 [+0.3, +2.4] | +4.7 | F1 -0.9; CIDEr +5.3 |
+    | fuse2 | CL pure | +3.0 [+1.4, +4.6] | -10.0 | F1 +0.7 [-0.3, +1.9] |
+  - Matched-cost frontier (best F1 gain with KTVIC CIDEr change >= c; c in {+5, +3, 0, -3, -6}):
+    - CL minus UPE: dev -0.9..+0.9; test P1 +0.5..+1.1; fuse2 -0.4..+0.4.
+    - So the calibrated object term TIES UPE as a selection rule.
+  - Classic MBR with an object-F1 utility (samples as pseudo-references): +1.6 / +1.9 (dev T0.5 / T0.8), +1.2 / +1.5
+    (test), -0.6 (dev T1.0). KTVIC CIDEr -0.3 to -5.4 (-18.9 at T1.0).
+  - Answer to the brief: exact expected-F1 SELECTION ("CEF1 pure") gains over greedy:
+    - +1.8 [-0.1, +3.9] / +3.4 / +3.8 F1 on dev T0.8 / T1.0 / T0.5;
+    - +4.4 [+2.8, +5.9] (P1) and +2.7 [+1.1, +4.3] (fuse2) on test;
+    - at KTVIC CIDEr -8 to -20.
+    Over UPE it gains +0.2 to +1.6 F1 and pays 9-20 CIDEr more. With a consensus term it ties UPE at matched CIDEr.
+  - Ensembles of adapters (p11), test, parameter-free:
+    - 12 KTVIC adapters: AUROC 0.742, lower than one model's 6 samples (they agree too much). Plug-in +1.8 [+0.2, +3.4]
+      (set). Picking one member caption: +0.6 n.s.
+    - 30 systems: plug-in +3.5 [+1.7, +5.4] (set). Realisable +1.1 to +1.5, n.s. CIDEr from -21.9 to +3.0, depending on
+      the consensus weight.
+3e. What-if: posterior quality -> best set F1 at the SAME pool (p10). Logit q is sharpened toward the truth and
+    re-calibrated. This is a map, not a method.
+  | AUROC | dev T0.8 (coverage 60%) | test fuse2 (coverage 68%) |
+  |---|---|---|
+  | 0.76 | 60.4 | 65.2 |
+  | 0.86 | 65.7 | 70.8 |
+  | 0.92 | 69.9 | 74.3 |
+  | 0.955 | 72.3 | 77.1 |
+  | 0.98 | 74.2 (P 90.4) | 79.1 (P 89.9) |
+  | 1.00 | 78.4 | 83.1 |
+  F1 >= 90 needs AUROC >= ~0.99 AND coverage >= ~85% together.
+3f. Can a plan be realised in KTVIC style?
+  - Existing adapters ignore prompt object lists (p0):
+    | system | tag named, plain -> with tags | dF1 |
+    |---|---|---|
+    | fuse2 short | 18.1% -> 17.7% | +0.3 n.s. |
+    | P1 short | 17.4% -> 19.5% | +0.4 n.s. |
+    | zero-shot | 18.9% -> 30.8% | +3.8 [+2.1, +5.5] |
+    G-DINO tags are only 25.1% precise against the KTVIC gold.
+  - Human references (p12): 20.6% name >= 3 classes (3: 16.4%, 4: 3.9%, 5+: 0.3%). Leave-one-out CIDEr-D of a reference
+    against its 4 siblings:
+    | classes named | 1 | 2 | 3 | 4+ |
+    |---|---|---|---|---|
+    | CIDEr-D | 186.5 | 181.9 | 192.2 | 160.2 |
+    So a 3-class sentence is in-distribution and 4+ costs about 25. Hence the cap of 3.
+  - Uncapped plans are larger: plan size 4 for 21-28% of images and 5+ for 12-19%.
+  - Fidelity reference: fine-tuned seq2seq realisers cover 95-97% of given concepts (CommonGen, Findings EMNLP 2020, arXiv
+    1911.03705, Table 3: BART 97.35, T5-large 95.29, human 99.33).
+3g. COCO (2,500 manifest images; gold = instances only; nothing chosen with COCO labels except where marked) (p6, p15, p18).
+  - Members (P / R / F1):
+    | member | P / R / F1 |
+    |---|---|
+    | zero-shot short | 90.8 / 48.5 / 63.3 |
+    | zero-shot detailed | 80.5 / 67.5 / 73.4 (best) |
+    | zero-shot detailed + VCD | 82.0 / 63.5 / 71.6 |
+    | fuse2 detailed | 88.9 / 52.3 / 65.8 |
+    | p1 short | 89.5 / 44.3 / 59.3 |
+    | VSPS(distill) detailed | 86.4 / 49.5 / 63.0 |
+  - HUMAN, English Karpathy captions with Rohrbach's synonyms:
+    | human | P / R / F1 |
+    |---|---|
+    | one caption | 92.6 / 56.6 / 70.3 |
+    | union of 5 | 85.3 / 74.3 / 79.5 |
+    | named by >= 2 of 5 | 93.3 / 65.6 / 77.0 |
+  - Committee of 9: union covers 71.6%; SET oracle 100 / 76.8 / 86.9; SEL oracle 95.8 / 72.8 / 82.7.
+  - Parameter-free set rules, every k shown:
+    - vote >= 2/9: 83.0 / 69.1 / 75.4 (+2.0 [+1.4, +2.6] over zero-shot detailed);
+    - vote >= 1/9: 74.9;
+    - >= 3/9: 71.9.
+    - The plug-in with UNCALIBRATED vote shares scores 67.6-70.7, worse than zero-shot detailed. A COCO calibration is needed
+      (COCO train2014 images are allowed for it; none are pooled yet).
+  - Realisable sentence-level plan (FILTER sentences whose classes all have < k votes, ADD sentences from other members for
+    missing classes with >= k votes): k = 2 gives 80.4 / 70.6 / 75.2 (+1.8 [+1.3, +2.3]). k was picked among 2-4 on these
+    images.
+  - Frozen-rule replication on FRESH images (the other 2,500 Karpathy-test images; 5 members; instance gold from
+    research_r9/C7_resolution, identical class sets on all 2,500 main images): 73.4 -> 74.3 (+0.9 [+0.5, +1.3]).
+    The same 5 members on the main images give +1.0.
+
+==========================================================================================================================
+4. CAN THIS LEVER REACH >= 90?
+==========================================================================================================================
+- KTVIC P: NO, at any useful recall. On the calibrated plan's PR curve, P >= 90 leaves R <= 26.2 (P1 test) or 22.0 (fuse2).
+- KTVIC R: NO.
+  - Recall is capped by pool coverage: 62-71% (6 samples), 74% (20 samples), 81% (30 systems).
+  - KTVIC's own annotators reach R 46.9 (one caption) and 66.6 (two fused) [R4_01].
+- KTVIC F1: NO.
+  - Best calibrated plan: 64.9 (frozen) / 65.2 (in-sample). Pool oracle with P = 100: 79.0-83.1.
+  - 90 needs AUROC >= ~0.99 together with coverage >= ~85%.
+  - The independent OpenViIC panel as evidence predicts the KTVIC set at F1 45.2 (one caption) to 54.8 (>= 2 of 5) on dev
+    (p7). Human annotators of KTVIC: 60.5 / 70.9.
+- COCO F1: NO. The union of 5 human captions scores 79.5 against instances, the committee oracle 86.9, and the best decision
+  75.4 (set) / 74.3 (realised, fresh images).
+- Scoring >= 90 against these golds would need near-oracle knowledge of what the annotators NAMED. Inventory-style
+  captions that list detector classes are metric gaming, and on KTVIC they would still fail: G-DINO tags are only 25%
+  KTVIC-precise. They also destroy the caption: two-sentence captions already cost CIDEr 143.9 -> 23.9.
+
+==========================================================================================================================
+5. PROPOSALS
+==========================================================================================================================
+M1. PLAN-F1: metric-Bayes object planning, then faithful realisation (KTVIC; COCO arm via M2).
+  Mechanism.
+    (1) Posterior. The model's k = 12 samples (T 0.5 / 0.8) plus greedy give per-class vote share, greedy flag and
+        train-reference class prior. Optional: the E2 layer-24 probe P(co) for each pooled class. A logistic calibrator
+        fitted on dev300 (P1_dev pools, never test) predicts "class is in the union of the references".
+    (2) Decision. The closed-form plug-in for micro-P / macro-R F1, with no labels at test:
+        include o iff q_o + kappa E[y_o/|G|] >= P*, (P*, R*, m) the posterior's own fixed point, capped at 3 classes.
+    (3) Realiser. A control-SFT adapter trained with P1's recipe on KTVIC train minus dev300, with the prompt suffix
+        "Doi tuong: o1, o2, o3" set to objects_in(target), so it learns to realise a given list in one sentence. At test the
+        list is the plan from (2).
+  Novel element vs closest prior (ids in section 6):
+    - Content selection is the Bayes act for the EVALUATION metric. It uses a posterior of being NAMED BY THE REFERENCE
+      PANEL (union of describers), calibrated from the model's own samples. This contrasts with:
+      - detector confidence or top-k tags: Fang CVPR'15 word detectors -> LM; Anderson EMNLP'17 CBS; Neural Baby Talk
+        CVPR'18; Show-Control-Tell CVPR'19;
+      - existence validation for precision: SelfVal 2601.22451 (arXiv, verified in R8); Woodpecker; LURE.
+    - The plug-in rule for the mixed micro-P / macro-R metric generalises Lipton ECML-PKDD'14's F*/2 rule.
+      Koyejo NeurIPS'14/'15 and Narasimhan NeurIPS'14 treat micro, macro and instance averaging separately.
+      The exact expected-F maximisers (Jansche ACL'07, Ye ICML'12 DTA, Dembczynski NeurIPS'11 / ICML'13) are exact for
+      one F over one label set. Applied per image they target instance-F, the wrong target here: per-image exact EF1 is
+      below the corpus rule on all 5 pools, by 0.2-0.7 F1.
+    - vs in-house UPE / CC-ADD: those select among candidates and are bounded by the selection frontier (CL ties UPE).
+      The plan moves past that frontier: +2.6 to +5.2 F1 over UPE at plan level, CI > 0.
+    - vs the nearest decoding-time precision/recall controllers: Manas et al. ICCV'25 (2508.11616) hand-set a w dial
+      whose best value differs by benchmark; PatchGate (2608.21819) uses a heuristic logit push/pull.
+      PLAN-F1 instead derives the operating point (about 3 classes, P* 0.61-0.66) from the metric and a calibrated
+      posterior, with no labels at test.
+  Expected effect:
+    - KTVIC test (plan level = upper bound of the realised effect), from the fuse2 pool and the P1 pool:
+      | plan | fuse2 pool P / R / F1 (dF1) | P1 pool P / R / F1 (dF1) |
+      |---|---|---|
+      | cap 3 | 70.6 / 56.8 / 63.0 (+4.9) | 71.1 / 53.9 / 61.3 (+6.8) |
+      | uncapped | 65.5 / 64.3 / 64.9 (+6.8) | 66.5 / 59.6 / 62.9 (+8.3) |
+    - With 12 instead of 6 samples: about +1-2 more (p5).
+    - With a probe-level posterior (AUROC 0.82-0.86, if it adds to the votes): +2 to +5 more (p10). That is still below 75.
+    - Realised = plan x fidelity. CommonGen-type fidelity of 95-97% would keep most of it. Unmeasured.
+    - COCO: F1 <= +2 (75.4 set level).
+  CIDEr cost:
+    - unmeasured; budget -5;
+    - cap 3 keeps the target in the reference distribution (3-class references: CIDEr-LOO 192 vs 182-187);
+    - risk: realising wrong classes as fluent false statements (priced into the plan's P, not into CIDEr).
+  GPU (one 3090):
+    - control-SFT on train minus dev300: <= 3.8 GPU-h (fuse2's logged training cost; P1-size data is smaller);
+    - 12 test samples from the same base: ~1.1 GPU-h (R6: 3.6 s/img per 6 samples). Dev already has 20 samples.
+    - realisation decode, dev300 + test: ~0.4 GPU-h;
+    - optional probe extraction: ~0.5 GPU-h.
+    - Total ~5-6 GPU-h.
+  Kill (pre-register before any decode; all on dev300 with the train-minus-dev300 control adapter):
+    K1 fidelity: realised captions name < 85% of the planned classes, or add > 0.3 unplanned classes per caption;
+    K2 realised KTVIC dev object F1 gain over greedy < +3.0 or its CI includes 0, or gain over UPE-frozen < +1.0.
+       (Plan level on dev T0.8 x6, cap 3: +3.7 over greedy and +2.1 over UPE; 12-20 samples add about 1-2.)
+    K3 KTVIC dev CIDEr-D < greedy - 5, or BLEU-4 < greedy - 3.
+    Test runs once, everything frozen. Report negative if test dF1 < +2 or CIDEr < greedy - 8.
+
+M2. Sentence-level plan realisation for multi-sentence captions (the COCO arm; incremental).
+  Mechanism: a committee posterior (vote counts over existing captions).
+    - FILTER: drop a sentence of the detailed caption when every class it names has < 2 votes.
+    - ADD: append a whole sentence from another member for each missing class with >= 2 votes, if all of that sentence's
+      classes have >= 2 votes.
+    Text edits are whole model sentences, so no generation is needed.
+  Novel element:
+    - Atomic Self-Consistency (2405.13131) merges sample sub-parts for long-form QA recall.
+    - Conformal factuality (Mohri & Hashimoto ICML'24) filters claims for precision.
+    - M2 uses ADD + DROP, set by the F1-optimal (recall-seeking) decision, measured against human instance truth. Low
+      novelty.
+  Measured effect:
+    - COCO F1 +1.8 [+1.3, +2.3] on the main 2,500 (k picked there);
+    - +0.9 [+0.5, +1.3] on FRESH images with the rule frozen (5 members);
+    - P +1.3 to -0.1, R +0.6 to +3.1.
+  KTVIC: not applicable to one-sentence captions. Two-sentence captions already cost ~120 CIDEr.
+  CIDEr cost: not measurable on COCO (no Vietnamese references on those images).
+  GPU: 0.
+    - Calibrating on COCO train2014 (allowed) would need committee captions on train images (~4-5 GPU-h).
+    - Adding the KTVIC-trained members on the other 2,500 images would need ~4.8 GPU-h of p1/fuse2 decodes.
+    Neither is recommended for +1-2 F1.
+  Kill / status: the rule was pre-stated in p18 and replicated on fresh images (+0.9 [+0.5, +1.3]), so it passes,
+    narrowly. Keep it as an appendix analysis, not a headline method.
+NOT PROPOSED:
+  - Calibrated expected-F1 MBR / exact-EF1 selection as a stand-alone method: it ties UPE at matched CIDEr (3d).
+  - Committee-of-adapters selection: n.s.
+  - A retrieval prior: +0 to +1.
+  - Count-only control: vote-blind counting loses precision (T3 3c).
+  - Precision-targeted decisions: P >= 90 leaves R ~ 22-26.
+
+==========================================================================================================================
+6. LITERATURE
+==========================================================================================================================
+Source: sub-agent search, files in lit/.
+- 41 papers CONFIRMED and 0 unconfirmed, via the arXiv API, Crossref, OpenAlex, OpenReview and the ACL Anthology / NeurIPS /
+  PMLR / JMLR / icml.cc indexes. DBLP was unreachable (TLS reset).
+- Tables and quotes: lit/verified.tsv and lit/numbers.txt. Scoop search: lit/scoop.txt and scoop_raw.txt.
+- Arbitration: I fetched CommonGen and Manas et al. myself (lit/commongen.txt, lit/manas2025.txt).
+
+6a. Decision theory for F-measures. These are the parts we take; the micro/macro closed form is the only new piece.
+- Lewis SIGIR'95 (10.1145/215206.215366) and Chai SIGIR'05 (10.1145/1076034.1076144): the probability ranking principle
+  and the exact expected F.
+- Jansche ACL'07 (P07-1093): maximum-expected-utility decoding for F.
+- Ye, Chai, Lee, Chieu ICML'12 (1206.4625): EUM and DTA are "asymptotically equivalent given large training and test
+  sets". Reuters macro-F1 with LR, C >= 1: thresholding 36.6 -> DTA 39.9.
+- Dembczynski et al. NIPS'11: the exact GFM algorithm.
+- Dembczynski et al. ICML'13 (PMLR v28): plug-in EFP vs binary relevance, instance F1 Scene 55.73 -> 74.44 and Enron
+  55.49 -> 61.04.
+- Waegeman et al. JMLR'14 (1310.4849).
+- Lipton, Elkan, Naryanaswamy ECML-PKDD'14 (1402.1892): with calibrated probabilities the optimal threshold is F*/2.
+- Koyejo et al. NIPS'14 and NIPS'15, Narasimhan et al. NIPS'14: consistent plug-in rules for generalised and multilabel
+  (micro/macro/instance) metrics.
+- Wu & Zhou ICML'17 (1609.00288).
+- Nowozin CVPR'14 (10.1109/CVPR.2014.77): Bayes-optimal decisions for IoU, a CV precedent for "decide for the metric".
+- Our data agree with Ye'12: EUM ~= DTA (3c).
+- New here: the closed form for the MIXED micro-P / macro-R metric, i.e. the E[y/|G_i|] term with its label-free fixed
+  point, and its use for caption content selection. The per-image exact maximisers target instance-F and are
+  0.2-0.7 F1 worse here.
+6b. Calibration and evidence.
+- Guo et al. ICML'17 (1706.04599); Zadrozny & Elkan KDD'02; Lakshminarayanan et al. NIPS'17 (1612.01474).
+- Sample consistency: Wang et al. ICLR'23 (2203.11171); SelfCheckGPT EMNLP'23 (2303.08896); Kuhn et al. ICLR'23
+  (2302.09664).
+- Hidden states: Azaria & Mitchell Findings EMNLP'23 (2304.13734); Jiang et al. ICLR'25 (2410.02762).
+- Detectors and correction: Grounding DINO ECCV'24 (2303.05499); Woodpecker (2310.16045, a journal paper: Sci. China
+  Inf. Sci. 2024); LURE ICLR'24 (2310.00754).
+- Reporting bias and importance: Misra et al. CVPR'16 (1512.06974); Berg et al. CVPR'12; Spain & Perona IJCV'11.
+  These are why our posterior's target is "named by the reference panel", not "present". Measured: detector tags are
+  25% KTVIC-precise, and outside the pool 7% gold.
+6c. MBR.
+- Kumar & Byrne HLT-NAACL'04 (N04-1022); Freitag et al. TACL'22 (2111.09388); Suzgun et al. Findings ACL'23 (2211.07634);
+  Bertsch et al. (2310.01387, Big Picture workshop'23).
+- In-pool MBR with an object-F1 utility gives +1.2 to +1.9 F1 here. Calibrated expected-F1 MBR ties UPE (3d).
+6d. Select-then-realise and controlled decoding (the closest prior art).
+- Fang et al. CVPR'15 (1411.4952). Word detectors are calibrated to held-out PRECISION and cut at one global threshold
+  tau (value not reported), then an ME LM plus DMSM writes the caption. COCO c5: BLEU-4 29.1, CIDEr 91.2.
+  -> Their selection rule is a precision threshold. Ours is the metric's Bayes act on a named-by-panel posterior.
+- Anderson et al. EMNLP'17, CBS (1612.00576). Forcing the top-4 tagger tags raises held-out mention F1 0 -> 54.0 (DCC
+  split, 8 classes; DCC 39.8, NOC 49.1). In-domain CIDEr falls 93.0 -> 86.3.
+  -> Fixed k and uncalibrated ranks; F1 is only the evaluation. CBS is a candidate realiser for us.
+- Neural Baby Talk CVPR'18 (1803.09845), Show-Control-Tell CVPR'19 (1811.10652), Hokamp & Liu ACL'17 (1704.07138) and
+  NeuroLogic NAACL'21 (2010.12884) are realisation machinery, reused rather than claimed.
+- Manas et al. ICCV'25 (2508.11616, MRGD). Separate object-precision and object-recall reward models, mixed by a user
+  weight w. LLaVA-1.5-7B on COCO:
+  | w | C_i | recall |
+  |---|---|---|
+  | greedy | 15.05 | 81.30 |
+  | 1.0 | 4.53 | 76.04 |
+  | 0.25 | 7.67 | 81.56 |
+  AMBER coverage 49.3 -> 63.8 (w 0.25). The best w differs by benchmark (about 0.25 for COCO, 1.0 for AMBER).
+  -> The nearest controller. It exposes a dial; PLAN-F1 computes the metric-optimal operating point from a calibrated
+     posterior, without labels.
+- PatchGate (2608.21819, preprint Aug 2026). An intrinsic object inventory pushes logits up or down. AMBER coverage
+  49.4 -> 56.0, CHAIR 7.5 -> 6.6.
+  -> A heuristic push/pull, with no F1 decision.
+- Precision-only claim filtering:
+  - Mohri & Hashimoto ICML'24 (2402.10978): FActScore factuality about 25% -> 80% while keeping about half the claims;
+  - Cherian et al. NeurIPS'24 (2406.09714);
+  - ConfLVLM (2502.20560, preprint): claim error 87.8% -> 10.0%;
+  - IntroConformal (2609.01375; EMNLP'26 per its arXiv comment, not confirmed).
+  -> All pay recall by deletion. Our metric rewards recall: at the operating point dF1/dR >> dF1/dP.
+- Recall-side merging: Atomic Self-Consistency EMNLP'24 (2405.13131, text); Visual Fact Checker CVPR'24 (2404.19752);
+  TACO (2511.09228, preprint).
+- Content selection for image description: Wang & Gaizauskas INLG'16 (W16-6631), learning to rank which gold objects
+  to mention.
+- Realisation fidelity: CommonGen, Findings EMNLP'20 (1911.03705, checked here). Concept coverage: fine-tuned BART 97.35%,
+  T5-large 95.29%, human 99.33%.
+SCOOP VERDICT
+- Searches: 53 arXiv API queries, 6 Crossref, 1 Semantic Scholar. "expected F1" AND caption returned 0 hits.
+- No paper combines all three of:
+  (1) a calibrated per-image object posterior;
+  (2) an expected-F1 / corpus-metric Bayes act choosing which objects to mention;
+  (3) fluent realisation of that set.
+  Each part has prior art.
+- The claim must stay narrow: decision-theoretic content selection for the micro-P / macro-R object metric, done before
+  realisation.
+- Gaps in coverage: DBLP unreachable, the OpenAlex quota exhausted, Semantic Scholar rate-limited. Non-arXiv papers and
+  papers from Sep-Oct 2026 may be missed.
+
+==========================================================================================================================
+7. CAVEATS
+==========================================================================================================================
+- The set-level numbers are PLANS, not captions. Their realised value needs M1's realiser.
+  - Fidelity is the main unknown: the existing adapters ignore prompt lists.
+  - Hallucinated plan classes become fluent false statements. They are counted in P, not in CIDEr or human preference.
+- Test pools come from models trained on all KTVIC train, at T = 0.8 with 6 samples. The calibrator transferred from P1_dev
+  (dev, T = 0.8) with ECE 0.03-0.06. Test numbers are ESTIMATES. Nothing was selected on test except where marked (COCO k).
+- The dev T0.5/T0.8 pools are step-A outputs of the UPE pre-registration (D9). They are used here for KTVIC-reference
+  endpoints only, after the job had finished. The frozen T* rule and the panel endpoints are untouched.
+- Committees mix systems and pipelines. Their vote shares are uncalibrated, and no clean dev committee exists (every
+  adapter except P1_dev trained on dev300).
+- The COCO sentence rule's k was picked on the main images. Only the fresh-image replication is clean.
+- Everything uses the 113-entry lexicon (it sees about 42% of noun mentions, K2) and exact class matching.
+- Model samples, votes and the probe are inside the method only. They are never labels and never evaluation evidence.
+- Licence probe. p7 reads OpenViIC captions at run time and prints numbers only. Of 21,535 panel strings, 3 occur verbatim
+  in my files, all in cache/seg_c5.json. Each is a P1_dev T=0.5 sample that coincides with a generic panel sentence; no
+  panel text was copied.
+
+==========================================================================================================================
+8. FILES (run from this directory with research_r6/B3_decoding/venv/bin/python; nice -n 15, OMP_NUM_THREADS=1)
+==========================================================================================================================
+- c5lib.py: pools, gold, calibrator, Poisson-binomial expected F1, plug-in fixed point, top-k EF1. Has a self-check.
+- seg_c5.py, seg_c5b.py: segmentation into cache/seg_c5.json.
+- Pilots:
+  | script | what it does |
+  |---|---|
+  | p0_tagfollow.py | tag-following |
+  | p1_dev.py | dev ceilings and rules |
+  | p2_build.py | dev T0.5/T0.8 CIDEr and UPE matrices |
+  | p3_sel.py | realisable selection, dev cross-fit and test frozen |
+  | p4_sets_test.py | test set level |
+  | p5_evidence.py | scaling and kNN prior |
+  | p6_coco.py | COCO committee and human ceilings |
+  | p7_panel_ceiling.py | OpenViIC-panel evidence ceiling, dev |
+  | p8_frontier.py | matched-CIDEr frontier, CL vs UPE |
+  | p9_prcurve.py | PR curve |
+  | p10_whatif.py | AUROC -> F1 map |
+  | p11_committee.py | ensembles of adapters |
+  | p12_style.py | classes per reference vs CIDEr |
+  | p13_cap.py | cap-3 plans |
+  | p14_macro.py | macro-recall term |
+  | p15_coco_sent.py | sentence-level COCO |
+  | p16_vs_upe.py | plan minus UPE |
+  | p17_mbrf1.py | classic MBR-F1 |
+  | p18_coco_rep.py | fresh-image COCO replication |
+  | p19_robust.py | calibration-source robustness |
+  | p20_detector.py | G-DINO tags as evidence |
+- The COCO scripts (p6, p15, p18) need NCS_DATA=/mnt/d/vsps_image_captioning/data.
+- Logs: out/*.log. lit/: verified.tsv, numbers.txt, scoop.txt, scoop_raw.txt, section6.txt, commongen.txt,
+  manas2025.txt, raw/.

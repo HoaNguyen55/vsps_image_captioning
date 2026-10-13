@@ -1,0 +1,282 @@
+R9 / C10_standards — Is "every object metric >= 90" what Q1/Q2 venues require?
+2026-10-13. CPU only (one local run, <1 min, 23 MB RSS).
+This report extends manuscript/research_wall/08 (protocols) and novel_direction/R2_01 (n-gram SOTA on Vietnamese sets)
+and does not repeat them. Every paper below was confirmed with the arXiv API, Semantic Scholar or OpenAlex, and every
+number was read from the paper's own table (the PDF text is in research_r9/C10_standards/dl/<arxiv id>/p.txt). Numbers
+marked [derived] are my arithmetic: F1 = 2PR/(P+R), and P = 100 - CHAIR.
+
+======================================================================================================================
+0. BOTTOM LINE
+======================================================================================================================
+- No Q1/Q2 journal and no top conference uses an absolute bar such as ">= 90". Q1/Q2 is the SCImago/JCR quartile of
+  the JOURNAL; it is not a property of the results. Papers get accepted for a gain over strong baselines under a
+  standard protocol.
+- No accepted captioning or hallucination paper found reports object precision, recall AND F1 all >= 90 for captions.
+  - Highest caption object F1 found: 79.7 (Attention Reallocation, IJCV 2025, CHAIR-F1, LLaVA-1.5-13B).
+  - Highest caption object recall found: 80.8 (MemVR, ICML 2025, CHAIR recall, ~100-word captions).
+  - Only yes/no probes reach about 90: POPE F1 90.6-91.1 (InternVL2.5/3-8B) and AMBER-discriminative F1 90.9
+    (RLAIF-V-12B).
+- Our own measured ceilings decide it (new in this round):
+  - COCO-2500 probe, instance-only gold: pooling ALL FIVE English human captions gives P 85.3 / R 74.3 / F1 79.5.
+    37.2% of instance classes are named by none of the five annotators.
+  - Five pooled Vietnamese UIT-ViIC annotators (COCO images): F1 71.3 (test) and 72.0 (val).
+  - KTVIC, one held-out human: F1 60.5. Two humans fused: F1 70.9 (R4_01).
+  - So ">= 90" asks a single caption to beat five humans combined, and on COCO to beat dedicated COCO-trained
+    multi-label classifiers (best OF1 found: 86.8).
+- What does get accepted:
+  - CHAIR_i -1 to -2 points absolute against the best baseline;
+  - object F1 +1.2 to +1.8;
+  - recall +3 to +4 with CHAIR not worse;
+  - POPE F1 +0.8 to +4;
+  - in one CVPR 2026 case, +0.38 correctness.
+- Statistics in accepted papers: 7 of 30 report multi-run statistics; 0 of 30 test the main comparison for
+  significance. Our 3 seeds plus paired bootstrap already exceed the norm.
+
+======================================================================================================================
+1. CEILINGS MEASURED ON OUR DATA (these decide reachability)
+======================================================================================================================
+1a. KTVIC test (558 images), from R4_01 (data/results/human_parity.json). Gold = the other annotators' references.
+| reference | P | R | F1 |
+|---|---|---|---|
+| one held-out human (1v4) | 85.3 [84.0, 86.6] | 46.9 [45.1, 48.7] | 60.5 [58.7, 62.3] |
+| two humans fused (2v3) | 76.1 | 66.6 | 70.9 |
+| one human, OpenViIC panel added to the gold (R5_01) | 94.0 | | |
+
+1b. NEW: human P/R/F1 against COCO-2014 INSTANCE labels (the gold of our COCO metric).
+- Union of n of the 5 references, averaged over all n-subsets.
+- Matchers: the repo's own (score_coco_probe.en_classes with CHAIR synonyms; vi_objects with lexicon v2).
+- The scoring follows object_prf: P pooled over mentions, R averaged over images.
+- Script: research_r9/C10_standards/bin/human_union.py. Its asserts reproduce R5_02's single-human rows (92.4/56.9 on
+  2,441 images; UIT-ViIC vi 99.6/40.8 and 99.2/42.3; en 99.0/42.3 and 99.3/44.6). Outputs: dl/human_union*.out.
+
+| set (images; mean instance classes per image) | 1 human | 2 pooled | 3 pooled | 4 pooled | 5 pooled | classes named by no human |
+|---|---|---|---|---|---|---|
+| COCO Karpathy-test probe, EN refs (2,500; 2.82) | 92.6/56.6/70.3 | 90.0/66.0/76.2 | 88.1/70.1/78.1 | 86.6/72.6/79.0 | 85.3/74.3/79.5 | 37.2% |
+| UIT-ViIC test, VI refs (231 COCO images; 3.61) | 99.6/40.8/57.8 | 99.6/47.9/64.7 | 99.6/51.8/68.1 | 99.6/54.1/70.1 | 99.5/55.6/71.3 | 48.9% |
+| UIT-ViIC val, VI refs (924; 3.54) | 99.2/42.3/59.3 | 99.1/49.5/66.0 | 99.0/53.1/69.1 | 98.9/55.2/70.9 | 98.9/56.5/72.0 | 48.5% |
+| UIT-ViIC test, EN refs, same images | 99.0/42.3/59.2 | | | | 97.9/67.3/79.8 | 37.1% |
+| UIT-ViIC val, EN refs | 99.3/44.6/61.6 | | | | 98.2/68.3/80.6 | 36.6% |
+
+Readings:
+(i) The human P-R frontier against instance labels runs (P, R) = (92.6, 56.6) -> (90.0, 66.0) -> (88.1, 70.1) ->
+    (85.3, 74.3). Precision FALLS as humans name more classes: 7-15% of human-named classes have no instance label
+    (label gaps or synonyms). "P >= 90 and R >= 90" lies outside the human frontier.
+(ii) To get R >= 90, a caption must name classes that none of 5 humans named. That is inventory-style text, which is
+     the metric-gaming case the brief already names.
+(iii) Where our systems sit on this frontier:
+     - COCO short: zero-shot 90.8/48.5/63.3 and fuse2 90.9/44.2/59.4. Precision is at the human level; recall is
+       below one human (56.6).
+     - COCO detailed: zero-shot 80.5/67.5/73.4. This beats one human on F1 but is about 9 P below the pooled-human
+       curve at the same recall (interpolated: P about 89.3 at R 67.5).
+     - KTVIC short: fuse2 F1 58.2 vs one human 60.5 (R4_01, delta -2.3, p = 0.050). Recall is at human level; the
+       whole gap is precision (-12.4).
+
+======================================================================================================================
+2. WHAT 2023-2026 Q1/Q2 JOURNALS AND TOP CONFERENCES PUBLISH: OBJECT METRICS AND LEVELS
+======================================================================================================================
+2a. CHAIR on COCO val2014, detailed descriptions (about 100 words, max 512 tokens). Values are CHAIR_s / CHAIR_i /
+    recall or F1.
+- OPERA (CVPR 2024, arXiv 2311.17911), LLaVA-1.5-7B: greedy 45.0/14.7, beam 48.8/13.9 -> OPERA 44.6/12.8.
+  InstructBLIP 58.8/23.7 -> 46.4/14.2.
+- Less-is-More (ACL 2024, 2402.14545), LLaVA-1.5-7B: 50.0/15.4/R 77.1 -> 36.8/11.3/R 74.3. Recall LOST 2.8.
+- PAI (ECCV 2024, 2407.21771), LLaVA-1.5-7B: 46.2/13.8/F1 75.9 -> 23.4/6.6/F1 75.7. Hallucination halved, F1 flat.
+  13B: 44.0/12.7/77.3 -> 33.0/9.2/77.8.
+- AGLA (CVPR 2025, 2406.12718): 51.0/15.2/R 75.2 -> 43.0/14.1/R 78.9 (mean of 3 runs).
+- MemVR (ICML 2025, 2410.03577): 50.0/15.4/R 77.1 -> 46.6/13.0/R 80.8. Highest CHAIR recall found.
+- Attention Reallocation (IJCV 2025, DOI 10.1007/s11263-025-02607-z, arXiv 2503.08342):
+  - LLaVA-1.5-7B: 47.0/14.3/F1 77.1 -> 30.6/7.0/F1 78.3 (+1.2);
+  - 13B: 44.8/12.8/77.9 -> 36.6/8.7/79.7 (+1.8). Highest caption object F1 found.
+- CLVA (Pattern Recognition 2026, DOI 10.1016/j.patcog.2026.114380, arXiv 2603.25088), LLaVA-1.5:
+  53.0/15.2/R 76.7 -> 48.0/12.7/R 80.2. (Its table header swaps CHAIR_s and CHAIR_i; the values are read as above.)
+  Qwen-VL, which writes short outputs: CHAIR about 7 with recall only 45.5.
+- Object HalBench (300 COCO images, detailed prompts), response / mention level:
+  - RLAIF-V (CVPR 2025, 2405.17220): LLaVA-1.5-7B 54.5/27.8 -> 10.5/5.2. GPT-4V 13.6/7.3.
+  - OPA-DPO (CVPR 2025, 2501.09695): 55.67/15.96 -> 13.00/4.25.
+  - SENTINEL (ICCV 2025, 2507.12455): LLaVA-1.5-7B 52.7/27.9 -> 4.3/2.6, against the previous SOTA TPO at 5.6/3.2.
+    Qwen2.5-VL-7B (our backbone): 15.0/9.2 -> 4.7/2.8.
+
+2b. CHAIR on COCO, short captions (max 64 tokens), from OPERA:
+- LLaVA-1.5 greedy 20.6/6.2, beam 18.8/5.9 -> OPERA 14.2/5.2;
+- InstructBLIP 30.0/14.5 -> 16.6/6.8;
+- MiniGPT-4 24.2/8.2 -> 22.6/8.2.
+- This confirms the brief's prior: strong 7B models have CHAIR_i of about 5-8 on short captions, i.e. P about 92-95
+  [derived], with recall about 45 (CLVA's Qwen-VL).
+
+2c. Caption object P/R/F1 with an explicit parser: SC-Captioner (ICCV 2025, 2508.06125).
+- Qwen2-VL-7B, COCO-LN500: zero-shot 81.1/61.8/69.5 -> SFT+DPO 77.0/74.2/75.1 -> SC-Captioner 78.7/75.0/76.4.
+  The gain over SFT+DPO is +1.2.
+- DOCCI500: 83.7/56.8/66.5 -> 80.2/66.0/71.6.
+- Precision falls as recall rises in every row.
+
+2d. Object recall / coverage of detailed captions.
+- AMBER generative (arXiv 2311.07397; 1,004 images), CHAIR / Cover:
+  LLaVA-1.5 7.8/51.0; Qwen-VL 5.5/49.4; CogVLM 5.6/57.2; GPT-4V 4.6/67.1.
+  Derived F1: LLaVA-1.5 65.7, GPT-4V 78.8 [derived].
+- After mitigation, Cover DROPS:
+  - OPA-DPO 7.7/51.6 -> 2.2/47.9;
+  - DeCo (ICLR 2025, 2410.11779): 8.2/48.9 -> 6.6/47.5 (greedy) and 7.1/50.7 -> 6.3/46.8 (beam). The authors call
+    the coverage loss "within an acceptable range".
+  - RLAIF-V 3.0/50.4.
+- CompreCap (CVPR 2025, 2412.08614; 560 COCO images), object coverage: GPT-4o 72.8, LLaVA-Next-34B 72.9, GPT-4V 72.3.
+  HUMAN 77.6 (133-word captions).
+- CAPTURE (arXiv 2405.19092), object + attribute + relation units: precision 61-66, recall 43-60 (LLaVA-1.5-7B
+  65.5/43.2; LLaVA-NeXT-7B 65.6/56.8).
+- DCScore (DeCapBench, ICLR 2025, 2503.07906): GPT-4o 53.4; the best 7B model is 55.7.
+
+2e. POPE F1 (yes/no object probe; average of the 3 COCO splits unless noted).
+- LLaVA-1.5-7B 87.3 / 86.1 / 84.2 (random / popular / adversarial; CVPR 2024, 2310.03744).
+- InternVL3 technical report (arXiv 2504.10479, Table 5): Qwen2-VL-7B 88.1, GPT-4o 86.9, InternVL2.5-8B 90.6,
+  InternVL3-8B 91.1. Qwen2.5-VL-7B is not listed.
+- Accepted gains:
+  - PAI 85.59 -> 86.42;
+  - ARA (ACM TOMM 2025, DOI 10.1145/3742434, arXiv 2408.00555): random split 84.75 -> 88.63;
+  - VCD (CVPR 2024, 2311.16922): random 81.33 -> 87.16, against a SAMPLING baseline, mean +- sd over 5 runs.
+- Re-evaluated under one protocol (RLAIF-V Table 1, AMBER-discriminative F1): VCD 74.9 and OPERA 78.3 vs plain
+  LLaVA-1.5 77.7. Decoding gains can vanish under re-evaluation.
+- Non-English: MHR (ACM TOMM 2026, DOI 10.1145/3797025, arXiv 2408.00550): LLaVA-1.5 multilingual POPE accuracy is
+  "under 70%" for most of its 13 languages vs "exceeds 85%" for English. Vietnamese is not among them.
+- Label noise: RePOPE (arXiv 2504.15707) re-annotates POPE and finds rankings shift. In this project's own sanity row
+  (scratchpad pope_out/scores.json), the original POPE labels score only F1 94.1 against the RePOPE labels (random
+  split). So about 94 is the label-noise cap of POPE.
+
+2f. AMBER discriminative F1: LLaVA-1.5 74.7-77.7; GPT-4V 87.4; RLAIF-V-7B 84.5; OmniLMM-12B 89.5 -> RLAIF-V-12B 90.9.
+    That is the only >= 90 found.
+
+2g. COCO multi-label classification (dedicated classifiers TRAINED on COCO; threshold 0.5).
+- ML-GCN (CVPR 2019, 1904.03582): mAP 83.0, CF1 78.0, OF1 80.3.
+- Query2Label (arXiv 2107.10834; the standard comparison table), CvT-w24 with 22k pretraining: mAP 91.3, CP 88.8 /
+  CR 83.2 / CF1 85.9, OP 89.2 / OR 84.6 / OF1 86.8.
+- ML-Decoder (WACV 2023) and ADDS report mAP only.
+- No OF1 >= 90 found. 2023-2026 Q1 multi-label papers exist (TIP, TCSVT, PR, TPAMI), but their abstracts give no
+  F1 and the full texts are paywalled (not verified).
+
+2h. Q1 journals specifically, read in full: none reports any object metric >= 90 except POPE-type probes.
+- IJCV 2025 (Attention Reallocation): F1 77-80.
+- PR 2026 (CLVA): recall 80.2.
+- TOMM 2025 (ARA): POPE F1 <= 89.0.
+- TOMM 2026 (MHR): multilingual POPE accuracy <= ~70% for most non-English languages.
+- Per 08 (not re-checked here): HB (Sci. Rep. 2026) reports POPE F1 91.4 and CHAIR_s 40.2 on LLaVA-1.5.
+- OpenAlex ISSN sweep (TPAMI, TIP, TMM, TCSVT, PR, IJCV, KBS, ESWA, Neurocomputing, InfFus, TNNLS, TOMM; title
+  "hallucination"; 2024-2026): 67 records. Those without an arXiv version (e.g. ESWA 2026 "...image captioning via
+  frequency perturbation entropy", TCSVT 2025 AQAH, TMM 2026 VECD) give no numbers in their abstracts.
+
+2i. Vietnamese captioning in Q1/Q2 journals (adds to R2_01).
+- OpenAlex sweep "vietnamese caption" for 2022-2026: 61 records. Only two Q1/Q2-tier journal articles:
+  - UIT-OpenViIC, Signal Processing: Image Communication, DOI 10.1016/j.image.2025.117430. SJR 2024 score 0.679 and
+    JCR Q2 per third-party sites; the SCImago page returned 403.
+  - HDUCap, JVCIR 2026, DOI 10.1016/j.jvcir.2026.104963. No public numbers.
+  - R2_01 also lists sViIC (TALLIP 2024).
+- The rest are VNU-JCSCE, JCSC, HaUI, SN Computer Science, IJECE, MAPR, RIVF and NICS.
+- NONE reports object P/R/F1, CHAIR, POPE or any hallucination metric. The only levels are n-gram (R2_01: OpenViIC
+  CIDEr 76.48; KTVIC GRIT 136.0). There is no Vietnamese object-metric bar to meet; we would set the first one.
+
+======================================================================================================================
+3. WHAT GAINS GET ACCEPTED; SEEDS AND SIGNIFICANCE
+======================================================================================================================
+Accepted gains, as numbers (baseline -> method, metric):
+| paper (venue) | metric | baseline -> method | absolute | relative |
+|---|---|---|---|---|
+| OPERA (CVPR'24) | CHAIR_i, 512 tok | 14.7 -> 12.8 (greedy) | -1.9 | -13% |
+| OPERA (CVPR'24) | CHAIR_i, 64 tok | 6.2 -> 5.2 | -1.0 | -16% |
+| SENTINEL (ICCV'25) | ObjHal CHAIR_i vs previous SOTA | 3.2 -> 2.6 | -0.6 | -19% |
+| CLVA (PR'26) | CHAIR_i / recall | 15.2 -> 12.7 / 76.7 -> 80.2 | -2.5 / +3.5 | -16% / +5% |
+| MemVR (ICML'25) | recall | 77.1 -> 80.8 | +3.7 | +5% |
+| Attention Reallocation (IJCV'25) | CHAIR object F1 | 77.1 -> 78.3 | +1.2 | +1.6% |
+| SC-Captioner (ICCV'25) | object F1 vs SFT+DPO | 75.1 -> 76.4 | +1.2 | +1.6% |
+| CCCaption (CVPR'26, 2602.21655) | correctness / completeness | 70.19 -> 70.57 / 50.05 -> 52.80 | +0.38 / +2.75 | +0.54% / +5% |
+| PAI (ECCV'24) | POPE F1 / CHAIR_i | 85.59 -> 86.42 / 13.8 -> 6.6 | +0.8 / -7.2 | +1% / -52% |
+| ARA (TOMM'25) | POPE F1, random split | 84.75 -> 88.63 | +3.9 | +4.6% |
+| RLAIF-V (CVPR'25) | ObjHal CHAIR_i | 27.8 -> 5.2 | -22.6 | -81% |
+| OPA-DPO (CVPR'25) | AMBER CHAIR / Cover | 7.7 -> 2.2 / 51.6 -> 47.9 | -5.5 / -3.7 | -71% / -7% |
+
+Pattern:
+- Papers headline large RELATIVE cuts in hallucination rate (-13% to -81%).
+- They keep recall and F1 "not worse": changes of +0.4 to +3.7, often negative (Less-is-More -2.8, DeCo -1.4/-3.9,
+  OPA-DPO -3.7).
+- Nobody chases absolute recall or F1 levels.
+
+Statistics (30 accepted papers read in full, venue verified: 25 top-conference, 5 Q1-journal; HalluciDoctor, HSA-DPO and VTI were left out because their venues could not be confirmed):
+- Multi-run statistics: 7 of 30.
+  - mean +- sd: VCD (5 runs), HALC, SID (3 seeds), MemVR (3 seeds), Nullu, HALVA;
+  - mean of 3 runs only: AGLA.
+- Significance test of the MAIN comparison: 0 of 30. (EFUF's t-test is on an analysis; HALVA's "significant" is an
+  adjusted-delta rule for general-task drops.)
+- None of the 5 journal papers (Woodpecker SCIS, MHR TOMM, ARA TOMM, Attention Reallocation IJCV, CLVA PR) reports
+  seeds. Attention Reallocation states a single fixed seed.
+- Per 08: HB (Sci. Rep. 2026) reports a mean of 3 trials.
+- CCA (NeurIPS 2024) answered [No] to the NeurIPS checklist item "Experiment Statistical Significance": "Error bars
+  are not reported since training of LVLMs is computationally expensive."
+- The ACL ARR checklist C3 asks for error bars or whether a result is a single run, and states: "Not answering
+  positively to a question is not grounds for rejection." (aclrollingreview.org/responsibleNLPresearch)
+- Our minimum detectable effect [derived from R4_01's CIs; 80% power, two-sided 0.05]: about 3 F1 on KTVIC-558
+  (paired SE about 1.15) and about 1.3 points on COCO-2500 (dP CI half-width 0.95, so SE about 0.48). Gains below
+  these will not separate from noise, whatever the venue accepts.
+
+======================================================================================================================
+4. CALIBRATED TARGET TABLE
+======================================================================================================================
+| metric (ours -> literature analogue) | typical SOTA in published Q1/Q2 and top-venue papers | what a Q1 reviewer accepts as significant | is >= 90 a recognised bar? | measured ceiling on our data | ours now |
+|---|---|---|---|---|---|
+| KTVIC object P, short (about 1 - CHAIR_i; 5-reference gold) | No published number on any Vietnamese set. Analogue: COCO short CHAIR_i 5-8, i.e. P 92-95 (OPERA; CLVA) | CHAIR_i -1 to -2 absolute vs the best baseline (-13% to -19% relative), recall not worse | Partly. CHAIR_i <= 10 is ordinary on COCO, but KTVIC gold is reference-only and penalises true but unmentioned objects | one human (1v4) 85.3; 94.0 with the OpenViIC panel added | P1 78.8-79.1; fuse2 75.4-75.7 |
+| KTVIC object R, short | Analogue: short-caption recall about 45 (Qwen-VL in CLVA); detailed CHAIR recall 75-81 | +3 to +4 with CHAIR equal or better (MemVR, CLVA, AGLA) | No. Never reported for any caption setting | one human 46.9; two fused 66.6 | fuse2 46.8-47.6; MBR 53.1; detailed 61.2 |
+| KTVIC object F1 | Analogue: caption object F1 66-80 (SC-Captioner; PAI; Attention Reallocation) | +1.2 to +1.8 (IJCV'25, ICCV'25); our MDE is about 3 | No | one human 60.5 [58.7, 62.3]; two fused 70.9 | fuse2 57.8-58.4; MBR 60.7; detailed 64.4 |
+| COCO object F1, instance-only gold (VI caption, 80 classes) | Analogue: CHAIR-F1 76-80 (union gold, ~100-word EN captions); dedicated COCO classifiers OF1 80.3 (ML-GCN) to 86.8 (Q2L) | +1 to +2 | No. It would beat COCO-trained classifiers | EN: 1 human 70.3, 5 pooled 79.5; VI (UIT-ViIC): 1 human 57.8-59.3, 5 pooled 71.3-72.0 | short 63.3 (zero-shot) / 59.4 (fuse2); detailed 73.4 |
+| COCO object P (CHAIR_i = 100 - P) | detailed CHAIR_i 13-15 at baseline; 6.6-13 for training-free methods; 2.6-5 after RLHF/DPO (ObjHal) | -1 to -2 CHAIR_i | P >= 90 is routine for short captions | 1 human 92.6, falling to 85.3 for 5 pooled | short 89.5-90.9 (already about 90) |
+| COCO object R | CHAIR recall 75-81; AMBER Cover 47-67 (GPT-4V 67.1); CompreCap: GPT-4o 72.8, human 77.6 | +3 to +4, or a recall loss of <= 4 when CHAIR falls | No | 1 human 56.6; 5 pooled 74.3; 37.2% of classes named by no human | short 44-48; detailed 67.5 |
+| POPE F1 (yes/no probe, not caption P/R) | 86-91: LLaVA-1.5 ~86, Qwen2-VL-7B 88.1, InternVL3-8B 91.1; journals 88.6-91.4 | +0.8 to +4 | Borderline yes for EN at 8B (90.6-91.1). Non-English LLaVA-1.5 accuracy <= ~70% (MHR) | label-noise cap about 94 (POPE vs RePOPE) | not measured (pope_vi jobs exist) |
+| AMBER: generative CHAIR / Cover; discriminative F1 | CHAIR 2.2-8, Cover 47-58 (GPT-4V 67.1); discriminative F1 75-91 | CHAIR -1.6 with Cover -1.4 accepted (DeCo) | Only discriminative F1 (RLAIF-V-12B 90.9) | - | not measured |
+| Vietnamese captioning, Q1/Q2 journals | n-gram metrics only (R2_01); no object or hallucination metric anywhere | n/a | No bar exists | - | we would be first |
+
+======================================================================================================================
+5. RECOMMENDATION: HOW TO FRAME THE TARGETS
+======================================================================================================================
+R1. Drop ">= 90 on each metric" as the success criterion. No venue states such a bar, no accepted paper meets it,
+    and our own human ceilings put it out of reach:
+    - KTVIC: R >= 90 vs two fused humans at 66.6; F1 >= 90 vs 70.9; P >= 90 vs one human at 85.3.
+    - COCO: F1 >= 90 vs five pooled humans at 79.5.
+    Chasing it forces inventory-style captions, which reviewers will flag through CIDEr.
+
+R2. Frame the targets against the HUMAN P-R FRONTIER at matched mentions per caption, for example:
+    - KTVIC short:
+      - parity: F1 not significantly below one held-out human, 60.5 (1v4, R4_01);
+      - stretch: close the 12-point precision gap at R about 47.
+    - KTVIC detailed: parity with two fused humans (F1 70.9 at 2.57 objects per caption).
+    - COCO (instance gold): reach the pooled-human curve (P 90.0 at R 66; P 85.3 at R 74.3).
+    State each target as "on or above the k-annotator frontier" (bin/human_union.py; human_parity.py for KTVIC). This
+    is a claim reviewers can check. It is also new: CHAIR, AMBER and CompreCap report single human or model points,
+    not a pooled-annotator frontier against instance labels.
+
+R3. The PRIMARY claim should be the paired gain:
+    - ΔF1 >= +2 over P1 AND over fuse2 (above our MDE of about 3 to be safe);
+    - precision not lower beyond its CI;
+    - CIDEr and BLEU reported alongside, with no CIDEr loss beyond its CI;
+    - mean +- sd over 3 seeds, paired bootstrap, Holm correction across P, R, F1, CHAIR_i, CHAIR_s.
+    Accepted Q1 work shows +1.2 to +1.8 F1 suffices when the protocol is standard. Our statistics already exceed the
+    norm (0 of 30 papers test significance).
+
+R4. Add STANDARD COMPARABLES in an appendix, so reviewers can place us on known scales:
+    - COCO CHAIR_s / CHAIR_i / recall with the Rohrbach gold (instances plus references), at 64 and 512 tokens;
+    - POPE F1, plus RePOPE;
+    - AMBER generative and discriminative.
+    Expected levels for a Qwen2.5-VL-7B-class model: ObjHal CHAIR_i about 9 at baseline (SENTINEL); POPE about 86-88 [estimate from LLaVA-1.5 about 86 and Qwen2-VL-7B 88.1].
+    Cost [estimate from R5_02's measured speeds of 1.3-6.1 s per image]: about 3.5 GPU-h per system, about 10 GPU-h for
+    zero-shot, P1 and fuse2.
+
+R5. In the paper, write: "first object-level P/R/F1 and hallucination benchmark for Vietnamese captioning, with
+    measured human ceilings". Then give every number together with its human ceiling, never as an absolute
+    percentage. Name the gaming check: the CIDEr and length cost of each gain.
+
+Proposal tally:
+- Framing (R2 + R3): CIDEr cost 0; 0 GPU-h (the scripts exist).
+  Kill criterion: if, after R9, every lever's F1 CI lies below the one-human point (60.5) in short mode and below 70.9
+  in detailed mode, claim only the paired gain over P1/fuse2, not human parity.
+- Comparables (R4): about 10 GPU-h, CIDEr cost 0.
+  Kill criterion: if POPE-vi or the CHAIR-512 runs fail parsing (> 5% unparsed), report only the KTVIC/COCO
+  object P/R/F1 with ceilings.
+
+Reachability of >= 90 (deciding numbers): NO on every caption metric.
+- KTVIC P: one human 85.3. P >= 90 is reachable only by under-mentioning, with recall collapsing.
+- KTVIC R: two fused humans 66.6.
+- KTVIC F1: two fused humans 70.9.
+- COCO F1: five pooled humans 79.5; best COCO-trained classifier OF1 86.8.
+- Only POPE-type yes/no probes reach about 90-91 in English.

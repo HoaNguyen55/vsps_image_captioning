@@ -1,0 +1,349 @@
+R9 / C6_multitask_data -- training signal and data for object P/R/F1 (KTVIC) and COCO object F1. 2026-10-13.
+CPU only (local, nice 15, 1 thread, <= 135 MB RSS, each pilot < 1 min; n2/n3 read-only listings). No GPU, no VLM.
+Literature: one sub-agent; every id checked with the arXiv API / Semantic Scholar / Crossref / CVF / ACL / NeurIPS index.
+
+======================================================================================================================
+0. BOTTOM LINE
+======================================================================================================================
+- The COCO loss after KTVIC SFT has two measured causes, and only one is a data problem this lever can fix.
+  (1) SHORT mode: a VOCABULARY loss. Recall falls only on COCO classes KTVIC captions rarely name (< 20 mentions:
+      32.9 -> 26.3; 20-199: 31.0 -> 24.3) and RISES on the 7 classes KTVIC names often (51.2 -> 57.7, fuse2).
+      Same concentration in P1 and in the paper system VSPS (rare -15.3, mid -13.1, frequent -3.1).
+      Lexical substitution: donut -> "bánh mì", frisbee -> "cái đĩa".
+  (2) DETAILED mode: a COVERAGE loss on objects no human names. 37.3% of COCO instance pairs are named by none of 5
+      annotators; zero-shot-detailed recovers 32.4% of them, fuse2-detailed 9.2%. Captions cannot teach these.
+- Upper bound of fixing (1) (hybrid stand-in, base vocabulary on KTVIC-rare classes): COCO short F1 59.4 -> 64.9
+  (+5.45 [+4.48, +6.39]), above zero-shot's 63.3; detailed 65.8 -> 73.4 (+7.5, P -5.1).
+- Ceilings: all 5 English human captions pooled reach COCO F1 79.4 (P 85.0 / R 74.4); one human 70.5.
+  KTVIC's pre-registered learner frontier puts R 90 at P 59 (F1 71). >= 90 is not reachable by training data on any
+  of the four metrics. COCO F1 90 needs an object-inventory appendix from a near-SOTA tagger (micro P90/R85; best
+  published OF1 86.8): F1 90.4 at CIDEr-D 88.6 -> 56.3 (English refs) / 179.7 -> 52.6 (Vietnamese refs). That is the
+  metric-gaming route; it is named, not proposed.
+- Proposals (section 4):
+  P-C6-1 VGR, Vocabulary-Gap Rehearsal from human COCO instance labels rendered as Vietnamese text. Main proposal;
+         closest prior NOC/PS3/VIVO; "close but not scooped".
+  P-C6-2 IVSR, instance-verified self-replay of the base model's detailed captions. Flagged MODEL-GENERATED;
+         incremental (SDFT/SSR/ReDraft, CHAIR-DPO).
+  Both must beat a zero-training LoRA-scaling (WiSE-FT) baseline.
+- Leakage: UIT-ViIC train holds 133 Karpathy-test images, 59 of them in the 2,500 manifest; val/test hold none.
+  The rehearsal pool (Karpathy train+restval minus UIT-ViIC val/test) is 112,132 images.
+
+======================================================================================================================
+1. MEASURED ON OUR DATA (CPU pilots, scripts p1-p9 in this dir, logs in out/; all <= 135 MB RSS, < 1 min each)
+======================================================================================================================
+Definitions are object_prf.py's (P pooled, R mean per image over images with gold, F1 harmonic). COCO = the 2,500-image
+manifest, gold = COCO-2014 instances only, Vietnamese matcher v2; English human captions matched with CHAIR synonyms.
+Reproduction check: the six COCO rows of CONTEXT_R9 reproduce exactly (e.g. fuse2_s42-short 90.9/44.2/59.4).
+
+1.1 Leakage (p1, p9)
+- UIT-ViIC train (2,695) contains 133 Karpathy-test images; 59 of them are in the 2,500 reporting manifest.
+  UIT-ViIC val (924) and test (231): 0 Karpathy-test images, 0 manifest images.
+- Any joint training must drop all 133 (not only the 59): UIT-ViIC train -> 2,562 images.
+- COCO-instance rehearsal pool = Karpathy train + restval (82,783 + 30,504) minus UIT-ViIC val/test = 112,132 images;
+  111,163 have instances. Karpathy test (5,000) and val (5,000) excluded by construction (asserted).
+
+1.2 COCO human ceilings vs instance gold (p1; 2,441 manifest images with 5 English captions)
+| human captions pooled | P | R | F1 |
+|---|---|---|---|
+| 1 (mean of 5) | 92.4 | 56.9 | 70.5 |
+| 2 (mean of 10 pairs) | 89.8 | 66.2 | 76.3 |
+| 3 | 87.9 | 70.3 | 78.1 |
+| 5 (all) | 85.0 | 74.4 | 79.4 |
+- 6,860 instance (image, class) pairs: named by 0/5 annotators 37.3%, 1/5 10.0%, 2/5 7.5%, 3/5 8.1%, 4/5 11.5%, 5/5 25.6%.
+- Least-named frequent classes (any-of-5 naming rate): handbag 0.03, backpack 0.08, cup 0.19, book 0.21, bottle 0.21,
+  chair 0.29, bowl 0.32, car 0.36, truck 0.35. person 0.89.
+- (C10 measured 85.3/74.3/79.5 and 37.2% on its image set; consistent.)
+- Vietnamese UIT-ViIC humans on their own (sports) images, train 2,562: one caption 99.5/42.2/59.3, all five 99.2/57.6/72.9.
+
+1.3 Where the COCO recall goes (p2: instance pairs split by how many of the 5 English annotators name the class)
+| system | P | R | F1 | recall on pairs named by 0/5 | 1-2/5 | 3-5/5 | classes/cap |
+|---|---|---|---|---|---|---|---|
+| zero-shot short | 90.5 | 48.8 | 63.4 | 4.0 | 28.2 | 70.6 | 1.19 |
+| P1 s43 short | 89.4 | 44.4 | 59.4 | 3.3 | 19.6 | 66.3 | 1.09 |
+| fuse2 s42 short | 90.7 | 44.1 | 59.3 | 3.9 | 24.0 | 66.4 | 1.10 |
+| zero-shot detailed | 80.2 | 67.5 | 73.3 | 32.4 | 62.3 | 84.5 | 2.14 |
+| fuse2 s42 detailed | 88.8 | 52.1 | 65.7 | 9.2 | 38.9 | 74.3 | 1.39 |
+- 19.8% of zero-shot-detailed's correct mentions are objects NO annotator named (P1 3.6%, fuse2-detailed 7.8%).
+- Detailed mode: zero-shot -> fuse2 loses 1,192 net instance hits (17.4 micro-R points), led by bottle 77/169,
+  chair 74/253, cup 71/188, book 64/128, dining table 44, giraffe 44/57, car 43, traffic light 35, truck 34, spoon 31.
+  Mostly non-salient objects: no caption-imitation target can teach them.
+
+1.4 The short-mode loss is a VOCABULARY loss on classes KTVIC rarely names (p7, p3)
+Band = how often KTVIC train captions (18,845) name the COCO class (matcher v2). Recall per band, 2,500 manifest:
+| band (KTVIC mentions) | share of test pairs | zero-shot short | P1 short | fuse2 short | zero-shot det | fuse2 det |
+|---|---|---|---|---|---|---|
+| < 20 (54 classes) | 41.3% | 32.9 | 26.9 | 26.3 | 50.9 | 31.6 |
+| 20-199 (19 classes) | 26.5% | 31.0 | 23.7 | 24.3 | 54.6 | 32.1 |
+| >= 200 (7 classes) | 32.2% | 51.2 | 53.6 | 57.7 | 79.8 | 69.8 |
+- The whole net short-mode loss sits in the two rare bands; classes KTVIC names often GAIN recall
+  (zero-shot -> fuse2-short net: rare 112%, mid 74%, frequent -86% of the 171 net lost hits).
+- Same concentration in the paper system VSPS (short): rare 17.6 / mid 17.9 / frequent 48.1 (zero-shot 32.9 / 31.0 /
+  51.2); its frequent band also falls, by 3.1.
+- Lexical domain substitution, e.g. donut -> "bánh mì", clock tower -> "tháp", frisbee -> "cái đĩa màu vàng",
+  laptop dropped (P1 vs zero-shot on the same images).
+- Top short-mode losses (zero-shot -> P1): donut 21/36, clock 20/97, laptop 18/65, tie 17/78, train 17/79, frisbee 17/46,
+  cell phone 16/90, couch 15/88, book 15/128, cake 15/55, cup 14/188, pizza 14/66.
+- Generic-noun fallback (526 COCO images with an animal instance): fuse2-short names a present animal class in 76.0%
+  (zero-shot 89.2%, P1 84.8%); 9.3% get only "con vật/động vật" (zero-shot 0.0%). Not learned from targets (KTVIC
+  first/consensual/fused targets use a generic animal noun in 0.1% of images). Single seed.
+
+1.5 Stand-in for "rehearsal restores base vocabulary on KTVIC-rare classes" (p8; upper-bound style)
+Hybrid mention set = trained model's mentions for classes KTVIC names >= T times, zero-shot's (same prompt) for the rest.
+Paired bootstrap vs the trained model, B = 2000. Uses the zero-shot model's own wording (no instrument learning).
+| trained | T | P / R / F1 | dF1 [95% CI] |
+|---|---|---|---|
+| fuse2 short (59.4) | 20 | 90.9 / 48.3 / 63.1 | +3.65 [+2.87, +4.42] |
+| fuse2 short | 200 | 90.9 / 50.5 / 64.9 | +5.45 [+4.48, +6.39] (dP -0.01) |
+| P1 short (59.3) | 200 | 90.7 / 49.3 / 63.8 | +4.59 [+3.71, +5.49] |
+| fuse2 detailed (65.8) | 20 | 85.9 / 60.6 / 71.0 | +5.19 [+4.39, +5.95] (dP -3.08) |
+| fuse2 detailed | 200 | 83.9 / 65.2 / 73.4 | +7.52 [+6.55, +8.44] (dP -5.06) |
+- T = 200 hybrid short (64.9) is above zero-shot short (63.3): keep KTVIC's gains on its frequent classes AND the base
+  vocabulary on the rest. This is the most a vocabulary-rehearsal method can deliver; a real one transfers part of it.
+
+1.6 UIT-ViIC is a narrow Vietnamese COCO-caption source (p3)
+- 2,562 clean train images: 61 instance classes (19 with >= 20 images); captions name 38 classes, only 12 >= 20 times
+  (person 11,791; sports ball 3,667; tennis racket 1,074; baseball bat 343; dog 152 ...).
+- Classes named >= 20 times cover 33.3% of COCO-test instance pairs, 18.2% of non-person pairs. Sports-ball naming
+  (3,667) is a hallucination risk on non-sports COCO images. Joint UIT-ViIC training cannot supply COCO-wide
+  Vietnamese vocabulary; human instance labels can (all 80 classes; the rarest, hair drier, has 178 pool images).
+
+1.7 Price of the only route to COCO F1 >= 90: an object-inventory appendix (p5)
+Candidate = one human caption (leave-one-out; the other 4 are the references). Appendix = one sentence naming tagged
+classes the caption does not name. Tagger = oracle instance labels, or simulated (true tags kept with prob r, false tags
+from the class prior until precision p). CIDEr-D: syllables (VI) / words (EN), punctuation stripped.
+| set | appendix | P | R | F1 | CIDEr-D |
+|---|---|---|---|---|---|
+| COCO 2,441, English | none | 92.4 | 56.9 | 70.5 | 88.6 |
+| | tagger P85/R70 | 83.8 | 87.0 | 85.4 | 57.7 |
+| | tagger P88/R80 | 85.8 | 91.5 | 88.6 | 56.8 |
+| | tagger P90/R85 | 87.4 | 93.5 | 90.4 | 56.3 |
+| | oracle | 96.5 | 100.0 | 98.2 | 58.2 |
+| UIT-ViIC val 924, Vietnamese | none | 99.2 | 42.3 | 59.3 | 179.7 |
+| | tagger P90/R85 | 90.1 | 91.2 | 90.7 | 52.6 |
+| | oracle | 99.7 | 100.0 | 99.9 | 50.6 |
+- Per-image recall averaging is lenient: a P88/R80 (micro) tagger plus the caption reaches R 91.5.
+- F1 >= 90 needs a tagger at about micro P 90 / R 85 (C10: best published COCO OF1 86.8) and costs ~32 English or
+  ~127 Vietnamese CIDEr-D points even with perfect tags. This is the metric-gaming route; it is named, not proposed.
+
+1.8 Target quality of instance-verified self-replay (p6; rest2500 = Karpathy-test images OUTSIDE the manifest, estimate only)
+| zero-shot detailed caption | P | R | F1 | classes/cap | length kept |
+|---|---|---|---|---|---|
+| raw | 79.9 | 67.8 | 73.4 | 2.23 | 100% |
+| drop sentences naming a non-instance class | 100.0 | 63.9 | 78.0 | 1.63 | 89.4% |
+| drop clauses naming a non-instance class | 100.0 | 66.3 | 79.7 | 1.72 | 91.5% |
+- 66% of captions untouched by either filter. P = 100 is by construction; a model trained on these will not reach it.
+
+1.9 KTVIC: what training data can and cannot move (existing results)
+- Frontier (pre-registered V4 law, TP(M) = 1.3996 (M/1.7826)^0.7468, R = 5.486 + 25.982 TP; landed runs' residual
+  95% CI [-1.40, +0.85]): R 90 needs M = 5.5 classes/caption at P 59.0 (F1 71.3); P 90 forces M = 1.04, R 29.8.
+- Recognition aids barely move it: Grounding-DINO tags in the prompt, KTVIC F1 fuse2 short 58.1 -> 58.4, detailed
+  64.4 -> 64.8, P1 54.5 -> 54.9 (frontier residual +1.87 [-0.27, +3.90] P). Only zero-shot (another style) gains:
+  40.1 -> 43.9.
+- Humans: one 85.3/46.9 (F1 60.5); two fused 76.1/66.6 (F1 70.9).
+
+======================================================================================================================
+2. LITERATURE (verified; numbers are baseline -> method as printed; ar5iv single version, camera-ready may differ)
+======================================================================================================================
+2.1 Novel-object captioning with label data (closest prior to P-C6-1)
+- DCC (Hendricks et al., CVPR 2016, 1511.05284): mention F1 on 8 held-out COCO objects 0 -> 39.78.
+- NOC (Venugopalan et al., CVPR 2017, 1606.07770): F1 39.78 -> 48.79. Without the joint label/LM objectives 25.38. It
+  explicitly targets the "forgetting" of objects absent from caption data.
+- PS3, partially-supervised captioning (Anderson et al., NeurIPS 2018, 1806.06004): labels used as partial captions.
+  Out-of-domain CIDEr 69.5 -> 94.3, F1 0 -> 63.4, BUT in-domain CIDEr 108.6 -> 101.2. This is the documented cost of
+  label-as-text supervision.
+- nocaps (ICCV 2019, 1812.08658): out-of-domain CIDEr, UpDown 30.1 -> 66.7 with tag-constrained beam search; human 91.6.
+- VIVO (Hu et al., AAAI 2021, 2009.13682): tag pretraining. nocaps out-of-domain CIDEr 45.3 -> 71.1, out-of-domain
+  object F1 15.7 -> 30.6.
+- Neural Baby Talk (CVPR 2018, 1803.09845): held-out F1 39.8 -> 70.3.
+- Tag2Text (ICLR 2024, 2303.05657): tag guidance gives COCO CIDEr 123.3 -> 124.6. Caption-paradigm COCO-80 P/R:
+  BLIP-2 captions 95.5/42.8, Tag2Text tagger 80.5/66.1. Captions stay low-recall even in English.
+- RAM (CVPRW 2024, 2306.03514): COCO P/R 82.9/66.4. Joint caption+tag training: OPPO mAP 80.60 -> 81.37.
+- RAM++ (ACM MM 2025, 2310.15200): no COCO numbers.
+2.2 Multi-label ceiling on COCO (instance-derived labels)
+- ML-GCN (CVPR 2019): OF1 80.3. ASL (ICCV 2021): OP 88.2 / OR 79.2. C-Tran (CVPR 2021): OF1 81.7.
+- ML-Decoder (WACV 2023): mAP 91.4, no F1 reported.
+- Best verified OF1: Query2Label CvT-w24 (2107.10834, arXiv, no venue found) mAP 91.3, OP 89.2, OR 84.6, OF1 86.8.
+  This is about the "P90/R85" tagger of 1.7.
+2.3 Reporting bias / salience
+- Misra et al. (CVPR 2016, 1512.06974): present-but-unmentioned rate measured per class in COCO; the most-biased
+  object is mentioned "roughly half as much as it appears". The presence-vs-relevance factorisation gives captioning
+  CIDEr 89.7 -> 92.8.
+- Berg et al. (CVPR 2012) and Ordonez et al. (ICCV 2013): verified, numbers not verified.
+- Yatskar et al. (*SEM 2014): within 90% of human on unigram BLEU. Outside the venue list.
+2.4 Prompts that mix styles and datasets
+- LLaVA-1.5 format prompt (CVPR 2024, 2310.03744): MME 1197.0 -> 1323.8, GQA 47.0 -> 46.8, MM-Vet 27.7 -> 26.3.
+- Prefix Conditioning (CVPR 2023, 2206.01125): zero-shot IN-1K 56.8 -> 67.3.
+- Wang et al. (AAAI 2023, 2212.01803): COCO CIDEr 131.9 -> 133.7; with the long-style prompt CIDEr 71.6.
+- Florence-2 (CVPR 2024, 2311.06242): brief/detailed/more-detailed outputs of 7.95/31.65/70.53 tokens in one model.
+- Deng et al. (ECCV 2020): CIDEr 117.6 at 10-14 words vs 29.5 at 20-25 words.
+- HallE-Control (2310.01779, arXiv): grounded-vs-inferred object switch, hallucination -44% with coverage kept.
+2.5 Forgetting, interpolation, replay
+- WiSE-FT (CVPR 2022, 2109.01903): ViT-L/14@336, ImageNet 86.2 / shift average 68.6 -> 86.8 / 76.9 at alpha 0.5.
+- Model Tailor (ICML 2024, 2402.12048): InstructBLIP COCO CIDEr 143.1 zero-shot -> 114.2 after Flickr30k fine-tuning
+  -> 139.8. Caption fine-tuning erodes base skills.
+- CoIN (NeurIPS 2024 D&B, 2403.08350): LLaVA ImageNet accuracy 94.95 -> 7.22.
+- ZSCL (ICCV 2023, 2303.06628): MTIL transfer, zero-shot 69.4, continual fine-tuning 44.6, LwF 56.9, WiSE-FT 52.3,
+  ZSCL 68.1.
+- LwF (ECCV 2016): old-task accuracy 50.9 -> 54.7.
+- RATT (NeurIPS 2020): continual captioning CIDEr 0.207 -> 0.635.
+- LoRA Learns Less and Forgets Less (TMLR 2024, 2405.09673): forgetting score 0.512 (full) vs 0.652 (LoRA r16;
+  higher = less forgetting).
+- SDFT (ACL 2024, 2402.13669): GSM8K 29.4 base -> 21.5 vanilla SFT -> 29.1.
+- SSR (ACL 2024, 2403.01244): AR 19.03 -> 52.16.
+- ReDraft (2609.16639, arXiv 2026, recent): verifier-filtered self-revision, prior-task loss 16.6 -> 1.5.
+2.6 Truth-filtered data and coverage
+- HalluciDoctor (CVPR 2024, 2311.13614): data CHAIR_obj 28.1 -> 8.3 (VQA cross-checks, not ground truth).
+- CHAIR-DPO (2508.20181, BMVC 2025 per arXiv comment): COCO-label CHAIR builds the DPO pairs. CHAIR_i 13.9 -> 3.6, BUT
+  AMBER Cover 51.7 -> 46.6. Coverage falls when hallucination-free targets are imitated: the main risk for P-C6-2.
+- Image Textualization, DenseFusion-1M (NeurIPS 2024 D&B), FuseCap (WACV 2024), CapsFusion (CVPR 2024): none reports
+  coverage against instance labels.
+2.7 Scoop verdicts (28 arXiv searches; S2/OpenAlex search returned HTTP 429, so arXiv web search was used)
+- N1, human instance labels as target-language text for rehearsal, classes picked by the corpus vocabulary gap:
+  CLOSE BUT NOT SCOOPED. Mechanism priors: NOC, PS3, VIVO, LwF, SSR. Nothing found for a pretrained VLM, a non-English
+  target, or vocabulary-gap class selection.
+- N2, salience-vs-instance-exhaustive coverage token with a CIDEr-vs-recall Pareto: INCREMENTAL. Nearest are
+  HallE-Control, Wang AAAI 2023, Florence-2 and Misra 2016.
+- N3, base-VLM detailed self-replay filtered by instance labels against forgetting: INCREMENTAL. Nearest are SDFT,
+  SSR, ReDraft, CHAIR-DPO and HalluciDoctor.
+
+======================================================================================================================
+3. OPTIONS IN THIS LEVER: VERDICTS
+======================================================================================================================
+(a) Auxiliary multi-label head (BCE over 80 classes, Tag2Text/RAM/ML-Decoder style).
+    The measured failure is NAMING, not seeing: trained models gain on KTVIC-frequent classes and lose only where
+    KTVIC lacks the words. Grounding-DINO tags in the prompt move KTVIC F1 +0.3/+0.4. A BCE head does not keep the
+    decoder's Vietnamese class names in use. NOT proposed; tagging AS TEXT is.
+(b) Joint UIT-ViIC captions. Drop all 133 Karpathy-test images. The captions teach 12 COCO classes >= 20 times
+    (18.2% of non-person pairs), with a sports-ball bias. Optional in-domain ingredient, not the COCO fix.
+(c) COCO-2014 instance labels as an auxiliary task. 112,132 leak-free images, every class >= 178 images, human
+    labels, no model text. -> P-C6-1.
+(d) Style / dataset / coverage prompts.
+    - Established (LLaVA-1.5, Prefix Conditioning, Florence-2, AAAI 2023).
+    - fuse2 already has two modes, and KTVIC detailed CIDEr-D 23.9 vs short 143.9 is the existing length price.
+    - A coverage token trained on instance-label appendices is the inventory route of 1.7 (N2, incremental). Report it
+      as a Pareto analysis only.
+(e) Keep the zero-shot recall.
+    (e1) LoRA scaling / WiSE-FT: zero training; it is the baseline every proposal must beat (WiSE-FT +8.3 OOD at +0.6
+         ID on CLIP). Untested on generation style: interpolation may also lose the KTVIC style.
+         Needs a --lora-scale flag in evaluate.py (~10 lines).
+    (e2) KL toward the base on unlabeled COCO images (LwF/ZSCL). It restores base vocabulary AND base hallucination
+         (zero-shot detailed P 80.5). Its bound is the zero-shot model on COCO (short 63.3), below VGR's hybrid
+         bound 64.9. An ablation of P-C6-1.
+    (e3) Replay of base captions [MODEL-GENERATED], filtered by human instance labels. -> P-C6-2.
+
+======================================================================================================================
+4. PROPOSALS
+======================================================================================================================
+P-C6-1  VGR: Vocabulary-Gap Rehearsal from human instance labels (human labels only; no model-generated text)
+  Mechanism
+  - One QLoRA run = fuse2's rows (KTVIC short + fused-2 detailed) + ~2,000 tag rows.
+  - Tag-row images: Karpathy train/restval, minus UIT-ViIC val/test, minus Karpathy test/val. Sample so that each of
+    the 73 classes KTVIC names < 200 times appears >= 25 times.
+  - Tag-row prompt: a NEW listing prompt, used only in training ("Liệt kê các đồ vật, con vật và người có trong ảnh.").
+  - Tag-row target: the image's COCO-2014 instance classes in Vietnamese, ordered by instance area. Names: the
+    coco80_vi synonym KTVIC annotators use most (bàn, ghế, xe máy, ô tô ...), else its first name.
+  - Evaluation prompts and protocol unchanged.
+  Novel element vs NOC (CVPR 2017) / PS3 (NeurIPS 2018) / VIVO (AAAI 2021) / LwF / SSR
+  (a) The rehearsal signal is exhaustive human instance truth rendered as target-language text. It is used to stop a
+      pretrained VLM from forgetting object names during other-language, other-domain caption SFT. NOC/VIVO/PS3 add
+      novel objects to English captioners; LwF and SSR distil the model's own outputs.
+  (b) Rehearsal classes are chosen by the measured vocabulary gap between the SFT corpus and the evaluation ontology.
+  (c) Effects are reported per corpus-frequency band and per human-salience band, which separates forgetting from
+      style.
+  Verdict: close prior, not scooped.
+  Expected effect (evidence)
+  - COCO short F1 59.4 -> 61-64. Bound +5.45 [+4.48, +6.39] (p8, T = 200); assumes 30-70% transfer. NOC: joint label
+    objectives 25.4 -> 48.8 held-out mention F1.
+  - COCO detailed 65.8 -> 67-71. Bound +7.5 at P -5.1.
+  - KTVIC: P +0 to +2, R +-1, F1 +-1. Target lengths are unchanged (frontier invariance); tags-in-prompt analogue
+    +2.2 P / -0.4 R.
+  CIDEr cost
+  - KTVIC short 0 to -3 vs the fuse2 3-seed mean 143.7. Adding fuse2's detailed row type cost ~2 vs P1 legacy 145.8.
+  - Documented risk: PS3's label-as-text cost 7.4 in-domain CIDEr.
+  - COCO has no Vietnamese references. UIT-ViIC val CIDEr is reported instead.
+  GPU-h (one 3090)
+  - ~9 per seed: SFT + KTVIC eval 5.3 (fuse2 took 4.3 h; +27% rows); COCO 2,500 short + detailed 2.8; UIT-ViIC val
+    1.0.
+  - WiSE baseline (fuse2 at alpha 0.5 / 0.75): ~5.
+  - Two seeds + baseline: ~23.
+  Kill (any one)
+  - K1. Dev = UIT-ViIC val, 924 COCO images; 66% of its instance pairs are in classes KTVIC names < 200 times. Kill if the
+    short-mode instance-F1 gain over fuse2 (same seed) is < +2.0 or its 95% CI includes 0.
+  - K2. Not above the best LoRA-scaled fuse2 (alpha chosen on the same dev) at no lower KTVIC CIDEr.
+  - K3. KTVIC test short CIDEr < 140.7, or a KTVIC object-F1 drop with a CI excluding 0.
+  - K4. List leakage: > 1% of caption outputs with >= 4 comma-separated class names or the tag-prompt wording.
+  - Freeze before any test look: ratio, rarity threshold, names.
+
+P-C6-2  IVSR: Instance-Verified Self-Replay for detailed coverage [MODEL-GENERATED: the base VLM's own captions]
+  Mechanism
+  - Generate the base model's zero-shot detailed captions for 2,000 Karpathy-train COCO images (evaluation detailed
+    prompt).
+  - Drop every clause naming a COCO class absent from the image's human instance labels.
+  - Add the result as detailed-prompt rows to the VGR mix. KTVIC fused-2 rows keep the same prompt, so the style must
+    stay image-domain-conditional; K3 below checks this.
+  Novel element vs SDFT / SSR (self-replay without external truth), ReDraft (2026, verifier-filtered self-revision)
+  and CHAIR-DPO / HalluciDoctor (truth- or VQA-filtered data against hallucination, not against forgetting):
+  - clause-level verification of self-replay by human instance labels, to keep a base VLM's long-description
+    coverage during short-caption, other-language SFT. INCREMENTAL.
+  Expected effect (evidence)
+  - Target quality (p6): 73.4 -> 79.7 F1 (P 100 / R 66.3, 91.5% of the length kept, 1.72 vs 2.23 classes per caption).
+  - CHAIR-DPO shows that imitating hallucination-free targets cuts coverage (Cover 51.7 -> 46.6).
+  - Hence COCO detailed F1 65.8 (fuse2) -> 70-75, about zero-shot 73.4 +- 2, never the 79.7 target.
+  - KTVIC +-1 if the domain conditioning holds.
+  CIDEr cost
+  - KTVIC short 0 to -3. KTVIC detailed (CIDEr-D 23.9) at risk.
+  - COCO: no Vietnamese references; report length and CLIP-S.
+  GPU-h: +3.4 generation (once) + ~1.5 extra SFT per seed; evals shared with VGR. About +5 per seed.
+  Kill
+  - K1. Dev detailed F1 not >= fuse2+VGR detailed + 3 with a CI excluding 0.
+  - K2. Dev detailed F1 below zero-shot detailed - 1, or classes per caption < 1.5 (coverage collapse).
+  - K3. KTVIC detailed P drop > 2, or KTVIC short CIDEr drop > 3.
+
+======================================================================================================================
+5. CAN THIS LEVER REACH >= 90? (deciding numbers)
+======================================================================================================================
+- KTVIC P, R, F1: NO.
+  - Pre-registered learner frontier (landed-run residual CI [-1.40, +0.85]): R 90 needs 5.5 classes per caption at
+    P 59.0 (F1 71.3); P 90 forces R 29.8.
+  - Training targets move along this frontier; the best recognition aid moves P by +1.87 [-0.27, +3.90].
+  - Humans: one 85.3 / 46.9; two fused 76.1 / 66.6 (F1 70.9).
+- COCO F1: NO for any caption-like output.
+  - All 5 human captions pooled: 79.4; one human: 70.5.
+  - This lever's bounds: short 64.9 (vocabulary restored), detailed targets 79.7 (P = 100 by construction).
+  - Only an inventory appendix from a tagger at about Query2Label level (OP 89.2 / OR 84.6) reaches 90.4 (simulated),
+    at CIDEr-D 88.6 -> 56.3 (English) / 179.7 -> 52.6 (Vietnamese). That is metric gaming.
+
+======================================================================================================================
+6. CAVEATS
+======================================================================================================================
+- The hybrid stand-in (p8) assumes the rehearsal fully restores base naming on rare classes and changes nothing
+  else. It is a bound, not a prediction. Single seeds of P1 s43 and fuse2 s42 on COCO; the "con vật" fallback is one
+  seed.
+- Instrument circularity (R8 T2 note): VGR's targets use the coco80_vi names that also score COCO. The p8 bound uses
+  the base model's own words, so it is not inflated by this. A trained VGR must be checked with matcher v1 vs v2 and
+  per class.
+- The simulated taggers in 1.7 draw false tags from the class prior, independent of the caption. Real errors
+  correlate, so treat those F1 values as +-2.
+- Qwen2.5-VL pretraining very likely saw COCO images (train2017 includes val2014). Zero-shot COCO numbers and
+  IVSR's replay on Karpathy-train images may contain memorised content.
+- UIT-ViIC val (the dev set) is sports-only. A 1,000-image Karpathy-val subset (instances streamable here; images to
+  download, ~160 MB) would broaden it.
+- p6 used rest2500, Karpathy-test images outside the reporting manifest, for an estimate only. Nothing was selected.
+
+======================================================================================================================
+7. FILES (this dir; run with python3, nice -n 15)
+======================================================================================================================
+- lib.py: loaders, object_prf definitions, CIDEr-D replica (copied from R8 T2), bootstrap. `python3 lib.py`
+  self-check reproduces CONTEXT_R9's COCO rows.
+- p1_leak_ceiling.py: leakage and human union-of-k ceilings.
+- p2_salience.py: recall by human-salience band, per-class losses.
+- p3_uitviic_cover.py: UIT-ViIC coverage, generic-noun fallback.
+- p5_appendix_cost.py: inventory price, oracle and simulated taggers.
+- p6_ivsr_standin.py: self-replay target quality.
+- p7_ktvic_vocab.py: KTVIC-frequency bands.
+- p8_hybrid.py: vocabulary-restoration bound.
+- p9_rehearsal_pool.py: Karpathy splits and instance labels, streamed; pool counts.
+- stream_inst.py: low-memory instance gold. Matches data/coco_probe/instance_gold.json on all 2,500 images.
+- out/*.log: numbers. out/inst_rest2500.json: instance gold of the manifest complement.
+  out/leak_ids.json: the 59 manifest images in UIT-ViIC train.
+- lit/: sub-agent scratch (fetched abstracts/PDF text).

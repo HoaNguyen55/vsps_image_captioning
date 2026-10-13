@@ -1,0 +1,389 @@
+R9 / C2_detect_tags: open-vocabulary detection and multi-label tags as recall evidence
+=====================================================================================
+Agent C2, 2026-10-13. Repo read-only. CPU pilots only (nice 15, 1 thread, < 1 GB). Scripts and outputs are in
+this folder. The literature dumps are in litA/ (taggers and detectors) and litB/ (tag-aided captioning and
+hallucination).
+
+0. VERDICT (measured ceilings first)
+------------------------------------
+- KTVIC: detector or tagger evidence cannot get P, R or F1 to 90. The measured ceilings are far below that.
+  - The real Grounding-DINO tags add about 0 F1.
+  - A perfect verifier over the existing COCO-80 tags caps short-mode F1 at 62-67.
+  - A perfect COCO-80 tagger, rendered with the right Vietnamese word and perfectly verified, caps R at
+    64-67 (short) and 74.5 (detailed), and F1 at about 73-74.
+  - Humans do worse than the target:
+    - An independent 5-caption human panel (UIT-OpenViIC), scored against the KTVIC gold: P/R/F1 45.5/72.4/55.9.
+    - One OpenViIC caption: 55.5/37.6/44.8.
+    - A held-out KTVIC annotator (CONTEXT): P 85.3 / R 46.9, i.e. F1 about 60.5.
+  - The KTVIC gold rewards the KTVIC annotators' salience and wording conventions. It does not reward
+    perception, and detectors supply perception only.
+- COCO (gold = instances only): caption F1 of 90 is above the human level.
+  - One human COCO reference scores P/R/F1 92.6/56.6/70.3 against the instance gold; the union of all 5
+    references scores 85.3/74.3/79.5.
+  - F1 >= 90 is reachable only as an object INVENTORY: the caption's classes unioned with the output of a
+    near-SOTA multi-label tagger.
+  - Simulation with the best published COCO operating point (Query2Label, OP 89.2 / OR 84.6): union F1
+    87.8-89.0. Reaching >= 90 also needs a verifier that removes about 40% of the tagger's false positives at
+    no TP loss; a perfect verifier gives 92.6-93.7.
+  - This is the "list every class" gaming the CONTEXT warns about. On KTVIC, one appended inventory clause
+    costs 54 syllable-CIDEr-D (165.5 -> 111.0).
+- The one design with a defensible novelty and a positive expected sign is copy-guarded tag-conditioned SFT
+  (Proposal A, sec. 5). Expected gain: KTVIC F1 +1 to +2.5, COCO F1 +1 to +4.
+
+1. HOW TAGS MAP TO THE TWO METRICS (CPU, existing files)
+----------------------------------------------------------
+Tags: data/results/tags_gdino.json, from Grounding-DINO-base over the 80 COCO names. They exist for the 558
+KTVIC test images only; no train, dev or COCO tags exist.
+- 2.39 tags per image. Rendered with the first Vietnamese entry of coco80_vi.json, 2.12 per image are visible to
+  the 113-entry KTVIC lexicon (objects_in). 31 images have no visible tag.
+- Only 43 of the 80 COCO first entries are visible to the KTVIC lexicon at all; the other 37 COCO classes score
+  neither TP nor FP on KTVIC.
+- All 80 first entries round-trip through COCO matcher v2 (vi_objects) to their own class, so Vietnamese
+  rendering loses nothing on COCO.
+Share of KTVIC gold objects (union of the 5 references) that are COCO-80 categories:
+- curated strict (person and its hyponyms + 26 classes): 42.2% micro, 44.7% per image;
+- reachable by the first Vietnamese entry, i.e. what the current tags can hit: 32.4%;
+- any coco80_vi synonym: 51.1%. This one is inflated by artifacts such as bồn cầu -> cầu (bridge) and
+  trường kỷ -> trường (school).
+- Your 39% lies between the first-entry and curated-strict figures.
+Open vocabulary: with this agent's English glosses of the 113 lexicon classes (ram_cover.py), RAM's 4,585-tag
+vocabulary contains 110/113 classes. That covers 96.5% of gold objects and 96.2% of fuse2's misses, against
+36.8% for strict COCO-80. Coverage is NOT the bottleneck (sec. 2).
+
+2. KTVIC PILOT: INJECTING THE TAGS (pilot_ktvic.py, pilot2-6)
+-------------------------------------------------------------
+Metric: exact object_prf (P micro, R per-image mean, F1). Paired bootstrap B=1000 over images, against each
+system without tags. No test tuning: rules are parameter-free or 2-fold cross-fitted (crc32 of the image id).
+
+2a. Tag quality against the gold
+- Tags alone (KTVIC lexicon): P/R/F1 34.3/22.0/26.8.
+- Against KTVIC + the independent OpenViIC panel (existing human captions, evaluation only): P 53.6.
+  So about 19 points of the tags' "false positives" are real objects that the KTVIC annotators did not name.
+- Recall of the COCO-reachable gold: 60.4% (406/672).
+- Precision by class (n):
+  - người 47% (491), túi 8% (116), xe máy 32% (105), ghế 16% (69), ô tô 26% (47), cây 36% (47),
+    xe đạp 36% (47), thuyền 61% (41), bát 10% (40), ô 14% (36), cốc 0% (28).
+- Precision of the tags a caption does NOT already name: 18-20% on short captions (P1, fuse2) and 12.8% on fuse2
+  detailed. Against the panel: 34-42%. Any unfiltered union therefore lowers P.
+
+2b. Union of tags with the caption's objects (P/R/F1; dF1 [95% CI])
+
+| system | base | U_all (all tags) | U_top1 | U_cf, F1-optimal class filter, cross-fit | oracle-verified tags |
+|---|---|---|---|---|---|
+| P1 s42 short | 77.9/41.4/54.1 | 50.3/50.6/50.5, -3.6 [-5.3,-2.1] | 65.1/47.0/54.6, +0.5 [-0.8,+1.8] | 70.5/43.4/53.8, -0.3 | 81.4/50.6/62.4 |
+| P1 s43 short | 78.8/41.7/54.5 | -3.9 [-5.6,-2.4] | +0.3 [-0.9,+1.5] | -0.3 | 82.1/50.6/62.6 |
+| fuse2 s42 short | 75.7/47.1/58.1 | 50.7/55.1/52.8, -5.3 [-6.8,-3.9] | 64.3/51.7/57.3, -0.8 [-1.8,+0.4] | +0.0 | 78.7/55.1/64.8 |
+| fuse2 s43 / s44 short | 58.4 / 57.8 | -5.1 / -4.7 | -0.6 / -0.4 (n.s.) | -0.3 / -0.7 | 65.4 / 65.4 |
+| tags_fuse2 s42 short | 77.9/46.7/58.4 | -5.2 | -0.8 | -0.3 | 80.7/55.0/65.4 |
+| fuse2 MBR short | 70.9/53.1/60.7 | -5.3 | -0.7 | -0.2 | 74.0/61.0/66.8 |
+| fuse2 s42 detailed | 68.0/61.2/64.4 | 51.2/65.6/57.5, -6.9 [-7.9,-5.8] | -1.9 [-2.6,-1.2] | 0 (no class passes) | 69.6/65.6/67.6 |
+| zero-shot short | 52.3/32.5/40.1 | +0.7 [-0.7,+2.2] | 47.9/38.7/42.8, +2.8 [+1.6,+4.0] | +2.7 [+1.6,+3.9] | 58.7/42.6/49.4 |
+
+- The precision-safe filter (add a class only if its cross-fit precision exceeds the base P) adds nothing to
+  any trained model.
+- Rank-2 union is worse than rank-1.
+- Oracle bounds, cocoFirst = M ∪ (gold ∩ first-entry COCO classes):
+  - P1 s42 83.9/58.9/69.2; fuse2 s42 short 81.0/62.3/70.5; fuse2 s42 detailed 71.6/71.5/71.6.
+  - Curated strict COCO-80: P1 85.2/64.3/73.3; fuse2 short 82.4/66.8/73.8; fuse2 detailed 72.6/74.5/73.5.
+- The oracle-verified headroom is mostly wording:
+  - 55% of the verified additions are "người";
+  - 25-47% re-express an object the caption already names at another granularity (người beside phụ nữ).
+  - Real perception headroom is therefore about R +5 in short mode.
+
+2c. What tags in the prompt actually do (pilot3_uptake.py; existing tags_* runs)
+Share of visible tags the caption names:
+- fuse2 24.1% -> tags_fuse2 24.4%; P1 s43 22.8% -> 25.7%. The trained adapters do not use the tag channel.
+- zero-shot 25.0% -> 42.5%, but precision of tag-class mentions falls from 73.9 to 60.8: it copies.
+fuse2 short gains P (75.7 -> 77.9), but not from tag evidence:
+- precision of tagged mentions moves 85.6 -> 84.4;
+- the gain sits in non-COCO mentions (P 73.1 -> 76.3, 1.32 -> 1.26 per image) and untagged COCO mentions
+  (69.9 -> 72.7). This is a prompt (typicality) effect, consistent with V5 sec. 7.
+- Prediction for R4's G6(a): the placebo-tag control will reproduce most of dP.
+Without retraining, a COCO class mention is precise when tagged (P 82-86, SFT models) and less so when untagged
+(65-75): absence of a tag is a weak veto.
+
+2d. Detector evidence versus sample self-consistency (pilot4_propensity.py, pilot4b_realise.py)
+Setup:
+- Candidates = (tags ∪ classes in the 6 existing fuse2_s42 T-samples) minus the greedy classes.
+- A logistic propensity model is trained on the other fold.
+- Decision rules: add when p > F1/2 (F1-optimal, Lipton et al. 2014) or when p > P (precision-safe).
+Object-set level, fuse2 s42 short:
+| candidates | AUROC (2 folds) | F1-optimal rule | precision-safe rule |
+|---|---|---|---|
+| tags only | 0.73 / 0.69 | +0.4 [-0.2,+1.1] | +0.0 |
+| samples only | 0.67 / 0.65 | 62.1/67.9/64.9, +6.8 [+5.0,+8.5] (P -13.6) | +0.5 [+0.2,+0.8] |
+| tags + samples | 0.78 / 0.73 | 63.2/66.3/64.7, +6.6 (P -12.5) | +0.8 [+0.4,+1.2] (R +1.0, P 0.0) |
+Realised as real captions (pick the T-sample that names the added classes, closest to greedy):
+- The gains vanish: precision-safe F1 +0.2 / +0.1; F1-optimal F1 -3.7 / -3.3, with syllable CIDEr-D -32 / -29.
+- The detector's marginal value over samples, realised: dF1 -0.1 [-0.4,+0.2] (precision-safe) and
+  +0.3 [-0.3,+1.0] (F1-optimal).
+- Tags carry a little AUROC beyond samples but almost no realisable F1. Realisation, not detection, is the
+  bottleneck.
+
+2e. What the captions miss (pilot5_misses.py)
+fuse2 s42 short misses 57.4% of the gold objects. Only 13.6% of the misses appear among the GDINO tags.
+- Top misses: áo 122, người 94, phụ nữ 70, quầy hàng 60, cây 59, cô gái 49, cửa 46, đường 45, đàn ông 41,
+  đồ 38, nhà 36.
+- These are person-word granularity, clothing and stalls/scene. An open-vocabulary tagger would see these
+  objects, but almost all of them exist in almost every street image; whether an annotator names them is
+  salience, not existence.
+
+2f. Inter-panel ceiling (pilot6_panel.py)
+OpenViIC captions of the same 555 images, scored as a system against the KTVIC gold:
+| what | P/R/F1 |
+|---|---|
+| 1 OpenViIC caption | 55.5/37.6/44.8 |
+| 2 OpenViIC captions | 52.4/53.5/52.9 |
+| 5 OpenViIC captions | 45.5/72.4/55.9 |
+| best single OpenViIC caption per image (oracle) | 83.0/59.3/69.2 |
+| fuse2 alone | 58.1 F1 |
+| fuse2 ∪ every panel object | 44.9/80.6/57.6 |
+| fuse2 ∪ panel objects with >= 2 votes | 60.4/66.2/63.2 |
+Even a tagger that output exactly what other humans find mention-worthy would not improve F1 by union.
+
+2g. CIDEr cost of realising a union as an inventory clause (pilot2_ktvic.py)
+Syllable CIDEr-D, punctuation stripped. Diagnostic only: the paper reports word-level CIDEr.
+| system | base | + "trong ảnh còn có <top-1 tag>" | + all tags |
+|---|---|---|---|
+| P1 s42 | 165.5 | 111.0 | 75.3 |
+| fuse2 s42 | 160.3 | 109.9 | 74.1 |
+Literature on decoding-time realisation:
+- CBS with 4 tag constraints: in-domain CIDEr 93.0 -> 86.3 (1612.00576, Tab 1-2).
+- nocaps' CBS: COCO val CIDEr 116.2 -> 97.7 (1812.08658, Tab 3).
+
+3. COCO PILOT (no detector tags exist there: simulation plus human calibration)
+------------------------------------------------------------------------------
+Data:
+- coco_areas.py streams instances_val2014 (scratchpad copy) for the 2,500 probe images. 2.82 gold classes per
+  image; 27 images have empty gold.
+- The class sets match data/coco_probe/instance_gold.json exactly.
+- Captions miss small objects: median area fraction of the gold classes the caption names is 0.090
+  (zero-shot short), against 0.0122 for the classes it misses.
+Human level (coco_human.py; Karpathy English references, Rohrbach synonyms, instance gold):
+- one reference: 92.6/56.6/70.3 (the five references agree within 0.4);
+- union of 5: 85.3/74.3/79.5.
+Simulated tagger (coco_sim.py):
+- The tagger is set at a micro precision P_t and recall R_t taken from published COCO numbers. Misses are drawn
+  at random ("indep") or smallest-instance-first ("small", which is correlated with caption misses).
+  False positives are drawn by class frequency.
+- Each tagger is unioned with the caption classes.
+P/R/F1 of the union for fuse2 s42 short (base 90.9/44.2/59.4), and F1 with a perfect verifier:
+| tagger (source) | union indep | union small | perfect verifier |
+|---|---|---|---|
+| Q2L CvT-w24, OP 89.2 / OR 84.6 (2107.10834 Tab 1) | 86.7/91.3/89.0 | 86.1/89.5/87.8 | 93.7 / 92.6 |
+| GDINO-B, 83.1 / 86.9 (RAM Tab 3; trained with COCO, see sec. 6) | 86.5 F1 | 85.5 F1 | 94.4 / 93.5 |
+| RAM-14M, 82.9 / 66.4 | 81.5 F1 | 78.7 F1 | 87.7 / 85.3 |
+| Tag2Text-14M, 80.1 / 64.5 | 79.8 F1 | 76.9 F1 | 87.0 / 84.5 |
+| hypothetical 90 / 90 | 90.7 F1 | 89.9 F1 | |
+| hypothetical 95 / 90 | 93.0 F1 | 92.3 F1 | |
+- zero-shot short gives the same picture; zero-shot detailed is worse (P about 78-79).
+- So COCO F1 >= 90 needs the caption to name about 2.8 classes per image: about 1.7x what one human caption
+  names, and about 2.8x the 1.0 that fuse2 names.
+
+4. LITERATURE (reported numbers; ids confirmed with the arXiv API or arXiv abs pages; venues from arXiv
+   comments, journal refs or OpenAlex; "arXiv" = no peer-reviewed venue found)
+-------------------------------------------------------------------------------------------------------------
+Multi-label tagging on COCO:
+- Query2Label 2107.10834 [arXiv]: CvT-w24 (22k, 384) mAP 91.3; CP/CR/CF1 88.8/83.2/85.9; OP/OR/OF1 89.2/84.6/86.8.
+  R101-448: mAP 84.9, OF1 81.5 (Tab 1).
+- ML-Decoder 2111.12933 [WACV 2023]: COCO-2014 mAP 91.4 (TResNet-XL 640), 90.0 (TResNet-L 448). No OP/OR
+  reported.
+- ASL 2009.14119 [ICCV 2021]: COCO-2014, TResNet-L 448: mAP 86.6, CF1 81.4, OF1 81.8 as printed.
+- ML-GCN 1904.03582 [CVPR 2019]: mAP 83.0, OP/OR/OF1 85.8/75.4/80.3.
+- RAM 2306.03514 [CVPRW 2024]:
+  - COCO-80 mAP 80.6 (RAM-14M) vs ML-Decoder 72.8 (Tab 2);
+  - COCO-80 image-level P/R: GDINO-B 83.1/86.9, RAM-14M 82.9/66.4, Tag2Text 80.1/64.5, BLIP 67.0/39.0,
+    CLIP 64.0/38.7 (Tab 3).
+- RAM++ 2310.15200 [ACM MM 2025 per OpenAlex]: OpenImages-common F1/P/R 77.6/79.9/75.4. No COCO numbers.
+- Tag2Text 2303.05657 [ICLR 2024]:
+  - COCO object F1/P/R from captions vs tags: Tag2Text captions 62.7/93.2/47.2, BLIP-2 captions 59.1/95.5/42.8,
+    Tag2Text tagging head 72.6/80.5/66.1 (Tab 2).
+  - Tag guidance: caption-object P/R 78.5/45.3 -> 81.4/52.0 (OPPO) and 72.0/44.6 -> 75.1/52.0 (OpenImages);
+    COCO CIDEr 123.3 -> 124.6 (Tab 5).
+Open-vocabulary detection (box AP; not image-level F1):
+- Grounding DINO 2303.05499 [ECCV 2024]: zero-shot COCO T 48.4, L 52.5; LVIS-minival T 27.4 (rare 18.1).
+  The HF base checkpoint is trained WITH COCO (GitHub README).
+- Grounding DINO 1.5 Pro 2405.10300 [arXiv]: COCO 54.3, LVIS-minival 55.7.
+- DINO-X Pro 2411.14347 [arXiv]: COCO 56.0, LVIS-minival 59.8 (rare 63.3); stage 1 excludes COCO, LVIS and V3Det
+  images.
+- OWLv2 2306.09683 [NeurIPS 2023]: LVIS rare 34.9 (self-trained), 44.6 (fine-tuned).
+- YOLO-World-L 2401.17270 [CVPR 2024]: LVIS-minival 35.4 (rare 27.6); COCO zero-shot 45.1 (COCO images removed
+  from GoldG).
+- Florence-2-L 2311.06242 [CVPR 2024]: COCO detection zero-shot 37.5; COCO caption CIDEr 135.6 zero-shot,
+  143.3 fine-tuned.
+Tags or detectors in captioning, hallucination and recall:
+- MARINE 2402.08680 [ICML 2025]: decoding guidance from DETR ∩ RAM++.
+  - CHAIR_s/CHAIR_i/Recall: LLaVA-1.5 8.8/4.6/41.1 -> 6.2/3.0/44.3; LLaVA 26.6/10.5/47.4 -> 17.8/7.2/50.8;
+    mean of 5 LVLMs, recall 40.3 -> 44.5.
+  - Ground-truth-object guidance reaches recall 57.5.
+  - POPE-adversarial on LLaVA-1.5, acc/F1: 79.4/81.6 -> 85.0/84.3.
+  - Uses COCO-trained DETR on COCO images, which the paper does not discuss.
+- HALC 2403.00425 [ICML 2024]: GDINO or OWLv2 focal-contrast decoding. LLaVA-1.5 CHAIR_s/CHAIR_i
+  20.80/6.77 -> 13.80/5.50; recall not reported.
+- Woodpecker 2310.16045 [SCIS 2024]: GDINO-verified post-hoc rewrite.
+  - POPE-random acc: MiniGPT-4 54.67 -> 85.33.
+  - LLaVA 86.00 -> 87.67, but POPE recall falls 84.00 -> 78.67.
+  - In MARINE's rerun, recall falls 41.1 -> 38.4: post-hoc verification removes objects, it does not add them.
+- LURE 2310.00754 [ICLR 2024]: LLaVA CHAIR_s 54.0 -> 27.1. In MARINE's rerun, recall rises 41.1 -> 56.3 but
+  CHAIR_s rises 8.8 -> 38.9.
+- HallE-Control 2310.01779 [arXiv]: RAM-grounded vs omitted objects. CCEval CHAIR_s/CHAIR_i/coverage
+  82.0/25.3/33.6 -> 57.0/14.0/37.6.
+- TUNA 2406.10839 [EMNLP 2024]: retrieved tags.
+  - POPE F1 85.94 -> 89.50.
+  - Tags at inference only, without training on them: 85.9 (+0.0). Random tags: 85.3.
+- ViECap 2307.16525 [ICCV 2023]: entity hard prompts. Without masking, the model learns to copy: COCO CIDEr
+  92.7 -> 53.2. With 40% entity masking: 92.9, and NoCaps overall 45.9 -> 66.2.
+- Constrained Beam Search 1612.00576 [EMNLP 2017]: held-out-class mention F1 0 -> 54.0 with 4 tags, at
+  CIDEr -6.7.
+- nocaps 1812.08658 [ICCV 2019]: CBS gives nocaps CIDEr 55.3 -> 73.1, but COCO CIDEr -18.5.
+- Partially-Supervised Captioning 1806.06004 [NeurIPS 2018]: held-out-object F1 63.4 at CIDEr 108.6 -> 101.2.
+- OSCAR 2004.06165 [ECCV 2020]: object tags raise COCO CIDEr 115.6 -> 123.4.
+- Visual Fact Checker 2404.19752 [CVPR 2024]: CLIP-Score +0.49; no object P/R reported.
+- FuseCap 2305.17718 [WACV 2024]: CIDEr 126.5 -> 128.7; no object P/R reported.
+- DenseFusion-1M 2407.08303 [NeurIPS 2024]: POPE 85.9 -> 86.5.
+- Misra et al. 1512.06974 [CVPR 2016]: P(mention) factorised into presence x relevance (reporting bias).
+  mAP 34.0 -> 36.3; presence head on COCO detection labels 63.7 -> 66.8.
+- HALVA 2405.18654 [ICLR 2025]: phrase-level contrast against hallucinated objects, with no tags.
+- EFUF 2402.09801 [arXiv; venue not re-verified]: unlearning of hallucinated objects.
+- Unlikelihood training 1908.04319 [venue not re-verified].
+- Robust-to-irrelevant-context RAG 2310.01558 [venue not re-verified]: the text analogue of training with
+  distractors.
+Pattern across the literature:
+- Tags without training on them give about 0 (TUNA-, MARINE's prompt-only baseline, this repo's P1 and fuse2).
+- Detectors used post hoc or at decoding mostly buy precision. When they add recall it is +3 to +4 (MARINE), or
+  a large recall gain that costs CIDEr (CBS -6.7; nocaps -18.5).
+- Training WITH tags and WITH masking (ViECap, PS3, TUNA) keeps most of the gain at a small CIDEr cost.
+
+5. PROPOSALS
+------------
+A. Copy-guarded tag-conditioned SFT, "CG-TagSFT" (recommended; modest)
+Mechanism:
+- Tag KTVIC train, dev300 and test, the COCO probe and UIT-ViIC with an open-vocabulary tagger over the
+  113-class KTVIC lexicon. Use RAM++, or GDINO-T / OWLv2 with the English glosses in ram_cover.py
+  (110/113 classes covered). Add COCO-80 names for COCO.
+- Train the fuse2 recipe with the tag list in the prompt (evaluate.py --tags format), with:
+  (i) 40% per-tag dropout and 50% whole-list dropout (ViECap's optimum; the model must still work without tags);
+  (ii) noise-matched distractor tags: absent classes drawn from the tagger's own false-positive confusion on
+      train images, at its measured FP rate;
+  (iii) an unlikelihood copy-guard: a penalty on the target-side tokens of a distractor class, so copying an
+       injected absent tag is punished explicitly.
+- Targets stay human (fuse2), so the model learns which detected objects these annotators mention (Misra's
+  relevance factor) instead of copying.
+Novel element vs the closest prior work:
+- ViECap (2307.16525) only drops entities and never injects false ones (zero-shot, CLIP entities).
+- TUNA (2406.10839) trains on retrieved tags, with no dropout and no copy penalty.
+- HallE-Control (2310.01779) splits ground-truth objects into grounded and omitted, with an inference knob.
+- HALVA (2405.18654) and EFUF (2402.09801) contrast hallucinated objects without a tag channel.
+- R4's planned 79a (tag-rate 0.5, COCO-80 GDINO tags) is dropout only; R4 itself labels it a baseline
+  (OSCAR / VinVL / Tag2Text).
+- The new part: (ii) and (iii) together, in a VLM SFT on salience-filtered human targets, with an open-vocabulary
+  lexicon tagger. The novelty is moderate (a combination); say so.
+Evidence and expected effect:
+- The channel is unused without training: uptake 24% -> 24%. Without dropout the model copies: zero-shot uptake
+  42.5% at tag precision 60.8; ViECap collapses.
+- Ceilings:
+  - oracle-verified COCO-80 tags: R +8 / F1 +7 to +8 (short), about +3 (detailed);
+  - the real perception share is about R +5 (sec. 2b);
+  - an open-vocabulary tagger covers 96% of misses, but salience limits it (tag precision against references
+    34%, 54% with the panel).
+- Literature: Tag2Text, clean tags, caption-object R +7 and P +3; TUNA, trained vs prompt-only, +3.6 POPE F1.
+- Expected:
+  - KTVIC short: P +1 to +2, R +1 to +3, F1 +1 to +2.5 (fuse2 58.1 -> about 59-61);
+  - KTVIC detailed: F1 +0.5 to +2;
+  - COCO: F1 +1 to +4 (59.4 -> at most about 63). Uptake follows KTVIC habits (about 1 object per caption), far
+    below the union bound of 79-89.
+CIDEr cost:
+- Expected -2 to +3 word-level CIDEr. Prompt-only tags measured +2.5 on fuse2 and +1.1 on P1; ViECap keeps
+  in-domain CIDEr with masking.
+- Report CIDEr, BLEU-4 and CHAIR next to P/R/F1, and add placebo-tag and oracle-tag control rows (R4 jobs 71,
+  G6 and G7).
+GPU on one 3090:
+- tagging about 1 GPU-h;
+- SFT seed 42 plus dev and test evals with, without, placebo and oracle tags: about 7 GPU-h (R4 costs 79a at
+  5.5);
+- seeds 43 and 44: about 11 GPU-h;
+- total about 8 GPU-h to the gate, about 19 GPU-h for 3 seeds.
+- Code: about 80 lines (distractor sampler in build_gold_sft --tags; unlikelihood term in the train_stage2
+  collator/loss).
+Kill rule (dev300, seed 42, vs fuse2 s42 without tags), dropping the method if any of these holds:
+- R4's G7 fails: dR short < +2.0, or dP < -1.0, or F1 without tags moves outside ±1;
+- the placebo-tag control recovers >= 70% of dF1;
+- more than 10% of injected distractors are named;
+- word-level CIDEr < fuse2 - 3.
+
+B. Presence x relevance evidence completion, "PREC" (COCO-oriented; flagged as metric-shaped)
+Mechanism:
+- The decision layer is a calibrated P(gold | image, class) = P(present | tagger posterior, VLM yes/no) x
+  P(relevant | present, gold type).
+- Relevance is learned from each dataset's own TRAIN gold: KTVIC references (salience); COCO-2014-train
+  instance labels (relevance about 1, existence only).
+- Classes are added by the F1-optimal plug-in rule (p > F1/2, Lipton 1402.1892) or a precision-safe rule.
+- Realisation is a prefix-preserving constrained continuation of the greedy caption (one model-written clause),
+  not a template.
+- For COCO the tagger must be clean of the Karpathy test images:
+  - a classifier trained on COCO-2014 train only (ML-Decoder protocol, 82,081 images; Karpathy test ⊂ val2014);
+  - or a COCO-free detector (GDINO-T, YOLO-World, DINO-X stage 1).
+Novel element:
+- Misra (1512.06974) factorises presence x relevance for training classifiers, not for completing captions.
+- MARINE, Woodpecker, VFC and HALC model presence only.
+- HallE-Control has a knob but no decision rule.
+- PREC applies the factorisation per gold type, which explains the measured asymmetry: tags add about 0 on KTVIC
+  (realised detector marginal -0.1 to +0.3) and up to +28 to +30 F1 at object-set level on COCO.
+Expected:
+- KTVIC: 0 to +0.8 F1 at the precision-safe rule (measured object-set +0.8 [+0.4,+1.2]; realised by sample
+  selection about +0.1 to +0.2).
+- COCO with a Q2L-level tagger: union bound F1 87.8-89.0, P about 86-87. A real verifier lands between 88 and
+  the perfect-verifier 92.6-93.7.
+CIDEr cost: large and must be reported.
+- Inventory clause on KTVIC: -54 syllable CIDEr-D. CBS: -6.7 (4 tags). nocaps: -18.5.
+- Measure on UIT-ViIC test, which has Vietnamese references AND COCO instance gold on the same 231 images.
+GPU:
+- 0 GPU-h for the tagger with a public COCO-2014-train checkpoint, plus about 0.3 GPU-h inference. Training one
+  is about 8-10 GPU-h (TResNet-L 448 on 82k images, rough).
+- About 1 GPU-h for VLM yes/no verification (2,500 images x about 3 candidates).
+- About 0.5 GPU-h for the re-decode.
+Kill rule, dropping the method if any of these holds:
+- object-set F1 < 88 at P >= 88 on held-out COCO-2014-TRAIN images (never test);
+- UIT-ViIC word-level CIDEr drop > 10;
+- the realised COCO F1 gain is < 50% of the object-set gain.
+If it ships, report it as a "caption + verified inventory" row, never as captioning F1.
+
+6. FLAGS
+--------
+- All tags are model-generated signals inside the method; none is evidence.
+- OpenViIC captions were used only as an evaluation panel (sec. 2a, 2f).
+- tags_gdino.json exists only for KTVIC test. Every KTVIC pilot rule is parameter-free or 2-fold cross-fitted on
+  test; the descriptive per-class precision table drives no decision. A real run must calibrate on dev300 (tag it
+  first).
+- Leakage on COCO:
+  - the HF grounding-dino-base checkpoint is trained with COCO (README), and about 87% of Karpathy-test (val2014)
+    images are in train2017, so its COCO-probe tags would be contaminated;
+  - RAM was trained on 113K COCO images (Karpathy train split is likely; check the overlap with Karpathy test);
+  - MARINE's DETR has the same issue.
+- The COCO numbers in sec. 3 are a SIMULATION: random false-positive classes, two miss models; real tagger
+  false positives co-occur with caption false positives, which would make the union's P slightly higher.
+- Syllable CIDEr-D is a diagnostic: the paper's numbers are word-level (RDRSegmenter).
+- Gaming:
+  - the person-word granularity (người plus phụ nữ) carries 55% of the oracle tag headroom on KTVIC;
+  - listing COCO classes gives the COCO gains;
+  - both raise P/R/F1 without better captions.
+
+7. CAN THIS LEVER REACH >= 90?
+------------------------------
+| metric | reachable? | deciding numbers |
+|---|---|---|
+| KTVIC P | No | added tags are 18-20% precise; precision-safe filters add 0. Best measured P with tags 77.9 (tags_fuse2); human 85.3 |
+| KTVIC R | No | oracle-verified curated COCO-80 completion caps R at 64-67 short and 74.5 detailed; fuse2 ∪ every object a second human panel names reaches 80.6, at P 44.9 |
+| KTVIC F1 | No | oracle completions 73-74; 5-caption human panel 55.9; real tags about +0 |
+| COCO F1 | No as captioning; borderline only as an inventory | union with the best published tagger: 87.8-89.0 simulated; >= 90 needs a perfect-ish verifier (92.6-93.7) or a tagger beyond SOTA (90/90 -> 89.9-90.7); humans 70.3 (1 caption) and 79.5 (5 captions) |
+
+Files:
+- pilot_ktvic.py/.out/.json — union variants
+- pilot2_ktvic.py/.out — panel, coverage, CIDEr
+- pilot3_uptake — uptake
+- pilot4_propensity, pilot4b_realise — propensity and realisation
+- pilot5_misses — misses
+- pilot6_panel — inter-panel ceiling
+- ram_cover — RAM vocabulary coverage and the 113-class English glosses
+- coco_areas, coco_sim(2).out, coco_human — COCO
+- litA/, litB/ — paper text dumps

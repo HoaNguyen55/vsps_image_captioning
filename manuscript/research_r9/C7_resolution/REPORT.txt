@@ -1,0 +1,431 @@
+C7_resolution (R9, 2026-10-13): visual resolution, tiling, zoom and small or peripheral objects as a RECALL lever.
+Scope: Qwen2.5-VL-7B (repo backbone), KTVIC object P/R/F1 (113-entry lexicon, reference gold), COCO object F1 (instance gold).
+All pilots are CPU-only (nice 15, 1 thread, <200 MB RAM, <15 s each). Scripts and outputs are in this directory (section 9).
+
+======================================================================================================================
+0. BOTTOM LINE
+======================================================================================================================
+- Resolution is not what limits our recall.
+  - COCO: our captions already see native resolution. The probe budget is 256-1024 tokens. The 640-px COCO images need a
+    median of 345 tokens (max 529), so 0 of 2,500 images hit the cap. A larger token budget therefore changes nothing on
+    COCO. Only upsampling (S², tiles, zoom) adds pixels per object.
+  - KTVIC: 50% of test images are shrunk at the 512-token eval budget, but mildly (median linear scale 0.97). The 75 most
+    shrunk images (<0.6x linear) have the same recall as the 290 native ones: fuse2-short +0.4 points [-5.5, +6.5].
+- The model sees far more than it says. POPE-COCO (RePOPE labels, Vietnamese prompt, native resolution) confirms present
+  objects at these rates: SMALL (<32² px) 67%, MEDIUM 88%, LARGE 96% for fuse2. Its short captions NAME 7%, 24% and 56% of
+  them.
+- Ceiling of ANY perception lever (resolution, tiling or zoom), holding P(named | seen) per size fixed:
+  - COCO fuse2-short: R 44.2 -> 47.6 with PERFECT perception; F1 59.4 -> 62.5.
+  - COCO zero-shot detailed: R 67.5 -> 77.6; F1 73.4 -> 79.0.
+  - A realistic "one size class better" gain is +1.4 R (fuse2-short) and +5.2 R (zero-shot detailed).
+- Literature: higher resolution or tiling moves POPE by -1.1 to +4.9 (typically +0.2 to +3.2), mostly confounded.
+  No resolution paper reports CHAIR or caption object recall, and several report resolution hurting hallucination
+  benchmarks. The only zoom method measured on free-form captions with an object metric (HALC, ICML 2024) cut CHAIR,
+  but its object recall FELL (45.73 -> 44.73).
+- >= 90 is NOT reachable through this lever on any metric (section 7).
+  - COCO F1 90 needs R about 89 at P 90.9.
+  - One human English caption scores F1 70.7 against the instance gold, and the union of 5 human captions scores 79.4.
+  - Naming every class that has an instance of at least 32² px, and nothing else, scores F1 91.5. So 90 is an
+    inventory target, not a captioning target.
+
+======================================================================================================================
+1. FACTS: THE VISION-TOKEN BUDGET IN THIS REPO
+======================================================================================================================
+- One LLM-side visual token covers 28x28 px. This is implied by the Qwen2.5-VL report: images are "resized to multiples of
+  28", patches have a 14-px stride, and four adjacent patch features are grouped. qwen_res.py replicates smart_resize, with
+  a self-check.
+- Budgets in the repo:
+  - evaluate.py: min 256 / max 512 tokens (KTVIC, all tables).
+  - coco_probe.py and pope_vi.py: 256-1024 tokens.
+  - train_stage2.py: 512 tokens on a 24-GB card (4-bit), 1,024 on 48 GB (bf16).
+- COCO (2,500 manifest images): native tokens median 345, max 529. No image hits 1,024. At 512, only 46 images would shrink.
+- KTVIC test (558 images): native tokens median 507, p90 1,564.
+
+  | cap   | shrunk images | p10 linear scale | mean tokens/image |
+  |-------|---------------|------------------|-------------------|
+  | 512   | 277 (50%)     | 0.56             | 417               |
+  | 1,024 | 114 (20%)     | 0.79             | 592               |
+  | 2,048 | 47 (8%)       | 0.98             | 720               |
+
+======================================================================================================================
+2. CPU PILOT, COCO (2,500 Karpathy-test images, gold = COCO-2014 instances only, VI matcher v2)  [coco_size.py -> coco_size.out]
+======================================================================================================================
+Instance sizes come from instances_val2014.json, streamed without json.load. The extraction matches
+data/coco_probe/instance_gold.json class sets on all 2,500 images. A class's size is the segmentation area of its LARGEST
+instance in the image. Each (image, gold class) pair carries weight 1/(N*|G_i|), so the lost weights sum exactly to 100 - R.
+
+2a. Size mix of the 7,054 gold pairs (2,473 images)
+
+  | size           | pairs         | recall weight | median area of largest instance |
+  |----------------|---------------|---------------|---------------------------------|
+  | S < 32² px     | 1,423 (20.2%) | 15.7%         | 0.5 tokens                      |
+  | M              | 2,271 (32.2%) | 29.7%         | 4.5 tokens                      |
+  | L >= 96² px    | 3,360 (47.6%) | 54.6%         | 42.4 tokens                     |
+
+  For 1,154 pairs, the largest instance covers less than one 28-px token.
+
+2b. Recall by size: % of pairs named (recall points lost)
+
+  | system                  | R    | S           | M           | L           |
+  |-------------------------|------|-------------|-------------|-------------|
+  | fuse2_s42-short         | 44.2 | 7.2 (14.0)  | 23.5 (20.4) | 56.3 (21.5) |
+  | p1_s43-short            | 44.3 | 5.9 (14.2)  | 22.1 (20.4) | 55.3 (21.1) |
+  | zeroshot-short          | 48.5 | 8.4 (13.6)  | 27.1 (18.9) | 58.5 (19.0) |
+  | fuse2_s42-detailed      | 52.3 | 12.6 (12.9) | 32.0 (17.6) | 65.4 (17.3) |
+  | zeroshot-detailed       | 67.5 | 27.5 (10.5) | 54.0 (12.1) | 80.2 (9.9)  |
+  | union of 8 caption files| 74.0 | 33.6        | 61.8        | 86.9        |
+
+  The union has P 75.7. Its chance-corrected R is at least 71.8.
+
+  -> Of fuse2-short's 55.8 lost points, 14.0 (25%) are small objects. 21.5 (39%) are LARGE objects with a median of 42 tokens:
+     clearly visible, not named.
+
+2c. Humans (2,441 images with English references; Rohrbach synonyms; NOTE: a different matcher from the VI systems)
+- One human caption: R 57.1 (S 12.1 / M 32.3 / L 65.8), P 92.8, F1 70.7. References #1-#5 score F1 70.2-70.7.
+- Union of the 5 human captions: R 74.4 (S 23.8 / M 52.8 / L 85.0), P 85.0, F1 79.4.
+- Recall points fuse2-short would gain by matching one human caption: S +1.4, M +3.8, L +7.8, total +13.0. Small objects
+  explain 11% of the model-human gap.
+- Zero-shot detailed is ABOVE one human caption in every size class (S 26.3 vs 12.1).
+
+2d. Position (largest-instance centre)
+- Chebyshev offset from the centre:
+
+  | system               | centre | mid  | edge | L-edge | L-centre |
+  |----------------------|--------|------|------|--------|----------|
+  | fuse2-short          | 50.4   | 23.2 | 8.2  | 17.3   | 67.3     |
+  | one human caption    | 59.6   | 33.3 | 11.0 |        |          |
+
+  The model/human ratio is 0.85 / 0.70 / 0.75, so the edge deficit is the human centre bias, not a model defect.
+- Vertical thirds (CCA 2410.15926 says raster order hurts the top of the image) [pos_check.out]:
+  - fuse2-short: 16.9 / 45.1 / 26.4.
+  - Human: 24.4 / 53.4 / 37.0.
+  - No early-token (top-left) deficit appears beyond the human pattern.
+
+2e. Selection vs sight (fuse2-short, 55.8 lost points)
+- 29.8 points are classes that another of the 8 caption files names on the same image, at the same native resolution.
+- 26.0 points are never named by any of them: S 9.5, M 9.9, L 6.6.
+
+2f. Perception, measured [pope_size.py -> pope_size.out]
+- Data: POPE-COCO outputs on n2 (/root/ncs-data/results/pope_vi; 500 val2014 images, 5,127 questions, native resolution).
+- Metric: % of PRESENT objects answered "yes", by the size of the queried class's largest instance. RePOPE labels;
+  n = 240 / 366 / 523.
+
+  | system       | S    | M    | L    |
+  |--------------|------|------|------|
+  | fuse2 vi     | 67.1 | 88.3 | 96.0 |
+  | fuse2 en     | 57.5 | 85.5 | 97.3 |
+  | p1 vi        | 75.8 | 94.0 | 99.0 |
+  | zeroshot vi  | 55.0 | 83.1 | 95.0 |
+  | zeroshot en  | 65.0 | 89.3 | 98.3 |
+
+  Original POPE labels give values 4-8 points lower. The adapters' yes-bias (yes-ratio 41-47%) inflates p1.
+- For fuse2-short, P(named | seen) is about 7.2/67.1 = 11% (S), 27% (M) and 59% (L). The loss is verbalization, not sight.
+
+2g. CEILING of any perception lever, holding P(named | seen) per size fixed. R_new = sum_b hit_b * target_b / seen_b
+    (seen_b from 2f, Vietnamese).
+
+  | system             | R now | one size class better | perfect perception | F1 now | F1 one better | F1 perfect |
+  |--------------------|-------|-----------------------|--------------------|--------|---------------|------------|
+  | fuse2_s42-short    | 44.2  | 45.5 (+1.4)           | 47.6 (+3.5)        | 59.4   | 60.7          | 62.5       |
+  | p1_s43-short       | 44.3  | +0.9                  | +1.4               | 59.3   | 60.0          | 60.5       |
+  | zeroshot-short     | 48.5  | +2.6                  | +5.8               | 63.3   | 65.5          | 68.0       |
+  | fuse2_s42-detailed | 52.3  | +2.0                  | +4.6               | 65.8   | 67.4          | 69.3       |
+  | zeroshot-detailed  | 67.5  | +5.2                  | +10.2              | 73.4   | 76.4          | 79.0       |
+
+  "One size class better" means S seen like M and M seen like L.
+- Looser bounds, unconditional:
+  - Every small-object miss recovered: F1 70.9 (fuse2-short) or 79.2 (zero-shot detailed).
+  - Every small and medium miss recovered: 84.2 or 85.0. Still below 90.
+
+2h. Oracle inventories (P = 100 by construction)
+- Name every class with a >= 32² instance: R 84.3, F1 91.5.
+- Name every class with a >= 96² instance: R 54.6, F1 70.6.
+
+2i. Classes carrying the most lost recall (fuse2-short: n pairs / % small / recall %)
+- person 1303/9/77.1, car 247/29/12.6, chair 261/13/13.4, giraffe 57/2/5.3, bench 119/21/3.4, surfboard 84/24/2.4,
+  truck 142/18/12.0, handbag 155/45/1.9, bottle 170/35/7.6, cup 188/30/11.7, skateboard 75/28/1.3, clock 98/40/35.7,
+  backpack 111/46/0.0.
+- Several are NAMING or MATCHER failures, not sight:
+  - kite: in 31 of 47 kite images the zero-shot-detailed caption writes the Chinese "风筝"; none writes "diều". Chinese
+    code-switching appears in 56/2,500 fuse2-short and 260/5,000 zero-shot-detailed COCO captions.
+  - surfboard: 56/84 write "ván trượt", but coco80_vi has only "ván lướt sóng".
+  - bench: 72/119 write the generic "ghế".
+  - backpack: 33/111 write "túi"; none writes "ba lô".
+  - giraffe: fuse2-short writes "con vật có vằn"; zero-shot detailed names it in 100%.
+- Fixes:
+  - Banning CJK tokens at decoding is a method change. It is worth about +0.8 R from kite alone.
+  - Extending the matcher is a measurement change and must be pre-registered.
+
+2j. Candidate pool for VERIFIED completion (a cross-lever pointer, not resolution) [pool_check.out]
+
+  | candidate pool                                       | P    | R    | F1   |
+  |------------------------------------------------------|------|------|------|
+  | COCO fuse2-short ∪ zero-shot-detailed objects        | 79.6 | 69.5 | 74.2 |
+  | COCO, same with only true additions (oracle)         | 94.6 | 69.5 | 80.1 |
+  | KTVIC fuse2-short ∪ fuse2-detailed                   | 67.3 | 62.6 | 64.9 |
+  | KTVIC, same verified against references (oracle)     | 81.2 | 62.6 | 70.7 |
+
+- The true COCO additions carry S 3.7, M 8.8 and L 12.9 recall points.
+- Zoom could only raise the rate at which a verifier accepts the S and M ones. At fuse2 seen-rates that is about
+  3.7*(0.88-0.67) + 8.8*(0.96-0.88), roughly +1.5 R.
+
+======================================================================================================================
+3. CPU PILOT, KTVIC (558 test images, reference gold, no boxes)  [ktvic_proxy.py -> ktvic_proxy.out]
+======================================================================================================================
+3a. Headroom: see section 1. Raising 512 -> 2,048 tokens changes the input of only half the images, and only 1.73x in
+    total tokens.
+
+3b. Recall by native downscale at 512 tokens (pair recall), fuse2-short:
+
+  | stratum      | recall | pairs |
+  |--------------|--------|-------|
+  | native       | 41.5   | 1,111 |
+  | x0.6-0.95    | 44.8   | 686   |
+  | <x0.6        | 41.9   | 277   |
+
+  Image-level bootstrap, <0.6x (75 images) minus native (290 images):
+
+  | system             | difference [95% CI]  |
+  |--------------------|----------------------|
+  | fuse2-short        | +0.4 [-5.5, +6.5]    |
+  | p1-short           | +2.5 [-3.4, +8.8]    |
+  | zeroshot-short     | -1.4 [-6.7, +4.3]    |
+  | fuse2-detailed     | +1.1 [-4.8, +7.8]    |
+  | zeroshot-detailed  | -0.3 [-7.7, +6.5]    |
+
+  These are confounded by content, but no deficit is visible. At the CI's worst case, native resolution for that stratum
+  would add <= 75/555 * 5.5, about 0.7 R.
+
+3c. Small-object-like lexicon classes (27, hand-tagged: biển báo, báo, bát, bóng, bút, bướm, chén, chổi, cọc neo, cốc, dao,
+    dép, giày, hoa, kính, ly, mái chèo, mũ, nón, nón lá, ong, quả, sách, túi, điện thoại, đĩa, đồng hồ)
+- They are 258 of 2,074 gold pairs (12%).
+- fuse2-short recalls them at 35.7% vs 43.6% for other classes, losing 7.1 of its 52.9 points on them.
+- Zero-shot detailed recalls them at 58.1% vs 55.2%: no size penalty when the prompt asks for detail.
+- Never named by any of the 58 caption files: 1.8 recall points.
+
+3d. Reference consensus (k of 5 annotators name the class)
+- fuse2-short recall: k=1 23.2%, k=2 40.1, k=3 49.0, k>=4 73.0.
+- k=1 classes carry 22.8 of the 52.9 lost points. Salience separates hits from misses.
+
+3e. Union of all 58 KTVIC caption files (<= 512 tokens)
+- 58 files: R 90.6 (P 27.0, 12.3 classes/caption). 28 short files: R 83.2. The 4 main systems: R 78.5.
+- Chance-corrected lower bound: 58.7. This over-corrects, because the KTVIC gold omits objects that are present.
+- Never-named mass is 9.4 points. It is dominated by lexical variants (toà nhà, cô gái, nam thanh niên, sạp hàng, đàn ông,
+  chàng trai, cặp đôi, đôi bạn): word choice, not small objects.
+
+3f. Grounding-DINO tags (base model, 800-px input; MODEL OUTPUT, flagged; COCO-80 vocabulary)
+- The 406 gold pairs the detector also finds are named by the union in 98.8% of cases.
+- fuse2-short loses 7.9 points on them.
+
+3g. The largest KTVIC misses (fuse2-short, recall points)
+- áo 5.2, người 4.5, cây 2.8, phụ nữ 2.8, quầy hàng 2.6, cửa 2.2, đường 2.2, cô gái 2.1.
+- These are clothing, people terms and scene elements. Resolution cannot move them.
+
+======================================================================================================================
+4. LITERATURE, REPORTED NUMBERS
+======================================================================================================================
+IDs were verified via the Semantic Scholar batch API. Venue is taken from the arXiv comment, the PDF header or S2. Numbers
+were read from the PDFs in lit/A and lit/B.
+
+4A. Resolution and tiling (object metric = POPE F1 unless stated)
+- LLaVA-1.5, CVPR 2024, 2310.03744:
+  - 13B -> 13B-HD (grid up to 672x448), POPE rand/pop/adv 87.1/86.2/84.5 -> 87.5/86.4/85.0 (+0.2 to +0.5).
+  - The paper says hallucination is "significantly reduced" at 448², with no number given.
+- LLaVA-UHD, ECCV 2024, 2403.11703: POPE 85.9 -> 89.1 (+3.2) and TextVQA +6.4. Confounded: aspect-ratio encoding alone
+  gives 86.7.
+- S², ECCV 2024, 2403.13043: no object-hallucination metric. LLaVA-1.5-7B V* attribute 43.5 -> 51.3, TextVQA 58.2 -> 61.0.
+- InternVL 1.5, Sci China Inf Sci 2024, 2404.16821: no POPE. HallusionBench peaks at 4 tiles (49.6) and shows "a slight
+  decline in performance at higher resolutions".
+- Monkey, CVPR 2024, 2311.06607: no POPE or CHAIR. Detailed captioning is shown only qualitatively.
+- Qwen2-VL, 2409.12191: fixed 64 -> 3,136 tokens moves InfoVQA 28.9 -> 77.3, but MMMU stays flat at 52.8-53.4.
+  HallusionBench (Fig. 4) peaks at 840² and is lower at 1120². No POPE.
+- Qwen2.5-VL, 2502.13923: 7B HallusionBench 52.9. No POPE, CHAIR or resolution ablation.
+- Mini-Monkey, ICLR 2025, 2408.02034:
+  - InternVL2-2B POPE 85.2 -> 88.0.
+  - More sub-images at baseline: 18 -> 48 gives POPE 85.8 -> 85.7, HallB 37.0 -> 36.2.
+  - Quote: "increasing the number of sub-images does not lead to better performance; instead, it may result in a decline."
+- SliME, 2406.08487, controlled same-hyperparameter test: baseline POPE 84.2 -> LLaVA-HD slicing 85.0, Monkey-style
+  slicing 83.1.
+- FlexAttention, ECCV 2024, 2407.20228: POPE 85.9 -> 85.9 at 1008². V* 47.6 -> 54.5. RefCOCO small 41.3 -> 51.3.
+- Dragonfly, 2406.00977:
+  - Tab. 1 ablation (Llama3.1-8B): POPE-F1 low-res 82.2 -> 4 crops 87.1 -> 36 crops 86.0.
+  - At a fixed 576 tokens: POPE low-res 83.4 -> 2x2 crops of an upsampled low-res image 85.1 -> 2x2 crops from native
+    pixels 86.8.
+  - 36 crops alone (86.0) score below 4 crops (87.1).
+- None of these 12 papers reports CHAIR or caption object recall.
+
+4B. Zoom, search and detail captioning
+- HALC, ICML 2024, 2403.00425, the closest prior for zoom during CAPTION decoding:
+  - Detector boxes give 4 enlarged focal views per token, and their next-token distributions are contrasted.
+  - LLaVA-1.5, COCO, 64 tokens: CHAIR_s/CHAIR_i/BLEU 20.80/6.77/15.93 -> 13.80/5.50/16.10.
+  - Caption object recall (OPOPE) 45.73 -> 44.73: recall goes DOWN.
+  - Analytic cost about 2.4x greedy.
+- ViCrop, ICLR 2025, 2502.17422 ("MLLMs know where to look"):
+  - LLaVA-1.5 TextVQA by answer-box area (<0.5% / 0.5-5% / >=5%): 39.38/47.74/50.65; with an oracle crop
+    69.95/65.36/56.96.
+  - rel-att crop: TextVQA 47.80 -> 55.17, V* 42.41 -> 62.30, POPE 85.27 -> 87.25.
+  - Extra cost 1.16 s/answer on an A6000.
+- DyFo, CVPR 2025, 2504.14920, POPE-COCO F1:
+  - LLaVA-1.5 random 89.58 -> 91.46 (recall 85.40 -> 92.07, precision 94.19 -> 90.86).
+  - Qwen2-VL random 89.22 -> 91.71, adversarial 85.11 -> 86.81.
+- DC², AAAI 2025, 2408.15556: LLaVA-1.5-7B V* 46.2 -> 57.3, POPE 85.6 -> 86.8. No CHAIR or caption recall.
+- ZoomEye, EMNLP 2025, 2411.16044: V* for LLaVA-1.5-7B 48.68 -> 83.25 and Qwen2.5-VL-3B 76.96 -> 89.01. POPE not reported.
+  8.2 search steps on average.
+- V*/SEAL, CVPR 2024, 2312.14135: V* 75.39 vs LLaVA-1.5 48.68. POPE 76.5 -> 82.4 against its own baseline. 6.0 s per
+  target on an A100.
+- DeepEyes, ICLR 2026, 2505.14362: Qwen2.5-VL-7B V* 71.2 -> 90.1. POPE overall 85.9 -> 87.7, but adversarial 85.9 -> 84.0.
+- RAP, ICML 2025, 2503.01222: LLaVA-1.5-7B V* 48.7 -> 91.1. POPE not reported.
+- Chain-of-Spot, 2403.12966, arXiv: POPE 85.9 -> 86.4 (7B).
+- CCA, NeurIPS 2024, 2410.15926: retrained position order. POPE acc 81.38 -> 86.86; CHAIR_s 46.2 -> 43.0 with recall
+  80.3 -> 80.4 (512 tokens). Objects in the upper image are recognised less often.
+- AMBER, 2311.07397, arXiv: generative Cover (object recall) for "Describe this image": GPT-4V 67.1, CogVLM 57.2, LLaVA-1.5
+  51.0, Qwen-VL 49.4. LLaVA-1.5 AMBER score is 82.9 at 25% resolution vs 83.5 at 100%.
+- CAPTURE, 2405.19092, arXiv: SAM crops, local captions, an OWLv2 filter and an LLM merge. LLaVA-1.5-7B detail-caption
+  recall 43.17 -> 51.44, precision 65.50 -> 64.23 (objects, attributes and relations pooled).
+- Perceptual limitation, 2402.07384, arXiv: accuracy gap from the largest to the smallest size quintile is BLIP-2
+  16.7/21.8 points, GPT-4V 7.3/9.1 (GQA/TextVQA). For LLaVA-1.5 it is "relatively stable".
+- FeedQuill, ICLR 2025, 2503.07906: PPO, not zoom. LLaVA-1.5-7B CHAIR_s 47.8 -> 5.1.
+- Image Textualization, 2406.07502, arXiv: detectors, no crops. Its POPE after tuning is 84.59 -> 86.47. No caption recall.
+
+4C. What transfers
+- Zoom, search and tiling raise object EXISTENCE answers (POPE) by about +1 to +3 F1. DyFo raises POPE recall by +6.7 at
+  -3.3 precision.
+- On free captions, the one direct test (HALC) did not raise object recall.
+- Detail pipelines with crops (CAPTURE) raise recall of long captions by about +8 at -1.3 precision.
+- This matches our pilot: the binding constraint is what the caption chooses to say, not what the encoder can resolve.
+
+======================================================================================================================
+5. GPU COST ON ONE RTX 3090 (24 GB) AT 1,024-2,048 VISION TOKENS
+======================================================================================================================
+Measured anchors in the repo:
+- Inference bf16, <= 512 tokens: peak 15.67 GB, 0.68 s/image (short; data/vram/vram_bf16-512vt_no_cap.json).
+- Inference 4-bit: 7.72 GB, 0.87 s/image.
+- Training: DPO 4-bit at 512 tokens 19.15 GB; bf16 DPO 23.82 GB at 256 tokens and OOM at 512 (train_stage2.py).
+- fuse2 SFT, 2 epochs at 512: 3.6 GPU-h.
+
+Inference estimates (bf16, sdpa, batch 1):
+- Memory: weights about 15.5 GB. The ViT at 8,192 patches (2,048 tokens) adds 0.1-0.3 GB with mem-efficient attention,
+  and at most 2.1 GB if the 4 full-attention layers materialise 16x8192² scores. The KV cache is about 57 KB/token,
+  0.13 GB at 2.2k. Peak about 16.5-18.5 GB, which fits. 4-bit peaks at about 9-11 GB.
+- Time: prefill scales with tokens and decode does not.
+  - KTVIC at cap 2,048: mean 720 vs 417 tokens (+73%). About 0.8-1.0 s/image short and 2-4 s detailed. The 558 test
+    images take about 0.15 h (short) and 0.5 h (detailed) per adapter.
+  - COCO at 2x test-time upsampling: mean 1,403 vs 357 tokens. About 1.2-1.8 s/image short, about 1-1.3 h per 2,500
+    images; detailed about 2.5-3 h.
+
+Training estimates (QLoRA 4-bit, frozen ViT, gradient checkpointing):
+- SFT at cap 2,048: about 1.6x compute, so about 5.8 GPU-h for a fuse2-size run.
+- Peak memory is set by the largest images (p90 1,564 tokens) plus full-vocabulary logits (about 1.3 GB fp32 at 2.2k
+  tokens). Estimated 12-18 GB, which probably fits but MUST be measured first.
+- DPO or RL (policy plus reference, chosen plus rejected) at >= 1,024 tokens will not fit: it is 19.15 GB already at 512.
+- Not recommended: section 3b shows nothing to gain.
+
+======================================================================================================================
+6. PROPOSALS
+======================================================================================================================
+P1. UGZ, uncertainty-gated zoom verification. It is the visual verifier of a recall-completion step and does no training.
+
+Mechanism:
+1. Take the existing short caption c_s and the same model's detailed caption c_d. Both are already computed for KTVIC test
+   and COCO.
+2. Candidates = objects(c_d) - objects(c_s).
+3. For each candidate x, compute a one-token existence probe p_full = P("có" | full image at native resolution, "Trong ảnh
+   có x không?"). Use one image prefill plus a cached-KV continuation per candidate (flagged model signal).
+4. Only when p_full falls in an uncertain band [t_lo, t_hi], re-probe on zoomed tiles: 2x2 overlapping tiles, each
+   upsampled 2x (or a ViCrop rel-att crop), and take p_zoom = max over tiles.
+5. Accept x if the combined score is >= t. Fit t on dev only: KTVIC dev300 and 500 Karpathy-VAL COCO images, whose
+   instance labels are legal because they are not test images.
+6. Insert at most k = 2 accepted objects. On KTVIC, use the CC-ADD sample-selection rule from R8 (the closest-to-greedy
+   sample that contains them). On COCO, use a fixed clause.
+
+Novel element vs the closest prior:
+- HALC 2403.00425 uses detector-defined focal views to contrast next-token distributions. It removes objects, and its
+  recall fell from 45.73 to 44.73. UGZ uses no detector, zooms only where the model's own probe is uncertain, and ADDS
+  objects.
+- ViCrop 2502.17422 crops for one question in VQA. UGZ gates the crop per candidate object and calibrates the gate with the
+  size-dependent perception curve measured in 2f.
+- CAPTURE 2405.19092 runs exhaustive SAM crops with an OWLv2 filter and an LLM merge offline. UGZ uses selective zoom,
+  verifies with the VLM itself and inserts at most k objects into a SHORT caption under a CIDEr guard.
+- DyFo, ZoomEye and V* search for a queried target. R8 CC-ADD triggers on consensus and has no visual check.
+
+Expected effect (evidence in 2g and 2j):
+- COCO: the pool holds 0.77 true additions per caption (25.3 R points), so k <= 2 rarely binds there.
+  - A probe verifier that accepts 75-85% of true candidates and passes 40-60% of the model's own false ones gives about
+    R +19 to +21 and P -4 to -7, i.e. F1 about 72-75 from 59.4. The pool ceilings are 74.2 unverified and 80.1 with an
+    oracle verifier.
+  - Of that, the ZOOM share is at most about +1.5 R, about +1 F1. Almost all of the gain is verified completion, which is
+    verbalization and should be coordinated with the MBR and CC-ADD agents.
+- KTVIC: the pool is 64.9 unverified and 70.7 if verified against references. A presence verifier cannot know what the
+  annotators chose to name, and CC-ADD-style insertion is limited by the sample pool. Expect F1 +1 to +3 (CC-ADD measured
+  +1.1). The zoom share is <= 0.5 R.
+- CIDEr cost: CC-ADD-style insertion measured KTVIC dev CIDEr-D -1.2 [-4.7, +1.7] in R8. Appending detailed-style text is
+  ruinous (fuse2 s43 short CIDEr 145.1 vs detailed 22.7), so k must stay small.
+  - Report caption length and CIDEr next to every F1.
+  - Name the gaming risk: with k uncapped this becomes an object inventory.
+
+GPU cost:
+- Per image: 1 prefill, <= 10 cached one-token probes, and 4 tile prefills for about 30% of candidates. About 1.5-3 s/image.
+- KTVIC dev300 + test: about 0.7 h. COCO val500 + test2500: about 2.5 h. Total about 3-4 GPU-h.
+
+Kill criteria:
+1. On COCO-val, UGZ minus the same pipeline WITHOUT zoom is < +0.5 F1: zoom is not the active ingredient. Keep only the
+   verified completion and hand it to the verbalization agents.
+2. On KTVIC dev300, the CIDEr-D drop is > 3, or the F1 gain is < +1: do not ship on KTVIC.
+3. With zoom, the POPE small-object yes-rate on the same 500 images stays below the medium rate minus 10: zoom does not
+   repair perception.
+
+P2. The direct resolution control. It is the test a Q1 reviewer will ask for; no novelty is claimed.
+(a) KTVIC: evaluate fuse2_s42 and p1_s43 at --max-vision-tokens 2048, which puts 92% of test images at native resolution.
+    Run dev300 first, then test, in both modes. The R4 job 73 planned 1,024 and was never run.
+(b) COCO: 2x test-time upsampling, S²-style without retraining, on fuse2-short and zero-shot detailed.
+(c) POPE-COCO at 2x, to measure seen-rate by size directly.
+
+- Predictions from this pilot:
+  - KTVIC: dR within +/-1 (3b), dP within +/-1.
+  - COCO: dR <= +1.4 (short) and <= +5.2 (zero-shot detailed), from 2g.
+  - POPE small objects: yes-rate +0 to +15.
+- Cost: (a) about 1.3 GPU-h, (b) about 2-3 GPU-h, (c) about 1 GPU-h.
+- Decision:
+  - If KTVIC dev dR < +1 and COCO-val dR < +1.5, report resolution as a negative control and close the lever.
+  - If KTVIC dev dR >= +2, re-open: SFT at 2,048 tokens, about 6 GPU-h, after measuring memory.
+
+======================================================================================================================
+7. CAN THIS LEVER REACH >= 90?
+======================================================================================================================
+- KTVIC P: NO. Resolution does not act on reference-gold precision. The false mentions are mostly real objects that the
+  annotators did not name, and one human caption reaches only P 85.3. In the literature, resolution moves POPE by -1.1 to
+  +4.9.
+- KTVIC R: NO. Resolution-addressable recall is at most 7.1 points (every small-like miss), and more likely at most 1.8
+  (never named), on top of R 47.1. No resolution effect is detectable (3b).
+- KTVIC F1: NO.
+- COCO F1: NO.
+  - Perfect perception gives F1 62.5 (fuse2-short) or 79.0 (zero-shot detailed).
+  - Recovering every small miss gives 70.9 or 79.2.
+  - One human caption is F1 70.7.
+  - F1 90 requires naming every class with a >= 32² instance (oracle 91.5): an inventory.
+
+======================================================================================================================
+8. CAVEATS
+======================================================================================================================
+- Seen-rates come from the 500 POPE images, not the 2,500 manifest images. The adapters' yes-bias inflates them. The
+  ceiling assumes P(named | seen) does not depend on how the object became visible; zoom crops could change salience.
+- Human vs model compares English references (Rohrbach synonyms) with Vietnamese captions (coco80_vi v2): different
+  matchers.
+- KTVIC has no boxes. The strata are confounded by content. The small-like class list is a hand tag (listed in 3c). The
+  unions include many low-precision systems, and the chance correction over-corrects.
+- Grounding-DINO tags and probe answers are model outputs and are flagged. No AI label is used as evidence of truth. All
+  gold labels are existing human labels: COCO instances, KTVIC references and RePOPE.
+- The literature numbers are mostly VQA-style existence (POPE, HallusionBench), not caption recall, and several gains are
+  confounded (resampler, ViT tuning).
+
+======================================================================================================================
+9. FILES (this directory)
+======================================================================================================================
+- extract_inst.py: streams instances_val2014 -> inst_karpathy5000.json, inst_pope500.json.
+- qwen_res.py: smart_resize token count with a self-check.
+- coco_size.py -> coco_size.out (tables A-M).
+- ktvic_proxy.py -> ktvic_proxy.out (K1-K10).
+- pope_size.py -> pope_size.out and pope_rates.json. pope/*.jsonl are read-only copies of the n2 POPE outputs.
+- pos_check.py -> pos_check.out.
+- pool_check.py -> pool_check.out.
+- lit/A and lit/B: the papers' PDFs and text.
