@@ -35,7 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from coco_probe import read_jsonl  # noqa: E402
+from coco_probe import BACKBONES, DEFAULT, read_jsonl  # noqa: E402
 from score_coco_probe import NCS_DATA, PROBE_DATA  # noqa: E402
 
 SPLITS = ("random", "popular", "adversarial")
@@ -129,7 +129,7 @@ def run(args) -> None:
     keys = sorted(asked)[: args.limit or None]
     out_dir = Path(args.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    model, processor = load_model(args.adapter)
+    model, processor = load_model(args.adapter, args.model, args.weights)
     for lang in args.langs.split(","):
         out = out_dir / f"{args.name}-{lang}.jsonl"
         done = {(r["image"], r["object"]) for r in read_jsonl(out, repair=True)}
@@ -187,7 +187,9 @@ def main() -> int:
     ap.add_argument("--images-dir", help="val2014 images (download_coco_images.py)")
     ap.add_argument("--out-dir")
     ap.add_argument("--adapter", default=None, help="leave empty = zero-shot")
-    ap.add_argument("--name", default=None, help="output file stem; required with --adapter")
+    ap.add_argument("--name", default=None, help="output file stem; required with --adapter or non-default --model")
+    ap.add_argument("--model", default=DEFAULT, choices=sorted(BACKBONES))
+    ap.add_argument("--weights", default=None, help="local pinned snapshot of --model (default: its hub id)")
     ap.add_argument("--langs", default="vi,en")
     ap.add_argument("--limit", type=int, default=0, help="first N distinct questions only (smoke tests)")
     args = ap.parse_args()
@@ -199,14 +201,15 @@ def main() -> int:
     if args.score:
         score(Path(args.data_dir), Path(args.out_dir))
         return 0
-    if not args.images_dir or (args.adapter and not args.name):
-        ap.error("generation needs --images-dir, and --name with --adapter")
+    if not args.images_dir or ((args.adapter or args.model != DEFAULT) and not args.name):
+        ap.error("generation needs --images-dir, and --name with --adapter or non-default --model")
     args.name = args.name or "zeroshot"
     run(args)
     return 0
 
 
 def _check() -> None:
+    assert DEFAULT == "qwen2.5-vl-7b" and "qwen3-vl-8b" in BACKBONES and len(vi_names()) == 80
     for reply, want in (("Có.", "yes"), ("Không.", "no"), ("KHÔNG", "no"), ("Không có.", "no"),
                         ("Có, trong ảnh có một con chó.", "yes"), ("Trong ảnh không có ô tô.", "no"),
                         ("Trong ảnh có một chiếc ô tô màu đỏ.", "yes"), ("Yes, there is a dog.", "yes"),

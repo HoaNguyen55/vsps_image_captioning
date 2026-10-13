@@ -35,16 +35,32 @@ from evaluate import PROMPTS  # noqa: E402  — same prompts as Tables 1/2
 
 P = 28 * 28
 MAX_NEW = {"short": 60, "detailed": 160}
+#: --model -> (hub id, transformers class, pixels per vision token). Every backbone gets the same 256-1,024
+#: vision-token budget. qwen3-vl-8b needs transformers >= 4.57, so it runs from its own venv (S0, judge D10 (iii)).
+DEFAULT = "qwen2.5-vl-7b"
+BACKBONES = {DEFAULT: ("Qwen/Qwen2.5-VL-7B-Instruct", "Qwen2_5_VLForConditionalGeneration", P),
+             "qwen3-vl-8b": ("Qwen/Qwen3-VL-8B-Instruct", "Qwen3VLForConditionalGeneration", 32 * 32)}
 
 
-def load_model(adapter: str | None):
+def stem(name: str | None, adapter: str | None, backbone: str) -> str:
+    """Output file stem. Another backbone must be named, so it never writes into the 7B zero-shot files."""
+    if backbone != DEFAULT and not name:
+        raise SystemExit(f"--name is required with --model {backbone}")
+    return name or ("distill" if adapter else "zeroshot")
+
+
+def load_model(adapter: str | None, backbone: str = DEFAULT, weights: str | None = None):
+    """`backbone` (+ `adapter`, merged) in eval mode and its processor; `weights` = a local pinned snapshot of it."""
     import torch
-    from transformers import AutoProcessor, Qwen2_5_VLForConditionalGeneration
+    import transformers
+    from transformers import AutoProcessor
 
     from rescap.vlm.base import dtype_kwarg
 
-    model = Qwen2_5_VLForConditionalGeneration.from_pretrained(
-        "Qwen/Qwen2.5-VL-7B-Instruct", attn_implementation="sdpa",
+    hub_id, cls, px = BACKBONES[backbone]
+    src = weights or hub_id
+    model = getattr(transformers, cls).from_pretrained(
+        src, attn_implementation="sdpa",
         device_map={"": 0}, **dtype_kwarg(torch.bfloat16))
     if adapter:
         from peft import PeftModel
@@ -56,8 +72,7 @@ def load_model(adapter: str | None):
         # the MERGED adapter — mathematically equivalent, greedy as before.
         model = model.merge_and_unload()
     model.eval()
-    processor = AutoProcessor.from_pretrained(
-        "Qwen/Qwen2.5-VL-7B-Instruct", min_pixels=256 * P, max_pixels=1024 * P)
+    processor = AutoProcessor.from_pretrained(src, min_pixels=256 * px, max_pixels=1024 * px)
     return model, processor
 
 
@@ -98,11 +113,13 @@ def main() -> int:
     ap.add_argument("--shard", type=int, default=0)
     ap.add_argument("--of", type=int, default=1)
     ap.add_argument("--limit", type=int, default=0)
+    ap.add_argument("--model", default=DEFAULT, choices=sorted(BACKBONES))
+    ap.add_argument("--weights", default=None, help="local pinned snapshot of --model (default: its hub id)")
     args = ap.parse_args()
 
     from PIL import Image
 
-    system = args.name or ("distill" if args.adapter else "zeroshot")
+    system = stem(args.name, args.adapter, args.model)
     man = json.loads(Path(args.manifest).read_text(encoding="utf-8"))
     images = sorted(man["images"], key=lambda x: x["cocoid"])[args.shard:: args.of]
     if args.limit:
@@ -110,7 +127,7 @@ def main() -> int:
     out_root = Path(args.out_dir)
     out_root.mkdir(parents=True, exist_ok=True)
 
-    model, processor = load_model(args.adapter)
+    model, processor = load_model(args.adapter, args.model, args.weights)
     modes = [m.strip() for m in args.modes.split(",") if m.strip()]
 
     for mode in modes:
@@ -135,5 +152,19 @@ def main() -> int:
     return 0
 
 
+def _check() -> None:
+    # the default backbone keeps the exact pre-switch load (hub id, class, 28-px tokens)
+    assert BACKBONES[DEFAULT] == ("Qwen/Qwen2.5-VL-7B-Instruct", "Qwen2_5_VLForConditionalGeneration", 28 * 28)
+    assert BACKBONES["qwen3-vl-8b"][2] == (16 * 2) ** 2  # patch 16 x spatial merge 2
+    assert stem(None, None, DEFAULT) == "zeroshot" and stem(None, "a", DEFAULT) == "distill"
+    assert stem("q3", None, "qwen3-vl-8b") == "q3"
+    try:
+        stem(None, None, "qwen3-vl-8b")
+        raise AssertionError("an unnamed second backbone would overwrite the 7B zero-shot files")
+    except SystemExit:
+        pass
+
+
 if __name__ == "__main__":
+    _check()
     sys.exit(main())
