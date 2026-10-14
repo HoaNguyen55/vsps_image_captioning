@@ -1,0 +1,358 @@
+{
+  "schema_version": 1,
+  "prereg_id": "2026-10-14_b1_qwen3vl_backbone",
+  "status": "frozen_2026-10-14_before_any_B1_ktvic_output_exists",
+  "authority": [
+    "Judge PD-5 Q1 (immediate CPU preregistration of B1 Qwen3-VL-8B-Instruct)",
+    "Judge PD-5 Q2 (machine_id=$(hostname) recorded in every output JSON)",
+    "Judge PD-2 (Option A count-matched frontier residual delta_P_front as primary endpoint)",
+    "Judge D17 (H1/H2/H3 count-controlled precision-recall frontier framework)",
+    "Claude 15:56 UTC item 3(b) (preregister B1 before any B1 KTVIC output exists)"
+  ],
+  "backbone": "Qwen/Qwen3-VL-8B-Instruct",
+  "Baseline_backbone": "Qwen/Qwen2.5-VL-7B-Instruct",
+  "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+  "licence": "Apache-2.0",
+  "total_weight_bytes": 17545915883,
+  "snapshot_path": "/root/ncs-data/models/Qwen3-VL-8B-Instruct-0c351dd",
+  "sha256sums_manifest_path": "/root/ncs-data/models/Qwen3-VL-8B-Instruct-0c351dd/SHA256SUMS",
+  "sha256sums_manifest_sha256": "dc7bd4a45eb3c56e00c56f68cd937871258b679b741949bd38a383950ffc52d8",
+  "venv": "/root/venv-qwen3vl",
+  "venv_python": "3.10.12",
+  "venv_packages": {
+    "torch": "2.5.1+cu121",
+    "torchvision": "0.20.1+cu121",
+    "transformers": "4.57.6",
+    "accelerate": "1.15.0"
+  },
+  "venv_freeze_path": "/root/venv-qwen3vl/FREEZE.txt",
+  "venv_freeze_sha256": "bf152944ea4389f609207c5f9589c214b2ff6a4ae3b2e2a9c877e64a57fbe605",
+  "vision_budget": {
+    "model_class": "Qwen3VLForConditionalGeneration",
+    "processor_class": "Qwen2VLImageProcessorFast",
+    "patch_size": 16,
+    "merge_size": 2,
+    "pixels_per_token": 1024,
+    "min_vision_tokens": 256,
+    "max_vision_tokens_eval": 1024,
+    "max_vision_tokens_train_4bit": 512,
+    "min_pixels": 262144,
+    "max_pixels_eval": 1048576,
+    "max_pixels_train_4bit": 524288,
+    "qwen25_patch_merge_pixels_per_token": 784
+  },
+  "weight_shards_sha256": {
+    "model-00001-of-00004.safetensors": {
+      "bytes": 4902275944,
+      "sha256": "d5d0aef0eb170fc7453a296c43c0849a56f510555d3588e4fd662bb35490aefa"
+    },
+    "model-00002-of-00004.safetensors": {
+      "bytes": 4915962496,
+      "sha256": "8be88fb5501e4d5719a6d4cc212e6a13480330e74f3e8c77daa1a68f199106b5"
+    },
+    "model-00003-of-00004.safetensors": {
+      "bytes": 4999831048,
+      "sha256": "83de00eafe6e0d57ccd009dbcf71c9974d74df2f016c27afb7e95aafd16b2192"
+    },
+    "model-00004-of-00004.safetensors": {
+      "bytes": 2716270024,
+      "sha256": "0a88b98e9f96270973f567e6a2c103ede6ccdf915ca3075e21c755604d0377a5"
+    }
+  },
+  "matchers": {
+    "v1_frozen_raw_tone": {
+      "env": "RESCAP_RAW_TONE=1",
+      "chair_py_ba351f8_sha256": "fd1d012398cae5d1984bb4effdf18919e157f1c770b8a13adbb070a8b659ec6b",
+      "description": "Frozen NFC matcher without oa/oe/uy tone-placement normalisation (Judge D11(ii))."
+    },
+    "v2_tone_normalised": {
+      "env": "RESCAP_RAW_TONE=0",
+      "chair_py_phase1_sha256": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+      "description": "NFC plus open-syllable oa/oe/uy tone-placement normalisation (Judge D10(iv)(a), PD-5 Q1(d))."
+    }
+  },
+  "step1_zeroshot_dev300_guard": {
+    "estimated_gpu_hours": 0.2,
+    "dataset": "ktvic_dev",
+    "split_file": "dev_data.json",
+    "n_images": 300,
+    "decoding": {
+      "dtype": "bfloat16",
+      "attn_implementation": "sdpa",
+      "do_sample": false,
+      "max_new_tokens_short": 60,
+      "max_new_tokens_detailed": 160
+    },
+    "thresholds": {
+      "short": {
+        "vietnamese_share_min": 0.98,
+        "cjk_rate_max": 0.02,
+        "mentions_per_caption_min": 0.8,
+        "mentions_per_caption_max": 3.5
+      },
+      "detailed": {
+        "vietnamese_share_min": 0.98,
+        "cjk_rate_max": 0.05,
+        "mentions_per_caption_min": 0.8,
+        "mentions_per_caption_max": 3.5
+      }
+    },
+    "s0_coco_baseline_reference": {
+      "short_vietnamese_share_pct": 98.52,
+      "short_cjk_rate_pct": 1.96,
+      "detailed_vietnamese_share_pct": 100.0,
+      "detailed_cjk_rate_pct": 5.0
+    },
+    "action_on_fail": "Abort immediately before Step 2 SFT; record pathology in step1_dev300_guard.json and fall back to held 3B jobs 57/58 with qwen-research licence disclosure."
+  },
+  "step2_1seed_gate_train_nodev": {
+    "run_id": "b1_qwen3vl_p1_nodev_s42",
+    "estimated_gpu_hours": 1.8,
+    "total_step1_plus_step2_gpu_hours": 2.0,
+    "full_3seed_budget_gpu_hours_min": 7.0,
+    "full_3seed_budget_gpu_hours_max": 8.0,
+    "train_split": "train_nodev (KTVIC train minus dev300)",
+    "splits_file": "data/splits/ktvic_train_minus_dev300.txt",
+    "sft_jsonl_sha256": "971879742e85d710fc828fa526b735d0c0b6469b4988e3d5402a26fb1b666f16",
+    "train_examples": 3469,
+    "eval_dev_examples": 300,
+    "eval_test_examples": 558,
+    "seed": 42,
+    "followup_seeds_if_gate_passes": [
+      43,
+      44
+    ],
+    "recipe": {
+      "stage": "sft",
+      "supervision_rung": "P1 (Vintern-1B verified propositions distilled via SFT, identical to p1dev_s42)",
+      "loss_mask": "assistant",
+      "epochs": 2.0,
+      "lr": 0.0001,
+      "batch_size": 1,
+      "grad_accum": 8,
+      "effective_batch_size": 8,
+      "lora_r": 16,
+      "lora_alpha": 32,
+      "lora_dropout": 0.05,
+      "lora_target_modules": "^(?!.*visual).*\\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)$",
+      "quantization": "4-bit NF4 double-quant (compute_dtype=bfloat16)",
+      "vision_tokens_train": 512,
+      "vision_tokens_eval": 1024
+    },
+    "hardware_and_telemetry_gates": {
+      "peak_vram_gb_max": 22.0,
+      "record_step_time_sec": true,
+      "record_machine_id_hostname": true,
+      "adapter_nonempty_check": true,
+      "c1_dev300_disjointness_check": true
+    },
+    "promotion_gate_to_s43_s44": {
+      "dev300_vietnamese_share_min": 0.99,
+      "dev300_cjk_rate_max": 0.01,
+      "test_mentions_per_caption_min": 1.2,
+      "test_mentions_per_caption_max": 2.5,
+      "require_dual_matcher_v1_v2_logged": true,
+      "note": "Both Outcome A and Outcome B are scientifically informative under PD-5 Q1(a); seeds s43 and s44 run iff technical/language gates pass and GPU queue budget permits after higher-priority jobs."
+    }
+  },
+  "frozen_frontier_predictions": {
+    "source_file": "manuscript/prereg/2026-10-12_ladder_predictions.json",
+    "source_sha256": "65dae1bc1598c6b7fc4743fd5ba9e3e25245a3a90b2e6d8ec614eeea5702ece3",
+    "checker_script": "scripts/prereg_ladder_check.py",
+    "checker_sha256": "279942468d879c93ca4c5c8767b829397b58cebedd73d845496f6ead22616d19",
+    "frontier_anchors": {
+      "M1": 1.7826,
+      "TP1": 1.3996,
+      "P1": 78.5188,
+      "R1": 41.8507,
+      "b": 0.7468,
+      "c0": 5.4859,
+      "c1": 25.9815,
+      "linear_tangent_slope_bP_pp_per_mention": 11.1528
+    },
+    "power_law_equations": {
+      "TP0_hat": "TP1 * (M / M1) ** b",
+      "P0_hat": "100.0 * TP0_hat / M = P1 * (M / M1) ** (b - 1.0)",
+      "R0_hat": "c0 + c1 * TP0_hat",
+      "F1_0_hat": "2.0 * P0_hat * R0_hat / (P0_hat + R0_hat)",
+      "P0_linear_tangent": "P1 - b_P * (M - M1), where b_P = (1 - b) * P1 / M1 = 11.1528 pp/mention"
+    },
+    "qwen25_p1_short_observed_anchors": {
+      "p1_s42": {
+        "M": 1.796,
+        "TP": 1.4,
+        "P": 77.944,
+        "R": 41.42,
+        "F1": 54.094,
+        "sent": 1,
+        "words": 11.962
+      },
+      "p1_s43": {
+        "M": 1.763,
+        "TP": 1.389,
+        "P": 78.76,
+        "R": 41.685,
+        "F1": 54.516,
+        "sent": 1,
+        "words": 11.909
+      },
+      "p1_s44": {
+        "M": 1.789,
+        "TP": 1.41,
+        "P": 78.858,
+        "R": 42.447,
+        "F1": 55.188,
+        "sent": 1,
+        "words": 11.873
+      },
+      "p1ep4_s42_prereg_band": {
+        "M_pred": 1.723,
+        "M_band_lo": 1.629,
+        "M_band_hi": 1.818,
+        "P_pred": 79.2,
+        "P_band_lo": 77.1,
+        "P_band_hi": 81.3,
+        "R_pred": 40.9,
+        "R_band_lo": 38.5,
+        "R_band_hi": 43.4,
+        "F1_pred": 54.0
+      },
+      "fuse2_s42_detailed_anchor": {
+        "M": 3.154,
+        "TP": 2.143,
+        "P": 67.955,
+        "R": 61.174,
+        "F1": 64.386,
+        "sent": 1.914,
+        "words": 24.013
+      }
+    },
+    "evaluation_grid": [
+      {
+        "M": 1.4,
+        "TP0_hat": 1.1685,
+        "P0_hat": 83.4675,
+        "R0_hat": 35.8464,
+        "F1_0_hat": 50.1536,
+        "P0_linear_tangent": 82.7859
+      },
+      {
+        "M": 1.6,
+        "TP0_hat": 1.2911,
+        "P0_hat": 80.6926,
+        "R0_hat": 39.0301,
+        "F1_0_hat": 52.6123,
+        "P0_linear_tangent": 80.5553
+      },
+      {
+        "M": 1.723,
+        "TP0_hat": 1.3645,
+        "P0_hat": 79.1935,
+        "R0_hat": 40.9378,
+        "F1_0_hat": 53.9744,
+        "P0_linear_tangent": 79.1835
+      },
+      {
+        "M": 1.763,
+        "TP0_hat": 1.3881,
+        "P0_hat": 78.7346,
+        "R0_hat": 41.5506,
+        "F1_0_hat": 54.3952,
+        "P0_linear_tangent": 78.7374
+      },
+      {
+        "M": 1.7826,
+        "TP0_hat": 1.3996,
+        "P0_hat": 78.5145,
+        "R0_hat": 41.8496,
+        "F1_0_hat": 54.5977,
+        "P0_linear_tangent": 78.5188
+      },
+      {
+        "M": 1.789,
+        "TP0_hat": 1.4034,
+        "P0_hat": 78.4433,
+        "R0_hat": 41.9471,
+        "F1_0_hat": 54.6633,
+        "P0_linear_tangent": 78.4474
+      },
+      {
+        "M": 1.796,
+        "TP0_hat": 1.4074,
+        "P0_hat": 78.3658,
+        "R0_hat": 42.0536,
+        "F1_0_hat": 54.7347,
+        "P0_linear_tangent": 78.3694
+      },
+      {
+        "M": 2.091,
+        "TP0_hat": 1.5767,
+        "P0_hat": 75.4055,
+        "R0_hat": 46.4517,
+        "F1_0_hat": 57.4888,
+        "P0_linear_tangent": 75.0793
+      },
+      {
+        "M": 2.582,
+        "TP0_hat": 1.8457,
+        "P0_hat": 71.4841,
+        "R0_hat": 53.4405,
+        "F1_0_hat": 61.1592,
+        "P0_linear_tangent": 69.6033
+      },
+      {
+        "M": 3.154,
+        "TP0_hat": 2.1432,
+        "P0_hat": 67.9524,
+        "R0_hat": 61.17,
+        "F1_0_hat": 64.3831,
+        "P0_linear_tangent": 63.2239
+      }
+    ],
+    "primary_endpoint_pd2": {
+      "name": "delta_P_front",
+      "definition": "P(B1) - P0_hat(M_B1) evaluated at B1's own observed mention count M_B1 on ktvic_test (n = 558) with zero parameter refitting.",
+      "secondary_endpoints": [
+        "delta_R_front = R(B1) - R0_hat(M_B1)",
+        "delta_F1_front = F1(B1) - F1_0_hat(M_B1)",
+        "Same-count controls: (v, g) tie-averaged vocabulary control and POOL-VOTE at M_B1",
+        "Dual-matcher side-by-side delta_P_front under v1 (RESCAP_RAW_TONE=1) and v2 (RESCAP_RAW_TONE=0)"
+      ],
+      "bootstrap_resamples": 10000,
+      "bootstrap_ci_level": 0.95,
+      "equivalence_margin_pp": 2.0
+    }
+  },
+  "two_outcomes_protocol": {
+    "equivalence_margin_pp": 2.0,
+    "ci_level": 0.95,
+    "outcome_A_invariance_holds": {
+      "criterion": "abs(delta_P_front) <= 2.0 pp AND 95% paired bootstrap CI of delta_P_front contains 0.0 (or TOST equivalence holds within [-2.0, +2.0] pp).",
+      "scientific_claim": "Cross-backbone frontier invariance holds: the count-driven precision-recall frontier P0(M) is invariant across VLM backbones (Qwen2.5-VL-7B vs Qwen3-VL-8B) under identical P1 supervision.",
+      "manuscript_action": "Report B1 (Qwen3-VL-8B P1) on the shared frontier plot in Section 5 as cross-backbone confirmation of H1/H2/H3."
+    },
+    "outcome_B_invariance_breaks": {
+      "criterion": "abs(delta_P_front) > 2.0 pp WITH 95% paired bootstrap CI of delta_P_front excluding 0.0.",
+      "scientific_claim": "Backbone visual-language prior shifts the baseline precision intercept a_P (by delta_a_P = delta_P_front) while preserving within-backbone count-slope b(k) and gold-completeness monotonicity (H4).",
+      "manuscript_action": "Report exact backbone intercept shift delta_a_P (under both v1 and v2 matchers) and scope the paper's invariance claim to within-backbone supervision-ladder invariance."
+    }
+  },
+  "instrument_sha256": {
+    "scripts/train_stage2.py": "29312ef765e3e49e5e1efefc5ad8b88fcf33c991b1a5f3a266a910ada3d1cab4",
+    "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+    "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+    "scripts/prereg_ladder_check.py": "279942468d879c93ca4c5c8767b829397b58cebedd73d845496f6ead22616d19",
+    "scripts/abs_halluc.py": "76819c8e1c439cce2c5651e50e2a86d28078c2cbb67db22bc6327401bbcfc481",
+    "scripts/ktvic_dev_split.py": "b4adfb4c6c6538c735126f1423e8520b156ad6ec81fa3aec9efa0d8558ff7c92",
+    "scripts/build_gold_sft.py": "18e7909f25cc5c94b194d1a4e13fe6d396b6a8debe73a354699534b1f009c60a",
+    "scripts/s0_screen.py": "78ff783870ad0921e84d0ba57fc69ed679c80f89373aad750bf298640333d5e3",
+    "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+    "rescap/vlm/base.py": "e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93",
+    "rescap/vlm/mock.py": "33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7",
+    "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+    "data/splits/ktvic_train_minus_dev300.txt": "006080b455a553ca9cc5d3f514ad76bfbe67f444c9c145a5696de681a4be1a58",
+    "manuscript/prereg/2026-10-12_ladder_predictions.json": "65dae1bc1598c6b7fc4743fd5ba9e3e25245a3a90b2e6d8ec614eeea5702ece3",
+    "manuscript/prereg/2026-10-13_s0_qwen3vl.md": "a9c616ca06503413224466d71d674c7655da0c371a1646b3ceb2c82f86ed69b8",
+    "manuscript/prereg/2026-10-14_b1_jobs/61_b1_qwen3vl_guard_and_gate.sh": "7d44ea6c8f20639003a53a1bb30f0e0bac5caab8be77e7800f4c7880db69c471"
+  }
+}

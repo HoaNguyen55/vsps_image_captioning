@@ -1,0 +1,156 @@
+{
+ "timestamp": "2026-10-14",
+ "authority": "PD-4 Q5(c), H6 Proposal P2, H3 Proposal P2",
+ "status": "pre-registered before any 58_z_xm3600_eval.sh (39_xm3600_eval.sh) output exists in data/results/xm3600",
+ "dataset": {
+  "name": "XM3600 (Crossmodal-3600, Thapliyal et al., EMNLP 2022) + Open Images V7 human-verified image labels (Kuznetsova et al., IJCV 2020)",
+  "n_images_full": 3600,
+  "n_images_eval_subset": 600,
+  "eval_subset_file": "data/xm3600_subset.txt",
+  "ref_count_distribution_vi_full_3600": {
+   "2_refs": 3450,
+   "3_refs": 150
+  },
+  "ref_count_distribution_vi_eval_600": {
+   "2_refs": 573,
+   "3_refs": 27
+  },
+  "mapped_lexicon_classes": 82,
+  "total_vi_lexicon_classes": 113
+ },
+ "frozen_inputs_sha256": {
+  "data/datasets/xm3600/test_data.json": "0a613214f95605ff137879f70cb84f8160172c28a650317766ac4a1d9c3b72e8",
+  "data/datasets/xm3600/full_data.json": "101d24ad98e9dec43625ee425fa1b49aa1bde98f9609945bf5dd4424fef1dacc",
+  "data/datasets/xm3600_en/test_data.json": "3a1bf2ef38a7ba5e23edc2abdb98a4bdd34ad9221e3e5e89aaabcab9204711b6",
+  "data/datasets/xm3600_en/full_data.json": "fd9cda7223dc5029d76a14cc42d594097c3bde2f7ade9005161962d6a2af13b3",
+  "data/xm3600/oiv7_labels.json": "bac3953a511a9793c22e928a29b68ae05dbf9654502abcbe7b64fd9f6d74c8b2",
+  "data/xm3600/vi_oiv7_map.json": "27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a",
+  "data/xm3600/manifest.json": "263015f9dc46ebe2cea80055e04ed39baf80a356f4e027cd3756464279135bef",
+  "data/xm3600_subset.txt": "f5ab86c7f3126ab6683e97b769e462aa149ca22b081a889d0a0027904d503952",
+  "scripts/xm3600_oiv7.py": "9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0",
+  ".session_backup/machines/n2/queue/paused/39_xm3600_eval.sh": "8ab1afccc06b1b6edd6c5b339ed9483c91dd1adff339b88a36b0ae471616596e",
+  ".session_backup/2026-10-14/r11_litmaps/L1/check_coco.json": "cb21dd257f93a794fa7933c39a994a15825e95f705bdf3dd3e5cc1ad273593aa"
+ },
+ "systems_queued_in_58_z": [
+  "xm3600_zeroshot-short",
+  "xm3600_zeroshot-detailed",
+  "xm3600_p1_s43-short",
+  "xm3600_p1_s43-detailed",
+  "xm3600_fuse2_s42-short",
+  "xm3600_fuse2_s42-detailed"
+ ],
+ "gold_density_Gbar_eval600": {
+  "refs1_firstk": {
+   "Gbar_all_600": 1.495,
+   "Gbar_nonempty": 1.7657,
+   "n_nonempty": 508,
+   "empty_gold_share": 0.1533
+  },
+  "refs1_randk": {
+   "Gbar_all_600": 1.6,
+   "Gbar_nonempty": 1.8831,
+   "description": "expected 1-reference gold size averaged across each image's 2-3 Vietnamese references"
+  },
+  "refs_all": {
+   "Gbar_all_600": 2.3483,
+   "Gbar_nonempty": 2.5387,
+   "n_nonempty": 555,
+   "empty_gold_share": 0.075,
+   "description": "union of all 2-3 Vietnamese references per image"
+  },
+  "oiv7_verified": {
+   "Gbar_pos_all_600": 2.0417,
+   "Gbar_pos_nonempty": 2.5206,
+   "n_nonempty_pos": 486,
+   "empty_pos_share": 0.19,
+   "mean_verified_absent_per_image": 4.0067,
+   "description": "Open Images V7 human-verified positive labels on the 82 mapped Vietnamese lexicon classes"
+  }
+ },
+ "a_N1_sign_predictions": {
+  "transferred_b_from_coco2500": {
+   "source_file": ".session_backup/2026-10-14/r11_litmaps/L1/check_coco.json",
+   "b_refs1_randk": 0.479,
+   "b_refs2_randk": 0.549,
+   "b_refs3_randk": 0.592,
+   "b_inst": 0.846
+  },
+  "out_of_sample_Mstar_micro_prior_b": {
+   "formula": "M*_micro = b_prior * Gbar / (1 - b_prior)",
+   "refs1_randk": {
+    "b_prior": 0.479,
+    "Mstar_all_600": 1.471,
+    "Mstar_nonempty": 1.7313,
+    "predicted_slope_sign": "negative (slope(refs1) < 0)"
+   },
+   "refs_all": {
+    "b_prior": 0.549,
+    "Mstar_all_600": 2.8586,
+    "Mstar_nonempty": 3.0904,
+    "predicted_slope_sign": "positive under transferred b (slope(refs_all) > 0); risky test since H3 showed b can compress on verbose outputs"
+   },
+   "oiv7_verified": {
+    "b_prior": 0.846,
+    "Mstar_all_600": 11.216,
+    "Mstar_nonempty": 13.847,
+    "predicted_slope_sign": "positive (slope(OIV7) > 0, where F1 = 2 * verified_precision * pos_recall / (verified_precision + pos_recall))"
+   }
+  },
+  "relative_form_predictions": {
+   "P1_refs1_slope_negative": "slope(refs1_randk) < 0 across the 6 XM3600 systems",
+   "P2_oiv7_slope_positive": "slope(oiv7_verified) > 0 across the 6 XM3600 systems",
+   "P3_slope_ordering": "slope(refs1_randk) < slope(refs_all) < slope(oiv7_verified)",
+   "P4_mstar_mixed_sign_agreement": "for each gold variant g in {refs1_firstk, refs1_randk, refs_all, oiv7_verified}, sign(slope_g) == sign(M*_mixed(g) - median_M)"
+  },
+  "kill_rule": {
+   "h6_p2_kill": "If >= 2 of the 3 out-of-sample sign predictions (refs1 < 0, refs_all > 0, OIV7 > 0) fail, N1 is demoted from core result to explanatory lemma / diagnostic.",
+   "h3_p2_r11_stop_rule": "If slope(refs1_randk) >= 0 on XM3600, N1's 1-reference half fails in a third setting and the sign-flip claim is dropped entirely."
+  }
+ },
+ "b_N2_adjacency_audit_completed_pre_gpu": {
+  "claim_addressed": "H6 Proposal P2(b) and H6 Section 4 Claim 11",
+  "source_archive": "data/datasets/xm3600/raw/captions.zip (captions.jsonl)",
+  "n_images_total": 3600,
+  "n_images_with_3_vi_refs_full": 150,
+  "n_images_with_3_vi_refs_eval600": 27,
+  "exchangeable_null_for_K3": 0.6667,
+  "observed_full_150_images": {
+   "adjacent_doubletons": 48,
+   "total_doubletons": 90,
+   "adjacent_share": 0.5333,
+   "bootstrap_ci95_b5000": [
+    0.4141,
+    0.6471
+   ],
+   "excess_over_null": -0.1333,
+   "positive_excess_detected": false
+  },
+  "observed_eval600_27_images": {
+   "adjacent_doubletons": 9,
+   "total_doubletons": 17,
+   "adjacent_share": 0.5294,
+   "bootstrap_ci95_b5000": [
+    0.25,
+    0.8
+   ]
+  },
+  "verdict": "PASS_INDEPENDENT_REFS (no positive adjacency excess on XM3600-vi 3-ref images: 0.5333 [0.4141, 0.6471] <= 2/3 null, contrasting sharply with KTVIC test 0.710 vs 0.400 null)"
+ },
+ "c_C3_two_panel_and_oiv7_predictions": {
+  "two_caption_panels_vi_vs_en": {
+   "gold_A": "XM3600-vi references (data/datasets/xm3600/test_data.json, 113-class Vietnamese lexicon)",
+   "gold_I_panel": "XM3600-en references on the exact same 600 images (data/datasets/xm3600_en/test_data.json, mapped via the 82-class / COCO-80 bilingual concept table)",
+   "prediction_kappa": "Across count-matched contrasts (MCP / frontier residual d_rho) for zeroshot, p1_s43, and fuse2_s42, the transfer slope kappa(A -> I_panel) < 1 with 95% bootstrap CI upper bound < 1.",
+   "kill_rule": "If the 95% CI of kappa(A -> I_panel) includes 1, partial transfer between caption panels is reported as KTVIC-specific."
+  },
+  "refs_vs_oiv7_verified_labels": {
+   "gold_A": "XM3600-vi references (P, R, F1 via xm3600_oiv7.py score)",
+   "gold_I_truth": "OIV7 human-verified labels (verified_precision, neg_hallucination, pos_recall via xm3600_oiv7.py score)",
+   "predictions": [
+    "C3-OIV7-1: KTVIC SFT adapters (p1_s43-short, fuse2_s42-short) achieve higher reference precision P than zeroshot-short on XM3600-vi refs, but their verified_precision gain on OIV7 over zeroshot-short is smaller than their reference precision gain (d_verified_precision < d_P_refs).",
+    "C3-OIV7-2: Detailed decoding (zeroshot-detailed, fuse2_s42-detailed) increases OIV7 pos_recall over short decoding (d_pos_recall > 0 with 95% CI > 0) while reducing XM3600-vi reference precision P (d_P_refs < 0).",
+    "C3-OIV7-3: Reference-false mapped mentions (ref_false_mapped) for p1_s43-short and fuse2_s42-short have a higher OIV7 present/(present+absent) share than zeroshot-detailed."
+   ]
+  }
+ }
+}
