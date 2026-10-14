@@ -1,0 +1,12 @@
+UITVIIC (test_data.json, 231 images, short mode) -- object precision / recall / F1 (%)
+  exact match | CHAIR-vi hypernym rule: P_h, R_spec (F1), R_vague (F1)
+  uitviic_fuse2_s42          true/cap=1.62  P= 87.4  R= 50.4  F1= 63.9 | P_h= 89.0  R_spec= 52.4 ( 66.0)  R_vague= 53.7 ( 67.0)
+  uitviic_p1_s42             true/cap=1.45  P= 90.8  R= 44.4  F1= 59.6 | P_h= 91.0  R_spec= 46.8 ( 61.8)  R_vague= 46.9 ( 61.9)
+  paired bootstrap vs uitviic_p1_s42 (B=5000, same images): delta [95% CI] p
+  uitviic_fuse2_s42          n=231  dP=-3.4 [-6.2,-0.5] p=0.0204  dR=+6.0 [+3.4,+8.7] p=0.0004  dF1=+4.3 [+1.8,+6.8] p=0.0004
+
+UITVIIC (test_data.json, 231 images, short mode) -- instance + reference gold, COCO-80 classes (Vietnamese lexicon v2): P / R / F1, CHAIR_i = 100 - P, CHAIR_s (%)
+  uitviic_fuse2_s42          n=231  true/cap=1.60  P= 99.5  R= 48.9  F1= 65.5  CHAIR_i=  0.5  CHAIR_s=  0.9
+  uitviic_p1_s42             n=231  true/cap=1.37  P= 99.4  R= 41.8  F1= 58.9  CHAIR_i=  0.6  CHAIR_s=  0.9
+  paired bootstrap vs uitviic_p1_s42 (B=5000, same images): delta [95% CI] p
+  uitviic_fuse2_s42          n=231  dP=+0.1 [-0.7,+1.0] p=0.7964  dR=+7.1 [+4.9,+9.3] p=0.0004  dF1=+6.7 [+4.6,+8.8] p=0.0004
