@@ -112,8 +112,7 @@ for mode, max_new in (("short", 60), ("detailed", 160)):
         "n_images": len(preds),
         "elapsed_sec": round(elapsed, 3),
         "predictions": preds,
-    }, ensure_ascii=False, indent=2) + "
-", encoding="utf-8")
+    }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     vi_cnt = sum(1 for c in preds.values() if looks_vietnamese(c))
     cjk_cnt = sum(1 for c in preds.values() if CJK.search(c))
@@ -155,8 +154,7 @@ guard_report = {
     "pass": all_pass,
 }
 (out_path / "step1_dev300_guard.json").write_text(
-    json.dumps(guard_report, ensure_ascii=False, indent=2) + "
-", encoding="utf-8"
+    json.dumps(guard_report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
 )
 if not all_pass:
     raise SystemExit("Step 1 dev300 zero-shot guard FAILED; aborting before Step 2 SFT.")
@@ -235,8 +233,7 @@ telemetry = {
     "peak_vram_gb": round(peak_vram_gb, 4),
     "peak_vram_gate_le_22gb": bool(peak_vram_gb <= 22.0),
 }
-Path(telemetry_out).write_text(json.dumps(telemetry, ensure_ascii=False, indent=2) + "
-", encoding="utf-8")
+Path(telemetry_out).write_text(json.dumps(telemetry, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 if peak_vram_gb > 22.0:
     raise SystemExit(f"Peak VRAM {peak_vram_gb:.2f} GB exceeded 22.0 GB gate")
 sys.exit(rc)
@@ -303,8 +300,7 @@ for split_tag, ds_dir, split_json, expected_n in splits:
         elapsed = time.time() - t0
         stem = f"b1_qwen3vl_p1_nodev_s42-{split_tag}-{mode}" if split_tag == "dev300" else f"b1_qwen3vl_p1_nodev_s42-{mode}"
         pred_path = out_path / f"{stem}.preds.json"
-        pred_path.write_text(json.dumps(preds, ensure_ascii=False, indent=2) + "
-", encoding="utf-8")
+        pred_path.write_text(json.dumps(preds, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         meta_path = out_path / f"{stem}.decode_meta.json"
         meta_path.write_text(json.dumps({
             "machine_id": machine_id,
@@ -313,8 +309,7 @@ for split_tag, ds_dir, split_json, expected_n in splits:
             "prompt_style": mode,
             "n_images": len(preds),
             "elapsed_sec": round(elapsed, 3),
-        }, ensure_ascii=False, indent=2) + "
-", encoding="utf-8")
+        }, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 PY
 
 # 5. CPU scoring via evaluate.py (in /root/vsps/.venv for RDRSegmenter/JVM) + dual-matcher (v1 & v2) frontier verdict.
@@ -355,8 +350,7 @@ def run_eval(preds_file: Path, split_json: str, dataset_env: str, mode: str, nam
     )
     payload = json.loads(out_json.read_text(encoding="utf-8"))
     payload["machine_id"] = machine_id
-    out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "
-", encoding="utf-8")
+    out_json.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return payload
 
 def dual_matcher_scores(preds: dict[str, str], refs: dict[str, list[str]]) -> dict:
@@ -459,7 +453,6 @@ results["primary_endpoint_pd2"] = {
 }
 
 verdict_path = out_path / "step2_b1_gate_verdict.json"
-verdict_path.write_text(json.dumps(results, ensure_ascii=False, indent=2) + "
-", encoding="utf-8")
+verdict_path.write_text(json.dumps(results, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 print(f"Wrote B1 gate verdict -> {verdict_path}")
 PY
