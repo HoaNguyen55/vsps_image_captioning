@@ -1,0 +1,119 @@
+R12 / H1 -- VALIDATING THE COUNT-MATCHED OBJECT EVALUATION (C1/C2/N1) AGAINST EXISTING HUMAN JUDGMENTS
+2026-10-14. Agent H1. CPU only (pilot: 8 s wall, 338 MB RSS, nice 19, 1 thread). No new annotation; public human sets only.
+Files (SP/r12/H1/): PREDICTIONS_FROZEN.txt (sha256 c09ed9a3..., written 12:52:33Z before any human-score statistic),
+scripts/h1_pilot.py, pilot_results.json, pilot.log, arxiv_ids.tsv (22 IDs), dl/ (untrusted downloads: thumb/, composite/, papers/).
+
+0. BOTTOM LINE
+- YES, human-judgment validation can go in the paper, but as a MEASUREMENT-VALIDITY section, not as proof that the count-
+  controlled residual or N1 "is what humans want". Of 5 frozen predictions: P3 held on THumB; P1a held twice; P1b, P2c, P5
+  FAILED; P2 kill rule fired.
+- What humans DO support: (i) object precision agrees with expert precision far better under complete gold (THumB pairwise
+  0.736 -> 0.903 from 1-ref to inst+refs gold); (ii) experts do not penalise "pseudo-FPs" (beta -0.09 vs -1.16 for real FPs);
+  (iii) matched-count pairs are where object metrics agree most with humans (0.85 T / 0.95 C vs 0.77 / 0.84 count-differing).
+- What humans do NOT support: the residual z beats raw CHAIR for overall quality (it is WORSE, -19 / -8 points), and
+  "complete-gold F1's verbosity reward is right" (humans are count-neutral; full-gold F1 prefers the longer caption 83% of the time).
+- Caveat that limits everything: short COCO captions (M = 1-2 classes), English only, pre-LVLM systems.
+
+1. EVIDENCE
+1a. Survey (all arXiv IDs checked via the arXiv API on 2026-10-14, titles match; sizes/licences from HF/GitHub APIs)
+ ID / set                         images            judgment                        size        multi-sys  licence / URL                          fit
+ 2111.08940 THumB 1.0 (NAACL22)   500 COCO val2014  expert P, R (1-5), penalties,   2,500 caps  5 (4 + Human) no licence file; github.com/jungokasai/  BEST: P/R
+                                  (Karpathy test)   kappa .86/.82                   585 KB                    THumB (mscoco/*.jsonl)
+ 1511.03292 Composite (Aditya)    ~2,000 COCO val14 crowd correctness+thoroughness  6,774 caps  4 texts/img   no licence stated, "cite"; Dropbox    GOOD: P/R
+                                  (+F8k, F30k)      1-5, 1 rater/HIT                1.1 MB zip  (1 human ref) AMT_eval.zip (imagesdg.wordpress.com) (noisy)
+ 2402.18091 Polaris (CVPR24)      13,691 COCO+nocaps overall 1-5 (fluency/relev/    131K caps   10 models     BSD; HF yuwd/Polaris 2.6 GB w/ images; GOOD: scale
+                                  val               descr.), ~8 raters, no sys id   (text ~16MB)              text via datasets-server rows API (works)
+ 2409.19255 Nebula/DENEB (ACCV24) 32,978 COCO+nocaps overall, 1 cand per image      33K         10 models     project page link [UNVERIFIED dl]       weak: no
+                                  val                                                                                                                 within-img
+ 2506.07631 DOCCI-Critique        100 DOCCI images  sentence-level factuality,      1,400 paras 14 VLMs       CC BY 4.0; HF google/DOCCI-Critique    BEST for
+            (Gordon et al.)                         5 raters + critiques            10,216 sent  long paras   (metadata.csv 14 MB)                   long caps
+ 2509.25818 LongCap-Arena / VELA  7,805 (DCI/DOCCI) descriptiveness, relevance,     32,246      multi        BSD-3-Clause-Clear; HF Ka2ukiMatsuda/  good, long;
+            (EMNLP25)                               fluency (separate)              16.8 GB w/ img           LongCap-Arena (text via rows API?)     no COCO gold
+ 2503.12329 CapArena (Find.ACL25) DOCCI subset      pairwise human battles          6,523 pairs 14 models    no licence; box.nju.edu.cn link        pairwise,
+                                                                                                                                                 long; DOCCI gold
+ 2404.02904 ALOHa / HAT (NAACL24) COCO              word-level hallucination labels 90+400      4 models     no licence; repo data/hat-trainval.json matcher
+                                                                                                             (549 KB; test split not found)          validity only
+ 2308.06394 M-HalDetect (AAAI24)  COCO val2014      span-level accurate/inaccurate  ~16K spans  1 (InstructBLIP) HF MM-Hallu/mhal-detect (604 MB, re-    1 system:
+                                                                                                             upload, licence none; CC BY-NC per 3rd party) no count var.
+ NeurIPS23 D&B VICR (Narins)      COCO val14+F8k    gamified ratings                68K / 15.6K pairs  ?        [dl UNVERIFIED]                        maybe
+ Flickr8k-Expert/CF (Hodosh JAIR  Flickr8k          expert 1-4 / crowd binary       5.8K / 47.8K retrieved   via CLIPScore/PAC-S Google Drive        no COCO
+   2013, DOI 10.1613/jair.3994                                                       captions, not systems                                      instances
+   [DOI not re-checked])
+ 1411.5726 PASCAL-50S             1,000 VOC         pairwise "closer to reference"  4,000 triplets           VT filebox                              consensus,
+                                                                                                                                                 not image
+ 1705.01359 FOIL-COCO (ACL17)     COCO              correct vs 1-noun foil          ~300K pairs synthetic    foilunitn.github.io                     count fixed
+ 2312.03631 MOCHa/OpenCHAIR       synthetic imgs    no human caption judgments found                         HF moranyanuka/OpenCHAIR (MIT)          no
+ 2412.15484 CapMAS (ICML25)       1,000 DOCCI       no human-judgment release (GPT-4o metrics + VQA needles) HF saehyungl/CapMAS (Adobe research) no
+ 2405.19092 DetailCaps-4870       mixed             GPT-4-eval labels; human only on a small subset [not checked] 970 MB              no
+ 2404.19753 DOCCI, 2405.02793 IIW human SxS evals not found as downloadable files; 2311.07397 AMBER = object annotations, not
+   judgments (usable as dense gold only); 2407.18589 HICE-S and 2412.13647 G-VEval: no new image human set (G-VEval's is video).
+1b. Pilot (CPU, frozen predictions; THumB T: 500 img, 5,000 pairs, 1,484 count-differing; Composite C: 1,996 img, 8,348 pairs,
+    5,010 count-differing). Unit = within-image caption pairs; acc = concordant/(conc+disc); 2,000 image bootstraps.
+ P1a acc(-CHAIR->P_h) - acc(z->P_h), cdiff, full gold: T +0.325 [+0.247,+0.398]; C +0.097 [+0.079,+0.116]        HELD x2
+ P1b acc(z->Total) - acc(-CHAIR->Total):              T -0.190 [-0.277,-0.108]; C -0.083 [-0.101,-0.065]        FAILED x2
+ P2a humans prefer the larger-M caption (Total):      T 0.481 [0.429,0.530] (R 0.563, P 0.345); C 0.525 [0.506,0.544]  FAILED T / HELD C (barely)
+ P2b F1 preference for larger M by gold (refs1/refs4/full): T 0.41/0.66/0.83; C 0.54/0.66/0.73 -> monotone HELD; but the human
+     value (0.48 / 0.52) is CLOSER to refs1 than to full                                                      FAILED (2nd clause)
+ P2c acc(F1_full->T) - acc(F1_refs1->T), cdiff:       T -0.018 [-0.073,+0.038]; C -0.006 [-0.022,+0.010]        FAILED; KILL rule fired
+ P3  OLS P_h ~ FP_full + PFP_1 + TP_full: T beta_FP -1.16 [-1.38,-0.94], beta_PFP -0.09 [-0.21,+0.02], diff +1.07 [+0.82,+1.32]
+     -> HELD. C beta_FP -1.16, beta_PFP -0.48 [-0.59,-0.37], diff +0.68 [+0.54,+0.81] -> FAILED (|PFP| > |FP|/3; kill not hit)
+ P4  human Total agrees with CHAIR on clean matched-count wins: T 0.846 (n 91), C 0.946 (n 928); confounded wins: T 0.625 (n 16,
+     UNDERPOWERED), C 0.705 (n 332) [0.645,0.763] > 0.60 -> FAILED; diff C +0.241 [+0.180,+0.303] (>= 15 pts held)
+ P5  object precision of the Human system under refs1: 0.774, HIGHEST of 5 (not lowest) -> FAILED. Under full gold Human is also
+     highest (0.984 vs VinVL-large 0.977), matching THumB's human P ranking (4.82 first).
+1c. Exploratory (not pre-registered; label as such in any paper text)
+ - Gold completeness and human validity of -CHAIR (all pairs, T: refs1/refs4/full): vs P_h 0.736/0.796/0.903; vs Total
+   0.627/0.714/0.793. C vs Total: 0.743/0.838/0.873. Gold completeness is the largest single driver of human agreement measured.
+ - Count-equal pairs (where CHAIR, F1, z coincide): T Total 0.846, P 0.941; C Total 0.946. Count-differing: 0.773 / 0.838 (CHAIR).
+ - Caption-level corr(M, Total) = -0.05 (T), -0.02 (C): humans are count-neutral in this short-caption regime.
+ - Pearson with Total, full gold: -CHAIR 0.247 (T) / 0.46 (C); F1 0.16 / 0.36; z 0.218 / 0.495. THumB Table 4 reference values
+   (w/ Human): CIDEr 0.23, CLIP-S 0.32, RefCLIP-S 0.41. A COCO-80 object score with complete gold is in CIDEr's range.
+
+2. PROPOSALS FOR GEMINI (all CPU; 0 GPU-h)
+ G1 Paper section "Do object metrics agree with humans?" from this pilot (rerun: python3 -E -P h1_pilot.py <syn> <inst_val2014>
+    <karpathy> thumb/ composite/AMT_eval.zip out.json; 10 s). Report 1b + 1c with "exploratory" tags. Claim strengthened: C2
+    (gold-indexing has a human-validity cost) and C1's matched-count principle (most human-valid comparisons). Q2 +3-5 pts.
+ G2 Polaris-COCO confirmatory replication (~0.3 CPU-h incl. ~262 rows-API calls, 1 s apart, ~16 MB text; map refs -> cocoid via
+    Karpathy). Prereg BEFORE pulling scores: H-a acc(-CHAIR_full->overall) - acc(-CHAIR_refs1->overall) > 0 (CI > 0); H-b count-equal
+    pairs agree more than count-differing pairs; H-c corr(M, overall) within image in [-0.1, +0.1]. Kill: H-a CI <= 0. Use test
+    split only for confirmation; train split may be used to set nothing (no tuning needed). Strengthens C2/C1. Q2 +2.
+ G3 Long-caption test where C1/E1 actually live: DOCCI-Critique (CC BY 4.0, 14 MB CSV, 14 VLMs, sentence factuality). Per
+    paragraph: human precision = share of sentences rated Accurate; object M from the paragraph; gold = DOCCI description classes
+    (1 dense ref, COCO-80) -- report gold sparsity as the caveat. Prereg: (i) per-VLM human factuality falls with M (slope < 0);
+    (ii) at matched M (pair VLMs on the same image, first-k classes) the object-precision ranking of the 14 VLMs agrees with the
+    human factuality ranking better than raw (Kendall tau gain >= 0.1). Kill: (ii) gain <= 0. ~0.3 CPU-h. This is the only
+    test of C1 in the LVLM regime; if it holds, Q1 +3-5.
+ G4 HAT trainval (549 KB): matcher validity (does COCO-80 FP flag match human hallucination words; precision/recall of the
+    matcher). 0.1 CPU-h. Supports C4-style measurement-validity framing for English. Small.
+
+3. RISKS, AND WHAT WOULD CHANGE MY JUDGEMENT
+ - Regime mismatch: THumB/Composite captions name 1-2 COCO classes; E1's methods name ~4-8 at 512 tokens. Humans being count-
+   neutral here says nothing about long captions. G3 (or LongCap-Arena/CapArena) is required before any claim about LVLMs.
+ - Composite = 1 crowd rater per HIT and 2015 template systems; P3/P4 failures there may be noise. THumB has 4 annotators but
+   only 16 confounded pairs.
+ - Licences: THumB and Composite have no licence file; use aggregates only and cite (consistent with PD-2 #7).
+ - "full" gold = COCO instances U 4 refs is itself incomplete (80 classes); human agreement 0.90 is an upper bound for this vocab.
+ - Would change my view: G3 showing matched-count object precision tracks 14-VLM human factuality better than raw -> upgrade the
+   residual/two-column claim to "human-supported in the LVLM regime".
+
+4. CLAIMS FOR GEMINI TO VERIFY
+ 1 Rerun h1_pilot.py; PREDICTIONS_FROZEN.txt sha256 c09ed9a3d001...; numbers in 1b/1c reproduce (seed 0, 2,000 boots).
+ 2 THumB facts: 500 Karpathy-test images, kappa 0.86 (P) / 0.82 (R), Human = one random COCO ref (arXiv 2111.08940v2 sec 2).
+ 3 Composite COCO CSVs: 2,009 HITs each, MaxAssignments = 1, 4 texts per HIT; text1 is a COCO reference (excluded from gold).
+ 4 Implementation note: P4 "confounded CHAIR win" also requires CHAIR_A < CHAIR_B (frozen text says "CHAIR wins"); without that
+   condition C = 0.699 (n 342), same verdict.
+ 5 Polaris has no system id field (features: refs, cand, img, human_score); datasets-server rows API returns text.
+ 6 DOCCI-Critique columns (file_name, sentence, factuality_ratings, Captioner_VLM, ...) and 14 VLMs x 100 images.
+ 7 Instance labels found for 2,298 / 2,307 images (9 without instances).
+
+5. DISAGREEMENTS (with our R10/R11/PD-3 line and Gemini's D16)
+ - D16's two-column standard (raw F1 + count-controlled residual) should NOT be sold as "closer to human judgment": in both
+   human sets the residual z agrees with overall human preference LESS than raw CHAIR (-19 / -8 pts). Justify the residual as
+   a decomposition/attribution tool (what changed: count vs choice), not as a better quality score. Confidence 80%.
+ - N1 should be framed as a property of the METRIC (sign flips with gold; replicated here: F1's long-caption preference 0.41 ->
+   0.83 THumB, 0.54 -> 0.73 Composite), not as "sparse gold misjudges what humans prefer": humans are count-neutral and sit
+   nearer the 1-ref value. Do not write "complete gold recovers human verbosity preferences". Confidence 80%.
+ - ADD to C2: gold completeness is the dominant driver of human validity of object precision (0.74 -> 0.90). This is the most
+   paper-ready human-backed number we have; it supports the two-gold design (C3) and argues for instance/panel gold. 75%.
+ - Expected bar effect: human validation as a supporting section ~ Q2 +5, Q1 +3; it cannot carry the paper. G3 is the one
+   check that could lift Q1 materially. Revised estimate after this round: Q2 60-68%, Q1 18-25%. Confidence 65%.

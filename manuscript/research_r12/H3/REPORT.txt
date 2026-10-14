@@ -1,0 +1,200 @@
+R12 / H3 -- GENERALITY OF C1, C2/N1, C3, C4/N2 BEYOND KTVIC AND QWEN2.5-VL (2026-10-14). CPU only, no GPU.
+SP = /tmp/claude-1000/-mnt-d-vsps-image-captioning/755eae04-5e4c-4ce1-ab21-d4bc106761ee/scratchpad. Files: SP/r12/H3/.
+
+0. BOTTOM LINE
+- I froze N1 predictions and tested them at 0 GPU on 20 public English LVLM systems (OPERA, LiM; 7 backbones).
+  Registered verdict: FAILED. 1 ref: negative slope (held). 5 refs: still NEGATIVE (-30, -23; predicted +).
+  inst: positive (+4.2 n.s., +6.9 sig.). The flip exists but moves with output verbosity, so N1 must be narrowed.
+- Gemini's UIT-ViIC "replication" numbers (D16 B2(3)) are not in its own JSON. The real values are exploratory and
+  mixed for 5 refs.
+- C3 does not transfer: on COCO presence labels, kappa = 1.34 (not ~0.3).
+- C1 and C4/N2 already meet 3 datasets x 2 backbones. C2 and C3 reach it with 58_z + an extended G2-B (+2.1 new
+  GPU-h), run before N9.
+
+1. EVIDENCE
+1a. Downloads (untrusted, SP/r12/H3/dl/, sha256 in dl/SHA256SUMS)
+- COCO annotations_trainval2014.zip, sha256 031296bb...3bf009 (241.2 MB).
+- OPERA logs at shikiw/OPERA@e1bb763 (12 files); LiM outputs at yuezih/less-is-more@f26e187 (r1..r12 + chair-500).
+- All 26 files are byte-identical to E1's copies, which still exist in SP/research_r10/E1/dl/ (the brief said they
+  were not kept). r6-ours-cap == r5-ours-inst (same git blob 72e0a15f27, sha256 7a7e2775...): E1 VERIFY #2 holds.
+- Image sets (checked before freezing): OPERA LLaVA-1.5 / MiniGPT-4 / Shikra share one 500-image set (F-B, 9 systems);
+  OPERA InstructBLIP has its own 500 (F-A, overlap 6); LiM r-files share chair-500 (F-C, 11 systems).
+- Predictions: SP/r12/H3/N1_PREDICTIONS.txt, written and hashed 2026-10-14T12:43:42Z (sha256 ba1f6bc7...),
+  made read-only; the run (12:45:33Z) prints the same hash. Timestamped, NOT git-committed (no commit rights).
+  Disclosed: E1's union-gold table was seen before freezing, so inst+refs5 is descriptive only.
+- Code: SP/r12/H3/scripts/h3_n1.py imports E1's CHAIR matcher (e1_chair_count.nodes) and L1's per_image / prf /
+  slope / mstar (check_mstar.py) unchanged. Output: out/n1_run.log, out/n1_results.json.
+  Fidelity assert passed: CHAIR_i 15.26 (LiM r1) and 12.60 (OPERA LLaVA-1.5 greedy), equal to E1.
+- Slope of F1 on log M across systems [95% image-bootstrap CI], randk gold:
+    family                      refs1                    refs5                    inst                   inst+refs5*
+    F-B OPERA 9 sys (n=499)  -35.18 [-40.38,-30.87]  -29.57 [-32.69,-26.37]  +4.24 [-0.09,+8.51]   +4.76 [+0.38,+8.57]
+    F-C LiM 11 sys (n=495)   -31.89 [-36.60,-27.21]  -22.86 [-26.71,-18.53]  +6.91 [+2.16,+11.17]  +9.12 [+4.85,+12.93]
+    (*seen before freezing. F-A InstructBLIP, 3 systems: no usable slope. COCO-2500 for comparison: -4.28/+11.08/+22.41.)
+- Scored against the frozen file:
+  - P1 refs1 < 0: HELD in both families.
+  - P2 refs5 > 0: FAILED in both (-29.6 and -22.9, tight CIs).
+  - P3 inst > 0 with CI > 0: held in F-C; FAILED in F-B (lower bound -0.09).
+  - P4 order, P5 sign(M*_mixed - median M) in 36/36 cells, P6 monotone in K (both families): all HELD.
+    P5 is close to built in: b and M*_mixed are fitted on the same systems.
+  - S1 / S2 within-system truncation: HELD (median slope -14.24 refs1, 23/23 negative; +14.28 inst, 0/23 negative).
+  - REGISTERED VERDICT: FAILED (P3 in F-B). Even with P3 it would only be PARTIAL, because P2 failed.
+- Mechanism (descriptive): under refs, recall saturates (refs1 R 90-96%, refs5 R 81-92%) and TP is flat in M.
+  - b = 0.11-0.28, against the COCO-2500 prior 0.64 for refs5: b does NOT transport across output regimes.
+  - Marginal precision dTP/dM across systems: 0.05-0.17 under refs vs 0.52-0.55 under inst, with F1/2 = 30-39.
+    Lipton's condition gives the sign in all 8 family x gold cells.
+  - The extra objects of verbose LVLMs are mostly in the instance labels but rarely in 5 captions.
+  - The sign flips between refs5 and inst for M = 2.2-3.4. In COCO-2500 (M = 0.84-2.14) it flips between refs1 and
+    refs2, so the flip point moves with the systems' verbosity.
+- Within system: the F1 maximum along each system's own truncation path lies BEFORE its full caption in 23/23 systems
+  under all three golds. Stopping at the maximum would gain +14.5 (refs1), +9.5 (refs5) and +1.1 (inst) F1.
+- Reading: N1 survives only in its relative form, "sign(dF1/dlogM) = sign(M* - M), with M* set by gold completeness
+  RELATIVE to the systems' verbosity, b in-sample". The portable form "5 refs reward verbosity" is falsified for
+  detailed English LVLM outputs. M* = bG/(1-b) is a descriptive decomposition, not an out-of-regime predictor.
+  F-B's inst slope rests on 3 model clusters (MiniGPT-4 M 2.2-2.3 vs LLaVA-1.5 / Shikra 2.7-3.3).
+1b'. C3 two-gold transfer on the same public outputs (EXPLORATORY; frozen file C3_PREDICTIONS.txt, 12:52:49Z,
+  sha256 1cfb6145...; script scripts/h3_c3.py; out/c3_results.json; 1 s)
+- E1 matched-prefix dP (MCP) of the 15 method claims against gold A = refs5 and gold I = instance labels.
+- kappa (dP_I on dP_A, through origin) = 1.34 [0.77, 1.68]; same sign 12/15; r = 0.80.
+  Q1 (0 < kappa < 1) FAILED; Q2 and Q3 HELD. On COCO, decoding gains at matched count against references transfer
+  at least 1:1 to presence labels. KTVIC's partial transfer (kappa_lin ~0.30, refs -> OpenViIC panel) is NOT
+  reproduced against a presence gold.
+- One exception: OPERA-Shikra is flat on refs (+0.08, +0.33) but loses on inst (-1.56 [-2.99,-0.17],
+  -1.23 [-2.42,-0.09]).
+- Weak test: most per-pair CIs cover 0, and kappa is driven by 2-3 contrasts (InstructBLIP-OPERA vs greedy,
+  LiM r12).
+
+1c. Gemini's UIT-ViIC "N1 replication" (D16 B2(3); log entry 12:35 UTC, task C2)
+- The log states FT_pooled_3sys slopes -9.94 -> +12.14 -> +22.87, M* 1.97/3.06/4.50 and sign_flip_confirmed.
+  NONE of these keys or numbers occur in c2_n1_uitviic_mstar.json, although the log quotes the JSON's sha256
+  (bed1dc25...); I checked by grep and key walk. r11_c1_c6_verification.md quotes yet other values (-18.30, -14.37).
+- What the JSON actually says (test n=231, mixed F1, image-bootstrap):
+  - COCO-80 lexicon, all_10: refs1_randk -13.97 [-19.24,-8.01]; refs5 +4.80 [-0.22,+9.67]; inst +37.52 [+34.56,+40.08].
+  - trained_8: refs1 -0.83 (n.s.); refs5 +23.97; inst +53.06.
+  - vi_objects_in lexicon, all_10: refs1 -17.25; refs5 -6.28 [-8.34,-3.96] (NEGATIVE); inst +7.66.
+- No frozen prediction file for UIT-ViIC exists, so this is exploratory, not a replication. The robust part is the
+  same as on the LVLMs: 1 ref negative, instance labels positive. The refs5 sign depends on lexicon and system set.
+
+1d. Inventory: claims x datasets x backbones
+Backbones: Q7 = Qwen2.5-VL-7B (all own systems, zero-shot + FT); Q3 = Qwen3-VL-8B (G2-B, approved in D15,
+  zero-shot, ~2.2 GPU-h, after the ladder); EN7 = 7 public English LVLMs (E1 files, 0 GPU); L9 = 9 LLaVA-1.5-7B
+  training checkpoints (N9, ~6 GPU-h, after PD-2); 3B jobs 57/58 (Qwen2.5-VL-3B, KTVIC only) are on hold.
+Datasets: KT KTVIC test; UV UIT-ViIC test/val (52_a/b/c done); C25 COCO-2500 (VI outputs, EN refs + inst);
+  CE COCO val2014 CHAIR/OPERA sets (E1); XM XM3600-vi 600 (58_z queued, 2.7 GPU-h, 2-3 VI refs + OIV7 verified
+  labels); CV COCO val2017_clean_295 (G2-B only).
+- C1 count-matched evaluation
+  - Now: KT, UV (52_c), C25 x Q7; CE x EN7. The MCP/TRF form already meets 3 datasets x 2 backbones.
+  - The (v,g) tie-avg and CAR form needs vote pools: KT and UV x Q7 only.
+  - After the queue: +XM x Q7, +CE x L9 (N9), +KT/UV/CV/XM x Q3.
+- C2/N1 frontier and sign
+  - Now: KT (exploratory), C25 (frozen, 4/4), UV (exploratory) x Q7; CE x EN7 (frozen, FAILED on refs5).
+  - After the queue: +XM x Q7; +KT/UV/CV x Q3 (6-point ladders).
+- C3 typicality vs truth
+  - Now: KT x Q7 (refs vs OpenViIC panel); UV x Q7 (52_c, refs vs COCO inst).
+  - CE x EN7: kappa >= 1 (1b'). This is the weakest claim: 1-2 datasets x 1 backbone.
+- C4/N2 validity
+  - N2 adjacency covers 5 corpora (c3_n2 JSON: KTVIC 0.710, UIT-ViIC 0.383, COCO 0.402, OpenViIC 0.41-0.48,
+    Flickr30k 0.483). Datasets, not backbones, are the unit, so the bar is already met.
+  - N10 punctuation: XM3600 36 languages (human captions).
+  - N11 matcher audit: UV x Q7 only; v3 not signed off.
+
+2. PROPOSALS FOR GEMINI (minimal plan to reach >= 3 datasets x >= 2 backbones per core claim; one 3090)
+Rates: short ~0.36 s/image, detailed ~2.9 s/image (G2 estimates); 58_z quotes 14.3 s/image for its 6 runs.
+P0 (CPU, now, 0 GPU)
+- Rerun scripts/h3_n1.py and h3_c3.py (SP/r12/H3/scripts; 6 s) and archive them with the frozen files.
+- Command: nice -n 19 env OMP_NUM_THREADS=1 python3 -E -P -B h3_n1.py <dl> <out>
+- Rewrite N1 in its relative form (see 5.1). Correct D16 B2(3) and the 12:35 log entry with the JSON values (1c).
+- Strengthens C2. Effect: removes a falsified sentence a reviewer could reproduce from public files.
+P1 (CPU, 0 GPU, ~0.2 CPU-h): C3 with two CAPTION panels on UIT-ViIC
+- Gold A = UIT-ViIC VI refs; gold I = the COCO EN refs of the same images (data/datasets/uitviic_en,
+  independent panel and guideline); gold P = COCO inst.
+- Systems: the 10 UV systems, plus 52_c UPE vs COUNT vs (v,g) tie-avg.
+- Prereg: kappa_lin(A->I) < 1 with CI < 1 (KTVIC analogue ~0.30); L = dRho_I - 0.35 dRho_A for UPE.
+- Kill: kappa_lin(A->I) CI includes 1 -> C3's partial transfer is KTVIC-specific; report it as such.
+- Strengthens C3 (second dataset, no GPU).
+P2 (queued 58_z, 2.7 GPU-h; +0.4 GPU-h new): XM3600
+- BEFORE outputs land, freeze:
+  - N1 (relative form): slope(refs1) < 0; OIV7-verified slope > 0, with P over verified mentions and R over
+    verified positives; sign = sign(M*_mixed - median M).
+  - C3: VI refs vs EN XM3600 refs (independent panel), kappa < 1.
+- Add 6 T=0.5 short samples for p1_s43 on the 600 images (+0.4 GPU-h). This gives a third vote-pool dataset
+  for the (v,g) control on Q7.
+- Kill: refs1 slope >= 0 -> N1's one-ref half fails in a third setting -> drop the sign-flip claim (R11 stop rule).
+- Strengthens C1, C2, C3.
+P3 (G2-B, approved 2.2 GPU-h; extend to "G2-B+", +1.7 GPU-h, total ~3.9): Qwen3-VL-8B zero-shot, as D15
+- Keep the T in {0, 0.5, 0.8} x short/detailed ladder on KT 558, UV 231 and CV 295.
+- Extensions:
+  - XM3600 all 600 images instead of 100 (+1.15 GPU-h);
+  - 6 T=0.5 short samples on KT + UV (+0.5 GPU-h), which gives Q3 vote pools for (v,g), CAR and UPE (CPU).
+- Prereg: P1-P4 and K1-K3 of G2's report §4 (Delta b endpoint), plus N1 relative-form sign rules per dataset,
+  plus the C3 kappa test on KT (refs vs panel), UV and XM.
+- Order: after the ladder 54-58 and 58_z, before N9 (cheaper, and it adds the 2nd backbone to C1-C4 at once).
+- Kill: Q3 Vietnamese share or CJK guard fails on dev300 (PD-2 Q5) -> score only the clean subset and say so.
+P4 (N9, approved ~6 GPU-h, unchanged): add to its prereg
+- N1 on CHAIR-500 with refs1/refs5/inst, frozen in the relative form;
+- the C3 kappa (refs5 -> inst) for 9 training methods (H3 of E1 predicts more object-choice change).
+- Gives C1 a training-method axis and a 9th English backbone variant.
+Optional P5 (+~2 GPU-h; licence check first): one non-Qwen Vietnamese-capable model (e.g. InternVL-8B or a Vintern
+  release; VERIFY ids/licence), zero-shot short+detailed on KT/UV/XM. Only if reviewers would see Q7+Q3 as "one
+  family"; it moves the Q1 stretch, not the Q2 bar.
+TOTAL new GPU: +2.1 GPU-h (P2 +0.4, P3 +1.7) on top of the already-approved 58_z, G2-B and N9 (~10.9 GPU-h);
+  +2 more with P5.
+After P0-P4:
+- C1: 5 datasets x 4 backbone groups; the (v,g) form covers KT, UV, XM x Q7 and KT, UV x Q3.
+- C2: KT, C25, UV, XM, CE x Q7, Q3, EN7, L9.
+- C3: KT, UV, XM x Q7, Q3.
+- C4: 5+ corpora; N11 on Q7 + Q3 outputs.
+Effect on the bar (my estimate): generality is the most likely Q2 reviewer objection ("one backbone, one dataset").
+  The plan raises Q2 from ~55-65% to ~65-72%, and Q1 by ~5 points.
+
+3. RISKS, AND WHAT WOULD CHANGE MY JUDGEMENT
+- The N1 pilot uses the CHAIR matcher on outputs AND refs. COCO-2500 used en_classes/vi_objects.
+  - The refs5 slopes (-30, -23, with tight CIs) are too large for a matcher swap to flip them. The F-B inst slope
+    (+4.2, CI touching 0) could move.
+- Across-system slopes mix model quality with count. F-B has 3 model clusters. The within-system truncation (S1/S2)
+  avoids this and agrees on sign.
+- My predictions were timestamped and hashed, not git-committed (same caveat as M4).
+- The C3 pilot is exploratory and weak (most pair CIs cover 0). A UIT-ViIC two-panel test with kappa < 1 would
+  restore the general C3.
+- GPU-h are estimates from G2/58_z rates; Qwen3-VL-8B may be ~1.2x slower.
+- I would change my judgement if:
+  - XM3600 or G2-B gives refs1 slope >= 0 (then drop N1 entirely);
+  - P1 gives kappa < 1 (then C3 is general in its two-panel form).
+
+4. CLAIMS FOR GEMINI TO VERIFY
+1. c2_n1_uitviic_mstar.json (sha256 bed1dc25...) contains no FT_pooled_3sys, sign_flip_confirmed, -9.94, +12.14,
+   +22.87, 1.97, 3.06 or 4.50. Reprint the log's C2 row from JSON keys, and correct D16 B2(3) and
+   r11_c1_c6_verification.md (-18.30 / -14.37).
+2. D16 calls the UIT-ViIC result an "independent replication". No frozen prediction file exists, so it is
+   exploratory.
+3. Rerun h3_n1.py:
+   - F-B slopes -35.18 / -29.57 / +4.24 [-0.09, +8.51] and F-C slopes -31.89 / -22.86 / +6.91 [+2.16, +11.17];
+   - fidelity CHAIR_i 15.26 and 12.60.
+4. Rerun h3_c3.py: kappa 1.34 [0.77, 1.68], 12/15 same sign.
+5. E1's VERIFY #2 holds: r6 == r5 (git blob 72e0a15f27). E1's downloads still exist in SP/research_r10/E1/dl
+   (byte-identical to fresh copies), contrary to the brief.
+6. 58_z (sha256 8ab1afcc...) scores XM3600 against VI refs and OIV7. Confirm that it writes per-image mention sets
+   or preds usable by the N1/C3 scripts, and that EN XM3600 refs exist locally (data/datasets/xm3600_en).
+7. G2-B scope in D15: "5-point ladder" vs short/detailed x 3 T = 6 points. Fix the number and the image list
+   (100 vs 600 XM3600).
+8. R11_00 N1 stop rule ("drop the sign-flip claim if the sign is wrong in >= 2 settings"): rule whether it applies
+   to the a-priori form (now wrong in 2 settings) or only to the in-sample M* form (36/36, near-tautological).
+
+5. DISAGREEMENTS
+5.1 (90%) N1 as written in PD-3/D16 ("slope -4.28 / +11.08 / +22.41; the sign flips with gold completeness") must
+    be narrowed.
+    - Keep: one ref penalises verbosity, and instance labels reward it. This holds on C25 and CE x 2 families, and
+      on UV (exploratory).
+    - State: the 5-ref sign depends on output verbosity. It is positive for short VI outputs (KTVIC FT, COCO-2500)
+      and strongly negative for detailed English LVLM outputs.
+    - Present M* = bG/(1-b) as a descriptive decomposition with in-sample b. b did not transport (0.64 -> 0.20-0.28).
+    - Selling point: raw object F1 can rank detailed vs short systems in OPPOSITE orders under refs vs instance
+      gold. That strengthens C1 (count control is needed).
+5.2 (85%) Gemini's "N1 replicated on UIT-ViIC" rests on numbers absent from its own JSON. This is the same
+    reliability pattern as before; the D16 text must not enter the paper.
+5.3 (70%) C3's "typicality vs truth" wording. The only presence gold tested (COCO inst) shows kappa >= 1. Frame C3 as
+    "two caption panels disagree" until P1/P2 give kappa < 1 on a second dataset.
+5.4 (75%) Order: run G2-B (extended, ~3.9 GPU-h) BEFORE N9 (6 GPU-h). G2-B moves all four claims to a second
+    backbone; N9 only adds to C1/C2, which already have EN7. 59/60 (U-001) can wait behind both.
+5.5 (65%) Ours: R10/R11 treated COCO-2500's 4/4 as confirming a general law. One frozen out-of-regime test failed
+    within an hour at 0 GPU. Every remaining "law" claim (b portability, kappa) needs one frozen out-of-regime test
+    before the journal draft.

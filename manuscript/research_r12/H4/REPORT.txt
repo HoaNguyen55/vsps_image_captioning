@@ -1,0 +1,200 @@
+R12 / H4 -- THEORY OF THE GOLD-INDEXED COUNT FRONTIER (C2) AND THE VERBOSITY SIGN FLIP (N1); PRIOR ART OUTSIDE CAPTIONING
+Agent H4, 2026-10-14. CPU only. Work dir SP/r12/H4/ (scripts/h4_check.py, out/h4_check.{json,log,time}). Repo read-only.
+No OpenViIC text read or written. STATUS: COMPLETE.
+0. BOTTOM LINE
+- C2/N1 can be made rigorous. Under exchangeable refs and salience-ordered mentions, b(k) is monotone in k (RR2 kernel) and
+  F1's verbosity reward changes sign at most once (- to +). For micro-F1 M* = b*U(k)/(1-b). All existing numbers fit.
+- New CPU facts: (A2) is directly visible (marginal mentions have low ref support); the b-channel carries 52-74% of the flip,
+  which uniform (SCAR) missingness cannot produce; KTVIC is not exchangeable (slot b .40->.63; adjacent pair = 1.76 captions).
+- Caveats: the KTVIC 1-ref "flip" is slot-dependent, and the closed form is exact only for micro-F1, not object_prf's
+  macro recall. Scoop risk LOW-MEDIUM (~20%): ingredients known; flip/single crossing not found in MT/summ/IR/PU/ecology.
+1. EVIDENCE
+1a. MODEL AND PROPOSITION (all algebra mine; cited pieces marked)
+Model. Object o in image i has naming propensity pi_o = P(one reference names o). Unlike Chen et al. 2015 §4.2 (arXiv 1504.00325,
+  read: one p per WORD, "we ignore image level saliency", subjects independent given o; H_p = pk/(pk+(1-p)^k), H_r = p), pi varies
+  within the image (Spain & Perona's salience). (A1) the k references are exchangeable and independent given the image. Then
+  P(o in G_k) = c_k(pi) = 1-(1-pi)^k and Gbar(k) = U(k) = sum_o E c_k(pi_o) is the incidence species-accumulation curve.
+  Systems of one frontier family at count M: mention m is in the nameable population w.p. s_m (else hallucinated or
+  guideline-unnameable) with propensity law F_m. TP_k(M) = sum_{m<=M} s_m g_k(m), g_k(m) = E_{F_m} c_k(pi).
+  (A2) salience ordering: F_m falls in m in the likelihood-ratio order. (A3) the family shares s_m and F_m (G2's H4 invariance;
+  prefix-nesting is NOT needed, consistent with G3 3f).
+PROPOSITION. Let b_k(M) = dlnTP_k/dlnM = p_marg/P (G2/G3 identity).
+ (a) b_k(M) is nondecreasing in k. b_1 = M s_M E_{F_M}[pi] / sum_m s_m E_{F_m}[pi]; b_inf = M s_M / sum_m s_m =: 1-D (system-only decay).
+ (b) Gbar(k) is increasing and concave in k.
+ (c) micro-F1 = 2TP/(M+Gbar) rises with M iff p_marg > F1/2 [Lipton et al. 2014, Thm 1 proof / Cor. 1: CITE, not new]
+     iff b_k/(1-b_k) > M/Gbar(k). With constant b, F1 has a unique maximum at M*(k) = b_k Gbar(k)/(1-b_k) (L1's closed form).
+ (d) SINGLE CROSSING. Lambda_k(M) = logit b_k(M) + ln Gbar(k) - ln M is nondecreasing in k, so the sign of F1's verbosity reward
+     changes at most once as references are added, and only from - to +; M*(k) is nondecreasing.
+ Closed form (deterministic salience pi_m = pi_1 m^-theta, s_m ~ m^-D): b_k(M) ~ 1 - D - theta*phi_k(pi_M), where
+     phi_k(pi) = k pi (1-pi)^(k-1) / (1-(1-pi)^k) is the elasticity of c_k (phi_1 = 1, phi_k falls to 0). theta = b_inf - b_1 is the
+     reference-incompleteness part of the exponent deficit; D is the system part (G3's b_sys = b_pool - D is this split).
+Proof sketch. (a) 1/b_k = sum_m [s_m/(M s_M)] g_k(m)/g_k(M). d/dk ln c_k(pi) = h(x)/k with x = (1-pi)^k and h(x) = -x ln x/(1-x),
+  increasing because h' ~ x-1-ln x >= 0; so c_k'/c_k falls in pi for k' > k (c is reverse-rule RR2 in (k,pi)). Under (A2) the
+  symmetrised double integral over x<y of [c_k'(x)c_k(y) - c_k(x)c_k'(y)][f_M(x)f_m(y) - f_M(y)f_m(x)] is >= 0 (Karlin's
+  composition), so g_k(m)/g_k(M) falls in k for m < M and 1/b_k falls. c_inf = 1 for pi > 0 gives b_inf.
+  (b) each c_k(pi) is increasing and concave in k. (c) dlnF1/dlnM = b - M/(M+Gbar); at M*, d2 = -b(1-b)/M*^2 < 0.
+  (d) logit b_k rises by (a), ln Gbar(k) by (b). Self-checked numerically (h4_check.py _check: RR2 on a grid, k = 1..10).
+Single-writer references (KTVIC §3.2: one writer types all 5 captions) violate (A1) twice:
+ (i) positive dependence. For associated indicators P(o not in G_k) >= (1-pi)^k (Esary, Proschan & Walkup 1967), so coverage and
+     Gbar(k) shrink. For a lag-1 chain with autocorrelation rho, c_k = 1-(1-pi)(1-(1-rho)pi)^(k-1) ~ k_eff*pi for small pi, with
+     k_eff = 1+(k-1)(1-rho): k captions of one writer act as k_eff < k annotators, b(k) ~ b_ind(k_eff) rises more slowly and the
+     crossing k moves right. The chain kernel is still RR2 (checked), so (a)-(d) hold in k_eff.
+ (ii) slot non-stationarity (pi differs by caption slot, e.g. a "headline" first caption). It breaks exchangeability even at k=1.
+ Under (A1), every k-subset design (first-k, random-k, fixed slots) has the same expected b(k), Gbar(k) and F1 slope.
+TESTABLE COROLLARIES
+ C-1 completeness law: on fixed outputs b(1) <= ... <= b(5) <= b(inf), and instance+refs gold (which also credits present but
+     never-named objects) sits at or above the reference limit. A gold-uniform (SCAR-type) thinning leaves b unchanged.
+ C-2 single crossing: across k the F1-on-lnM slope changes sign at most once, - to +, and sign(slope) = sign(Lambda_k(M0)) at the
+     family centre M0. Two channels push the same way: logit b (salience-dependent missingness; zero under SCAR) and ln Gbar.
+ C-3 exchangeability signature: exchangeable refs give design-invariant b, Gbar, slope; single-writer refs give lag-1 pairs <
+     lag>=2 pairs (Gbar, b), contiguous first-k < random-k, a later crossing, and slot-1 effects at k=1.
+1b. CHECKS AGAINST EXISTING NUMBERS (L1 check_mstar/check_coco.json, G2 §3b, L2 adjacency logs)
+ C-1 HOLDS. b(k): KTVIC FT random-k .536/.606/.648/.681/.703, first-k .403/.504/.581/.655/.703; COCO-2500 random-k
+     .479/.549/.592/.620/.643 -> inst .846 -> inst+refs .867; UIT-ViIC .445/.498/.522/.538/.535 -> inst .943 (G2). 22/23 steps are
+     nondecreasing; the one dip (UIT 4->5, -0.003, 231 imgs) is inside G2's CIs.
+ C-2 HOLDS IN SIGN SEQUENCE. F1-on-lnM slopes (repo metric): KTVIC random-k -3.32/+3.77/+8.42/+11.94/+14.15, first-k
+     -10.65/-3.22/+3.49/+9.72/+14.15; COCO -4.28/+2.82/+6.69/+9.16/+11.08, inst +22.41, inst+refs +24.16. Every sequence has
+     exactly one sign change, always - to +, and the slope itself rises monotonically with gold completeness.
+ C-3 HOLDS ON EXISTING NUMBERS. COCO first-k = random-k (Gbar within .006, b within .003, slope within .13). KTVIC first-k <
+     random-k in Gbar (2.43 vs 2.68 at k=2) and b (k=1..4), and its crossing is later (k 2->3 vs 1->2). L2 adjacency share
+     KTVIC .710 [.670,.752] vs null .40; COCO .402, UIT-ViIC .384.
+1c. NEW CPU CHECK (h4_check.py, 21 s, 342 MB; B=500 image bootstrap; KTVIC 36 FT systems, COCO-2500 9 systems; L1 conventions)
+ T1 self-check passes: RR2 for c_k, for the lag-1 chain kernel (rho .2/.5/.8) and for the 5-ref kernel w_k(n); support identity exact.
+ T2 assumption (A2) checked directly. Support n = #refs (of 5) naming a mention. Marginal/average share ratio r(n), n=0..5:
+     KTVIC 1.92/1.26/0.82/0.62/0.31/0.21 (monotone in 92% of draws); COCO 2.41(unsupported, not in instance labels)/1.86/1.25/
+     0.80/0.48/0.26, present-but-unnamed 3.20 (monotone in 100%). Half of KTVIC's marginal mentions have zero reference support
+     (vs 26% of the average mention). On COCO the marginal mentions split 24% unsupported, 28% present-but-never-named, 48% named.
+     The exact identity TP_k = sum_n h(n) w_k(n) reproduces L1's random-k b within .003 (KTVIC .533/.603/.648/.679/.703).
+ T3 exchangeability, k=1 golds from ONE slot and k=2 golds from slot pairs:
+     COCO slots b .478/.489/.476/.475/.484, slopes -3.6 to -4.5 (all CI < 0); lag-1 minus lag>=2 pairs: Gbar -.000 [-.009,.008],
+     b -.002 [-.007,.003]. Design-invariant, as (A1) predicts.
+     KTVIC slots b .403/.469/.567/.633/.618 with Gbar flat (1.88-1.95); slot1 - mean(slots 2-5) = -.169 [-.225,-.107]. The k=1
+     slope runs -10.65 [-13.9,-7.3] (slot 1), -6.98 (2), -1.44 [-4.4,+1.6] (3), +1.39 [-1.6,+4.6] (4), +0.30 (5). A writer's early
+     captions name the headline objects; later ones name secondary objects (slot non-stationarity, departure (ii)).
+     KTVIC lag-1 minus lag>=2 pairs: Gbar -.205 [-.236,-.170], slope -1.33 [-2.26,-0.47], b +.002 [-.013,+.017]. Within slots
+     2-5 the result is the same. An adjacent pair is worth k_eff = 1.755 [1.72,1.79] independent captions (COCO 1.98 [1.94,2.02]),
+     i.e. rho ~ .25. PARTLY FAILED PREDICTION: I expected b lower for adjacent pairs. The chain kernel predicts only about -.01 at
+     k=2 for rho=.25 (dependence is first-order in Gbar and second-order in b), which the CI cannot resolve. Conclusion: dependence
+     acts on KTVIC through Gbar; slot non-stationarity, not dependence, drives the design-dependence of b.
+ T4 sign rule. The micro form Lambda = logit b + ln Gbar - ln M0 gets 18/22 L1 gold signs; all 4 misses are at k<=2 with
+     Lambda in (0, .31). Under the repo metric (micro P, image-macro R) the condition is P*d > R*(1-b), with d the recall
+     exponent (d < b; e.g. COCO k=1 .425 vs .478). Applied via L1's M*_mixed, the rule gets 28/30 slot/pair golds right (COCO
+     15/15, KTVIC 13/15). The misses are p12 (M*_mix 1.87 vs median 1.83, i.e. at the crossing) and s3 (n.s.).
+     Channel split of Delta Lambda (k=1 -> 5): the b-channel (salience-dependent missingness) carries 52% (KTVIC random-k), 65%
+     (first-k), 68% (COCO), and 74% (COCO refs1 -> inst); the rest is the Gbar-channel. A SCAR-type uniform thinning has no
+     b-channel, so uniform PU corrections cannot remove most of the flip.
+ T2b TRUE micro-F1 (pooled TP/(M+U), exact random-k): the flip is still there but weaker at k=1. KTVIC -2.25 [-4.26,-0.27] ->
+     +6.36/+11.65/+15.03/+17.33; COCO -1.84 [-3.14,-0.55] -> +5.78/+9.96/+12.71/+14.69. At k=1, M*_micro (1.99 KTVIC, 1.26 COCO)
+     sits INSIDE the family's M range (median 1.83 / 1.19), so the family straddles the optimum. Macro recall pushes M* down
+     (M*_mixed 1.77 / 1.05), which makes the 1-ref penalty robust. The paper must say which F1 it uses.
+ T5 closed form b_k = 1-D-theta*phi_k(pi_M), fitted on the random-k curves: RMSE .0017 (KTVIC) / .0019 (COCO), D identified to
+     about +-.03 (KTVIC .267 [.234,.289], COCO .333 [.301,.352]). Implied reference limit b_inf(refs) ~ .73 KTVIC (G3 route ~ .81)
+     and ~ .67 COCO, versus .867 for COCO inst+refs. Forcing D = 1-.867 fits worse (RMSE .0127). [MODEL extrapolation] The
+     ~.20 gap on COCO is the present-but-caption-unnameable share. More references cannot remove it; only instance labels can.
+1d. PRIOR ART OUTSIDE CAPTIONING (V = verified today on a primary or abs page; S = search snippet only; U = unverified)
+ MT   Freitag, Grangier & Caswell, arXiv 2004.06063, EMNLP 2020 [V abs]. Paraphrased references raise correlation;
+      "multi-reference BLEU does not improve the correlation for high quality output". Nothing on length or a sign.
+      BLEU brevity penalty with "closest reference length" (Papineni et al. 2002) is more lenient with more refs [S]; Post,
+      arXiv 1804.08771 [S], lists the number of refs and the multi-ref BP as underspecified parameters. Nakov & Vogel arXiv
+      1710.00346 [V abs]: PRO tuning "is known to yield too short translations"; it is about the optimiser, not the ref count. Verdict: MT knows qualitatively that length behaviour depends on reference handling. No law, no sign flip found.
+ SUMM Sun, Shapira, Dagan & Nenkova, "How to Compare Summarizers without Target Length?", NeuralGen 2019, ACL W19-2303 [V
+      anthology listing + abstract]. ROUGE F1 varies non-linearly with summary length; they normalise by a random system of
+      the SAME length. This is the closest precedent for C1 (count-matched control) and must be cited. Single reference
+      (CNN/DM), so no k-dependence. Our M* = b*Gbar/(1-b) predicts their finding: long references (large Gbar) put M* above
+      system lengths.
+ IR   Buckley & Voorhees SIGIR 2004, doi 10.1145/1008992.1009000 (bpref; unjudged = nonrelevant biases measures) [L2];
+      Lu, Moffat & Culpepper, Inf. Retr. J. 19(4):416-445, 2016 [S, author page]: recall-based metrics are more volatile
+      across evaluation and pool depth than utility metrics; Webber, Moffat & Zobel EVIA 2010 [S]. Structurally the closest
+      analogue: pool depth = reference completeness, retrieval depth = verbosity, and unjudged-as-nonrelevant penalises deep
+      retrieval under shallow pools. I found no IR result stating that the sign of a depth/cutoff preference flips with pool depth.
+ MLL/PU  Jain, Prabhu & Varma KDD 2016 doi 10.1145/2939672.2939756 (propensity-scored metrics; missing labels bias toward
+      head labels) [L1 Crossref]. PU evaluation review arXiv 2206.02423 [S]: F is estimable only under SCAR (labelling
+      independent of the instance). Our b-channel IS the non-SCAR part. Under SCAR, b is invariant and M* only scales with the
+      label frequency c (M*_obs = c*M*_true). So "observed F's optimal threshold moves with missingness" is known in spirit,
+      but I found no paper deriving a single-crossing sign result or a b/Gbar channel split.
+ ECO  Incidence rarefaction/accumulation U(k) (Colwell et al. 2012 J. Plant Ecol.; Chao et al. 2014 Ecol. Monogr.
+      doi 10.1890/13-0133.1 [G3]); Gotelli & Colwell 2001 Ecol. Lett. 4:379 [S]: comparisons depend on the standardisation
+      level, and curves converge at small samples (Cayuela et al. 2015 [S]). Ranking reversal when accumulation curves cross is
+      the same mathematics as our flip (terse = high-propensity, saturates early; verbose = low-propensity tail). Heaps' law =
+      U(k) growth (G3: beta ~ .47). Cite as tools, not as prior statements of the result.
+ HUMAN/CAPTION  Chen et al. 2015 §4.2 [V text]: homogeneous p, precision falls with fewer refs at fixed recall. Spain &
+      Perona IJCV 2011 (ordered naming) [G3]. Lipton et al. 2014 F/2 rule [L1 V]. Association inequality: Esary, Proschan &
+      Walkup, Ann. Math. Stat. 1967 [U, standard result].
+ SCOOP RISK for N1 (sign of F1's verbosity reward set by gold completeness, single crossing, b/Gbar channels): LOW-MEDIUM
+      (about 20%). Evidence: 1 extended + 8 standard searches, plus L1 (35 arXiv queries) and L2 (12): no paper states the
+      sign flip or the single crossing. Each ingredient is known (Chen §4.2, Lipton, Sun 2019, pool depth, SCAR, rarefaction),
+      so a reviewer will call it "an expected consequence". The defensible novelty is the propensity-indexed exponent b(k), the
+      single-crossing proposition with its measurable channel split, and the exchangeability signature, all tested on 2
+      datasets with fixed outputs. Risk is higher (MEDIUM, about 35%) for C1 alone, because of Sun 2019 and Napoles et al. 2011
+      (compression-rate-matched comparison [U]).
+2. PROPOSALS FOR GEMINI
+P1 (CPU 0.1 h, 0 GPU) Freeze the theory checks. Copy SP/r12/H4/scripts/h4_check.py to scripts/frontier_theory.py; it imports
+   L1's check_mstar/check_coco, so repoint those too. Run: nice -n 19 env OMP_NUM_THREADS=1 python3 scripts/frontier_theory.py OUT.
+   Assert the numbers in 1c. Add true micro-F1 next to object_prf F1 in every N1 table.
+   Claim: C2/N1. Effect: removes the "closed form does not match your metric" reviewer hit (T4/T2b).
+P2 (CPU 0.3 h) Out-of-sample sign rule, pre-registered BEFORE scoring: UIT-ViIC test, 6 systems, refs-lex + inst-coco80; XM3600-VI once G2-D outputs exist.
+   Prereg: (i) b(k) nondecreasing; (ii) one crossing, - to +; (iii) sign(slope) = sign(M*_mixed - median M); (iv) UIT-ViIC (5 independent writers) is design-invariant: slot1 -
+      slots2-5 |db| < .05 and lag-1 - lag>=2 |dGbar| < .05.
+   Kill: a + to - crossing with both CIs excluding 0, or (iii) failing with |M* - median| > .3, on either set. Then drop
+   "single crossing" and keep only C-1.
+   Effect: moves N1 from 1 confirmatory set (COCO) to 2-3.
+P3 (GPU about 2-3 h, CPU 0.5 h) Large-k test, the one thing that would make the theory Q1-grade. Data: an existing multi-reference set with instance labels: nocaps val (10
+   refs/img, Open Images labels; arXiv
+     1812.08658) or PASCAL-50S (50 refs/img, Vedantam et al. CIDEr arXiv 1411.5726; VOC2008 boxes, VOC-20 maps into COCO-80).
+     VERIFY availability and licences first; no new labels needed. Family: one zero-shot EN backbone (Qwen2.5-VL-7B) x {1 sentence, 2-3 sentences, detailed} + 6 samples at
+        T=0.5 of the
+     1-sentence prompt, on 1,000 images.
+   Prereg: b(k) monotone up to k=10 (50); the k<=5 closed-form fit predicts b(10) within +-.04 [MODEL]; b_inf(refs) < b(instance) by > .1; M*(k) increasing with one crossing.
+   Kill: b falls with k (CI excludes 0) between any k and 2k, or the b(10) prediction misses by > .08.
+   Claims: C-1, C-2 and the reference-limit gap. Effect: +5-8 points on Q1 odds. It turns a 5-reference observation into a
+   tested law with an asymptote.
+P4 (CPU 0.2 h) KTVIC single-writer card for C4: report per-slot b(1) and slopes, k_eff = 1.755, adjacency .71. Use random-k
+   (all subsets) only, never first-k, in every KTVIC k-curve. Effect: closes a reviewer trap in N1's KTVIC numbers.
+HOW THE PAPER SHOULD PRESENT THE THEORY (task 3)
+ CITE (not new): Lipton et al. 2014 for the F/2 rule (Prop. c, iff part); Chen et al. 2015 §4.2 for propensity-based human precision vs k (homogeneous p); Spain & Perona for
+    ordered naming; Sun et al. 2019 for length-matched (random-baseline) normalisation, as the precedent of count matching; Buckley & Voorhees 2004 and Lu et al. 2016 for
+    incomplete judgments; rarefaction (Colwell 2012 / Chao 2014) and SCAR/propensity (Jain 2016; PU review) as tools.
+ STATE AS NEW, as one Proposition with a proof sketch in the appendix: (a) b(k) monotone under salience ordering (RR2 kernel argument); (d) single crossing of the verbosity
+    reward, with M* = b*U/(1-b) for micro-F1; the two-channel split (b vs Gbar; SCAR has no b channel); the exchangeability signature for single-writer refs (k_eff, slot non-
+    stationarity).
+   Each comes with its measured check (1b/1c tables) and the (A2) support-profile test r(n).
+ NEEDS MORE EVIDENCE BEFORE THE CLAIM IS MADE: single crossing on a 2nd and 3rd dataset (P2); asymptote and reference limit (P3, otherwise label it [MODEL]); any claim on d(k)
+    monotonicity for macro recall (empirical only, no proof); the KTVIC 1-ref sign (slot-dependent; see 5).
+ Wording: "Proposition", not "Theorem". It is a sufficient-condition result under (A1)-(A3), with (A2) tested and (A1) shown to
+   fail on KTVIC.
+3. RISKS AND WHAT WOULD CHANGE MY JUDGEMENT
+ - Only 2 datasets support the frontier families (9 COCO systems, 36 KTVIC systems from one recipe family). If P2 fails on
+   UIT-ViIC, N1 shrinks to "COCO + exploratory".
+ - (A3) is an assumption: off-style systems break it (L1's all-73 sets miss 3/10 signs). The proposition covers only families
+   on one frontier.
+ - The cross-system OLS slope averages the local derivative. When M* falls inside the family's range (k=1 micro), its sign is
+   fragile, as T2b shows.
+ - T5's reference limit is a one-propensity extrapolation (2 params, 4 points). Heavy-tailed pi could keep b rising past k=5.
+ - Scoop: a 2019-26 MT/summarisation paper with a reference-count ablation of length preference would lower N1's novelty to
+   "replication in captioning". My searches were shallow in MT (WMT multi-reference studies were not exhaustively read).
+4. CLAIMS FOR GEMINI TO VERIFY
+ 1 Rerun h4_check.py and check: KTVIC slot b .403/.469/.567/.633/.618; slot1 - slots2-5 = -.169 [-.225,-.107]; lag-1 - lag>=2: Gbar -.205 [-.236,-.170], b +.002 [-.013,+.017];
+    k_eff 1.755 (COCO 1.98); COCO slots .475-.489.
+ 2 Mixed sign rule 15/15 COCO and 13/15 KTVIC slot/pair golds. Micro form 18/22 on L1's golds. True micro-F1 at k=1:
+   -2.25 [-4.26,-.27] KTVIC, -1.84 [-3.14,-.55] COCO.
+ 3 Support ratios r(n) (1c T2) and the identity b(k) = .533/.603/.648/.679/.703 vs L1's random-k .536/.606/.648/.681/.703.
+ 4 Channel shares 52/65/68/74% (T4).
+ 5 Proof steps: h(x) = -x ln x/(1-x) is increasing; the RR2 composition step; the association inequality (Esary et al. 1967,
+   page numbers U).
+ 6 Chen et al. 2015 §4.2 formulas as quoted in 1a (from SP/r11_litmaps/L2/dl_txt/1504.00325.txt lines 505-700).
+ 7 Sun et al. 2019, W19-2303, pp. 21-29: does it use a single reference? Does ROUGE-F1 rise or fall with length there?
+ 8 Napoles, Van Durme & Callison-Burch 2011 (sentence compression, rate-matched comparison) and Nakov et al. COLING 2012
+   (BLEU+1 yields short translations): IDs U.
+ 9 Lu, Moffat & Culpepper 2016 bibliographic details; nocaps and PASCAL-50S availability and licences.
+5. WHERE I DISAGREE (with R10/R11/PD-3 and with Gemini)
+ - N1's KTVIC 1-ref numbers should not be quoted as a flip. The first-k -10.65 is a slot-1 artefact: single slots range from
+   -10.65 to +1.39, and slots 3-5 alone give no significant slope. Present COCO as the confirmatory N1 set and KTVIC as the
+   single-writer case study. Never use first-k subsets. (confidence 85%)
+ - M* = b*Gbar/(1-b) must not be presented as the sign rule for object_prf F1. It is exact only for micro-F1. With
+   image-macro recall the condition is P*d > R*(1-b). (90%)
+ - "Dependence lowers b" (my own prior, and implicit in L2/G3 wording) is not supported. Dependence acts on Gbar
+   (k_eff 1.755); slot order acts on b. Correct the C4 wording accordingly. (75%)
+ - R11's "C2 scoop LOW-MED" stands, but the paper should claim the Proposition plus its checks, not the empirical flip alone.
+   The flip alone is predictable from Lipton + Chen + rarefaction, and a reviewer will say so. (70%)
+ - Gemini D16 numbers ("Chao2 completeness 0.7325", LOO ceiling F1 .7072) are not checked here. Any Chao figure on KTVIC
+   refs is a within-writer estimate (exchangeability fails, 1c T3) and must say so. (80%)

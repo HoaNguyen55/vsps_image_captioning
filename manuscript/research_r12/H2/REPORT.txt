@@ -1,0 +1,147 @@
+R12 / H2 — Target venue and the reviewer bar for a Q1-target / Q2 evaluation-methodology paper (2026-10-14)
+Status: COMPLETE. Conventions: [UNVERIFIED] = not confirmed on a primary page;
+[MODEL] = model signal; SJR = SCImago Journal Rank; "readiness" = my 0-100% score against a demanding reviewer.
+
+0. BOTTOM LINE
+  - Readiness now ~50% (13-criterion weighted checklist, §1b); biggest hole = no validation against human
+    judgments (10%) and no constructive result (30%). >90% is not reachable without both; ceiling ~80-85%.
+  - Primary venue: TACL (Q1, no APC, 10 pp) framed as evaluation methodology, ONLY if P1 is positive.
+    Otherwise primary TMLR (SJR Q2, evidence-not-novelty criterion) - but check FAIR no-reuse rule.
+  - Backup for the Vietnamese benchmark+baseline framing: JVCIR (Q2 CV&PR) or TALLIP (Q2, USD 475-725).
+  - Do P1 (THumB meta-eval, CPU) before M3; then N9 + K2 placebo, N1 replications, toolkit, proofs.
+
+1. EVIDENCE
+1a. Venues. SJR = SCImago page scraped with firecrawl 2026-10-14 (dl_sjr/j_*.md; parsed by scripts/sjr.py ->
+    dl_sjr/sjr_all.json). Format: SJR 2025 score, category quartile 2024->2025.
+  TPAMI   4.829  Q1 everywhere (AI, CV&PR, Software...)            | IJCV   3.103  Q1 (AI, CV&PR, Software)
+  TACL    2.144  Q1 (AI, Ling., CS Appl., HCI); diamond OA          | CL     1.837  Q1 (AI, Ling., CS Appl.); diamond OA
+  PR      2.147  Q1 (AI, CV&PR, SP)    | TMM 1.989 Q1 (CS Appl., Media Tech., SP) | ESWA 1.939 Q1 | IPM 1.845 Q1
+  KBS     1.753  Q1                    | Neurocomputing 1.465 Q1                   | TOMM 0.925 Q1 (CompNet, Hardware only)
+  MTAP    0.798  Media Tech Q1; CompNet/HW/Software Q2                           | TMLR 0.744 AI Q2, CV&PR Q2 (first ranked 2025)
+  LRE     0.574  Linguistics Q1; Lib.&Inf.Sci. Q2->Q1; CS Appl. Q2 (new 2025)    | TALLIP 0.574 CS (misc.) Q2 (only category)
+  JVCIR   0.573  Media Tech Q1; CV&PR Q2; SP Q2
+  NLE     coverage ends 2024 (2024: Ling. Q1, AI Q2). Renamed "Natural Language Processing" (Cambridge, gold OA,
+          eISSN 2977-0424) from Vol 31/2025 per the editor's 2024 note; the new title has no SJR rank yet [UNVERIFIED in
+          Scopus]. Treat as unranked for this submission.
+  From .paper_work/Q2_LITERATURE.md (SCImago scrape 2026-10-10, not re-checked): SPIC 0.607 CV&PR Q2; PRL 0.793 CV&PR Q1;
+  CVIU 0.820 CV&PR Q1; NLP Journal (Elsevier) 1.266 Q1 (first ranked 2025); IJMIR 1.071 Q1.
+  Fit, comparables (DOIs from Crossref per-ISSN search, dl_xref/batch*.json; arXiv IDs via export.arxiv.org,
+  dl_arx/comp1.json), typical evidence, practicalities. [abs] = judged from abstract only.
+  1 TACL (Q1). Fit HIGH for evaluation methodology. Comparables: Berger+ 2025 caption-evaluation taxonomy + metric
+    analysis 10.1162/tacl.a.52 (arXiv 2408.04909); Opitz 2024 classification-metric theory + critique of practice
+    10.1162/tacl_a_00675 (2404.16958); Kamath+ 2026 reporting bias in V+L 10.1162/tacl.a.690 (2602.23351).
+    Evidence: analysis papers; theory/derivation + many datasets/metrics, human judgments where metrics are
+    validated; no new model needed. Practical: 10-page limit + appendices, monthly deadline (1st), no APC,
+    must not be previously published (dl_pol/tacl_sub.md). Review time not published [UNVERIFIED ~2-3 mo].
+  2 CL (Q1). Fit MEDIUM-HIGH (long methodological articles). Comparables: Belz+ 2026 QRA reproducibility
+    10.1162/coli.a.625; Thomson+ 2024 human-eval flaws 10.1162/coli_a_00508; van Deemter 2024 hallucination
+    definition 10.1162/coli_a_00509. Practical: long 30-40 pp, short 15-25 pp, no fees, extended conference
+    papers allowed (cljournal.org/submissions.html). Slow [UNVERIFIED].
+  3 TMLR (SJR Q2). Fit HIGH: criteria are "claims supported by accurate and convincing evidence" + audience
+    interest; "novelty ... not a necessary criterion" (jmlr.org/tmlr/acceptance-criteria.html). Comparables:
+    Tri-HE, Wu+ 2025, openreview iNywrSPpvc / arXiv 2410.23114 (benchmark, many LVLMs, training-free fix);
+    VidHal 2026 [abs]. Practical: no APC, no length limit (reviews 2 wk <=12 pp, 4 wk >12 pp). BLOCKER RISK:
+    "we do not accept submissions that are expanded versions of conference papers" and no reuse of text,
+    figures or results (editorial-policies). FAIR v10 (VSPS method) has no 148.23 number, but shares P1/KTVIC/COCO
+    tables -> must not reuse FAIR results.
+  4 IJCV (Q1, JIF 10.3, first decision median 37 d, hybrid). Fit MEDIUM. Comparables: Chen+ 2026 survey of
+    multimodal hallucination evaluation 10.1007/s11263-026-02756-9; SCoRE 2026 standardized human evaluation
+    10.1007/s11263-026-02842-y [abs]; Attention Reallocation 2025 10.1007/s11263-025-02607-z (2-3 LVLMs, CHAIR/
+    POPE, single seed per R9 C10). Bar: several backbones + benchmarks; human study for eval papers.
+  5 TPAMI (Q1, top). Fit LOW-MEDIUM. Comparables: Zone Evaluation (metric spatial bias) 10.1109/TPAMI.2024.3409416
+    (2310.13215); LVLM-eHub 10.1109/TPAMI.2024.3507000 (2306.09265). Bar: ~10+ models x many datasets + code.
+  6 TOMM (Q1 only in CompNet/Hardware). Fit MEDIUM. Comparables: MHR multilingual hallucination 10.1145/3797025
+    (2408.00550; 2 backbones, 13 languages, no Vietnamese, no seeds); ARA 10.1145/3742434; VGL-DPO 10.1145/3796715.
+    ACM gold OA, LMIC 50% off (USD 725/475) per 04_rolling_journals.json.
+  7 TMM (Q1). Fit LOW-MEDIUM: hallucination papers there are methods (RUR 10.1109/TMM.2025.3599076; VECD
+    10.1109/TMM.2026.3651099). Expects SOTA method -> our main weakness.
+  8 LRE (Q1 Linguistics; Q2 CS Appl.; JIF 2.0; first decision 36 d; hybrid). Fit MEDIUM only if a releasable
+    resource exists; 0 V+L caption-evaluation papers found 2023-26 (37 hits are text resources). Licence (PD-2 Q4)
+    limits what we can release.
+  9 PR (Q1, JIF 9.1). Fit LOW-MEDIUM. Comparables: CLVA 10.1016/j.patcog.2026.114380 (3 backbones, overhead);
+    silhouette upper bound 10.1016/j.patcog.2026.113402 (2509.08625; metric theory). Method-heavy.
+  10 IPM (Q1). Fit MEDIUM for the IR framing (gold completeness = incomplete judgments, Buckley&Voorhees 2004,
+    10.1145/1008992.1009000, already in L2). Hallucination papers there are decoding methods (GLINT
+    10.1016/j.ipm.2026.104850; ALD2 10.1016/j.ipm.2026.104869).
+  11 JVCIR (CV&PR Q2; Media Q1). Fit MEDIUM-HIGH for "Vietnamese benchmark + baseline". Comparable: HDUCap
+    10.1016/j.jvcir.2026.104963 (Vietnamese captioning benchmark); VLFuseCap 10.1016/j.jvcir.2026.104983.
+    OA APC USD 2,660, first decision 15 d, acceptance ~215 d (Q2_LITERATURE, 2026-10-10).
+  12 TALLIP (Q2). Fit HIGH on language, LOW bar: Hindi captioning 10.1145/3749641, 10.1145/3749642 (n-gram metrics,
+    1 architecture, translated COCO [abs]). >=13 pp, >=25% new vs conference, APC USD 725/475 (LMIC).
+  Excluded: ESWA/KBS/Neurocomputing (Q1, method/application papers; no eval-methodology comparable found);
+  MTAP (WoS status [UNVERIFIED], reputation risk); NLE (unranked successor title).
+
+1b. Q1-readiness checklist (weight w; score now; evidence). Weighted total NOW = 50% (sum w*score/100).
+  C1 Validation vs human judgments of caption quality (w12): 10%. None. Humans are used only as gold/frontier
+     (R9 C10 human_union.py); no THumB/Polaris/FOIL meta-evaluation (grep: only G2 G2-E mentions THumB).
+  C2 >=3 datasets with independent gold (w10): 60%. KTVIC (single writer, PD-3 Q2a), UIT-ViIC test n=231
+     sports-only, COCO-2500 (frozen 4/4, R11_00 §1.3); XM3600 + UIT-ViIC N1 replication pending.
+  C3 >=2 backbone families (w8): 50%. Own systems all Qwen2.5-VL (36 KTVIC, 9 COCO; L1 REPORT l.93,158);
+     E1 re-scores 4 public LVLMs (OPERA/LiM repos, E1 REPORT §0); N9 (training methods) not run.
+  C4 Head-to-head with prior controls (LeHaCE NeurIPS 2024 DOI 10.52202/079017-3538, fixed-token CHAIR, AMBER
+     Cover) (w8): 45%. Spec curve 2/15-6/15 (PD-3 Q2b); X1 P-B KILLED: count does not beat length on English
+     (+0.186 [-0.257,+0.579]); reviewer will ask "why not LeHaCE".
+  C5 Statistical rigour (w8): 80%. Paired/image-clustered bootstrap B=5000, Holm+SESOI, 3 seeds, MDE known;
+     r(rho_A,rho_I) underpowered (0.81->0.45 without 2 runs).
+  C6 Pre-registration + negative results (w6): 75%. 11 negative families, frozen predictions; governance
+     dents: M6 rule 44 s before look, E3 relabelled, E1 K2 placebo not run (D16 A3/A4).
+  C7 Theory (w8): 50%. Lipton 2014 corollary + Chen 2015 §4.2 are prior art; M*=b*G/(1-b), L1 (A=0 for
+     re-thresholding), CAR Shapley are derivations, not yet stated as propositions with proofs.
+  C8 Measurement validity (w7): 70%. Matcher v1/v2+CJK, single-writer audit N2, df(".")=0 CIDEr mechanism,
+     leakage 401/558 disclosed; v3 matcher lacks sign-off.
+  C9 Changes published conclusions (w8): 55%. ~80% of published precision gain is count (E1); survivors depend
+     on control; N3 31-65% count-unmatched preference pairs; training methods untested.
+  C10 Constructive output (validated protocol or a method that beats the frontier) (w8): 30%. Two-column
+     standard adopted (D16 B3a) but unvalidated; no positive method (CONTEXT §2 main weakness).
+  C11 Reproducibility / released toolkit (w7): 40%. Scripts + repro gates exist; no installable package/API/
+     tests; per-image data release blocked by licences.
+  C12 Positioning, no "first" claims (w5): 70%. R11 Litmaps map, overlap table R11_00 §5.
+  C13 Data licence / availability (w5): 45%. PD-2 Q4 open (OpenViIC terms, KTVIC has no licence file).
+  Reading: >90% is NOT reachable on one 3090 without new annotation unless C1 and C10 both come out positive.
+  Realistic ceiling after the 5 actions below: ~80-85%.
+
+2. PROPOSALS FOR GEMINI (the 5 highest-leverage gaps; all after the PD-2 queue, each with a committed prereg)
+  P1 [C1, +~7 pts] Human-judgment meta-evaluation on EXISTING English labels, CPU only (~3 CPU-h, 0 GPU-h).
+     Data: THumB 1.0 (arXiv 2111.08940; per-caption human Precision/Recall/Total on COCO, check licence first);
+     FOIL (accuracy) and Polaris as secondary if licences allow. Score every caption with raw object P/R/F1,
+     CHAIR_i and the count-controlled residual (score_coco_probe.en_classes matcher). Prereg: primary =
+     Kendall tau_c (system-level and caption-level) of residual vs human Total, compared with raw F1 by
+     paired bootstrap over images; prediction: residual tau - raw-F1 tau > 0. Kill: CI of the difference
+     includes 0 -> report "count control changes rankings but is not closer to humans" and drop any
+     "better metric" wording. Effect: turns C1 from 10% to 55-70%; required for TACL/IJCV.
+  P2 [C3, C9, +~8 pts] N9 (9 LLaVA-1.5-7B training-method checkpoints, ~6 GPU-h, already approved D16 B1b)
+     PLUS E1's registered K2 seed placebo (2 sampling seeds of one LVLM, ~1 GPU-h). Kill rules as in L6 §3 D1;
+     placebo kill: |dP_MCP| >= 0.5 -> MCP control is noise-sensitive, report it.
+  P3 [C2, +~5 pts] N1 replication on UIT-ViIC and XM3600 (OIV7 verified labels; 58_z job ~1.5 GPU-h) with
+     sign predictions frozen first (PD-3 Q3). Kill: sign fails on both -> N1 stays COCO-only.
+  P4 [C4+C11, +~6 pts] One CPU package (eval toolkit) that re-runs E1 from public outputs and adds LeHaCE's
+     length-curve comparison on the SAME outputs (~4 CPU-h). Prereg: report survivors under count, length and
+     both; no winner claimed in advance (X1 P-B already killed count-over-length on English).
+  P5 [C7, +~3 pts] Write N1 and L1 as propositions with proofs (0 compute): slope sign of F1 on log M equals
+     sign(M* - M) under TP=a*M^b; A=0 for any re-thresholding of the model's own score. Cite Lipton 2014 as
+     the base result. Kill: a reviewer-grade counterexample in the 73 systems (sign mismatch 4/20 on KTVIC now).
+
+3. RISKS
+  - P1 may show raw F1 tracks humans as well as the residual -> the paper becomes "a validity audit", Q2 tier.
+  - TMLR's no-extension/no-reuse rule vs FAIR 2026: one FAIR table reused = desk-reject risk.
+  - Q1 reviewers (TACL/IJCV) weigh breadth; one own backbone + small UIT-ViIC (231) may cap at major revision.
+  - Licence refusal (PD-2 Q4) removes the OpenViIC panel (C3 of the paper).
+  Would change my view: positive P1 (-> TACL first, ~35-40% Q1); N9 showing training methods survive count
+  control (-> stronger constructive story).
+
+4. CLAIMS FOR GEMINI TO VERIFY
+  1. SJR 2025 quartiles in §1a (dl_sjr/sjr_all.json); TMLR is Q2 (AI, CV&PR) from 2025, NLE ends 2024.
+  2. TMLR editorial policy bans expanded conference papers and result reuse (jmlr.org/tmlr/editorial-policies).
+  3. TACL 10-page limit, monthly deadline, no APC; CL long 30-40 pp, no fees, extended conf. papers OK.
+  4. THumB 1.0 release contains per-caption P/R scores and a licence permitting research use.
+  5. FAIR v10 contains no 148.23 and no count-controlled analysis (grep of the docx).
+  6. Comparable DOIs in §1a resolve (Crossref) and arXiv IDs 2408.04909, 2404.16958, 2602.23351, 2310.13215,
+     2306.09265, 2410.23114, 2509.08625.
+
+5. DISAGREEMENTS
+  - PD-2 says "choose among multimedia and language-resources journals". I disagree (75%): TOMM/TMM/IJCV/PR
+    publish hallucination METHODS; an evaluation-methodology paper with negative method results fits NLP
+    evaluation venues (TACL, CL) and TMLR far better. LRE needs a releasable resource we lack.
+  - "Q2 55-65%" is right only for a JVCIR/TALLIP framing; for TMLR (Q2) with P1-P4 done I estimate 60-70%.
+  - Gemini's D16 confidences of 97-99% on governance items are overclaims (CONTEXT §3); do not let them set
+    venue tier. Priority should move from new method GPU runs (M3) to P1 (CPU, highest leverage) (70%).

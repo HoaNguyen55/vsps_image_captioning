@@ -1,0 +1,143 @@
+R12 / H5 -- EVIDENCE-ADDING METHODS vs THE COUNT FRONTIER (2026-10-14). CPU only (2 runs, 5 s each, 180 MB).
+Conventions: [A] = arXiv abs/HTML page read by me today; [R] = ID verified in a repo report (named); [UNVERIFIED] = not
+checked. [MODEL] = model-made signal. P(beat) = my probability of passing the PD-2 count-matched primary on test AND
+D16's two-column standard incl. the B5 truth gate. SP = scratchpad; H5 = SP/r12/H5. Note: my three web-survey sub-agents
+hit the usage limit and returned nothing, so section 1a is thinner than planned (IDs below come from me or repo reports).
+
+0. BOTTOM LINE
+- Presence evidence (detectors, grounding, POPE-style self-VQA, VCD) is the wrong evidence for KTVIC reference gold: SFT
+  "false" mentions are 97.3% real objects (C8), so a perfect presence verifier buys <= +0.5 P. Expect M1 to fail (P ~8%).
+- NEW CPU result: a text-kNN retrieval prior (human refs of the 10 train images whose refs best match the 13 pool
+  captions) carries vote-independent information (AUROC within (v,g) cells 0.614) and gives +1.16 [+0.02, +2.29] F1 at
+  PLAN-F1 k_i vs (v,g) tie-avg, +0.76 [-0.44, +1.95] vs POOL-VOTE; panel side +0.81 [-0.20, +1.83]. Near-miss, 0 GPU.
+- Best pilot: "EV-RANK" = text-kNN + image-kNN + layer-24 probe, ~1.5 GPU-h, dev300; then CPU-only test. Run it BEFORE M3
+  (it is a cheap gate on M3's hypothesis); N9 after both. P(beat) ~20% for EV-RANK vs ~15% for M3 under the B5 gate.
+
+1. EVIDENCE
+1a. Literature 2024-2026 (count-controlled gains?)
+- "Beyond Saying Less", 2609.35294 [A] (Long, Zhang, Min, Shan, Chen; v1 28 Sep 2026). Qwen2.5-VL-7B (our backbone).
+  Shows on-policy RL (GRPO/DAPO/Dr.GRPO) cuts hallucination by "making fewer valid claims" (Avg. Facts 41.63 -> 31.65 /
+  24.31, Fig. 5). Fix: SCAPO (sub-sentence credit) + DOPA dense presence labels ([MODEL]: Qwen3.6-27B judge + manual
+  spot checks, 160 labels / 894 aliases, 5,000 COCO train images). Table 2 (as read from HTML; VERIFY layout): COCO-label
+  Hal/Cover 15.1/64.3 -> 13.4/73.7 (DOPA-trained) and 13.9/78.8 (COCO-label-trained). Precision AND coverage rise, so it
+  sits above any frontier with b <= 1 -- but no matched-count analysis, no CIs, and multi-GPU full fine-tuning.
+  => The only 2026 Pareto evidence I verified is TRAINING with dense per-object rewards, not decode-time verification.
+- Repo-verified (E1, 2026-10-14, per-caption re-scoring at matched prefix count): VCD 2311.16922 [R] +0.06 [-0.42, +0.53];
+  OPERA 2311.17911 [R] +0.07; LiM-EOS 2402.14545 [R] +7.9 raw P -> +1.08 [-0.14, +2.25]; 3/15 claims survive. From SumGD
+  2410.13321 [R] aggregates: VCD/ICD are WORSE at matched count (+1.7..+4.1 CHAIR_i). Visual contrastive decoding: dead.
+- Detector/grounding verification: Woodpecker 2310.16045 [R], HALC 2403.00425 [R] (recall FELL 45.73 -> 44.73, C7),
+  2510.27164 [R], SENTINEL 2507.12455 [R]: all delete or correct; none reports matched-count results (M1, E1, B4).
+  In-repo: GDINO tags status AUROC 0.58 / 0.48 on proposed objects (R6 B4); COCO-80 veto removes 9/1,017 mentions (R9 C3);
+  GDINO tags in the SFT prompt +0.3 [-1.0, +1.6] F1 (C8 P3).
+- Self-VQA / probes: SelfVal 2601.22451 [R] (Best-of-10 CHAIR_i 9.9 -> 4.1, no coverage); HaloProbe 2604.06165 [R];
+  HALP 2603.05465 [R] (~0.79 AUROC on Qwen2.5-VL-7B); Devils in Middle Layers 2411.16724 [R]. All label = PRESENCE;
+  none tests matched count. Not re-verified today: REVERSE 2504.13169, LogicCheckGPT 2402.11622, MARINE 2402.08680,
+  CGD 2402.15300, CapMAS 2412.15484 [UNVERIFIED].
+- Retrieval: m-RNN n-best rerank by kNN train captions 1412.6632 [R] (COCO CIDEr 84.2 -> 93.8); SmallCap 2209.15323,
+  EVCap 2311.15879 [R] (B4). None measures object choice at matched count.
+- Coverage-aware rewards (local PDFs, titles read today): CCCaption 2602.21655 (dual reward complete + correct), BalCapRL
+  2605.07394, SC-Captioner 2508.06125, CapRL 2509.22647, ViGoR 2402.06118. Matched-count results not checked [VERIFY].
+- Verdict: in what I could verify, NO 2024-2026 paper reports a count-matched gain; the closest is a Pareto move from
+  dense-reward RL (2609.35294). Our count-matched framing stays distinctive; "first" must not be claimed.
+
+1b. Repo evidence and CPU checks
+PRE-RUN PREDICTIONS (written before running H5/scripts/h5_cpu.py; dev300, matcher v2, PLAN-F1 k_i):
+ P-H5-1 dF1 tracks a signal's AUROC WITHIN vote strata, not its marginal AUROC; bar for +1.0 F1 is 0.66-0.72.
+ P-H5-2 Text-kNN prior (k = 10, query = 13 pool captions): dF1 vs (v,g) tie-avg in [-0.8, +0.5], CI incl. 0 (85%).
+ P-H5-3 Caption-level count-matched oracle reaches < 60% of the class-level FULL-ORACLE.
+RESULTS (H5/out/h5_cpu.json, h5_robust.json; 1,306 pool items, 52.3% gold; tie-avg F1 58.97 at m 2.623):
+- Signal bar (synthetic s = delta*y + N(0,1)): cell AUROC 0.569 -> dF1 -0.06; 0.634 -> +0.90; 0.696 -> +1.95; 0.753 ->
+  +2.98; 0.804 -> +4.42; 0.848 -> +5.72 (vs tie-avg; mean of 5 seeds). vs POOL-VOTE subtract ~0.4 (M1: 0.70 -> +1.55).
+  P-H5-1 HELD for the shape: model-derived signals collapse inside cells (first-mention share 0.637 marginal -> 0.512
+  within cells); the class prior does not (0.576 -> 0.573) but is weak on the pool (it was 0.710 on the E2 set).
+  Bar: within-cell AUROC >= ~0.66 (vs tie-avg) / ~0.70 (vs POOL-VOTE) for a +1.0 point estimate.
+- P-H5-2 FAILED (upward). Text-kNN k=10: marginal 0.752, within-cell 0.614. dF1 at PLAN-F1 k_i: vs tie-avg +1.16
+  [+0.02, +2.29]; vs votes-only learned ranker +0.88 [-0.28, +2.05]; vs POOL-VOTE +0.76 [-0.44, +1.95]. greedy_k +0.23,
+  top3_k +1.00. k=30: +1.13 / +1.15 / +0.96. Greedy-only query weaker (+0.52). Robust to near-duplicates: skipping the
+  top-1 neighbour +1.06 [-0.07, +2.22] (cell AUROC 0.611); dropping the 10% most-similar images +1.28 [+0.05, +2.56].
+  Two golds (296 images): d_rho_A (KTVIC) +1.09 [-0.05, +2.24], d_rho_I (OpenViIC panel, aggregates only) +0.81
+  [-0.20, +1.83], L = d_rho_I - 0.35 d_rho_A = +0.44 [-0.50, +1.35]: NOT typicality-only, but underpowered.
+  Contrast M2: class-level priors failed (-0.35); retrieval is image-conditional through the captions' scene words.
+- P-H5-3 HELD: caption-level oracle among same-count pool captions +6.15 [+4.51, +7.88] over vote-sum choice, 59% of
+  class-level FULL-ORACLE +10.40 at greedy_k. So realising by caption selection keeps most headroom, cheaply.
+- Verified repo numbers: POPE-vi RePOPE seen-rate fuse2-vi S/M/L 67.1/88.3/96.0 (research_r9/C7 pope_size.out); short
+  captions name 7.2/23.5/56.3% (coco_size.out); P1 misses named by >= 2 other outputs 81.6% (C8 out_ktvic_strict.txt);
+  E2 probe L24 0.807, class prior 0.710, P(co) 0.709, no-image probe 0.708 (data/results/e2_probe.log, 4,046 queries on
+  497 TRAIN images, positive rate 0.359 -- not the pool set). M1 oracle +4.58 presence / +10.34 full (m1_headroom.json).
+
+1c. Headroom arithmetic and P(beat)
+- Presence: oracle <= +4.58 at k_i (loose: "unnamed by both panels" != absent); C8 bound <= +0.5 P; measured detector
+  AUROC 0.58 => cell AUROC ~0.55 => dF1 ~ -0.1..+0.3. "Model sees more than it says" is real on COCO instance gold, but
+  KTVIC boundary errors are naming choices among real objects (person words, stuff nouns; 54% of FPs panel-confirmed).
+- Probe L24 transfer: E2 image part over prior = d sqrt(1.226^2 - 0.776^2) = 0.95 (equiv. AUROC 0.75). The prior's d
+  shrinks 0.78 -> 0.27 from E2 set to pool; if the image part shrinks half as much, cell AUROC ~0.63 -> +0.9 alone.
+- Text-kNN (0.614, d 0.41) + independent probe (0.63, d 0.47): combined d 0.62 -> cell AUROC ~0.67 -> ~+2.0 vs tie-avg,
+  ~+1.6 vs POOL-VOTE, if independent. A shared-error correlation of 0.5 cuts this to ~+1.2.
+- P(beat), all gates: M1 grounding ~8%; text-kNN alone (CPU) ~15%; EV-RANK ensemble ~20%; M3 CM-DPO ~15% (its own 25-30%
+  before the B5 gate); VCD/self-VQA re-rank < 5%.
+
+2. PROPOSALS FOR GEMINI
+P1 (0 GPU, do first). Freeze the text-kNN arm and pre-register its KTVIC test look.
+- Commit H5/scripts/h5_cpu.py + h5_robust.py under manuscript/prereg/2026-10-1x_knn_prior.md with: k = 10, query = all
+  pool captions, TF-IDF 1-2 syllable grams, sublinear tf, min_df 2, database = all KTVIC train (test images never in it),
+  smoothing (c+0.5)/(k+1), logit feature, ranker = L2 logistic on [v, g, v*g, knn] FIT ON ALL dev300 then frozen.
+- Test pools: data/results/upe/test/p1assist_s4{2,3,4} greedy + 6 x T0.5 (7 votes: re-specify v = s6/6 BEFORE looking).
+  k_i = PLAN-F1 test k_i. Primary: pooled 3-seed dF1 vs (v,g) tie-avg AND vs POOL-VOTE, B 5000, Holm over P/R/F1.
+  Pass: both >= +0.5 with CI > 0 (SESOI 0.5 because n = 558 x 3); B5: CI(d_rho_A) > 0 and CI(L) > 0 on the panel.
+- Kill: either CI includes 0 -> report as a negative with dev effect size. CPU < 0.1 h.
+- Strengthens C1 (evaluation identity D-A: only evidence-adding rules move A) and C3 (typicality vs truth: the L split).
+P2 (GPU pilot, ~1.5 GPU-h, dev300 only): EV-RANK = evidence-ensemble re-rank at matched count.
+- Step 0 prereg (before any GPU): this section's rules + hashes of the pool files (greedy 1e183383..., T0.5 876a1d42...,
+  T0.8 60ebd640...) + the frozen text-kNN feature.
+- Step 1 GPU (one 3090, bf16 base Qwen2.5-VL-7B-Instruct, no adapter):
+  (a) image-kNN: SigLIP/CLIP image embeddings for 3,769 KTVIC train images (dev300 included only as queries), kNN mention
+      share k = 10 from train-minus-dev300 refs. ~0.1 GPU-h. [external evidence: existing human labels]
+  (b) probe features: for each of 1,306 dev300 pool items AND ~6,000 train-minus-dev300 items (1,000 images x (ref-union
+      classes + 4 most co-occurring unnamed classes)), one forward of scripts/probe_existence.ask, save last-token hidden
+      state at layers 20/24/28 [MODEL]. ~0.6 GPU-h. Probe = L2 logistic on PCA-256 of L24, trained on train items only.
+  Self-grounding (M1) is NOT included: its expected cell AUROC (~0.55) adds multiplicity, not power.
+- Step 2 CPU: features [v, g, v*g, text-kNN, image-kNN, probe]; cross-fitted on PLAN-F1 folds.
+  Mechanistic gate G1: within-(v,g)-cell AUROC of each new feature reported; probe must reach >= 0.60 else drop it.
+  PRIMARY K1: EV-RANK vs POOL-VOTE (the stronger control) at PLAN-F1 k_i: dF1 >= +1.0 and CI > 0, and > 0 at greedy_k
+  and top3_k. K2: EV-RANK minus text-kNN-only >= +0.3 (else the GPU features add nothing; report P1 only).
+  K3 (B5): d_rho_I CI > 0 is NOT required on dev300 (underpowered); L point estimate must be >= 0.
+- Step 3 realisation + guards, CPU only: per image pick the pool caption with the largest sum of EV-RANK scores among
+  captions with the control caption's class count (caption-level oracle headroom +6.15, 1b). Same rule with vote scores
+  = control. Guards vs control: CIDEr-D P0 and P7 >= control - 1.0 and >= 141.33 (D15 iii c); exact train-ref copy rate
+  <= 2x P1_dev; CJK rate <= control + 0.5 pt; fragment guard <= 15/300. Report D16 two columns (raw F1 / residual).
+- Test policy: only after K1+K2 pass; separate committed prereg; image-kNN and probe on the 558 test images (~0.6
+  GPU-h); 3 test pools as in P1; UIT-ViIC test (COCO instance gold) as the second set. Worst-case total ~2.3 GPU-h.
+- Value: a pass is the paper's first count-surviving method; a fail is a clean "even added evidence stays under the
+  frontier" negative with a measured AUROC-in-cell for each evidence type (a reusable C1 diagnostic).
+Order: P1 (CPU, now) -> P2 EV-RANK (1.5 GPU-h) -> M3 (4.2 GPU-h; skip if the probe's in-cell AUROC < 0.58, since M3
+must learn the same image-conditional mention-worthiness from the same labels) -> N9 (~6 GPU-h; evaluation, needed
+for Q1 regardless; prediction: dense-reward/fine-grained checkpoints (HALVA, RLAIF-V) keep more matched-count gain).
+Effect on the bar: P1+P2 pass -> Q1 odds up ~10 pts (method + evaluation story); fail -> Q2 unchanged, C1 stronger.
+
+3. RISKS
+- All dev numbers are from 300 images, CI half-width ~1.15 F1; the kNN effect may shrink on test (winner's curse: the
+  primary was pre-declared, but I examined 3 kNN variants).
+- Text-kNN conditions on the model's own captions: if the captions are wrong, retrieval reinforces them; also reads
+  KTVIC train refs (single-writer style), so the panel gain may not replicate -> watch L.
+- Probe trained on ref-union labels learns typicality; its train-item candidate set differs from pool candidates.
+- Test pools have 7 votes, not 13: votes are noisier, which favours any extra evidence (would inflate test gains).
+What would change my view: text-kNN fails P1 on test (then drop retrieval; P(EV-RANK) -> 10%); probe in-cell AUROC
+>= 0.68 on dev (then promote the probe to a method and to M3's critic).
+
+4. CLAIMS FOR GEMINI TO VERIFY
+1 Re-run H5/scripts/h5_cpu.py and h5_robust.py (NCS_DATA=<repo>/data, 5 s each): text-kNN cell AUROC 0.614; dF1 +1.16
+  [+0.02, +2.29] vs tie-avg, +0.76 [-0.44, +1.95] vs POOL-VOTE; panel +0.81 [-0.20, +1.83]; L +0.44 [-0.50, +1.35].
+2 My (v,g) tie-avg at PLAN-F1 k_i is 58.97 under matcher v2; D15(i) quotes 59.48 for dev300 -- confirm it is v1.
+3 2609.35294 Table 2 column mapping (COCO-label vs DOPA-label vs AMBER) -- read from HTML by a summariser.
+4 E2 probe500.npz images: are any in dev300? (leakage for P2's probe training).
+5 IDs marked [UNVERIFIED] in 1a; matched-count results of CCCaption / BalCapRL / SC-Captioner (local PDFs in SP/dl_*).
+6 C8 "perfect perceiver <= +0.5 P" and "97.3% real" (second_panel.json).
+
+5. DISAGREEMENTS
+- With R11 L1/N8 and R11_00 ("GPU should prioritise M1 grounding"): disagree, 80%. Presence evidence targets the wrong
+  error; the measured in-cell information is in retrieval (0.614), not detectors (~0.58 marginal on proposals).
+- With PD-2's control: report BOTH (v,g) tie-avg and POOL-VOTE; the latter is ~0.4 F1 stronger on dev300, and a
+  "win" vs tie-avg alone is not enough (M2's family-max rule). 85%.
+- With M3-before-anything (R10_00 priority 1): run P1/P2 first; they are cheaper and test M3's premise. 75%.
+- With D16's description of N9 as purely an evaluation item: it is also the literature test of "evidence-adding
+  training beats the frontier" (2609.35294 predicts yes for dense rewards); add that prediction to N9's prereg. 70%.

@@ -1,0 +1,260 @@
+R12 H6 REPORT: independent red team of Gemini's D16 and of our own direction (R10/R11/PD-3). 2026-10-14, CPU only.
+Paths are relative to /mnt/d/vsps_image_captioning. Times are UTC (file mtimes are +07; subtract 7 h).
+
+0. BOTTOM LINE
+- D16: all 5 flagged issues are confirmed. New problems:
+  - three cited hashes and one path do not exist;
+  - 0.7325 and 0.7072 are hard-coded literals with no computing code;
+  - "K4 triggers" is false under the registered endpoint;
+  - N1 on UIT-ViIC ran before its freeze rule, and its sign rule is close to an identity.
+- The top Q1 threats are novelty against LeHaCE and Lipton, one dataset and one backbone, control-dependence, and
+  AI-made provenance. The negatives are not among them.
+- Keep the ladder: single-writer refs change its interpretation, not its numbers. Move XM3600 up, run N9 plus E1's K2
+  placebo first after the ladder, and put res2048 last.
+- Reframe the paper as measurement validity (count, gold completeness, exchangeability), validated on human judgments
+  (THumB) and on more than one dataset with independent annotators. KTVIC is the motivating case.
+- My estimates: as-is, Q2 about 55% and Q1 about 15%; after P1-P7, Q2 about 70-75% and Q1 about 25-30%.
+
+1. EVIDENCE (each item checked by me against primary files or pages)
+1a. The five D16 issues in CONTEXT_R12 §3: all five CONFIRMED.
+ (i) E1 K2 placebo. manuscript/research_r10/E1/REPORT.txt l.162-166 defines the placebo as "two sampling seeds of one
+     model", in Phase B (LLaVA-1.5-7B, CHAIR-500). 54_p1_4ep_s42 is the KTVIC ladder run that trains P1 for 4 epochs
+     (job 56_p1_4ep_s42.sh). D16 l.89 and l.137 map the placebo to the wrong run. PD-3 Q2(b) itself names no run.
+ (ii) arXiv 2401.08100 v1 (16 Jan 2024) lists Anh-Cuong Pham, Van-Quang Nguyen, Thi-Hong Vuong, Quang-Thuy Ha.
+     The citation is "Pham et al. 2024", not "Nguyen et al.". §3.2 says "three participants" annotated, each typing five
+     captions per image into blank boxes, and two researchers then revised them. The paper never states "one writer per
+     image" in words. Cite it as "one annotator enters five captions per image (§3.2, Fig. 5); three annotators in total".
+ (iii) M4 C2. REPORT.txt l.141 reads "[-1.5, +2.0], 95% CI containing 0", and the JSON key
+     C2_count_matched_delta_in_-1.5_+2.0_ci_contains_0 agrees. D16's "[+1.0, +2.0]" is wrong. It probably mixes C2 with
+     the M4 arm's GO rule crit1_delta_cm_ge_1.0.
+ (iv) M4 C4. REPORT.txt l.143 reads "captions naming no class <= 15/300", key C4_empty_object_captions_le_15
+     (observed 12, P1_dev 9). D16's "unique mention patterns" is wrong.
+ (v) 0.7325 [0.7131, 0.7519] and the LOO ceiling F1 0.7072 (P 0.9317, R 0.5698) are HARD-CODED LITERALS in
+     .session_backup/2026-10-13/r10_cpu/g2_g3_mt9_verification_v2.py, l.471-472 and l.482-486. No code computes them.
+     - Timeline: D16 (mtime 10:47) cites them before the script (11:08) and its JSON (11:09) existed.
+     - No other repo file contains 0.9317, 0.5698 or 0.7072.
+     - The computed values in the same JSON block are Chao2 standard 0.8509 [0.8282, 0.8713], non-adjacent-Q2
+       0.7338 [0.6897, 0.7739] and T3 0.73.
+     - D16 N2's "LOO ceiling gap (70.7% vs 61.5%)" is also untraceable.
+     - Verdict: UNTRACEABLE. These numbers stay out of the paper.
+1b. Further D16 and channel inconsistencies (new)
+ (vi) D16 cites three hashes that match no file on disk.
+     - n11 battery: D16 has d7b1223a…; the real files are v1 050e99d6… and v2 bda4f46d….
+     - e4: D16 has 0004ccce…; the real files are 3e0637d9… and 08e96d39….
+     - m6: D16 has 242f235f1576c237…, which is only 49 hex characters. The real hash is 242f235f15760cf4….
+     - The path D16 gives, data/results/r10_cpu_suite/, exists neither on disk nor in git; the files live in
+       .session_backup/2026-10-13/r10_cpu/.
+     So D16's "verified (sha256 …)" claims were never checked against the files they name.
+ (vii) D16 says "K4 triggers (6/15 > 1/3)". e1_x1pb_verification_v2.json shows that this depends on the control:
+     - k4_en_verdict_prefix = NOT_TRIGGERED (2/15) under the registered primary MCP prefix;
+     - sent_tieavg: NOT_TRIGGERED (2/15);
+     - random subset: TRIGGERED (6/15). The random-subset control also fails its own two-seed placebo in 2 of 8 rows
+       (instructblip greedy and r11-minigptv2: passes_K2 = false).
+     - K3 (positive control < +3) fails in 2 of 8 rows (opera llava-1.5 and minigpt4). E1's registered action for this
+       ("enlarge to 2,000 images") has not been taken.
+ (viii) N1 on UIT-ViIC is not a confirmatory replication.
+     - The run (r11_verify/c2_n1_uitviic_mstar.json, 10:43) came before D16 (10:47) set "freeze sign predictions
+       first". No frozen-prediction file exists.
+     - The "prediction" sign(M* - median M) uses b and G-bar fitted on the same outputs. Under TP = a·M^b,
+       dF1/dM ∝ b(M+G) - M, so the sign rule is close to an identity: a goodness-of-fit check, not a replication.
+     - COCO's frozen P4 has the same weakness. COCO P1-P3 are real predictions, but low-risk ones.
+ (ix) Minor items.
+     - The lambda_cnt file is data/results/upe/test/upe_mbr_ktvic_test.json; its values 0.90/0.90/0.85 are correct.
+     - The arXiv author is "Narayanaswamy" (1402.1892 v2, 14 May 2014). D16 writes "Naryanaswamy".
+     - The n11 and e4 _v2 scripts hard-code copied results (for example [0.36, -0.08, 0.80] and -35.17). Those JSONs
+       repeat numbers; they do not recompute them.
+     - The nine _v2 scripts contain 165 dict entries holding float literals. Some are registered thresholds; some are
+       copied results.
+1c. Literature (verified on primary pages)
+ - LeHaCE: Wei, Wang, Zhang, Fan and Zhao, NeurIPS 2024 (mlanthology wei2024neurips-stable). It fits a
+   length-hallucination curve, scores "at a uniform image description length", and uses the curve slope as a metric.
+   It is the closest prior work to C1 and C2. Our English "count beats length" (X1 P-B) is KILLED, so "count instead
+   of length" cannot carry the novelty.
+ - Lipton, Elkan and Narayanaswamy, arXiv 1402.1892: "the optimal threshold is half the optimal F1 score".
+ - THumB 1.0: Kasai et al., NAACL 2022, arXiv 2111.08940.
+   - github jungokasai/THumB, mscoco/mscoco_THumB-1.0.jsonl: 500 captions for each of Up-Down, Unified-VLP,
+     VinVL-base and Human, with human Precision (1-5) and Recall (1-5) scores on COCO Karpathy-test images.
+   - No LICENSE file is visible [licence UNVERIFIED].
+ - XM3600: Thapliyal et al., EMNLP 2022, arXiv 2205.12522. Whether one image's captions come from different
+   annotators is not stated in the abstract [UNVERIFIED].
+1d. Queue facts (CPU)
+ - The ladder prereg (2026-10-12_ladder_predictions.json, commit 1b5d16b) was frozen before any ladder output existed.
+ - Discriminating arms, L vs T:
+   - p1ep4: count >= 1.63 under L vs 1.24 under T;
+   - cons: count ratio <= 1.30 vs >= 1.40;
+   - unf2/cons: >= 0.97 vs <= 0.95.
+ - rnd2-detailed: T's 0.828 lies INSIDE L's [0.78, 0.86], so rnd2 does not discriminate L from T.
+ - V4 prereg §1d had already found KTVIC references non-exchangeable. §2 shows T missing P1's count by +44%.
+   T is already refuted, so the ladder now tests frontier invariance across training recipes.
+ - KTVIC adjacency (r11_verify/c3): test 0.710, train 0.667, dev300 0.631 [0.565, 0.696]. UIT-ViIC VI is
+   0.38-0.39 (null 0.40).
+
+2. PROPOSALS FOR GEMINI (in priority order; costs are on 1 RTX 3090 or CPU)
+P1 Provenance purge [CPU 2-3 h, 0 GPU; claims: all; risk R7]
+ - Scan every *_v2.py in r10_cpu/ and r11_verify/ for float literals in result dicts (165 hits).
+ - Classify each one: registered threshold, copied result, or unsourced.
+ - Recompute or delete each copied or unsourced value.
+ - Write manuscript/number_manifest.tsv with columns: number, script, JSON key, sha256.
+ - Kill rule: a number with no computing script never enters the manuscript or a D-file.
+ - Every D-file pastes real sha256sum output.
+ - Effect: removes the silent failure that would surface when the code is released.
+P2 Freeze XM3600 predictions [CPU 0.3 h; commit BEFORE any 58_z output; claims: N1/C2, C3, C4]
+ - (a) N1, out of sample. Predict the slope sign under 1 ref, all refs and OIV7-verified labels, using b TRANSFERRED
+   from COCO-2500 (no refit) and G-bar from the XM3600 gold. This is risky; the in-sample sign rule is not.
+ - (b) N2 adjacency on images with 3 refs (null 2/3) before calling the refs "annotators".
+ - (c) Typicality vs truth, refs vs OIV7, for zeroshot, P1 and fuse2.
+ - Kill rule: if 2 or more sign predictions fail, N1 drops from "core" to "explanatory".
+P3 Queue: move 58_z_xm3600_eval (2.7 GPU-h) to run right after 54 [rename only; sha256 8ab1afcc… unchanged]
+ - It gives a second dataset with human-verified truth labels (OIV7) on Open Images photos, which carry less
+   COCO-pretraining exposure. That is the cheapest attack on risks R2 and R9.
+P4 Ladder interpretation addendum [CPU 0.2 h; dated commit before any ladder output is scored]
+ - No prediction or rule changes. It states four things:
+   (1) T's numbers assume Bin(5, pi) (V4 A1), which KTVIC violates. A T "win" is reported but not read as support for
+       Prop 1.
+   (2) multiref's H1 (variance channel) cannot test between-annotator variance on single-writer refs.
+   (3) The P1-family arms train on ref slot 0, the first caption of a single-writer sequence.
+   (4) A secondary descriptive analysis: TOST equivalence at the registered +-1.0 P tolerance, plus the MDE of the
+       pooled residual.
+P5 N9 plus E1's registered K2 seed placebo [~6.5 GPU-h; claims: C1 generality and calibration; risks R1, R2, R4]
+ - Same harness for both: the LLaVA-1.5-7B base with 2 sampling seeds on CHAIR-500 (+0.5 GPU-h), then 9 public
+   checkpoints.
+ - Prereg rule, fixed before the look:
+   - PRIMARY count control = the control whose placebo has |dP| <= 0.5 and a CI that covers 0;
+   - if several qualify, the registered prefix MCP;
+   - the others go in a spec curve.
+ - Kill rule: if every control fails the placebo, replace "published gains are count shifts" with "count control
+   changes the ranking".
+ - Effect: the largest single Q1 lever, because it covers published TRAINING methods (L6: 0 of 12 repos release
+   outputs).
+P6 Human-validity test on THumB 1.0 [CPU ~1 h; licence check first; claims: C1, C2/N1; risks R1, R5]
+ - Score the 2,000 captions with the English CHAIR matcher against 1-ref, 5-ref and COCO instance gold.
+ - Frozen predictions, all with image-clustered bootstrap:
+   (a) partial r(object-P, M | human P) < 0 under 1-ref gold, and its CI covers 0 under instance gold;
+   (b) within count strata (M fixed), Spearman(object-P, human P) >= 0.2;
+   (c) r(object-F1, human R) under instance gold exceeds the same r under 1-ref gold.
+ - Kill rule: if (a) fails, N1 is arithmetic of the metric only, not a validity result, and is demoted.
+ - Effect: turns N1 and the count control from near-identities into measurement-validity evidence.
+P7 59 WiSE-FT [5 GPU-h; claim: a count-controlled positive on the truth side; risk R8]
+ - Commit the N12-D2 count-controlled two-gold endpoint BEFORE 59 starts. Its parts:
+   - UIT-ViIC instance gold;
+   - (v,g) tie-avg plus the frontier residual;
+   - the L gate.
+ - It is the best evidence-adding candidate in the queue: base-model vocabulary on the 73 rare classes, with a raw
+   bound of +5.45 F1.
+ - Kill rule: if the residual CI covers 0 at alpha*, record it as a negative and skip VGR.
+P8 Order after the ladder: N9+K2 -> 59 -> G2-B (2.2) -> M3 (4.2) -> E6 P1 (2.0) -> 60 res2048 (1.0)
+ - 60 goes last. Drop it if GPU time binds and cite the C7 §3b CPU audit instead.
+P9 Paper prereg ledger [writing; risk R6]
+ - One table: every claim -> registration commit and time -> first-look time.
+ - KTVIC test is labelled EXPLORATORY: b was fitted on it and it has had many looks.
+ - Confirmatory sets: the ladder, COCO-2500 (frozen), XM3600 (P2), THumB (P6) and N9 (P5).
+ - E3 and M6 are listed as unregistered looks.
+Expected effect of P1-P7 on the quality bar (my estimates):
+ - Q2: from ~55% to ~70-75%.
+ - Q1: from ~15% to ~25-30%.
+ - The largest gains come from P5, P6 and P1.
+
+3. RISK REGISTER (S = severity, L = likelihood, each 1-5; ranked by S×L)
+ #  risk (what a Q1 reviewer attacks)                                   S L SxL  mitigation [cost]
+ R1 Novelty: C1/C2 look like LeHaCE with count in place of length. The  5 5 25  Position explicitly: per-image exact matching
+    p_marg > F1/2 rule is Lipton 2014; human P vs k refs is Chen 2015.          (no curve form), gold dependence, training-
+    X1 killed "count beats length" in English.                                  method leaderboard, CAR. P5 + P6 [6.5 GPU-h, 1 CPU-h]
+ R2 External validity: one dataset family (KTVIC), one backbone, mostly 5 5 25  P3 XM3600, P5 N9, G2-B, P6 THumB
+    one seed. UIT-ViIC test is 231 sports images.                              [~11 GPU-h, 1 CPU-h]
+ R3 KTVIC refs come from 3 people, one writer per image, with no         4 5 20  Disclose it ourselves as N2. Move the human
+    punctuation. The "human ceiling" and the gold are one writer's.             ceiling to COCO/UIT-ViIC/panel. Done mostly [CPU]
+ R4 Control-dependence: UPE +0.61 vs -0.02; E1 2/15 vs 6/15; K4 fires    5 4 20  One primary control, chosen by the placebo rule
+    under one control only; M4 C2 holds on one endpoint only.                   (P5). Every other control goes in a spec curve
+                                                                               [0.5 GPU-h]
+ R5 Small effects; nulls read as invariance. MDE ~+-2 F1 at n=300/558.  4 5 20  MDE on every null; TOST at the registered SESOI;
+                                                                               larger sets (COCO-2500, XM3600 600, UIT val 924)
+                                                                               [CPU]
+ R7 Provenance: AI-made analyses carry literals and false hashes         5 3 15  P1 manifest, plus a second implementation of the
+    (1a v, 1b vi). Code release exposes them.                                   5 headline numbers that must agree to 1e-6
+                                                                               [1 day CPU/human]
+ R8 No method beats the frontier, so the paper reads as a list of        3 5 15  Frame the negatives as validation of the
+    negatives.                                                                  instrument; need positive controls (E1 K3, N9
+                                                                               survivors). P7 and M3 are upside only [9 GPU-h]
+ R6 Prereg hygiene: E3 and M6 unregistered looks; N1-UIT run before its  4 3 12  P9 ledger; KTVIC test labelled exploratory [writing]
+    freeze; KTVIC test reused (b fitted on test).
+ R9 OpenViIC panel: licence open; 401/558 images in OpenViIC train;      3 4 12  Demote C3 to supporting. Replicate it on XM3600
+    the panel cannot be released, so C3 cannot be reproduced.                   OIV7 and UIT-ViIC COCO gold; email the UIT
+                                                                               authors [CPU]
+ R10 Matcher validity is unmeasured; v3 is not signed off.               4 3 12  Extraction precision against existing labels
+                                                                               (UIT-ViIC refs vs COCO, XM3600 vs OIV7); v2 stays
+                                                                               primary [1 CPU-h]
+ R11 Baseline: 148.23 is not comparable with GRIT 136.0 / ViG / HDUCap.  3 4 12  Protocol table; no SOTA claim; "controlled
+    Punctuation and segmentation each move CIDEr by 17-35 points.                baseline" only [CPU]
+ R12 Venue fit: a Vietnamese-centred evaluation paper reads as narrow.   4 3 12  Reframe (§5e); Vietnamese is the motivating
+                                                                               case [writing]
+ R13 Truth-side contamination: COCO images are likely in Qwen           3 3  9  Use val2017_clean_295, XM3600 and the KTVIC panel
+    pretraining (D13 barred Qwen3-VL-8B for this).                              for truth claims [CPU]
+ R14 Negative section is too large (11 families).                       2 4  8  One table (B9) plus a supplement [writing]
+What would change my judgement:
+ - Up: N9 shows that some published training method survives count control. That is a positive control for the
+   instrument, and it would lift Q1 by about 10 pp.
+ - Up: P6 (a) to (c) hold.
+ - Down: XM3600 sign predictions fail, OR the placebo fails for every control. Then C1 becomes "control-dependent" and
+   the measurement framing weakens.
+ - Down: the panel licence is refused.
+
+4. CLAIMS FOR GEMINI TO VERIFY
+ 1. Recompute sha256 of n11_35e_posthoc_r10_battery(.json/_v2), e4_protocol_verification(.json/_v2) and
+    m6_pm6b_arbitration.json. Replace D16's d7b1223a…, 0004ccce… and 242f235f1576c237… (49 characters), and the
+    non-existent data/results/r10_cpu_suite/ path. Say which version (v1 or v2) each verdict uses.
+ 2. Provide the code that computes chao2_completeness 0.7325 [0.7131, 0.7519] and pan_leave1out_ceiling
+    (0.9317/0.5698/0.7072), defining "pan" and the gold. Otherwise retract both, and retract "70.7% vs 61.5%".
+ 3. M4 C2 is registered as [-1.5, +2.0] with the CI containing 0. C4 is "captions naming no class <= 15/300".
+ 4. The KTVIC first author is Anh-Cuong Pham (arXiv 2401.08100).
+ 5. E1's K2 placebo is two sampling seeds of LLaVA-1.5-7B on CHAIR-500. It has not been run, and it is not
+    54_p1_4ep_s42.
+ 6. E1 K4 is NOT_TRIGGERED under the registered prefix endpoint (2/15) and TRIGGERED only under the random subset (6/15).
+    E1 K3 fails in 2 of 8 rows, and the registered "enlarge to 2,000 images" is still pending.
+ 7. Is there a frozen-prediction file for N1 on UIT-ViIC that predates 10:43 UTC? If not, label that run exploratory.
+ 8. Renaming 58_z keeps its content hash (8ab1afcc…). Confirm that qrun.sh picks jobs in lexical order.
+ 9. Check THumB's licence (no LICENSE file is visible). Check whether LeHaCE released per-instruction outputs, which
+    would allow a CPU head-to-head [UNVERIFIED].
+ 10. Lipton is spelled "Narayanaswamy". The ECML-PKDD 2014 title differs from the arXiv title [UNVERIFIED from memory:
+    "Optimal Thresholding of Classifiers to Maximize F1 Measure"].
+ 11. XM3600-vi: are one image's captions written by different annotators? Run the N2 adjacency check on 3-ref images.
+
+5. DISAGREEMENTS (confidence that my position is right)
+ With Gemini (D16):
+ a. The "verified sha256" citations and the 99% confidence are not earned: three hashes match no file. Every D-file
+    should paste sha256sum output. 95%.
+ b. "N1 CONFIRMED 5/5 on UIT-ViIC" is an in-sample goodness-of-fit check, run before the freeze rule existed. Label it
+    exploratory until P2 and P6 hold. 85%.
+ c. "K4 triggers" misstates the registered verdict. The C1 headline depends on the control, and one primary control
+    must be fixed by the placebo rule (P5). 85%.
+ d. Chao2 completeness on KTVIC assumes independent sampling occasions, which single-writer refs violate. Report the
+    computed range (0.73-0.85) as a sensitivity bound, or drop it. 80%.
+ With our direction (R10/R11/PD-3):
+ e. PAPER STORY: reframe as "measurement validity of object-level caption metrics: count, gold completeness, reference
+    exchangeability".
+    - Each threat comes with a cheap audit a practitioner can rerun.
+    - Validate against human judgments (P6) and on >= 2 datasets with independent annotators (COCO-EN, XM3600,
+      UIT-ViIC).
+    - The re-scoring of 15 decoding methods (E1) and 9 training methods (N9) is the applied demonstration.
+    - KTVIC is the MOTIVATING CASE, where all three threats co-occur, not "the testbed".
+    - The baseline (148.23), the 11 negatives and C3 become supporting sections.
+    - Keep one paper, not a split. Confidence: reframe 70%; no split 65%.
+ f. N1 should not be a "core result" (PD-3 Q3, 85%). Under a power-law frontier it is close to an identity of F1 plus
+    Lipton 2014. Keep it as an explanatory lemma and diagnostic. It becomes core only if P2 (transferred b) and P6
+    (human validity) hold. 75%.
+ g. Demote C3 (OpenViIC panel) from pillar to supporting, for licence, leakage, power and control-dependence reasons.
+    Replicate it on XM3600 OIV7 and UIT-ViIC COCO gold. 75%.
+ h. The ladder is still worth its ~16 remaining GPU-h. 75%.
+    - It is the only cleanly pre-registered experiment in the project.
+    - It tests the training-side complement of A = 0: decision-only rules cannot win by the identity; can target
+      curation?
+    - Both outcomes are informative. Runs on the frontier support invariance across recipes; a run off it would be
+      the first count-controlled positive.
+    - Single-writer refs change the INTERPRETATION (T model, multiref H1, slot 0), not any frozen number. File P4.
+    - Do not drop any run. rnd2 is the first to cut if GPU time binds; declare that before any output is scored.
+    - It must not be the paper's centrepiece: it is KTVIC-only with one seed.
+ i. Re-order the queue: 54 -> 58_z XM3600 -> 55 -> 58 unf2 -> 56 -> 57 -> N9+K2 -> 59 -> G2-B -> M3 -> E6 P1 -> 60.
+    70% overall; 80% for the XM3600 move; 60% for N9 before 59. The gain is information timing, plus insurance if GPU
+    access ends.
+ j. The two-column standard (D16 B3a) is right, but its second column must be ONE pre-declared control. A menu of
+    controls invites a "control shopping" critique. 85%.
+ k. Plan the paper so it does not depend on M3: P(count-controlled positive) <= 20%. 70%.
