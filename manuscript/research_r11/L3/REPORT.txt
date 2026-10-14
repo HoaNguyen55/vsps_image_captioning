@@ -1,0 +1,199 @@
+R11 / L3 -- What humans choose to mention (B3) x hallucination evaluation (A1-A3) and preference optimisation (D)
+Agent L3, 2026-10-14. Folder SP/r11_litmaps/L3/. CPU check: l3_check.py (sha256 168f296a...), outputs l3_check_raw.json
+(v2 exact classes = the MT2/PD-2 endpoint) and l3_check_can.json (canonical synonyms). Run: ~80 s each, ~60 MB, nice 19,
+1 thread. Aggregates and lexicon class names only; OpenViIC text is read into memory to build class sets, never written.
+
+0. BOTTOM LINE
+- No verified paper uses multi-annotator mention frequency in LVLM hallucination/omission metrics or in preference
+  optimisation. The closest is VIFIDEL (ACL 2019), which weights objects by reference mentions: one gold, no count control.
+- Mechanism (new, supported): non-transfer between golds comes from GUIDELINE-ONLY mentions plus gold-size dilution (x0.69), not
+  low-k gains. UPE gains shared objects (+0.016 of +0.017 TP/img), dropping panel-only objects (-0.008); 35_e's is control-side.
+- Evaluation card (supported): P1 omits consensus objects (4/4 refs) at 25-28% vs 13-17% for a held-out annotator at near-equal
+  count; 58.5-58.7% of its reference-"hallucinations" are panel-named, the same as a human's singletons (59.6-60.2%).
+- Killed: class-level k/5 importance does not predict which FPs the panel confirms (AUC 0.52-0.57, CI includes 0.5 on test).
+
+1. THE GAP AS THE MAP SHOWS IT (final merge, analysis.json, 7,725 works; B3 = 2 seeds, 214 works)
+  pair                                   obs   exp   | Gemini OpenAlex map (n3, unreviewed): obs / exp
+  A1 hallucination metrics x B3            5   79.6  |  5 / 37.3
+  A2 hallucination decoding x B3           1   35.3  |  1 / 16.3
+  A3 length/count control x B3             0    3.3  |  0 / 1.6
+  B3 x D preference optimisation           0   28.5  |  0 / 13.1
+  B3 x C1 Goodhart/overoptimisation        2   44.1  |  3 / 28.0
+  B3 x F F-measure/allocation              1   10.2  |  1 / 5.9
+  B1 caption metrics x B3                 13   31.7  | 22 / 40.5      (B2 gold completeness x B3: 0 / 15.3)
+What the bridges are:
+- A1/A2 x B3: one content bridge, M3ID (Favero et al., CVPR 2024, arXiv 2403.14003), a mutual-information DECODING
+  method that cites Spain & Perona. The others (CLIPScore 2104.08718, a 2020 survey, Im2Text, PASCAL VOC) are generic.
+- B3 x C1: PASCAL VOC and the DPM detector (generic references). B3 x F: a 2019 thesis on multi-label reduction.
+  Conceptual bridge NOT in the map: Arroyo, Perona & Cole (arXiv 2305.15584) show that the positive label an annotator
+  gives is not chosen at random (label bias). Mention-worthiness is that bias in caption golds.
+- B1 x B3: CLIPScore, BISON, gender/racial-bias captioning papers, VIP and DIVE. They cite Berg 2012 as background; none
+  scores omission or hallucination by k/n.
+Caveat: the ratio is inflated by era. Seed citers are mostly 2013-2019 (Spain-Perona: 7 citers from 2023 on; Berg: 16), while
+A1/A2/D are 2023+. Reading the 2019+ citers (S2 citer lists): only VIFIDEL (1907.09340) turns reference-mention frequency into
+a caption metric. Gregorio, Ponti & Goldwater (CoNLL 2026) link salience to mention ORDER and grammatical role, not to
+hallucination. The gap is real at the content level, but smaller than 5/80 suggests.
+
+2. CLOSEST PRIOR WORK
+Key: [C] = Crossref record via doi.org; [A] = arXiv abs page; [P] = paper text read today (arXiv HTML or ACL page).
+Background (importance = what people name):
+ 1 Spain & Perona, "Measuring and Predicting Object Importance", IJCV 91:59-76, doi 10.1007/s11263-010-0376-0 [C]
+   (published online 2010-08-27). Importance = probability an observer names the object; position and size predict it.
+ 2 Berg et al., "Understanding and predicting importance in images", CVPR 2012 pp.3562-3569, doi 10.1109/CVPR.2012.6248100 [C].
+ 3 Yun, Peng, Samaras, Zelinsky & Berg, CVPR 2013 pp.739-746, doi 10.1109/CVPR.2013.101 [C]. Gaze vs what is described.
+ 4 Jas & Parikh, "Image Specificity", arXiv 1502.04569 [A], CVPR 2015 (CVF page). Description consistency varies by image.
+ 5 Yatskar, Galley, Vanderwende & Zettlemoyer, "See No Evil, Say No Evil", *SEM 2014 pp.110-120, doi 10.3115/v1/S14-1015
+   [ACL page]. Content selection from dense labels.
+ 6 Tavakoli, Shetty, Borji & Laaksonen, ICCV 2017 pp.2506-2515, doi 10.1109/ICCV.2017.272 [C], arXiv 1704.07434 [A].
+   Salient objects are mentioned earlier. A saliency-boosted captioner gives no significant COCO gain (precedent for M2).
+ 7 Misra, Zitnick, Mitchell & Girshick, "Seeing through the Human Reporting Bias", CVPR 2016 pp.2930-2939,
+   doi 10.1109/CVPR.2016.320 [C], arXiv 1512.06974 [A]. Separate presence and relevance heads. This is the conceptual
+   precedent for "plausible-unmentioned vs absent", but it is used for training classifiers, not for evaluation.
+Evaluation and omission metrics:
+ 8 VIFIDEL, Madhyastha, Wang & Specia, ACL 2019 pp.6539-6550, doi 10.18653/v1/P19-1654 [C], arXiv 1907.09340 [A]: takes into
+   account "the relative importance of objects mentioned in human reference descriptions". This is the CLOSEST work. It has
+   one gold, no count control, and no LVLM hallucination split.
+ 9 AMBER, arXiv 2311.07397 [A][P]. Cover = share of annotated objects mentioned, all objects weighted equally. The annotations
+   include "all visible objects in the image, including background objects".
+10 HallE-Control / CCEval, arXiv 2310.01779 [A][P]. Coverage = matched / all ground-truth objects, unweighted, GPT-4-assisted.
+   It states "we do not strictly enforce consistent constraints (same coverage, average length, and average objects)".
+11 CAPTURE, arXiv 2405.19092 [A][P]. Exact, synonym and soft matching, plus a stop list of abstract nouns. Objects are not
+   weighted by salience; the F1 scores are weighted only by element type (5:5:2).
+12 CompreCap, arXiv 2412.08614 [A][P]. Object coverage is unweighted. Area weights enter only the attribute score; the
+   "tiny objects (<5% pixels)" filter is used only for its VQA part.
+13 DeCapBench/DCScore + FeedQuill, arXiv 2503.07906 [A][P]. Unweighted P/R over information units; recall credits
+   verified-correct unreferenced units. FeedQuill reward = precision + 0.5 x unit count: no importance, no omission check.
+14 InfoMetIC, ACL 2023 pp.3171-3185, doi 10.18653/v1/2023.acl-long.178 [C]: reference-free "vision recall".
+    CapMAS (Lee et al., arXiv 2412.15484) [A] reports factuality and coverage. Per Gemini A4, its 67.9->18.3 drop is
+    FACTSCORE (reference-free), so it must NOT be cited as cross-gold evidence.
+Preference optimisation and omission repair (B3 x D: nothing uses human mention frequency):
+15 CHAIR-DPO, Compagnoni et al., arXiv 2508.20181 [A], BMVC 2025: CHAIR labels the winner of each pair. Abstract only:
+   no importance or omission term. HSA-DPO, Xiao et al., arXiv 2404.14233 [A]: severity-aware AI feedback.
+16 Omission: "Two Causes, Not One" arXiv 2509.00371 [A] (omission vs fabrication mechanisms). PatchGate arXiv 2608.21819 [A]
+   (recovers visible objects that were left out, from model-internal evidence). ProCap arXiv 2607.21022 [A] (prominence-
+   ranked object injection for VIDEO captions, using detector saliency rather than human mention statistics).
+Cross-guideline and cross-language differences in content:
+17 van Miltenburg, Elliott & Vossen, INLG 2017 pp.21-30, doi 10.18653/v1/W17-3503 [C], arXiv 1707.01736 [A]. Ye, Santy,
+   Hwang, Zhang & Krishna, arXiv 2310.14356 [A] (CVPR 2025 per the map's DOI 10.1109/CVPR52734.2025.02762, not opened).
+   Both: annotator groups (by language) differ in WHAT they describe. Gregorio et al., CoNLL 2026 pp.301-317,
+   doi 10.18653/v1/2026.conll-main.18 [ACL page]: salience -> mention order and grammatical role.
+Not opened: THRONE arXiv 2405.05256 (ID verified [A]; its metric definitions are UNVERIFIED, session limit).
+Yi, Deng & Hu, ACL 2020, doi 10.18653/v1/2020.acl-main.93: [C] is OK, but whether it weights by reference consensus is
+UNVERIFIED.
+Scoop risk for R10 findings in scope:
+- E3 (~30% naming / ~70% choice of what to mention): LOW for the quantitative split of a metric gap with a shuffled null.
+  MEDIUM for the qualitative point that annotator groups mention different things (items 7, 17).
+  Gemini's E3 #7 (unreviewed) supports it: the THING_L2 tier closes 64.3% (dev) / 61.9% (test) of the gap.
+- M2 (a salience prior gives no gain at matched count, -0.35 F1): scoop LOW and novelty LOW. Items 1, 2 and 6 predict it.
+- V3 (15-type taxonomy; 38% of person "hallucinations" are missing hypernym links): LOW for the Vietnamese specifics. MEDIUM
+  for the general point that matcher vocabulary inflates hallucination rates (CHAIR synonym list, ALOHa/CAPTURE soft
+  matching, ManyNames).
+- E2 three-way FP split: LOW-MEDIUM. COCO-CHAIR's instance-union gold, DCScore's verified-unreferenced credit and Misra's
+  relevance head all treat "real but unmentioned" content. None splits it with a second, independent human panel.
+- New D1 below (two-gold transfer accounting): no prior found. LOW, but this is absence of evidence: two searches were cut by
+  the session limit.
+
+3. NEW DIRECTIONS INFERRED FROM THE GAP
+Sanity (reproduces MT2/n11 exactly): UPE vs COUNT, test, 3 seeds +0.606 [0.247, 0.969] KTVIC / +0.09 [-0.32, +0.46]
+panel; dev300 +0.45; 35_e cm (G0 vote control) +2.07 [-0.09, +4.23] KTVIC / +0.47 [-0.90, +1.87] panel.
+Notation, per image: "panel-only" = a mention outside the KTVIC 5-ref union that the panel names (fp_conf);
+"unconfirmed" = named by neither gold. Units are objects/img [95% CI], B=2000, images resampled.
+D1 Two-gold transfer accounting at matched count (candidate 2; SUPPORTED in a refined form) -- pillar C3 (+C1)
+ Claim:
+ - Identity: dTP_K - dTP_P = d(KTVIC-only TP) - d(panel-only). Non-transfer is carried by GUIDELINE-ONLY mentions plus a
+   gold-size dilution, not by gains on low-k objects.
+ - UPE, test, 3 seeds:
+   * dTP_K +0.017 [0.005, 0.029]: shared objects +0.016 [0.007, 0.027], KTVIC-only +0.001.
+   * Where the gain comes from: panel-only dropped -0.008 [-0.017, +0.001], i.e. 42% of the FP cut; unconfirmed dropped
+     -0.011 [-0.021, -0.002].
+   * dTP_P = +0.008 only. Gains sit at k<=2 (+0.010 [0.001, 0.020]) but are panel-shared: k/5 does not explain the loss.
+   * Dilution: first-order F1 per +1 TP/img is 42.8 (KTVIC) vs 29.5 (panel). Full TP transfer would give the panel
+     +0.49 [0.14, 0.87]; observed +0.09.
+   * The other pools fit: p1_s43 cuts mostly unconfirmed FPs (-0.039; panel-only -0.007) and transfers (+1.25 vs +1.30);
+     fuse2_s42 splits its cut (-0.011 / -0.011) and transfers partly (+0.73 vs +0.20).
+ - 35_e, cm: the KTVIC gain is mostly consensus objects (k>=3: +1.49 of +2.07). The panel's panel-only term is -0.56,
+   = system -0.16 minus control +0.41.
+   * So the loss is CONTROL-side: at 35_e's counts the vote control adds panel-only objects the panel credits (b .745 vs
+     .899). Greedy vs greedy transfers fully (+0.047 vs +0.053 TP), so 1.77 vs 1.06 there is dilution. The brief's
+     "35_e = mention choice" holds only through the control.
+ - The canonical matcher gives the same pattern (UPE panel-only -0.008; 35_e control panel-only +0.44).
+ New vs §2 and R10: E6 measures non-transfer (kappa, G index) and E3 splits HUMAN captions. Neither shows where a system's
+   gain goes. No paper in §2 does object-level two-gold accounting.
+ Prediction (pre-register first): on the untouched pairs (M6 knapsack vs total-count control; PLAN-F1 vs POOL13 [dev300];
+   LEX vs COUNT [test]):
+   (a) shared share dTP_K,shared / dTP_K >= 0.7;
+   (b) panel-only explains >= 70% of the KTVIC-panel TP gap for vote-consensus selectors;
+   (c) the transfer ratio is <= 0.4 when panel-only is >= 40% of the FP cut, and >= 0.7 when it is <= 20%.
+   For M3 CM-DPO (B3 x D): its gain transfers only if the chosen/rejected pairs differ in unconfirmed mentions, not in
+   panel-only ones. Audit the pairs with the same cells.
+ Test: extend l3_check.py (pair() / cm()) to those files; no new labels. Cost: CPU < 0.2 h, GPU 0. Novelty 3, risk 2.
+D2 Importance-conditioned evaluation card at matched count (candidate 1; SUPPORTED as a reporting tool) -- C3/C4 (+C1)
+ Claim: report next to each count-matched endpoint:
+   (i) salient-omission rate SOR = 1 - recall on objects that ALL held-in refs name (4/4, folds pooled), with a held-out
+       KTVIC annotator as the anchor;
+   (ii) recall by k;
+   (iii) the commission split into panel-named ("plausible-unmentioned") vs unconfirmed.
+ Evidence:
+   * SOR: P1_dev 25.2% vs human 13.0% (dev300); P1 s42 28.3% vs 17.3% (test). Mentions per caption 1.76-1.82 vs 1.68-1.74.
+     At k=1 the gap is small: 0.21-0.25 vs 0.25-0.28.
+   * Panel confirmation of KTVIC gold by k=1..5: .60 / .73-.74 / .73-.79 / .84-.87 / .86-.89. Consensus objects are
+     guideline-robust; singletons are guideline-specific.
+   * Commission: 58.5-58.7% of P1's out-of-reference mentions (vs 4 refs) are panel-named, against 59.6-60.2% for a
+     held-out human. A held-out human's "FPs" are exactly the k=1 objects.
+ New vs VIFIDEL/AMBER/CCEval/CAPTURE/CompreCap/DCScore: they weight by importance or count coverage, but have one gold and no
+   count control. Here: k-stratified omission against a held-out human at matched count, and a commission split by a second
+   human panel. The ingredients are known.
+ Prediction:
+   (a) over the 36 FT runs on matched-count residuals, Kendall tau(SOR, F1) <= 0.6;
+   (b) MBR/UPE lower panel-only mentions without lowering SOR;
+   (c) the SOR ranking agrees across golds (tau >= 0.7, using panel consensus = named by >= 60% of panel captions).
+ Test: data/results/*.preds.json (73 test systems) plus ktvic_openviic_refs.json aggregates; design on dev300.
+   UIT-ViIC (COCO images) gives a second independent gold: data/uitviic/instance_gold.json (existing human instance labels).
+ Cost: CPU < 0.5 h, GPU 0.
+ Novelty 2-3, risk 2.
+D3 Class-level k/5 predicts which FPs the panel confirms (candidate 3) -- KILLED on CPU
+ Evidence: importance = mean k/5 when present (train refs only); AUC 0.571 [0.478, 0.654] on dev (208 FP items) and
+   0.519 [0.457, 0.581] on test (392). The class prior does a bit better (0.605 / 0.648).
+ This agrees with E3 (pi_c tau -0.04/-0.26) and E2 (guideline zeros are invisible from one gold). KTVIC importance
+   cannot stand in for a second gold. Keep it as one negative sentence (pillar C5).
+D4 Importance-stratified MCP audit of the published English methods (A2 x B3 1/35; A3 x B3 0/3.3) -- C1, generality
+ Claim: for E1's public OPERA (4 LVLMs) and Less-is-More outputs (500 COCO val2014 images), split each method's matched-
+   prefix (MCP) changes by k = number of the 5 COCO captions naming the class, and by instance presence.
+ Prediction: >= 12/15 pairs show no salient-recall gain at MCP (CI for k>=3 recall includes 0). Raw CHAIR gains come from
+   dropping k=0 classes, present or absent.
+ Test: E1's e1_chair_count.py, CHAIR synonyms (data/coco_probe/chair_synonyms.txt), COCO captions + instances val2014.
+   E1's dl/ is not in the backup, so it must be downloaded again.
+ Cost: CPU ~0.5 h + download, GPU 0.
+ Novelty 3, risk 3.
+
+4. LITMAPS SEEDS TO ADD: VIFIDEL 10.18653/v1/P19-1654 | Misra 10.1109/CVPR.2016.320 | Tavakoli 10.1109/ICCV.2017.272 |
+   Yatskar 10.3115/v1/S14-1015 | Jas-Parikh arXiv 1502.04569 | DCScore arXiv 2503.07906 | Arroyo et al. arXiv 2305.15584 |
+   van Miltenburg 10.18653/v1/W17-3503 | Ye et al. arXiv 2310.14356 | CHAIR-DPO arXiv 2508.20181
+5. CLAIMS FOR GEMINI TO VERIFY
+ 1 Re-run (from repo root): nice -n 19 env OMP_NUM_THREADS=1 python3 -I SP/r11_litmaps/L3/l3_check.py raw (then can).
+   sha256: script 168f296a, raw 8dcbdc36, can 8f304857. Check the reproduced MT2/n11 numbers in §3.
+ 2 D1 cells for UPE 3-seed (+0.016 shared, -0.008 panel-only, -0.011 unconfirmed, dTP_P +0.008; slopes 42.8 / 29.5).
+   35_e cm split: K +2.07 = sys +1.49 - ctrl -0.59; panel-only -0.56 = sys -0.16 - ctrl +0.41.
+ 3 D2: SOR 25.2 vs 13.0 (dev), 28.3 vs 17.3 (test); panel-named share of FPs 58.5-58.7 (P1) vs 59.6-60.2 (human).
+   D3: AUC .571 / .519, class prior .605 / .648.
+ 4 r10_a4_citation_verification.json CONFLICTS with my checks:
+   - its entries give S14-1015 as Kuznetsova et al.; the ACL page (pp.110-120) says Yatskar et al.;
+   - its entries give 1502.04569 as Johnson et al., scene graphs; the arXiv page says Jas & Parikh, Image Specificity;
+   - its entries give CVPR.2013.101 as Entry-Level Categories / Baby Talk; Crossref says Yun et al., pp.739-746;
+   - its entries give P19-1654 pp.6543-6553 and other titles; Crossref says VIFIDEL, pp.6539-6550.
+   Re-resolve all four at doi.org / aclanthology.org.
+ 5 Quotes from paper text: AMBER "all visible objects ... background objects"; CCEval "we do not strictly enforce consistent
+   constraints"; CompreCap's <5% tiny-object filter (VQA only); CAPTURE stop list and 5:5:2; FeedQuill r = c_p + 0.5 c_r.
+ 6 UNVERIFIED: THRONE's metrics; whether CHAIR-DPO reports recall; whether Yi et al. 2020 weights by consensus;
+   Ye et al.'s CVPR 2025 venue.
+ 7 Absence: re-run the cut searches ("salience-weighted CHAIR", "consensus-weighted object recall", "mention-worthiness DPO",
+   "annotation guideline transfer hallucination metric") before any novelty wording. Never say "first".
+6. WHAT WOULD CHANGE MY CONCLUSION (kill rules)
+ D1: on the untouched pairs, panel-only explains < 50% of the KTVIC-panel TP gap in >= 2 of 3 -> drop the mechanism and keep
+     only dilution. If the shared share is < 0.5, the mechanism is "KTVIC-only gains" instead: rewrite.
+ D2: under the V3 hypernym-fixed matcher, P1's SOR is within 3 pts of the human -> the omission gap was a matcher artefact.
+     If tau(SOR, F1) > 0.8 on matched residuals, keep SOR as one descriptive row only.
+ D3: already killed. Revive only if an image-level importance from EXISTING human labels (COCO instance area on UIT-ViIC)
+     reaches AUC >= 0.65.
+ D4: if k/5 cannot be mapped for >= 90% of objects or the files cannot be fetched -> drop. If >= 4/15 pairs gain on
+     salient recall at MCP -> report "mixed", not "no selection gain".

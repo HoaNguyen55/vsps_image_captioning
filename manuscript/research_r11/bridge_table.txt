@@ -1,0 +1,81 @@
+works 7725
+{
+"A3 length/count control": 118,
+"D preference optimization": 1028,
+"A2 hallucination decoding": 1276,
+"E2 multilingual/protocol": 195,
+"A1 hallucination metrics": 2875,
+"E1 Vietnamese V+L": 71,
+"C1 Goodhart/overoptimization": 1593,
+"B1 caption metrics": 1143,
+"C2 caption RL": 646,
+"B2 gold completeness/raters": 552,
+"B3 object importance": 214,
+"F F-measure/allocation": 370
+}
+    0 obs    137.7 exp ratio 0.0  A1 hallucination metrics x F F-measure/allocation
+    0 obs     61.1 exp ratio 0.0  A2 hallucination decoding x F F-measure/allocation
+    0 obs      3.3 exp ratio 0.0  A3 length/count control x B3 object importance
+    0 obs      5.7 exp ratio 0.0  A3 length/count control x F F-measure/allocation
+    0 obs     54.7 exp ratio 0.0  B1 caption metrics x F F-measure/allocation
+    0 obs     15.3 exp ratio 0.0  B2 gold completeness/raters x B3 object importance
+    0 obs     73.5 exp ratio 0.0  B2 gold completeness/raters x D preference optimization
+    0 obs     26.4 exp ratio 0.0  B2 gold completeness/raters x F F-measure/allocation
+    0 obs     28.5 exp ratio 0.0  B3 object importance x D preference optimization
+    0 obs     76.3 exp ratio 0.0  C1 Goodhart/overoptimization x F F-measure/allocation
+    0 obs     30.9 exp ratio 0.0  C2 caption RL x F F-measure/allocation
+    0 obs     49.2 exp ratio 0.0  D preference optimization x F F-measure/allocation
+    0 obs      3.4 exp ratio 0.0  E1 Vietnamese V+L x F F-measure/allocation
+    0 obs      9.3 exp ratio 0.0  E2 multilingual/protocol x F F-measure/allocation
+    1 obs     81.7 exp ratio 0.01  B1 caption metrics x B2 gold completeness/raters
+    2 obs     91.2 exp ratio 0.02  A2 hallucination decoding x B2 gold completeness/raters
+    5 obs    235.7 exp ratio 0.02  B1 caption metrics x C1 Goodhart/overoptimization
+    1 obs     46.2 exp ratio 0.02  B2 gold completeness/raters x C2 caption RL
+    2 obs    133.2 exp ratio 0.02  C1 Goodhart/overoptimization x C2 caption RL
+    2 obs     86.0 exp ratio 0.02  C2 caption RL x D preference optimization
+    1 obs     35.3 exp ratio 0.03  A2 hallucination decoding x B3 object importance
+    3 obs    106.7 exp ratio 0.03  A2 hallucination decoding x C2 caption RL
+   26 obs    592.9 exp ratio 0.04  A1 hallucination metrics x C1 Goodhart/overoptimization
+    1 obs     24.3 exp ratio 0.04  A3 length/count control x C1 Goodhart/overoptimization
+   11 obs    205.4 exp ratio 0.05  A1 hallucination metrics x B2 gold completeness/raters
+   13 obs    263.1 exp ratio 0.05  A2 hallucination decoding x C1 Goodhart/overoptimization
+    2 obs     44.1 exp ratio 0.05  B3 object importance x C1 Goodhart/overoptimization
+    5 obs     79.6 exp ratio 0.06  A1 hallucination metrics x B3 object importance
+   17 obs    188.8 exp ratio 0.09  A2 hallucination decoding x B1 caption metrics
+   13 obs    152.1 exp ratio 0.09  B1 caption metrics x D preference optimization
+    2 obs     19.5 exp ratio 0.1  A2 hallucination decoding x A3 length/count control
+    1 obs     10.2 exp ratio 0.1  B3 object importance x F F-measure/allocation
+    4 obs     40.2 exp ratio 0.1  C1 Goodhart/overoptimization x E2 multilingual/protocol
+    1 obs      8.4 exp ratio 0.12  A3 length/count control x B2 gold completeness/raters
+    2 obs     15.7 exp ratio 0.13  A3 length/count control x D preference optimization
+    2 obs     11.7 exp ratio 0.17  A2 hallucination decoding x E1 Vietnamese V+L
+    1 obs      5.4 exp ratio 0.19  B3 object importance x E2 multilingual/protocol
+    5 obs     25.9 exp ratio 0.19  D preference optimization x E2 multilingual/protocol
+    2 obs      9.4 exp ratio 0.21  D preference optimization x E1 Vietnamese V+L
+   27 obs    113.8 exp ratio 0.24  B2 gold completeness/raters x C1 Goodhart/overoptimization
+   65 obs    240.4 exp ratio 0.27  A1 hallucination metrics x C2 caption RL
+    4 obs     14.6 exp ratio 0.27  C1 Goodhart/overoptimization x E1 Vietnamese V+L
+    9 obs     32.2 exp ratio 0.28  A2 hallucination decoding x E2 multilingual/protocol
+  123 obs    425.4 exp ratio 0.29  A1 hallucination metrics x B1 caption metrics
+    6 obs     17.9 exp ratio 0.34  B3 object importance x C2 caption RL
+   26 obs     72.6 exp ratio 0.36  A1 hallucination metrics x E2 multilingual/protocol
+   13 obs     31.7 exp ratio 0.41  B1 caption metrics x B3 object importance
+   91 obs    212.0 exp ratio 0.43  C1 Goodhart/overoptimization x D preference optimization
+   12 obs     26.4 exp ratio 0.45  A1 hallucination metrics x E1 Vietnamese V+L
+   20 obs     43.9 exp ratio 0.46  A1 hallucination metrics x A3 length/count control
+    1 obs      2.0 exp ratio 0.51  B3 object importance x E1 Vietnamese V+L
+    4 obs      5.1 exp ratio 0.79  B2 gold completeness/raters x E1 Vietnamese V+L
+   11 obs     13.9 exp ratio 0.79  B2 gold completeness/raters x E2 multilingual/protocol
+   13 obs     16.3 exp ratio 0.8  C2 caption RL x E2 multilingual/protocol
+  405 obs    382.6 exp ratio 1.06  A1 hallucination metrics x D preference optimization
+  749 obs    474.9 exp ratio 1.58  A1 hallucination metrics x A2 hallucination decoding
+   46 obs     28.9 exp ratio 1.59  B1 caption metrics x E2 multilingual/protocol
+   17 obs     10.5 exp ratio 1.62  B1 caption metrics x E1 Vietnamese V+L
+    6 obs      3.0 exp ratio 2.01  A3 length/count control x E2 multilingual/protocol
+   12 obs      5.9 exp ratio 2.02  C2 caption RL x E1 Vietnamese V+L
+  373 obs    169.8 exp ratio 2.2  A2 hallucination decoding x D preference optimization
+   78 obs     17.5 exp ratio 4.47  A3 length/count control x B1 caption metrics
+    9 obs      1.8 exp ratio 5.02  E1 Vietnamese V+L x E2 multilingual/protocol
+   59 obs      9.9 exp ratio 5.98  A3 length/count control x C2 caption RL
+  623 obs     95.6 exp ratio 6.52  B1 caption metrics x C2 caption RL
+    8 obs      1.1 exp ratio 7.38  A3 length/count control x E1 Vietnamese V+L

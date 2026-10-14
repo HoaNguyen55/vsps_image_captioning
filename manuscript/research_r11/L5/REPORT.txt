@@ -1,0 +1,188 @@
+R11 / L5 -- Hallucination & caption evaluation x Vietnamese / multilingual V+L + evaluation protocol      2026-10-14
+Folder SP/r11_litmaps/L5/. Scripts: uitviic_chair_audit.py, xm_punct_pilot.py, absparse.py. Outputs: uitviic_chair_audit.json,
+xm_punct_pilot.json, e1_citers.txt, bw_new.txt. Downloads (untrusted, parsed only): dl_abs*/, dl_pdf/. CPU only; no OA/S2 calls.
+V = checked by me on a primary page (arXiv abs/PDF/HTML or DOI resolving to the publisher); R = verified by an R10 agent; U = unchecked.
+
+0. BOTTOM LINE
+- Map: E1 is tiny (71 works); E1 x A1/A2/D/C1 bridges are below expectation in the S2 merge, but OpenAlex gives A1 x E1 11 vs 11.5.
+  Weak signal. Still, no bridging paper scores object hallucination in Vietnamese captions or audits a Vietnamese metric protocol.
+- C4 scoop risk: LOW for the classifier matcher and ViPOPE+ (no Vietnamese visual-hallucination benchmark; ViHallu is text-only).
+  MEDIUM for "segmentation moves Vietnamese CIDEr" (ViTextCaps 2604.27712). Signatures are prior art (sacreBLEU, SacreEOS).
+- Brief fix: KTVIC refs contain no punctuation (0/2,790) and P1 emits 0/558 periods; the 99.8% is zero-shot. Not "75.6% vs 99.8%".
+- UIT-ViIC: 23/33 v2 "hallucinations" are matcher artifacts; v3 removes 10 (CHAIR_i only 8.97 -> 8.16%); 'đứa trẻ' x6 survive.
+  Directions: D1 punctuation x IDF law (36 languages, rho 0.81); D2 per-corpus matcher audit; D3 classifier minimal pairs.
+
+1. THE GAP AS THE MAP SHOWS IT (SP/r11_litmaps/analysis.json, final S2 merge; obs vs expected)
+- E1: A1 x E1 12 vs 26.4; A2 x E1 2 vs 11.7; D x E1 2 vs 9.4; C1 x E1 4 vs 14.6; B2 x E1 4 vs 5.1; B1 x E1 17 vs 10.5 (crowded).
+- E2: A1 x E2 26 vs 72.6; A2 x E2 9 vs 32.2; D x E2 5 vs 25.9; C1 x E2 4 vs 40.2; B2 x E2 11 vs 13.9.
+- Gemini's OpenAlex map (.session_backup/2026-10-14/r11_litmaps_n3/summary.txt): A1 x E1 11 vs 11.5 (no gap). E2 = 2,086 works,
+  dominated by sacreBLEU's MT citers, so E2 deficits (A1 x E2 28 vs 325) are partly a composition artefact. Pointers only.
+- What the bridges are:
+  * A1 x E1 (12): 6 generic old works (COCO, Visual Genome, ResNet, LRCN, COCO Captions); 2 surveys (2409.18142, 2408.15769);
+    3 LVLM/toolkit papers listing Vintern as a baseline (VLMEvalKit DOI 10.1145/3664647.3685520; 2412.05271; V2PE 2412.09616);
+    a Romanian VLM citing CHAIR + LaVy (2512.14926); SHROOM-Visions 2026 (2608.25662; V), which cites ViHallu + ALOHa and
+    detects LVLM hallucination spans in zh/en/fr/it, no vi.
+  * A2 x E1 and D x E1: only COCO and Visual Genome.
+  * C1 x E1: only ImageNet, VGG, ResNet and COCO.
+  * A1 x E2: the nearest is CCHall (2505.19108; V), joint cross-lingual and cross-modal hallucination detection; also
+    VCE (ICASSP 2026, cites MHR).
+  * B2 x E2: PaLI and SigLIP-type papers that cite ImageNet-ReaL and XM3600, with no gold-completeness work.
+  * B1 x E1: Vietnamese captioners that report CIDEr without protocol analysis: HDUCap (JVCIR 2026,
+    DOI 10.1016/j.jvcir.2026.104963; V) and ViG (MAPR 2026, DOI 10.1109/MAPR72750.2026.11685699; V).
+- All 71 E1 citers (e1_citers.txt): retrieval (ViCLIP-OT 2602.22678), VQA (AutoViVQA 2603.09689), medical (ViX-Ray 2603.15513),
+  and the UIT-OpenViIC journal version (DOI 10.1016/j.image.2025.117430; V, resolves to Elsevier). None measures object
+  hallucination or metric protocol.
+=> The gap: hallucination measurement and n-gram protocol for Vietnamese captions sit between two communities that do not cite each
+   other. Vietnamese V+L cites CIDEr; multilingual hallucination work translates POPE and stops at VQA.
+
+2. CLOSEST PRIOR WORK (2023-2026 unless noted; all V unless marked)
+Vietnamese V+L
+ [1] DSC2025 ViHallu, arXiv 2601.04711 (Jan 2026). TEXT-ONLY: 10,000 (context, prompt, response) triplets, 111 teams; no images.
+     Name clash: "ViHallu" in arXiv 2507.22003 (Dai et al., ACM MM 2025) is an English vision-centric mitigation method.
+ [2] Vintern-1B, 2408.12480 (OCR/VQA; no hallucination eval in abstract). LaVy, 2404.07922 (LaVy-Bench).
+     VMMU, 2508.13680 (2.5k reasoning questions). None is a POPE/CHAIR-type test.
+ [3] VLSP vision tasks: vieCap4H 2021 (BLEU only; overview JCSCE art. 341, V via search); EVJVQA 2302.11752 (VLSP 2022, vi/en/ja
+     VQA); MLQA-TSR 2510.20381 (VLSP 2025, traffic-sign legal QA). No object-hallucination task.
+ [4] UIT-ViIC 2002.00175. It uses PyVI word tokenisation and never compares tokenisers on the same data (one tokeniser per
+     dataset). KTVIC 2401.08100 uses RDRSegmenter. UIT-OpenViIC 2305.04166 has a journal version (DOI above).
+ [5] ViTextCaps, arXiv 2604.27712 (Apr 2026): Vietnamese scene-text captioning.
+     App. C.2 scores 5 tokenisers (space, PyVi, Underthesea, character, syllable) "applied uniformly to both hypotheses and
+     references": CIDEr varies "31-36%", BLEU-4 76%. It has a text-hallucination rate (THR, OCR tokens); B.8.2 only counts
+     classifiers. Read via the HTML (sec. 5 item 5).
+Multilingual hallucination
+ [6] Multilingual POPE-style work, none with Vietnamese: MHR 2408.00550 (POPE in 13 languages; list R, no vi); CLAIM 2506.11073
+     (ACL 2025; POPE + MME via Google Translate: zh es ru pt bg hi de); CCHall 2505.19108 (ACL 2025; en + hr cy sw cs nl sv fr
+     es pt; captions from XM3600 and xFlickr&Co); SHROOM-Visions 2608.25662 (zh en fr it).
+Protocols for unsegmented or syllabic languages
+ [7] XM3600 2205.12522, fn. 14: "We use the reference implementation with default parameters: github.com/vrama91/cider. We
+     remove punctuation and lowercase the captions and references before computing automated metrics." Segmenter not named.
+     The release's own vi tokens are whitespace syllables.
+ [8] PaLI 2209.06794: "We normalize the unicode, tokenize, and remove all punctuation before calculating CIDEr scores. For
+     languages without word boundaries such as Chinese, Japanese, Korean and Thai, a neural model is used for segmenting the
+     text." Vietnamese is not mentioned, so it is scored at syllable level.
+ [9] Named segmenters: STAIR 1705.00823 (ACL 2017; "morphological analysis ... using MeCab"); MUNIChus 2603.10613 (LREC 2026,
+     9 languages, no vi; Jieba/MeCab on both sides, CIDEr-R). COCO-CN 1805.08661 (BosonNLP for statistics) and AI Challenger
+     1711.06475 do not state metric tokenisation in the text I read.
+[10] Signatures/tokenisation: sacreBLEU 1804.08771; FLORES-101 2106.03193 (spBLEU: BLEU "is heavily dependent on the particular
+     tokenization used, i.e. tokenizing more aggressively can artificially raise the score"); SacreEOS 2305.12254 (ICIAP 2023, DOI
+     10.1007/978-3-031-43148-7_4; captioning signature for SCST <Eos>, "up to +4.1 CIDEr-D"); CIDEr-R 2109.13701; JaSPICE 2311.04192.
+[11] No CHAIR variant with classifier or measure-word handling was found for vi, zh or ja (two searches; multilingual
+     hallucination papers report English CHAIR).
+
+Scoop risk for the C4 items
+ C4a protocol card + punctuation:
+   - Signature concept: HIGH (prior art [10]); cite it, do not claim it.
+   - "Segmentation moves Vietnamese CIDEr": MEDIUM ([5]; [8] sets syllable level by default).
+   - Max-IDF trailing-period mechanism, rank-stability/significance stress set and second-panel reordering: LOW. Not found.
+     COCO, XM3600 and PaLI avoid the mechanism by stripping punctuation, so expect a "known hygiene" objection.
+ C4b classifier-aware matcher + person hypernyms: LOW. Nothing found in [1]-[11]. ViTextCaps only counts classifiers.
+ C4c ViPOPE+ with verified absences: LOW for Vietnamese ([1], [2], [6]). MEDIUM if framed as "multilingual POPE" (MHR, CLAIM).
+     Fast-moving area: re-check before submission.
+
+Q2 check on UIT-ViIC (uitviic_chair_audit.py; Gemini's train-derived v3 = extract_v3 + ancestors_v3)
+ v2: CHAIR_i 8.97% (33/368). v3: CHAIR_i 8.16% (23/282).
+ - v3 removes 10 of the 33: all 6 'quả' (quả bóng) and all 4 'cầu' (cầu thủ = player).
+ - It also drops 76 non-hallucinated mentions: the same tokens had matched spurious gold. So the ratio barely moves (-9% relative).
+ - 'đứa trẻ' 6/6 survive. In every one of these images the references say 'cậu bé' (boy), e.g. pred "Đứa trẻ đang chơi bóng đá
+   trên sân cỏ ." against refs "Một cậu bé ...". Neither 'cậu bé' nor 'cô bé' is in the 113-entry extraction lexicon, so
+   HYPERNYMS_V3[cậu bé] never fires. v3 also treats 'đứa trẻ' as a hyponym of 'trẻ em'; it should be a synonym.
+ - My lexical diagnosis of all 33 (AI reading of human refs; motivation only, not evidence): 23 artifacts = 6 classifier +
+   4 compound + 6 child noun + 4 role-noun/gender-modifier/typo (nam vận động viên, thủ môn nam, khán giả, 'đàn ồng') + 3
+   compound/homograph (sân nhà, tranh bóng [verb], đồ chơi); 9 true by the metric's definition (2 phụ nữ, 2 đàn ông over
+   neutral refs, 1 bàn, 4 áo); 1 ambiguous (trong nhà = indoors). With all 23 fixed: CHAIR_i ≈ 10/279 = 3.6%.
+ - Domain shift. Among UIT-ViIC test refs (1,155 captions), 'cầu thủ' occurs in 251, 'vận động viên' in 184 and 'cậu bé' in 56.
+   KTVIC test (2,790 captions) has 0, 0 and 11. KTVIC-mined tables cannot cover sports role nouns.
+ - Ranking flip in Gemini's audit (v1_v3_unified_v3_audit.md; point estimates, no CI): UIT-ViIC CHAIR_i, p1_s43 transfer vs
+   zero-shot: v2 30.0 vs 27.1; v3 23.6 vs 27.7.
+ - On KTVIC, the headline p1assist - zeroshot ΔCHAIR_i shrinks from -24.64 to -18.69 under v3; its CI still excludes 0.
+ - Gemini's audit: v3 cuts UIT-ViIC 'quả' matches from 3,806 to 24 (V1 reported 23). This is consistent with the above.
+
+3. NEW DIRECTIONS INFERRED FROM THE GAP
+D1. A punctuation-convention x IDF law for CIDEr-D, across languages.
+ Claim: what a hypothesis-final punctuation token does to CIDEr-D is set by its document frequency in the references. A system
+   whose punctuation convention differs from the panel's therefore gains or loses CIDEr predictably, in any language. Under
+   keep-punctuation protocols (KTVIC P0), cross-family comparisons depend on that convention.
+ New vs sec. 2: COCO, XM3600 and PaLI strip punctuation, which avoids the issue without measuring it. SacreEOS is about <Eos> in
+   the SCST reward. ViTextCaps varies tokenisers, not conventions.
+ Pilot already run (xm_punct_pilot.py; XM3600, 36 languages; caption 2 scored against caption 1; official tokens; 7.9 CPU-min,
+ 0.5 GB):
+   - Spearman(reference final-punctuation rate, relative change) = 0.81; Spearman(IDF of the token, change) = -0.84.
+   - 19 languages whose references rarely end in punctuation (rate < 0.10): -0.7% to -15.3%, median -7.7%.
+   - he, te, en (rate > 0.80): +2.1% to +8.4%. vi: rate 0.38, change -1.2%.
+   - Pre-registered: "<= -15% for every language with rate < 0.10" FAILED (2/19). "Rate > 0.80 -> >= -5%" HELD. "rho > 0.8" HELD.
+   - So the sign is general; the size depends on the setup (KTVIC: -23%, 5 references).
+ Prediction: the penalty deepens with more references. On KTVIC with k = 1..5 references it becomes monotonically more negative,
+   reaching <= -20% at k = 5. On UIT-ViIC (98% of references end in " .") appending "." to the KTVIC-trained P1 outputs RAISES
+   CIDEr.
+ Test: KTVIC, UIT-ViIC and coco_en references plus data/results/*-short.preds.json and data/results/uitviic/*.preds.json; E4's
+   Cider class; reference subsampling as in E4 P10/P11.
+ Cost 0 GPU-h, ~0.5 CPU-h. Pillar C4, plus C5 (the MBR/UPE CIDEr "cost"). Novelty 2, risk 2.
+D2. Corpus transfer of the Vietnamese object matcher: a per-corpus artifact audit.
+ Claim: the share of CHAIR-vi "hallucinations" that are extractor artifacts depends on the corpus. UIT-ViIC's are role and child
+   nouns; KTVIC's are cửa hàng and cây cầu. The share is large enough to reorder systems. So freeze the extractor from each
+   corpus's TRAIN references and audit it with existing labels before making cross-corpus claims.
+ New vs sec. 2: V1/V3 validated v3 on KTVIC only. Here KTVIC-derived v3 fixes 10 of 33 UIT-ViIC flags, and the v2 -> v3 change
+   flips p1_s43 (transfer) vs zero-shot. No cross-corpus CHAIR audit was found in [1]-[11].
+ Prediction: mine role and child nouns from UIT-ViIC train references, set 'đứa trẻ' = 'trẻ em', and freeze. Train-reference
+   caption counts: cầu thủ 2,790; vận động viên 2,829; cậu bé 727; khán giả 326. Then:
+   - uitviic_p1_s42-short: CHAIR_i <= 5.0%;
+   - KTVIC P1: CHAIR_i moves by <= 0.3 pp;
+   - the UIT-ViIC order (transfer < zero-shot) holds with a paired-bootstrap CI.
+ Test: uitviic_chair_audit.py + run_v1_v3_unified_v3_audit.py on data/results/uitviic*/ and uitviic_ind_{test,val}/. Label check:
+   data/uitviic/instance_gold.json (COCO person) supports role-noun mentions at >= 99%.
+ Cost 0 GPU-h, < 0.5 CPU-h. Pillar C4, plus C1 (count-matched endpoints share this extractor). Novelty 3, risk 2.
+D3. Classifier minimal pairs for object matchers and VLMs, in several languages.
+ Claim: in classifier languages, standard tools segment numeral + classifier + noun inconsistently. XM3600's official zh tokens
+   fuse "两只鸡" into one token but split "另一 只". Matchers and VLMs also confuse classifier senses (quả bóng is not a fruit; cây
+   vợt is not a tree). Both bias object-level metrics for vi, zh, ja and th.
+ New vs sec. 2: no classifier-aware CHAIR or probe was found for any language. V1 covers vi only.
+ Predictions:
+   (a) CPU: >= 10% of zh/ja numeral-classifier phrases in XM3600's official tokens are fused with their noun (~0% for vi
+       syllables), and word-level vs character-level object recall then differs by >= 3 points;
+   (b) GPU: V2's classifier-sense arm raises zero-shot Qwen2.5-VL FP by >= 3 points over matched controls, and the rise shrinks
+       by >= 50% when asked in English.
+ Test: XM3600 captions.jsonl (local, 36 languages, official tokens); data/coco_probe/coco80_vi.json; pope_vi.py --items (V2).
+ Cost (a) 0.3 CPU-h; (b) ~1 GPU-h (a subset of V2 S1). Pillar C4. Novelty 3, risk 3.
+D4. Packaging, not a novelty: a signature card for syllabic and unsegmented languages.
+ Pilot, 1-vs-1 human CIDEr with punctuation stripped (whitespace / official / character tokens):
+   zh 0.07 / 31.1 / 48.1; th 0.28 / 61.1 / 42.3; ko 28.6 / 59.6 / 91.9; vi 73.6 / 73.2 / 56.2; en 108.8 / 108.8 / 102.7.
+ The card should name the segmenter, the unit, punctuation, case, IDF source and the number of references. Novelty 1 (cite [10]).
+
+4. LITMAPS SEEDS FOR THIS GAP (arXiv ids, all V)
+ 2604.27712 ViTextCaps | 2305.12254 SacreEOS | 2505.19108 CCHall | 2506.11073 CLAIM | 2608.25662 SHROOM-Visions 2026 |
+ 2603.10613 MUNIChus | 2106.03193 FLORES-101 | 2209.06794 PaLI | 2311.04192 JaSPICE | 2407.09495 (non-English captioning datasets).
+
+5. CLAIMS FOR GEMINI TO VERIFY
+ 1 KTVIC punctuation:
+   - data/datasets/ktvic/test_data.json: 0/2,790 references contain any punctuation (train: 0.3%).
+   - P1-family short predictions: 0/558 end in "."; zeroshot-short: 557/558.
+   - SUBAGENT_WORK_LOG.md line 1126 and D15(iv) give "75.56% (2,108/2,790)" and "+8.22 (148.66 vs 156.88)". Both contradict
+     e4_protocol_verification.json (df('.') = 0; P7 for p1assist_s42 = 148.70). Correct D15.
+ 2 uitviic_chair_audit.json:
+   - v2 33/368 = 8.97%; v3 23/282 = 8.16%; 10 mentions removed (6 quả, 4 cầu).
+   - cậu bé, cô bé, vận động viên, cầu thủ, thủ môn and khán giả are not keys of NOUN_CLASSIFIER (113 keys).
+ 3 Paired bootstrap, UIT-ViIC CHAIR_i, p1_s43-short minus zeroshot-short: under v2 (30.02 vs 27.1) and under v3 (23.61 vs 27.7).
+ 4 Re-run xm_punct_pilot.py (~8 CPU-min) and check xm_punct_pilot.json. Check that XM3600's official vi tokens are whitespace
+   syllables.
+ 5 ViTextCaps App. C.2: 5 tokenisers; CIDEr "31-36%" and BLEU-4 76% relative variance (I read these through a page summary).
+ 6 Quotes in sec. 2: XM3600 fn. 14; PaLI's XM3600 paragraph; STAIR's MeCab sentence; FLORES-101 on spBLEU; SacreEOS "+4.1 CIDEr-D".
+ 7 Language lists:
+   - CLAIM: zh, es, ru, pt, bg, hi, de (Google Translate);
+   - CCHall: en plus 9;
+   - SHROOM-Visions: zh, en, fr, it;
+   - MHR: 13 languages, no vi (R).
+ 8 r10_a4_citation_verification.json has wrong metadata:
+   - CLAIM's arXiv title is "...Cross-Lingual Attention Intervention", first author Zekai Ye, translated with Google Translate.
+     The file has "Cross-Lingual Alignment", Zihao Ye and GPT-3.5.
+   - UIT-OpenViIC's first author is Doanh C. Bui, not "Nhat-Quang Bui".
+ 9 U (unverified): COCO-CN and AI Challenger metric tokenisation; vieCap4H's BLEU tokenisation.
+
+6. WHAT WOULD CHANGE MY CONCLUSIONS (kill rules)
+ - Scoop: a 2025-26 Vietnamese POPE/CHAIR or classifier-aware matcher appears -> raise C4b/C4c to HIGH. Re-search arXiv and the
+   VLSP 2025-26 Anthology before submitting.
+ - D1: on KTVIC, the k=5 penalty is > -15%, or it is not monotone in k -> drop the "law" and keep E4's KTVIC numbers only.
+ - D2: with the frozen UIT-ViIC role/child table, CHAIR_i stays > 6.5%, or the transfer vs zero-shot CI includes 0 under both
+   matchers -> report "matcher-robust" and make no transfer claim.
+ - D3: (a) fusion < 5% for zh/ja, or a recall gap < 1 point -> drop the matcher arm; (b) V2's K1 fires -> drop the VLM arm.
+ - Map: the final maps show A1 x E1 at or above expectation, with Vietnamese hallucination papers among the bridges -> the gap is
+   void.

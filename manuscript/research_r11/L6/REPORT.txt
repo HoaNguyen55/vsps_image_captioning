@@ -1,0 +1,217 @@
+R11 / L6 -- CROWDED AREA (A x D) + LENGTH/COUNT CONTROL (A3): SCOOP CHECK FOR C1, M3, M5, M6. 2026-10-14. CPU only.
+Sources: analysis.json + summary.txt (final merge, 7,725 works); s2_citers.json keyword scan (6,631 unique S2 works); 35 arXiv abs
+pages (curl, 3 s apart; the arXiv API returned HTTP 429 all session); ACL Anthology; 12 GitHub repos (gh API, read-only); 5 HF
+preference-pair files (parsed as data with python -I; no downloaded code run); 11 WebSearch queries. No OpenAlex/S2 calls.
+Files (L6/): tools/pairs_count_audit.py (E1's CHAIR matcher, copied) -> pairs_count_audit.json (76 s, 72 MB); dl_abs/, dl_pairs/,
+dl_readme/ = untrusted downloads.
+
+==== 0. BOTTOM LINE ==============================================================================================================
+- I found no verified work that builds preference pairs with equal object counts, or that re-scores DPO/RL-trained LVLMs at matched
+  object count. In the map, A3 x D and A2 x A3 have 2 bridges each (15.7 and 19.5 expected); both are COCO and Visual Genome.
+- The neighbourhood is crowded, though. HALVA's swaps are count-preserving by construction, RLAIF-V length-filters its pairs, and
+  "Beyond Saying Less" (Sep 2026) names the shortcut. Scoop risk: C1 low; M3 medium (narrow the claim); M5 low (high as a method); M6 low.
+- None of the 12 DPO/RL repos I scanned releases per-caption outputs, so a count-matched DPO leaderboard needs about 6 GPU-h of decoding.
+- CPU pilot on released pairs: only 35-69% of pairs are count-matched. In HA-DPO, HSA-DPO and SENTINEL the chosen answer names fewer
+  COCO classes in 82-90% of the unmatched pairs, often at nearly equal word length.
+
+==== 1. THE GAP AS THE MAP SHOWS IT ==============================================================================================
+Final-merge numbers (the brief quoted an earlier merge: 403 / 179 / 46 / 16.5 / 20.5):
+  pair                       obs   exp    ratio  what the bridging works are
+  A1 metrics x D pref-opt    405   382.6  1.06   newest 60 = all 2026 DPO/RL/decoding/steering method papers (UE-DPO 2605.04874,
+                                                 ADAPT 2606.31054, DA-DPO 2601.00623, P2-DPO 2606.03376, HII-DPO 2602.10425 ...)
+  A2 decoding x D            373   169.8  2.20   the same papers: methods cite VCD/OPERA and RLHF-V/POVID as baselines (crowded)
+  A1 x A3 length/count        20    43.9  0.46   surveys (TPAMI 2022 2107.06912; TACL 2025 2408.04909), controllable captioning
+                                                 (AnyCap 2507.12841; FoCUS 2609.00709; TMM 2025 2411.19106), datasets, METEOR
+  A3 x D                       2    15.7  0.13   Microsoft COCO (2014) and Visual Genome (2017) only
+  A2 x A3                      2    19.5  0.10   the same two datasets
+Reading:
+- Among the 60 newest A1 x D bridges, only 2 abstracts mention length, count or density: DSCC 2608.12746 and Beyond Saying Less
+  2609.35294. Among all S2 citers of the D seeds, 42 mention length/count/verbosity. The substantive ones are in sec. 2.
+- Structural caveat. A3 has only 2 seeds (LaBERT, 2101.08000; 118 works). R-DPO sits in D and LeHaCE in A1 (S2 lists 4 LeHaCE citers).
+  So the thin A3 x D bridge means "captioning length/count control never meets LVLM preference optimisation". It does not mean
+  that nobody controls length in DPO. Text DPO does: R-DPO has 228 S2 citers, but only 6 (2.6%) also cite an A1/A2 hallucination seed.
+
+==== 2. CLOSEST PRIOR WORK (IDs verified on arXiv abs pages today; venue from the abs comment unless noted) ==========================
+2a. Preference pairs (Q1). Distance to M3 = same-image pairs naming the SAME number of object classes, so a count reward cancels.
+ [P1] R-DPO 2403.19159, Park/Rafailov/Ermon/Finn, Findings ACL 2024 pp. 4998-5017, DOI 10.18653/v1/2024.findings-acl.297 (Anthology).
+      Text DPO; a loss-side length regulariser. FAR.
+ [P2] SamPO 2406.10957, Lu et al., EMNLP 2024: down-sampled KL. LD-DPO 2409.06411, Liu et al.: length desensitisation. SimPO
+      2405.14734 (NeurIPS 2024): length-normalised reward. All text-only and loss-side. FAR.
+ [P3] Singhal et al. 2310.03716 (COLM 2024). DATA-side "length balancing" of reward-model pairs: it balances the direction of length
+      differences in 10-token bins, not per pair. RM accuracy fell (WebGPT 61.5 -> 52.6). MEDIUM (data-side, but text and length).
+ [P4] RLAIF-V 2405.17220 (no venue on the abs page). Same model, same input and decoding, different seeds ("deconfounded":
+      style and word choice). It drops pairs whose preferred answer is too short, keeping the length gap under one word (sec. 2.2).
+      Score = -(number of rejected claims); this count score beat a percentage score in human agreement (96.7 vs 83.3, App. C.1).
+      So the pairs are length-matched on average but not count-matched, and the score itself favours fewer claims.
+      CLOSEST DATA-SIDE PRECEDENT in LVLM DPO.
+ [P5] HALVA/DPA 2405.18654, ICLR 2025. Off-policy one-for-one phrase swaps in GT-derived answers (Gemini Pro Vision + VG), so
+      object swaps preserve the count. Phrase-level pairwise loss plus token KL (alpha 0.4). AMBER Cover 51.0 -> 53.0, CHAIR 7.8 -> 6.6,
+      CHAIR length 100.6 -> 92.2 (7B). CLOSEST ON THE PAIR PROPERTY. Count is incidental: no count rule, no on-policy pool, no frontier test.
+ [P6] mDPO 2406.11839, EMNLP 2024. The conditional pair is the SAME answer y_w with the original vs a <20%-cropped image. That pair is
+      text-identical, so it is trivially count-invariant, but it teaches image reliance, not object choice. The standard term uses
+      VLFeedback pairs. "May lead to a decrease in object coverage". MEDIUM.
+ [P7] RLHF-V 2312.00849 (CVPR 2024): segment-level human corrections, which delete or replace, plus dense DPO. HSA-DPO 2404.14233:
+      detect-then-rewrite plus severity weights. HA-DPO 2311.16839: "style-consistent" GPT rewrites. POVID 2402.11411 (no venue):
+      GT vs GPT-4V-injected hallucinations. No count control in any. FAR.
+ [P8] CHAIR-DPO 2508.20181, BMVC 2025 ("...via Object-aware Preference Optimization"). Of two T 0.7 samples the lower CHAIR_i wins;
+      ties are discarded; no count control. AMBER CHAIR_i 7.6 -> 3.0 and Cover 51.7 -> 46.6 (beta 0.2). FAR: a rate winner rewards saying less.
+ [P9] OPA-DPO 2501.09695, CVPR 2025. On-policy answer as rejected; GPT-4V minimal revision or GT as chosen; no count control.
+      AMBER CHAIR 7.7 -> 2.2, Cover 51.6 -> 47.9 ("slightly conservative strategy"). MEDIUM-FAR (on-policy, but edits change the count).
+ [P10] HII-DPO 2602.10425 (sec. 3.4) and SENTINEL 2507.12455: same-model pairs that share a prefix and diverge at one sentence.
+      In HII-DPO the chosen answer omits the removed object, so the pairs are count-UNMATCHED by design. MEDIUM-FAR.
+ [P11] HDPO 2411.10436 (Findings ACL 2025): rewrote over-long positives with GPT-4o "to mitigate length bias" [UNVERIFIED snippet].
+2b. Evaluation at matched length or count (Q2; distance to C1)
+ [E1] LeHaCE, NeurIPS 2024, DOI 10.52202/079017-3538 (resolves to proceedings.com 079017-3538). Content per Gemini's full-paper
+      read (e6_mt15_verification.md sec. 5): per-model OLS of CHAIR on WORD length over up to 25 instructions; 6 base LVLMs, not
+      mitigation methods; CHAIR-type rates only; "cannot be used with just one instruction"; rejects truncation. CLOSEST to C1.
+ [E2] MRGD 2508.11616 (Manas et al.; ICCV 2025 per CVF). Draws a P-R curve for its own decoder. Its one matched-recall comparison is
+      against prompting (~81% recall). LLaVA-RLHF, HA-DPO, POVID, EOS, HALVA, CSR, mDPO, VCD and CGD sit at their own operating points.
+      This is the closest thing to a DPO comparison at matched coverage, and it is not matched.
+ [E3] Own-method length checks: CAS 2605.27993 App. C "length-aligned CHAIR" (64-token truncation, CAS vs vanilla only);
+      Sandhu et al. 2608.24966 (COLM 2026 workshop: fixed 64/128-token budgets, recall 0.78 -> 0.70); SumGD 2410.13321 (token budgets).
+ [E4] DSCC 2608.12746. Re-ran VCD/OPERA under one protocol, UNMATCHED (89.5-104.9 words vs its 171.5), and calls 1 - CHAIR_I a
+      "density-independent criterion". X1-H2 refutes that: at constant quality, P falls with m.
+ [E5] CheXalign 2410.07025 (ACL 2025): reference-judge DPO for chest X-ray reports exploits length; a length-controlled GREEN score.
+      This is length-controlled evaluation of a DPO'd VLM, but in tokens and for radiology reports.
+ [E6] Beyond Saying Less 2609.35294 (Sep 2026). On-policy RL cuts hallucination "merely by saying less": Avg Facts 41.63 for the backbone
+      vs 31.65 (GRPO) and 24.31 (DAPO). Its fix is dense presence/absence data plus subsentence credit. Reports Cover and a harmonic
+      Cap. Score; no matched-count evaluation and no count-matched pairs. Related: ClaimDiff-RL 2605.20278 ("reduce hallucination by
+      increasing missing facts"); Nguyen et al. 2610.14976 (IEEE Access 2026, coverage-aware OCS reward against fewer-object hacking).
+ Answer to Q2. No verified work re-scores DPO- or RL-trained models at matched object count. R10's E1 is the only per-image
+ matched-count re-scoring found, and it covers decoding methods only: 3/15 survive (Gemini: 2/15 after Holm; placebo and positive
+ controls pass). Released outputs: none of the 12 repos ships per-caption CHAIR/AMBER outputs of its trained model. Scanned:
+ RLHF-V, RLAIF-V, HA-DPO, POVID, mDPO, HALVA, OPA-DPO, HSA-DPO, CHAIR-DPO, V-DPO, LLaVA-RLHF, SENTINEL. They release eval inputs,
+ LLaVA's stock tables, checkpoints and training pairs. HALC has decoder_zoo/LURE/result/lure_test.json (LURE, for E1 Phase A2).
+2c. Count or length control in captioning (Q3)
+ [C1] LaBERT 2007.09580 (ECCV 2020): length-level embedding. Luo & Shakhnarovich 2005.14386: length control.
+ [C2] Zhu et al. 2101.08000 (arXiv 2021): a control signal over "sentence quality, sentence length, sentence tense and number of nouns".
+      Count conditioning is therefore prior art.
+ [C3] CaptionSmiths 2507.01409 (ICCV 2025): continuous length, descriptiveness and word-uniqueness conditioning.
+      CapAgent 2412.11025: agent-based quantity control [UNVERIFIED snippet].
+ [C4] None of 3 searches found an LVLM that conditions on the number of distinct objects to mention and is then tested at matched count.
+      None found allocating a fixed TOTAL mention budget across images. The F side is in M6 (Lipton 1402.1892, Schultheis 2401.16594).
+2d. Released preference PAIRS audited at object level (CPU; COCO-80 + CHAIR synonyms; % of pairs naming >= 1 class)
+  dataset (file)                 pairs   matched  chosen fewer  chosen more  fewer|unmatched  mean dk  mean dwords
+  POVID (v1 json)               16,483   52.1%    21.3%         26.6%        44.4%            +0.11    -1.3
+  HA-DPO (llava-v1.5 desc)       5,181   47.3%    46.5%          6.2%        88.2%            -0.69    -7.8
+  HSA-DPO (llava1dot5 jsonl)     8,076   69.2%    25.1%          5.6%        81.7%            -0.25    -2.0
+  mDPO / VLFeedback 10k          9,281   40.8%    29.5%         29.7%        49.8%            -0.10    +41.3
+  SENTINEL (LLaVA-1.5-7B 8.6k)   8,600   34.9%    58.3%          6.7%        89.7%            -0.74    -1.1
+  KTVIC E5-DPO pairs (M3 sec. 3d) for comparison: 24.4% matched, mean dk -0.22.
+  Reading:
+  - Every dataset carries a count channel (31-65% of pairs differ in count). Its sign is dataset-specific.
+  - SENTINEL and HSA-DPO differ by only 1-2 words but by 0.25-0.74 classes, so a length control would leave the count channel open.
+  - RLHF-V and RLAIF-V are not audited: parquet with embedded images; the datasets-server returns 501; no pyarrow here.
+2e. Scoop risk per R10 item (Q4)
+- C1 count-matched evaluation + CAR: LOW. The confound is widely acknowledged (LeHaCE, SumGD, CAS, Sandhu, DSCC, CheXalign,
+  Beyond Saying Less), so it is not claimable. Not found anywhere: per-image object-count matching, a pre-registered count frontier,
+  CAR, or re-scoring of other groups' released outputs. Watch item: A2 x D is the most crowded pair (2.2x), and a "fair comparison
+  at matched recall" paper could appear at any time; re-search before submission.
+  Caveat for the "count beats length" sub-claim (Gemini, e1_x1pb_verification.md sec. 3):
+  - on English decoding pairs, count wins on variance (R2 0.488 vs 0.053; partial dR2 of length given count: mean 0.0015, max 0.005);
+  - the signed mean alpha_len - alpha_cnt is only +0.186 P [-0.257, +0.579], so X1's P-B kill rule triggers on the signed mean;
+  - the big verdict flip (MBR +2.60 vs -0.14) is a KTVIC density-changing case.
+  The brief's "< 2.1% of F1 variance" is not in that file.
+- M3 CM-DPO: MEDIUM. Why:
+  - HALVA's count-preserving swaps (ICLR 2025), mDPO's text-identical conditional pairs and RLAIF-V's length filter cover parts
+    of the idea, and 35-69% of public pairs are already count-matched by accident (2d);
+  - M3 sec. 2 says "length control in DPO is loss-side". That is wrong: RLAIF-V, Singhal and HDPO all control length on the data side.
+  Not found: an explicit equal-count pair rule with the cancellation lemma, a vote-matched control and a count-frontier test.
+  Claim exactly that. Compare with HALVA and with Beyond Saying Less.
+- M5 object budget: LOW as framed by M5 (the ranking/allocation/base decomposition and the frontier test). HIGH as a method:
+  noun-count conditioning (2101.08000) and length conditioning (LaBERT, CaptionSmiths, 2005.14386) are published.
+- M6 corpus allocation (knapsack): LOW. The rule itself is standard plug-in F-measure theory (Lipton 2014, Ye 2012, Koyejo 2015,
+  Schultheis 2024 at-k), so it is not novel. Not found: a fixed total budget allocated across images for a caption object metric,
+  or the point that per-image count control is blind to allocation. The map shows 0 bridges for A1 x F and A2 x F
+  (137.7 and 61.1 expected; the F cluster may be undercounted).
+
+==== 3. NEW NOVELTY DIRECTIONS ===================================================================================================
+D1 COUNT-MATCHED LEADERBOARD OF ANTI-HALLUCINATION *TRAINING* METHODS (from public checkpoints; outputs are not released)
+ Claim: at matched per-image count (MCP + tie-averaged + CAR), DPO/RL CHAIR gains split into count shift, allocation and object choice.
+   The count share is predicted by the sign of each method's released training pairs (2d).
+ Why new: E1 covers decoding outputs only. MRGD [E2] compares DPO models unmatched. LeHaCE [E1] tests base models. 0/12 repos release
+   outputs.
+ Prediction:
+   (a) median dP_MCP over the training checkpoints exceeds E1's decoding mean (+0.6 P); this is E1-H3.
+   (b) checkpoints trained on "chosen-fewer" data (HA-DPO, HSA-DPO, SENTINEL; mean dk <= -0.25) shrink mean classes per caption
+       by >= 0.3 more than POVID/mDPO (|dk| <= 0.11).
+   (c) HALVA (count-preserving swaps) has |dm| <= 0.15.
+ Test: E1 Phase B3. LLaVA-1.5-7B base + public checkpoints from the READMEs: POVID_stage_two_LoRa, openbmb/RLAIF-V-7B,
+   pritamqu/halva7b-lora, CHAIR-DPO (aimagelab collection), SENTINEL (psp-dada collection), HA-DPO, HSA-DPO, OPA-DPO (Drive).
+   Greedy, 512 tokens, LiM CHAIR-500 ids; COCO val2014 annotations are already in E1/dl; score with e1_chair_count.py.
+ Cost: ~0.6 GPU-h per checkpoint x 9 ~ 6 GPU-h (+6 for AMBER-1004); CPU 0.3 h. Pillar C1 (+M3 rationale).
+ Novelty 4, risk 2.
+D2 LENGTH-MATCHED IS NOT COUNT-MATCHED: COUNT AUDIT OF RELEASED PREFERENCE DATA (pilot done, sec. 2d)
+ Claim: public LVLM anti-hallucination preference sets carry an object-count channel at near-equal length, so length fixes
+   (R-DPO, SamPO, LD-DPO, RLAIF-V's filter, HDPO's rewrite) leave the "say less" gradient intact. Same unit-of-control argument as X1,
+   moved from evaluation to training data.
+ Why new: the length-debiasing work [P1-P4, P11] is in tokens, and no dataset paper reports object-count balance.
+ Prediction: in RLAIF-V (gap < 1 word by construction, count-based score) the chosen answer names fewer COCO classes in >= 60% of
+   count-unmatched pairs.
+ Test: L6/tools/pairs_count_audit.py on the 5 files (done) + RLAIF-V/RLHF-V parquet text columns (needs pyarrow) + HALVA/OPA-DPO
+   (Drive). Report per dataset: matched share, sign, and |dwords| <= 2 strata.
+ Cost: CPU < 0.5 h. Pillar C1 (unit) and the M3 motivation. Novelty 3, risk 1.
+D3 M3 ON PUBLIC ENGLISH DATA: COUNT-MATCHED SUBSET DPO (external validity of the invariance lemma, no new pairs or labels)
+ Claim: DPO on only the count-matched part of a released set keeps m and Cover while still improving object choice. An equal-size
+   random subset shrinks m.
+ Why new: no published ablation restricts LVLM preference data by count. HALVA's count-preserving swaps were never tested as a count
+   control.
+ Prediction (HSA-DPO, 5,588 matched of 8,076):
+   - dm(CM) within +-0.10 of base; dm(random) <= -0.15;
+   - dP_MCP(CM) - dP_MCP(random) >= +1.0, CI > 0;
+   - AMBER Cover(CM) >= base - 1.
+ Test:
+   - LLaVA-1.5-7B QLoRA DPO, beta 0.1, 1 epoch, on CM vs random-equal-size subsets; images from hsa_dpo_imgs.tar.gz (474 MB);
+   - decode CHAIR-500 and score as in D1; replicate on the HA-DPO desc set (2,451 matched).
+   - Add a control on the rejected severity score so that "matched" does not just mean easier pairs.
+ Cost: ~2 x 4 GPU-h + 1.2 decode ~ 10 GPU-h. Pillar M3 / C5. Novelty 3, risk 4 (3090 memory, likelihood displacement on swaps).
+
+==== 4. LITMAPS SEEDS TO ADD (not in seeds.json) =================================================================================
+ RLAIF-V 2405.17220 | OPA-DPO 2501.09695 | CHAIR-DPO 2508.20181 | SENTINEL 2507.12455 | Beyond Saying Less 2609.35294 |
+ ClaimDiff-RL 2605.20278 | CheXalign 2410.07025 | Singhal et al. 2310.03716 | SamPO 2406.10957 | MRGD 2508.11616
+
+==== 5. CLAIMS FOR GEMINI TO VERIFY ==============================================================================================
+ 1. Rerun the 2d audit: python3 -I L6/tools/pairs_count_audit.py <repo>/data/coco_probe/chair_synonyms.txt out.json name=fmt:path ...
+    Files and sha256[:12]:
+    - HA-DPO hadpo/llava-v1.5/desc_data.json 0b213209a6e1;
+    - POVID POVID_preference_data_for_VLLMs_version_1.json e97667408d76;
+    - mDPO vlfeedback_llava_10k.json 967f69e1a0a1;
+    - HSA-DPO hsa_dpo_preference_llava1dot5.jsonl 4c11e1a66a95;
+    - SENTINEL LLaVA_v1_5_7b_SENTINEL_8_6k.json ece6d16c0d4c;
+    - script c9ee7a00c5c7.
+    Then add RLAIF-V and RLHF-V (text columns via pyarrow).
+ 2. RLAIF-V sec. 2.2 (short preferred answers dropped; length gap < 1 word) and App. C.1 Table 9 (96.7 vs 83.3). The page names
+    the count variant both REJ-N and REJ-C.
+ 3. HALVA: Cover 51.0 -> 53.0; CHAIR 7.8 -> 6.6; CHAIR length 100.6 -> 92.2 (7B); alpha 0.4; GT answers from Gemini Pro Vision + VG.
+ 4. OPA-DPO AMBER (LLaVA-1.5-7B): CHAIR 7.7 -> 2.2, Cover 51.6 -> 47.9. CHAIR-DPO: CHAIR_i 7.6 -> 3.0, Cover 51.7 -> 46.6 (beta 0.2).
+ 5. mDPO's conditional pair = identical y_w with a <20% crop; the "decrease in object coverage" wording.
+ 6. HII-DPO sec. 3.4 (identical prefix; chosen omits the removed object). DSCC: "density-independent criterion" = 1 - CHAIR_I.
+ 7. CAS 2605.27993 App. C (64-token length-aligned CHAIR, own method only). MRGD: one matched-recall comparison (~81%, vs prompting).
+ 8. Beyond Saying Less Fig. 5 Avg Facts 41.63 / 31.65 / 24.31; baselines DPO, mDPO, SymMPO, OPA-DPO; no release statement.
+ 9. Singhal 2310.03716 length balancing: WebGPT RM accuracy 61.5 -> 52.6; length-reward correlation 0.72 -> -0.13.
+10. HDPO 2411.10436: the GPT-4o rewrite "to mitigate length bias" [snippet only]. CapAgent 2412.11025 [snippet only].
+11. No per-caption outputs in the 12 repos of 2b; open HALC decoder_zoo/LURE/result/lure_test.json. Check the base model of each D1
+    checkpoint (LLaVA-1.5-7B only) and the OPA-DPO / HALVA Drive contents.
+12. Map numbers (final merge): 405/382.6, 373/169.8, 20/43.9, 2/15.7, 2/19.5. Also R-DPO: 228 S2 citers, 6 of which cite an
+    A1/A2 seed.
+13. Source of the brief's "< 2.1% of F1 variance". e1_x1pb_verification.json gives mean partial dR2(len | count) = 0.0015 on
+    per-image dP, and R2(F1 ~ log Len) = 0.18 vs 0.42 for log M on 8 LLaVA-1.5-7B runs.
+14. 2101.08000 method section: is "number of nouns" a discrete control input, and are object precision/recall reported vs it?
+
+==== 6. WHAT WOULD CHANGE MY CONCLUSION (kill rules) =============================================================================
+- Scoop: a paper with equal-object-count preference pairs, or matched-count re-scoring of DPO models, would move M3 or C1 to HIGH.
+  Cite it and reframe as replication or extension. Re-run the 2b/2a searches plus a Litmaps "cited by" sweep of RLAIF-V, HALVA,
+  OPA-DPO and LeHaCE before submission.
+- D1:
+  - if the checkpoints' base CHAIR is more than 1.0 from the published values, fix the protocol before any look (fidelity, as E1-K1);
+  - if dk-sign does not order dm (difference < 0.1 class), drop prediction (b);
+  - if >= 1/2 of the checkpoints keep a Holm-significant dP_MCP >= +1.0, the headline becomes "training changes object choice",
+    which still serves C1.
+- D2: if RLAIF-V's chosen-fewer share among unmatched pairs is in [45%, 55%] AND D1 shows no dk -> dm link, drop "length control
+  leaves a count channel" (keep the table as description).
+- D3:
+  - if dm(CM) < -0.10, the invariance does not protect in practice and M3's premise is weakened;
+  - if dP_MCP(CM) - dP_MCP(random) has CI covering 0 with both arms keeping Cover, count matching is unnecessary on English data.
+  Report either outcome as a pre-registered negative.
+- Ratings: M3 drops to LOW only if HALVA's full method shows no count-balanced design intent (App. D.3 templates still unread).
+  M6 rises if a corpus-level F budget paper for captioning or multi-label generation is found.

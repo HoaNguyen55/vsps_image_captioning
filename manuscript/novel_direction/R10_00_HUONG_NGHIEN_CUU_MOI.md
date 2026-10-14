@@ -10,6 +10,17 @@
 - Tài liệu này không chứa văn bản chú thích OpenViIC nào. OpenViIC chỉ xuất hiện dưới dạng số tổng hợp của panel đánh giá.
 - X1 nộp báo cáo muộn và được tích hợp cuối cùng. Cả 20 báo cáo đều đã có.
 
+
+**Đính chính sau review (2026-10-14).** Nguồn: review RV1–RV3 các kết quả CPU của Gemini, và vòng R11 (`R11_00_LITMAPS_NOVELTY.md` §6). Các điểm này thay thế mọi câu mâu thuẫn bên dưới.
+- **KTVIC: một người viết cả 5 câu cho mỗi ảnh** (bài báo KTVIC §3.2). Các phân tích "người chú thích" trên KTVIC (E2, E5, G3, mức con người 1v4) phải đọc là "câu tham chiếu của cùng một người viết".
+- **E1: số cặp sống sót phụ thuộc đối chứng.** 2/15 (Holm + SESOI, khớp giữ thứ tự) đến 6/15 (tập con ngẫu nhiên). Placebo đã đăng ký chưa chạy.
+- **X1 P-B thất bại theo luật dừng của chính nó.** Chênh lệch có dấu là +0.186 [−0.257, +0.579], so với yêu cầu ≥ +1.0. Bỏ claim "đơn vị đối tượng tốt hơn độ dài" trên dữ liệu tiếng Anh. Trên KTVIC, ví dụ MBR vẫn đứng.
+- **Quy tắc p_marg > F1/2 (G2) là định lý của Lipton và cộng sự 2014;** phải trích dẫn.
+- **G3 H1 bị bác ở cặp 4.**
+- **Trần con người "khử nhiễu Chao2" 0.848 là sản phẩm lỗi;** phải xoá.
+- **P-M6b trên test thất bại.**
+- **E4: ref KTVIC không có dấu câu nào** (0/2.790), và P1 không sinh dấu chấm (0/558). Các số 75.56% và 99.82% trong D15(iv) sai.
+
 ---
 
 ## 1. Tóm tắt
@@ -34,6 +45,7 @@
    - Cả 36/36 hệ thống fine-tune trên KTVIC đều nằm ở (0, 0) trên hai trục. 37 hệ thống off-style nằm ở ρ_A −55 nhưng ρ_I chỉ −21 (E6 §3.1).
    - Khi chọn lọc theo từng ảnh có đọc tham chiếu, hai trục tách rời. Chọn bằng 2 ref KTVIC cho +6.48 F1 trên 2 ref KTVIC khác, nhưng chỉ +1.22 trên panel (κ = 0.19) (E6 §3.3).
    - G1: trên chỉ số đối tượng, MBR chỉ là dịch chuyển số lượng (residual −0.4% / −1.3%), nhưng rơi dưới biên QUAN HỆ: p1_s43mbr −17.7% [−32.0, −3.4]. Self-fusion lệch cả biên đối tượng (−6.7%) lẫn quan hệ (−22.0%) (G1 §3c; câu ở G1 §0 gộp self-fusion vào "dịch chuyển thuần" là không khớp với bảng §3c của chính nó).
+   - **Đính chính sau tổng hợp (MT13, hạng mục #9 của Gemini).** Các file `p1_s43mbr` và `fuse2_s42mbr` là self-fuse k=1, tức tối đa hoá số lượng, không phải UPE-MBR. Trên lựa chọn UPE thật, giả thuyết H5 ("UPE làm hỏng quan hệ") bị bác: residual rel_s có CI chứa 0 trên 3/3 seed, gộp +2.97% [−13.5, +20.2]; P_rel_s của UPE +0.44 pp, còn self-fuse k=1 −5.47 pp [−9.44, −1.28] (`.session_backup/2026-10-13/r10_cpu/g1_a1_a4_true_upe.json`). Câu "MBR làm hỏng quan hệ" phải đọc là "self-fuse k=1 làm hỏng quan hệ".
 4. **Phân bổ (allocation) là kênh thứ ba, và đối chứng cùng số lượng theo từng ảnh không nhìn thấy nó (M6; cùng hướng với E1 và M5).**
    - Giữ nguyên tổng số mention của greedy, phân bổ toàn cục theo vote [MH] cho +1.84 [+0.29, +3.34] F1.
    - Knapsack chọn một caption có sẵn cho mỗi ảnh cho +2.08 [+0.05, +4.11] (p .044; khoảng 6 nhánh đã thử; dev300). So với đối chứng của PD-2, nó chỉ được +0.09 (M6 §0, §3c–3e).
@@ -49,7 +61,7 @@
 - Verdict KILL KHÔNG SẠCH: CIDEr dev 144.33 → 145.90, tức +1.57 [−6.26, +9.55], dưới ngưỡng +3.0. Guard G4 (sao chép nguyên văn ref) trượt: 1.00 → 1.70 → 1.60 → 2.25%, vượt giới hạn 1.33%. CIDEr trên panel −0.5 [−3.7, +2.6].
 - Kết quả khớp số lượng so với P1_dev: ΔF1 +1.77 [−0.52, +4.08]; Δresidual biên +1.46 [−0.80, +3.64]; mention 1.763 → 1.793.
 - D14 đóng nhánh RL (YES 99%) và ghi kết quả thành kết quả âm đăng ký trước N11; 35_f và 35_g bỏ qua (0 GPU-h); tổng chi RL 3.79 GPU-h (theo coordinator; riêng huấn luyện 3.153 GPU-h).
-- **Dự đoán đăng ký trước của M4 cho run này: 3/4 đúng.**
+- **Dự đoán của M4 cho run này: 3/4 đúng.** Các dự đoán được viết trước kết quả và có dấu thời gian, nhưng không được commit trước, nên bài báo gọi chúng là "dự đoán có dấu thời gian", không gọi là đăng ký trước (D15, MT21).
   - C1 mention ∈ [1.65, 1.90] → 1.793: đúng.
   - C3 F1 dev ∈ [53.1, 56.6] → 56.34: đúng.
   - C4 ≤ 15/300 caption không nêu lớp nào → 12/300: đúng. Người tổng hợp tự đếm bằng objects_in; P1_dev 9/300 khớp M4 §3a.
@@ -110,7 +122,7 @@ N/F/I/R lần lượt là novelty / tính khả thi trên một RTX 3090 / impac
 3. **Mọi lợi ích phải được phân rã.** CAR chia lợi ích so với greedy thành nền D, số lượng C, phân bổ B, xếp hạng A (M6 §3e); đối chứng của PD-2 chỉ thấy phần A. TRF/MCP của E1 và xếp hạng/phân bổ/nền của M5 cùng cấu trúc. Telescoping phụ thuộc thứ tự cộng, nên phải lấy trung bình Shapley qua 6 thứ tự (X1 §2d).
 4. **Áp dụng cho phương pháp của người khác và của nhóm.** E1 (đã công bố); UPE (D11); PLAN-F1 (D12); E5-DPO (residual −1.97 [−4.33, +0.18], M3 §1); salience (M2); rào đón (M7: +0.09 [0.00, +0.29]); RL 35_e = N11 (Δresidual +1.46 [−0.80, +3.64] ở +0.03 mention, D14). Phần xếp hạng A ≈ 0 ở mọi nơi đã đo; phần còn lại là số lượng, cộng thêm phân bổ.
 5. **"Khớp số lượng trên ref KTVIC" vẫn chỉ đo tính điển hình.** E6 thêm trục thứ hai và chỉ số Goodhart. E3: khoảng cách giữa hai hướng dẫn gồm ~30% cách gọi tên, ~70% chọn cái để nhắc. E2 tách FP thành ba phần. E5 đổi sang "đơn vị người chú thích": chưa hệ thống nào bằng một nhóm người ở cùng số lượng (dC < 0 với cả 11). Mốc người: P1 ngang người trên trục độc lập (+1.2 F1 ở cùng M) nhưng kém người KTVIC 5.4 F1 về tính điển hình (E6 §3.2). Ví dụ Goodhart thật, đã chấm: 35_e tối ưu CIDEr KTVIC (+1.57, không có ý nghĩa) trong khi CIDEr panel −0.5 và tỉ lệ chép nguyên văn ref tăng 3.4 lần (D14).
-6. **Ngoài đối tượng.** Quan hệ và thuộc tính có biên riêng, MBR làm hỏng quan hệ (G1); lỗi hình thức và vùng mù của endpoint (V3); rào đón không thoát được biên, chỉ quy tắc proper như Brier thưởng cho nó (M7).
+6. **Ngoài đối tượng.** Quan hệ và thuộc tính có biên riêng; self-fuse k=1 (tối đa số lượng) làm hỏng quan hệ, còn UPE-MBR thật thì không (G1; hạng mục #9 của Gemini, H5 bị bác); lỗi hình thức và vùng mù của endpoint (V3); rào đón không thoát được biên, chỉ quy tắc proper như Brier thưởng cho nó (M7).
 7. **Tính hợp lệ của phép đo.** Thẻ giao thức, lỗi do dấu câu/chữ hoa, sửa Bảng 3 KTVIC (E4); matcher v2 với v3 làm độ nhạy (V1, V3); mẫu âm sinh từ caption bị nhiễm (V2); đối chứng định nghĩa duy nhất bằng trung bình hoá phá hoà (X1 §3a).
 8. **Mốc baseline.** P1 response-only: CIDEr 148.23 (SD 0.38), giao thức cấp từ (PD-2). Không đặt cạnh 136.0 của GRIT khi chưa khớp giao thức: khớp thì chênh +12.2, lệch thì thành +28.3 (E4 §3).
 
@@ -200,6 +212,12 @@ Xếp theo: hợp lệ với endpoint của PD-2 × xác suất qua / chi phí. 
 - Trên dev chỉ phần C có ý nghĩa: +0.92 [+0.52, +1.32]. B +0.62 [−0.38, +1.71] và D +0.57 [−0.55, +1.77] đều có CI chứa 0.
 - Theo file gốc, kill-2 tính trên gold panel; JSON không có Δ so với COUNT trên gold KTVIC. Telescoping phụ thuộc thứ tự (X1 §2d). Residual UPE của G2 chỉ là suy ra gần đúng (G2 §5.5).
 - **Đề xuất câu chữ:** "UPE không có lợi ích nào so với đối chứng vote cùng số lượng; lợi ích so với greedy là số lượng, cộng phân bổ và xếp hạng lại theo vote, hai phần sau không có ý nghĩa trên dev." Chạy P-M6a trên test với Shapley, trên cả gold KTVIC lẫn panel.
+- **Kết quả sau tổng hợp (Gemini D15-A, hậu kiểm; `.session_backup/2026-10-13/r10_cpu/mt2_upe_car_shapley.md`).**
+  - Trên gold KTVIC 5 ref, UPE vượt COUNT đã đăng ký (q_o ≡ 1): +0.61 [+0.25, +0.98].
+  - Trên panel, UPE không vượt COUNT: +0.10 [−0.25, +0.42].
+  - UPE cũng không vượt đối chứng chính mới của D15(i), (v,g) tie-avg, kể cả trên KTVIC: −0.12 [−0.29, +0.06].
+  - CAR Shapley gộp 3 seed trên KTVIC (tổng +1.92): số lượng +1.50, phân bổ +0.74, xếp hạng −0.32.
+  - Câu chữ cho bài: lợi ích +0.61 phụ thuộc định nghĩa đối chứng, nên không được dùng làm bằng chứng UPE vượt kiểm soát số lượng.
 
 **MT3. Hằng số biên khớp trên test.** M4: cấm dùng trong huấn luyện. M3, M5 và residual "official" của M6: dùng biên chính thức làm cổng dev. G2: không mang b sang gold hay tập ảnh khác. M4 §3b(v): không khớp lại được trên dev300 vì fuse2 đã huấn luyện trên các ảnh đó. **Thống nhất:** biên chỉ là công cụ đánh giá; trên dev dùng Δ ghép cặp có guard Δm; báo cáo cả bản "official" lẫn bản neo trên dev (như M6).
 
@@ -221,7 +239,7 @@ Xếp theo: hợp lệ với endpoint của PD-2 × xác suất qua / chi phí. 
 
 **MT12. G3 H4 và M6.** G3: phương pháp dùng bằng chứng nội tại giữ nguyên s. M6: phân bổ theo vote vượt biên khi m < m* ≈ 2.4. Bằng chứng của G3 lấy ở m ≥ 2.6 (PLAN-F1). P-M6b sẽ phân xử.
 
-**MT13. File "MBR" không phải UPE-MBR.** G1, E5, V3, E4 và X1 §3c phân tích p1_s43mbr và fuse2_s42mbr. UPE-MBR không lưu lựa chọn thành preds (G2 §3d; G1 §4A.3). Nguồn gốc các file MBR chưa xác minh (G1 §5.5).
+**MT13. File "MBR" không phải UPE-MBR.** G1, E5, V3, E4 và X1 §3c phân tích p1_s43mbr và fuse2_s42mbr. UPE-MBR không lưu lựa chọn thành preds (G2 §3d; G1 §4A.3). Gemini đã xác minh nguồn gốc (MT13): các file này sinh từ `scripts/self_fuse.py --k 1`, khớp 556/558 và 557/558 ảnh.
 
 **MT14. Lệch 0.06–0.08.** Recall của P1_dev 43.13 so với 43.07 (M3, M7); precision 1v4 của người 85.25 so với 85.33 (G3, V1); within 60.43 so với 60.50 (E3). Hai lời giải thích: phiên bản matcher, và gộp thay cho trung bình theo fold. D14 xác nhận v1 cho 43.07, v2 cho 43.13 trên dev300 (`data/results/rl/`), tức phần recall là do matcher. Hai lệch còn lại để Gemini phân xử.
 
@@ -253,7 +271,7 @@ Xếp theo: hợp lệ với endpoint của PD-2 × xác suất qua / chi phí. 
 
 ### 6.1 Ngay lập tức, không tốn compute
 
-1. **Ghi nhận N11 (D14) và kết quả các dự đoán.** Đưa 35_e vào Bảng B9. Ghi thêm một kết quả phương pháp luận: dự đoán đăng ký trước của M4 cho RL chỉ thưởng CIDEr (trung tính về đối tượng ở số lượng khớp) đúng 3/4. C2 trượt sát: cm +2.07 so với ngưỡng +2.0, dù CI vẫn chứa 0. Đây chỉ là bằng chứng một phần cho luận điểm bất biến của biên ở một phương pháp HUẤN LUYỆN, và phải báo cáo đúng là 3/4.
+1. **Ghi nhận N11 (D14) và kết quả các dự đoán.** Đưa 35_e vào Bảng B9. Ghi thêm một kết quả phương pháp luận: dự đoán có dấu thời gian (không commit trước) của M4 cho RL chỉ thưởng CIDEr (trung tính về đối tượng ở số lượng khớp) đúng 3/4. C2 trượt sát: cm +2.07 so với ngưỡng +2.0, dù CI vẫn chứa 0. Đây chỉ là bằng chứng một phần cho luận điểm bất biến của biên ở một phương pháp HUẤN LUYỆN, và phải báo cáo đúng là 3/4.
 2. **Phán quyết về endpoint:**
    - (i) Đối chứng chính là (v,g) tie-avg; họ tie-avg để kiểm tra độ vững (X1, M2; MT4).
    - (ii) Thêm endpoint "khớp tổng" và phần B của CAR (Shapley) cho phương pháp phân bổ (M6; MT2, MT6).

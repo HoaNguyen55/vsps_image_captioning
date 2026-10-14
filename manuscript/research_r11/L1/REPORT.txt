@@ -1,0 +1,187 @@
+R11 / L1 -- HALLUCINATION EVALUATION & DECODING x F-MEASURE DECISION THEORY   (2026-10-14, agent L1, CPU only)
+Files (SP/r11_litmaps/L1/): scripts/check_mstar.py -> check_mstar.{log,json} (KTVIC, 76 s, 84 MB); scripts/check_coco.py ->
+check_coco.{log,json} (COCO-2500, 164 s, 318 MB; predictions frozen first in check_coco_PREDICTIONS.txt); scripts/check_stop.py ->
+check_stop.log (M6 curves); arxiv_q1/q2.txt (35 arXiv API queries), arxiv_ids.tsv (20 IDs), dl_crossref/ (6 DOIs), s2_hits.txt.
+
+0. BOTTOM LINE
+- The gap is real after a fair null: hallucination metrics x F-measure has 0 bridges vs ~19 (ours) / ~5 (Gemini n3) expected. No
+  caption/LVLM paper found that picks object mentions by an F-measure Bayes rule; THRONE even scores with F0.5 but never uses its rule.
+- G2's "F1 rises iff marginal precision > F1/2" IS Lipton et al.'s result (the inequality inside their Thm 1 proof); cite, never claim.
+- New and tested here: the verbosity reward of raw object F1 is gold-indexed (M* = b*Gbar/(1-b)) and FLIPS SIGN under 1-reference gold
+  (KTVIC FT slope -10.65 -> +14.15; COCO -4.28 -> +22.41, all 4 pre-written predictions held). D12 is predicted by two stopping rules.
+
+1. THE GAP AS THE MAP SHOWS IT
+Pairs (observed / independence-expected; "fair" = expected x pooled obs/exp of the other distant pairs, 0.141 ours, 0.073 n3):
+  pair        ours (7,725 works, F=370)            Gemini n3 OpenAlex (19,268 works, F=475; unreviewed)
+  A1 x F      0 / 137.7, fair 19.4, P(0)=4e-9       0 / 74.1, fair 5.4, P(0)=0.005
+  A2 x F      0 / 61.1,  fair 8.6,  P(0)=2e-4       0 / 32.5, fair 2.4, P(0)=0.09
+  A3 x F      0 / 5.7,   fair 0.8 (n.s.)            0 / 3.3,  fair 0.2 (n.s.)
+  B3 x F      1 / 10.2,  fair 1.4 (n.s.)            1 / 5.9,  fair 0.4 (n.s.)
+- Raw independence expectations overstate the gap 7-14x (most distant pairs have ratio 0.01-0.1); only A1 x F stays significant on
+  both maps. A3/B3 are too small to call. The F cluster is ML theory, so even F-aware vision papers rarely cite these 5 seeds.
+- The single bridge (B3 x F, both maps): "Reduction methods for multi-label classification", 2019 dissertation, DOI 10.17760/d20328153
+  (links BergImportance, Koyejo, Ye). Multi-label ML, not captioning (abstract only seen).
+- S2 citers of the F seeds (s2_citers.json: Lipton 59, Ye 136, Koyejo 110, Arampatzis 84): the vision-adjacent ones are ImageCLEF
+  Caption 2019 concept detection (UA.PT, cites Lipton), F-measure loss for salient object detection (arXiv 1805.07567), detection
+  metrics for autonomous systems (2210.10298), RNN set prediction (NAACL 2019, 1904.05829), Tversky-RL video safety (2610.02019).
+  None decides what a caption should mention.
+- Reverse (caption/hallucination citers whose abstracts mention F1/EOS/length): Devil-in-the-EOS (2507.20077), When More Words Say
+  Less (2601.04609), CapProbe (2608.11074). None uses F-measure decision theory.
+- arXiv API, 35 queries: "expected F1" / "F1-optimal" / "optimal threshold" x caption|hallucination|VLM = 0 hits (C5/R9: 53 queries,
+  same). Nearest analogues are abstention/conformal LVLM work (2502.20560, 2606.16667, 2502.06884) and MBR-uncertainty decoding
+  (2503.05318), all precision- or risk-controlled, none F-optimal.
+
+2. CLOSEST PRIOR WORK (A = arXiv API metadata, C = Crossref, P = primary page/PDF read; all checked today)
+ 1 Lipton, Elkan, Narayanaswamy, arXiv 1402.1892 [A,P] = ECML-PKDD 2014, LNCS 8725:225-239, DOI 10.1007/978-3-662-44851-9_15 [C;
+   Crossref/PDF spell "Naryanaswamy"]. Thm 1: add a score region iff its odds >= J of the rest; Cor. 1: calibrated -> s >= F/2;
+   Thm 3: uninformative -> predict all positive; Sec. 4.2 "batch observation"; Sec. 5: micro vs macro optima differ.
+ 2 Ye, Chai, Lee, Chieu, ICML 2012, arXiv 1206.4625 [A]: EUM (threshold) and DTA (expected-F sets) "asymptotically equivalent given
+   large training and test sets"; DTA better for rare classes, EUM more robust to misspecification.
+ 3 Dembczynski, Waegeman, Cheng, Huellermeier, NIPS 2011, GFM [P: papers.nips.cc 4389]: exact maximiser from m^2+1 parameters
+   P(y_i=1, |y|=s); Waegeman et al., JMLR 15 (2014), arXiv 1310.4849 [A]: top-k structure, regret of thresholding vs GFM.
+ 4 Dembczynski, Kotlowski, Koyejo, Natarajan, ICML 2017, PMLR 70:961-969 [P]: population utility (PU) vs expected test utility
+   (ETU); they differ only for non-decomposable metrics such as F.
+ 5 Koyejo, Natarajan, Ravikumar, Dhillon, NIPS 2015 "Consistent Multilabel Classification" [P: papers.nips.cc; NO arXiv ID, so
+   not 1502.05709]: micro/macro/instance metrics -> per-label marginals with a shared threshold. Pages 3321-3329 vs 3303-3311: VERIFY.
+ 6 Schultheis, Kotlowski, Wydmuch, Babbar, Borman, Dembczynski, ICLR 2024 (not ICML), arXiv 2401.16594 [A,P]: macro-at-k, exactly
+   k labels per instance (a per-instance budget).
+ 7 Arampatzis, Kamps, Robertson, SIGIR 2009:524-531, DOI 10.1145/1571941.1572031 [C: "Where to stop reading a ranked list?"]:
+   per-query cutoff optimising F from score distributions. Lewis, SIGIR 1995, DOI 10.1145/215206.215366 [C]: PRP for F.
+ 8 Yue, Zhang, Jin, "Less is More", ACL 2024, DOI 10.18653/v1/2024.acl-long.633 [C], arXiv 2402.14545 [A]: EOS decision drives
+   hallucination. E1 re-score (LLaVA-1.5-7B): +7.9 P raw -> +1.08 [-0.14, +2.25] at matched count.
+ 9 Mohamed & Kementchedjhieva, arXiv 2507.20077 [A] (COLM 2025 per search; VERIFY): de-biasing EOS lengthens captions, "predictable
+   rise in hallucinations". The opposite EOS move to LiM; neither states an objective that sets where to stop.
+10 Kalai, Nachum, Vempala, Zhang, "Why Language Models Hallucinate", arXiv 2509.04664 [A,P]. Sec. 4.2 proposes explicit targets:
+   "Answer only if you are >t confident, since mistakes are penalized t/(1-t) points". The QA analogue of D-B.
+11 Kaul et al., THRONE, CVPR 2024, arXiv 2405.05256 [A,P]: principal metric = class-wise F0.5, "precision twice as important as
+   recall". An F-measure inside an A1 seed whose Bayes threshold (F/1.25) is never discussed.
+12 Chan, Chen, Wang, King, ACL 2019, DOI 10.18653/v1/P19-1208 [C], arXiv 1906.04106: keyphrase generators emit too few items;
+   adaptive recall->F1 reward. Johnson, Tarlow, Walder, R-U-SURE, ICML 2023, arXiv 2303.00732 [A]: decision-theoretic choice of
+   which generated parts to keep, from samples. Jain, Prabhu, Varma, KDD 2016, DOI 10.1145/2939672.2939756 [C]: propensity-scored
+   metrics for missing labels; Schultheis et al. KDD 2022 arXiv 2207.13186 [A] (critique of propensity models).
+2b. THEORY CHECK (Q2). Same result? YES. Micro-F1 = 2TP/(M+G). Adding mentions with expected precision p raises F iff p > F/2 (F of
+   the current set). Lipton's Thm 1 proof compares exactly F1' vs F1'' for one added region; Cor. 1 is its fixed point under
+   calibration (theta* = F*/2). G2's "iff b*P > F/2" is the same inequality at any operating point, with b*P = marginal precision.
+   - Averaging: exact for micro (pooled) F1. Macro (per-class) F1: one threshold per class. Instance F1: per-image thresholds on tiny
+     batches (GFM). object_prf.py is micro-P with image-macro-R: include iff p > P/(1+kappa/|G_i|), kappa = P^2 m/R^2 (C5). This
+     equals F/2 only when |G_i| = P*m/R, so G2's rule is approximate for the repo metric (sign agreement 73/77 steps, D-B).
+     F_beta generalises to p > F_beta/(1+beta^2), my derivation; Zhao et al. JMLR 14 (2013) derive optimal F thresholds (VERIFY form).
+   - Incomplete gold: p and F are measured against the gold used. With k references, unreferenced true objects count as FP, so b and
+     the F1-optimal count M* = b*Gbar/(1-b) shrink as references are removed. The rule says what maximises F against THAT gold.
+   - Verbosity (E6 corr 0.84, panel gold): b_I 0.899, Gbar 6.0 -> M* ~ 53 >> every system's M, so every frontier mention adds F1.
+     The sign is explained. The size of the correlation also reflects scatter: on KTVIC 5-ref gold the all-73 corr is only +0.22,
+     because off-style systems sit 20-46 P below the frontier. Under 1-ref gold the sign reverses (D-C).
+2c. SCOOP RISK for R10 claims in scope
+   - G2 "F1 rises iff p_marg > F1/2": HIGH (it is Lipton 2014). Present as a corollary, cite [1].
+   - C1 count-matched object evaluation: LOW from this cluster. F-theory papers never match counts; [6] fixes k per instance as a
+     task constraint, not as a control; [11]/POPE use F-scores with no count control.
+   - C2 gold-indexed exponent and the sign flip of the verbosity reward: LOW-MODERATE. No hit. Nearest: COCO Captions (arXiv
+     1504.00325 [A]): with fewer references human precision dips at equal recall; [12] Jain 2016 (missing labels bias metrics).
+   - M6 allocation / CAR: MODERATE. Water-filling = [1] batch observation + [5] shared micro threshold; [7] per-query cutoffs, [6]
+     per-instance k. New only as an evaluation decomposition (CAR) and the frontier-crossing condition.
+   - PLAN-F1 / C5 rule: MODERATE-HIGH for the rule (plug-in thresholding is standard); the mixed micro-P/macro-R closed form is the
+     only new piece (C5). UPE / EOS re-scoring claims: LOW.
+
+3. NEW DIRECTIONS INFERRED FROM THE GAP (verdicts on the brief's (a)-(c) included)
+D-C. The verbosity reward of raw object F1 is gold-indexed and flips sign under sparse gold   [from Q2; tested here]
+  Claim: with frontier TP = a*M^b, micro-F1 peaks at M* = b*Gbar/(1-b) (Lipton Cor. 1 + G2; b -> 1 gives Lipton Thm 3, "name
+    everything"). b rises with gold completeness, so F1 rewards verbosity only where M* exceeds the systems' counts, and rewards
+    brevity under sparse gold.
+  Evidence (object_prf convention, 500 image bootstraps; slope = OLS of F1 on log M across systems):
+    KTVIC test, 36 FT systems (M 1.76-3.75): 1 ref -10.65 [-13.87,-7.28] (first-k) / -3.32 [-6.19,-0.48] (random-k); 2 refs (random)
+      +3.77 [+0.99,+6.02]; 5 refs +14.15 [+11.67,+16.49]. All 73 systems: -3.94 [-6.10,-1.74] -> +7.61 [+5.74,+9.40].
+    COCO-2500, 9 systems (M 0.84-2.14), predictions frozen before the run, 4/4 held: 1 EN ref -4.28 [-5.91,-2.45]; 5 refs +11.08
+      [+9.76,+12.43]; instance labels +22.41 [+21.27,+23.48]. sign(slope) = sign(M*_mixed - median M) in 12/12 COCO and 16/20 KTVIC
+      variants (3 misses = all-73 sets at k<=2, where off-style systems break one frontier; 1 = FT k=2 first-k, M* 1.87 vs median
+      1.83). The micro closed form overestimates M* at sparse gold (10/12, 15/20).
+    Side finding for G2: KTVIC's first reference is special. b(k=1) is 0.403 first-k vs 0.536 random-k (COCO 0.478 vs 0.479), so
+      Delta b(5-1) is +0.30 first-k vs +0.17 random-k.
+  New vs Sec. 2: R10 treats "raw F1 rewards verbosity" as unconditional. Here its sign is predicted from (b, Gbar) and reverses
+    between golds of the same images. Count control is needed in BOTH directions.
+  Prediction: on UIT-ViIC (refs-lex vs inst-coco80) and XM3600-VI (1-2 refs/img), sign(slope) = sign(M* - median M). Terse and
+    verbose systems swap raw-F1 rank between 1-ref and instance gold.
+  Test: L1/scripts/check_mstar.py and check_coco.py + G2 loaders (data/results/uitviic, data/uitviic/instance_gold.json); XM3600
+    once G2-D outputs exist. Cost: <0.3 CPU-h (+~1.5 GPU-h only for XM3600 outputs). Pillars: C2 (main), C1, C4.
+    Novelty 3, risk 2.
+D-B. Every object metric declares an implicit confidence target; F1's is F/2, the count-matched residual's is b*P_f   [(b),(c)]
+  Claim: raw F1 adds a mention iff its posterior > F/2 (Lipton). F_beta: > F_beta/(1+beta^2), so THRONE's F0.5 asks 0.8*F. The
+    frontier residual adds iff posterior > dTP_f/dM ~ b*P_f(m). On KTVIC the residual's bar (0.50-0.62) is about 2x F1's (0.24-0.31),
+    so an expected-F1 planner overshoots the residual-optimal count by construction. This is Kalai et al.'s "explicit confidence
+    target" (2509.04664) made concrete for object mentions.
+  Evidence (check_stop.py on M6 out/m6_alloc.json, dev300, 7 rules x 11 budget steps): sign(dF1) = sign(p_marg - F/2) in 73/77
+    steps; sign(d residual) = sign(p_marg - p_frontier) in 74/77. Global vote: raw F1 peaks at m 3.21 (62.45; next step p_marg 0.238 <
+    F/2 0.312), exactly the uncapped PLAN-F1 label-free fixed point (m 3.213). Its residual there is -2.21; the residual peaks at m
+    1.33-1.91 (+1.85..+2.13; the frontier is extrapolated below 1.76).
+  (b) verdict: YES. Decision theory predicts D12 twice over. (i) The plan is top-k_i by its own q, so it equals the q-ranked
+    same-count control (300/300 identical, dF1 0.00). (ii) It stops where p = F/2, past the count where p falls below the
+    frontier's marginal precision, hence a negative residual. The cap of 3 (-2.49 vs -1.56 uncapped at m 2.63) is outside the theory.
+    An EOS policy is a per-image k_i rule over the model's own order, so it can win at matched total count only via allocation.
+    E1's LiM-EOS split (count ~4.9 P, per-image stopping 1.9 P, object choice 1.1 P n.s.) fits this.
+  (c) verdict: the mapping is off. Corpus allocation = PU/EUM (global threshold; Koyejo micro). Per-image EF1 = ETU/DTA for instance
+    F on a one-image batch (GFM): a metric mismatch (C5: -0.2 to -0.7), not a finite-sample effect. Ye et al. predict EUM ~ DTA at
+    ~1,300 decisions (C5: 60.1 vs 60.3) and are silent on m* ~ 2.4. The crossing follows from the frontier condition (M6 T4); the
+    allocation gain follows from Lipton's batch observation (M6 T2).
+  Prediction: on test pools (p1assist_s4{2,3,4} greedy + 6 x T0.5, data/results/upe/test/), a label-free plug-in with threshold F/2
+    lands at m >= 2.6 with residual < 0. The same plug-in with threshold = frontier marginal precision lands at m in [1.5, 2.1] with
+    residual >= 0. Across released decoders, THRONE-F0.5 favours short decoders more than F1-type scores do.
+  Test: plan_f1.py plug_in with the threshold swapped, dev-frozen calibrator; m6_alloc curves for dev. CPU ~0.5 h, 0 GPU.
+    Pillars: C1, C5. Novelty 3, risk 2.
+D-A. Decision rules cannot buy ranking: CAR's A term is zero for any Bayes act on the control's own score   [(a)]
+  Claim: for micro-F (and the mixed metric under independent labels) every Bayes act given marginals q is top-k_i by q per image
+    (Lewis 1995; Ye 2012 DTA; Koyejo 2015; Lipton Thm 1). So A = 0 against the own-score control, and A <= 0 when choice is
+    restricted to existing captions. A > 0 needs new evidence (a better score), or label dependence through the 1/|G_i| term
+    (GFM count-conditional marginals). Known in substance (PRP for F); new only as an evaluation identity and triage rule.
+  Evidence: D12 300/300 identical; vs raw-vote control +0.08 [-0.74,+0.91]; UPE Shapley phi_A < 0 in 11/11 rows (-0.10..-0.51,
+    mt2_upe_car_shapley.md); knapsack A +0.09 [-0.83,+1.03]; R10_00: "A ~ 0 everywhere measured".
+  Prediction: no score-preserving rule (EOS rule, threshold, vote-monotone MBR, F-planner) shows A > 0 with CI > 0. Only
+    evidence-adding methods (M1 grounding re-rank; layer-24 probe, AUROC 0.807) can.
+  Test: tie-averaged own-score controls (x1_ties.py) for every method. For the loophole, dev300 13-caption pools: compute w =
+    E[y/|G_i|] from 5-caption subset unions vs PLAN's independent Poisson-binomial, then dF1 at fixed k_i (predict |dF1| < 0.3).
+  Cost: <0.3 CPU-h. Pillars: C1 (CAR), C5; steers GPU to M1. Novelty 2, risk 1.
+D-D. Propensity-scored object F1: object importance as missing-label propensity   [B3 x F, B2 x F]
+  Claim: reference incompleteness is the XMLC missing-label problem (Jain 2016; Schultheis 2022). A class's naming propensity
+    pi_c = P(named by one annotator | present) is object importance (Berg 2012; Spain & Perona). Weighting reference TPs by
+    1/(1-(1-pi_c)^k) estimates instance-gold P/R from references alone. If D-C's mechanism is right, the corrected b(k) is flat in k.
+  Prediction: on COCO-2500 (pi_c fitted on COCO train/val instances + refs, never on the 2,500), corrected refs-F1 ranks the 9 systems
+    closer to instance F1 than raw refs-F1 (Kendall tau gain >= 0.2), and corrected b(1..5) spans < 0.05.
+  Test: CPU on data/coco_probe + Karpathy refs; UIT-ViIC instance_gold.json for VI. ~0.5 CPU-h. Pillars C2/C3. Novelty 3, risk 4
+    (salience is image-dependent, i.e. labels are missing not at random; only 9 systems).
+
+4. LITMAPS SEEDS TO ADD (explore A1/A2 x F)
+  10.1007/978-3-662-44851-9_15 (Lipton ECML-PKDD 2014) | arXiv 2509.04664 (Kalai 2025) | arXiv 2405.05256 (THRONE, F0.5) |
+  10.18653/v1/2024.acl-long.633 (LiM-EOS) | arXiv 2507.20077 (Devil in the EOS) | arXiv 1310.4849 (Waegeman, GFM/Bayes-optimality) |
+  PMLR v70 dembczynski17a (PU vs ETU; no DOI, add by title) | 10.1145/2939672.2939756 (Jain 2016, propensity) |
+  10.18653/v1/P19-1208 (keyphrase count/F1 reward) | arXiv 2303.00732 (R-U-SURE, sample-based decision-theoretic truncation)
+
+5. CLAIMS FOR GEMINI TO VERIFY
+ 1 Rerun L1/scripts/check_mstar.py (76 s, 84 MB; working-tree rescap/chair.py = matcher v2, sha prefix in check_mstar.json) and
+   check_coco.py (164 s, 318 MB). Slopes as in D-C; COCO systems = 9 (incl. zeroshot-detailed+vcd).
+ 2 check_stop.py on .session_backup/2026-10-14/research_r10/M6/out/m6_alloc.json: 73/77 and 74/77; global-vote F1 argmax at m 3.21;
+   plan_fixed_point m 3.2133 (P .615, R .593, kappa 3.448).
+ 3 KTVIC b(k=1) = 0.403 first-k vs 0.536 random-k (36-system FT ladder). Why is reference #1 of test_data.json special?
+ 4 Lipton quotes from arXiv v2 (L1/dl_pdf/lipton.txt): Cor. 1 "s >= F/2"; Thm 3 "optimal thresholding to maximize F1 results in
+   predicting all examples positive"; Sec. 5 "micro F1 is optimized by predicting all negative while macro is optimized by predicting
+   all positive" (rare label, uninformative classifier).
+ 5 THRONE Sec. 3.1: class-wise F0.5 is "the principle metric" and makes "precision twice as important as recall" (2405.05256v2).
+ 6 Kalai et al. Sec. 4.2 wording (2509.04664v1, HTML).
+ 7 The F_beta threshold p > F_beta/(1+beta^2) (my algebra) and whether Zhao et al. JMLR 14:1033-1090 state it (only the abstract was read).
+ 8 Koyejo et al. NIPS 2015 pages (3321-3329 mlanthology vs 3303-3311 elsewhere). Gemini's r10_a4 file also says the companion binary
+   paper is "ICML 2014, arXiv:1402.4042" [UNVERIFIED; I believe it is NIPS 2014].
+ 9 Errors in Gemini's r10_a4_citation_verification.json (A-59): 2401.16594 is ICLR 2024 (proceedings.iclr.cc), not ICML 2024.
+   DOI 10.1145/1571941.1572031 is titled "Where to stop reading a ranked list?" (Crossref), not "Stop-and-Turn...".
+10 Venues: 2507.20077 COLM 2025 and 2601.04609 ACL 2026 (from search snippets only) [UNVERIFIED].
+11 Bridge work DOI 10.17760/d20328153 (2019 dissertation): only its title and abstract were seen.
+12 Fair-null numbers in Sec. 1 (pooled obs/exp over distant pairs, ratio < 1): 0.141 (ours) and 0.073 (n3).
+13 E1's LiM-EOS split (4.9 / 1.9 / 1.1 P) and the D12 numbers, from E1/REPORT.txt 3c and decisions/LOG.md D12.
+
+6. WHAT WOULD CHANGE MY CONCLUSION (kill rules)
+ - Gap: a 2018-2026 caption/LVLM paper that chooses object mentions by an F-measure Bayes rule (threshold F/2, GFM or EUM). That would
+   make PLAN-F1/C5 and D-B incremental. Checked: arXiv API 35 queries, WebSearch ~20, S2 citers of the F seeds.
+ - D-C: on UIT-ViIC or XM3600, the sparsest-gold slope is > 0 with CI > 0 while M*_mixed < median M (or the reverse), in >= 2
+   settings. Then drop the sign-flip claim and keep only "b depends on the gold".
+ - D-B: on test, the F/2 plug-in lands at m < 2.3 or has residual >= 0, or the frontier-threshold plug-in has residual < 0 with CI
+   excluding 0. Then the two-target account fails.
+ - D-A: a score-preserving rule has A > 0 (CI > 0) against its own-score tie-averaged control, or dependence-aware w moves F1 by
+   > 0.5 at fixed k_i. Then the GFM loophole is real; promote it to a method and drop the identity.
+ - D-D: corrected refs-F1 does not raise Kendall tau with instance F1, or corrected b(k) still spans >= 0.1. Then propensity is not
+   the mechanism.

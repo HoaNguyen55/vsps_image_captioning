@@ -1,0 +1,198 @@
+R11 / L2 -- Object-hallucination metrics x incomplete gold, rater equivalence, capture-recapture  (2026-10-14)
+Agent L2. Files in SP/r11_litmaps/L2/: scripts/adjacency_check.py (CPU; part 1 hit the 600 s cap after 5 datasets, part 2 1m48s, 0.69 GB),
+adjacency_check_part1.log, adjacency_check_part2.{log,json}; downloaded pages in dl_abs/, dl_html/, dl_pdf/, dl_txt/.
+
+0. BOTTOM LINE
+- Real gap: full map B1xB2 = 0 bridges vs 1,016 expected, A1xB2 = 11 vs 935; all 11 are backbones citing ReaL + POPE.
+- Prior art covers each piece (Chen 2015 §4.2 human P vs k refs; IR incomplete judgments; PU/propensity metrics; RePOPE;
+  species estimators for crowd lists; Resnick v3). Scoop: C2 low-med; E2 med; E5 med concept, low set-coverage part.
+- KTVIC's "paraphrase chain" is a single-writer artifact (§3.2: one annotator types an image's 5 captions). Adjacent
+  doubletons: KTVIC 0.71 vs 0.38-0.46 for UIT-ViIC, COCO, OpenViIC (Flickr30k 0.48 = length sort). E2/E5/G3 must say
+  "reference captions", not "annotators"; Chao/Good-Turing on KTVIC refs are within-writer estimates.
+
+1. THE GAP AS THE MAP SHOWS IT
+Final merge (SP/r11_litmaps/analysis.json, 7,725 works) | Gemini full map (r11_litmaps_n3/summary.txt, 19,268 works):
+  A1 halluc. metrics x B2 gold completeness/raters   11 obs / 205.4 exp     | 11 / 935.0
+  A2 halluc. decoding x B2                             2 / 91.2              |  3 / 409.9
+  A3 length/count control x B2                         1 / 8.4               |  1 / 41.4
+  B1 caption metrics x B2                              1 / 81.7              |  0 / 1,016.2 (checked in summary.txt)
+  B2 x B3 object importance                            0 / 15.3              |  0 / 74.4
+  B2 x D preference optimization                       0 / 73.5              |  1 / 329.9
+  B2 x F F-measure                                     0 / 26.4              |  1 / 147.8
+Caveat: in the merged map B2 = 552 works, and 499 of them are Semantic Scholar citers of ImageNet ReaL. Another 13 cite
+  SurveyEquivalence. Chao1987, ChaoJost2012 and DawidSkene have no S2 citer lists, so B2 there is mostly "ReaL citers".
+  The full map (B2 = 5,997, single-seed links included) shows the same near-zero bridges, so the gap is not an artifact.
+What the bridging works do (all read; ids from the S2/OpenAlex records, not re-checked):
+  - InternVL (CVPR 2024, 2312.14238), InternVL 2.5 (2412.05271), InternVL TPAMI 2026, EVA (CVPR 2023, 2211.07636),
+    Scaling ViT (CVPR 2022, 2106.04560), UniViTAR (2504.01792), CLIP long-tail (NeurIPS 2024, 2405.21070), ResNet.
+    They cite ReaL and POPE as benchmark rows. None studies gold completeness.
+  - On LMMs as open-world image classifiers (ICCV 2025, 2503.21851; links ReaL, LURE, POPE). This is the only bridge
+    that touches label ambiguity/incompleteness, and it is for classification, not captions.
+  - A3 x B2 and B1 x B2: a mis-dated "Attention Is All You Need" record (doi 10.65215/2q58a426). Spurious.
+  - B2 x B3 and B2 x D: none.
+  - SurveyEquivalence's 13 citers cover subjective labels, moderation and misinformation, e.g. Plank 2022 (2211.02570)
+    and Posthoc Verification (2106.07353). None is about captioning or hallucination.
+Reading: hallucination-metric papers do not cite the relabelling, rater-equivalence or capture-recapture literature, and
+  vice versa. The closest work therefore sits OUTSIDE the map's clusters (sections 2 and 4).
+
+2. CLOSEST PRIOR WORK (ids checked on arXiv abs pages 2026-10-14 unless marked; G-A4 = also in Gemini's A4 check)
+P1 Chen et al., "Microsoft COCO Captions: Data Collection and Evaluation Server", arXiv:1504.00325, §4.2.
+   Human word precision against k refs from a mention propensity p: H_p = pk/(pk+(1-p)^k), H_r = p. Going from 4 refs
+   to 1 lowers precision at the same recall; precision -> 1 as subjects -> infinity. Assumes subjects are independent
+   given the object; COCO captions are "five independent" AMT captions. This is the human-side ancestor of b_pool and
+   of E2's propensity. The R10 G2/G3/E2/E5 reports do not cite it (R2_03/R5 already list it as must-cite).
+P2 Rohrbach et al., CHAIR, arXiv:1809.02156 (EMNLP 2018). Gold = COCO instance labels plus reference objects, to cut
+   false hallucinations. It has no completeness index.
+P3 Neuhaus & Hein, RePOPE, arXiv:2504.15707 (2025). They re-annotate all 500 POPE images. Errors concentrate in "Yes"
+   (COCO-positive) questions, ambiguous pairs are dropped, and model rankings shift. This is label noise in a
+   discriminative gold, not completeness of a free-form gold.
+P4 Open-vocabulary CHAIR: OpenCHAIR/MOCHa (Ben-Kish et al., arXiv:2312.03631, gold from generative foundation models);
+   ALOHa (Petryk et al., arXiv:2404.02904, NAACL 2024). AMBER (arXiv:2311.07397) is LLM-free with its own annotations
+   (manual-annotation details from memory, VERIFY). All score against a fixed gold; none estimates what it misses.
+P5 Dense golds: DOCCI (2404.19753, 15k images, ~136-word single descriptions); IIW (2405.02793, human-in-the-loop);
+   DCI (2312.08578, mask-aligned). More complete, but single-writer, and none estimates residual incompleteness.
+P6 SC-Captioner (2508.06125, ICCV 2025) refines CAPTURE "to alleviate its incomplete precision evaluation". An ad hoc
+   fix; no estimator or law. Yan et al. (2406.17115) measure benchmark reliability and validity, not completeness.
+P7 ReaL-style relabelling: ReaL (2006.07159); Vasudevan et al. (2205.04596: "nearly half of the supposed mistakes are not
+   mistakes"); Northcutt et al. (2103.14749, NeurIPS 2021 D&B). For captions: ECCV Caption (2204.03359, ECCV 2022;
+   x3.6 image-to-caption positives, rankings change) and CxC (2004.15020, EACL 2021). Retrieval or classification only.
+P8 Resnick, Kong, Schoenebeck, Weninger, arXiv:2106.01254 v3 (2026-04-22), "Principled Evaluation with Human Labels:
+   One Rater at a Time and Rater Equivalence" (G-A4). Defines the power curve over sampled panels and rater equivalence.
+   App. G: the empirical curve reaches only panel sizes up to n-1, and parametric (Beta-mixture) synthetic extrapolation
+   "works poorly in practice". It has no set-valued outputs and no Good-Turing/Chao.
+P9 Trushkowsky, Kraska, Franklin, Sarkar, "Crowdsourced Enumeration Queries", ICDE 2013 best paper (arXiv 1202.2335,
+   "Getting It All from the Crowd", per web search, VERIFY). Species estimators gauge how complete a crowd-enumerated set
+   is; worker heterogeneity ("streakers") breaks them. This is the closest precedent for Chao over annotator lists.
+P10 Incomplete judgments in IR: Buckley & Voorhees, SIGIR 2004, 25-32, doi 10.1145/1008992.1009000 (bpref); Keenan,
+   Smeaton & Keogh, JASIST 52(7):570-574, 2001, doi 10.1002/asi.1096 (pool depth; G-A4).
+P11 Missing-label-corrected metrics: Jain, White & Radivojac, arXiv:1702.00518 (AAAI 2017, PU-corrected P/R); Jain,
+   Prabhu & Varma, KDD 2016, doi 10.1145/2939672.2939756 (propensity-scored P@k); Schultheis et al., arXiv:2207.13186
+   (KDD 2022) criticise propensities. Ding, Botzer & Weninger (2106.07353, DADC 2022): post-hoc verification finds model
+   predictions verified as often as the gold.
+Not found (~12 web/abs queries; NOT a "first" claim): no system count frontier indexed by gold size; no capture-recapture
+  or Chao coverage on caption references; no rater equivalence for set-valued caption content.
+SCOOP RISK
+C2 (b set by gold completeness; b_sys = b_pool - D): LOW-MEDIUM.
+  - P1 already shows precision depends on k through propensity (the b_pool side), and P10 shows evaluation depends on
+    judgment depth.
+  - New: the system exponent indexed by k and instance gold, plus the reference/system split. Present b_pool as P1
+    generalised to heterogeneous propensities.
+  - On KTVIC, "k refs" means k captions by ONE writer (section 3, D3).
+E2 (FP = sampling-unnamed / guideline-unnamed / hallucinated): MEDIUM.
+  - "Many FPs are real unannotated objects" is established (P2, P3, P7, P11). The PU correction exists (P11).
+  - New: the three-way split from capture-recapture plus an independent panel.
+  - The sampling term comes from M_h/Chao on within-writer refs. Positive list dependence makes N_hat too low, so on
+    KTVIC the sampling/guideline split is not identified. Report it as a bound.
+E5 (k*): MEDIUM on the concept, LOW on set-coverage extrapolation.
+  - P8 owns rater equivalence, and its one-rater-at-a-time protocol is E5's h=1.
+  - App. G leaves E5's slot open (beyond-panel extrapolation) and rejects the parametric route: lead with Chao-Jost,
+    and keep the beta-binomial as a check only.
+  - P8 assumes raters are distinct people. KTVIC "k annotators" are captions by one writer, so a true annotator-
+    equivalent exists only in OpenViIC units (independent students).
+
+3. NEW DIRECTIONS (the three candidates evaluated, one added)
+D3 first, because it conditions the others. Reference exchangeability audit. VERDICT: keep, as a measurement-validity
+  result. The adjacency chain IS a dataset-construction artifact, and it is KTVIC-specific.
+  Claim: KTVIC's adjacency excess comes from its documented single-writer protocol (P1 contrast: COCO = independent
+    workers). A 3-statistic audit separates single-writer chains (KTVIC), sort artifacts (Flickr30k) and exchangeable
+    panels (COCO, UIT-ViIC, OpenViIC):
+      (i) the share of doubletons in adjacent pairs vs 0.40;
+      (ii) the lag-1 minus lag-2..4 pair Jaccard;
+      (iii) the slot-precision gradient.
+    It must gate every Chao/Good-Turing estimate, k-subset curve and leave-one-out "human ceiling".
+  Evidence (CPU, this round, image bootstrap B=1000; part1/part2 logs). Adjacent share [CI]; Jaccard lag1 - lag2..4:
+    KTVIC test 558      0.710 [0.670,0.752]   lags .71/.10/.08/.10   +0.135 [0.118,0.154]
+    KTVIC train 3,769   0.667 [0.649,0.685]                          +0.113 [0.106,0.120]
+    UIT-ViIC VI 3,842   0.384 [0.365,0.404]   (5 writers)            -0.008 [-0.015,-0.002]
+    same imgs, COCO EN  0.406 [0.381,0.429]                          +0.005 [-0.001,+0.011]
+    COCO-EN 2,441       0.402 [0.363,0.443]                          -0.001 [-0.008,+0.007]
+    OpenViIC panel      exact-5 (n=251) 0.461 [0.401,0.519]; first-5 (n=425) 0.428 [0.385,0.470]; Jaccard CIs span 0
+    Flickr30k chains    31,783 images, lexicon-free (Entities coreference ids): 0.483 [0.478,0.488], lags .48/.29/.16/.07,
+                        Jaccard falling with lag (.44 to .35). Captions are length-sorted: mean words by slot
+                        19.4/15.1/12.7/10.8/8.9, and 59.7% of images are in non-increasing order. KTVIC slot lengths are
+                        flat (11.6-12.5).
+  Known for COCO/Flickr? COCO is exchangeable, as its paper states. Flickr30k shows an order (sort) effect, not a
+    chain; I found no paper on it [UNVERIFIED]. It still biases any "first k refs" subset.
+  New vs §2: P1/P8/P9 all ASSUME independent raters. No caption paper found tests reference exchangeability before
+    estimating completeness.
+  Prediction:
+    (a) Chao2 Q0 from non-adjacent pairs exceeds the all-pairs Q0 on KTVIC (Gemini: 2.67 vs 0.65 [GEMINI, not
+        re-derived]), but agrees within 10% on COCO and UIT-ViIC;
+    (b) KTVIC leave-one-out human P against equal-size adjacent-only vs non-adjacent-only gold differs by >= 2 P, and by
+        < 0.5 P on COCO and UIT-ViIC.
+  Test: extend scripts/adjacency_check.py on existing refs. Cost < 0.2 CPU-h, 0 GPU-h. Pillar C4; it also corrects the
+    C2, C3 and E5 wording. Novelty 2, risk 1.
+D1 Completeness-indexed reporting ("report b and C(k) next to every object metric"). VERDICT: keep, but only narrowed
+  into a falsifiable claim-stability result. A reporting standard alone is novelty 1.
+  Claim: a gold card (coverage C_hat(k), b, the D3 audit) predicts when an object-metric ordering flips between golds.
+    The flips are carried by count differences.
+  New: P1 and P10 show that completeness matters in principle. No caption or hallucination paper reports coverage or
+    tests claim stability across gold completeness.
+  Prediction:
+    - raw object-P orderings flip between the least and most complete gold in >= 15% of system pairs;
+    - >= 80% of the flips have |dM| >= 0.3 classes per caption;
+    - at matched count (frontier residual), flips fall to < 5%.
+    Systems: KTVIC 73 systems x all k-subsets; COCO-2500 9 x refs1..5/inst/inst+refs; UIT-ViIC 6.
+  Test: the existing outputs of SP/research_r10/G2/g2_frontier.py, plus E5 kstar.py coverage. Cost 0.3 CPU-h. Pillar C2
+    (+C1). Novelty 2, risk 2.
+D2 Chao1/Chao2-corrected object precision. VERDICT: as a KTVIC metric it is already falsified (E2: Spearman 0.65 vs 0.91
+  for raw), and the general correction belongs to P11 (PU, propensity). One clean test remains, on EXCHANGEABLE refs
+  with an independent gold.
+  Claim: with exchangeable refs (COCO, UIT-ViIC; D3), E2's M_h-corrected P* predicts precision against instance+refs
+    gold better than raw ref-P. With within-writer refs (KTVIC) it does not.
+  New: P11 needs a known prior or propensity; here the propensity comes from exchangeable references and is checked
+    against instance labels. E2 tested only non-exchangeable refs.
+  Prediction: on COCO-2500 (9 systems) and UIT-ViIC test (6 systems), in COCO-80 space,
+    MAE(P*, P_inst+refs) <= 0.6 x MAE(P_refs, P_inst+refs), and Spearman(P*) >= Spearman(P_refs).
+  Test: point E2's e2_pilot.py at data/datasets/{coco_en,uitviic} plus data/coco_probe/instance_gold.json. Cost 0.5 CPU-h.
+    Pillar C2/C3. Novelty 3, risk 3: COCO-80 is small, and instance gold has RePOPE-type errors.
+D4 (added; B2 x D gap 0 / 73.5, full map 1 / 329.9) Incomplete gold inside preference-pair construction.
+  Claim: reference-labelled pairs ("rejected = names objects outside the refs") carry label noise that grows as the gold
+    shrinks and correlates with count: the longer sample is rejected more often. DPO then learns brevity, a count shift
+    that count-matched evaluation nulls.
+  New: R-DPO (2403.19159) separates length; HA-DPO, POVID and HALVA build negatives by rewriting or injection. I found no
+    paper that measures pair-label noise vs gold size (shallow search, VERIFY).
+  Prediction: in M3-style pairs labelled with refs {0,2}, >= 20% of rejecting objects are named by the held-out refs
+    {4} or by the OpenViIC panel (aggregates), and flipped pairs have larger dM (CI excludes 0).
+  Test: the M3 builder on existing dev300 or train sample pools (VERIFY which pools exist). Cost 0.5 CPU-h. Pillar C1/C5
+    (explains the DPO nulls). Novelty 3, risk 3.
+
+4. LITMAPS SEEDS TO ADD (bridge B2 to A1/B1; all checked except where marked)
+  arXiv:1504.00325 (COCO Captions §4.2) | arXiv:2504.15707 (RePOPE) | arXiv:2508.06125 (SC-Captioner)
+  arXiv:2204.03359 (ECCV Caption) | arXiv:2205.04596 (Vasudevan, ImageNet mistakes) | arXiv:2406.17115 (HQM)
+  doi:10.1145/1008992.1009000 (Buckley & Voorhees, bpref) | arXiv:1702.00518 (Jain et al., PU metrics)
+  doi:10.1145/2939672.2939756 (Jain, Prabhu & Varma, propensity) | arXiv:1202.2335 (Trushkowsky et al.; VERIFY mapping)
+
+5. CLAIMS FOR GEMINI TO VERIFY
+ 1 KTVIC arXiv:2401.08100v1 §3.2: "three participants follow the nine rules"; the interface "presents human annotator an
+   image ... to provide five captions in the corresponding blank boxes"; then two researchers revise.
+ 2 UIT-OpenViIC arXiv:2305.04166: 51 students in groups of five, one subset per group, "did not let the students in a
+   group know each other". UIT-ViIC arXiv:2002.00175 §3.2: "five writers". Not stated: whether each image gets one
+   caption per writer.
+ 3 Chen et al. 1504.00325 §4.2: H_p = pk/(pk+(1-p)^k), H_r = p; "assuming independence between subjects conditioned
+   on o"; human precision falls from 4 refs to 1 at fixed recall.
+ 4 Resnick v3 App. G: the empirical power curve reaches only sizes up to n-1; synthetic extrapolation "works poorly in
+   practice". Gemini A4 says "E5 NOVELTY INTACT"; I keep the concept at MEDIUM because "one rater at a time" = E5's h=1.
+ 5 Re-run: nice -n 19 env OMP_NUM_THREADS=1 NCS_DATA=/mnt/d/vsps_image_captioning/data python3
+   SP/r11_litmaps/L2/scripts/adjacency_check.py OUT.json [keys]. KTVIC test must give 0.7102, matching Gemini's 71.02%.
+   Check every row of the D3 table.
+ 6 Flickr30k Entities slot lengths 19.4/15.1/12.7/10.8/8.9 words; 59.7% of images non-increasing. Is the order of
+   Flickr30k's original token file length-sorted, or did Flickr30k Entities sort it?
+ 7 Map: Gemini summary.txt B1xB2 0 vs 1016.2, A1xB2 11 vs 935.0, B2xD 1 vs 329.9. In the merged map, 499 of 552 B2
+   works are S2 citers of ImageNet ReaL.
+ 8 RePOPE per-question error and ambiguity rates (not extracted here). AMBER manual-annotation protocol and its
+   coverage metric. SC-Captioner's quote on CAPTURE's "incomplete precision evaluation".
+ 9 Trushkowsky et al. ICDE 2013 doi and the arXiv 1202.2335 version. Buckley & Voorhees pages 25-32. Jain 2016 doi.
+10 Bridging-work ids in section 1 come from S2/OpenAlex records and were not re-checked.
+
+6. WHAT WOULD CHANGE MY CONCLUSIONS (kill rules)
+ D3: the KTVIC excess disappears under synonym-merged classes or the COCO-80 VI matcher (a matcher artifact). Or the KTVIC
+     authors report several writers per image: then reframe it as an ordering effect and drop "single-writer".
+ D1: unmatched-count ordering flips < 5% of pairs on both KTVIC and COCO. Then the gold card is one sentence, not a result.
+ D2: on COCO or UIT-ViIC, the MAE ratio is > 0.8 or Spearman does not improve. Then drop P* everywhere and keep only Chao
+     lower bounds.
+ D4: < 10% of rejecting objects are named by held-out refs or the panel, or there is no dM correlation. Then drop D4.
+ Scoop upgrades:
+  - a paper that fits system precision against the number of references, or applies Chao/coverage to caption
+    references: C2/E2 go to HIGH;
+  - a rater-equivalence paper with coverage-based extrapolation for set-valued outputs: E5 goes to HIGH.

@@ -1,0 +1,184 @@
+R11 / L4 - GOODHART & OVER-OPTIMISATION x CAPTION METRICS, CAPTION RL, HALLUCINATION, PREFERENCE OPT. (2026-10-14)
+Folder SP/r11_litmaps/L4/: this file; tools/{regr_goodhart,gate_contrast,metric_kappa}.py -> *.json (aggregates only, no
+OpenViIC text; 2.5 s / 14 s / 19 s, <= 94 MB, nice 19, 1 thread). Bridge counts: FINAL merge (7,725 works). No OpenAlex/S2.
+
+0. BOTTOM LINE
+- The C1 gap is real for MEASUREMENT, not for awareness: caption-RL papers report metric gaming (word repetition, "degeneration")
+  but never cite Gao/Taori/Manheim. None found scores it against a second independent human gold on the same images.
+- Scoop risk for C3: LOW for the instrument, MEDIUM for the framing (2026 RL papers now test proxy gains on held-out graders).
+- CPU checks reframe C3: KTVIC-ref selection decoupling is REGRESSIONAL (kappa flat in n, ~ selection-free kappa_lin 0.30); ~45% of the
+  held-out-KTVIC gain is per-image count reallocation, so count-controlled kappa is 0.38-0.43 (> D15's 0.35); the ratio flips by seed.
+- Directions: D1 regressional-vs-extremal curve per selector metric (on E6 P1, 2 GPU-h); D2 two-gold WiSE-FT path (0 extra GPU); D3 linear test.
+
+1. THE GAP AS THE MAP SHOWS IT (observed / expected bridges)
+  A1 halluc. metrics x C1 26/592.9 | A2 halluc. decoding x C1 13/263.1 | B1 caption metrics x C1 5/235.7 | C1 x C2 caption RL 2/133.2
+  A3 x C1 1/24.3 | B3 x C1 2/44.1 | B2 x C1 27/113.8 | C1 x D pref. opt. 91/212.0 | C1 x F F-measure 0/76.3 | C2 x D 2/86.0.
+  Contrast: B1 x C2 623/95.6. Caption RL is metric-driven, but none of it cites the Goodhart seeds.
+- B1xC1, C1xC2, A3xC1, B3xC1: every bridge is a generic citation (COCO 2014, ResNet, ImageNet 2009, PASCAL VOC, DPM, "Unbiased look
+  at dataset bias"). There are ZERO substantive bridges.
+- A1xC1, A2xC1: LVLM preference papers cite Gao 2022 as motivation (RLAIF-V 2405.17220, HIO 2405.15356, RoVRM 2408.12109,
+  APASI 2509.11287, oDPO NAACL 2025 long.349, LPOI 2505.21061). They score one fixed benchmark (CHAIR/POPE/AMBER); none draws a
+  gold-vs-proxy curve. Two do test against an independent check:
+  - 2610.05425: RL gain on a training checker vs an independent checker (§2 #23);
+  - 2610.12707: two reward heads tie on the benchmark yet differ by 6.4 in hallucination judging; retraining cuts CHAIR by 5.1 while
+    lowering every reward-benchmark score.
+- C1xD: mostly text-LLM DPO over-optimisation and length-bias papers (2406.02900, 2505.18126, 2502.00814, 2510.05526). The multimodal
+  ones (RLAIF-V, SPA-VL 2406.12030, 2407.02477) use fixed benchmarks. B2xC1: ImageNet relabel/ER citers; classification only.
+- Caveat: the gap is partly vocabulary. The C1 seeds are ImageNet-shift and LLM-RM papers. Caption papers describe the same
+  phenomena as "degeneration", "repeat the same word" or a "fidelity vs adequacy" trade-off, without those citations (§2 #16-20).
+
+2. CLOSEST PRIOR WORK (every ID read on its arXiv abs page 2026-10-14; [vU] = venue not shown there, unchecked)
+ Over-optimisation / Goodhart
+  1 2210.10760 Gao, Schulman, Hilton (ICML 2023, PMLR v202): synthetic gold-vs-proxy RM curves; BoN and RL follow different forms.
+  2 1803.04585 Manheim & Garrabrant (2018): "(at least) four" Goodhart mechanisms (regressional, extremal, causal, adversarial).
+  3 2310.09144 Karwowski+ (2023) [vU]: a quantitative Goodharting score (proxy up, true down past a critical point); early stopping.
+  4 2406.02900 Rafailov+ (NeurIPS 2024): DPO-family methods "still commonly deteriorate from over-optimization".
+  5 2404.01054 Jinnai+ (NAACL 2025): BoN reward hacking; an MBR term as a proximity regulariser (MBR-BoN).
+  6 2411.03524 Kovacs, Deutsch, Freitag (WMT 2024): MBR/QE with metric X overestimates quality under X and other neural metrics,
+    vs human ratings; metric ensembles help. Closest analogue of UPE-MBR (+0.61 on KTVIC vs +0.10 on the panel).
+  7 2310.03716 Singhal+ (COLM 2024): length drives most RLHF reward gains; a length-only reward reproduces most gains.
+ Two test sets / effective robustness (C3 population regime)
+  8 1902.10811 Recht+ (2019) [vU]: new ImageNet test set; 11-14% drop, "not caused by adaptivity".
+  9 2007.00644 Taori+ (2020) [vU]: robustness interventions rarely beat the ID trend; larger, more diverse data is the exception.
+ 10 2107.04649 Miller+ (2021) [vU]: "accuracy on the line" (OOD accuracy tracks ID accuracy) across models and shifts, with exceptions.
+ 11 2004.14444 Miller, Krauth, Recht, Schmidt (2020) [vU]: four new SQuAD test sets; the NLP two-test-set template.
+ 12 2106.15831 Andreassen+ (2021) [vU]: effective robustness appears mid fine-tuning and "vanishes at convergence" (our "lock").
+ 13 2109.01903 Wortsman+ (CVPR 2022): fine-tuning cuts robustness; WiSE-FT weight interpolation restores it at no cost.
+ 14 2209.00613 Teney+ (2022) [vU]: ID and OOD can be inversely correlated; ID-only selection can miss the OOD-best models.
+ 15 2004.06063 Freitag, Grangier, Caswell (EMNLP 2020): paraphrased second references (less "translationese") change metric-human
+    correlation. This is the MT analogue of a second gold on the same inputs.
+ Caption metrics / caption RL / LVLM reward hacking
+ 16 1612.00370 Liu+ (ICCV 2017): human raters strongly prefer SPIDEr-optimised captions over MLE- or COCO-metric-optimised ones.
+ 17 2109.13701 dos Santos, Colombini, Avila (W-NUT 2021): SCST on CIDEr-D "repeat several times the same word" to match ref length.
+ 18 2205.13115 Cho+ (Findings NAACL 2022): the naive CLIP reward "degeneration problem"; fixed by grammar fine-tuning; human eval.
+ 19 2307.10350 Nguyen+ (NeurIPS 2023 D&B): NoCaps CIDEr "is not a reliable indicator" of caption utility for training.
+ 20 2312.03631 Ben-Kish+ (MOCHa, DOI 10.18653/v1/2024.findings-acl.657): multi-objective RL reward targets fidelity vs adequacy.
+ 21 2309.14525 Sun+ (LLaVA-RLHF, 2023, preprint): RLHF "reward hacking" in LMMs; RM augmented with captions; MMHal-Bench.
+ 22 2308.06394 Gunjal, Yin, Bas (AAAI 2024): BoN rejection sampling with a hallucination RM, human-judged (-55% hallucination).
+ 23 2610.05425 Vosoughi, Kasturi, Xu, Wismueller (4 Oct 2026; submitted to npj Digit. Med.). RL trains a chest-X-ray checklist;
+    gains are measured by a rule check and by an independent checker not used in training. The training format raised the training
+    checker's gain and lowered the independent one's: 6.2% [2.0, 10.5] prespecified, 7.7% post hoc. Closest in spirit to kappa;
+    no count control.
+ 24 2605.12474 Mahmoud+ (May 2026) and 2608.11669 Yang+ (Aug 2026): rubric RL; training-verifier gains do not transfer to held-out
+    judges; the gold judge peaks then falls (-3 on HealthBench-Hard, -22 on ResearchQA). Text only.
+ 25 2607.09492 Yao+ (Jul 2026): multimodal RL reward-hacking rate 48.1% with outcome-only rewards; "RLOO remains vulnerable"
+    (35_e was an RLOO variant).
+ Length bias of multimodal RMs: no abstract-level measurement found. 2402.04788 (MLLM-as-a-Judge, ICML 2024) reports judge "biases";
+ its longer-answer numbers (+0.6 / +0.75) are body text [U]. 2610.12707 (body) and VL-RewardBench 2411.17451 (pair design) [U].
+ Effective-robustness plots for caption metrics: none found (2 searches).
+SCOOP RISK FOR R10 C3
+- Two-gold map (rho_A typicality vs rho_I independent panel): LOW for the instrument (two human panels on the same images, count-matched
+  residuals; not found). MEDIUM for the idea: reviewers will read it as "accuracy on the line" for captions (cite #10, #12, #15).
+- G = 1 - d rho_I/d rho_A and kappa: LOW-MEDIUM. The named ratio was not found; relatives are #1, #3 and #23-25. Internal risk is
+  HIGH (D3).
+- "Trained systems lock, reference-reading selection decouples": LOW-MEDIUM. Lock = #12; decoupling = #6, #14, #24; the pairing in
+  captioning was not found. Our CPU check says the decoupling is regressional and partly per-image count reallocation, not a collapse.
+- UPE-MBR KTVIC-only gain: LOW (#6 is MT with human ratings and no count control), but cite #6 and #5.
+- 35_e: LOW for the two-gold measurement; HIGH that "CIDEr RL games CIDEr" is already known (#16-18, #25). Frame it as a measured
+  instance, not a finding.
+
+3. NEW DIRECTIONS
+ CPU evidence (dev300 pool = p1dev_s42, 6 samples/image at T=0.5, n=296; selector = Dice vs KTVIC refs 0-1; per-image Dice):
+  E-a regr_goodhart.json. kappa(n) = dT/dH with H = held-out refs 3-4 and T = 2 panel captions.
+      - Raw, n = 2/3/4/6: 0.29 / 0.27 / 0.25 / 0.23. Selection-free kappa_lin = cov_w(S,T)/cov_w(S,H) = 0.30 [0.05, 0.56].
+      - kappa6 - kappa2 = -0.06 [-0.22, +0.09]. For H=refs 2-4, T=full panel, kappa(n) sits 0.07-0.09 below kappa_lin
+        (CI excludes 0 only at n = 2-3).
+      - Same-count control: dH 5.85 -> 3.31, dT 1.35 -> 1.43, kappa 0.38-0.43 [0.11, 0.80]. Corpus count moves only +0.017.
+  E-b gate_contrast.json.
+      - UPE vs COUNT (test) kappa by seed: 0.07 [-1.03, 0.60] / 0.75 [-11.4, 9.1] / 0.40 [-4.1, 4.6].
+      - 35_e vs P1 (dev): kappa 0.65 [-3.94, 5.15] although dA and dI are both null.
+      - Linear contrast L = dI - 0.35 dA (x100): UPE 3-seed -0.08 [-0.41, +0.22]; 35_e +0.36 [-0.86, +1.56]. L gives a stable
+        "not shown"; the ratio "passes" 2/3 UPE seeds.
+  E-c metric_kappa.json (syllable-level CIDEr-D approximation), 2-ref targets.
+      - CIDEr-selected best-of-6: object-level kappa 0.06 [-0.37, 0.47], vs 0.23 for Dice selection.
+      - CIDEr-level: +19.7 CIDEr on held-out KTVIC refs, +3.7 on the panel; kappa 0.19 [0.03, 0.40]. E6's "+44.7 vs +0.07"
+        looks in-sample (§5 #5).
+  E-d map2d.json.
+      - In the frontier count range (M <= 3.4; 32 off-style systems): rho_I = 5.39 + 0.450 rho_A, r 0.90. System bootstrap:
+        slope [0.37, 0.52], intercept [1.2, 9.4].
+      - FT-36 mean rho_I -0.41, i.e. ~5.8 below the line. This is extrapolated, since every off-style rho_A <= -31.
+      - VCD-short vs zero-shot-short: d rho_A -6.6, d rho_I -6.5, so it moves along the line.
+ Candidate verdicts.
+  (i) ER fit over all 73: weak as stated.
+      - The map is two clusters, and FT between-system SD < its SE (SNR 0.65-0.70, e6_mt15 md §2.2).
+      - The largest residuals (-15/-16) are M~6.5 detailed systems outside the frontier anchors.
+      - Keep it as one figure; the real test is D2.
+  (ii) BoN curve: keep, but E-a predicts no Gao-style peak for object selection (D1).
+  (iii) kappa gate: keep the aim, replace the ratio (D3).
+ D1. Regressional vs extremal Goodhart, per selector metric.
+  Claim: KTVIC-ref best-of-n transfers to the panel at a rate set by the within-image covariance of the two golds (kappa_lin ~0.3,
+   object selection), not by optimisation strength. n-gram selectors add an extremal part: their top samples are KTVIC-phrased
+   but not panel-confirmed (E-c, wide CI).
+  New vs §2: #1 uses a synthetic gold and #6 uses human ratings in MT. Not found: a selection-free predictor separating the two
+   Goodhart types, with count control, on a second human caption panel.
+  Prediction (contrary to E6 P1's prereg "beta_I > beta_A_held"):
+   - object-Dice selector at T=0.5: |kappa(n) - kappa_lin| <= 0.10 for all n <= 16, and the Gao-form beta CIs include 0 on both golds;
+   - CIDEr-D selector: object-level kappa(16) <= kappa_lin - 0.15.
+  Test: E6 P1 pools (16 samples at T=0.5 and 1.0, dev300). Generalise regr_goodhart.py and metric_kappa.py to K=16 and to the
+   selectors {object Dice, CIDEr-D, BLEU-4, label-free self-MBR}; same-count control; B=2000.
+  Cost 2.0 GPU-h (already planned) + 0.1 CPU-h. Pillar C3 (+C4: which metric is safe as a reward). Novelty 3, risk 2.
+ D2. Two-gold WiSE-FT path: an effective-robustness test of the lock.
+  Claim: KTVIC fine-tuning has negative effective robustness (E-d). The final stretch of fine-tuning buys typicality, not
+   independent agreement (#12, #13 for captions).
+  New vs §2: shown for classifiers. Not found for captioners, or with two human caption panels.
+  Prediction (short mode). Chord = zero-shot (-35.3, -9.7) -> fuse2 (0.35, 0.75), slope 0.29.
+   - ER_chord(alpha=0.5) = rho_I minus the chord at its rho_A, >= +2.
+   - rho_I(0.75) >= rho_I(1.0) - 1 while rho_A(0.75) <= rho_A(1.0) - 3.
+  Test: score the 59_wise_ft outputs (fuse2_s42_wise05 and _wise075, KTVIC test short + detailed; prereg
+   2026-10-13_vgr_wise_ft.md) with E6 map2d.py and the same frontiers. Detailed mode is sensitivity only (zero-shot detailed is
+   outside the frontier anchors).
+  Cost 0 extra GPU-h (decodes are already queued in D15's P3 slot), 0.05 CPU-h. Pillar C3 (+C5). Novelty 3, risk 3.
+ D3. A pre-registered transfer TEST (not a ratio) for reference-trained caption methods.
+  Claim: kappa = dI/dA is ill-conditioned when dA is small.
+   - It flips with seed (E-b).
+   - It flips with the count control: 35_e 0.23 with the M4 rollout-vote control vs 1.12 with rho; BoN 0.23 raw vs 0.43 same-count.
+   - It passes nulls.
+   Instead use L = d rho_I - kappa0 * d rho_A, with kappa0 = the policy's own pool kappa_lin (E-a; ~0.30 on dev300, close to D15's
+   0.35). L asks the right question: does the method transfer better than simply reading the references would?
+  New vs §2: held-out-grader checks exist (#23-25), but none with a calibrated null or a count-controlled linear test.
+  Prediction: M3 (CM-DPO; its pairs read KTVIC refs) gives L <= 0 (CI includes 0) with kappa0 from its step-0 pool, and the D15
+   ratio disagrees with L on >= 1 of 3 seeds.
+  Test: now on existing files (gate_contrast.json; repeat on rho residuals with D15(i) tie-avg control), then on M3.
+   Rule: pass iff the L 95% CI > 0 AND the d rho_A CI > 0. Report G with a Fieller CI. D15 belongs to the judge; this is a proposal.
+  Cost 0.1 CPU-h now; M3 is 4.2 GPU-h, already approved. Pillar C3 + C5. Novelty 3, risk 2.
+
+4. LITMAPS SEEDS TO ADD (to populate B1xC1 and C1xC2)
+ 1612.00370 SPIDEr | 2109.13701 CIDEr-R | 2205.13115 CLIP reward | 2411.03524 MBR metric bias | 2004.06063 paraphrased refs |
+ 2107.04649 accuracy on the line | 2106.15831 ER through fine-tuning | 2310.03716 length in RLHF | 2610.05425 independent checker |
+ 2308.06394 BoN + human-judged hallucination.
+
+5. CLAIMS FOR GEMINI TO VERIFY
+ 1 Every arXiv ID in §1-§2 resolves to the title given (read 2026-10-14). Venues marked [vU], and the body-text claims marked [U],
+   are unchecked.
+ 2 e6_mt15_verification.md §3.2 conflicts with its own JSON.
+   - A01 n=2/3/6 M is 1.964/2.092/2.295 in the .md but 1.772/1.774/1.787 in the JSON (dM +0.017 [-0.042, +0.077]).
+   - The "+0.525 count inflation explains 43.1%" sentence is wrong: the 43% is the same-count-control drop, i.e. per-image count
+     REALLOCATION.
+   - A_all n=6 A_34/I_2 dF1 is +14.07/+1.65 in the .md vs +11.1/+2.85 in the JSON.
+   - §3.1 names 6 FT seeds as the pool; the code reads p1dev_s42-dev300-short-T0.5.jsonl.
+ 3 The .md rows CIDEr_01, CIDEr_all, BLEU4_all, ROUGE_L_all, METEOR_all and SPICE_proxy have no provenance (0 hits in
+   e6_mt15_verification.json and verify_e6_mt15.py). Do not cite them.
+ 4 Re-run the three L4 tools (command in each docstring) and confirm the E-a, E-b, E-c and E-d numbers.
+ 5 E6's CIDEr "+44.7 KTVIC / +0.07 panel" (R8 T1/T2; raw files missing): check whether +44.7 was scored on the selection refs.
+   If so, the held-out CIDEr kappa is ~0.15-0.19 (E-c), not ~0.002, and E6 H3's CIDEr bound (<= 0.10) fails.
+ 6 35_e (log.jsonl, gate.json):
+   - sampled-rollout reward, mean of steps 1-40 vs 161-200: 90.7 -> 126.7;
+   - in-run dev CIDEr: 142.37 -> 141.60;
+   - exact copy per block: 1.0% -> 2.25% (step 0: 0.67%).
+   The reward rise includes policy sharpening, so it is not a clean proxy curve.
+ 7 35_e kappa depends on the count control: 0.47/2.07 = 0.23 (M4 cm) vs 2.42/2.17 = 1.12 (rho) (n11 battery .md).
+ 8 Quotes: 2610.05425 "6.2% (95% interval 2.0% to 10.5%)" (prespecified) and 7.7% (post hoc), with report-derived labels;
+   2607.09492 "RLOO remains vulnerable" and RHR 48.1%; 2608.11669 -3 / -22.
+ 9 D15 wording: on dev, kappa = d rho_I/d rho_A >= 0.35; on test, d rho_I > 0 with the 95% CI lower bound > 0.
+
+6. WHAT WOULD CHANGE MY CONCLUSION
+ - Scoop: a caption/LVLM paper that scores metric-optimised or RL-trained captioners against a second independent human reference
+   panel on the same images, with length or count control. C3 novelty would then fall to "replication" (re-search monthly:
+   "independent annotators" + reward hacking + caption).
+ - D1 kill: object-Dice kappa(16) < kappa_lin - 0.15 with CI excluding 0 means extremal Goodhart even for object selection. Then
+   report kappa per n and drop the single kappa. Separately, drop the CIDEr half if CIDEr object-level kappa(16) >= 0.25.
+ - D2 kill: both WiSE-FT points within +-2 of the chord (CI includes 0) means the lock is linear in weight space; keep E-d as
+   descriptive only.
+ - D3 kill: if the ratio and L agree on every verdict across 3 seeds x 2 count controls, keep D15's ratio.
+ - Global: if kappa_lin is driven by a few classes (person hypernyms, V3), the regressional reading is a matcher artefact. Recheck
+   it with matcher v3.
