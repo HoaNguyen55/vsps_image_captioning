@@ -124,7 +124,7 @@ TRIGGERED	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	over
 37.52	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.coco80.gold_variants.inst_only.groups.all_10.slope_F1_mixed_per_logM	bed1dc259aef	keyed
 -16.42	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.vi_objects_in.gold_variants.refs1_firstk.groups.all_10.slope_F1_mixed_per_logM	bed1dc259aef	keyed
 -6.28	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.vi_objects_in.gold_variants.refs5_randk.groups.all_10.slope_F1_mixed_per_logM	bed1dc259aef	keyed
-+20.70 [16.35,25.00] / +32.72 [28.01,37.27] (UIT-ViIC paired diffs)	A	.session_backup/2026-10-14/review_gemini_r10/RV4/work/rv4_n1.json	TODO key path	b477ce34be1c	rc-only
++20.70 [16.35,25.00] / +32.72 [28.01,37.27] (UIT-ViIC paired diffs)	A	.session_backup/2026-10-15/paperA_keys/uitviic_paired_diffs.json	coco80.all_10.diff_refsall_minus_ref1first ; coco80.all_10.diff_inst_minus_refsall	586feae7d145	keyed
 16483	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.povid.pairs_with_objects	5d572461d174	keyed
 0.521	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.povid.count_matched_share	5d572461d174	keyed
 0.444	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.povid.chosen_fewer_among_unmatched	5d572461d174	keyed
@@ -155,8 +155,8 @@ TRIGGERED	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	over
 -0.017	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.rlaifv.mean_dk	5d572461d174	keyed
 401 (disclosure; B owns)	A	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_32_leakage_disclosure.splits.ktvic_test_558.in_openviic_train	a416b13f1e0f	keyed
 71.86	A	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_32_leakage_disclosure.splits.ktvic_test_558.in_openviic_train_pct	a416b13f1e0f	keyed
-UIT-ViIC b(k) one dip -0.003 (G2)	A	-	TODO trace to JSON	-	pending
-133 UIT-ViIC train in Karpathy test (59 probe, 8 POPE)	A	-	R11_00 §6; TODO trace	-	pending
+UIT-ViIC b(k) one dip -0.003 (vi_objects_in, first-k, 4->5 refs; 0.5385->0.5355)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar_v2.json	uitviic_test.lexicons.vi_objects_in.gold_variants.{refs4_firstk,refs5_firstk}.groups.transfer_6.b	03b99f565710	keyed
+133 UIT-ViIC train in Karpathy test (59 probe, 4 POPE; 21 POPE overall) [CORRECTED: was 8 POPE]	A	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_21_m3_checks.uitviic_overlap.{overlap_with_coco_karpathy_test_5000,overlap_with_coco_probe_manifest_2500,overlap_with_pope500_in_karpathy_test,overlap_with_pope500_all_val2014} (recomputed: .session_backup/2026-10-15/paperA_keys/uitviic_karpathy_overlap.json, 7e6e8a1d7239)	a416b13f1e0f	keyed
 N9 count-matched leaderboard (9 ckpts)	A	-	-	-	pending
 E1 K2 seed placebo	A	-	-	-	pending
 XM3600 58_z slopes/adjacency (prereg 4ccbee3 valid)	A	-	-	-	pending
@@ -166,7 +166,7 @@ B3 large-k (nocaps, PASCAL-50S)	A	-	-	-	pending
 148.66	B	data/results/p1assist_s42-short.json	results.0.scores_scaled_x100.CIDEr	ea38b60e7dc5	keyed
 148.06	B	data/results/p1assist_s43-short.json	results.0.scores_scaled_x100.CIDEr	ce8576a440d5	keyed
 147.96	B	data/results/p1assist_s44-short.json	results.0.scores_scaled_x100.CIDEr	723d97653f89	keyed
-148.23 (SD 0.38) mean of 3 seeds	B	data/results/p1assist_s4{2,3,4}-short.json	mean of results[0].scores_scaled_x100.CIDEr	-	rc-only
+148.23 (SD 0.38) mean of 3 seeds	B	.session_backup/2026-10-15/paperA_keys/cider_3seed_mean.json	mean ; sd_sample_ddof1	f6f68d02f4f9	keyed
 0.7102	B	.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json	k5_exchangeability_audit.ktvic_test_objects_in.adjacent_share	abc04948644a	keyed
 0.6673	B	.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json	k5_exchangeability_audit.ktvic_train_objects_in.adjacent_share	abc04948644a	keyed
 0.631	B	.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json	k5_exchangeability_audit.ktvic_dev300_objects_in.adjacent_share	abc04948644a	keyed
@@ -197,7 +197,7 @@ B3 large-k (nocaps, PASCAL-50S)	A	-	-	-	pending
 -36.17	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law.ktvic_test_k1_to_k5_curves.p1assist_s42-short.first_k.k=1.d_abs	312c9b453197	keyed
 -16.73	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law.ktvic_test_k1_to_k5_curves.p1assist_s42-short.first_k.k=1.d_rel_pct	312c9b453197	keyed
 1.29	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law.uitviic_test_append_period_effect.ktvic_transfer_p1_s43-short.d_abs_add_minus_strip	312c9b453197	keyed
-+7.20 pp vi recall gap	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d3a_xm3600_classifier_fusion_audit (TODO key)	312c9b453197	pending
++7.20 pp vi recall gap	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d3a_xm3600_classifier_fusion_audit.verdict_summary.vi_recall_gap_pp	312c9b453197	keyed
 30.02	B	.session_backup/2026-10-14/r11_verify/c5_n11_uitviic_role_child_audit.json	uitviic_test.v2.transfer_p1_s43-short.CHAIR_i	c5e020d9c3a6	keyed
 21.39	B	.session_backup/2026-10-14/r11_verify/c5_n11_uitviic_role_child_audit.json	uitviic_test.v3_role_child.transfer_p1_s43-short.CHAIR_i	c5e020d9c3a6	keyed
 27.12	B	.session_backup/2026-10-14/r11_verify/c5_n11_uitviic_role_child_audit.json	uitviic_test.v2.zeroshot-short.CHAIR_i	c5e020d9c3a6	keyed
@@ -209,16 +209,16 @@ B3 large-k (nocaps, PASCAL-50S)	A	-	-	-	pending
 -0.5383	B	.session_backup/2026-10-14/r11_verify/c7_54_p1_4ep_s42_evaluation.json	prereg_ladder_check_v4.joint_frontier_invariance_5_landed_runs.mean_residual_P_pp	d3b86f48ddd3	keyed
 0.61 (UPE vs COUNT)	B	.session_backup/2026-10-13/r10_cpu/mt2_upe_car_shapley.json	ktvic_test.ktvic_5ref_gold_v2_raw.p1assist_3seed_image_clustered.paired_comparisons.upe_vs_cnt.F1.d	d9ec60488d2b	keyed
 0.10 (UPE vs COUNT, panel)	B	.session_backup/2026-10-13/r10_cpu/mt2_upe_car_shapley.json	ktvic_test.openviic_panel_gold_v2_raw.p1assist_3seed_image_clustered.paired_comparisons.upe_vs_cnt.F1.d	d9ec60488d2b	keyed
--0.02 [-0.32,0.27] (UPE vs (v,g) tie-avg)	B	.session_backup/2026-10-14/review_gemini_r10/RV1/rc2_out.txt	line "pooled concat"	2e8e57c84df3	rc-only
-0.347	B	.session_backup/2026-10-14/r11_verify/c4_n6_linear_gate_residuals.json	comparisons.upe_mbr_vs_cnt_3seed_image_clustered_test.d15i_vote_cm.dA_x100	422e8feca4de	keyed
+-0.02 [-0.32,0.27] (UPE vs (v,g) tie-avg; corpus F1 telescoping A term, CONCAT bootstrap; image-clustered CI [-0.36,0.32])	B	.session_backup/2026-10-15/paperA_keys/upe_vg_two_estimators.json	E1_corpus_F1_UPE_minus_vg_tieavg_at_own_ki.pooled_concat_B2000_seed0_pt_lo_hi_p (clustered: .pooled_image_clustered_B2000_seed0_pt_lo_hi)	6992b4bd3ed8	keyed
+0.347 (per-image Dice x100: UPE residual minus COUNT residual vs vote control; NOT UPE vs (v,g); see .session_backup/2026-10-15/paperA_keys/upe_vg_two_estimators.json E2 + bridge keys)	B	.session_backup/2026-10-14/r11_verify/c4_n6_linear_gate_residuals.json	comparisons.upe_mbr_vs_cnt_3seed_image_clustered_test.d15i_vote_cm.dA_x100	422e8feca4de	keyed
 0.207	B	.session_backup/2026-10-14/r11_verify/c4_n6_linear_gate_residuals.json	comparisons.upe_mbr_vs_cnt_3seed_image_clustered_test.d15i_vote_cm.dI_x100	422e8feca4de	keyed
 0.086	B	.session_backup/2026-10-14/r11_verify/c4_n6_linear_gate_residuals.json	comparisons.upe_mbr_vs_cnt_3seed_image_clustered_test.d15i_vote_cm.L_dI_minus_035dA_x100	422e8feca4de	keyed
 0.254 (kappa)	B	.session_backup/2026-10-14/r11_verify/c4_n6_linear_gate_residuals.json	comparisons.35e_rl_cn_v3_vs_p1dev_dev300_g0pool.d15i_vote_cm.kappa	422e8feca4de	keyed
 -0.177 (L)	B	.session_backup/2026-10-14/r11_verify/c4_n6_linear_gate_residuals.json	comparisons.35e_rl_cn_v3_vs_p1dev_dev300_g0pool.d15i_vote_cm.L_dI_minus_035dA_x100	422e8feca4de	keyed
 0.531 (panel-confirmed FP share)	B	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B3_L3_two_gold_transfer.raw_summary.test_q3.panel_confirmed_share	3d79842d4f2c	keyed
-0.614 kNN within-cell AUROC; +1.16 / +0.76 dF1 (dev300)	B	.session_backup/2026-10-14/r12/H5/out/h5_cpu.json	TODO key	fd813e9a21c6	pending
-Chao2 0.8509 / 0.7338 (within-writer bound)	B	.session_backup/2026-10-13/r10_cpu/g2_g3_mt9_verification_v2.json	TODO key	055f4f9c4b59	pending
-+2.07 [-0.20,+4.27] (35_e M4 C2, not held)	B	.session_backup/2026-10-13/r10_cpu/n11_35e_posthoc_r10_battery_v2.json	TODO value key	bda4f46d505c	pending
+0.614 kNN within-cell AUROC; +1.16 / +0.76 dF1 (dev300)	B	.session_backup/2026-10-14/r12/H5/out/h5_cpu.json ; .session_backup/2026-10-14/r12/H5/out/h5_robust.json	signals.knn13_k10 (PRIMARY).within_vg_cell ; arms_vs_tieavg.knn13_k10 (PRIMARY).planf1_k.vs_tieavg ; [h5_robust] vs_POOL_VOTE	fd813e9a21c6 ; 177829b5b1bc	keyed
+Chao2 0.8509 / 0.7338 (within-writer bound)	B	.session_backup/2026-10-13/r10_cpu/g2_g3_mt9_verification_v2.json	g3_claims_1_and_9.claim9_nonadjacent_chao2.{chao2_completeness_standard,chao2_completeness_nonadj_q2_only}	055f4f9c4b59	keyed
++2.07 [-0.20,+4.27] (35_e M4 C2, not held)	B	.session_backup/2026-10-13/r10_cpu/n11_35e_posthoc_r10_battery_v2.json	1_M4_cm_endpoint.m4_primary_g0_ktvic.delta_cm_x100_b2000	bda4f46d505c	keyed
 Ladder 55/56/57/58_unf2	B	-	-	-	pending
 B1 3 seeds + B2	B	-	-	-	pending
 kNN P1 test	B	-	-	-	pending
