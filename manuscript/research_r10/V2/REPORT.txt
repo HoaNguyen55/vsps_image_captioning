@@ -1,0 +1,219 @@
+R10 / V2: ViPOPE+, a Vietnamese object-existence benchmark built from existing human labels  (2026-10-14)
+Folder: research_r10/V2/. Pilot code: pilot_v2.py, pilot_v2b.py. Outputs: pilot_v2.json, pilot_v2b.json (aggregates only).
+
+0. BOTTOM LINE
+- Idea: Vietnamese probes with human-label positives; negatives only where labels are exhaustive or verified (COCO, XM3600+OIV7);
+  KTVIC negatives aggregate-only, random mode, gated and panel-filtered; Vietnamese lexical negatives with an English control;
+  and a joint per-object "seen but not said" analysis at matched FPR and matched object count.
+- New: the multilingual POPEs we checked are translations (MHR, CLAIM; MHR's 13 languages exclude Vietnamese). None found has
+  language-native lexical negatives or audits how contaminated caption-derived negatives are.
+- Pilot lesson (UIT-ViIC, COCO truth): 0/5-mention popular/adversarial negatives are 33.7% present, still 18-19% after a second
+  panel; capture-recapture underestimates this 3-6x; a salience gate cuts it to <=0.4%.
+- Value: an evaluation pillar for PD-2 and a test of whether omissions are count-driven. Not a method win (optional S5 only).
+
+1. PROBLEM AND HYPOTHESES
+Translated POPE (data/results/pope_vi/) inherits three things:
+- English-centric negatives;
+- COCO label errors (RePOPE);
+- no link between what a model affirms and what it says.
+KTVIC has no instance labels, and its 5 references are incomplete (one annotator vs four: R 46.90, data/results/human_parity.json).
+So "not mentioned" is not "absent".
+H1 (label noise; pilot supports it): negatives from 0/5 caption mentions are contaminated in proportion to how often the class sits
+   unmentioned in the background. Popular and adversarial modes are unusable without exhaustive labels. Random mode plus a salience
+   gate is usable at <=0.5%.
+   Falsified if: UIT-ViIC popular 0/5 contamination < 5%. Observed: 33.7%.
+H2 (Vietnamese lexical negatives): for zero-shot Qwen2.5-VL-7B asked in Vietnamese, these items raise the FP rate by >= 3 points
+   over matched non-lexical negatives (same image, same co-occurrence decile):
+   - V1, shared head (lò vi sóng -> lò nướng, bình nước -> bình hoa, chậu cây -> chậu rửa, xe tải -> xe buýt);
+   - V2, diacritic minimal pairs (voi/vòi, lò/lọ, ghe/ghế, diều/điều);
+   - V3, classifier sense (cây vợt/cây dù -> cây cảnh; quả bóng -> quả cam/táo).
+   The rise must shrink by >= 50% when the same items are asked in English. That English contrast separates lexical confusion from
+   visual similarity, as in zebra/horse.
+   Falsified if: the difference-in-differences CI includes 0 for all 3 systems.
+H3 (gap): joint P(said | seen at 5% FPR, present) rises with object size (S < M < L).
+   At matched object count, the model's said-set agrees with human said-sets about as well as humans agree with each other. If so,
+   omissions are budget-driven, which is consistent with frontier invariance.
+   Falsified if model-vs-human agreement at matched count is lower than human-vs-human, CI excluding 0. That would mean selection
+   headroom exists, and it triggers Stage 5.
+H4 (culture, exploratory): absent culture-typical classes (xe máy, nón/mũ, trâu, chợ, xích lô) draw more FP on Vietnam-locale XM3600
+   images than on other locales, beyond the same contrast for control classes. Low power: 53 Vietnam-locale images carry OIV7 labels.
+
+2. CLOSEST PRIOR WORK
+V = verified in this session (arXiv page or search result); M = ID from memory, Gemini must verify.
+- POPE, Li et al., EMNLP 2023, arXiv 2305.10355 [M; the RUCAIBox repo is pinned in scripts/pope_vi.py].
+  English COCO yes/no probes with random/popular/adversarial negatives from instance labels.
+  New here: Vietnamese-native negatives, an audit of caption-derived negatives, and the joint gap. Novelty vs it: moderate.
+- RePOPE, Neuhaus & Hein 2025, arXiv 2504.15707 [V]. Re-annotates POPE and shows that label errors reorder models.
+  New here: no new annotation; contamination is estimated from existing panels and ground-truth proxies. Moderate.
+- AMBER, Wang et al. 2023, arXiv 2311.07397 [V]. Generative and discriminative tasks on the same images, with a coverage metric.
+  English. It is closest for (c).
+  New here: a per-object JOINT conditional P(said | seen) by class and size, at matched FPR and count, against human omission.
+  Moderate.
+- MME, Fu et al. 2023, arXiv 2306.13394 [M]. Its existence subtask is tiny and English/Chinese. Low overlap. High novelty vs it.
+- MHR, Qu et al. 2024, arXiv 2408.00550 [V]. POPE translated by GPT-3.5 into 12 languages (ru de zh ja fr es pt uk bg tr ar ko).
+  No Vietnamese; translated negatives. New here: Vietnamese, native lexical negatives. Moderate-high.
+- CLAIM, Ye et al., ACL 2025, arXiv 2506.11073 [V for the paper; language list UNVERIFIED]. Translated POPE and MME
+  hallucination subsets; a method paper. Moderate-high.
+- MHaluBench / UNIHD, Chen et al., ACL 2024, arXiv 2402.03190 [V]. A meta-benchmark for hallucination detectors, English.
+  It is not a multilingual POPE. Low overlap.
+- THRONE, Kaul et al., CVPR 2024, arXiv 2405.05256 [V]. Free-form (Type I) and yes/no (Type II) hallucination diverge.
+  It compares benchmarks, not per-object joint measures. Moderate.
+- PatchGate, Ko et al., arXiv 2608.21819 (Aug 2026) [V abstract only]. A "verbalization gap" between an intrinsic object set and
+  the objects mentioned, measured with AMBER coverage and CHAIR, in English.
+  This is the closest to (c). If its full text has per-object probe-vs-caption analysis by size, (c) novelty drops to low.
+- HOPE, Xie et al. 2025, arXiv 2508.06530 [V]. CLIP-chosen content-aware distractors, English.
+  Ours are lexical and orthographic distractors with a cross-lingual control. Moderate-high.
+- NOPE, Lovenia et al., ALVR 2023/24, arXiv 2310.05338 [V]. LLM-generated negative-pronoun VQA. Low overlap.
+- HallE-Control, Zhai et al., arXiv 2310.01779 [V]. CCEval: VQA benchmarks understate caption hallucination. Moderate for (c).
+- DSC2025 ViHallu, Nguyen et al., arXiv 2601.04711 [V]. Vietnamese hallucination detection, TEXT ONLY. It is not visual.
+- Data sources [M]: XM3600 (Thapliyal et al., EMNLP 2022, arXiv 2205.12522); Open Images V7 verified image-level labels
+  (Kuznetsova et al., IJCV 2020, arXiv 1811.00982); UIT-ViIC (arXiv 2002.00175); KTVIC (arXiv 2401.08100).
+Overall novelty: MODERATE.
+- No single piece is unprecedented.
+- The combination is not in any source we found: Vietnamese, exhaustive or verified negatives, a ground-truth audit of
+  caption-derived negatives, lexical negatives with an English control, and a joint gap at matched count.
+- One web search found no Vietnamese visual object-hallucination benchmark. Make no "first" claim.
+
+3. EVIDENCE SO FAR (CPU; pilot_v2.py 66 s, pilot_v2b.py ~60 s; 38 MB RAM; nice 19, 1 thread)
+A. UIT-ViIC: 3,846 COCO images, 5 Vietnamese and 5 English refs each.
+   Truth: data/uitviic/instance_gold.json. Matchers: vi_objects v2 and en_classes (scripts/score_coco_probe.py).
+   - Positives named by >=1 of 5 vi refs: 99.1% present (>=2: 99.4%). Ref-union positives are sound.
+   - Negatives from 0/5 vi mentions, 3 per image per mode (n = 11,538 each). % truly present:
+       mode          0/5      0/5 + EN panel 0/5   Chapman estimate   salience gate   gate + panel
+       random        2.34     1.40                 0.23               0.20            0.06
+       popular      33.73    17.91                 5.42               0.39            0.13
+       adversarial  33.74    19.24                 5.47               0.19            0.10
+   - Capture-recapture underestimates 3-6x, because misses are correlated: background objects are missed by both panels.
+   - The gate is q_c = (1-p_c)^5 <= 0.02, with p_c the zero-truncated binomial MLE.
+     It keeps 8 of 80 classes: bear, bed, cat, dog, elephant, horse, kite, person. So it is clean but much less hard.
+   - q_c is NOT calibrated: predicted P(0/5 | present) is ~0, but the true value is 0.08-0.33 for the kept animals.
+     The gate works because unmentioned prevalence is low, so use it as a ranking rule, not as a probability.
+   - Human "said" rates (>=1 of 5 refs | present) show heavy human omission of background classes, so any model gap must be
+     referenced to a human baseline:
+     person 99.0, sports ball 56.4, tennis racket 41.8, baseball bat 31.3, glove 6.4, bottle 4.4, car 1.9, chair 1.7, bench 0.8,
+     handbag 0.0.
+   - Southern 'banh' (ball) is missing from the lexicon, but appears in only 76 of 19,256 captions, so its effect is minor.
+B. KTVIC test: 555 images with the OpenViIC panel (data/ktvic_openviic_refs.json, 5.39 captions per image), 87 lexicon classes.
+   Aggregates only; no caption text was written.
+   - Share of 0/5 negatives that the independent panel names: random 4.62%, popular 32.37%, adversarial 34.11%.
+   - (image, class) pairs named: refs 2,513, panel 3,981, both 1,929.
+   - Chapman residual after the panel filter: 1.97 / 5.54 / 5.90%. Given A's 3-6x underestimate, the plausible true residual is
+     about 6-35%.
+   - The gate keeps 11 classes, but the panel still names 4.56 / 9.25 / 8.77% of what passes, because person-attribute classes
+     (giày, quần, cô gái, học sinh) get through.
+   => KTVIC negatives are not usable at item level. KTVIC is used for positives and for the gap analysis; its negatives appear in
+      aggregate only, with bounds.
+C. Joint seen and said: POPE-vi probe replies x COCO-2500 captions, on the 32 overlapping images (83 present pairs).
+   P(said | probe yes, present):
+   - zero-shot: short 37.5, detailed 79.7;
+   - P1 s43: short 40.5, detailed 36.5;
+   - fuse2 s42: short 42.4, detailed 51.5.
+   Said-but-not-seen: 0-1 of 83. So correct caption mentions are a subset of probe-yes answers.
+   This is a joint estimate where R9 C7 used a ratio of marginals from different image sets, and it supports R9's "verbalization,
+   not sight" reading. n is tiny (CI about ±12 points). Stage 2 scales it up.
+D. Lexicon (data/coco_probe/coco80_vi.json):
+   - 22 shared first syllables: xe x6 classes, máy x5, bánh x5, ván x4, ghế x3, bàn x3, ly/cốc, bình, chậu, lò, bồn, tàu, gấu,
+     ngựa, đồng, quả/trái, cây, con, cái, chiếc, ô.
+   - Diacritic minimal pairs across classes: voi/vòi, lò/lọ, ghe/ghế, diều/điều, cừu/cứu, bóng/bông, ván/vằn, tủ/từ, bành/bánh.
+   - Items available on COCO-2500 plus UIT-ViIC (6,350 images, exhaustive COCO labels):
+     V1: 1,895 items on 1,498 images;
+     V2: 1,338 items (chair->boat alone 858; cap per pair);
+     V3: 13,714 items (subsample);
+     H (bench/couch -> chair, where the Vietnamese hypernym is ambiguous): 443, kept only as a separate diagnostic.
+E. XM3600 + OIV7 (data/xm3600/manifest.json): 2,119 images with a verified label on 68 mapped Vietnamese classes.
+   - Pairs: 4,453 verified present and 8,276 verified absent.
+   - Vietnam-locale images: 100, of which 53 have OIV7 labels.
+F. Existing POPE-vi yes-ratio: P1 42.7 vs zero-shot 36.0 (vi, random; data/results/pope_vi/scores.txt).
+   Raw "yes" is therefore biased across systems, so "seen" must be defined at a matched FPR.
+
+4. PILOT DESIGN FOR GEMINI
+Build (CPU, under 5 min): new script scripts/vipope_build.py, plus a --items flag for scripts/pope_vi.py.
+- Output: items.jsonl rows {set, image, class, prompt, label, mode, pair_of, size_bucket, ref_k}.
+- Prompt: pope_vi's "Trong ảnh có {term} không? Trả lời có hoặc không." with the first coco80_vi term
+  (or the colliding form for V2).
+- The --items flag asks arbitrary items and records first-token log P(có) and log P(không) (and yes/no for English) next to the
+  greedy answer. One forward pass per item.
+Sets:
+- COCO: COCO-2500 (data/coco_probe/instance_gold.json; sizes from instances_val2014 areas: S < 32², M, L > 96²,
+  by largest instance).
+  - Positives: all present classes.
+  - POPE-recipe random/popular/adversarial negatives from instance labels.
+  - V1/V2/V3 items, capped at 60 per pair, each with a matched control: same image, an absent class with no lexical overlap,
+    in the same co-occurrence decile as the pair's present class.
+  - Diacritic-stripped copies (with and without classifier) of all V2 items, their controls, and 500 random items.
+  - On the 32 POPE images, use RePOPE labels.
+- XM3600: every verified pair (labels flagged as machine-proposed but human-verified), with the VN-locale flag.
+- KTVIC test:
+  - positives = ref-union classes, with k-of-5 recorded;
+  - negatives = random mode only: 0/5 refs AND 0 panel mentions AND gated classes, excluding person-attribute classes;
+  - aggregate only, never released per item.
+Stages (GPU-h assume 0.35 s/item on a 3090; Gemini should VERIFY from the original pope_vi logs):
+- S1, H2: V1/V2/V3, controls and stripped variants, in vi and en.
+  About 6.3k items per system per language. 3 systems (zero-shot, P1 s43, fuse2 s42) x vi, plus en for zero-shot and P1:
+  about 3.1 GPU-h.
+- S2, H3: COCO-2500 positives (~7.2k) plus 1 random negative per image (2.5k, used to set each system's 5%-FPR threshold).
+  Captions already exist (data/results/coco_transfer, coco5000). 3 systems: about 2.8 GPU-h.
+- S3, H4 and the verified split: XM3600, 12.7k items per system, 2 systems: about 2.5 GPU-h.
+  Add about 1 GPU-h for captions if job 39_xm3600_eval has not produced them.
+- S4, KTVIC aggregate: about 4.2k items per system, 2 systems: about 0.8 GPU-h.
+- S5, optional method: probe-ranked object selection on KTVIC dev300 (300 x 87 classes).
+  About 2.5 GPU-h, or about 0.5 GPU-h if the image KV-prefix is reused.
+- Core total S1-S4: about 9-10 GPU-h. CPU total: under 0.5 h.
+Scoring and endpoints:
+- PRIMARY-H2: paired, image-clustered bootstrap (B = 2000) of FP(V) - FP(matched control), and the DiD (vi - en),
+  per system and per V type.
+- PRIMARY-H3:
+  - joint P(said | seen@5% FPR, present) per size bucket;
+  - per-image said-set agreement with each human ref, at matched object count. Compare it with leave-one-out human-vs-human
+    agreement. Matched count is the PD-2 rule: compare to top-k_i at the model's own k_i.
+- PD-2 count control (S5): probe-rank top-k_i vs raw-sample-vote-share top-k_i at the SAME k_i; paired ΔF1 on dev300 only.
+  This counts as a model-generated signal inside a method, and is flagged as such.
+- KTVIC FP: FP_true = (FP_obs - c*R)/(1 - c), with c bounded by [panel-detected = 0, UIT-ViIC-calibrated upper bound].
+  Report the interval.
+Pre-registration before any look (manuscript/prereg/), with frozen items.jsonl hash, matcher v2, thresholds and the kill rules.
+- K1: DiD < 1.0 point, or CI includes 0, for all systems -> drop the Vietnamese-negative claim and report it as null.
+- K2: diacritic-stripped answer-flip rate < 2% -> drop that arm.
+- K3: S < M < L fails for >= 2 of 3 systems, or all CIs are wider than ±5 points -> descriptive only.
+- K4: KTVIC corrected-FP interval wider than 10 points -> report "not estimable".
+- K5: S5 ΔF1 < +0.5, or CI includes 0, on dev300 -> stop. Test split is never used.
+
+5. CLAIMS GEMINI MUST VERIFY
+1. Rerun pilot_v2.py and pilot_v2b.py (paths above; NCS_DATA=data) and check every number in section 3.
+2. MHR 2408.00550: 13 languages, no Vietnamese, GPT-3.5 translation (read from the arXiv HTML v1).
+3. CLAIM 2506.11073: its language list and translation method (unverified here).
+4. PatchGate 2608.21819: does the full text contain per-object probe-vs-caption analysis by class or size? If yes, downgrade (c).
+5. AMBER 2311.07397: the Cover metric and the shared images between generative and discriminative tasks; English only.
+6. Any Vietnamese visual hallucination or POPE benchmark from 2025-26 (VLSP 2025, Vintern or LaVy evaluations).
+   One search here found only the text-only ViHallu (2601.04711).
+7. IDs marked M in section 2: POPE 2305.10355, MME 2306.13394, XM3600 2205.12522, Open Images 1811.00982, UIT-ViIC 2002.00175,
+   KTVIC 2401.08100.
+8. Seconds per item for pope_vi on the 3090 (sets every GPU-h above), and whether XM3600 captions for P1 and fuse2 already exist.
+9. License terms of KTVIC and UIT-ViIC for releasing derived item lists. The OpenViIC-filtered KTVIC items stay unreleased (U-002).
+10. Whether a bench counts as "ghế" for Vietnamese speakers. H items stay out of the primary endpoint whatever the answer.
+11. That COCO-2500 and POPE-500 overlap in exactly 32 images (computed here from cocoid).
+
+6. RISKS AND FIT WITH PD-2
+Risks:
+- Qwen2.5-VL may simply not confuse diacritics or heads, so K1 fires. A null result is still a clean finding.
+- Visual similarity confounds V1 (zebra/horse, teddy bear/bear). The English DiD addresses it, but not perfectly, because English
+  "teddy bear" also contains "bear".
+- COCO label errors: RePOPE relabelled 139 of POPE's 1,500 'yes' questions, and the 'no' error rate is 0.3-2.6%.
+  These errors remain outside the POPE-500 images.
+- OIV7 negatives are sparse, and their candidates were proposed by a machine, which adds a selection bias. The labels themselves
+  are human-verified.
+- The salience gate makes KTVIC negatives easy, so KTVIC hallucination numbers are weak by design.
+- Low power for H4.
+- Novelty is moderate. PatchGate (2026), AMBER and THRONE cover parts of (c), and MHR and CLAIM cover multilingual POPE.
+Fit with PD-2: this strengthens the evaluation and methodology pillar.
+(i) It gives a general, quantified warning for every benchmark that derives negatives from captions, a problem common in
+    low-resource languages, with a ground-truth audit and a failed capture-recapture fix.
+(ii) It gives a Vietnamese probe resource whose labels come only from humans.
+(iii) H3 tests directly whether omissions are count-driven. If they are, that explains why UPE and PLAN-F1 collapse to count shifts.
+     If not, S5 is the one cheap method test at matched count.
+
+7. SCORES (1-5)
+- Novelty 3: the combination is new, but each piece has neighbours (MHR, CLAIM, AMBER, THRONE, PatchGate, HOPE).
+- Feasibility on 1x3090: 5. The data is local, the build is CPU-only, and the core is about 9-10 GPU-h.
+- Expected impact 3: a solid evaluation section and a reusable lesson on negative contamination, but not a method that beats the
+  frontier unless S5 survives.
+- Risk 2 (low): the main risk is a null lexical effect, which is still reportable. The KTVIC side is already de-risked by the pilot.

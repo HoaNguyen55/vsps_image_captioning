@@ -1,0 +1,243 @@
+R10 / M4 -- RL WITH A COUNT-DEBIASED (FRONTIER-RESIDUAL) OBJECT REWARD ON THE CN-RLOO ENGINE
+2026-10-14. CPU only (nice 19, 1 thread, 64 s, 97 MB peak). Repo read-only; no GPU; NO test file read. Work dir
+research_r10/M4/: m4_pilot.py (analysis + self-check), out/m4_pilot.json, train_rl_obj.py (the arm, self-checked),
+m4_endpoint.py (primary-endpoint scorer). F1 x100 unless stated. Pools = G0 rollouts of P1_dev (k 8, T 1.0) + greedy
+on dev300 and on the first 300 RL images (train300); gold = union of objects_in over the 5 train refs.
+
+======================================================================================================================
+0. BOTTOM LINE
+======================================================================================================================
+- The literal "F1 minus frontier F1 at the caption's count" is NOT count-neutral in RLOO. The frontier prices a class at
+  0.586 TP; within an image the policy's extra classes are right only 0.48 [0.44, 0.52]. So every frontier residual
+  pushes toward FEWER objects (-0.11 to -0.51 SD/class), and the power-law forms pay captions that name no object
+  ("say-nothing" hacking; 10-14% of step-0 rollouts). The literal forms also import test-fitted constants into training.
+- Use a count-stratified RLOO baseline (CS) instead. Its count gradient is exactly 0 (E grad = sum_m P(m) grad E[F1|M=m]),
+  it needs no constants, and inventories win 0.3-0.7% of groups (plain F1: 3-6%). Cost: 22% of groups lose object signal.
+- One-step cross-fit proxy: +1.4 to +1.8 count-matched F1 over CIDEr-only. SFT on the same 5-ref information (mr5assist)
+  sits on the frontier, so P(test pass) ~25%. Novelty low-moderate. 4.0 GPU-h first look; ~18 more for a 3-seed claim.
+
+======================================================================================================================
+1. PROBLEM AND HYPOTHESIS
+======================================================================================================================
+PD-2: no method beats the count frontier at matched count. An object reward in CN-RLOO (R9 C4 P-A) can raise F1 just by
+naming more classes, i.e. by moving ALONG the frontier, as UPE-MBR and PLAN-F1 did.
+H1: CN-RLOO with advantage rloo(CIDEr-D)/s_C + w CS(F1)/s_O (w = 1) raises matched-count object F1 over the
+CIDEr-only control (35_e) at an unchanged count. Falsifiable predictions:
+- P1 (dev300): cm(M4) - cm(35_e) >= +1.0 (cm = count-matched dF1 vs the vote-top-k control, sec. 4c).
+- P2: |classes/caption(M4) - classes/caption(35_e)| <= 0.15.
+- P3 (test, 3 seeds): pooled frontier residual F1 - F^1(m) of M4 minus the control >= +1.0, 95% CI excluding 0.
+- P4 (optional plain-F1 arm): the count rises (>= +0.15) and the residual stays within +-1.0.
+H0 (frontier invariance): any RL object term moves only along the frontier; M4's matched-count gain <= +0.5, CI over 0.
+
+======================================================================================================================
+2. CLOSEST PRIOR WORK (verified by web search on 2026-10-14 unless marked)
+======================================================================================================================
+| id | one line | new here | novelty vs it |
+|---|---|---|---|
+| ODIN 2402.07319 (ICML 2024) | two-head RM; the length-correlated head is dropped in RL | no learned RM; count is an explicit, verifiable covariate, conditioned on in the baseline | moderate |
+| Post-hoc Reward Calibration 2409.17407 (ICLR 2025) | subtract a locally-weighted-regression estimate of reward-vs-length bias | same move with count; we show a between-system fitted curve MIS-prices the within-prompt contrast | low-moderate |
+| Length-Controlled AlpacaEval 2404.04475 | GLM; predict preference at zero length difference | evaluation analogue of our matched-count endpoint | low |
+| Stratified GRPO 2510.06214 (ICML 2026 poster per icml.cc) | advantages within strata of structurally similar trajectories (search-call counts) | CS = its SAN without normalisation, strata = object count; used to remove a hackable gradient, tied to a matched-count endpoint | LOW (estimator) |
+| Singhal et al. 2310.03716 | length drives most RLHF reward gain | count plays that role for object F1 | low |
+| PS-NOC 2109.05115 (BMVC 2022) | SCST-F1 on novel-object F1 | object F1 with count control | moderate |
+| SC-Captioner 2508.06125 (ICCV 2025) | reference-parsed object/attr/relation set reward, mistake penalties | matched-count comparison instead of set rewards | moderate |
+| BalCapRL 2605.07394 (arXiv) | GRPO with precision + recall + length-gated fluency | count-stratified baseline instead of a length gate | moderate |
+| Tucker et al. 1802.10031 (ICML 2018) | action-dependent baselines give no variance gain | here a count-dependent baseline deliberately CHANGES the estimand | n/a (background) |
+- Also verified: R-DPO 2403.19159 (length regularisation in DPO); HallE-Control 2310.01779 (hallucination vs coverage).
+- Scoop: one extended search for count-controlled or debiased object rewards in captioning RL found none. ClaimDiff-RL
+  2605.20278, RubiCap 2603.09160, Re3Cap 2608.21305 and 2507.20077 are UNVERIFIED (search titles only).
+  PS-NOC/SC-Captioner/BalCapRL figures: R9 C4 sec. 7.
+- Overall LOW-MODERATE. Claim the measured between/within frontier mismatch and the matched-count training signal, not
+  the estimator.
+
+======================================================================================================================
+3. EVIDENCE (out/m4_pilot.json; dev300 | train300; G0 sha256 f71aff0c... | d5898fe4...)
+======================================================================================================================
+3a. Validity.
+  - CIDEr-D proxy (rl_reward.CiderD, longest-match segmentation on the refs' compound vocabulary): sample / greedy
+    reward 71.6 / 138.7 | 78.1 / 148.0, vs the G0 report's 71.9 / 139.8 | 78.1 / 148.1.
+  - P1_dev bf16 greedy, dev300: 1.763 classes/caption, P 74.29, R 43.13, F1 54.57; 9/300 name no class; gold 3.50
+    classes/img; same caption as the 4-bit G0 greedy on 135/300 (= R6_00's 45.0%).
+3b. Q1: IS THE PER-CAPTION RESIDUAL WELL DEFINED? Only as a within-group count price, and that price is wrong.
+  (i) Level: TP1 is a corpus mean, and TP at a given count differs by image. RLOO (no std norm, rl_reward.rloo) cancels
+      every per-image term, so only the within-image count slope acts.
+  (ii) Slope: the frontier is a BETWEEN-system law (one point per trained system; b from 2 anchor groups at m = 1.78
+      and 3.15), but RLOO contrasts samples WITHIN an image.
+      - Within-image marginal TP per extra class (fixed-effects slope): 0.479 [0.436, 0.525] | 0.472 [0.426, 0.517],
+        vs the frontier price 0.586.
+      - Pairwise steps 0->1 / 1->2 / 2->3: 0.61 / 0.52 / 0.38 | 0.58 / 0.48 / 0.41.
+      - Precision at caption count 1 / 2 / 3 / 4: 68 / 63 / 54 / 50% (dev).
+      The between-system curve does not give the within-image price (an ecological-inference error).
+  (iii) Extrapolation: the power law is used at integer counts 0..5, outside its fit range. The first class costs
+      0.909 TP, so naming nothing is rewarded.
+  (iv) Jensen: on dev rollouts, E f(M) = 1.223 vs f(E M) = 1.278 TP/img. As an ENDPOINT, the residual must come from
+      corpus means; prereg_ladder_check.residual already does this.
+  (v) Leakage: TP1, M1, b, c0 and c1 were fitted on KTVIC TEST runs, and the cross-system frontier cannot be refitted
+      on dev300 (fuse2 trained on those images).
+  Count gradient of the advantage, SD per extra class (fixed-effects slope; raw 95% CI excludes 0 for every object term
+  except CS; CIDEr: point estimate only):
+  | term | dev | train | object-free rollouts vs group mean (dev / train) |
+  |---|---|---|---|
+  | CIDEr-D (35_e reward) | +0.21 | +0.06 | n/a |
+  | F (plain F1, C4 P-A) | +0.66 | +0.69 | -0.26 / -0.20 |
+  | F1res_corpus (literal F1 - F^1(M)) | -0.11 | -0.14 | -0.005 / +0.006 |
+  | F1res_img (F1 - per-image F1 of f(M)) | -0.37 | -0.51 | +0.16 / +0.16 |
+  | TPres_pow (TP - f(M)) | -0.38 | -0.43 | +0.24 / +0.23 |
+  | TPres_lin (TP - 0.586 M) | -0.26 | -0.27 | +0.02 / +0.05 |
+  | CS (count-stratified F1) | 0 (exact) | 0 (exact) | 0 (compared only with other object-free rollouts) |
+  - Object-free rollouts are 10.0% | 14.0% of step-0 samples.
+  - CS identity: E[grad log pi(a) (F(a) - E[F | M(a)])] = sum_m P(m) grad E[F | M=m]. The object term never pushes the
+    count distribution; a rollout without a same-count mate contributes 0.
+3c. Q2: WHAT VARIANCE DOES IT ADD? Residualising subtracts a deterministic g(M): it adds no noise and removes the
+  count-driven part.
+  - Within-group SD of the object term (dev): F 0.214 -> 0.189-0.198. Groups with no object signal: 4.7% -> 1.7%.
+    Correlation with the CIDEr advantage: 0.43 -> 0.33-0.41.
+  - Split-half reliability (within-group correlation of advantages, gold = refs {0,1} vs refs {3,4}): CIDEr 0.52 | 0.48,
+    F 0.64 | 0.58, residuals 0.52-0.65, CS 0.58 | 0.47. The same-count "which objects" signal is about as consistent
+    across annotators as CIDEr; it is not annotator noise.
+  - CS costs signal: 21.7 | 23.0% of groups have no object signal; 11.5% of rollouts have no same-count mate; baseline
+    variance x1.45 (full leave-one-out at k = 8: x1.14); mean |A| 0.64 | 0.61 SD vs 0.93-1.01 for the other terms.
+  - The frontier's parameter error (b from 2 groups) acts as BIAS, not variance: it sets the count price.
+3d. Q3: LIST HACKING (C4 injection test; % of images where the hack beats all 9 real candidates; in-sample).
+  Columns: z-weight w = 0.5 / 1 / 2 / 4 / object-only, dev300; train300 at w = 1 in brackets.
+  | hack (CIDEr hack vs greedy) | F | F1res_corpus | TPres_lin | CS |
+  |---|---|---|---|---|
+  | H1 support inventory (35.5 vs 138.9) | 3.4/4.8/6.9/13.1/19.9 [3.1] | 1.0/1.7/2.1/3.1/5.8 [1.4] | 0.7/1.0/2.1/3.4/4.5 [1.0] | 1.0/0.3/0.3/0.3/0.0 [0.3] |
+  | H3 greedy + all extra classes (70.4) | 3.2/6.0/11.7/16.3/23.0 [6.1] | 1.1/1.4/3.2/5.7/6.7 [3.0] | 0.7/2.5/3.2/4.9/4.6 [2.4] | 0.4/0.4/0.0/0.0/0.0 [0.7] |
+  | H4 greedy + 1 class, vote >= 2 (106.9 vs 136.7) | 5.6/9.7/14.4/15.7/12.0 [12.0] | 3.2/6.5/9.7/14.4/9.7 [6.9] | 5.1/8.8/11.1/13.9/9.7 [7.9] | 5.6/8.3/12.0/13.4/10.2 [5.6] |
+  - Residuals cut inventory wins 2-5x but open the say-nothing hack. CS neutralises both: lists and empty captions have
+    no same-count rival, so they get 0.
+  - Nothing stops a single append (H4). Under CS it wins only when its class is right at that count, which PD-2 counts
+    as legitimate; the CIDEr term (about -30 per append) and the mentions guard bound it.
+3e. ONE-STEP SELECTION PROXY. Best-of-9 by z(C) + w z(O), +0.5 bonus on greedy (as C4). Cross-fit: reward on refs
+  {0,1}, scored on {3,4}, and swapped; 2-ref union scale. raw = dF1 vs greedy; cm = dF1 vs the vote-top-k control at
+  the chosen count, minus the greedy's (sec. 4c).
+  | reward (w) | dev raw | dev dM | dev cm [95% CI] | train raw | train dM | train cm [95% CI] |
+  |---|---|---|---|---|---|---|
+  | C-only (35_e analogue) | +0.38 | -0.04 | +1.35 [-0.42,+3.22] | -0.26 | -0.02 | +0.39 [-1.79,+2.39] |
+  | F (1) | +3.44 | -0.02 | +3.74 [+1.64,+5.99] | +2.29 | +0.02 | +1.57 [-0.62,+3.72] |
+  | F1res_corpus (1) | +1.92 | -0.17 | +4.20 [+1.90,+6.56] | +0.63 | -0.10 | +1.26 [-0.91,+3.45] |
+  | TPres_lin (1) | +1.39 | -0.19 | +4.02 [+1.80,+6.35] | -0.04 | -0.16 | +1.50 [-0.61,+3.76] |
+  | CS (1) | +2.32 | -0.06 | +3.17 [+1.14,+5.37] | +1.03 | -0.06 | +1.74 [-0.44,+3.80] |
+  | CS (2) | +1.51 | -0.07 | +2.60 [+0.38,+4.81] | +1.22 | -0.06 | +2.02 [-0.23,+4.24] |
+  - In-sample upper bounds: cm +8 to +11 for every object term; C-only +3.7 | +4.1. Greedy vs the control at its own
+    count, cross-fit: +1.68 | -0.27. P1_dev bf16, 5-ref union: cm = +0.56 [-1.63, +2.81].
+  - Object terms add +0.9 to +2.9 matched-count F1 over C-only in ONE step (2-ref scale). The residual forms partly buy
+    it by dropping classes (dM -0.10 to -0.19).
+  - F's one-step dM is small, but its count gradient (+0.66 SD per class) compounds over RL steps. The proxy therefore
+    understates F's count drift, and only the RL run tests it.
+3f. Prior against H1: mr5assist_s42 (SFT on all 5 refs, the information this reward reads) has residual +0.25
+  [-2.10, +2.54] and -0.26 vs p1assist (r9_synthesis/PD2_BLOCKER5_9_TABLES.md; Gemini table). UPE-MBR and PLAN-F1
+  (sample-vote information) are pure count shifts.
+
+======================================================================================================================
+4. PILOT DESIGN FOR GEMINI
+======================================================================================================================
+4a. PRE-REGISTRATION OF THE CONTROL (35_e), made 2026-10-14 before any 35_e output.
+  - Control = the CN arm that gives gate v2's final first-look verdict: 35_e at D9's temperature, or its registered
+    lr 5e-5 rerun if under-moved. Its OUT/last is decoded by evaluate.py bf16 on dev300 (the gate decode; no extra GPU).
+  - Predictions (basis: CIDEr's count gradient +0.21 | +0.06 SD/class and the C-only row in 3e):
+    C1 classes/caption in [1.65, 1.90] (P1_dev 1.763);
+    C2 cm(control) - cm(P1_dev = +0.56) in [-1.5, +2.0], 95% CI containing 0;
+    C3 raw dev object F1 in [53.1, 56.6] (P1_dev 54.57);
+    C4 captions naming no class <= 15/300 (P1_dev 9);
+    C5 on test, only if decoded under a later decision: frontier residual within +-1.0 P.
+  - Whatever 35_e yields enters M4's endpoints as measured; C1-C5 only test whether CIDEr-only RL is object-neutral at
+    matched count.
+  - Branching: M4 runs after pass, grey, under-moved (after its rerun) or a clean kill, NOT after a non-clean kill (a
+    guard failed: the engine is untrusted). Gate v2 says any further RL run needs a judge decision: ask for one.
+4b. THE M4 ARM. Same settings as the control (seed 42, the first 1,000 images of the seed-42 order, k 8, T, beta 0.03,
+  lr, tau from 35_b, --micro 4, 5 images/step, copy mask, fragment guard, KL anchor P1_dev); only the reward changes.
+  - train_rl_obj.py wraps train_rl.py by injecting a Reward subclass, so no frozen file changes. train_rl.py and
+    rl_reward.py still match gate v2's sha256 bd5743bb... / 3b18b7a3..., and 35_f/35_g need them.
+  - w = 1, s_C = 0.525, s_O = 0.214 (mean within-group SDs on G0 dev300). No --resume (RESUME_KEYS lacks the obj args).
+  Commands, on n2 with 35_e's environment and set -e:
+    cp <M4>/train_rl_obj.py <M4>/m4_endpoint.py scripts/  # committed via gatekeeper WITH the new prereg file
+    python scripts/train_rl_obj.py --self-check
+    R=p1dev_s42; RL=$NCS_DATA/rl; G=$RL/g0; P1=$RL/$R-dev300-short.json; T=<control T>; LR=<control lr>
+    TAU=$(python -c "import json; print(json.load(open('$G/g0_report.json'))['tau'])")
+    A="--adapter $NCS_DATA/runs/$R --images-file data/splits/ktvic_train_minus_dev300.txt --dev-file \
+       data/splits/ktvic_dev300.txt --tau $TAU --k 8 --beta 0.03 --lr $LR --seed 42 --micro 4 --temperature $T"
+    O="--obj-w 1 --s-c 0.525 --s-o 0.214"
+    python scripts/train_rl_obj.py $O $A --dry-run --out $RL/dryrun_m4cs_s42 --n-images 20 --dev-limit 20 --eval-every 20
+    python scripts/train_rl_obj.py $O $A --out $RL/g1_m4cs_s42 --n-images 1000 --eval-every 250
+    NCS_DATASET=ktvic_dev timeout 3600 python scripts/evaluate.py --model qwen2.5-vl-7b --adapter $RL/g1_m4cs_s42/last \
+      --split dev_data.json --prompt short --name g1_m4cs_s42-dev300-short --out $RL/g1_m4cs_s42-dev300-short.json
+    python scripts/rl_report.py --gate $RL/g1_m4cs_s42 --p1dev $P1 --rl $RL/g1_m4cs_s42-dev300-short.json \
+      --g0-report $G/g0_report.json       # guards G1-G4 only; its CIDEr verdict is informational for M4
+    python scripts/rl_report.py --panel $P1 $RL/g1_m4cs_s42-dev300-short.json --out $RL/g1_m4cs_s42/panel.json
+    python scripts/m4_endpoint.py $RL/g1_m4cs_s42-dev300-short.preds.json $RL/<control>-dev300-short.preds.json \
+      $G/dev300.jsonl
+4c. PRIMARY ENDPOINT (dev300; m4_endpoint.py, sha256 6d8e7ed1...).
+  - cm(X) = mean_i [F1(X_i) - F1(V_i(k_i))]: k_i = the number of objects_in classes in X_i; V_i(k) = the top-k classes
+    by vote over P1_dev's 8 G0 dev300 rollouts (PD-2's "top-k_i by raw sample vote"), boundary ties at expected TP;
+    gold = union of the 5 refs. Delta = cm(M4) - cm(control), paired bootstrap, B 2000, default_rng(0).
+  - GO to 4d only if ALL hold: (1) Delta >= +1.0 with 95% lower bound > -1.0; (2) |dM| vs control <= 0.15;
+    (3) dev CIDEr-D >= control - 3.0; (4) gate v2 guards G1-G4 hold; (5) list-guard hits (>= 2 commas, or more classes
+    than max over refs + 1) <= 3% of dev greedy, and captions naming no class <= 15/300.
+  - Otherwise KILL. A kill ends M4: no reruns at another w, lambda or temperature (no forking paths). Report it as
+    frontier invariance surviving.
+  - Reported, not gating: panel count-matched delta, CHAIR_i, raw F1, the mentions trajectory.
+4d. CONFIRMATORY (after GO and a judge decision; test decoded once per run).
+  - Runs: M4 seeds 43 and 44 plus two CIDEr-only control seeds (train_rl.py, identical settings): 3+3 runs with
+    short-prompt test decodes.
+  - Primary: 3-seed mean frontier residual F1 - F^1(m), M4 minus control (pre-registered frontier;
+    prereg_ladder_check.residual machinery; matcher v2 as in the PD-2 tables).
+  - CLAIM only if: >= +1.0 with paired 95% CI excluding 0; M4's own pooled residual CI excludes 0; |dM| <= 0.15;
+    OpenViIC panel residual delta >= 0. Power: per-run CI is about +-2.3 F1, hence 3 seeds.
+4e. COST on one 3090 (unit cost = 35_e's ~3.7 GPU-h per 1,000 images at k 8; the object term is CPU, < 1 ms per rollout)
+  | stage | GPU-h |
+  |---|---|
+  | first look: dry run 0.1 + RL 3.7 + dev decode 0.2 | 4.0 |
+  | confirmatory: 4 RL runs (15.6) + 6 test decodes (1.8) + 2 dev decodes (0.4) | ~18 |
+  | optional plain-F1 contrast arm (C4 P-A; dev only, for the 2x2 count-shift picture) | 4.0 |
+  Expected spend at P(GO) ~0.3: about 9.5 GPU-h. CPU: < 0.1 h per run for scoring; this pilot took 0.02 CPU-h.
+
+======================================================================================================================
+5. CLAIMS GEMINI MUST VERIFY
+======================================================================================================================
+1. The n2 copies of rl/g0/dev300.jsonl and train300.jsonl hash to f71aff0c... / d5898fe4... (the local backup used).
+2. Rerun m4_pilot.py (64 s): fixed-effects slope 0.479 [0.436, 0.525] | 0.472 [0.426, 0.517] vs lambda 0.586; the
+   count-gradient table (3b); object-free rollouts 10.0 | 14.0%.
+3. The CIDEr-D proxy matches RDRSegmenter on means only. Re-score 100 dev rollouts with the real segmenter and check
+   within-group rank agreement.
+4. On the GPU dry run, dump 5 groups and confirm rloo(virtual reward) = rloo(C)/s_C + w CS/s_O
+   (train_rl_obj._check proves the identity on random data only).
+5. Check the CS identity independently: E[grad log pi (F - E[F|M])] = sum_m P(m) grad E[F|M=m]. If Stratified GRPO
+   2510.06214 already states it, cite it as theirs. Confirm its ICML 2026 status.
+6. Confirm that the frontier constants in 2026-10-12_ladder_predictions.json come from KTVIC test runs, and rule that
+   no test-fitted constant may enter a training objective.
+7. Re-derive the mr5assist residual +0.25 [-2.10, +2.54] from its preds (it comes from a Gemini table).
+8. P1_dev dev300: 1.763 classes, P 74.29, R 43.13, F1 54.57, 9 captions naming no class, cm +0.56 [-1.63, +2.81],
+   bf16 = 4-bit greedy on 135/300.
+9. Unverified (search titles only): ClaimDiff-RL 2605.20278, RubiCap 2603.09160, Re3Cap 2608.21305, 2507.20077;
+   BalCapRL 2605.07394's venue; the PS-NOC abstract figures (sources disagree: 85.9/34.1 vs 75.8/26.6).
+
+======================================================================================================================
+6. RISKS AND FIT WITH PD-2
+======================================================================================================================
+- Information ceiling: the reward reads the same 5 refs that put mr5assist on the frontier, so H0 is the likely outcome.
+  The kill after 4 GPU-h bounds the cost.
+- Signal loss: CS gives no object signal in 22-23% of groups and |A| is 0.62 SD, so the run may be under-moved. No
+  fallback is registered, on purpose; the EMA-slope form TP - lambda_hat M (lambda re-estimated within groups each
+  step) would need a new decision.
+- Count drift: the CIDEr term still moves the count (+0.21 SD/class on dev). The control shares that drift, and the
+  endpoint is relative to the control and count-matched.
+- Single appends (H4) win 8% at w = 1. The CIDEr guard (about -30 per append on the proxy) and mentions bound them.
+- Reference style: KTVIC-union gains can be typicality. The OpenViIC panel residual is the truth-side check.
+- Proxy limits: the proxy is one-step and on the 2-ref scale; its effect sizes are proxy sizes.
+Fit: strengthens the METHODOLOGY pillar. It turns PD-2's matched-count endpoint into a training signal, and it shows
+that a between-system frontier mis-prices the within-image contrast, a general caution against debiasing a reward with
+a fitted curve. It is the only RL arm whose success criterion is PD-2's primary endpoint. A pass would be the first
+method above the frontier; a null shows frontier invariance holds even under an RL reward that targets it.
+
+======================================================================================================================
+7. SCORES (1-5)
+======================================================================================================================
+- Novelty 2: the estimator exists (Stratified GRPO SAN), and so does reward-minus-fitted-bias (ODIN, 2409.17407). New:
+  matched-count object signal for captioning RL, and the measured frontier mismatch.
+- Feasibility on 1x3090 4: the arm and the scorer are written and self-checked; first look 4.0 GPU-h. It waits on
+  35_e's verdict and a judge decision.
+- Expected impact 3: a pass fills PD-2's open problem; a pre-registered null still strengthens the evaluation pillar.
+  P(pass) ~25%.
+- Risk 4 (5 = riskiest): the information ceiling (mr5assist on the frontier) and a +-2.2 F1 one-seed dev CI.

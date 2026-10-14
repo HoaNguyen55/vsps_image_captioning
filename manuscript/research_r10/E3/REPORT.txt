@@ -1,0 +1,211 @@
+R10 / E3 -- A GUIDELINE-INVARIANT OBJECT METRIC                                         2026-10-14
+Folder: research_r10/E3/ (scratchpad). Files: e3_pilot.py (md5 9c27888568afaad9410d210fc9b0217e, frozen before
+the test look, FROZEN_MD5_before_test.txt), e3_tiers.py (dev300 only), dev300.json, test.json, tiers_dev300.json.
+Outputs hold aggregate numbers and lexicon class names only. No OpenViIC caption text is written; nothing is fitted on OpenViIC.
+
+0. BOTTOM LINE
+- The idea as posed (synonyms, hypernyms, learned name merges) closes only ~30% of the gap between within-KTVIC
+  and cross-panel human F1. That holds on dev300 (gap 17.9 -> 12.1) and on the frozen test look (15.7 -> 10.8).
+  Chance-corrected cross-panel agreement kappa rises only 0.65 -> 0.71.
+- About 70% of the gap is SELECTION policy (which objects get mentioned), not naming. Restricting to things closes it:
+    * COCO-80 projection: gap -2.4 (dev300) / -4.2 (test), kappa 0.89 / 0.96;
+    * a Vietnamese-preserving THING tier of the 113-class lexicon: gap 6.4, kappa 0.73 (dev300);
+    * the scene tier keeps a gap of 22.7.
+- System side (73 outputs, test, exploratory, not count-matched):
+    * the KTVIC-gold vs OpenViIC-gold ranking tau goes from 0.55 (exact) to 0.67 (COCO-80);
+    * the "home advantage" of KTVIC-fine-tuned systems over zero-shot falls 9.8 -> 2.8 F1;
+    * naming layers leave both unchanged (tau 0.51-0.55, home 9.7-10.1).
+- Proposal: a two-tier object metric (guideline-invariant THING tier + guideline-specific SCENE tier) plus an
+  invariance audit: cross-panel kappa against a shuffled-image null, and a naming/selection decomposition.
+  Value: it explains the 60.5 vs 45.0 human-ceiling discrepancy and defends the object metric. Novelty: moderate.
+  Soft and hierarchical matching are known; the two-panel, same-image audit was not found in prior work.
+
+1. PROBLEM AND HYPOTHESES
+Object F1 against reference captions depends on the guideline. Same images, matched (data/ktvic_openviic_refs.json):
+- a KTVIC annotator vs the other 4 KTVIC refs scores F1 60.5;
+- an OpenViIC annotator vs the 5 KTVIC refs scores 45.0.
+So a human ceiling, or any cross-dataset comparison, says as much about the guideline as about the captioner.
+Decomposition into: count (OpenViIC names 2.27 classes/caption vs 1.74), gold size (4 vs 5 refs), NAMING (synonyms,
+dialect, hypernym level), and SELECTION (what is worth mentioning).
+  H1 (naming share): synonym + hierarchy + data-learned merges close <= 35% of the F1 gap.        [supported, §3]
+  H2 (selection share): restricting to a thing vocabulary closes >= 60%.                          [supported on dev300]
+  H3 (systems): under the thing tier, cross-gold system ranking tau rises >= 0.10 and the FT-vs-ZS home advantage
+      shrinks >= 50%, also at MATCHED COUNT.                    [supported un-matched (exploratory); matched = Gemini]
+  H4 (calibration): classes with low within-KTVIC annotator consistency pi_c are the ones that diverge across
+      guidelines, so pi_c-weighting yields invariance.                                             [FALSIFIED, §3]
+  H5 (validity): any soft matcher that "closes the gap" must not inflate the shuffled-image null; otherwise the
+      closure is spurious.                                       [supported: learned free merges fail exactly this way]
+
+2. CLOSEST PRIOR WORK (V = verified by web search today; U = not re-verified this session)
+- [V] ALOHa: Petryk et al., NAACL 2024 short, arXiv:2404.02904. LLM object extraction, semantic similarity, Hungarian
+  matching; an open-vocabulary CHAIR. Soft matching is NOT new. New here: invariance across annotation guidelines,
+  tested on two human panels of the same images, with a chance-corrected null. Novelty vs this: moderate.
+- [V] CAPTURE: Dong et al., arXiv:2405.19092. Extracts objects/attributes/relations, matches "through three stages".
+  [U: that the stages are exact / synonym / soft-embedding.] Same delta as ALOHa. Moderate.
+- [V] OpenCHAIR / MOCHa: Ben-Kish et al., arXiv:2312.03631. Open-vocabulary hallucination benchmark. It does not address
+  reference-guideline dependence. Moderate.
+- [V] Hierarchical P/R/F: Kiritchenko, Matwin, Nock & Famili 2006 (Canadian AI, pp. 395-406);
+  Kosmopoulos et al., DMKD 29:820-865 (2015), arXiv:1306.6802, doi:10.1007/s10618-014-0382-x.
+  Our L2 is exactly ancestor-augmented hP/hR. Novelty of L2 itself: LOW.
+- [V] ManyNames: Silberer, Zarriess & Boleda, LREC 2020 (aclanthology 2020.lrec-1.710). 36 names per object; shows
+  hierarchical and cross-classification naming variation. Phenomenon known; its effect on hallucination metrics
+  across guidelines is not measured there. Moderate.
+- [V] Freitag, Grangier & Caswell, EMNLP 2020, arXiv:2004.06063. Reference style changes MT metric correlations.
+  The closest "references are not innocent" analogue, but for MT and n-gram metrics. Moderate.
+- [V paper / U claim] Lee et al., arXiv:2412.15484 (hyper-detailed captioning). A search summary says a
+  reference-based factuality score fell from Spearman 67.9 to 18.3 with stylistically different human captions.
+  Not confirmed on the page. VERIFY.
+- [V paper / U claim] UMIC, Lee et al., ACL 2021 short, arXiv:2106.14019: scores vary with reference type (search summary).
+- [U] CHAIR: Rohrbach et al., EMNLP 2018, arXiv:1809.02156 (fixed COCO-80 synonym list).
+- [U] SPICE: Anderson et al., arXiv:1607.08822 (WordNet synonyms).
+- [V, partial] Vietnamese WordNet: Lam & Kalita 2022, Computacion y Sistemas. Built by MACHINE-TRANSLATING WordNets.
+  If used, that is an AI-made lexical signal and must be flagged.
+Overall: soft / hierarchical / embedding matching = LOW novelty. Two-panel same-image invariance audit
+(kappa vs shuffled null, naming-vs-selection split, cross-gold system rank stability) = MODERATE. Two searches found
+no study isolating annotation guidelines across datasets for object metrics. That is absence of evidence, not a "first".
+
+3. EVIDENCE SO FAR (CPU, nice 19, 1 thread, < 1.5 GB, longest run 3 min)
+Protocol:
+- matcher = rescap.chair.objects_in (v2 tone-normalised), object_prf.image_counts/scores, pooled per image as in
+  C1_ceiling/ktvic_ceiling.py;
+- within = each KTVIC caption vs the union of the other 4;
+- cross4 = each OpenViIC caption vs the same 4-unions (gold size matched); cross5 = vs all 5;
+- null = same, against the refs of a different image (fixed derangement, seed 0);
+- kappa = (cross4 - nullC) / (within - nullW);
+- learned merges and pi_c are fitted on KTVIC train-minus-dev300 only;
+- design choices on dev300 (300 imgs, 296 with OpenViIC);
+- ONE test look (555 imgs) with the script frozen (md5 above) beforehand.
+Sanity: L0 test cross5 = 44.96 (matches PD2 Blocker-8 k=1 exactly); within 60.43 (official fold-average 60.50).
+
+Layers:
+  L0    exact
+  L1    + SYNONYMS / leading classifier + dialect dù = ô
+  L2    L1 + hypernym closure (hF)
+  L3    free learned merges
+  L3s   learned merges restricted to lexically related pairs
+  ROOT  hypernym root
+  CW1/2 L1/L2 weighted by pi_c
+  C80   COCO-80 projection
+  THING / SCENE   L2 restricted to an a-priori tier list (e3_tiers.py)
+
+HUMAN SIDE              dev300                                    test (frozen, one look)
+layer   within cross4  gap   nullW nullC kappa  | within cross4  gap   nullW nullC kappa
+L0       62.66  44.78 17.88  10.4  12.9  0.61   |  60.43  44.69 15.74  10.3  11.9  0.65
+L1       63.77  47.17 16.60  11.1  13.9  0.63   |  61.12  46.71 14.41  10.7  12.5  0.68
+L2       65.80  52.99 12.81  17.7  21.5  0.66   |  63.50  52.58 10.92  16.1  19.8  0.69
+L3s      67.06  54.93 12.13  20.0  23.3  0.67   |  64.73  53.90 10.83  17.5  20.6  0.71
+ROOT     67.54  55.16 12.38  20.6  24.5  0.65   |  64.74  54.04 10.70  18.4  22.2  0.69
+CW2      67.74  55.05 12.69  19.7  23.7  0.65   |  64.95  54.38 10.57  17.8  21.8  0.69
+L3       89.46  84.15  5.31  74.8  74.1  0.68   |  88.38  84.38  4.00  75.3  74.7  0.75   <- INVALID (null 75)
+C80      73.37  75.77 -2.40  41.2  47.0  0.89   |  75.33  79.57 -4.24  45.2  50.5  0.96
+THING    64.14  57.76  6.38  23.2  27.9  0.73   |  (not run on test)
+SCENE    64.83  42.12 22.71   9.1   9.0  0.59   |  (not run on test)
+
+Readout:
+(a) Naming layers close 28-33% of the gap on both splits (H1).
+(b) Free merges by within-caption co-mention exclusivity chain everything into one class (người + xe + nhà + ...).
+    Captions name ~1.7 objects, so ANY two co-present objects are mutually exclusive within a caption (salience
+    competition). The gap "closes" to 4-5 only because the null rises to 75 (H5). Raw gap closure is not evidence;
+    the shuffled null must be reported.
+(c) pi_c does not predict cross-panel divergence: Kendall tau(pi_c, OpenViIC-unconfirmed share) = -0.04 (dev300,
+    46 classes), -0.26 (test, 54). CW adds nothing over L1/L2. H4 falsified.
+(d) Top dev300 unconfirmed classes (share of OpenViIC mentions outside the KTVIC union):
+    dù 1.00 (14 mentions; KTVIC never says it, so a dialect synonym of ô; from the run BEFORE DIALECT was added,
+    reproduce with DIALECT = {}; frozen dev300.json shows the merged class ô: u .48, n 21), bóng, sạp hàng, dãy nhà .90, biển hiệu .89, phòng .83,
+    đồ .73, mũ .66 (OpenViIC names hats 3.7x as often), quần .64.
+    These are scene, signage, clothing and generic nouns: selection policy.
+(e) THING tier halves the remaining gap. The residual (P 62.7 vs 86.5) is plausibly clothing/accessories (mũ, quần,
+    áo), which COCO-80 lacks and where full invariance holds. Hypothesis for Gemini, untested.
+
+SYSTEM SIDE (test, 73 *.preds.json covering the 555 matched images; F1 vs KTVIC-5 union and vs OpenViIC union; NOT count-matched)
+layer  tau(Kgold,Ogold)  tau(vs L0, Kgold)  home adv. FT-ZS  zeroshot-detailed rank K/O
+L0          0.546              1.000             9.79              40 / 10
+L1          0.553              0.967            10.05              39 / 9
+L2          0.514              0.902            10.11              48 / 7
+ROOT        0.505              0.869             9.65              53 / 15
+CW1         0.602              0.960            10.02              40 / 10
+C80         0.669              0.772             2.79              55 / 53
+(L3 tau 0.839 is the degenerate one-class artefact.)
+Under exact matching, zero-shot-detailed ranks 40th on KTVIC gold but 10th on OpenViIC gold, a 30-place swing from the
+guideline alone. Under C80 it is 55th on both. Caveat: the OpenViIC gold is larger (6.0 vs 3.7 classes/img) and
+favours high-count systems, so the count-matched check (§4 step 2) is the real test.
+
+4. PILOT DESIGN FOR GEMINI (all CPU; GPU optional only for step 4)
+Data: KTVIC train/test; data/splits/ktvic_dev300.txt; data/ktvic_openviic_refs.json (evaluation only);
+data/results/*.preds.json. Scripts: research_r10/E3/e3_pilot.py, e3_tiers.py (read-only reuse of rescap.chair,
+object_prf, score_coco_probe).
+Step 0 (2 min): reproduce. Check md5 9c278885..., then
+    nice -n 19 env OMP_NUM_THREADS=1 python3 -I e3_pilot.py dev300 > dev300.json; same with test.
+  Must reproduce §3 to 0.01.
+Step 1 (dev300 only, 10 min): PRE-REGISTER the tier lists before any test run.
+  - THING = lexicon minus SCENE minus GENERIC (lists in e3_tiers.py);
+  - THING-noclothing = THING minus {áo, quần, mũ, nón, nón lá, giày, dép, kính, quần áo};
+  - for each: gap, kappa, null, 95% bootstrap CI (B=2000 over images).
+  Choose the primary tier on dev300 by highest kappa_cross with nullW <= L0 nullW + 15. One tier only.
+Step 2 (CPU, 15 min; PD-2 primary endpoint, count-matched):
+  - for each gold (KTVIC-5, OpenViIC union) and each layer in {L0, L2, primary tier, C80}, fit
+    log TP = a + b log M by OLS over the 73 systems, giving per-system residuals, as prereg_ladder_check.at;
+  - ENDPOINT A: Kendall tau of residuals across the two golds;
+  - ENDPOINT B: home advantage = mean residual gap (Kgold - Ogold) of FT systems minus that of ZS systems
+    (zero-shot = files named *zeroshot*);
+  - bootstrap over images, B=2000.
+Step 3 (test, confirmatory; pre-register the tier and the predictions first):
+  - human-side kappa_cross and gap under the primary tier;
+  - predictions: kappa_cross(tier) - kappa_cross(L0) >= 0.10, and gap <= 0.5 x L0 gap;
+  - also report L0 within/cross so the paper can state both ceilings.
+Step 4 (optional; model-generated signal, flag it): embedding soft match over the 113 class names
+  (e.g. multilingual-e5-base or LaBSE), 113x113 cosine, threshold s* chosen on dev300 by max (within - nullW) using
+  KTVIC refs only. Roughly 0.1 GPU-h or ~10 CPU-min after download.
+  Prediction: kappa gain over L2 < 0.03 (naming is only ~30% and L2 already takes most of it).
+Kill rules:
+  K1  any layer with nullW > L0 nullW + 15 is invalid (over-merging).
+  K2  test kappa gain of the primary tier over L0 < 0.10: drop the "invariant metric" claim; keep only the
+      decomposition (naming ~30% / selection ~70%) as an analysis paragraph.
+  K3  tau(tier vs L0 on KTVIC gold) < 0.70: not "ranking sensibly"; report it as a different construct, not a replacement.
+  K4  count-matched endpoint A gain over L0 < 0.10, or endpoint B shrink < 50%: drop the system-side invariance claim.
+  K5  step 4 gain < 0.03 kappa: no embedding layer in the paper.
+Compute: GPU 0 h (step 4 optional, <= 0.1 h). CPU about 0.5 h total. No new labels; no training; OpenViIC used for
+evaluation only.
+
+5. CLAIMS GEMINI MUST VERIFY
+ 1. L0 test cross5 = 44.96 and within 60.43 come from e3_pilot.py; within differs from human_parity.json 60.50 only by
+    pooling vs fold-averaging.
+ 2. Gap and kappa numbers in §3 (both splits), and that L3's null is ~75 (the over-merging explanation).
+ 3. Kendall tau(pi_c, u_c) = -0.04 (dev300) and -0.26 (test); class_divergence_L1 in dev300.json and test.json.
+ 4. "dù": 14 OpenViIC mentions on dev300, none confirmed by KTVIC refs (re-run e3_pilot.py dev300 with DIALECT = {});
+    rescap/vi/lexicon.py SYNONYMS lacks dù -> ô.
+ 5. System table: 73 files, tau 0.546 -> 0.669 (C80), home advantage 9.79 -> 2.79, zero-shot-detailed rank 40/10 -> 55/53.
+ 6. CAPTURE's three matching stages (exact / synonym / soft?): check arXiv:2405.19092 Sec. 3.
+ 7. The 67.9 -> 18.3 Spearman drop attributed to arXiv:2412.15484: locate the table or drop the claim.
+ 8. CHAIR arXiv:1809.02156 and SPICE arXiv:1607.08822 IDs; KTVIC arXiv:2401.08100 and its authors' institution
+    (assumed Hanoi). UIT-OpenViIC arXiv:2305.04166 (UIT, HCMC).
+    The North/South dialect explanation for ô/dù is a HYPOTHESIS: annotator origin is undocumented.
+ 9. No prior work found that measures object-metric invariance across two independent caption panels of the same
+    images. Run a fuller search (e.g. Flickr30k vs COCO re-captioning, nocaps, DOCCI vs COCO, "annotation guideline"
+    + hallucination metric) before claiming novelty.
+
+6. RISKS AND FIT WITH PD-2
+Risks:
+- Only one guideline pair. Invariance is shown for KTVIC vs OpenViIC only; no third same-image Vietnamese panel exists.
+- The THING tier is a vocabulary restriction, so reviewers may call it "just COCO-80". The defence: keeping
+  Vietnamese-specific things (nón lá, xích lô, xe ba gác) and reporting SCENE separately rather than dropping it.
+- One exploratory test look has been taken (frozen script). Confirmatory claims must use the NEW pre-registered
+  quantities (primary tier, count-matched endpoints).
+- The closed 113-class lexicon makes out-of-vocabulary mentions invisible. An open-vocabulary extractor would need an
+  LLM, an AI signal.
+- The kappa normalisation depends on the null definition (a derangement); report the nulls too.
+Fit with PD-2: strengthens the evaluation/methodology pillar directly.
+- It explains why the human ceiling is 60.5 (within guideline) and 45 (cross guideline): ~30% naming, ~70% selection.
+- It gives reviewers a guideline-robust object score.
+- It tempers "fuse2 beats humans" claims: they become tier-specific.
+- It turns the count-matched frontier into a cross-guideline test.
+It is not a method that beats the count frontier.
+
+7. SCORES (1-5)
+Novelty 3: the matching ingredients are known (ALOHa, CAPTURE, hF); the same-image two-panel invariance audit and the
+           naming/selection decomposition appear new but rest on a limited search.
+Feasibility 5: CPU-only, existing files, minutes. Scripts and numbers already exist.
+Impact 3: a solid methodology section and reviewer defence of the object metric; general value for multi-dataset
+          captioning evaluation. It does not fix the "no method survives count control" problem.
+Risk 2: the human-side result already replicates across dev300 and test; the main uncertainty is the count-matched
+        system endpoint and the reception of a tiered vocabulary.

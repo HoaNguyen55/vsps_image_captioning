@@ -1,0 +1,243 @@
+R10 / G2 -- SCOPE OF THE COUNT-FRONTIER LAW ACROSS DATASETS, LANGUAGES, DECODING AND BACKBONES   (2026-10-14)
+Artifacts (this folder): g2_frontier.py (CPU, 2m40s, 365 MB peak), g2_frontier.json (all numbers), g2_frontier.txt.
+
+0. BOTTOM LINE
+- The power-law form TP = a*M^b holds in every setting we have: KTVIC, UIT-ViIC and COCO-2500; reference, instance
+  and mixed gold; trained systems, sampling, vote sets and count-only selection. RMSE is 0.6-2 P points per family.
+- The exponent is NOT universal. On the same outputs, b goes from 0.40 to 0.99. It is set by the gold, not the
+  captioner: on KTVIC b rises monotonically with the number of references in the gold (k=1..5: 0.40 -> 0.70;
+  Delta = +0.30 [0.25, 0.35]), and instance labels give the highest b (COCO: 0.85 vs 0.64 for 5 refs).
+- Reading: b = marginal precision / mean precision. With incomplete references, most of the precision decay along
+  the frontier is unreferenced true objects, not hallucination.
+- Invariance is gold- and family-specific. It holds for the KTVIC-fine-tuned ladder on KTVIC refs (32/36 inside
+  CI) and on UIT-ViIC refs (6/6). It fails for off-style systems on KTVIC refs (zero-shot -19 to -25 P). It fails
+  on instance gold, where it exposes P1's out-of-domain hallucination (-5 P) that UIT-ViIC references hide.
+- Decoding: T does not change b (T0.8 - T0.5 = +0.03 [-0.01, +0.07]), but T=0.8 samples sit 3-5 P BELOW the
+  frontier. UPE moves along it. Vote sets are S-shaped: mid thresholds sit up to +2.8 P above.
+- Value: turns "count-matched evaluation" from a KTVIC observation into a general, gold-indexed measurement law
+  for the PD-2 methodology pillar. It also blocks the reviewer trap of reusing b = 0.747 anywhere else.
+
+1. PROBLEM AND HYPOTHESES (falsifiable)
+Problem: PD-2's primary endpoint uses a pre-registered frontier TP = 1.3996*(M/1.7826)^0.7468. That frontier was
+fit on KTVIC test against the union of the 5 references, from 2 anchors (P1 x3 seeds, fuse2_s42-detailed). Is the
+exponent a property of captioners (universal) or of the gold? Does invariance hold off KTVIC?
+Identity used throughout: dTP/dM = b*TP/M, so marginal precision p_marg = b*P. Adding a mention raises F1 iff
+p_marg > F1/2. In every setting below b*P >> F1/2 (e.g. KTVIC P1: 0.747*78.5 = 58.6 vs 27.3), so F1 rises
+monotonically with count over the whole observed range. That is why unmatched F1 rewards verbosity.
+H1 (completeness law): on a fixed image set and fixed outputs, b increases monotonically with gold completeness:
+   k references (k=1..5) < 5 refs < instance labels. Kill: b(5)-b(1) CI includes 0 on >= 2 of 3 datasets.
+H2 (language-free exponent): on the same images and gold, Vietnamese and English caption families have
+   |Delta b| <= 0.05. Kill: the paired CI excludes [-0.05, +0.05].
+H3 (decoding moves the intercept, not the exponent): the temperature change leaves |Delta b| <= 0.05, and the
+   T=0.8 intercept is lower. Kill: |Delta b| CI excludes [-0.05, +0.05].
+H4 (family invariance needs a style-matched gold): within a gold, systems sharing the references' style have
+   |residual| <= 2 P; systems with another style or domain do not. Kill: zero-shot within 2 P on KTVIC refs, or
+   P1 within 2 P of the UIT-ViIC instance frontier.
+
+2. CLOSEST PRIOR WORK (IDs checked by web search on 2026-10-14 unless marked VERIFY)
+[1] Rohrbach et al., "Object Hallucination in Image Captioning", EMNLP 2018, arXiv:1809.02156 / ACL D18-1437.
+    CHAIR uses instance labels plus references. It has no count-matched comparison and no trade-off law.
+    New here: a count frontier per gold, and the finding that the gold's completeness sets its exponent.
+[2] Buckland & Gey, "The relationship between recall and precision", JASIS 45(1):12-19, 1994 (RePEc).
+    The classic result that precision falls as the retrieved set grows. It is the closest conceptual ancestor:
+    count = number retrieved. New here: the power-law form, b = p_marg/P, and the exponent's dependence on
+    reference completeness. Novelty vs [2]: moderate.
+[3] Kasai et al., "Transparent Human Evaluation for Image Captioning" (THumB), NAACL 2022, arXiv:2111.08940.
+    Rubric with precision/recall dimensions; humans beat machines mainly on recall. No fitted trade-off curve.
+[4] Zhai et al., HallE-Control / CCEval, arXiv:2310.01779. Controls caption length and object count when
+    comparing hallucination. It matches length and count, but fits no frontier law and does not vary the gold.
+[5] Lee et al., CapMAS "Toward Robust Hyper-Detailed Image Captioning", arXiv:2412.15484. Listed at PMLR
+    v267 (lee25aj), i.e. ICML 2025 (VERIFY venue). Reports factuality and coverage separately; finds that
+    hallucination grows with length.
+[6] Dong et al., CAPTURE / DetailCaps, arXiv:2405.19092. Object precision/recall against parsed references.
+    SC-Captioner (arXiv:2508.06125) criticises its precision as incomplete: real but unreferenced objects are
+    penalised. Our k-reference curve quantifies exactly this effect, as an exponent.
+[7] VALOR-EVAL arXiv:2404.13874 (faithfulness vs coverage) and THRONE arXiv:2405.05256 (CHAIR_i favours short
+    captions). Both state the trade-off; neither has a law, an invariance test or a gold-completeness index.
+    VERIFY venues.
+Novelty: MODERATE overall. The trade-off and the length confound are well known. The new parts:
+  (a) a fitted power law with b = p_marg/P;
+  (b) b indexed by gold completeness (k-reference curve, instance limit) on fixed outputs;
+  (c) a cross-system invariance test per gold, including where it fails.
+  The search found no prior caption-metric paper with (b) or (c). Search depth was limited (6 queries), so this
+  is not a "first" claim.
+
+3. EVIDENCE SO FAR (CPU, existing files only; 1000 shared image-bootstrap draws per image set)
+Points are system means over the same images: M = unique classes per caption, TP = classes in the gold.
+b_ols = OLS of log TP on log M over all systems in the setting. b_anc = the pre-registration's two-anchor slope.
+Reproduction checks passed:
+  - KTVIC b_anc = 0.7468, matching manuscript/prereg/2026-10-12_ladder_predictions.json;
+  - P/TP agree with data/results/{uitviic,coco_transfer}/object_prf-*.txt to 0.1, e.g. COCO zero-shot short
+    inst+refs P 94.59 vs 94.6, UIT-ViIC P1 short inst P 88.62 vs 88.6.
+setting (gold)                          sys  N     M range      b_ols [95% CI]        b_anc [CI]           rmseP
+KTVIC test refs5-lex, FT ladder          36  558   1.76-3.75    0.703 [0.666,0.741]   0.747 [0.691,0.804]  1.17
+KTVIC test refs5-lex, all incl. legacy   73  558   1.03-6.71    0.694 [0.652,0.738]   0.747                16.47
+KTVIC test decoding (all points)         68  558   0.66-4.41    0.756 [0.732,0.782]   --                   2.16
+   vote-threshold sets (3 seeds)         21                     0.770 [0.743,0.799]
+   count-only caption choice min/max-M    6                     0.779 [0.729,0.833]
+KTVIC dev300 decoding T0.5+T0.8          32  300   0.52-3.92    0.752 [0.714,0.789]
+   T0.5 vote / T0.8 vote                  7/7                   0.741 [.699,.782] / 0.768 [.729,.806]
+UIT-ViIC test refs5-lex                   6  231   1.87-6.94    0.535 [0.491,0.587]   0.552 [0.455,0.665]  1.62
+UIT-ViIC test refs5-COCO80                6  231   1.07-2.29    0.551 [0.488,0.609]   0.737 [0.603,0.881]  2.69
+UIT-ViIC test inst-COCO80 (=inst+refs)    6  231   1.07-2.29    0.943 [0.903,0.983]   1.168 [1.062,1.313]  3.83
+COCO-2500 refs5-COCO80 (EN refs)          9  2500  0.84-2.14    0.642 [0.624,0.663]   0.786 [0.738,0.837]  3.70
+COCO-2500 inst+refs-COCO80                9  2500               0.867 [0.854,0.880]   0.959 [0.920,0.997]  1.62
+COCO-2500 inst-COCO80                     9  2500               0.846 [0.833,0.862]   0.977 [0.933,1.021]  1.12
+Humans, inst gold, vote>=t of 5 captions:
+  UIT-ViIC all 3842 imgs, VI              5  3842  0.89-1.87    0.992 [0.989,0.996]
+  UIT-ViIC all 3842 imgs, EN              5  3842  0.71-2.33    0.987 [0.985,0.989]
+  COCO-2500, EN                           5  2500  0.73-2.08    0.872 [0.861,0.884]
+Systems: KTVIC = every data/results/*.preds.json. UIT-ViIC = data/results/uitviic/* (P1_s43, fuse2_s42,
+zero-shot x short/detailed). COCO = coco5000/{zeroshot,distill}, coco_transfer/{p1_s43,fuse2_s42} x 2 modes, plus
+coco5000_vcd zero-shot detailed. Decoding (test) = p1assist_s4{2,3,4} greedy plus upe/test/*-T0.5.jsonl, and
+fuse2_s42 greedy plus samples/fuse2_s42-test-short.jsonl. Decoding (dev300) = p1dev_s42 greedy
+(.session_backup/machines/n2/ncs-data/rl/) plus upe/p1dev_s42-dev300-short-T{0.5,0.8}.jsonl.
+3a. A single exponent does not fit. Delta b vs the KTVIC ladder (independent draws):
+      UIT-ViIC refs-lex -0.167 [-0.224, -0.107]
+      COCO refs5 -0.060 [-0.103, -0.019]
+      COCO inst +0.143 [+0.102, +0.184]
+      UIT-ViIC inst +0.241 [+0.185, +0.293]
+    A common-slope model is rejected; b spans 0.40-0.99 over settings with non-overlapping CIs.
+3b. Reference type and completeness (paired: same images, same outputs, only the gold changes). b by k refs:
+      KTVIC ladder: 0.403 / 0.504 / 0.581 / 0.655 / 0.703 for k = 1..5 (mean |G| 1.72 -> 3.72 classes)
+      COCO-2500:    0.478 / 0.552 / 0.589 / 0.620 / 0.643, then instance labels 0.846
+      UIT-ViIC:     0.445 / 0.498 / 0.522 / 0.538 / 0.535
+    Paired Delta b:
+      refs5 - refs1: KTVIC +0.300 [0.248, 0.347], COCO +0.165 [0.148, 0.181], UIT-ViIC +0.090 [0.047, 0.136]
+      inst - refs5:  COCO +0.203 [0.186, 0.220], UIT-ViIC (COCO-80 space) +0.392 [0.334, 0.453]
+    The KTVIC k-curve fits b ~ 0.40 + 0.19 ln k (k=2..4 predicted 0.53/0.61/0.66, observed 0.50/0.58/0.66) and
+    has not saturated at k=5. So 0.747 is "KTVIC with 5 references", not a property of the learner.
+    Caveat: subsets are the first k refs in file order; averaging over random subsets is in step G2-C below.
+3c. Invariance per gold (residual CIs that exclude 0):
+    - KTVIC refs, FT ladder: 4/32 non-anchor systems off the pre-registered frontier. They are
+      fuse2/p1 selffuse-two -4.3/-4.1, e5dpo-short -3.1, tags_fuse2-detailed +1.75.
+      Still clean at k=1 (only e5dpo-short off).
+    - KTVIC refs, off-style systems: zero-shot -19 to -25 P; legacy main_/seed4x/round/official/vsps -25 to -46 P.
+      The intercept depends on lexical and salience style alignment with the references.
+    - UIT-ViIC refs-lex: 0/6 off (N = 231, CIs about +-3 P).
+    - UIT-ViIC instance gold: 4/6 off. P1 short/detailed sit at -5.0/-4.5, fuse2-short +4.4, zero-shot short +4.7.
+      Against refs, P1 looked fine (+0.5 / -2.6, both n.s.). Reference gold hides a real precision deficit.
+    - COCO-2500: instance gold has 6/8 off but small (-1.2 to +1.9). EN-ref gold has 8/8 off (-7.2 to +4.6), so
+      the reference gold here inflates spread.
+    - In-domain on KTVIC, reference-style frontiers compress differences between style-matched systems.
+      Out of domain, they can hide or invent differences.
+3d. Decoding vs the pre-registered KTVIC frontier (test):
+    - T=0.5 single samples: mean residual -0.8 / -1.4 / -1.2 P (3 seeds), individual CIs mostly cover 0.
+    - fuse2 samples (e5_sample default T=0.8, VERIFY): -3.45 P mean, 5/6 CIs exclude 0.
+    - dev300: T=0.8 samples sit about 4-7 P below the T=0.5 samples at the same M.
+    - Exponent unchanged by T (3a/H3), so temperature is a quality loss, not a count shift.
+    - Count-only choice of the min-M / max-M caption from the pool: -2.9 to +0.5 P, i.e. on or under the frontier.
+    - UPE-MBR (no preds in repo; point implied from the reported Delta P/Delta R with R = c0 + c1*TP, approximate):
+      residual +1.91 / +0.67 / +1.21 vs greedy +0.69 / +0.48 / +1.27. It moves along the frontier on 2 of 3
+      seeds, consistent with kill 2 (pure count shift).
+    - Vote-threshold sets are S-shaped around the frontier:
+        mid thresholds (>=3, >=4 of 7) reach +2.3 to +2.8 P (CI > 0 for p1assist_s42 and fuse2), but at most
+        +1.1 / +1.9 for s43 / s44;
+        unanimity (>=7 of 7) falls -5 to -10 P below.
+      Consequence: the COUNT control (top-k by vote) is a stricter bar than the training frontier. A selection
+      method that ties COUNT is already about 1-2 P above the frontier.
+3e. Language: on 3842 identical COCO-sports images with identical instance gold, Vietnamese and English human
+    caption families give Delta b (EN - VI) = -0.005 [-0.009, -0.002]. That is significant but negligible, so
+    H2 holds for humans. No English MODEL outputs exist locally, and no XM3600 outputs exist (only
+    oiv7_labels.json and the data). Those are the runs to buy (section 4).
+
+4. PILOT DESIGN FOR GEMINI
+G2-A (CPU, 0 GPU-h, ~0.1 CPU-h): rerun and freeze.
+   NCS_DATA=data nice -n 19 env OMP_NUM_THREADS=1 python3 research_r10/G2/g2_frontier.py
+   - Copy the script to scripts/frontier_scope.py; ROOT is hard-coded to /mnt/d/vsps_image_captioning.
+   - Archive g2_frontier.json as the descriptive Table "frontier per gold".
+G2-B (GPU, about 7-9 GPU-h on one 3090): English and other backbones on the SAME images and gold.
+   Data:
+   - COCO-2500 (data/coco_probe/manifest.json) for short prompts;
+   - the 1000-image subset data/coco_probe/manifest_s0_detailed1000.json for detailed prompts;
+   - UIT-ViIC test (231).
+   Backbones, all zero-shot, no training:
+   - Qwen2.5-VL-7B (already have VI);
+   - Qwen3-VL-8B-Instruct (Gate S0 code exists: scripts/s0_screen.py);
+   - one non-Qwen open model that fits 24 GB, e.g. InternVL2.5-8B or LLaVA-OneVision-7B (choose on availability;
+     VERIFY licence).
+   Each backbone: {EN, VI} x {one-sentence, 2-3 sentences, detailed} = 6 runs per backbone, 18 in total.
+   Add 6 samples at T=0.5 for the one-sentence EN/VI prompts (gives a vote family per language).
+   Cost: short ~0.25 GPU-h, detailed-1000 ~0.8 GPU-h per run.
+   Scoring (CPU):
+   - EN with score_coco_probe.en_classes, VI with vi_objects (matcher v2);
+   - gold = instance labels, 5 refs, and k = 1..5 refs, exactly as in g2_frontier.py sections 5 and 7.
+   Commands: reuse the coco_probe generation path used for coco5000 / coco_transfer (output
+   <system>-<mode>.shard0of1.jsonl), then g2_frontier.py with the new dirs added to the COCO loop. VERIFY that
+   evaluate.py / coco_probe accept --model and an English prompt; if not, extend s0_screen.py.
+G2-C (CPU, ~0.3 CPU-h): robustness of the completeness law.
+   - b(k) averaged over 20 random k-subsets per image;
+   - a leave-one-system-out b;
+   - a jackknife over systems for settings with <= 9 systems.
+G2-D (GPU, ~1.5 GPU-h): XM3600.
+   - Run the existing queue job (39_xm3600_eval.sh; xm3600_oiv7.py score) for P1_s43 / fuse2_s42 / zero-shot,
+     short + detailed, on data/xm3600_subset.txt.
+   - Frontier vs the VI XM3600 refs (k = 1, 2 only) and vs OIV7 verified labels (verified precision only).
+   - Prediction from 3b: b_refs(k=2) in about [0.45, 0.60]; OIV7-verified b at least 0.15 higher.
+G2-E (CPU, 0 GPU, optional): public outputs of other backbones.
+   - THumB 1.0 (arXiv:2111.08940): system and human captions on COCO with ratings (VERIFY that the release
+     contains per-image captions).
+   - Rohrbach et al. CHAIR repo outputs (VERIFY that they are downloadable).
+   - Score them in English vs instance labels and 5 refs. Gives older CNN-LSTM/transformer backbones at no GPU
+     cost.
+Pre-registration (write before any G2-B/D output lands):
+  Primary endpoint: paired Delta b with image-bootstrap 95% CI (B = 1000, draws shared within an image set).
+  Secondary: count-matched residual in P points against the frontier of the same gold.
+  P1 (H1): b(5 refs) - b(1 ref) > 0 with CI > 0 for every new backbone family. b(inst) > b(5 refs).
+  P2 (H2): for each backbone, |b_EN - b_VI| <= 0.05 (CI inside +-0.05) against instance gold.
+  P3 (H3): |b(T0.5 vote family) - b(greedy prompt family)| <= 0.05 per backbone.
+  P4 (H4): against instance gold, backbones differ in intercept (at least one pair > 2 P apart at matched M)
+      while sharing b within 0.05.
+  Kill rules:
+  - K1: P1 fails on >= 2 datasets. Then the completeness law is dropped and only "b is dataset-specific"
+    is reported.
+  - K2: P2 fails for >= 2 of 3 backbones. Then language changes the exponent; report it per language.
+  - K3: if power-law RMSE > 3 P within a style-matched family on any gold, report the frontier only as a local
+    linearisation around the operating range.
+
+5. CLAIMS GEMINI MUST VERIFY
+ 1. Rerun g2_frontier.py. b_anc(KTVIC) = 0.7468; ladder b_ols 0.703; refs1..5 curve; COCO inst 0.846; UIT inst 0.943.
+ 2. My COCO reference gold uses raw Karpathy sentences parsed per image from dataset_coco.json. Check that it
+    equals score_coco_probe's gold. P/TP reproduce object_prf-short/-detailed.txt to 0.1, so it should.
+ 3. The temperature of samples/fuse2_s42-test-short.jsonl is assumed to be e5_sample.py's default (T = 0.8,
+    top-p 0.95). Confirm from the run log.
+ 4. The dev300 greedy file .session_backup/machines/n2/ncs-data/rl/p1dev_s42-dev300-short.preds.json has sha256
+    1e183383... (the "greedy" hash in data/results/upe/upe_choose_t.json).
+ 5. The UPE residuals in 3d are implied via R = c0 + c1*TP. Recompute them from actual UPE-chosen captions
+    (upe_mbr.py ktvic) before quoting.
+ 6. Legacy KTVIC systems are -25 to -46 P off the frontier. Confirm this is style/leakage (cjk_rate.json) and
+    not a key or format mismatch.
+ 7. "Vote-threshold mid-range above the frontier" is seed-dependent (+1.1 to +2.8 P). Treat it as descriptive.
+ 8. Citations: CapMAS venue (ICML 2025?), THRONE and VALOR-EVAL venues, SC-Captioner arXiv:2508.06125 content,
+    Buckland & Gey 1994 page range. Also check whether any 2025-26 paper fits a count- or length-indexed
+    hallucination law (my search: 6 queries, none found).
+ 9. b = p_marg/P and "F1 rises with M iff p_marg > F1/2" are algebra; check the derivation once.
+
+6. RISKS AND FIT WITH PD-2
+Risks:
+ - Few systems outside KTVIC (6-9) and narrow M ranges. The two-anchor slope is unstable there: COCO anchors
+   span M 1.09-1.40, giving b_anc 0.98 vs b_ols 0.85. Mitigation: always report OLS over the family plus
+   bootstrap and LOO.
+ - A power law is only a local approximation: vote families are S-shaped.
+ - The only English points are human captions.
+ - EN and VI use different matchers (en_classes vs vi_objects), so cross-lingual intercepts are not comparable;
+   only exponents are.
+ - The k-subset curve uses file order (fixed in G2-C).
+ - UIT-ViIC test has 231 images: wide CIs.
+Fit with PD-2:
+ - Strengthens the evaluation/methodology pillar directly. The paper can state the frontier as a gold-indexed law,
+   with b measuring reference completeness, invariant within style-matched families and diagnostic where it
+   breaks.
+ - Count-matched comparison must use a frontier refit on the same gold and image set. Never transport b = 0.747.
+ - Explains why the COUNT control is the harder endpoint for selection methods (3d).
+ - Gives a principled reason the KTVIC frontier "held on every landed run": all landed runs were style-matched.
+ - It does not by itself supply a method that beats the frontier.
+
+7. SCORES (1-5)
+ Novelty 3: the trade-off is classical (IR, CHAIR, CCEval). The gold-completeness-indexed exponent and per-gold
+   invariance tests are new to my search, but incremental.
+ Feasibility 5: the core result is already computed on CPU from existing files. Extensions need about 9 GPU-h
+   and no new labels.
+ Expected impact 3: makes the methodology pillar general and reviewer-proof. It is not a method gain.
+ Risk 2: the main findings have tight paired CIs on existing data. The open risk is the English/backbone
+   replication (H2/H4).

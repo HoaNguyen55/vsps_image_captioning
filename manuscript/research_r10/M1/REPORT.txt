@@ -1,0 +1,249 @@
+R10 / M1 -- GROUNDING-VERIFIED OBJECT SELECTION AT MATCHED COUNT
+2026-10-14. Agent M1. CPU only (nice 19, 1 thread, < 1.5 GB, runs < 3 min). No images, no GPU, repo read-only.
+Folder: research_r10/M1/ (m1_headroom.py, m1_headroom.json/.log, rawtone/, m1_ground.py, m1_selfcheck.py, selfcheck.log)
+
+====================================================================================================================
+0. BOTTOM LINE
+====================================================================================================================
+- Idea: re-rank each image's pooled candidate classes using Qwen2.5-VL's own grounding of each class (box found,
+  P(co), box area, centrality, instance count, decode confidence). Pick exactly k_i classes, so any F1 change is
+  pure ranking. Test it against the raw-vote count control.
+- New CPU result: an oracle decomposition at matched count. At PLAN-F1's k_i on dev300, vs the strongest vote
+  control:
+  - a PERFECT presence verifier gains at most +4.6 F1;
+  - perfect re-ranking gains +10.3 F1;
+  - perfect tie-breaking gains +1.3 F1.
+  To clear "+1.0 F1, CI > 0", a signal must have marginal AUROC >= ~0.70 AND be independent of the votes.
+  Text-side salience (first mention) gives -0.9 F1.
+- Expected value: a 1.0-1.3 GPU-h dev300 screen with a hard pre-registered kill. My prior that it beats the count
+  control is about 20%.
+- The CPU decomposition plus the signal-to-dF1 curve is useful even if the pilot fails. It is a general count-control
+  ceiling for the whole verify / detect-then-describe family, and it strengthens the evaluation pillar.
+
+====================================================================================================================
+1. PROBLEM AND HYPOTHESIS
+====================================================================================================================
+Setup:
+- The PLAN-F1 / UPE gains are count shifts. Within an image, calibrated q ranks like the raw vote
+  (data/results/planf1/dev_plan_critique.json).
+- A selection method beats the count control only if it carries ranking information the votes lack.
+- Grounding can add two such kinds of information:
+  (a) presence: demote pooled classes the model cannot localise;
+  (b) salience: promote classes with large or central boxes. Humans name large, central objects
+      (Spain & Perona; Berg et al. 2012).
+
+H1 (primary): on dev300, the cross-fitted re-ranker GROUND_ALL = logistic on [v, g, v*g] + grounding features beats
+the POOL-VOTE control (top-k_i by 12v+g) at the same k_i (PLAN-F1 cap-3 counts) by dF1 >= +1.0 with 95% CI > 0.
+
+Falsifiable predictions (made before any GPU run):
+- P1: GROUND_ALL vs POOL-VOTE dF1 lies in [-1.0, +1.0], so the kill fires. Probability about 75-80%.
+- P2: has_box rate is >= 0.90 on in-union classes and >= 0.75 on non-union classes. Most non-union candidates are
+  real (54% are panel-confirmed, see §3), so presence separates weakly: marginal AUROC about 0.55-0.60, which maps to
+  dF1 <= +0.5.
+- P3: GEOMETRY_ONLY adds < +0.02 within-image AUC over the pool vote. P1's votes were trained on KTVIC references,
+  so they already encode reference salience; the text-salience arm already shows this.
+- If P1 fails upward (dF1 >= +1, CI > 0), this is the project's first selection method to beat the count control.
+
+====================================================================================================================
+2. CLOSEST PRIOR WORK (IDs checked by web search on 2026-10-14; * = some details only from secondary sources)
+====================================================================================================================
+Novelty ratings: method (grounding as a selection signal) is LOW-MODERATE; evaluation (count-matched ceilings and the
+signal-to-dF1 curve) is MODERATE. In my (limited) search I found no grounding or verification paper that reports
+matched-count dF1 against a self-consistency count control. Make no "first" claim.
+
+Verification and detect-then-describe:
+1. Woodpecker, arXiv 2310.16045.
+   - Post-hoc pipeline: concept extraction, questions, Grounding DINO + VQA validation, then correction.
+   - Evaluated on POPE/MME; it deletes or corrects objects and has no count control.
+   - New here: count fixed; does grounding RANK pooled candidates better than votes?
+2. HALC, arXiv 2403.00425 (ICML 2024).
+   - Focal-contrast grounding inside decoding, plus matching beam search; CHAIR-type metrics.
+   - Fewer objects lowers CHAIR trivially, and HALC has no matched-count control.
+3. Grounding DINO, arXiv 2303.05499: the detector inside Woodpecker-type verifiers; our R9 C3 COCO-80 veto with it
+   removed 9 of 1,017 P1 mentions (§3).
+4. arXiv 2510.27164 (2025): drops objects a detector ensemble does not confirm; deletion, no count control.
+
+Grounded MLLMs (the capability, not the selection rule):
+5-7. Kosmos-2, arXiv 2306.14824 (location tokens); Shikra, arXiv 2306.15195 (coordinates as text); Groma,
+     arXiv 2404.13013 (ECCV 2024, region tokens). None uses its own boxes to choose which objects a caption names.
+8. Qwen2.5-VL report, arXiv 2502.13923: grounding with absolute coordinates and JSON output (our instrument).
+
+Content selection from detections:
+9-10. Neural Baby Talk, arXiv 1803.09845 (CVPR 2018, detector-filled slots); Show, Control and Tell, arXiv
+      1811.10652 (CVPR 2019, region-set control). Both control WHAT is named; neither tests selection at matched count.
+
+Salience predicts mention (closest prior for hypothesis (b)):
+11. Berg et al., "Understanding and predicting importance in images", CVPR 2012, DOI 10.1109/CVPR.2012.6248100.*
+    - Importance = P(named in a description); predicted by logistic regression on size, location and category.
+    - New here: does the effect survive conditioning on the captioner's own sample votes, at fixed count?
+12. Spain & Perona, ECCV 2008; IJCV 2011, vol. 91*. Position and size are the most informative features.
+13. Tavakoli et al., arXiv 1704.07434 (ICCV 2017): salient objects are mentioned earlier.
+    - Our text-salience arm tests the textual version of this and finds no gain.
+
+Attention-box agreement (closest prior for the attention arm):
+14. Jiang et al., "Devils in Middle Layers", arXiv 2411.16724 (CVPR 2025).
+    - Attention mass inside the GT box separates real from hallucinated object tokens.
+    - New here: self-grounded boxes (no GT boxes) and a count-matched selection endpoint.
+15. arXiv 2503.06287: a few localization heads give boxes from text-to-image attention.
+16. LURE, arXiv 2310.00754: later-in-caption position signals hallucination. Our first-mention feature encodes this.
+
+====================================================================================================================
+3. EVIDENCE SO FAR
+====================================================================================================================
+Setup (m1_headroom.py, output m1_headroom.json):
+- Data: dev300; pool = P1_dev greedy + 6 samples at T 0.5 + 6 at T 0.8. This is PLAN-F1's pool:
+  - greedy: .session_backup/machines/n2/ncs-data/rl/p1dev_s42-dev300-short.preds.json, sha 1e183383..., asserted;
+  - samples: data/results/upe/*.jsonl.
+- Matcher v2 (HEAD rescap/chair.py, sha e47d249a...):
+  - 1,306 pooled class items, 4.35 per image, 52.3% in the 5-reference union;
+  - gold 3.50 classes per image, 1.23 of them outside the pool.
+- Every arm picks exactly k_i classes per image. Paired bootstrap B = 5000.
+- Reproduction with matcher v1 (RESCAP_RAW_TONE=1, output in rawtone/):
+  - plan - RAW-VOTE dF1 = +0.08 [-0.74, +0.91], p = 0.851, which is exactly dev_plan_critique.json;
+  - plan F1 58.954; 1,307 items.
+
+a) dF1 vs POOL-VOTE (12v+g) at matched k_i, matcher v2:
+
+  | arm (k_i = PLAN-F1, m 2.62)             | F1    | dF1 [95% CI]           |
+  |-----------------------------------------|-------|------------------------|
+  | POOL-VOTE control                       | 59.37 | --                     |
+  | RAW-VOTE (v, then g, lp)                | 58.62 | -0.76 [-1.52, -0.03]   |
+  | PLAN-F1 q (calibrated)                  | 58.97 | -0.40 [-1.49, +0.68]   |
+  | TEXT-SALIENCE (first-mention features)  | 58.52 | -0.85 [-2.18, +0.46]   |
+  | TIE-ORACLE (y breaks pool-vote ties)    | 60.66 | +1.29 [+0.62, +2.04]   |
+  | PRESENCE-ORACLE (demote panel-unconf.)  | 63.95 | +4.58 [+3.34, +5.95]   |
+  | FULL-ORACLE (y first)                   | 69.71 | +10.34 [+8.24, +12.62] |
+
+  - Greedy counts (m 1.76): presence +3.86 [+2.57, +5.32], full +10.33, tie +0.29, text -0.05.
+  - Top-3 counts (m 2.77): presence +4.57, full +9.53, tie +1.38, text -0.92.
+  - Matcher v1: presence +4.30, full +9.87, tie +1.19, text -1.47 [-2.79, -0.21] (same picture).
+  - The PRESENCE-ORACLE demotes every class neither human panel names (KTVIC union, or the OpenViIC panel on 296 of
+    300 images; OpenViIC used as an evaluation bound only). It is an UPPER bound for any presence verifier.
+  - Reading: presence verification can reach at most 44% of the matched-count headroom. The other 56% is choosing
+    among real objects (salience and naming style).
+
+b) Signal-to-dF1 curve. s = delta*y + N(0,1), independent of the votes given y (optimistic). Cross-fitted with
+   [v, g, v*g], top-k_i, mean of 5 seeds:
+
+  | marginal AUROC of s | within-image AUC | dF1 vs POOL-VOTE                     |
+  |---------------------|------------------|--------------------------------------|
+  | 0.57                | 0.734            | -0.46                                |
+  | 0.63                | 0.754            | +0.49                                |
+  | 0.70                | 0.784            | +1.55 (seed-0 CI [+0.32, +3.42])     |
+  | 0.76                | 0.814            | +2.58                                |
+  | 0.85                | 0.880            | +5.31                                |
+
+  For reference, the pool vote's own within-image AUC is 0.726. The bar is roughly an independent AUROC-0.70 signal.
+
+c) Anatomy of the control's errors at k_i:
+  - False positives: người 29, đường 21, phụ nữ 20, quầy hàng 15, áo 13, nhà 13, cửa 11, toà nhà 11, đàn ông 10.
+  - 54.4% of the false positives are named by the OpenViIC panel (real but unreferenced).
+  - Misses: người 24, áo 21, đàn ông 16, quầy hàng 10.
+  - These errors are mostly person-noun granularity and stuff nouns. Boxes for người, đàn ông and phụ nữ coincide,
+    so grounding cannot decide that choice.
+
+d) Earlier internal evidence:
+  - R9 C3 (manuscript/research_r9/C3_halluc_decode/REPORT.txt §0(2), §2d): a Grounding DINO COCO-80 veto
+    (data/results/tags_gdino.json, test only, tags with no boxes) drops 9 of 1,017 P1 mentions, dP +0.0
+    [-0.2, +0.3]. COCO-80 hallucinations are only 1.7 of 21.2 false-positive points.
+    Qwen open-vocabulary grounding differs: it can box stuff nouns (đường, cửa, nhà) that COCO-80 cannot judge.
+  - E2 probe (data/results/e2_probe.log): Qwen P(có) AUROC 0.709 with the image vs class prior 0.710; a hidden-state
+    probe at layer 24 reaches 0.807. R6 found the probe equal to the vote veto.
+
+====================================================================================================================
+4. PILOT FOR GEMINI TO RUN (dev300 first; test only after a dev PASS)
+====================================================================================================================
+Data: data/splits/ktvic_dev300.txt; KTVIC images $NCS_DATA/datasets/ktvic/images; P1_dev greedy
+n2:/root/ncs-data/rl/p1dev_s42-dev300-short.preds.json (sha 1e183383...); samples data/results/upe/
+p1dev_s42-dev300-short-T0.5.jsonl (sha 876a1d42...) and -T0.8.jsonl (sha 60ebd640...).
+
+Step 0 (freeze):
+- Gatekeeper copies m1_ground.py and m1_headroom.py into the repo (set REPO/GREEDY in m1_headroom.py) and writes
+  manuscript/prereg/2026-10-1x_m1_grounding.md with the hashes, matcher v2 and the rules below.
+
+Step 1 (dry run, < 0.05 GPU-h):
+  NCS_DATA=/root/ncs-data python m1_ground.py --repo /root/vsps --greedy G.preds.json \
+      --samples S_T0.5.jsonl S_T0.8.jsonl --out ground_dry.jsonl --limit 2
+- Overlay the boxes on the 2 images to confirm the coordinate convention (absolute pixels of the resized input,
+  normalised by image_grid_thw*14).
+- Time the run and extrapolate. Only a coordinate bug may be fixed after this step.
+
+Step 2 (Stage 1a, est. 1.0-1.3 GPU-h on one 3090):
+- Same command without --limit, --out ground_dev.jsonl. Base Qwen2.5-VL-7B-Instruct, bf16, no adapter (~17 GB).
+- About 1,306 items, each one P(co) forward (scripts/probe_existence.ask) + one greedy grounding (<= 256 tokens).
+- Fixed prompt: 'Locate every instance of "{vi}" (a Vietnamese noun) in the image and output the bbox coordinates in
+  JSON format. If there is none, output [].'
+
+Step 3 (CPU, < 3 min):
+  NCS_DATA=... python m1_headroom.py ground_dev.jsonl   # writes m1_stage2.json
+- Features: logit P(co), has_box, log max box area, centrality, log1p(n_box), summed area, mean log-prob.
+- Arms: GROUND_ALL, PRESENCE_ONLY, GEOMETRY_ONLY. Each is cross-fitted on PLAN-F1's folds (seed 0) with [v, g, v*g].
+- Each arm is compared with POOL-VOTE and RAW-VOTE at three count rules.
+- Self-check: m1_selfcheck.py checks that a planted signal passes and a null signal fails (selfcheck.log: OK).
+
+Pre-registered rules (dev300):
+- G0, instrument validity (KTVIC references only):
+  - pass needs has_box rate >= 0.85 on in-union items and a parsed rate >= 0.95;
+  - on failure: one fallback run with a 113-entry English gloss table, frozen and hashed first and flagged as a
+    model-made lexical resource (+1.0 GPU-h);
+  - if the fallback also fails: STOP, "instrument invalid" (not a test of H1).
+- K1, PRIMARY: GROUND_ALL vs POOL-VOTE at PLAN-F1 k_i (object_prf.paired, n = 5000).
+  - Needs dF1 >= +1.0 and a 95% CI lower bound > 0, AND dF1 > 0 at both greedy_k and top3_k.
+  - Otherwise STOP: no Stage 1b, no realisation, no test. Report as a matched-count negative.
+- K2, mechanism wording: "salience" may be claimed only if GEOMETRY_ONLY alone has a CI lower bound > 0. Otherwise
+  call the gain "verification".
+- Stage 1b, attention-box agreement (runs only if PRESENCE_ONLY dF1 >= +0.5; est. 0.5 GPU-h):
+  - P1_dev adapter, eager attention, teacher-forced on each pool caption that names the class;
+  - mean attention over layers 14-21 and all heads, from the class tokens to the image tokens;
+  - feature = attention mass inside the union of the class's boxes divided by the box-area share, max over captions;
+  - same K1 rule. No code is written for this until the gate opens.
+- Stage 3, test (only if K1 passes):
+  - fit on all dev300 and freeze; test pool = PLAN-F1 test step 1 (~1.3 GPU-h, shared) + grounding on ~2,430 test
+    items (~2.0 GPU-h); primary = the same contrast at the PLAN-F1 test k_i;
+  - caption level: realise the grounded plan and the POOL-VOTE plan with the PLAN-F1 realiser planf1_s42
+    (2 x 0.25 GPU-h); report all D10 columns.
+
+Budget: expected 1.0-1.3 GPU-h (a dev kill is likely); worst case ~6.6 GPU-h plus the 1.75 GPU-h realiser training
+already queued as PLAN-F1 job 51; CPU < 0.1 h.
+
+====================================================================================================================
+5. CLAIMS GEMINI MUST VERIFY
+====================================================================================================================
+1. All arXiv IDs and venues in §2.
+   - Starred details (Berg 2012 features; Spain & Perona IJCV pages) came from citing pages only.
+2. Qwen2.5-VL outputs absolute pixel boxes on the processor-resized image. Qwen3-VL uses 0-1000 relative boxes;
+   confirm on the dry run.
+3. Re-run m1_headroom.py (CPU, about 2 min) and match §3 (v2), plus rawtone/ (RESCAP_RAW_TONE=1, run in a copy).
+4. probe_existence.ask's P(có) token handling still holds with the current transformers version.
+5. Measure the GPU-h estimates on the dry run before queueing.
+6. "No matched-count evaluation of grounding verification found" is search-limited. Re-search before any
+   related-work sentence.
+
+====================================================================================================================
+6. RISKS AND FIT WITH PD-2
+====================================================================================================================
+Risks:
+- Most boundary errors are naming choices among REAL objects (person-noun granularity, stuff nouns). Grounding cannot
+  see these choices, which is why my prior is pessimistic (P1, P2).
+- Vietnamese class names may ground poorly (G0 plus the gloss fallback).
+- Large stuff boxes (đường, nhà) may push geometry the wrong way.
+- 300 images and 10 features: cross-fitting limits overfitting, and the primary is fixed in advance.
+
+Model-signal flags: P(co), boxes and attention are model-generated FEATURES, flagged like the votes. Labels are KTVIC
+human references only; OpenViIC is used only for the §3a evaluation bound.
+
+Fit with PD-2:
+- Pillar: evaluation/methodology. The §3 decomposition (presence ceiling 44% of the matched-count headroom, tie
+  ceiling 12%) and the signal-to-dF1 curve are CPU-only and ready now.
+- A positive K1 gives the paper's first count-surviving method. A negative K1 extends the PLAN-F1/UPE null from two
+  methods to the verification family.
+
+====================================================================================================================
+7. SCORES (1-5)
+====================================================================================================================
+- Novelty 3: the method is close to Berg 2012 + Woodpecker + Devils; the count-controlled ceilings and curve are new
+  as far as I searched.
+- Feasibility 5: 1.0-1.3 GPU-h, scripts written, CPU scorer self-checked.
+- Expected impact 2: about 20% chance of a positive. The evaluation tool alone has moderate value.
+- Risk 4 (high): the evidence points to a null (54% of false positives are real objects; presence ceiling +4.6 even
+  when perfect).

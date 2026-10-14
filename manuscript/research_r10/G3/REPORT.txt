@@ -1,0 +1,224 @@
+G3 REPORT (R10): a generative theory of the count frontier, TP = 1.3996 (M/1.7826)^0.7468
+Agent G3, 2026-10-14. CPU only (nice 19, 1 thread, each pilot < 1 min, < 0.5 GB). Repo read-only. No VLM/LLM loaded, no labels
+made, no OpenViIC text read. Work dir: research_r10/G3/ (scripts *.py, outputs out/).
+
+==========================================================================================================================
+0. BOTTOM LINE
+==========================================================================================================================
+- Statistics of the annotators ALONE cannot produce b = 0.75. Model the references as Zipf/Heaps-type naming propensities:
+  beta-binomial fit to the 5-annotator incidence data, plus Chao2 for unseen classes. With ANY monotone ranking of those
+  objects (ideal ranker, pseudo-annotator union, logit noise at any temperature, constant hallucination share), the model
+  gives b = 0.87-0.96. Calibrated to P1's precision, it predicts P = 75.4-76.8 at fuse2-detailed's count; observed 67.95.
+- What works is a two-factor decomposition, measured on gold built from h = 1..5 test references:
+    P_sys(M; h) = s1 (M/M1)^-D * P_pool(M; h),  so  b_sys(h) = b_pool(h) - D.
+  - P_pool(M; h) is the precision of a pool of k fresh humans against h others. It is computed exactly from the
+    k-annotator accumulation curve U(k): TP = U(k) + U(h) - U(k+h), with Chao2 extrapolation where k + h > 5.
+  - Two system constants, s1 = 0.892 and D = 0.194, fit all 10 system precisions (P1 and fuse2-det x h = 1..5) with
+    RMSE 0.78 P.
+  - Fitting on h <= 4 only predicts b(h=5) = 0.756, against the pre-registered 0.7468.
+- WHY 0.75: 1 - b = 0.253 = 0.053 (reference saturation, the Heaps/Good-Turing part, 21%) + 0.200 (the system, 79%).
+  - The system part is D, the rate at which the share of a system's mentions that are not "human-nameable" grows with
+    count.
+  - Humans have D = 0: their gold-hit rate is flat over mention position (86.6/83.5/84.9/85.5). Detailed systems decay
+    as r^-0.25.
+- What a frontier-beating method must change: only s(M), the in-population share. P_pool is fixed by the references.
+  - Re-ranking by the model's own evidence (vote share, calibrated q, count plans, longer targets) leaves s(M) unchanged,
+    hence a zero residual. This explains UPE, PLAN-F1 and the ladder runs.
+  - Halving D is worth about +3.9 P / +3.5 F1 at detailed counts. Raising s1 from 0.89 to 0.95 is worth about +5.1 P /
+    +3.2 F1 at P1's count.
+- Value: a reference-count-invariant object precision, s = P_sys / P_pool. It gives two numbers per system (s1, D),
+  comparable across datasets with different numbers of references. No prior work found derives or decomposes this curve.
+
+==========================================================================================================================
+1. PROBLEM AND HYPOTHESIS
+==========================================================================================================================
+Elasticity identity (exact). b(M) = dlnTP/dlnM = P_marg(M) / P(M). A constant b means the gold-hit rate of the r-th
+  marginal mention decays as r^-(1-b) = r^-0.253. Between the anchors, marginal P = (2.143-1.400)/(3.154-1.783) = 54.2%
+  against an average of about 73%.
+Model (salience-ordered naming, two populations):
+  - Each image has human-nameable objects with naming propensity pi, heavy-tailed. Measured: Q_c = classes named by
+    exactly c of 5 annotators = 1.28/1.01/0.65/0.39/0.38 per image (c = 1..5); Chao2 Q0 = 0.65 unseen nameable classes
+    per image; U(k) = 1.743/2.577/3.101/3.460/3.717 (test).
+  - The gold is the union of h annotators.
+  - A system lists objects in decreasing evidence. A share s(M) of its mentions falls in the nameable population and
+    behaves like a pooled human (hit rate P_pool(M; h)). The rest (hallucinated, or real but never named in KTVIC style)
+    misses the gold.
+  - Hence P_sys = s(M) P_pool(M; h). Power-law share: s = s1 (M/M1)^-D.
+Annotator-side identities (exact, no model):
+  - P_1vh-pool = 1 - [U(k+h) - U(h)] / U(k).
+  - Good-Turing form: P_1v4 = 1 - Q1/(5 U1) = 85.25, vs the measured 85.33 (human_parity.json; the gap is the matcher
+    version).
+Falsifiable predictions:
+  H1 (gold-size invariance): D and s1 do not depend on h. Kill: for any frontier system pair, max_h D - min_h D > 0.06
+     with a CI excluding 0, or the 2-parameter RMSE exceeds 1.5 P.
+  H2 (panel extension): with OpenViIC added to the gold, b_sys rises, and D' < D by the share of "real but
+     KTVIC-unnameable" mentions.
+  H3 (position law): any new detailed-mode frontier run has a position decay alpha_pos in [0.21, 0.29], while human
+     captions stay flat (alpha < 0.05).
+  H4 (methods): a method that moves only the count, or re-ranks within an image by the model's own evidence, keeps
+     (s1, D) within seed noise. Only a signal outside the model's evidence can move s.
+
+==========================================================================================================================
+2. CLOSEST PRIOR WORK (verified this round by web search unless marked)
+==========================================================================================================================
+1. Spain & Perona, "Measuring and Predicting Object Importance", IJCV 91 (2011); ECCV 2008 precursor "Some Objects Are
+   More Equal Than Others". Importance = P(object named first), with naming order modelled as draws from an urn.
+   - NEW here: we model the SYSTEM's naming order against an incomplete multi-annotator gold, and derive the frontier
+     exponent and its gold-size dependence. Overlap: moderate (the ordered-naming premise).
+2. Berg et al., "Understanding and Predicting Importance in Images", CVPR 2012 (DOI 10.1109/CVPR.2012.6248100). Predicts
+   what gets described from composition, semantic and context factors.
+   - NEW: a frontier theory; their importance model is a candidate source of the nameability prior (pilot P-E).
+     Overlap: low.
+3. Zhou et al., LURE, arXiv 2310.00754 (ICLR 2024). Hallucinated objects appear later in the generated text (position
+   factor).
+   - Feng et al., arXiv 2406.12663 (2024): object size shrinks along a caption; they question "more detail = more
+     hallucination".
+   - arXiv 2507.12455 (2025, title seen in search, details UNVERIFIED): hallucinations rise later in captions.
+   - NEW: a quantitative law (alpha_pos ~ 1 - b), and a decomposition into a reference part and a system part.
+     Overlap: moderate on the empirical position effect.
+4. Kalai & Vempala, "Calibrated Language Models Must Hallucinate", arXiv 2311.14648 (STOC 2024). The Good-Turing singleton
+   rate lower-bounds hallucination.
+   - NEW: Good-Turing/Chao applied to the REFERENCE process. Human precision equals 1 - singleton rate exactly, and it
+     sets b_pool. Overlap: low (different object).
+5. Chao et al., "Rarefaction and extrapolation with Hill numbers", Ecol. Monogr. 84(1):45-67 (2014), DOI
+   10.1890/13-0133.1. Incidence rarefaction and extrapolation. "Reliable up to about double the sample": Colwell et al.
+   2012, UNVERIFIED.
+   - NEW: used to compute a reference-size-dependent object frontier. Overlap: tool only.
+6. Misra et al., arXiv 1512.06974 (CVPR 2016), reporting bias (verified in R8 T3); Rohrbach et al., arXiv 1809.02156
+   (EMNLP 2018), CHAIR (verified, search hit). Conceptual root of the "nameable share" and the metric being modelled.
+7. Menon et al., ICML 2015: AUC is invariant to label corruption. Explains why monotone recalibration and count methods
+   stay on the curve (NOT re-verified this round).
+   Davis & Goadrich, ICML 2006, the PR/ROC relation: the frontier is a PR curve in count coordinates (NOT re-verified).
+Novelty scan (6 web searches: Heaps law captions/annotators; precision-count power law; hallucination vs length theory).
+  - No paper found that fits or derives TP ~ M^b for object mentions.
+  - No paper found that predicts the precision-count curve from annotator accumulation statistics.
+  - No paper found that splits it into a reference part and a system part.
+  - The nearest is Sekai2, arXiv 2608.09449, which fits Heaps' law (exponent about 0.43) to annotation prompts: vocabulary
+    only, not objects.
+Ratings: decomposition and invariant precision MODERATE-HIGH; position law LOW-MODERATE; "why 0.75" as a whole MODERATE.
+
+==========================================================================================================================
+3. EVIDENCE SO FAR (CPU, all files under research_r10/G3/out/)
+==========================================================================================================================
+3a. Annotator statistics (annot_stats.json; KTVIC test 558 images / train 3,769; matcher = object_prf's objects_in)
+  - U(k), k = 1..5:
+    - test 1.743/2.577/3.101/3.460/3.717;
+    - train 1.634/2.397/2.895/3.251/3.519.
+    - The Heaps slope U(5)/U(1) gives beta about 0.47.
+  - Q1..Q5 per image (test): 1.285/1.014/0.647/0.394/0.376. Chao2 Q0 = 0.651 (test), 0.821 (train).
+  - Classes ever named: 83 (test), 106 (train).
+  - Human 1v4 precision by mention position (test): 86.6/83.5/84.9/85.5, i.e. FLAT. Train: 85.3/82.0/80.8/78.8, a mild
+    decline.
+3b. Human-pool exponent against h-annotator gold (frontier_models.json and decomp_fit.log)
+  - b_pool(h), interpolated at the anchors 1.783 -> 3.154: 0.727/0.824/0.881/0.922/0.947 for h = 1..5.
+    - Exact (no extrapolation) for h <= 2. Chao extrapolation enters for h >= 3.
+  - Human-pool P at M1 for h = 5: 89.3. P1: 78.5.
+3c. Annotator-only generative models, test (beta-binomial a = 1.63, b = 2.43, N = 4.37 candidates per image; fits U(1..3)
+    within 0.03; underfits U(5) by 0.14, i.e. the real tail is heavier)
+  - Two-point b:
+    - ideal ranker 0.909;
+    - k-union 0.947;
+    - logit ranking noise T = 0.25..2: 0.907-0.944.
+  - With a constant 9.4% outside share (C3): 0.925-0.958.
+  - Temperature calibrated to P1 (T = 2.8): b = 0.962 and P(MF) = 76.8. Train fit: 0.929 and 75.4. Observed: 0.747 and
+    67.95.
+  => The exponent is NOT a property of the reference process alone.
+3d. System exponent vs gold size (gold_size.json): P1 (3 seeds) -> fuse2_s42-detailed against the union of h of the 5
+    references (all subsets)
+  | h | 1 | 2 | 3 | 4 | 5 |
+  |---|---|---|---|---|---|
+  | b_sys | 0.561 | 0.640 | 0.689 | 0.723 | 0.747 |
+  | b_pool - b_sys | 0.166 | 0.185 | 0.192 | 0.199 | 0.200 |
+  - P(M1) / P_pool(M1): 0.90 / 0.90 / 0.90 / 0.89 / 0.88.
+  - The 2-parameter fit (s1 0.892, D 0.194) has residuals -0.5..-1.0 P for h <= 2 and +1.2 P for h = 5. This is
+    consistent with Chao2 being a lower bound, which inflates P_pool(h=5).
+  - Fit on h <= 4: predicted b(5) = 0.756 and P(M1)/P(MF) = 80.1/69.7, against 0.7468 and 78.5/67.95.
+3e. Position law (sys_stats.json; frontier_models.json "nested_positions")
+  - Detailed systems: alpha_pos = 0.251/0.277/0.264 for fuse2 s42/s43/s44, 0.271 for e5, 0.236 for tags_fuse2. So
+    1 - alpha = 0.72-0.76, matching b = 0.7468.
+  - Short systems: 0.10-0.16 (at most 3 mentions).
+  - Off-frontier systems: zero-shot 0.60, vcd 0.59, legacy main 0.44.
+3f. Not prefix-nested (frontier_models.json "truncation")
+  - Truncating fuse2-det, fuse2_s43-det and e5-det mention lists to P1's count gives P = 74.8/75.3/75.5, below P1's 78.5.
+    The truncation-curve b is 0.81-0.83.
+  - So frontier invariance is invariance of the SHARE s(M) across recipes, not one shared ordered list. Caption order is
+    partly syntactic.
+3g. Cross-system frontier (32 KTVIC-trained on-frontier runs in data/results, selffuse excluded)
+  - OLS b = 0.728.
+  - Quadratic local b: 0.70 at M1, 0.75 at MF. No significant curvature: the runs cluster at M of about 1.8, 2.1 and 3.2.
+  - Selffuse runs: truncation b about 0.79-0.81, but P is 3-5 lower at every count. That is an s1 loss, not curvature.
+
+==========================================================================================================================
+4. PILOT DESIGN FOR GEMINI (0 GPU-h for A-D; E is 0 GPU-h if dev300 pools exist, else about 1 GPU-h)
+==========================================================================================================================
+Data: KTVIC test/train json, data/results/*.preds.json, human_parity.json, the dev300 sample pools behind
+  data/results/planf1/. OpenViIC is read only at run time, for aggregates only.
+A (reproduce, CPU about 5 min). Copy G3's annot_stats.py, sys_stats.py, frontier_models.py, gold_size.py and
+  decomp_fit.py to a scratch dir, then run each with nice -n 19 env OMP_NUM_THREADS=1 python3 <script> in that order.
+  Assert the numbers in section 5.
+B (pre-register H1, CPU about 10 min). Add image bootstrap (B 1000) to gold_size.py and decomp_fit.py.
+  - Pairs: p1assist s42-44 -> e5_s42-detailed; mr5assist_s42-short -> tags_fuse2_s42-detailed; p1mask_s42 ->
+    fuse2_s43/s44-detailed; each landed ladder run (cons/unf2/rnd2/multiref/p1ep4) against the P1 anchors.
+  - Endpoint: D(h) per pair with CI. Report s1 and D next to every frontier residual.
+  - Kill: as H1 in section 1.
+C (H2, CPU). Gold' = KTVIC 5 refs union the OpenViIC panel (555 test images).
+  - Recompute U' and b_pool' for the mixed panel. The panels are not exchangeable, so enumerate the KTVIC subsets plus
+    the panel block.
+  - Endpoint: D' vs D. D - D' is the "real but KTVIC-unnameable" part of the system term. Cross-check with C3's 56.5%.
+D (instance gold, CPU). COCO-2500 probe and coco_transfer preds against COCO instance labels; human pool from C10's
+  human_union.py (k = 1..5).
+  - Endpoint: D_inst, the hallucination-only part.
+  - Prediction: D_inst < D_KTVIC, with C + D summing to about D.
+E (method test, primary endpoint count-matched, PD-2 Q1). Nameability re-ranker on the dev300 sample pools.
+  - Score = vote share + lambda * logit of a per-class naming-rate prior, estimated from KTVIC train-minus-dev300
+    annotations only (human labels, no AI labels).
+  - Per image, keep the baseline's count k_i. Compare with RAW-VOTE-MATCHED at the same k_i.
+  - Pre-register lambda on dev halves.
+  - Kill: dF1 CI includes 0 or point < +0.5. Theory prior: small (+0.3 to +1), since SFT already absorbs class priors
+    (PLAN-F1's prior weight 0.28 vs vote 2.82).
+  - Only on a pass: one test look, 3 seeds, frozen lambda.
+CPU-h total about 0.5. GPU-h: 0 (E: about 1 GPU-h only if the dev300 pools must be regenerated).
+
+==========================================================================================================================
+5. CLAIMS GEMINI MUST VERIFY
+==========================================================================================================================
+1. U(k) test = 1.743/2.577/3.101/3.460/3.717, Q1 = 1.285 per image, and P_1v4 = 1 - Q1/(5 U1) = 85.25 vs 85.33 in
+   human_parity.json. Explain the 0.08 gap (matcher v1 vs v2?).
+2. b_sys(h) = 0.561/0.640/0.689/0.723/0.747 and b_pool(h) = 0.727/0.824/0.881/0.922/0.947 (decomp_fit.log).
+3. 2-parameter fit: s1 0.892, D 0.194, RMSE 0.78 P. The h <= 4 fit predicts b(5) = 0.756.
+4. Annotator-only models: b in [0.87, 0.96]. The T-calibrated P(MF) = 76.8 test / 75.4 train vs 67.95 observed.
+5. alpha_pos for fuse2-det s42/s43/s44 = 0.251/0.277/0.264, e5-det 0.271. Human 1v4 positions are flat.
+6. Cross-system OLS b = 0.728 over the 32 runs listed in frontier_models.json.
+7. Truncating fuse2/e5 detailed lists to M1 gives P 74.8-75.5 (< 78.5).
+8. Citations: Spain & Perona IJCV 91 (2011) pages and DOI; the arXiv 2507.12455 title and authors; the Colwell 2012
+   "double the sample" rule; Menon ICML 2015; Davis & Goadrich ICML 2006 (not re-verified here).
+9. Chao2 assumes exchangeable annotators, which fails on KTVIC (paraphrase chain, V4 1d). Rerun 3b with non-adjacent
+   subsets only, and report how much b_pool(5) moves.
+
+==========================================================================================================================
+6. RISKS AND FIT WITH PD-2
+==========================================================================================================================
+Risks:
+- D has been measured on ONE system pair. Its h-invariance has a slight upward drift (0.166 -> 0.200) and needs B.
+- b_pool(5) rests on Chao2, a lower bound, under violated exchangeability. The h <= 2 values are exact, so the
+  decomposition survives, but the 21% / 79% split could shift to about 15% / 85%.
+- P_pool is evaluated at the total count M, not at the in-population count s*M. A refinement changes D by about 0.01-0.02.
+- s(M) is descriptive. Splitting it into hallucination vs unnameable needs C and D.
+- The power law is a local summary. The models give slowly varying elasticities. Do not extrapolate beyond M of about
+  3.3; the selffuse residuals are an s1 loss, not curvature.
+Fit with PD-2: the EVALUATION/METHODOLOGY pillar.
+- It explains frontier invariance and the 0.75 value.
+- It turns the C10 R2 "k-annotator human frontier" into the b_pool term of the same equation.
+- It gives a reference-count-invariant precision s = P/P_pool usable on KTVIC, UIT-ViIC and COCO.
+- It states the exact target a method must hit (raise s1 or lower D) and why count-only methods cannot.
+
+==========================================================================================================================
+7. SCORES (1-5)
+==========================================================================================================================
+- Novelty 4: no prior derivation or decomposition found. The components (Good-Turing, Chao, the position effect) are known.
+- Feasibility 5: CPU only, existing files, minutes.
+- Expected impact 3: a strong methodology section and a sharper target. It is not itself a method that beats the frontier.
+- Risk 2: the main claim (D invariant in h) holds on one pair; B can kill it cheaply.
+
+FILES: annot_stats.py, sys_stats.py, frontier_models.py, gold_size.py, decomp_fit.py; out/annot_stats.json,
+  out/sys_stats.json, out/frontier_models.json, out/gold_size.json, out/decomp_fit.log.

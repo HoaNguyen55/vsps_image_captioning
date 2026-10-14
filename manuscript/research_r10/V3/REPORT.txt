@@ -1,0 +1,226 @@
+R10 V3 -- A Vietnamese caption error taxonomy measured on existing outputs (rule-based, reference-derived, no AI labels)
+Agent V3, 2026-10-14. Folder: research_r10/V3/ (scratchpad). Script: V3/taxonomy.py (sha256 05992fde...), output
+V3/taxonomy.json (sha256 450f6c91...), table V3/table.txt (V3/show.py prints it). Run: 11 s wall, 234 MB, 1 core.
+
+0. BOTTOM LINE
+- I built a 15-class error taxonomy. It is rule-based and reference-derived, with no model and no AI label. Content
+  classes: object, person-type, count, colour, size, relation, plus salient omission. Form classes: classifier slot,
+  register, CJK, English, fragment, function-word end, cut-off, repeated 5-gram. I measured it on 25 KTVIC-test
+  output sets (558 images each), 4 sample pools and the 35_e RL log.
+- KTVIC SFT removes almost every language-form error: each form class is <= 3% of P1/fuse2 captions (one exception:
+  fuse2-detailed's template repetition, 17.7%), against 25-98% for zero-shot and legacy systems. For every fine-tuned
+  system the dominant error is object hallucination (P1 21%, fuse2 29% short / 52% detailed), followed by person-type
+  (7.6% / 11% / 19%).
+- What count-controlled object evaluation misses: 7-14% of the flagged error instances of the short fine-tuned systems,
+  19-20% for fuse2 detailed, 26-35% for zero-shot and 9-71% for legacy systems. It also misses form side effects of a
+  "pure count shift": MBR selection removes fragments (P1 -1.1 pp [-2.0,-0.4]) and adds CJK (fuse2 +0.7 pp [+0.2,+1.4]).
+- Two defects in the object metric itself:
+  (a) The CHAIR-vi hypernym lattice has no links from cô gái / chàng trai to phụ nữ / đàn ông / người. As a result,
+      38% of P1's person-type "hallucinations" and 68% of zero-shot-short's are same-gender specificity mismatches.
+  (b) The classifiers cây and quả are read as objects in 0.5-7% of captions.
+- The KTVIC references can verify only a small part of the non-object claims. Count is checkable for about 1-4% of
+  asserted count phrases, relation for <= 28%, size almost never. So count, attribute and relation errors need
+  independent human labels: the existing COCO instance counts. That is the pilot.
+- Novelty is moderate-low for a taxonomy. AMBER, CHAIR and van Miltenburg & Elliott already cover the content classes.
+  What is new: Vietnamese form classes, a blind-spot audit of a count-matched endpoint, and coverage per claim type.
+  Expected value: one appendix table plus a matcher fix for the PD-2 evaluation pillar, not a headline.
+
+1. PROBLEM AND HYPOTHESES
+Problem. The PD-2 primary endpoint compares object sets at matched object count. By construction it sees only object
+classes. It cannot see wrong counts, colours or relations, classifier misuse, off-register text, script leakage or
+truncation, and it inherits whatever its matcher gets wrong. How large is that blind spot, and which error class
+dominates each system? This can be measured on existing files only.
+
+Falsifiable predictions for the pilot (section 4). The observed values below come from this run.
+- H1 (count-flag validity): against COCO instance counts (existing human labels), the strict reference-derived count flag
+  has precision >= 0.70 for person and vehicle classes with <= 5 instances; the lenient flag has precision < 0.50.
+  Refuted if strict precision < 0.50.
+- H2 (lattice fix): adding the missing person links (matcher v3) raises object P and lowers CHAIR_i for every system,
+  more for zero-shot than for P1. It does not break the pre-registered count frontier: invariance still holds.
+  Refuted if |dP| < 0.2 pp for all systems, or if the zero-shot gain is <= P1's gain.
+- H3 (form side effects of selection): MBR/UPE selection lowers the fragment rate on dev300 (CI excludes 0 in >= 2 of 3
+  seeds), although its count-matched dF1 is about 0 (UPE kill 2 fired).
+- H4 (RL): CN-RLOO vs P1_dev on dev300 does not raise fragment, fw_end, register, CJK or English incidence (each CI
+  includes 0 or lies below 0). Refuted if any one of them rises with its CI above 0.
+
+2. CLOSEST PRIOR WORK (IDs verified by web search on 2026-10-14 unless marked)
+- Rohrbach et al., "Object Hallucination in Image Captioning", EMNLP 2018, arXiv:1809.02156 (ACL D18-1437). Defines CHAIR:
+  object-only and English. Here: CHAIR-vi is reused as the object class, and 13 non-object classes are added.
+  Novelty vs this paper: moderate.
+- van Miltenburg & Elliott, "Room for improvement in automatic image description: an error analysis", arXiv:1704.04198
+  (2017). A manual error taxonomy of an English captioner. Here: fully automatic, Vietnamese, with
+  references used as the only judge. Novelty: moderate.
+- Shekhar et al., "FOIL it!", ACL 2017 (P17-1024), arXiv:1705.01359. Single-word foil errors in captions, built
+  synthetically. Here: errors are found in real system outputs. Novelty: high relative to FOIL, but FOIL's aim differs.
+- Wang et al., "AMBER: An LLM-free Multi-dimensional Benchmark for MLLMs Hallucination Evaluation", arXiv:2311.07397.
+  The closest prior work: LLM-free, with existence, attribute and relation classes, but it needs dedicated annotations.
+  Here: no new annotation, the language-form classes are added, and evaluability coverage is reported.
+  Novelty vs AMBER: low-moderate.
+- Wu et al., "Evaluating and Analyzing Relationship Hallucinations in LVLMs" (R-Bench), ICML 2024, arXiv:2406.16449.
+  Relation hallucination needs targeted questions. This run shows that the KTVIC references cannot score relations:
+  0 contradictions at <= 0.10 evaluable relations per caption. Novelty: low.
+- Guan et al., "HallusionBench", CVPR 2024, arXiv:2310.14566. VQA-style diagnosis of language hallucination and visual
+  illusion. It does not taxonomise free-form captions. Novelty vs it: high, but the problem is different.
+- Dong et al., "Benchmarking and Improving Detail Image Caption" (CAPTURE), arXiv:2405.19092. Extracts objects,
+  attributes and relations with a scene-graph parser, for English, with no form classes. Novelty: moderate.
+- Zhai et al., "HallE-Control / CCEval", arXiv:2310.01779. Controls detail level when measuring hallucination, using a
+  GPT-4-assisted judge. This is the closest idea to "matched count", but it uses an AI judge.
+  Novelty: moderate (here no AI judge, and the blind-spot audit is new).
+- Marchisio et al., "Understanding and Mitigating Language Confusion in LLMs", EMNLP 2024, arXiv:2406.20052.
+- Hinck et al., "Why do LLaVA VLMs Reply to Images in English?", Findings of EMNLP 2024, arXiv:2407.02333.
+  Both papers measure wrong-language output. Here: the same failure, inside captions, as CJK and English classes
+  on an SFT captioner. Novelty: low-moderate.
+- Qu et al., "Mitigating Multilingual Hallucination in LVLMs", arXiv:2408.00550. A multilingual extension of POPE
+  (VQA), not caption errors. Seen in search only, details unverified: CLAIM (ACL 2025, arXiv:2506.11073).
+- Bai et al., "Hallucination of Multimodal LLMs: A Survey", arXiv:2404.18930. Its category/attribute/relation taxonomy
+  was NOT confirmed in the snippets I saw: verify before citing it for that.
+Overall novelty: MODERATE-LOW. The content classes are standard. Novel here: (i) Vietnamese form classes (classifier
+slot, register measured against reference rates, CJK, English, function-word ending), all scored by one AI-free
+instrument; (ii) a quantified blind spot of a count-matched object endpoint, per system; (iii) evaluability coverage
+reported for each claim type.
+
+3. EVIDENCE SO FAR (CPU, existing files only; KTVIC test, 558 images; incidence = % of captions with >= 1 error)
+Instrument. All norms come from the 17,345 KTVIC train references outside dev300 (the vi_diagnostics convention):
+- the 848 syllables that end some reference;
+- classifier-slot usage after a numeral or quantifier;
+- register-marker rates: an a-priori marker is used only if < 0.5% of references contain it, so "bức ảnh"
+  (3.6%) and "khung hình" (0.9%) are excluded;
+- the Vietnamese syllable inventory.
+English tokens are pure-ASCII words that are absent from KTVIC train and present in COCO-EN captions; loanwords
+(jeans, led, cafe...) are counted separately. Reused code: rescap.chair (objects_in, the gold lattice),
+vi_diagnostics.syllables, clean_supervision (CJK_RE, repeated_ngram n=5) and rl_reward.FUNCTION_END.
+Reference rules:
+- count: a caption numeral is contradicted only when >= 2 references state an explicit total (>= 2) for the SAME noun
+  and none of them agrees (strict rule); collectives such as cặp đôi are excluded;
+- colour: hue sets per noun, with neighbouring hues counted as agreement, so colour errors are a lower bound;
+- size and relation: an antonym in a reference for the same noun or pair, and no reference agreeing.
+
+Per-system incidence, % of captions (P1 = p1assist s42/43/44 mean; fuse2 = s42/43/44 mean; SD across seeds <= 1.9):
+  system           obj  pers  cnt*  col  clf  reg   cjk  eng  frag  fwE   cut  rep5  omit | invisible share / clean+flag
+  zeroshot-short   55.0 16.8  0.5  0.5  0.0  25.6  0.7  3.8  0.0  0.7   0.2  0.0  54.7 | 25.6% / 29.2%
+  zeroshot-det     97.5 27.2  0.9  5.4  1.1  98.0  5.2 16.8 22.2  7.3  50.2 17.6  39.4 | 34.6% / 100% (n=11)
+  P1 short         21.2  7.6  0.4  0.3  0.5   0.3  0.0  0.0  1.6  0.1   n/a  0.1  42.1 | 8.4-10.4% / 2.4-2.7%
+  P1 detailed      20.7  7.6  0.4  0.1  0.5   0.4  0.0  0.1  1.1  0.2   n/a  0.0  41.3 | 7.3-8.8% / 1.7-2.5%
+  fuse2 short      29.0 11.1  0.5  0.9  0.2   0.3  0.6  0.4  2.4  0.1   n/a  0.3  38.2 | 7.2-13.9% / 2.8-5.6%
+  fuse2 detailed   52.1 19.4  0.7  2.4  0.2   0.7  0.6  0.3  0.1  0.1   0.1 17.7  25.4 | 18.7-19.8% / 23-26%
+  official-det     70.4 20.3  2.2  1.8  3.9  98.4 27.8  4.1  8.2  1.8  10.0 57.2  54.7 | 59.1% / 100%
+  vsps-det         73.8 18.8  1.6  1.4  4.8  71.7  0.2  3.8  0.0  0.4   0.0 16.7  52.9 | 40.2% / 88.2%
+  * strict count rule. The lenient rule (any reference count conflict, including "một X" vs a plural) flags
+    P1 5.4%, fuse2-det 11.1%, zero-shot-det 16.5% and official-det 25.1%. In two lenient P1 flags I inspected, the
+    references describe single persons in multi-person scenes, which is why the strict rule is primary.
+  Size and relation: 0.0-0.2% everywhere. "invisible share" = flagged commission+form instances outside the object
+  set; "clean+flag" = object-clean captions (no object/person error) that carry >= 1 other error.
+  Dominant class: object hallucination for every system, except register for zero-shot-detailed and the official
+  legacy outputs. Hedging dominates the legacy register errors (có vẻ: 550 of 558 official-short captions); meta
+  language dominates zero-shot (cho thấy: 517 of 558 zero-shot-detailed captions).
+  Zero-shot detailed: 50.2% of captions are cut off (no final punctuation in a punctuating system; consistent with
+  max_new_tokens truncation) and 22.2% end in a fragment. The CJK rate of 5.2% matches data/results/cjk_rate.json.
+Paired bootstrap differences (pp [95% CI], B=2000, images resampled; only classes whose CI excludes 0):
+- p1_s43mbr - p1_s43 (short): obj +9.7 [5.9, 13.3]; person +2.7 [0.7, 4.7]; fragment -1.1 [-2.0, -0.4];
+  omission -5.9 [-9.1, -3.1].
+- fuse2_s42mbr - fuse2_s42: obj +12.7; person +4.1; CJK +0.7 [0.2, 1.4]; fragment -1.6 [-2.7, -0.7]; omission -3.8.
+- fuse2_s42 - p1assist_s42 (short): obj +6.5 [2.5, 10.2]; person +2.5 [0.4, 4.8]. No form class differs.
+- p1assist_s42 detailed - short: NO class differs; both are 12 syllables. P1 ignores the detailed prompt.
+- fuse2 detailed - short: obj +21.2; person +7.4; colour +2.3; rep5 +17.2 (template reuse across its two sentences);
+  omission -11.5.
+- p1assist_s42 - zeroshot (short): register -25.5; English -3.8; CJK -0.7; fragment +1.6 [0.5, 2.7]
+  (P1 has no punctuation).
+Evaluability coverage (evaluable / asserted claims per caption). "Asserted" includes the article "một", so it is an
+upper bound:
+- count: P1 0.04/0.97; zero-shot-det 0.05/3.70;
+- colour: P1 0.04/0.06; zero-shot-det 0.28/1.20;
+- relation: P1 0.05/0.18; zero-shot-det 0.01/0.60;
+- size: ~0.
+Error rate per evaluable claim:
+- count: P1 9-11%, fuse2 10.5% short / 14.3% detailed, zero-shot 17-19%, official-detailed 74%;
+- colour: P1 4%, fuse2-det 18%, zero-shot-det 23%.
+Person-type split, % of captions (P1 s42 / zero-shot short):
+- same-gender lattice gap (e.g. phụ nữ vs reference cô gái): 2.9 / 11.5;
+- gender contradiction: 1.1 / 0.4;
+- gender invented over a neutral "người": 1.8 / 2.3;
+- other person types: 2.0 / 3.0.
+Cause: rescap/vi/lexicon.py HYPERNYMS has "cô gái trẻ" but no "cô gái", "chàng trai", "cậu bé", "cô bé", "em bé",
+"đứa trẻ" or "học sinh". These nouns therefore never reach người, and the CHAIR-vi gold treats them as unrelated.
+Classifier read as an object (cây cầu → tree, quả bóng → fruit) and hallucinated: P1 0.5%, fuse2-det 1.3%,
+zero-shot-det 7.0%, vsps-det 5.0% of captions.
+Samples (6 per image, short):
+- fuse2 T=0.8: obj 32.2, fragment 2.8;
+- p1assist T=0.5 (3 seeds): obj 23.1, fragment 1.4 (greedy 1.6).
+RL: the 35_e log (.session_backup/machines/n2/queue/35_e_rl_cn_v3.log) holds aggregates only, no caption text. Under the
+RL guard's own (word-level) instrument, 7.8% of rollouts are fragments: 6.8% in the first 10 steps and 9.5% in the last
+10 of 47. fw_end is 0.16%. The two instruments differ, so this is context only.
+
+4. PILOT FOR GEMINI TO RUN (CPU only; GPU 0 h, plus <= 0.3 GPU-h only if dev300 greedy outputs are missing)
+P-A. Count-flag validity against COCO instance counts (H1). CPU 0.3 h; needs about 3 GB RAM, so run on the cluster CPU,
+not the shared laptop.
+- Data: data/results/uitviic/uitviic_{zeroshot,p1_s43,fuse2_s42}-{short,detailed}.preds.json and their UIT-ViIC
+  references; data/uitviic/instance_gold.json (vi↔COCO class pairs); data/datasets/coco_probe/annotations/
+  instances_{train,val}2014.json (per-class instance counts, crowd excluded); coco_transfer shards for COCO-2500.
+- Steps:
+  1. Copy V3/taxonomy.py to scripts/vi_error_taxonomy.py and add --refs uitviic.
+  2. Map each count claim (noun, n) to its COCO class through instance_gold "vi" (persons, vehicles, animals).
+  3. A claim is "instance-wrong" if n (1-5) differs from the non-crowd instance count with area >= 1% of the image.
+  4. Report the precision and recall of the strict and lenient flags against instance-wrong claims, with a bootstrap
+     CI over images.
+- Pre-register the area threshold and the class list before the first look.
+- Kill K1: strict precision < 0.50 → drop the count class from the paper and report "not measurable from references".
+P-B. Matcher v3 lattice fix (H2). CPU < 0.2 h.
+- Add the missing links to HYPERNYMS: cô gái→phụ nữ, chàng trai→đàn ông, cậu bé→bé trai, cô bé→bé gái,
+  em bé→trẻ em, đứa trẻ→trẻ em, học sinh→người, công nhân→người.
+- Re-score object P/R/F1, CHAIR_i and the frontier residuals for P1 (3 seeds), fuse2 (3 seeds), zero-shot, UPE and
+  PLAN-F1 with scripts/object_prf.py and scripts/prereg_ladder_check.py.
+- Pre-register: the direction (P up, CHAIR_i down), "zero-shot gain > P1 gain", and frontier invariance unchanged.
+- Report v3 as a sensitivity row next to v2, the same way tone_norm was handled. Kill K2: |dP| < 0.2 pp everywhere →
+  footnote only.
+P-C. Form side effects on dev300 (H3, H4). CPU < 0.1 h each.
+- Run the taxonomy (dev mode: KTVIC train references of the dev300 images; norms stay train-minus-dev, so there is no
+  leakage) on P1_dev greedy, UPE picks (3 seeds) and the CN-RLOO checkpoint that the CIDEr gate selects.
+- Primary endpoint: paired incidence difference per form class, bootstrap B=2000 (seed 0).
+- Pre-register H3/H4 before the RL outputs are read. Report next to the count-matched object residual.
+- Also ask train_rl.py to log the rollout text for 1 image in 20, so the taxonomy can run on RL samples.
+- Kill K3: if every form class differs by less than 0.5 pp for UPE and RL, cut the blind-spot claim to one sentence.
+GPU-h total: 0 (0.3 only if dev300 greedy files must be regenerated). CPU-h total: about 0.6. Nothing touches test for
+selection; the test numbers above are reporting only.
+
+5. CLAIMS GEMINI MUST VERIFY
+1. Re-run V3/taxonomy.py from the repo root and check the output sha256 (450f6c91...) and the per-system incidences.
+2. The P1 invisible-instance share is 7.3-10.4% across 6 runs; fuse2-detailed 18.7-19.8%; zero-shot 25.6% (short) and
+   34.6% (detailed).
+3. MBR fragment reductions: P1 -1.08 [-1.97, -0.36]; fuse2 -1.61 [-2.69, -0.72]. MBR CJK +0.72 [0.18, 1.43] (fuse2).
+4. HYPERNYMS in rescap/vi/lexicon.py lacks cô gái, chàng trai, cậu bé, cô bé, em bé, đứa trẻ and học sinh. Check that
+   _gold_objects() then never adds người for a reference that says only "cô gái".
+5. Same-gender lattice-gap share of person-type errors: P1 s42 2.9/7.7 captions; zero-shot short 11.5/16.8.
+6. Zero-shot detailed: 50.2% of captions lack final punctuation (likely max_new_tokens). Check the generation config.
+7. P1 detailed vs short: no class differs and both are about 12 syllables. Confirm that the P1 detailed prompt yields
+   short outputs.
+8. Citations: arXiv 2311.07397 (AMBER), 1809.02156, 1704.04198, 1705.01359, 2406.16449, 2310.14566, 2405.19092,
+   2310.01779, 2406.20052, 2407.02333, 2408.00550; 2506.11073 is unverified. Check whether 2404.18930 really uses a
+   category/attribute/relation taxonomy before citing it for that.
+9. Check that the register flags are not legitimate KTVIC phrasing: the top flagged markers are listed under
+   "top_register" in taxonomy.json.
+
+6. RISKS AND FIT WITH PD-2
+Risks:
+- No human validation of rule precision is allowed beyond existing labels. P-A covers count only; the register,
+  classifier and English rules are audited only by listing their top flagged items (taxonomy.json:
+  top_register, top_cl_pairs, top_english).
+- The classifier rule still fires on lexical compounds ("quả cầu" = globe), so treat the class as an upper bound.
+- The object class inherits reference incompleteness: R9 C3 found 56.5% of P1's object false positives are real.
+- repeat5 counts template reuse as well as genuine loops.
+- Coverage is tiny for count and relation, so low error rates there mean "unmeasurable", not "rare".
+- The cut-off rule is undefined for unpunctuated systems (P1, fuse2 short).
+Fit: this strengthens the evaluation/methodology pillar in three ways:
+- (i) It gives a measured scope statement for the count-matched endpoint: what it cannot see, per system.
+- (ii) A one-file matcher fix (v3 lattice) that may shift the CHAIR and object numbers. The zero-shot-vs-P1 comparison
+  is the most exposed.
+- (iii) Evidence that SFT solves language form, which justifies centring the paper on object content.
+It adds no method that beats the count frontier.
+
+7. SCORES (1-5)
+- Novelty 2: the content classes are standard (CHAIR, AMBER); new are the Vietnamese form classes, the blind-spot
+  audit and per-claim coverage.
+- Feasibility on 1x3090: 5. CPU only, it already runs in 11 s, and the pilot needs about 0.6 CPU-h.
+- Expected impact 3: an appendix table plus the lattice fix, which could move the headline CHAIR/object-P numbers and
+  helps reviewers trust the endpoint.
+- Risk 2 (low): the measurement already exists. The main risk is low precision of the count and classifier rules,
+  which P-A (count) and the listed top flags (classifier) expose.

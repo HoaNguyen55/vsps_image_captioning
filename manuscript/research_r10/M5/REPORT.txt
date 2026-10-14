@@ -1,0 +1,249 @@
+R10 / M5 - OBJECT-BUDGET-CONDITIONED CAPTIONING (one adapter, control token k = 1..4)        2026-10-14, CPU only
+Folder: research_r10/M5/ (scratchpad). Evidence: m5_check.json (sections A-F). Scripts: m5_check.py, m5_prefix.py,
+m5_pool7.py, m5_pilot.py (build + pre-registered scorer + check). No test file was read. No GPU. Repo untouched.
+
+0. BOTTOM LINE
+- Idea: train one QLoRA adapter on existing KTVIC references, each with a count suffix k. k = the reference's number
+  of unique lexicon classes, bucketed 1/2/3/4+. Sweep k at test time and compare the curve with the frontier.
+- What the CPU checks say: a fixed-k sweep cannot be compared fairly with the frontier. A fixed k spreads objects
+  evenly over images, and at the same mean count that costs 1-2.5 F1 against adaptive allocation (dev300).
+  With P1's own ranking, even the oracle count only reaches the frontier (residual -0.39). So a curve that lies
+  "below the frontier" would mostly measure allocation, not selection. The whole curve can rise only if the adapter
+  ranks objects better. One mechanism exists, and it is narrow: the k=1 bucket teaches "name the consensus object"
+  (71%), while the first object of a multi-object reference is the consensus object only 34-51% of the time.
+- Expected value: H0 (on the frontier; a count shift plus an allocation effect) about 75%. k=1-only ranking gain
+  about 15%. Frontier-beating curve about 10%. Cost: 2.4 GPU-h on dev300.
+- Salvage, useful whether or not the method works: frontier residual = ranking + allocation + base terms. The
+  same-count control (top-k_i by vote) is blind to allocation by construction. Applied to PLAN-F1's dev residual
+  (-2.49): ranking -0.95, allocation +0.68, base -2.23. The P1 vote ranker, not the plan, sinks it.
+- Novelty: method LOW (noun-count and length control exist); decomposition / matched-allocation method MODERATE.
+
+1. PROBLEM AND HYPOTHESIS
+Question: does an adapter told "name k objects" pick better objects at every budget k than the trained frontier
+TP = 1.3996 (M/1.7826)^0.7468 and than self-consistency selection at the same per-image count?
+Definitions (pre-registered):
+- Count M_i = |set(objects_in(caption))|, the same as object_prf.py. Gold = union of the 5 references.
+- Frontier = official anchors (manuscript/prereg/2026-10-12_ladder_predictions.json; at() in prereg_ladder_check.py).
+- Ranker R = raw vote share over P1's pool (greedy + samples; ties broken by greedy mention order, then name).
+For any system S with per-image counts m_i:
+  residual_F1(S) = [F1(S) - F1(top-m_i by R)]                 ranking term (the PD-2 same-count control)
+                 + [F1(top-m_i by R) - F1(uniform-alloc by R)]  allocation term (same total; counts as even as pool allows)
+                 + [F1(uniform-alloc by R) - frontier_F1(m)]    base term (how good R is at that count)
+  Check: P1-dev greedy +0.17 = -0.38 + 0.62 - 0.07 (asserted in m5_pilot.py check).
+Hypotheses, each falsifiable on dev300 and then on a pre-registered test look:
+- P0 (manipulation): realised mean m rises strictly with k. Prediction: m(k=1) ≈ 1.0-1.3, m(k=2) ≈ 1.8-2.2,
+  m(k=3) ≈ 2.5-2.9, m(k=4) ≈ 2.9-3.5. k=4 falls short because it has only 568 rows of 4+.
+- H0 (frontier invariance holds): the fixed-k sweep lies on or below the frontier at k=2,3, with F1 residual in
+  [-3.0, +0.5]. The allocation penalty is the gap. Per-image k_i lands within [-0.5, +1.5] of the frontier.
+  Its ranking term vs R is in [-1, +1] at m < 2.3. At m > 2.5 the ranking term is positive only because R's base
+  term is weak there; that is not evidence against H0.
+- H1k1 (narrow): at k=1 the adapter's precision beats R's top-1 by >= 2 P. Reference: dev R top-1 = 79.3 P
+  (13-caption pool) and 80.4 P (7-caption pool).
+- H1 (frontier-beating, the claim the direction asks for): for the per-image k_i variant, the ranking term is
+  > +1 F1 AND the frontier residual is > +1.5 F1, both with CI > 0 on test (3 seeds).
+- Per-image k from uncertainty: k_i = #(pool vote share >= 0.5), clipped to [1,4]. Prediction: +1 to +2 F1 over the
+  same sweep at uniform allocation and matched total count, mostly through precision.
+
+2. CLOSEST PRIOR WORK (verified by web search on 2026-10-14 unless marked)
+ 1. Deng, Ding, Tan, Wu, "Length-Controllable Image Captioning" (LaBERT), ECCV 2020, arXiv 2007.09580,
+    DOI 10.1007/978-3-030-58601-0_42. Length-level embedding, non-autoregressive decoder. Controls words, not
+    objects; no hallucination-vs-budget frontier. New here: object budget, precision at matched count. Moderate.
+ 2. Luo & Shakhnarovich, "Controlling Length in Image Captioning", arXiv 2005.14386 (TTIC page: CVPR VQA
+    workshop). Length control plus a per-image length predictor; the predictor is the analogue of k_i. New here:
+    object count, allocation measured at matched total. Novelty: low-moderate.
+ 3. Zhu, Wang, Qu, "Macroscopic Control of Text Generation for Image Captioning", arXiv 2101.08000. The control
+    signal includes the NUMBER OF NOUNS. CLOSEST: count conditioning is prior art. Abstract reports only
+    BLEU/CIDEr/SPICE, no object precision vs count (unverified beyond the abstract). METHOD novelty vs it: low.
+ 4. Zhai et al., "HallE-Control: Controlling Object Hallucination in Large Multimodal Models", arXiv 2310.01779.
+    A continuous switch between grounded and imagined objects in LVLM detailed captions (CCEval: coverage plus
+    hallucination). Controls the kind of knowledge, not the count; no matched-count frontier. Moderate.
+ 5. Yue, Zhang, Jin, "Less is More: Mitigating Multimodal Hallucination from an EOS Decision Perspective",
+    ACL 2024, arXiv 2402.14545. The stopping decision (when to emit EOS) drives hallucination. Closest LVLM
+    "budget" view, but it is not count-controlled and not compared at matched count. Novelty: moderate.
+ 6. Zhou et al., LURE, "Analyzing and Mitigating Object Hallucination in LVLMs", ICLR 2024, arXiv 2310.00754.
+    Hallucinations concentrate late in captions. Our KTVIC references are not salience-ordered (section 3, C2),
+    so a "prefix-k" truncation control is not a salience selector here.
+ 7. Cornia, Baraldi, Cucchiara, "Show, Control and Tell", CVPR 2019, arXiv 1811.10652. Control by a region set or
+    sequence (what to mention). Chen, Jin, Wang, Wu, "Say As You Wish" (ASG), CVPR 2020, arXiv 2003.00387: an
+    abstract scene graph sets how many objects, attributes and relations to mention. Both are content and
+    structure control without an evaluation at matched count.
+ 8. Wang et al., "Controllable Image Captioning via Prompting", AAAI 2023, arXiv 2212.01803: learned length
+    prompts. Saito et al., "CaptionSmiths", ICCV 2025, arXiv 2507.01409: continuous length and descriptiveness
+    control. Kikuchi et al., EMNLP 2016, arXiv 1609.09552: LenEmb and LenInit length control.
+ Unverified leads: REVERSE (Wu et al., NeurIPS 2025, arXiv 2504.13169); a search snippet says a threshold trades
+ coverage against CHAIR, but the abstract does not confirm it. NumCap (ACM, DOI 10.1145/3576927) is a
+ number-indexed multi-caption model; details unread.
+ Summary: conditioning on a count is NOT new (3, 7). I found no prior work that tests a count-controlled
+ captioner against a learner precision-vs-count frontier, or that splits residuals into ranking, allocation and
+ base terms. That gap is the only novelty I would claim, and only as "not found", never as "first".
+
+3. EVIDENCE SO FAR (CPU, existing files only; numbers from m5_check.json)
+Inputs:
+- .session_backup/machines/n2/ncs-data/datasets/ktvic/train_data.json (md5 4dd4dc11..., identical to
+  data/datasets/ktvic).
+- data/splits/ktvic_dev300.txt.
+- P1-dev greedy: .session_backup/machines/n2/ncs-data/rl/p1dev_s42-dev300-short.preds.json.
+- P1-dev samples: data/results/upe/p1dev_s42-dev300-short-T{0.5,0.8}.jsonl.
+A. Bucket sizes, train minus dev300 (3,469 images, 17,345 references; k = unique lexicon classes):
+     k=0 1,954 (11.3%) | k=1 6,183 (35.6%) | k=2 6,144 (35.4%) | k=3 2,496 (14.4%) | k=4 519 (3.0%) | 5+ 49 (0.3%)
+   - Images with >= 1 reference in the bucket: k=1 2,521 | k=2 2,535 | k=3 1,374 | k=4 366 | 5+ 45.
+   - 2,522 images (72.7%) have references in >= 2 distinct buckets among 1..4; 879 in one; 68 in none.
+   - dev300 (1,500 references): k=1 550 | k=2 577 | k=3 210 | k=4 40 | 5+ 4 | k=0 119.
+   -> k=4 is data-poor: 568 rows with 4+ (k=4 on 366 images), mostly busy scenes. k=0 rows (11%) are dropped.
+B. Each reference against the union of the other 4 (precision / recall by bucket, k=1..4, 5+):
+   - P: 87.0 / 83.9 / 81.7 / 78.7 / 68.0. R: 45.2 / 53.5 / 59.7 / 64.9 / 62.7.
+   - Human targets lose only 8 P from k=1 to k=4, but this is selection-biased: annotators write 4 objects on
+     busy images. It is not a fixed-k bar.
+C. Structure of the references:
+   - A k=1 reference names the image's top class (by the other 4 references' votes, ties count) 71.0% of the
+     time (n=6,114).
+   - The FIRST object of a k=2/3/4+ reference is the top class only 50.6 / 44.0 / 34.0% of the time.
+     The second object: 47.9 / 37.0 / 29.2%. Any object: 80.5 / 84.4 / 87.3%.
+   - A k=1 object is named by ALL longer references of its image 52.0% of the time, by ANY 73.3% (n=3,929).
+   -> Mention order in the references does not follow consensus. The k=1 bucket carries a "single best object"
+      signal that pooled SFT blurs. This is the only H1 mechanism found. Prefix truncation is NOT a fair control.
+D. dev300 gold and uncertainty:
+   - Gold classes per image: mean 3.50. Histogram 1:35 2:53 3:71 4:59 5:42 6:17 7:13 8+:7 (0:3).
+   - Fixed-k oracle precision ceiling (gold-ranked) k=1..4: 99.0 / 93.2 / 85.3 / 75.5.
+   - Official frontier at m=1..4: P 90.9 / 76.3 / 68.8 / 64.0, F1 44.1 / 56.7 / 63.6 / 67.8.
+     Validated only for m in [1.76, 3.15] (anchors P1 and fuse2-detailed). At m=1 it predicts 90.9 P, above the
+     human k=1 precision (87.0, B). So k=1 and k=4 residuals are extrapolation checks, not method tests.
+   - Spearman correlation of the gold count with: P1-dev greedy count 0.37; pool class count 0.40;
+     #classes with vote >= 0.5: 0.30.
+E. dev300 controls with P1-dev's pool (13 captions: greedy + 6 at T0.5 + 6 at T0.8):
+   - R top-k, k=1..4: m 1.00 / 1.95 / 2.77 / 3.42; P 79.3 / 71.3 / 63.5 / 58.4; F1 42.7 / 56.5 / 59.7 / 60.2;
+     frontier F1 residual -1.29 / +0.23 / -2.69 / -5.42. R is weak above m ≈ 2.3.
+   - Allocation at an EXACTLY matched total (rule vs uniform allocation by R; paired bootstrap B=2000 on seed 0,
+     then the mean over 20 allocation seeds):
+       k_i=#(v>=0.3)       m 2.16  dF1 +2.05 [+0.24, +3.96] (20-seed mean +1.61)  dP +3.71 [+1.46, +6.12]  resid +0.77
+       k_i=#(v>=0.5)       m 1.60  dF1 +1.67 [-0.28, +3.68] (mean +2.31)          dP +3.96 [+1.17, +6.73]  resid +1.63
+       k_i=#(v>=0.7)       m 1.30  dF1 +0.92 [-1.25, +3.06] (mean +2.08)
+       P1 natural count    m 1.76  dF1 +0.62 [-1.38, +2.63] (mean +0.74)
+       oracle min(|G|,4)   m 2.85  dF1 +2.68 [+1.31, +4.00] (mean +2.55)  resid -0.39  (uniform -3.07)
+   - On the 7-caption pool (greedy + 6 at T0.5, the pool that exists on test), m5_pool7.py:
+     k_i=#(v>=0.5): dF1 +1.81 [-0.21, +3.78], mean +1.62, dP +3.04 [+0.56, +5.64], resid +1.38 (m 1.65).
+     k_i=#(v>=3/7): dF1 +1.24 [-0.43, +2.92], mean +1.06, resid +0.90 (m 1.92).
+   -> Setting k per image from the model's own uncertainty works for ALLOCATION: +1 to +2.3 F1 at matched total,
+      driven by precision. Even oracle counts with P1's ranking only reach the frontier.
+F. PLAN-F1 dev residual decomposed (data/results/planf1/dev_plan_critique.json + uniform-allocation F1 at m=2.6267):
+   - ranking: plan 58.95 vs pool-vote same-count 59.90 -> -0.95
+   - allocation: 59.90 vs uniform 59.22 (20-seed mean) -> +0.68
+   - base: 59.22 vs frontier 61.45 -> -2.23
+   - sum -2.50 (reported -2.49)
+   -> Selection from short-caption pools is capped by the base term at m > 2.3.
+Also: multiref (mr5assist_s42, 5 references per image; data/results/tone_norm/object_prf-short.txt line 12) has
+P 77.9 at M ≈ 1.82 against a frontier P of 78.1. Five times the reference data did not shift the curve, so the
+adapter's extra data is not a mechanism for H1.
+
+4. PILOT DESIGN FOR GEMINI TO RUN (dev300 first; test only through a new pre-registration)
+Data (CPU, seconds):
+- m5_pilot.py build, train minus dev300.
+- Rows: all 2,496 k=3 rows and all 568 k=4+ rows, plus 1,937 k=1 and 1,937 k=2 rows sampled with seed 42.
+  Total 6,938 rows = P1-dev's 2-epoch row budget; 3,001 images.
+- 20% of rows keep the plain short prompt (natural mode); the rest get the suffix
+  " Nhắc đến đúng {k} đối tượng." (k = 4: " Nhắc đến từ 4 đối tượng trở lên.").
+- Prompt base = build_dpo_data.PROMPT_SHORT (= evaluate.PROMPTS["short"]).
+- sha256 of sft.jsonl, local Python 3.12.3: c9ef2097f32b806c89c4b1eaeed2c8cedfd9e9f43ffe2420cb46b4b093783bde.
+- Script sha256s: m5_pilot.py d6a111d8...15bc6 and m5_check.py 5d9558e5...b2ce (recompute when copied).
+Commands, after copying the M5 scripts to $M5 on n2/n3 (export VSPS_ROOT=/root/vsps NCS_DATA=/root/ncs-data
+O=$NCS_DATA/results/m5_dev; the heredoc below is indented for reading, so de-indent it in the job script):
+  python $M5/m5_pilot.py check        # must print: check ok {"ranking": -0.38, "allocation": 0.62, ...}
+  python $M5/m5_pilot.py build --annotations $NCS_DATA/datasets/ktvic/train_data.json \
+      --images-file data/splits/ktvic_train_minus_dev300.txt --rows 6938 --out $NCS_DATA/gold_m5k
+  python scripts/ktvic_dev_split.py --sft $NCS_DATA/gold_m5k/sft.jsonl          # C1 disjointness, as in 51_planf1
+  timeout 14400 python scripts/train_stage2.py --stage sft --data $NCS_DATA/gold_m5k --out $NCS_DATA/runs/m5k_s42 \
+      --epochs 1 --seed 42 --loss-mask assistant | tee $O/train_m5k.log           # expect "training set: 6938"
+  for k in 1 2 3 4 free; do NCS_DATASET=ktvic_dev K=$k python - <<'EOF'
+  import os, sys; sys.path[:0] = ["scripts", "."]
+  import evaluate as E                     # no repo edit: suffix the short prompt in this process only
+  S = {"1": " Nhắc đến đúng 1 đối tượng.", "2": " Nhắc đến đúng 2 đối tượng.", "3": " Nhắc đến đúng 3 đối tượng.",
+       "4": " Nhắc đến từ 4 đối tượng trở lên.", "free": ""}
+  k = os.environ["K"]; E.PROMPTS["short"] += S[k]; O = os.environ["O"]; N = os.environ["NCS_DATA"]
+  sys.argv = ["scripts/evaluate.py", "--model", "qwen2.5-vl-7b", "--adapter", f"{N}/runs/m5k_s42",
+              "--split", "dev_data.json", "--prompt", "short", "--name", f"m5k_s42-k{k}-dev300-short",
+              "--out", f"{O}/m5k_s42-k{k}-dev300-short.json"]
+  raise SystemExit(E.main())
+  EOF
+  done
+  python $M5/m5_pilot.py score --gold-split train --ids data/splits/ktvic_dev300.txt \
+      --sweep $O/m5k_s42-k{1,2,3,4}-dev300-short.preds.json --free $O/m5k_s42-kfree-dev300-short.preds.json \
+      --pool $NCS_DATA/rl/p1dev_s42-dev300-short.preds.json data/results/upe/p1dev_s42-dev300-short-T0.5.jsonl \
+             data/results/upe/p1dev_s42-dev300-short-T0.8.jsonl --out $O/m5_score_dev.json
+  Per-image k_i needs no extra decode: greedy decoding is deterministic, so caption_i(k_i) = sweep output k_i.
+  Optional arm, prompt-only control: P1-dev adapter plus the same suffixes, no k-training (4 x 300 decodes).
+GPU on one 3090:
+- SFT 868 steps x 7.35 s ≈ 1.75 GPU-h. Basis: 7.2-7.5 s per 8-row step, B5 report l.131; PLAN-F1 job 1.75 GPU-h
+  for the same row budget.
+- Decodes 5 x 300 short ≈ 0.6 GPU-h (0.12 GPU-h per 300 images, as in 51_planf1).
+- Dev stage ≈ 2.4 GPU-h; +0.5 for the optional arm.
+- Test stage (only if dev passes): full-train rows (--rows 7538, no --images-file) ≈ 1.9 + 5 x 558 decodes ≈ 1.1,
+  so 3.0 GPU-h per seed and ≈ 9 GPU-h for 3 seeds.
+CPU: < 0.2 h in total (score < 2 min; evaluate.py CIDEr for the free mode).
+Pre-registration (freeze before the first decode):
+- builder rows and sha, suffix text, recipe (P1-dev 35_a: 1 epoch, seed 42, assistant mask), greedy decoding,
+  m5_pilot.py sha, TAU = 0.5;
+- pools: dev = P1-dev 13 captions; test = p1assist_s42 greedy + s42/s43/s44 T0.5 samples (19 captions);
+- frontier = official anchors.
+Primary endpoint (method, PD-2): per-image k_i variant (k_i = #(pool vote >= 0.5), clipped to [1,4], caption
+taken from the sweep):
+  (a) frontier F1 residual, with CI > 0;
+  (b) ranking term, i.e. paired dF1 vs top-m_i by R at the SAME per-image counts, with CI > 0.
+  Both are needed, because allocation alone gives +1.4 to +1.6 on dev without any training (E).
+Secondary, descriptive:
+- fixed-k curve k=1..4 with per-k decomposition and fidelity (mean m, share m == k);
+- frontier extrapolation at k=1 and k=4;
+- free mode on the frontier (sanity);
+- H1k1: k=1 precision vs R top-1.
+Kill rules (dev300):
+- K0: mean m not strictly increasing, or m(k=1) > 1.35, or m(k=2) outside [1.65, 2.35] -> the count token does not
+  control lexicon objects. Stop; report the negative.
+- K1: ranking term of the k_i variant <= +0.5 F1 (point) -> no method claim and no test look. Publish only the
+  decomposition and the curve.
+- K2: free-mode CIDEr-D < P1-dev - 3.0, or CJK rate > P1-dev + 1 pt -> broken adapter; stop.
+- GO to test: K0 and K2 pass, and the K1 point is >= +1.0. Claim H1 only if (a) and (b) hold on test, pooled over
+  3 seeds.
+
+5. CLAIMS GEMINI MUST VERIFY
+ 1. Rerun m5_check.py, m5_prefix.py and m5_pool7.py. Bucket counts (A), the 71.0% vs 50.6/44.0/34.0% prefix
+    rates (C), and the allocation deltas (E) must reproduce exactly.
+ 2. Check that uniform_alloc matches the rule's total EXACTLY (it asserts this) and that pool truncation does not
+    bias the k=4 controls. The score output reports count_shortfall_of_R; treat k=4 as descriptive if it is
+    > 0.1.
+ 3. The frontier is validated only for M in [1.76, 3.15]. The comparison of human k=1 LOO precision (87.0, 4-ref
+    gold) with the frontier at m=1 (90.9, 5-ref gold) is indicative only: rescore with 5-ref gold before quoting it.
+ 4. mr5assist_s42 lies on the frontier: recompute exact M with object_prf.py (I derived M ≈ 1.42/0.779).
+ 5. PLAN-F1 decomposition (F): ranking -0.95 uses pool_vote_matched_13 from dev_plan_critique.json; recompute with
+    plan_dev.json on n3.
+ 6. The evaluate.py in-process prompt suffix reaches generation. Print one dev prompt, and check that the scoring
+    subprocess still runs in short mode.
+ 7. The builder sha256 is stable on the n2/n3 Python version (random.sample/shuffle); if not, re-freeze it.
+ 8. arXiv 2101.08000 conditions on noun count. Read its method section and any object-precision results; this
+    sets the method-novelty rating.
+ 9. REVERSE's coverage-vs-CHAIR threshold (2504.13169) and NumCap (DOI 10.1145/3576927): read before citing.
+10. Throughput 7.2-7.5 s per 8-row step (manuscript/research_r6/B5_backbone_recipe_REPORT.txt l.131 and l.379).
+
+6. RISKS AND FIT WITH PD-2
+Risks:
+- The count fidelity may be poor. k counts only the 113-entry lexicon, which the model never sees. Hypernym pairs
+  (người plus đàn ông, not adjacent) count twice. The cây/cầu matcher bug adds noise.
+- k=4 is out of distribution: 568 rows of busy scenes. Forcing 4 objects on simple images invites invention.
+  The dev ceiling is 75.5 P at k=4.
+- dev300 power: a single residual has CI ≈ ±3.4 F1. Only the paired terms are powered at n=300.
+- R is weak above m ≈ 2.3, so "beats the same-count control" at k=3,4 is expected even under H0. The
+  decomposition, not dF1 vs R alone, must decide.
+- The suffix changes the prompt; style drift and CIDEr loss are possible (hence K2).
+Fit with PD-2 (methodology pillar, either outcome):
+- (i) Residual decomposition into ranking + allocation + base. It explains why selection methods (UPE, PLAN-F1)
+  fail at matched count: a weak base ranker at m > 2.3, not their selection logic.
+- (ii) Matched-count comparisons must match the per-image allocation, not just the mean: 1-2.5 F1 at the same
+  mean on dev.
+- (iii) A new kind of stress test for frontier invariance (explicit count control by one model across m ≈ 1-3.5).
+- Positive H1 would be the first method in this project to survive count control. Expect H0.
+
+7. SCORES (1-5)
+- Novelty 2: count/noun conditioning is prior art (2101.08000, ASG, LaBERT). Only the decomposition and
+  matched-allocation evaluation look new (moderate, not found in search).
+- Feasibility 5: 2.4 GPU-h dev stage, existing recipe, scripts ready, no repo edits needed.
+- Impact 2: the likely outcome (H0) adds a methodology section, not a method. H1 (~10%) would be high impact.
+- Risk 4: high risk that no method claim survives. The low cost and the decomposition, which is informative either
+  way, bound the loss.

@@ -1,0 +1,211 @@
+R10 / E2 -- Noise-aware object F1 from annotator mention propensity (capture-recapture over the 5 KTVIC refs)
+Agent E2, 2026-10-14. CPU only. Files: research_r10/E2/{e2_pilot.py, e2_results.json, e2_ablation.py, e2_ablation.txt}
+
+0. BOTTOM LINE
+- Idea: treat the 5 KTVIC references as 5 capture occasions. Fit a closed-population M_h finite-mixture model
+  (Pledger 2000) to get (a) mention-worthy objects per image and (b) per-class naming propensity. Treat each
+  system as a 6th occasion and extrapolate its hit rate to the objects no reference named. This yields
+  P* = (TP + U)/|M|, R* = (TP + U)/N_hat and F1*.
+- The model itself works. Fitted on 3 refs, it predicts precision against all 5 refs with MAE 2.3 pts (naive:
+  6.7). From 4 refs the MAE is 1.1 (naive: 2.6). It predicts the growth of the reference object set to within
+  0.6-2.4%.
+- As a replacement metric it FAILS the independent-panel check:
+  * P* ranks systems worse than raw P against the panel-implied precision (Spearman 0.65 vs 0.91).
+  * F1* beats raw F1 against panel F1 (0.97 vs 0.77), but recall alone does better (0.997). The gain is
+    precision compression, not modelling.
+- Why: one panel can only see "sampling zeros" (objects KTVIC-style annotators name sometimes). It is blind to
+  "guideline zeros" (real objects KTVIC annotators essentially never name). Link (2003) shows this tail is not
+  identifiable.
+- What survives is an evaluation-methodology analysis. Object "false positives" split three ways:
+  sampling-unnamed real / guideline-unnamed real / true hallucination.
+  * Fine-tuned systems: about 7-18 / 11-13 / 1-4 points of mentions.
+  * Zero-shot detailed: 12 / 25 / 31.
+- Value: moderate. It is a clean, general, CPU-only analysis for the PD-2 evaluation pillar. It is NOT a new
+  headline metric and does NOT rescue any method from count control.
+
+1. PROBLEM AND HYPOTHESIS
+Problem: object P against 5 refs counts every unnamed real object as a hallucination. second_panel.json
+already shows the scale of this: a held-out human scores P 85.4 vs 4 refs, and the OpenViIC panel confirms
+52-62% of fine-tuned systems' ref-false mentions.
+H1 (internal): a propensity model fitted on R'<5 refs predicts each system's precision against all 5 refs
+  better than assuming no change. Falsified if model MAE >= naive MAE. Result: NOT falsified.
+H2 (external): P*/F1* from KTVIC refs alone agree with the independent OpenViIC panel better than raw P/F1.
+  Falsified if the rank correlation with the panel targets is not higher. Result: FALSIFIED for P*. Supported
+  for F1* only through precision compression (see 3.4).
+H3 (rankings): F1* changes system rankings. Result: yes (Spearman 0.94 over 73 systems), but mainly by
+  promoting long, high-recall captions (zero-shot detailed), which the panel says hallucinate most.
+
+2. CLOSEST PRIOR WORK (verified by web search unless marked)
+[1] Pledger 2000, Biometrics 56(2):434-442. Finite-mixture ML for closed capture-recapture (M_h, M_th).
+    Our model is her M_h with refs as occasions. New: refs as occasions, the system as an extra occasion
+    with class-specific rates, and use as a metric correction. Novelty vs [1]: application only.
+[2] Link 2003, Biometrics 59(4):1123-1130, doi 10.1111/j.0006-341X.2003.00129.x. N is not identifiable under
+    heterogeneous detection. Holzmann, Munk & Zucchini 2006 (Biometrics) give conditions for finite and beta
+    mixtures. Our "guideline zeros" are exactly Link's unidentifiable tail. The OpenViIC panel makes them
+    measurable here, which is the useful twist.
+[3] Hui & Walter 1980, Biometrics 36(1):167-171. Latent-class accuracy of a test with no gold standard. Same
+    spirit: evaluate a system against imperfect references with a latent model. New: positive-only "tests"
+    (refs never say absent), many exchangeable refs, open object vocabulary.
+[4] Dawid & Skene 1979, JRSS-C 28(1):20-28 (doi 10.2307/2346806, NOT verified here). Annotator confusion
+    matrices by EM. Our refs have only propensities (no false positives), so DS reduces to [1]. Novelty vs
+    DS: low.
+[5] Jain, White & Radivojac, AAAI 2017, arXiv:1702.00518, doi 10.1609/aaai.v31i1.10937. They correct
+    precision/recall measured on positive-unlabeled data, but need the class prior. New: we identify the
+    labelling propensity from 5 independent positive-only labellers, not from a prior. Novelty vs [5]:
+    moderate.
+[6] Spain & Perona 2011, IJCV 91 (pages 59-76 from memory). "Measuring and Predicting Object Importance":
+    importance = probability an observer names the object, fitted with an urn model. Berg et al.,
+    CVPR 2012, doi 10.1109/CVPR.2012.6248100, predict what people will describe. Both estimate naming
+    propensity in order to predict it. Neither corrects caption metrics for unnamed-but-present objects.
+[7] Rohrbach et al., EMNLP 2018, arXiv:1809.02156 (CHAIR). Petryk et al., NAACL 2024 short 30 (ALOHa).
+    Both treat a mention outside the references or labels as a hallucination. Neither models reference
+    incompleteness.
+[8] Keenan, Smeaton & Keogh 2001, JASIST 52(7):570-574 (found on IDEAS; title to confirm). Extrapolates the
+    relevant documents a system would get with an infinite pool. This is the IR analogue of our "precision
+    at infinite refs".
+[9] In-repo prior: scripts/second_panel.py already runs a TWO-panel Lincoln-Petersen/Chapman (N = 8.35
+    classes/img). E2 adds the WITHIN-panel, 5-occasion, heterogeneity-aware model, the per-system
+    extrapolation, the hold-out validation, and the 3-way decomposition.
+Novelty search: 3 queries ("capture-recapture image captioning references", "Dawid-Skene caption evaluation
+incomplete references", "capture-recapture hallucination evaluation") found no paper that applies
+capture-recapture or Dawid-Skene to caption references or caption metrics. Overall novelty: MODERATE.
+The machinery is classical; the application and the sampling-vs-guideline decomposition were not found.
+
+3. EVIDENCE (CPU pilot e2_pilot.py: 236 s wall, 72 MB RSS, nice 19, 1 thread; matcher v1, RESCAP_RAW_TONE=1;
+   KTVIC test 558 images x 5 refs; propensity model fitted on TRAIN refs, 3769 images)
+3.0 Self-check (simulation in _check()): 2 salience classes, 20% hallucinated mentions. P* recovers the true P
+    (within 1.5) and R* the true recall; raw P is more than 5 points low. Passed.
+3.1 Mixture on train refs. BIC picks K=3 (39338, vs 39451 for K=2 and 39357 for K=4).
+    w = (0.517, 0.375, 0.108), p = (0.102, 0.429, 0.929).
+    Half of all KTVIC-mentionable objects are named by a given annotator only ~10% of the time.
+    (a) Objects per image on test: observed 3.72; N_hat 5.50 (train fit) / 4.87 (test refit).
+        Chao-M_h lower bound 4.37; jackknife-1 4.74; jackknife-2 5.06.
+        So 5 refs cover 68-85% of KTVIC-mentionable objects. The two-panel LP coverage is 44.5% (N 8.35).
+        The gap is the guideline-zero population.
+    (b) Class propensity (one-p zero-truncated fit per class, 56 classes with >=30 objects; e2_results.json
+        "class_propensity").
+        Highest: học sinh .67, cô gái .65, tàu .64, sách .64, chợ .63, thuyền .61.
+        Lowest: nón .08, mũ .14, con đường .22, túi .27, phòng .27, nam thanh niên .28.
+        CAVEAT: low p partly reflects lexical splitting (nón / nón lá / mũ name one hat), not salience.
+3.2 V1, internal hold-out. Fit on R' refs (all subsets, train refs refit at the same K); predict each
+    system's TP against all 5 refs; 73 systems x C(5,R') subsets. Error is in points of P5:
+      R'=3 (730 rows): MAE model 2.33 | naive (P5=P3) 6.71 | human-like (g=p, all RF real) 11.88; model bias +1.35
+      R'=4 (365 rows): MAE model 1.11 | naive 2.57         | human-like 8.26;                   model bias +0.42
+      Reference-set size S5 (observed 2074): from 3 refs 2123 (+2.4%; naive 1731); from 4 refs 2086 (+0.6%)
+    The model over-predicts slightly but consistently (positive bias): the M_h tail is a little too generous.
+3.3 V2, external. 16 systems in data/results/second_panel.json; aggregates only, no OpenViIC text read.
+    Panel target: real fraction of ref-false mentions = confirmed_share / human confirmed_share (58.78).
+    Panel-implied P = P + (100-P) * that fraction.
+      sys                 P     P*    R*    F1    F1*   model real-frac | panel real-frac  panel-P  P_union
+      p1-gold-short      77.9  86.9  28.4  54.1  42.8   0.40           | 0.95             98.8     90.2
+      fuse2_s42-short    75.8  86.2  32.8  58.1  47.5   0.43           | 0.94             98.5     89.1
+      fuse2_s42-detail   68.0  84.6  48.5  64.4  61.7   0.52           | 0.93             97.6     85.4
+      zeroshot-short     52.3  62.4  24.6  40.1  35.3   0.21           | 0.85             93.0     76.2
+      zeroshot-detail    31.6  43.9  52.2  40.7  47.7   0.18           | 0.55             69.2     53.7
+    Real fraction, model vs panel: Pearson +0.56 (all 16), -0.60 (14 fine-tuned); MAE 0.48. The model sees
+      about half of what the panel calls real.
+    |P - panel-implied P|: raw 25.6 -> P* 13.7 (all 16); raw 23.6 -> P* 11.7 (fine-tuned). The gap halves.
+    Spearman vs panel-implied P: raw 0.91, P* 0.65. Vs P_union: raw 0.98, P* 0.72.
+      Vs P_openviic: raw 0.96, P* 0.65. P* ranking is WORSE.
+    Spearman vs F1_union: raw F1 0.77, F1* 0.97. Vs F1_openviic: raw 0.67, F1* 0.91.
+3.4 Ablation (e2_ablation.txt): F1* rank agreement comes from precision compression.
+    Over the 14 fine-tuned systems, R_macro ALONE has Spearman 0.996 with F1_union. The (P*, R_macro) mix
+    gives 0.974, F1* 0.965, raw F1 0.895.
+    The panel's high, flat precision (85-92) makes panel F1 a recall ranking. Any recall-weighted F1 matches it.
+3.5 Rankings, 73 test systems: Spearman F1 vs F1* 0.937 (Kendall 0.82); P vs P* 0.972.
+    Big movers: vcd-detailed 40->10, zeroshot-detailed 39->13, p1assist_s42-detailed 20->35.
+    Mechanism: R* is micro recall over N_hat, so long captions gain. That is undesirable here, because the
+    panel says zero-shot detailed hallucinates most.
+3.6 Three-way split of ref-false mentions (points of all mentions):
+    sampling-real = model; guideline-real = panel-implied minus model; hallucination = the rest.
+      p1-gold-short       RF 22.1 = 8.9 sampling + 12.0 guideline + 1.2 halluc
+      p1_s43-short        RF 21.2 = 7.1 + 13.3 + 0.8
+      fuse2_s42-short     RF 24.2 = 10.4 + 12.3 + 1.5
+      fuse2_s42-detailed  RF 32.0 = 16.6 + 13.0 + 2.4
+      e5_s42-detailed     RF 32.8 = 18.2 + 11.0 + 3.6
+      zeroshot-short      RF 47.7 = 10.1 + 30.6 + 7.0
+      zeroshot-detailed   RF 68.4 = 12.3 + 25.4 + 30.7
+    Reading:
+    * Detailed mode's precision drop vs short is mostly sampling-unnamed objects (+6 pts), not hallucination
+      (+0.9). The same story as the fuse2/COCO-80 fact in CONTEXT section 2, now from KTVIC refs alone.
+    * Zero-shot's extra ref-false mentions are mostly guideline-real (vocabulary and style), except in
+      detailed mode.
+    No CIs yet; see the pilot below.
+3.7 PD-2 count control: the correction does not touch it.
+    fuse2 MBR-short vs fuse2 short: raw dP -4.9 -> dP* -1.6; dF1* +5.9 vs raw dF1 +2.6.
+    F1* rewards count even more, so a same-count control would gain the same.
+
+4. PILOT FOR GEMINI (CPU only; 0 GPU-h; about 0.5 CPU-h at nice 19)
+Data: KTVIC train/test refs; data/results/*.preds.json; second_panel.json aggregates.
+No OpenViIC text, no new labels, no model-generated labels. Systems enter only as the scored object.
+Steps:
+ (1) Re-run as-is: nice -n 19 env OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python research_r10/E2/e2_pilot.py
+     Check the section 3 numbers.
+ (2) Add an image bootstrap (B=1000; refit g each draw; keep (w,p) from train) for these quantities:
+     V1 MAE(model) - MAE(naive); the five panel Spearman differences; every cell of the section 3.6 split.
+ (3) Robustness, each pre-registered:
+     (a) synonym-merged classes (nón/nón lá/mũ; the person-variant set; rescap.chair HYPERNYMS roots);
+     (b) hypernym-closed captures (P_h space);
+     (c) K = 2/3/4 and a beta-binomial in place of the finite mixture;
+     (d) matcher v2 (RESCAP_RAW_TONE unset).
+ (4) Optional, if the split is adopted: on dev300 only, check that the split is stable for P1 vs fuse2.
+     dev300 preds already exist under data/results/planf1 or upe; verify this.
+Pre-registration (before step 2):
+  Primary endpoint E1: V1 at R'=3, paired bootstrap MAE(model) - MAE(naive) < 0, CI excluding 0.
+  Secondary E2: Spearman(P*, panel-implied P) - Spearman(P, panel-implied P) > 0. Already observed -0.26.
+  E3: for fine-tuned systems, the hallucination share stays below the sampling share in the 3.6 split.
+Kill rules:
+  K1: if E1 fails under synonym merging (3a), drop the whole direction.
+  K2: if E2 is not > 0 (expected), never report P*/F1* as a headline or replacement metric; use only as
+      analysis.
+  K3: if the 3.6 hallucination share for fine-tuned systems has CI upper bound > 5 pts, drop the claim that
+      "fine-tuned FPs are almost all real".
+Count-matched note: no method claim is made, so the matched-count endpoint does not apply. If anyone does
+  re-score UPE/PLAN with F1*, it must be against the same-count control (expected: null, see 3.7).
+
+5. CLAIMS GEMINI MUST VERIFY
+ 1. All section 3 numbers, by re-running e2_pilot.py and e2_ablation.py.
+    My raw P on 558 images matches second_panel.json (555 matched images) within 0.1, e.g. p1-gold-short
+    77.94 vs 77.88.
+ 2. Dawid & Skene 1979, JRSS-C 28(1):20-28, doi 10.2307/2346806 (from memory, unverified).
+ 3. Chao 1987, Biometrics 43(4):783-791, doi 10.2307/2531532: the M_h lower bound used in 3.1 (unverified).
+ 4. Pledger 2000, Biometrics 56(2):434-442 (verified).
+    Link 2003, Biometrics 59(4):1123-1130 (verified).
+    Holzmann, Munk & Zucchini 2006, Biometrics (verified only by snippet; get pages and doi).
+ 5. Hui & Walter 1980, Biometrics 36(1):167-171 (verified).
+    Jain et al., AAAI 2017, arXiv:1702.00518 (verified).
+ 6. Spain & Perona, IJCV 91 (2011): pages 59-76, and whether their importance definition also covers "named
+    at all" (I saw "named first").
+    Berg et al., CVPR 2012, doi 10.1109/CVPR.2012.6248100 (verified).
+ 7. Keenan, Smeaton & Keogh 2001, JASIST 52(7):570-574: confirm the title and that it extrapolates unjudged
+    relevant documents.
+ 8. Novelty: search Google Scholar and Semantic Scholar for "capture-recapture" or "Lincoln-Petersen" or
+    "mark-recapture" with "caption" or "image description" or "reference"; and "Dawid-Skene" with "caption".
+    3 web searches here found nothing.
+ 9. That panel sensitivity for system ref-false objects equals the held-out human's (58.78%). The whole
+    "guideline-real" term in 3.6 depends on it.
+
+6. RISKS AND PD-2 FIT
+Risks:
+- Link non-identifiability. N_hat ranges 4.37-5.50/img across estimators. The sampling share in 3.6 moves
+  with it.
+- Lexical splitting inflates singletons and so N_hat. Test 3a may shrink the sampling share.
+- The model has positive bias in V1 (+1.35 at R'=3), so it overstates the sampling share a little.
+- The guideline-real term rests on one panel-sensitivity assumption (claim 9).
+- Reviewers may see the method as classical. The contribution is the decomposition and the validated
+  extrapolation, not the estimator.
+- AI-label rule: no model-generated labels are used. Systems are only scored. The rejected "other systems
+  as annotators" variant would break the rule and is excluded.
+PD-2 fit: this strengthens the EVALUATION/METHODOLOGY pillar.
+- It gives one paragraph plus one table: "what object false positives are made of".
+- It ties the human 1v4 ceiling, the two-panel capture and the reference-style facts into one model.
+- It does NOT help the main open problem (no method beats the count frontier).
+
+7. SCORES (1-5)
+Novelty 3: the estimators are classical; their use on caption references and the sampling-vs-guideline split
+  were not found in prior work (search still to be confirmed).
+Feasibility 5: CPU only, under 5 min, already runs; bootstrap and robustness are about 30 CPU-min.
+Expected impact 2: valid as an analysis section. As a metric it failed the panel check, so it cannot carry
+  the paper.
+Risk 3: identifiability and the panel-sensitivity assumption can move the split by several points.
+  Mitigated by bounds (Chao) and by the pre-registered kill rules.

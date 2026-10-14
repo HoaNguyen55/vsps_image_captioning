@@ -1,0 +1,275 @@
+M6 REPORT -- R10: per-image ALLOCATION of a fixed total mention budget. Can allocation beat the corpus count frontier?
+2026-10-14. Agent M6. CPU only (nice 19, 1 thread, <= 75 MB RSS, each run <= 12 s). Repo read-only. No VLM, no new labels.
+Model samples and votes are used only inside decision rules (flagged). The calibrator target is the human KTVIC reference union
+(dev300, cross-fitted, as in PLAN-F1). Files are in research_r10/M6/:
+  - m6_alloc.py, out/m6_alloc.json, out_run6.log (final run; deterministic);
+  - frozen/rescap/ = `git archive ee583c7 rescap`, the pre-registered matcher (see section 5, claim 1).
+
+==========================================================================================================================
+0. BOTTOM LINE
+==========================================================================================================================
+- Theory. At a fixed TOTAL count B, the F1-optimal allocation for micro-P / macro-R is water-filling: keep the B (image, class)
+  pairs with the largest s = q + kappa*E[y/|G_i|]. C5's PLAN-F1 rule is this allocation at its own B. Gains need cross-image
+  dispersion of the marginal score; with exchangeable images the gain is zero (Jensen).
+- Allocation alone does beat the pre-registered frontier at equal total count, but only at LOW counts. dev300, global
+  pool-vote allocation: +2.0 F1 at m 1.76, +1.5 at m 2.0, +0.4 at m 2.25; it crosses below the frontier at m* ~ 2.4.
+- PLAN-F1 (m 2.63) sat past the crossing. Its cap of 3 also made the allocation near-uniform. Its -2.49 residual splits into:
+  cap -0.93, macro term -0.84, calibrated q instead of raw votes -0.54, and a remainder of -0.18.
+- Realisable now with no training: choose ONE existing caption per image by a knapsack at greedy's own total count.
+  dev300: dF1 +2.08 [+0.05, +4.11], CIDEr-D -2.3 [-8.8, +4.3]. That is UPE's F1, reached at greedy's count.
+- The main value is methodological. PD-2's per-image same-count control cannot see allocation (this arm scores +0.09 against it).
+  A telescoping Count-Allocation-Ranking (CAR) decomposition shows that UPE is NOT a pure count shift. Novelty: moderate.
+
+==========================================================================================================================
+1. PROBLEM, THEORY AND FALSIFIABLE PREDICTIONS
+==========================================================================================================================
+Metric (scripts/object_prf.py): P = sum_i TP_i / sum_i k_i (micro), R = mean_i TP_i/|G_i| (macro), F = 2PR/(P+R).
+Total B = sum_i k_i = N*m. Each image i has a ranked candidate list j = 1..n_i with posterior p_ij = P(y_ij = 1).
+Define w_ij = E[y_ij / |G_i|] (C5's Poisson-binomial term).
+
+T1 (water-filling).
+  At fixed B, dF = (F_P/B) dTP + (F_R/N) dU, with U = sum_i TP_i/|G_i|. Hence dF is proportional to sum (p + kappa*w) over the
+  items that change, with kappa = P^2 m / R^2 (exactly C5's kappa).
+  The large-N optimum therefore keeps the global top-B items by s_ij = p_ij + kappa*w_ij. Within an image, w is increasing in
+  p (prereg 2026-10-13_plan_f1.md, section 3), so k_i* = #{j : s_ij >= tau_B}.
+  PLAN-F1 uncapped is this allocation at the B where tau_B = P*. The cap adds a constraint k_i <= 3, and it binds on 70% of
+  dev images.
+T2 (no dispersion, no gain).
+  If images are exchangeable given the evidence (same marginal-score sequence), then sum_{j<=k} s_i(j) is concave in k.
+  By Jensen, uniform k_i is optimal. Allocation gains are bounded by how far the evidence separates images AT THE MARGIN.
+T3 (exchange formula).
+  Take a reference allocation with included set I and excluded set E. The gain is Delta(B) = sum_r (s^E_(r) - s^I_(r))_+,
+  with s^E sorted descending and s^I ascending.
+  In F1 points, dF ~ 2R^2/(P+R)^2 dP + 2P^2/(P+R)^2 dR. At greedy's point, recall is worth P^2/R^2 = 3.0x precision.
+  Check on dev: global vote at greedy's B swaps 61 greedy mentions (41.0% gold) for 62 pool mentions (66.1% gold).
+  That is +15.3 TP, so dP ~ +2.9. Observed: +2.84.
+T4 (frontier crossing).
+  Start from a system on the frontier at m0 (greedy, residual ~ 0). At m = m0, any Delta > 0 puts the allocator above the
+  frontier at EQUAL total count.
+  For m > m0 the allocator must also add (m - m0)N pool items. Their mean precision c_A(m) must exceed the frontier chord
+    c_f = TP0 [(m/m0)^b - 1] / (m - m0)   (b = 0.7468; c_f -> b*P0 at m0: 0.59 official, 0.55 dev-anchored;
+    dev-anchored chord to m 2.63 = 0.526).
+  The pool has only 54 non-greedy items with vote share >= 0.5 (65% gold). After those, candidates are 50% and then 31% gold.
+  So c_A falls below c_f, and the crossing on dev300 is m* ~ 2.4.
+  Consequence: allocation alone can beat the frontier only for m below m*. The width of that window is set by pool coverage
+  and depth: 65.0% of gold classes are in the 13-caption pool.
+Hypotheses and falsifiable predictions (test, pre-registered, nothing tuned on test):
+  H1 At each seed's greedy total count, global pool-vote allocation beats greedy at the set level: dF1 >= +1.0, CI > 0.
+     (dev, 13 captions: +1.84 [+0.29, +3.34]; 7 captions, T0.5: +1.52 [+0.09, +2.95]).
+  H2 In CAR, the allocation term B is > 0 for the global-vote set and for the knapsack captions (dev: +1.27 / +1.42).
+     The per-image PD-2 term A is ~ 0 (dev: +0.00 / +0.09).
+  H3 Crossing: the set-level residual against the official frontier is > 0 at m0, ~0 at m ~ 2.4, and < 0 at m >= 2.75.
+  H4 With 13 captions, the knapsack captions beat greedy at Delta m = 0: dF1 >= +1.0, CI > 0, CIDEr-D >= greedy - 5.
+  H5 UPE's test gain re-attributes to count + allocation (dev: C +0.92 [+0.52, +1.32], B +0.62 [-0.38, +1.71]).
+     Its ranking term stays ~ 0 (dev +0.14), which agrees with the reported "+0.07 vs count control".
+
+==========================================================================================================================
+2. CLOSEST PRIOR WORK (V = verified today by web search; C5 = verified in R9 C5 lit/verified.tsv via arXiv/Crossref APIs)
+==========================================================================================================================
+1. Lipton, Elkan, Narayanaswamy (arXiv PDF header: Naryanaswamy), ECML-PKDD 2014, arXiv:1402.1892 [V, C5].
+   - Theirs: calibrated scores give an optimal F1 threshold of F*/2; corpus F1 couples instances through one global threshold.
+   - New here: the fixed-budget form for the MIXED micro-P / macro-R metric, the allocation decomposition, and the frontier
+     test. The global-threshold structure is theirs. Rating: LOW for the rule.
+2. Nan Ye, Chai, Lee, Chieu, ICML 2012, arXiv:1206.4625 [C5]; Dembczynski, Waegeman, Cheng, Huellermeier, NIPS 2011 (GFM)
+   [C5]; Jansche, ACL 2007, P07-1093 [C5].
+   - Theirs: exact expected-F maximisers for ONE F over one label set, i.e. instance-F when applied per image.
+   - New here: a corpus-level budget across images. C5 measured per-image exact EF1 as 0.2-0.7 below the corpus rule. MODERATE.
+3. Koyejo, Natarajan, Ravikumar, Dhillon, NIPS 2015, "Consistent Multilabel Classification" [C5].
+   - Theirs: micro averaging gives a shared threshold; macro gives per-label thresholds; instance averaging gives per-instance
+     thresholds.
+   - New here: micro-P mixed with instance-averaged R. The kappa*E[y/|G_i|] term couples the two. MODERATE (C5's closed form).
+4. Schultheis, Kotlowski, Wydmuch, Babbar, Borman, Dembczynski, ICLR 2024, arXiv:2401.16594 [V].
+   - Theirs: "macro-at-k", with exactly k labels per instance (a PER-INSTANCE budget).
+   - New here: a TOTAL budget with free per-instance k_i, and showing that k_i allocation is a separable source of gain.
+     MODERATE. This is the closest "budgeted" prior.
+5. McDonald, ECIR 2007, DOI 10.1007/978-3-540-71496-5_51 [V]; Lin & Bilmes, NAACL-HLT 2010, ACL N10-1134 [V].
+   - Theirs: knapsack, ILP or budgeted-submodular selection of content units under a length budget within one summary.
+   - New here: the budget is shared ACROSS images and scored by a corpus micro/macro metric. MODERATE.
+6. Arampatzis, Kamps, Robertson, SIGIR 2009, pp. 524-531, "Where to stop reading a ranked list?" [V, title/venue/pages; DOI
+   10.1145/1571941.1572031 NOT confirmed]; Bahri, Tay, Zheng, Metzler, Tomkins, SIGIR 2020 "Choppy", arXiv:2004.13012 [V].
+   - Theirs: per-query ranked-list truncation for per-query metrics (F1, DCG). This is the analogue of choosing k_i.
+   - Not theirs: a shared total budget or corpus-level coupling. MODERATE.
+7. Nakov, Guzman, Vogel, COLING 2012, ACL C12-1121 [V].
+   - Theirs: sentence-level vs corpus-level BLEU yields different (shorter) outputs; corpus metrics couple length across items.
+   - This is a precedent for "corpus metric -> allocation effects", not for objects. LOW-MODERATE.
+8. In-house: R9 C5 (closed-form rule), PLAN-F1 prereg and dev_plan_critique.json, UPE-MBR.
+   - Here: the first decomposition of their gains into count / allocation / ranking.
+Scoop search: 3 WebSearch queries plus 7 verification queries (budget allocation across instances, caption object-count
+allocation, global vs per-instance top-k). None found per-image allocation of a fixed TOTAL mention budget for a corpus micro-P / macro-R object metric. Closest
+hits: refs 1, 4 and 6. Coverage gaps: no DBLP or Semantic Scholar API, and papers from Sep-Oct 2026 may be missed.
+Novelty overall:
+  - CAR decomposition plus the crossing condition: MODERATE (an evaluation contribution);
+  - knapsack / global-threshold selection: LOW (standard machinery; the count-matched evaluation is the point).
+
+==========================================================================================================================
+3. EVIDENCE (CPU, dev300, P1_dev pool = greedy + 6 x T0.5 + 6 x T0.8; all numbers in out/m6_alloc.json)
+==========================================================================================================================
+3a. Reproduction.
+  - PLAN-F1 dev plan: P 64.85 / R 54.04 / F1 58.95, m 2.6267, official residual -2.49 [-5.52, +0.09]. This equals
+    data/results/planf1/dev_plan_critique.json exactly, but ONLY with the frozen rescap/chair.py (sha256 fd1d0123).
+  - With the working-tree matcher v2 (e47d249a): 58.97 at m 2.6233 (787 mentions).
+  - Pool: 1,307 items; coverage 65.0% of gold classes; cross-fitted AUROC(q) 0.7634.
+3b. F1 against the OFFICIAL frontier, as a residual (rule - frontier, F1 points), at equal total count m:
+  | rule \ m                          | 1.33  | 1.50  | 1.76  | 2.00  | 2.25  | 2.50  | 2.63  | 2.77  | 3.00  | 3.21  | 3.50  |
+  |---|---|---|---|---|---|---|---|---|---|---|---|
+  | uniform k_i, ranked by vote       | -1.06 | -0.69 | +0.03 | +0.29 | -1.11 | -2.26 | -2.76 | -3.28 | -4.06 | -4.69 | -5.64 |
+  | GLOBAL vote (allocation)          | +2.13 | +2.05 | +1.97 | +1.52 | +0.42 | -0.19 | -0.18 | -0.81 | -1.37 | -2.21 | -4.43 |
+  | global q                          | +1.53 | +1.77 | +1.58 | +1.57 | +0.49 | -0.51 | -0.72 | -1.02 | -2.31 | -3.51 | -4.56 |
+  | F1-opt q + kappa*w (C5, uncapped) | +3.12 | +2.76 | +0.97 | +0.69 | +0.35 | -0.53 | -1.56 | -1.43 | -1.72 | -2.84 | -4.40 |
+  | same, cap 3 (= PLAN at 2.63)      | +3.12 | +2.66 | +0.99 | +0.28 | -0.66 | -1.42 | -2.49 | -3.41 | -     | -     | -     |
+  | greedy count + delta (q rank)     | -3.77 | -2.08 | +0.44 | -0.28 | -0.84 | -1.24 | -1.38 | -2.21 | -3.48 | -4.54 | -5.78 |
+  | k_i proportional to TRUE |G_i|    | -5.57 | -4.47 | -2.92 | -2.32 | -1.86 | -2.05 | -2.15 | -2.21 | -2.24 | -2.77 | -4.07 |
+  | ORACLE allocation (q rank fixed)  | +13.8 | +14.3 | +14.7 | +14.4 | +13.7 | +12.5 | +11.7 | +10.6 | +8.4  | +5.2  | +1.0  |
+  | frontier F1 (official)            | 49.26 | 51.42 | 54.40 | 56.69 | 58.79 | 60.61 | 61.45 | 62.35 | 63.61 | 64.67 | 65.93 |
+  Greedy caption: 54.53 at m 1.763 (+0.13). Uniform allocation crosses below the frontier at ~2.1; global allocation at ~2.4.
+3c. At greedy's total count (B = 529), paired, 2,000 image bootstraps (95% CI):
+  - Global vote set vs greedy: dF1 +1.84 [+0.29, +3.34] (p .028), dP +2.84, dR +1.34.
+    Dev-anchored residual +1.84 [+0.34, +3.33]; official residual +1.97 [-1.25, +5.00].
+  - Split: ranking at k_i = g_i is +0.57 [-0.55, +1.77]; allocation (global vs g_i) is +1.27 [-0.05, +2.59] (p .059).
+  - Rule = name a class iff >= 6 of the 13 captions name it, plus 5-vote classes in prior order until B is met.
+    68 images change count.
+    k histogram (0..5): [16, 101, 134, 36, 12, 1], vs greedy [9, 100, 151, 33, 7].
+  - Per 60-image fold, allocating within the fold: +1.60, -0.59, +3.04, +0.36, +4.09.
+  - Fewer samples: 6 x T0.5 gives +1.52 [+0.09, +2.95]; 6 x T0.8 gives +0.94 [-0.97, +2.85].
+  - "More objects for cluttered images" (k_i proportional to TRUE |G_i|, an oracle) vs uniform: -2.58 [-4.45, -0.69]
+    (P +5.15, R -4.63). Under macro-R, starving sparse images costs ~3x more than the precision gained. The metric's
+    allocation signal is marginal confidence, not clutter. Clutter-proportional allocation helps only at m 3.21 (+2.03).
+3d. Realisable arm: ONE existing caption per image, a Lagrangian multiple-choice knapsack on sum(q) - lambda*|M| with
+    lambda set to hit B = 529 (label-free; ties go to greedy).
+  - F1 56.61 (P 76.94 / R 44.78) at m 1.7633. dF1 vs greedy +2.08 [+0.05, +4.11] (p .044). 35.7% of images switch.
+  - KTVIC CIDEr-D 142.07 vs 144.33: -2.27 [-8.81, +4.28] (C5's cached per-candidate matrices).
+  - Compare UPE: 56.77 at m 1.91 (residual +0.95). This arm reaches it at greedy's count (residual +2.21; dev-anchored
+    +2.08 [+0.04, +4.12]).
+  - Using raw votes instead of q: +0.90 [-0.61, +2.34], CIDEr -4.5.
+  - 7-caption T0.5 pool: +0.78 [-1.02, +2.56], CIDEr -6.6 [-13.4, -0.2]. The realisable gain needs the 13-caption pool.
+3e. CAR decomposition, telescoping (ranking source V = 13-caption vote; base G = greedy caption):
+    F(S) - F(G) = D [V at g_i - G] + C [count: G's allocation shifted to S's total] + B [allocation: V at S's k_i - shifted]
+                + A [ranking: S - V at S's k_i = PD-2's per-image control].
+  | system (m)          | TOTAL               | D base re-rank | C count             | B allocation        | A ranking (PD-2)  |
+  |---|---|---|---|---|---|
+  | UPE (1.91)          | +2.24 [+0.88,+3.73] | +0.57          | +0.92 [+0.52,+1.32] | +0.62 [-0.38,+1.71] | +0.14 [-0.89,+1.13] |
+  | PLAN cap3 (2.63)    | +4.43 [+1.97,+6.78] | +0.57          | +4.96 [+2.89,+7.03] | -1.08 [-2.35,+0.28] | -0.02 [-0.81,+0.79] |
+  | knapsack caps (1.76)| +2.08 [+0.05,+4.11] | +0.57          | 0                   | +1.42 [+0.00,+2.86] | +0.09 [-0.83,+1.03] |
+  | global vote (1.76)  | +1.84 [+0.29,+3.34] | +0.57          | 0                   | +1.27 [-0.05,+2.59] | 0 (by construction) |
+  Reading:
+  - PLAN's capped allocation is WORSE than "greedy's own k_i + delta" at the same total. The cap destroyed the base model's
+    allocation signal: Spearman(k_i, |G_i|) is 0.334 for PLAN vs 0.329 for uniform, 0.37 for the greedy caption, 0.45 for
+    global vote.
+  - UPE's "pure count shift" verdict comes from term A only.
+3f. Why PLAN-F1 fell below the frontier, at m 2.6267 (F1; official residual -2.49):
+  | step                                  | F1    | change |
+  |---|---|---|
+  | PLAN                                  | 58.95 |        |
+  | uncap (same B)                        | 59.89 | +0.93 [-0.34, +2.14] |
+  | drop the macro term kappa*w           | 60.73 | +0.84 [-0.12, +1.85] |
+  | raw pool vote instead of calibrated q | 61.27 | +0.54 |
+  | frontier                              | 61.45 | +0.18 |
+  - The marginal precision needed from greedy to 2.63 is 0.526 (dev-anchored chord). The plan delivered 0.456.
+  - The frontier's marginal precision b*P_f is 0.59 / 0.57 / 0.53 / 0.51 at m 1.76 / 2.0 / 2.63 / 3.21.
+  - The pool's precision by q-rank is 80.6 / 61.2 / 43.7 / 39.5 / 33.9 / 27.9%.
+  - The critique's matched controls held the plan's k_i fixed, so they inherited the near-uniform allocation and could not
+    see this.
+  - The macro term is noise-level with this posterior: -0.61 (m 1.76), -0.84 (2.63), +0.67 (3.21), all n.s.
+    corr(E|G_i|, |G_i|) = 0.49.
+3g. The allocation signal is the bottleneck, not the rule.
+  - Oracle allocation (gold-aware k_i, same ranking) is +14.7 at m 1.76, so the headroom is large.
+  - Cross-image AUROC of q among items at the same within-image rank: 0.68 / 0.69 / 0.64 / 0.69.
+  - Adding image-level features (log pool size, greedy count, vote rank) gives AUROC 0.7628 vs 0.7634, and an allocation
+    change of +0.37 / +0.17 (n.s.).
+3h. Side finding.
+  - Sampled captions as systems: T0.5 slots average F1 53.88 at m 1.76 (residual -0.51); T0.8 slots 50.14 at m 1.77
+    (residual -4.32).
+  - Frontier invariance holds for greedy decoders, not for sampled outputs. Keep this in mind when the frontier is used for
+    sampling-based methods.
+
+==========================================================================================================================
+4. PILOT FOR GEMINI TO RUN (pre-register first; everything frozen from dev300; no test number has been seen by M6)
+==========================================================================================================================
+P-M6a CAR audit of landed systems (0 GPU; CPU < 5 min per system).
+  - Port m6_alloc.py sections 0-3 and 7 into a repo script, e.g. scripts/car_decomp.py, via the gatekeeper.
+  - Import the frozen rescap from ee583c7, or pin the matcher in the prereg.
+  - Run on dev300 for greedy / UPE / PLAN (numbers in 3e).
+  - Run on test for UPE x3 seeds, using the existing pools data/results/upe/test/p1assist_s4{2,3,4}-test-short-T0.5.jsonl plus
+    the greedy preds (hashes in upe_mbr_ktvic_test.json; V = 7-caption vote).
+  - Endpoint: terms A-D with 95% CIs, pooled over seeds.
+  - No kill rule (descriptive). Report it next to PD-2's per-image control.
+P-M6b Set-level allocation on test (0 GPU; CPU).
+  - Rule: global top-B by 7-caption vote (ties: greedy flag, then train prior logit), B = each seed's own greedy total count.
+  - Primary endpoint: paired dF1 vs greedy at Delta m = 0, pooled over 3 seeds (object_prf.paired, n = 5000).
+  - Dev reference: +1.52 [+0.09, +2.95].
+  - Kill: pooled dF1 < +0.8 or CI includes 0.
+  - Secondary: CAR B term > 0; residual against the official frontier.
+P-M6c Realisable knapsack captions (the method arm), about 1.7 GPU-h on one 3090.
+  - Step 1: for each p1assist_s4X, run
+      python scripts/e5_sample.py --adapter $NCS_DATA/runs/p1assist_s4X --split test_data.json --limit 0 --prompt short
+             --n 6 --temperature 0.8 --top-p 0.95
+    6 samples x 558 images x ~3.6 s per image per 6 samples (R6/C5 timing) = ~0.56 GPU-h per seed, ~1.7 GPU-h for 3 seeds.
+  - Step 2 (CPU): fit the calibrator once on P1_dev dev300 with the 13-caption features (plan_f1.py fit; weights are in the
+    prereg).
+    - Apply it to each test pool.
+    - Pick one caption per image: maximise sum(q) - lambda*|M|, with lambda bisected so the total count equals that seed's
+      greedy total. Ties go to greedy.
+    - Score with evaluate.py --predictions (CIDEr-D, BLEU-4) and object_prf.
+  - Primary endpoint: pooled paired dF1 vs greedy at Delta m = 0 (count-matched by construction).
+  - Secondary: CAR terms; CIDEr-D; OpenViIC panel-augmented P (evaluation only).
+  - Kill: pooled dF1 < +1.0, or CI includes 0, or CIDEr-D < greedy - 5 (dev: +2.08 [+0.05, +4.11], CIDEr -2.3).
+  - Report negative in full.
+  - Disclose the transductive count match (label-free, over the test batch). The online variant is a frozen dev lambda.
+P-M6d Optional (0.5 GPU-h): replace q with the E2 layer-24 probe (C5: AUROC 0.807) for allocation only.
+  - Prediction: the gain rises only if rank-conditional AUROC rises above 0.75 (3g).
+Total: 0 GPU-h for P-M6a/b; about 1.7 GPU-h for P-M6c; about 0.5 GPU-h for P-M6d. CPU about 0.5 h.
+
+==========================================================================================================================
+5. CLAIMS GEMINI MUST VERIFY
+==========================================================================================================================
+1. Instrument drift. Working-tree rescap/chair.py (sha256 e47d249a, matcher v2 since a0accb5) is not the frozen fd1d0123 that
+   PLAN-F1 / UPE pre-registered. Rerunning plan_f1.py with it gives F1 58.97 at m 2.6233, not 58.95 / 2.6267.
+   Every re-score must pin the matcher.
+2. All dev numbers in section 3: `nice -n 19 env OMP_NUM_THREADS=1 python3 m6_alloc.py` (about 5 s; asserts the plan
+   reproduction and the UPE hash 1380ad20).
+3. The UPE CAR terms (C +0.92, B +0.62, A +0.14). Check that A matches the method in the test "+0.07 vs count control".
+4. The frontier is a 2-anchor curve (mean of the 3 P1-short runs, plus fuse2_s42-detailed at M 3.154; b fitted from 2 points).
+   Above m 3.15 it is extrapolation.
+5. The T0.8 sample slots lie 4.3 F1 below the frontier (3h). Recompute with object_prf.
+6. Citations: the Arampatzis 2009 DOI; Lipton surname spelling; that Koyejo 2015 does not treat a mixed micro-P /
+   instance-R metric (C5's claim); the scope of the Schultheis 2024 at-k budget.
+7. Existence and hashes of the p1assist_s4X test greedy preds and adapters on n2 (for P-M6b/c).
+8. That the knapsack writes only model captions (picks), never new text, and that OpenViIC stays evaluation-only.
+
+==========================================================================================================================
+6. RISKS AND FIT WITH PD-2
+==========================================================================================================================
+Risks.
+- Multiplicity and small N. About 6 arms were examined at B = 529 on 300 images; the best p is .028-.044. Test must be
+  pre-registered and confirmatory. The effect is small (+1.5 to +2 F1) and the CIs touch 0.
+- Sampling depth. The realisable gain needs 12 samples (7-caption pool: +0.78 n.s., CIDEr -6.6). Test CIDEr could fall more
+  than on dev.
+- Transductive budget. Matching B uses the test batch (no labels). A frozen vote threshold (5/13) is the online form.
+- The set-level arm empties 16 vs 9 images (no lexicon object). The knapsack arm avoids this.
+- Model signals. q uses model votes (flagged) and a dev-fitted calibrator on human refs (cross-fitted). No AI labels.
+- Calibrator transfer. P-M6c applies a P1_dev calibrator to p1assist pools; C5 measured ECE 0.03-0.06 for this transfer.
+- Macro artifact? No. The gains are mostly micro precision (dP +2.65 / +2.84 at equal total count), i.e. more correct
+  mentions for the same number of mentions.
+Fit with PD-2.
+- Evaluation pillar (main). CAR refines the primary endpoint: PD-2's per-image same-count control is the A term only, and
+  it cannot see allocation. With CAR, UPE's gain is re-attributed (count +0.92, allocation +0.62) instead of being called a
+  pure count shift.
+- Method pillar. This gives the first candidate method that is count-matched at the TOTAL level and sits above the frontier
+  on dev (+2.08). It is cheap and needs no training. The paper must state that allocation is the source of the gain.
+- Explains PLAN-F1's failure with a falsifiable law (crossing at m* ~ 2.4), not as noise.
+
+==========================================================================================================================
+7. SCORES (1-5)
+==========================================================================================================================
+Novelty 3:
+  - CAR plus the frontier-crossing condition is new in this setting;
+  - the water-filling rule is standard F-measure plug-in theory (Lipton, Koyejo).
+Feasibility on 1x3090 5:
+  - 0 GPU-h for dev, the audit and the set-level test;
+  - about 1.7 GPU-h for the realisable test arm.
+Expected impact 3:
+  - fixes an endpoint blind spot and re-attributes UPE;
+  - yields a modest count-matched positive. It is not a large accuracy gain.
+Risk 3 (moderate):
+  - dev evidence is p ~ .03-.05 with arm multiplicity;
+  - realisable gains need deep pools, and CIDEr may cost more on test.

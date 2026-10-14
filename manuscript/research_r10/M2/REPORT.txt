@@ -1,0 +1,195 @@
+R10 / M2 -- Learned human mention-worthiness (salience) for content selection
+Agent M2, 2026-10-14. CPU-only. Folder: research_r10/M2/ (m2_salience.py, m2_pilot.json, pilot_stdout.txt,
+error_analysis.txt). dev300 only; no test labels were read; no OpenViIC text was used.
+
+0. BOTTOM LINE
+- Direction is NEGATIVE at CPU level. I learned which classes KTVIC annotators name (class prior, k-of-5 reference
+  consensus, first-mention position, co-occurrence) from train-minus-dev300 references only (3,469 images x 5 refs).
+  I combined this with the model's sample votes (MODEL SIGNAL) by zero-fit Bayesian transforms and by cross-fitted
+  within-image ranking models. On dev300 none of these beats the strongest raw-vote ranking at matched per-image
+  counts k_i, in any of 5 count regimes. At PLAN-F1's k_i: best human+vote rule -0.35 F1 [-1.53, +0.87] vs pool-vote.
+- Within-image headroom is real (oracle at matched k_i: +9.9 F1). But the boundary errors are image-specific: the
+  same classes (người, áo, đàn ông, phụ nữ, đường) are false positives in some images and misses in others. Class-
+  level salience cannot reorder them. About 25% of the oracle's helpful swaps are word choice inside one lexical family.
+- Useful by-product for PD-2 (methodology): the "raw-vote" matched control is sensitive to tie-breaking. Its variants
+  differ by up to 1.03 F1 at the SAME counts (58.87 / 59.52 / 59.90). A learned vote-only calibration "wins"
+  +0.92 [+0.18, +1.74] over PLAN-F1's control, yet -0.10 vs the strongest variant. Pre-register the control as the
+  best of a fixed vote-ranker family, or any sub-1-F1 "win" is tie-breaking.
+- Novelty: low (importance-from-descriptions is Berg et al. 2012 / Spain & Perona 2008-11). Expected value: a
+  short negative result plus a control-design rule. Recommend no GPU, except optionally one <=0.5 GPU-h grounded-
+  salience check (Sec. 4) with a hard kill rule.
+
+1. PROBLEM AND HYPOTHESIS
+Setting. Per dev300 image, the pool is P1_dev s42 greedy + 6 samples at T0.5 + 6 at T0.8 (PLAN-F1's frozen pool).
+Candidates are the classes any pool caption names (rescap.chair 113-class lexicon, frozen matcher fd1d0123 via
+RESCAP_RAW_TONE=1). Label y = class is in the union of the 5 references. Metric: object_prf micro-P / macro-R / F1.
+Primary endpoint: paired DeltaF1 (bootstrap B=5000 over images) vs a same-count control: top-k_i by vote, at
+identical k_i per image. PLAN-F1 showed that its calibrated q only sets k_i; within-image order is the only lever left.
+H1: a class's human mention-worthiness, learned from train refs, carries within-image ranking information beyond the
+  model's votes. Predictions:
+  (a) a cross-fitted votes+human ranker beats the strongest vote control at PLAN-F1's k_i: DeltaF1 >= +1.0, CI > 0;
+  (b) the gain holds at greedy k_i and fixed k = 2, 3;
+  (c) dropping the human features (votes-only learned ranker) loses that gain.
+H1 is falsified if (a) fails. RESULT: (a), (b) and (c) all fail (Sec. 3).
+H2 (zero-parameter): P1 was SFT'd on ONE caption per image (plan_f1.py docstring: "first caption"), so sample votes
+  estimate a single annotator's naming rate. The gold label is a union over 5 annotators. A class-specific
+  beta-binomial fitted on the train k-of-5 profile, updated with the votes as pseudo-annotators (n_eff), gives
+  P(any of 5 names o). Its within-image order differs from raw vote. Prediction: beats pool-vote at matched k_i.
+  RESULT: falsified (-0.47 [-1.48, +0.56] at n_eff=2; no n_eff in {1, 2, 4, 8, 13} wins).
+
+2. CLOSEST PRIOR WORK (verified by web search on 2026-10-14 unless marked)
+[1] Berg, Berg, Daume III, Dodge, Goyal, Han, Mensch, Mitchell, Sood, Stratos, Yamaguchi, "Understanding and
+    Predicting Importance in Images", CVPR 2012, DOI 10.1109/CVPR.2012.6248100. Defines importance as what people
+    choose to describe. Predicts it from compositional, semantic and context factors. M2's class prior and
+    co-occurrence are its "semantic/context" factors. New here: tested as a re-ranker on top of LVLM sample votes
+    at matched counts; it adds nothing. Novelty vs [1]: low.
+[2] Spain & Perona, "Some Objects Are More Equal than Others: Measuring and Predicting Importance", ECCV 2008,
+    DOI 10.1007/978-3-540-88682-2_40; journal version "Measuring and Predicting Object Importance", IJCV 91 (2011)
+    (IJCV DOI NOT verified). Importance = probability an object is named, measured from many annotators; position
+    and size are predictive. M2's k-of-5 consensus is this measure. Novelty vs [2]: low.
+[3] Yatskar, Galley, Vanderwende, Zettlemoyer, "See No Evil, Say No Evil: Description Generation from Densely
+    Labeled Images", *SEM 2014, DOI 10.3115/v1/S14-1015. Content selection from dense human labels. Novelty: low-mod.
+    (M2 has no dense labels; uses LVLM samples as the candidate generator.)
+[4] Yun, Peng, Samaras, Zelinsky, T. Berg, "Studying Relationships between Human Gaze, Description, and Computer
+    Vision", CVPR 2013, DOI 10.1109/CVPR.2013.101. What is looked at vs what is described. Novelty: moderate (we
+    use no gaze).
+[5] Jas & Parikh, "Image Specificity", CVPR 2015, arXiv 1502.04569. Description consistency across annotators varies
+    per image. M2's beta-binomial over-dispersion is a class-level analogue. Novelty: moderate.
+[6] Madhyastha, Wang, Specia, "VIFIDEL", ACL 2019, P19-1654, DOI 10.18653/v1/P19-1654, arXiv 1907.09340. Weights
+    objects by how many references mention them, in an evaluation metric. Same signal as M2's "how many of 5 refs",
+    used for scoring rather than selection. Novelty: low-mod.
+[7] Cornia, Baraldi, Cucchiara, "Show, Control and Tell", CVPR 2019, arXiv 1811.10652. Region-set/sequence-
+    controlled captioning: the realiser side of content selection (PLAN-F1's realiser is this idea). Novelty: n/a.
+[8] Borgeaud & Emerson, "Leveraging Sentence Similarity in NLG: Improving Beam Search using Range Voting", WNGT 2020,
+    arXiv 1908.06288. Outputs voting for each other (consensus over samples). The vote baseline is in this family.
+[9] (2026, found by search, CONTENT UNVERIFIED) PatchGate arXiv 2608.21819 (omitted-but-visible objects in frozen
+    VLMs); ProCap arXiv 2607.21022 (prominence-ranked object injection, video). Closest recent "seen-but-not-said"
+    work; it uses detector/patch evidence, not human mention statistics.
+Overall novelty of M2 as proposed: LOW. Possibly new but unpromising: the matched-count, within-image test of human
+salience on top of LVLM votes (a negative result), and the "union-of-5 posterior with model samples as pseudo-
+annotators" (H2). I found no prior instance of H2; not exhaustively searched.
+
+3. EVIDENCE SO FAR (CPU pilot, 13 s, 92 MB RSS, nice 19, 1 thread)
+Script: research_r10/M2/m2_salience.py (imports scripts/plan_f1.py read-only). Output: m2_pilot.json.
+Inputs (sha256 verified = PLAN-F1 prereg values):
+  greedy .session_backup/machines/n2/ncs-data/rl/p1dev_s42-dev300-short.preds.json (1e183383...);
+  samples data/results/upe/p1dev_s42-dev300-short-T0.5.jsonl (876a1d42...), -T0.8.jsonl (60ebd640...);
+  refs .session_backup/machines/n2/ncs-data/datasets/ktvic/train_data.json (3,769 images x 5).
+Reproduction: PLAN-F1 dev plan regenerated byte-identical (sha256 58ecef13... = prereg). Controls reproduce
+data/results/planf1/dev_plan_critique.json exactly: RAW-VOTE(v,g,lp) 58.87, NOPRIOR(v,g) 59.52, POOL-VOTE13 59.90.
+Pool: 1,307 (image, class) items, 4.36 classes/img, 52.3% in gold. Gold: 3.51 classes/img, of which 1.23 are never
+named by any of the 13 pool captions (pool coverage ceiling about 65% of gold classes).
+
+3a. Matched-count F1 at PLAN-F1's k_i (m = 2.627). Delta vs POOL-VOTE13 (the strongest control here) [95% CI]:
+  ORACLE (rank by gold)            69.76   +9.86 [+7.87, +12.01]   <- headroom of within-image ranking
+  Human-only (pool membership + one class statistic, NO votes):
+    prior 52.82 (-7.08) | k-of-5 consensus 51.88 (-8.02) | first-mention position 53.72 (-6.18) | co-occ 52.36 (-7.54)
+  Zero-fit union posteriors (votes = MODEL SIGNAL):
+    U_A presence-model 59.12 (-0.78 [-1.79, +0.16]); U_BB n_eff=1/2/4/8/13: 58.79 / 59.43 / 59.31 / 59.11 / 59.11
+    (best -0.47 [-1.48, +0.56])
+  Cross-fitted within-image ranking models (pairwise L2 logistic, PLAN-F1's 5 folds):
+    votes only [logit vote, g]          59.80  -0.10 [-0.59, +0.31]   (+0.92 [+0.18, +1.74] vs PLAN-F1 raw control!)
+    votes + ALL human features          59.55  -0.35 [-1.53, +0.87]
+    votes + prior                       58.68  -1.22 [-2.29, -0.22]
+    votes + consensus / position / co-occ  59.48 / 59.33 / 59.50   (all CIs include 0, all points negative)
+    POST-HOC votes + model's own first-mention rank (image-conditional MODEL SIGNAL)  59.24  -0.66 [-1.41, -0.02]
+3b. Robustness across count regimes (best human+vote rule minus the BEST control in that regime):
+  greedy k_i (m 1.763): controls 55.14 / 55.33 / 55.09; best human+vote 55.19 (+prior or +position), -0.14 vs best;
+    votes-only 55.56 (+0.23 vs best, CI incl. 0).
+  fixed k=1: controls 42.88 / 43.04 / 42.82; best human+vote 43.15 (+0.11). Oracle 51.17.
+  fixed k=2: controls 56.70 / 56.39 / 56.24; best human+vote 56.65 (co-occ, -0.05). Oracle 67.20.
+  fixed k=3: controls 58.97 / 59.60 / 59.97; best human+vote 59.69 (co-occ, -0.28). Oracle 69.25.
+  Votes+ALL-human minus votes-only: -0.25, -0.71, -0.55, +0.05, -0.34 (plan, greedy, k1, k2, k3). Human features
+  never help beyond noise (max +0.05) in matched-count F1.
+3c. Within-image pairwise AUC (count-free; ties = 1/2): vote 0.727, pool13 0.726, votes-only learned 0.727,
+  votes+human 0.740, votes+prior 0.742, U_BB(n_eff=1) 0.737; human-only 0.536-0.585 (above chance).
+  So human salience does improve global within-image order, by +0.013 AUC. That gain does not reach the top-k_i
+  boundary. Likely reason (NOT tested): it reorders low-vote items (s13 = 1: 389 items, gold rate 0.25), which are
+  below k_i anyway.
+3d. Why it fails (error_analysis.txt):
+  - Votes are already well ordered: gold rate by pool votes s13 of 13 is 0.25 (1), 0.45 (2-3), 0.54 (4-6),
+    0.65 (7-9), 0.83 (10-12), 0.88 (13).
+  - At k=3, the same classes dominate BOTH error sides: người 29 FP / 24 FN, áo 13/21, đàn ông 11/15,
+    quầy hàng 15/10, phụ nữ 20/5, đường 22/5. The errors are image-specific, not class-level.
+  - The class residual (gold rate minus vote-bin base rate) is |res| < 0.10 for most of the 30 most frequent pool
+    classes. Largest: cầu -0.22 (n=18), báo -0.20 (13), kính +0.22 (10), ô tô +0.20 (10).
+  - 24-26% of the oracle's beneficial swaps (k=2: 21/86; k=3: 23/89) stay inside one lexical family: person
+    words, đường/con đường/vỉa hè, nhà/toà nhà, ... (my grouping; see Claim 9). That is wording, not content
+    selection.
+  - Interpretation: SFT on human captions has already internalised class-level mention-worthiness into the votes.
+    What remains is image-conditional (which person word fits this image; is the shirt prominent here).
+3e. Multiplicity: 16 candidate rankers (+3 controls, +oracle) x 5 regimes, + 1 post-hoc, all on dev300. Nothing passes, so selection bias
+  cannot create a false positive here. It only means the near-miss CIs are not inferential.
+
+4. PILOT DESIGN FOR GEMINI TO RUN
+Recommendation: do NOT spend GPU on the M2 direction as proposed. The CPU result is decisive for class-level human
+salience. Two items:
+4.1 (CPU, 1 min; adopt now) Control-design rule for PD-2. Re-score every pending matched-count comparison
+  (UPE-MBR kill 2, PLAN-F1, future selectors) against the vote-control FAMILY {RAW(v,g,lp), NOPRIOR(v,g), POOL13}.
+  Report both the max and the pre-registered member. Commands:
+    cd /mnt/d/vsps_image_captioning && RESCAP_RAW_TONE=1 nice -n 19 env OMP_NUM_THREADS=1 \
+      python3 <scratchpad>/research_r10/M2/m2_salience.py      # writes m2_pilot.json next to the script
+  Pre-register: control = POOL13 for primary; the family max for robustness. A method passes only if DeltaF1 vs
+  the family max has CI > 0. (Spread among controls: 1.03 / 0.24 / 0.22 / 0.46 / 1.00 F1 across the 5 regimes.)
+4.2 (OPTIONAL GPU, <= 0.5 GPU-h, LOW priority) G-SAL: image-conditional grounded salience.
+  This is the only salience hypothesis the CPU pilot leaves open. [2] found object SIZE and POSITION predictive of
+  mention. R9 C7: name rate 7/24/56% for small/medium/large. Votes may not fully carry it.
+  Data: same dev300 pool (1,307 items, 300 images).
+  Step 1 (GPU): one zero-shot call per image to base Qwen2.5-VL-7B-Instruct (no adapter). Ask for JSON bounding
+  boxes of each pool class (the Vietnamese class name, plus an English gloss), greedy, max 256 new tokens.
+  Save {image_id: {class: [[x1,y1,x2,y2], ...]}}. MODEL-GENERATED signal: flag it; never treat it as gold.
+  Script to write (about 60 lines, reuse rescap.vlm loader): s_ground_dev300.py. Est. 300 calls x ~3 s ~ 0.25
+  GPU-h on 1x3090.
+  Step 2 (CPU, < 1 min): add features [log max-box area fraction, centre distance, #boxes, box-found flag] to
+  m2_salience.py's Xs. Fit the cross-fitted pairwise model exactly as "L_votes" plus those 4 features.
+  Primary endpoint: DeltaF1 vs POOL13 at PLAN-F1's k_i (plan sha256 58ecef13...), B=5000, same 5 folds.
+  Kill rules:
+    K-a: DeltaF1 < +1.0 or CI lower bound <= 0 -> kill;
+    K-b: the votes-only model is within 0.3 F1 of it -> kill (the gain is calibration, not salience);
+    K-c: DeltaF1 vs the family max <= 0 at greedy k_i or fixed k=3 -> kill.
+  Confirmatory (only if all pass; pre-register first): freeze dev300 weights. Apply to the KTVIC test pools
+  data/results/upe/test/p1assist_s4{2,3,4}-test-short-T0.5.jsonl + their greedy preds. NOTE: 6 samples + greedy
+  (7 votes, not 13), so re-specify r_hat = (s7 + 0.5) / 8 BEFORE looking.
+  Prior chance of passing: about 15-20%.
+CPU-h total: < 0.1. GPU-h: 0 (recommended) or <= 0.5 (G-SAL).
+
+5. CLAIMS GEMINI MUST VERIFY
+ 1. Re-run m2_salience.py: plan sha256 58ecef13... reproduced; the controls give 58.87 / 59.52 / 59.90 at m=2.627.
+ 2. Every number in Sec. 3a-3c matches m2_pilot.json (bootstrap seed 0, B=5000).
+ 3. With the current tone-normalised matcher (unset RESCAP_RAW_TONE): the conclusion is unchanged. NOT run by me.
+ 4. P1_dev / P1 SFT uses only the first reference per image (scripts/build_gold_sft.py). H2's motivation rests on it.
+ 5. Berg et al. CVPR 2012, DOI 10.1109/CVPR.2012.6248100: "importance = what people describe".
+ 6. Spain & Perona IJCV 91 (2011): exact pages/DOI (I verified only the ECCV 2008 DOI 10.1007/978-3-540-88682-2_40).
+ 7. Yatskar et al. *SEM 2014 DOI 10.3115/v1/S14-1015; Yun et al. CVPR 2013 DOI 10.1109/CVPR.2013.101; Jas & Parikh
+    arXiv 1502.04569; VIFIDEL DOI 10.18653/v1/P19-1654; Cornia et al. arXiv 1811.10652; Borgeaud & Emerson
+    arXiv 1908.06288.
+ 8. PatchGate (arXiv 2608.21819) and ProCap (arXiv 2607.21022): existence and claims. Search snippets only.
+ 9. The lexical-family share (about 25%) uses MY grouping: _GENDERED and _NEUTRAL_PERSON in rescap/chair.py, plus
+    hand-made road/building/river/hat/... families. Re-check with an independent grouping.
+10. The explanation in 3c (AUC gain sits below the k_i boundary) is a hypothesis. Verify it with a boundary-
+    restricted AUC.
+
+6. RISKS AND FIT WITH PD-2
+Risks:
+- The pilot uses one seed (P1_dev s42) and 300 images. CIs are about +/-1 F1, so effects below ~1 F1 cannot be
+  resolved. A real +0.5 gain could be hidden. But the point estimates are negative for every human-feature model
+  in 4/5 regimes.
+- Human statistics come from KTVIC style. Under a different guideline (OpenViIC panel) salience may differ. Untested.
+- G-SAL relies on model-made boxes, which are AI-made: usable inside a method (flagged), never as evidence.
+Fit with PD-2:
+- Strengthens the evaluation/methodology pillar.
+  (i) Control-family rule: tie-breaking alone moves matched-count F1 by up to 1.03.
+  (ii) An error budget for object F1 on the same pool:
+       count (frontier);
+       pool coverage (35% of gold never sampled);
+       within-pool ranking (oracle +9.9 at matched k_i), about a quarter of it lexical-family choice;
+       class-level human salience explains ~0 of the ranking part.
+  (iii) A clean negative: "SFT already internalises human mention-worthiness". It complements the PLAN-F1 and UPE
+       negatives, which reviewers will ask about.
+- It does NOT supply the method that beats the count frontier.
+
+7. SCORES (1-5)
+Novelty 2  - importance-from-descriptions is established [1][2][6]; only the matched-count LVLM test and H2 are new.
+Feasibility 5 - CPU pilot done in 13 s; the optional GPU check is <= 0.5 GPU-h on 1x3090.
+Expected impact 2 - a negative result plus a control-design rule; no frontier-beating method.
+Risk 4 (high) - the direction already failed on CPU; G-SAL has a low prior of passing.

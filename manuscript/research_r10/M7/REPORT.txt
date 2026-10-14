@@ -1,0 +1,250 @@
+R10 / M7 -- Uncertainty-aware (hedged) Vietnamese captions                                  2026-10-14
+Folder: research_r10/M7/ (scripts + JSON outputs listed in section 3). Everything below was run on local CPU only.
+
+0. BOTTOM LINE
+- Idea: let the captioner keep objects it is unsure about as calibrated hedges ("có thể có X") instead of
+  dropping or asserting them, and score them with a proper rule.
+- Main result (a theorem plus a dev300 check): hedging CANNOT escape the count frontier. Under any metric that is
+  linear or multilinear in per-mention credit, a hard caption with the same expected count weakly dominates every
+  hedged caption. On dev300, hedging is a pure count shift: dF1 vs the same-count vote control is +0.09 [0.00, +0.29].
+- Hedging pays only under a strictly proper rule. The per-class Brier score is the proper extension of FP+FN.
+  Under it, the Bayes 3-level hedged caption cuts loss by 15% vs the best hard caption (2.24 vs 2.64 per image).
+  The gain is calibration of the same signal, not better discrimination.
+- New corpus facts: Vietnamese references almost never hedge (KTVIC test 0/2,790; train 0.058%). P1 never hedges
+  (0/558). Zero-shot Qwen2.5-VL hedges in 58% of its detailed captions, and those hedges carry signal: 47% of
+  hedged mentions are present vs 82% of asserted ones (COCO-2500, human instance labels).
+- Value: an evaluation pillar for PD-2 rather than a frontier-beating method. It closes "why not just hedge?",
+  adds a gaming-proof metric, and documents that SFT on hedge-free references erases an informative channel.
+
+1. PROBLEM AND HYPOTHESIS
+Setting. Each image i has candidate classes o (113-entry lexicon, rescap.chair.objects_in). Gold y_o is 1 when a
+KTVIC reference names o. q_o = P(y_o = 1 | model signal). A caption states each o at level c_o in {0, h, 1}
+(omit, hedge, assert).
+H1 (no escape; theorem, falsifiable empirically through its assumption that q ranks like the votes).
+  Take metrics that give a mention credit w_o and score TP_w = sum w_o y_o, M_w = sum w_o (micro P = TP_w/M_w,
+  macro R = TP_w/|G|). At a fixed per-image M_w = K, E[TP_w] = sum w_o q_o is maximised by the fractional-knapsack
+  solution: the top floor(K) objects by q, plus a fraction of the next one.
+  Expected F1 with independent inclusions (a reader who samples a set from the stated levels) is multilinear in
+  w, so its maximum over [0,1]^n sits at a vertex, which is a hard caption.
+  => A hedge gains recall at exactly the precision cost of a fractional mention. Any "gain" is a count shift.
+  Prediction P1: on KTVIC test, the binary F1 of hedged captions (hedges counted as mentions) minus the same-count
+  raw-vote control is in [-0.5, +0.5] with a CI covering 0. Linear-credit F1 sits at or below the
+  fractional-knapsack hard control.
+H2 (where hedging pays). Use the per-class Brier score B = sum_o (c_o - y_o)^2 over the fixed class universe.
+  For c in {0,1} it equals FP + FN, so it is the strictly proper extension of today's binary object metric.
+  For the level set {0, h, 1} the Bayes act is: hedge iff h/2 < q <= (1+h)/2, assert iff q > (1+h)/2. With h = 0.5
+  that is hedge for q in (0.25, 0.75] and assert above 0.75. The expected loss of a hedge is 0.25 whatever q is,
+  vs min(q, 1-q) for the best hard choice.
+  Prediction P2: the Bayes 3-level caption beats the best hard caption (assert iff q > 0.5) by 10-18% Brier on
+  KTVIC test.
+  Murphy view: the gain comes from stating levels close to the hit rates (reliability) and from a 3-way split of
+  the SAME q. No new discrimination enters, so the ranking, and with it the count frontier, is unchanged.
+H3 (semantic validity). "có thể có X" claims uncertainty about PRESENCE. But reference gold and sample votes
+  measure SALIENCE (would a captioner mention X?), and 56.5% of P1's reference-"false positives" are real objects
+  (CONTEXT section 2, C3 panel).
+  Prediction P3: hedges chosen from vote share are present in 25-75% of cases under human instance labels
+  (COCO-2500), at least 15 points below asserted mentions. If they are present in more than 75% of cases, the
+  hedges mislabel salience as doubt; vote share is then the wrong hedge signal (see kill rule K3).
+
+2. CLOSEST PRIOR WORK (searched 2026-10-14; V = ID/venue verified by web search, U = check)
+ [1] V Mielke, Szlam, Dinan, Boureau. Reducing conversational agents' overconfidence through linguistic
+     calibration. TACL 10:857-872 (2022), doi:10.1162/tacl_a_00494, arXiv:2012.14983.
+     Prior: a correctness predictor steers hedging in chit-chat QA. Single truth per answer, no set metric.
+     New here: object-SET captions, the count-frontier impossibility, and presence vs salience gold.
+ [2] V Lin, Hilton, Evans. Teaching models to express their uncertainty in words. TMLR 2022, arXiv:2205.14334.
+     Prior: verbalised probabilities for arithmetic QA.
+     New here: hedges inside a description and their effect on set metrics.
+ [3] V Band, Li, Ma, Hashimoto. Linguistic calibration of long-form generations. ICML 2024 (PMLR 235),
+     arXiv:2404.00474. Prior: SFT+RL so that a READER's forecasts from the text are calibrated, scored by a proper
+     rule. Closest in spirit. New here: vision, an object-set reader, the proof that set-F1 readers cannot reward
+     hedging, and the FP+FN -> Brier link.
+ [4] V Zhou, Jurafsky, Hashimoto. Navigating the grey area (epistemic markers). EMNLP 2023, arXiv:2302.13439.
+     V Zhou, Hwang, Ren, Sap. Relying on the unreliable. ACL 2024, arXiv:2401.06730. Finding: RLHF preference data
+     penalises uncertainty, so models stop hedging. Our analogue: SFT on hedge-free captions (0/2,790 KTVIC test
+     refs) drives the hedge rate from 58% (zero-shot detailed) to 0% (P1). I found no captioning study of this.
+ [5] V Yona, Aharoni, Geva. Can LLMs faithfully express their intrinsic uncertainty in words? EMNLP 2024,
+     arXiv:2405.16908. Prior: a decisiveness-vs-confidence faithfulness metric for QA. We reuse the idea for
+     object hedges, but with a strictly proper rule and human instance labels.
+ [6] V Whitehead et al. Reliable VQA: abstain rather than answer incorrectly. ECCV 2022, arXiv:2204.13631.
+     V Srinivasan et al. Selective "Selective Prediction". Findings ACL 2024, arXiv:2402.15610.
+     V Geifman, El-Yaniv. Selective classification for DNNs. NeurIPS 2017, arXiv:1705.08500.
+     Prior: abstain or answer for a single answer, with risk-coverage curves. A hedge is a third, partial-credit
+     action inside a multi-object output. Our theorem says a risk-coverage view over hard mentions already holds
+     all the discrimination; hedging only adds calibration.
+ [7] V Zhou et al. (LURE). Analyzing and mitigating object hallucination in LVLMs. ICLR 2024, arXiv:2310.00754.
+     Prior: uncertainty and late position predict hallucination; a post-hoc revisor rewrites (U: that it masks
+     uncertain objects as [IDK]). We keep such objects as calibrated hedges and control for position: hedged
+     mentions are less precise at every rank (section 3).
+ [8] U (title found by search; authors and venue not checked) Object-level verbalized confidence calibration in
+     VLMs via semantic perturbation, arXiv:2504.14848.
+     U "Seeing is believing, but how much?" verbalized calibration in VLMs, EMNLP 2025, arXiv:2505.20236.
+     Prior: numeric confidence on VQA or object questions. Not hedges inside free captions, not set metrics.
+ [9] V Petryk et al. ALOHa: hallucination measure for captioning. NAACL 2024 short,
+     doi:10.18653/v1/2024.naacl-short.30, arXiv:2404.02904. U: that it notes captioners say "possibly", and parses
+     "chair or table" where CHAIR flags it. No proper scoring of hedges.
+[10] V MacLeod, Bennett, Morris, Cutrell. Blind people's experiences with computer-generated captions. CHI 2017,
+     pp. 5988-5999. Users over-trust captions; framing that stresses possible error shifts blame to the caption.
+     V Wu, Wieland, Farivar, Schiller. Automatic alt-text. CSCW 2017, pp. 1180-1192. U: the deployed
+     "Image may contain:" hedge wording. Motivation: hedged descriptions are a real accessibility need.
+[11] V Gneiting and Raftery. Strictly proper scoring rules. JASA 102(477):359-378 (2007),
+     doi:10.1198/016214506000001437. U Murphy (1973) Brier decomposition, J. Appl. Meteor. 12:595-600.
+Novelty rating:
+- MODERATE overall. Linguistic calibration and selective prediction are established.
+- HIGH for these specific pieces (none found in quick searches; still no "first" claim):
+  (a) the no-escape theorem linking hedging to the count frontier;
+  (b) per-class Brier as the proper extension of FP+FN for hedged captions, with a demonstration that the
+      "asserted-P + hedge-inclusive-R" metric can be gamed;
+  (c) presence-vs-salience gold for hedges;
+  (d) Vietnamese reference hedge statistics and SFT erasure.
+
+3. EVIDENCE SO FAR (CPU, nice -n 19, 1 thread, < 70 MB RSS, < 2 min each)
+3a. How often captions hedge. Script hedge_count.py -> hedge_counts.json. A caption counts if it has >= 1
+    epistemic marker: có thể là/có, có lẽ, dường như, hình như, có vẻ, trông/nhìn như|giống, chắc là, có khả năng,
+    không rõ, gì đó, ai đó, hoặc, hay là. The "hoặc" counts include non-hedge disjunctions such as colours.
+     corpus (all human unless marked)        captions   hedged   %       object mentions in hedge scope
+     KTVIC train                               18,845      11   0.058   6 / 31,330 (0.019%)
+     KTVIC test                                 2,790       0   0.000   0 / 4,907
+     UIT-ViIC (train+val+test)                 19,256       6   0.031   0 / 41,761
+     XM3600-vi (full)                           7,350      40   0.544   19 / 12,973 (0.146%)
+     OpenViIC (all splits; aggregate only)     61,241     147   0.240   70 / 130,382 (0.054%)
+     COCO-en (2,441 imgs; English list)        12,205      58   0.475   --
+     P1 s42 test short / detailed (model)      558/558   0 / 0  0 / 0   0
+     zero-shot test short (model)                 558       1   0.18    --
+     zero-shot test detailed (model)              558     324  58.1    1,964 / 5,666 (34.7%; scope = rest of caption)
+     P1_dev dev300 samples T0.5+T0.8 (model)    3,600       1   0.028   0
+    Meaning:
+    - KTVIC-style references give no hedge supervision and no n-gram credit for a hedge. Any hedge clause pays a
+      "style tax" in CIDEr (measure it in E4).
+    - SFT removed the base model's hedging completely.
+3b. Are the base model's own hedges informative? Script hedge_precision.py -> hedge_precision.json. Descriptive
+    only, nothing fitted. Scope rule: the rest of the clause after the marker; a disjunction covers its whole
+    clause.
+    - COCO-2500, gold = COCO-80 HUMAN instance labels, zero-shot detailed:
+      asserted P 82.0% (n=5,128 class mentions), hedged P 47.2% (n=229).
+      By rank (asserted vs hedged): rank0 92.5 vs 44.2 | rank1 76.3 vs 51.1 | rank2 71.0 vs 45.9 |
+      rank3 69.3 vs 50.0 | rank4+ 65.2 vs 30.8.
+      By marker family: possibility (có thể là, có lẽ...) 25.6% (n=78), appearance (có vẻ, dường như, trông như)
+      51.6% (n=31), disjunction (hoặc) 60.0% (n=120).
+      VSPS/distill hedges only 9 mentions (44%).
+    - KTVIC test, reference gold, zero-shot detailed: asserted 32.3% (n=3,489), hedged 21.0% (n=176). Lower at
+      every rank, e.g. rank2 39.4 vs 9.5.
+    - Reading: in the wild, a hedge marks roughly half the presence rate at the same position, so it is a real,
+      roughly calibrated uncertainty channel. "có thể là" (~26%) is used slightly more cautiously than "maybe = 50%".
+    - Note on the n values: in hedge_precision.json the "asserted" n is double-counted (the key is written twice);
+      P is unaffected. The n values above are corrected.
+3c. Dev300 pilot (script hedge_eval.py -> hedge_eval.json; brier_extra.py -> brier_extra.json).
+    Signal (FLAGGED MODEL SIGNAL): P1_dev greedy plus its 12 samples (6 at T0.5, 6 at T0.8).
+    q = Laplace hit rate of the cell (greedy names o, #samples naming o), cross-fitted on PLAN-F1's 5 folds.
+    Hedge level h = 0.5 is fixed a priori, and the Bayes thresholds 0.25 / 0.75 follow from h. NOTHING was tuned.
+    Pooled calibration of the cells (hit rate vs reference gold):
+    - non-greedy objects named by 1/12 samples: 0.25 (n=386); 2/12: 0.44 (n=163); 3-6/12: 0.49-0.56 (n=199);
+      7-8/12: 0.74 (n=23);
+    - greedy objects with >= 10 votes: 0.85-0.90 (n=270); greedy objects with <= 3 votes: 0.36 (n=47).
+    So the non-greedy 2-6 vote band is the natural "có thể" band (q about 0.5).
+    Greedy reproduces PLAN-F1's dev greedy: P 74.29 / R 43.13 vs 43.07, F1 54.57.
+     policy (m = mentions/img, hedges counted)    m     F1 hedge=mention  dF1 vs same-count vote ctl  linear-credit F1 | frac-hard ctl  Brier/img
+     greedy                                     1.76   54.57             -0.80 [-2.10,+0.48]          54.57 | 55.75          2.647
+     greedy + hedge(non-greedy, votes>=3)       2.52   60.21             +0.09 [ 0.00,+0.29]          57.55 | 57.99          2.430
+     greedy + hedge(votes>=4)                   2.24   59.00             +0.02 [-0.24,+0.30]          56.87 | 57.23          2.497
+     greedy + hedge(votes>=6)                   1.95   56.74             -0.30 [-1.13,+0.55]          55.67 | 56.48          2.576
+     Bayes 3-level (hedge 0.25<q<=0.75)         3.56   60.16              0.00 (identical sets)       53.49 | 56.79          2.238
+     continuous q (unlimited verbal prob.)      4.35   59.38              0.00                         51.87 | 57.16          2.100
+     best HARD caption under Brier (q > 0.5)    1.91   --                 --                           --                    2.637
+    - Binary metric: hedging is UPE/PLAN-F1 again, a pure count shift. If the matcher drops hedges, every row
+      falls back to greedy (54.57).
+    - Linear partial credit: hedged captions are BELOW the fractional-knapsack hard control at the same weighted
+      count in all 6 rows (-0.4 to -5.3 F1). This matches H1.
+    - Brier: Bayes 3-level is -15.1% vs the best hard caption; continuous q is -20.4%. The best hard caption only
+      gains 0.4% over greedy. This matches H2: the gain is calibration-only.
+    - Gaming check: the improper two-tier metric (P over asserted mentions, R counting hedged mentions) lets
+      "hedge every candidate" keep P = 74.29 while R rises from 43.13 to 68.68, i.e. +25.6 recall at zero
+      precision cost. Brier does not allow this: hedging all 113 classes costs 0.25 per absent class.
+    - Caveat: the pooled AUROC and Murphy terms in the JSON are computed over cand-or-gold, a universe that depends
+      on the system, so do not cite them. Recompute them over the fixed 113-class universe (pilot step C1).
+3d. Literature (section 2): no captioning paper found that scores hedges with a proper rule or relates hedging to
+    a count/PR frontier. Searches: "hedging calibration image captioning", "verbalized confidence epistemic
+    markers vision-language".
+
+4. PILOT DESIGN FOR GEMINI TO RUN
+Pre-register BEFORE any test look, in manuscript/prereg/<date>_hedge_m7.md:
+- hedge lexicon and scope rule (frozen as in hedge_precision.py);
+- h = 0.5; Bayes thresholds 0.25 / 0.75;
+- q table = dev300 cells using T0.5 samples ONLY (6 votes), because test only has 6 T0.5 samples per seed;
+- metrics and kill rules below.
+C1 (CPU, about 15 min; no GPU). Turn hedge_eval.py into hedge_eval_test.py (about 25 lines):
+   - fit the cell table on all of dev300: greedy .session_backup/machines/n2/ncs-data/rl/p1dev_s42-dev300-short.preds.json,
+     samples data/results/upe/p1dev_s42-dev300-short-T0.5.jsonl, refs ktvic_dev/dev_data.json;
+   - apply it to KTVIC test for seeds 42/43/44: greedy data/results/p1assist_s4{2,3,4}-short.preds.json,
+     samples data/results/upe/test/p1assist_s4{2,3,4}-test-short-T0.5.jsonl, refs ktvic/test_data.json;
+   - add a Brier and Murphy decomposition over the FIXED 113-class universe, plus a paired bootstrap of the
+     per-image Brier (B = 5000).
+   Run: nice -n 19 env NCS_DATA=<ncs-data root> OMP_NUM_THREADS=1 python3 -I hedge_eval_test.py
+C2 (CPU, about 20 min). Realise the hedges as text: greedy + ", có thể có " + " và ".join(H) for the
+   Bayes-hedged H.
+   - Re-score the object metrics with a hedge-aware matcher (the hedge_precision.split scope rule) and check
+     that the hedge set round-trips exactly.
+   - Score CIDEr-D (word-level protocol) of the hedged text vs greedy. This is E4, the style tax.
+G1 (GPU, about 1.5 GPU-h on the 3090). P1 s43 short samples, 6 at T0.5, on COCO-2500 (manifest
+   data/coco_probe/manifest.json), with the same sampler as the UPE test samples. Then on CPU (10 min): apply the
+   dev q table, and score the presence calibration of the Bayes-hedged band vs asserted mentions against
+   data/coco_probe/instance_gold.json (human COCO-80 labels; the score_coco_probe.vi_objects matcher).
+   This is E3.
+G2 (optional; only if E2 and E3 pass; about 5 GPU-h): hedge-preserving SFT.
+   - Targets: references + ", có thể có X" for train-minus-dev300 objects in the Bayes hedge band, computed from
+     P1_dev's own votes on the train images (FLAGGED MODEL SIGNAL in the targets; about 1.5 GPU-h of sampling).
+   - QLoRA SFT about 2-3 GPU-h; dev300 evaluation about 0.5 GPU-h.
+   - Question: does a model that writes its own hedges match the template's Brier at no CIDEr cost?
+Endpoints (KTVIC test, 3 seeds, paired bootstrap over images, B=5000):
+  E1 (PD-2 primary; count-matched): binary F1 of the hedged-as-mention caption minus the same-count raw-vote top-k
+     control. Pre-registered prediction: |dF1| < 0.5 with the CI covering 0 in >= 2/3 seeds, i.e. NO escape.
+  E2 (this direction's claim): Brier per image of Bayes 3-level vs the best hard caption (q > 0.5).
+     Prediction: -10% to -18%.
+  E3 (semantics; COCO-2500 human labels): presence rate of the hedged band in [0.25, 0.75] and >= 15 points below
+     the asserted band.
+  E4 (report only): CIDEr cost of the hedge clause. Expected -2 to -6, since the references never hedge.
+Kill rules:
+  K1: E2 reduction < 5%, or the CI includes 0 in >= 2/3 seeds -> drop the direction; vote-based q is too coarse.
+  K2: E1 dF1 > +0.5 with a CI excluding 0 -> H1's ranking assumption failed. Report it as a selection effect,
+      NOT a hedging effect, and audit it.
+  K3: E3 hedged-band presence > 0.75 -> vote-share hedges are salience, not doubt. Do not ship "có thể" captions
+      driven by votes. Retry only with a presence signal (POPE-vi yes-probability; a model signal, flagged).
+Compute: C1 + C2 about 0.6 CPU-h; G1 1.5 GPU-h + 0.2 CPU-h; G2 about 5 GPU-h (conditional).
+
+5. CLAIMS GEMINI MUST VERIFY
+ 1. Hedge counts in 3a: re-run M7/hedge_count.py and check the "hoặc" senses by hand on KTVIC/XM3600 only (never
+    print OpenViIC text). Also confirm that KTVIC test has 0 hedged captions.
+ 2. 3b precision numbers: re-run M7/hedge_precision.py, check the scope rule on 30 zero-shot COCO captions, and fix
+    the double-counted asserted n.
+ 3. The 3c table and the dev greedy match with PLAN-F1 (R 43.13 here vs 43.07 in data/results/planf1/
+    dev_plan_critique.json): find the source of the 0.06 difference (refs file or matcher version).
+ 4. The H1 proof (fractional knapsack; multilinear expected F1 maximised at a vertex) and the H2 Bayes thresholds:
+    independent derivation.
+ 5. The FP+FN = Brier identity for hard captions over a fixed class universe, and that classes outside
+    cand-or-gold add 0.
+ 6. Citations marked U: [7] LURE's [IDK] masking; [8] authors/venue of 2504.14848 and 2505.20236; [9] ALOHa's
+    "possibly" / "chair or table" example; [10] the Facebook "Image may contain" wording and the MacLeod DOI
+    10.1145/3025453.3025814; [11] Murphy 1973.
+ 7. "No captioning paper scores hedges with a proper rule or relates hedging to a count frontier": run a deeper
+    search (Semantic Scholar: hedge, epistemic, uncertainty + captioning, 2015-2026) before any novelty wording.
+ 8. The 58.1% zero-shot detailed hedge rate is driven by "hoặc" (270 captions): report it with and without them.
+
+6. RISKS AND FIT WITH PD-2
+Risks: (a) the Brier gain looks tautological (proper rules reward calibration); the result is the PAIR: gain
+under proper rules, zero under count-matched F1. (b) Salience vs presence (H3/K3). (c) CIDEr style tax.
+(d) Few zero-shot hedges (229 on COCO). (e) Clause-level hedge scope is approximate; a parser is the upgrade.
+(f) Vietnamese hedge strength is not normed; h = 0.5 is fixed a priori, not claimed as the reader's reading.
+Fit: this strengthens the EVALUATION/METHODOLOGY pillar.
+  (i) A general impossibility result that protects the count-matched endpoint from a whole class of "recall at no
+      precision cost" claims, hedging included.
+  (ii) A proper, gaming-proof object metric (Brier = FP+FN extended) usable for any system that hedges, e.g. the
+       zero-shot detailed baseline, whose 34.7% of hedge-scoped mentions current matchers count as assertions.
+  (iii) Resource-style facts: hedge rates in five Vietnamese human corpora; SFT erasure from 58% to 0%.
+  It does NOT supply the missing frontier-beating METHOD, and by H1 it cannot.
+
+7. SCORES (1-5)
+ Novelty 3: linguistic calibration and abstention exist. The frontier impossibility, proper object-Brier and
+   presence/salience split for captions were not found in prior work (verify item 7).
+ Feasibility on 1x3090 5: C1/C2 are CPU-only on existing files; G1 is about 1.5 GPU-h; G2 is optional.
+ Expected impact 3: a solid methods section and a reviewer-proofing result; no method win.
+ Risk 2 (low-moderate): the core results are a proof plus CPU numbers already in hand. The main open risk is K3
+   (salience vs presence).

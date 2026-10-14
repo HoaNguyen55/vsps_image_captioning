@@ -1,0 +1,237 @@
+R10 / E4 -- Vietnamese evaluation-protocol robustness and a protocol card            2026-10-14
+Folder: research_r10/E4/  (protocol_pilot.py, pilot_results.json, this file). Repo untouched.
+
+0. BOTTOM LINE
+- I re-scored 26 committed KTVIC short-caption systems under 15 protocols (CPU, 6 min). The scorers
+  reproduce the committed numbers exactly. Gemini's syllable CIDEr 164.25 is VERIFIED: 164.32/164.11/164.31.
+- Within the fine-tuned (FT) cluster, rankings hardly move with segmenter, tone, case, punctuation,
+  sigma or IDF source: Kendall tau 0.92-1.00, and no significant pair reverses. The absolute level does
+  move: syllable vs word adds +14 to +16 CIDEr, so 164.25 must never sit next to GRIT's word-level 136.0.
+- Comparisons across system families are fragile. A trailing "." costs CIDEr-D 20-29%, because an n-gram
+  absent from every reference gets the maximum IDF. Greedy minus MBR is 47.2 CIDEr under the official
+  protocol, 18.7 with punctuation stripped (the COCO-server convention) and 63.8 at syllable level.
+- The reference panel dominates. Against the independent OpenViIC captions of the same 555 images, FT
+  systems fall 66-70% and their order becomes noise (tau_FT = -0.05). A KTVIC-trained legacy model drops
+  below zero-shot.
+- Deliverable for PD-2: a protocol card with a sacreBLEU-style signature, a lint for the KTVIC-T3 bug
+  class, and a rule: claim A>B only if the sign survives a pre-registered stress set. Novelty: moderate.
+  Cost: 0 GPU-h.
+
+1. PROBLEM AND HYPOTHESIS
+Vietnamese spaces separate syllables, not words, so every n-gram metric depends on a chain of choices:
+segmenter, tone placement, case, punctuation, CIDEr-D settings, IDF source and reference panel. Papers
+rarely report these choices (KTVIC Table 3 mixed them by accident).
+H1 (level): the choices move absolute CIDEr by more than published between-method gaps (GRIT gap = 12.2).
+  Falsified if every protocol in the stress set moves P1-assist by < 5 CIDEr.  -> NOT falsified (+16.1).
+H2 (within-family stability): among systems with the same output style, the ranking is stable. Pass if
+  tau_FT >= 0.9 and 0 significant reversals under every stress protocol.  -> HOLDS (min tau 0.905).
+H3 (interaction): the effects depend on the system (punctuation, case, length), so cross-family deltas are
+  protocol artefacts. Falsified if the |delta| of a cross-family gap varies < 20% across the stress set.
+  -> NOT falsified (MBR gap 18.7..63.8; FT/zero-shot ratio 4.0x..6.6x).
+H4 (panel): a reference panel with another guideline reorders the FT cluster. Falsified if
+  tau_FT(OpenViIC refs) >= 0.8.  -> NOT falsified (-0.05). Still needs the capped-refs check (sec. 5, item 6).
+
+2. CLOSEST PRIOR WORK (IDs checked by web search on 2026-10-14 unless marked)
+a) Post 2018, "A Call for Clarity in Reporting BLEU Scores", WMT18, arXiv:1804.08771 / W18-6319.
+   Reference tokenisation moves BLEU by up to 1.8; introduces sacreBLEU signatures. New here: captioning
+   metrics (CIDEr-D), Vietnamese segmentation, rank stability with bootstrap, reference-panel effect.
+b) Grusky 2023, "Rogue Scores", ACL 2023, DOI 10.18653/v1/2023.acl-long.107 (no arXiv found). ROUGE
+   configurations go unreported or are buggy across 2,000+ papers. New: captioning, Vietnamese, CIDEr.
+c) Marie, Fujita, Rubino 2021, "Scientific Credibility of MT Research", ACL 2021, arXiv:2106.15195.
+   Meta-evaluation of 769 MT papers: BLEU deltas without significance tests. New: measures the effect
+   instead of surveying practice.
+d) Li, Zong, Ng 2011, "Automatic Evaluation of Chinese Translation Output: Word-Level or Character-
+   Level?", ACL 2011, P11-2028. Character-level metrics correlate better with humans (MT, Chinese). The
+   closest analogue for segmented languages. New: captioning, Vietnamese, and rank and significance
+   stability rather than correlation.
+e) dos Santos, Colombini, Avila 2021, "CIDEr-R", W-NUT@EMNLP 2021, arXiv:2109.13701. CIDEr-D's sigma=6
+   length penalty is ill-suited to non-COCO length distributions (Portuguese). New: here sigma is one
+   factor among many, and the punctuation/max-IDF mechanism is quantified.
+f) Freitag, Grangier, Caswell 2020, "BLEU might be Guilty but References are not Innocent", EMNLP 2020,
+   arXiv:2004.06063. References drive metric validity. New: an independent second human panel
+   (OpenViIC) reorders a captioning leaderboard.
+g) Chen et al. 2015, "Microsoft COCO Captions: Data Collection and Evaluation Server", arXiv:1504.00325.
+   PTB tokenisation and punctuation REMOVAL; the de facto English card. New: the Vietnamese pipeline here
+   keeps "." as a token, which differs from COCO.
+h) Vedantam et al. 2015, CIDEr, arXiv:1411.5726. Defines the TF-IDF consensus. IDF from the scored refs
+   is the source of the max-IDF penalty on unseen tokens.
+i) Context only, protocols NOT verified: STAIR Captions arXiv:1705.00823 (Japanese), COCO-CN
+   arXiv:1805.08661, AI Challenger arXiv:1711.06475 (Chinese). I could not confirm their MeCab/jieba
+   evaluation tokenisation. UNVERIFIED: Gehrmann, Clark, Sellam 2022 survey, arXiv:2202.06935 (search
+   failed).
+Searches for "Vietnamese captioning protocol sensitivity" returned nothing relevant. Searches also
+missed: UIT-ViIC arXiv:2002.00175, VieCap4H (VLSP 2021), and HUFLIT 2025 (pyvi, BLEU only; per the
+Gemini audit). This is NOT a "first" claim.
+Novelty ratings: overall MODERATE. Vietnamese-specific quantification + T3 correction + panel test: HIGH
+for this niche. Protocol cards as a concept: LOW (sacreBLEU).
+
+3. EVIDENCE SO FAR (CPU; E4/protocol_pilot.py -> E4/pilot_results.json)
+Setup.
+- Scorers: line-for-line re-implementations of pycocoevalcap Bleu(4,'closest'), Rouge(beta 1.2) and
+  Cider (CIDEr-D, n=4, sigma=6, df over the scored refs, x10, including the bigram-"length" quirk).
+- `--check` reproduces committed p1-gold-short exactly:
+    word     149.79 / 45.55 / 64.24 (CIDEr / B4 / R-L), data/results/p1-gold-short.json;
+    syllable 165.43 / 48.05 / 64.25.
+- RDRSegmenter: the VnCoreNLP-1.2 CLI (Gemini's copy, scratchpad/r9_synthesis/vncorenlp), fed through
+  stdin/stdout pipes. OpenViIC text was never written to disk; only aggregate scores were saved.
+- RDR(raw ref) == KTVIC segment_caption on 2790/2790 refs.
+Systems (26).
+- 24 data/results/*-short.preds.json:
+    FT cluster (15): p1assist x3, p1-gold, p1 x2, p1mask, mr5assist, fuse2 x3, tags_fuse2, tags_p1, e5,
+      e5dpo;
+    MBR x2; zero-shot x3; detailed-trained-in-short x4.
+- 2 KTVIC legacy baselines (ResNet-LSTM, ViT-Transformer; Gemini's copy of pacman-ctm/thesis-code).
+Protocols: P0 official = RDR, lowercase, punctuation kept as a token, CIDEr-D sigma=6, test-ref IDF,
+5 KTVIC refs.
+
+CIDEr deltas vs P0 (FT range | MBR p1_s43mbr | zeroshot) and FT ranking stability:
+  protocol                         FT d (rel)             MBR      zero-shot  tau_FT  flips/105  sig rev/lost
+  P1 syllable raw (=--also-syll.) +14.2..+16.4 (+10-12%)  -0.2     +5.3       0.962   2          0/2
+  P2 syllable, punct split        +14.1..+16.4            +12.5    +3.2       0.962   2          0/2
+  P3 pyvi word                    -0.8..+0.1              -0.5     -1.2       0.981   1          0/1
+  P4 KTVIC-T3 bug (seg hyp/raw ref)-72.5..-58.1 (-47-49%) -39.2    -11.4      0.733   14         0/2 (+3 gained)
+  P5 case-sensitive               0                       0        -6.5(-23%) 1.000   0          0/0
+  P6 tone norm (RDR)              0 (VnCoreNLP already normalises tone placement; 0 of 14,508 hyps change)
+  P6b tone norm (syllable)        +14.2..+16.7            -0.2     +6.3       0.924   4          0/3
+  P7 punctuation stripped (COCO)  0..+0.1                 +28.5(+29%) +6.1    0.981   1          0/1
+  P8 sigma=inf (no length pen.)   +6.0..+8.0              +8.0     +9.9(+34%) 0.981   1          0/2
+  P9 IDF from KTVIC train refs    -0.2..+1.1              -8.0     -1.9       0.962   2          0/0 (+3)
+  P10 4 refs (mean of 5 LOO)      -0.1..+0.1              +1.1     +0.2       1.000   0          0/0
+  P11 1 ref (mean of 5)           +4.9..+5.8              +13.0    +2.7       0.905   5          0/1
+  P12 OpenViIC refs (555 imgs)    -104.8..-82.0 (-66-70%) -60.4    -6.2       -0.048  55         1/12 (+13)
+     (P12 compared with KTVIC refs on the same 555 images: P12ref, tau 0.962 vs P0)
+Significance: paired bootstrap, B=2000, seed 42. 26 of 105 FT pairs are significant under P0.
+"rev" = significantly reversed; "lost" = no longer significant.
+
+Concrete consequences (data/results + pilot_results.json):
+- Gemini's KTVIC_PROTOCOL_COMPARATORS.md (.session_backup/2026-10-13/r9_synthesis) checks out:
+    p1assist syllable = 164.25 (SD 0.12);
+    legacy models: T3 bug 21.8/36.8; word-level 48.9/72.9; syllable 52.9/79.1.
+  I obtained these independently by re-segmenting the de-underscored legacy captions.
+- Level trap: P1-assist vs GRIT is +12.2 under a matched word-level protocol. Putting our syllable figure
+  next to GRIT's word figure gives +28.3, an inflation of 2.3x.
+- Punctuation mechanism: refs contain no punctuation, so "." has df=0 and IDF = log(558) = 6.32, the
+  maximum. Every n-gram ending in "." also carries maximum weight. This inflates ||hyp|| and cuts the
+  cosine.
+    MBR outputs: 1.01 punctuation marks per caption; greedy P1: 0.00.
+    p1_s43 minus p1_s43mbr: 47.2 (P0), 18.7 (P7), 63.8 (P1), 8.7 (P12).
+  => The CIDEr cost of MBR/UPE decoding reported so far is mostly a punctuation artefact.
+- Case: zero-shot outputs are 100% capitalised and FT outputs 0%. Case-sensitive scoring cuts zero-shot
+  by 23% and BLEU-4 from 5.48 to 4.49.
+- FT/zero-shot ratio: 4.0x (sigma=inf) .. 6.6x (case-sensitive) under KTVIC refs; 2.0x under OpenViIC
+  refs.
+- Panel effect on deltas:
+    p1assist_s42 minus fuse2_s42: +4.8 (P0) -> -0.8 (P12);
+    e5 minus e5dpo: 14.8 -> 5.2;
+    ViT-Transformer minus zero-shot: +43.9 -> -4.7.
+  KTVIC CIDEr largely rewards conformity to the KTVIC caption style ("có một ... xuất hiện ...").
+  This matches the fuse2 precision finding in CONTEXT section 2.
+- Other metrics:
+    BLEU-4: syllable +2.7 for FT (45.88 -> 48.57).
+    ROUGE-L: nearly segmenter-invariant for FT (64.49-64.57), but case-sensitivity costs zero-shot 2.5.
+- Tone: KTVIC test refs contain 0 old-style placements; zero-shot preds contain 64/558. Tone
+  normalisation matters only at syllable level (+1.0 for zero-shot); RDR absorbs it.
+Cost: 5:59 wall-clock; Python peak RSS 366 MB; Java heap capped at 700 MB; nice 19, 1 thread.
+
+4. PILOT DESIGN FOR GEMINI TO RUN (all CPU; 0 GPU-h)
+Already runnable:
+  cd <scratchpad>/research_r10/E4
+  nice -n 19 env OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python3 protocol_pilot.py --check   # ~11 s
+  nice -n 19 env OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 python3 protocol_pilot.py           # ~6 min
+Steps (about 1.5 CPU-h in total):
+ S1 Cross-check with official pycocoevalcap 1.2 + py_vncorenlp on the GPU box (CPU only):
+    scripts/evaluate.py --predictions <f> --also-syllable for the 24 repo systems.
+    Compare with pilot_results.json P0/P1. Expected difference < 0.01. Also run METEOR (meteor-1.5,
+    "-l en" on Vietnamese) and record that setting in the card.
+ S2 Extend protocol_pilot.py:
+    (i) --mode detailed (the sigma and length effects will be far larger);
+    (ii) UIT-ViIC systems in data/results/uitviic;
+    (iii) underthesea as a 4th segmenter (install in a private venv);
+    (iv) CJK-strip protocol;
+    (v) P12 with OpenViIC refs capped at 5 (3 random seeds) and k-matched KTVIC subsets.
+ S3 Protocol-robust significance table for the paper's headline deltas, one row per claim:
+      P1-assist vs fuse2; P1-assist vs e5/e5dpo; P1 vs zero-shot; UPE/MBR vs greedy.
+    Columns: P0 delta [95% CI], protocol range [min, max] over the stress set, OpenViIC-panel delta.
+ S4 Ship scripts/protocol_card.py (it belongs in the repo; the user decides). It should:
+    - emit the signature;
+    - lint before scoring: underscores on one side only (T3 detector); capitals in hyp but not in refs
+      with lowercasing off; punctuation in hyp but not in refs (warn: max-IDF penalty); NFC check;
+    - refuse subset scoring (evaluate.py already does this).
+Pre-registration (write before S2/S3; evaluation only, nothing tuned, test outputs already fixed):
+ PR1 Stress set S = {P1, P2, P3, P5, P7, P8, P9, P11}. The panel check P12 is reported separately.
+ PR2 Primary endpoints:
+     (a) tau-b of the FT ranking vs P0;
+     (b) number of P0-significant FT pairs that S protocols significantly reverse.
+     Count matching does not apply: these are n-gram metrics, not object-level claims.
+ PR3 Predictions for detailed captions:
+     tau_FT >= 0.9 for all of S; |P8 delta| >= 20% for >= 1 system;
+     tau_FT(P12, capped at 5 refs) < 0.5.
+ PR4 Reporting rule (below) is fixed before S3 is looked at.
+Kill rules:
+ K1 S1 differs from the re-implementation by > 0.05 CIDEr on any system: stop, fix, re-run.
+ K2 P12 with 5 capped refs gives tau_FT >= 0.8 on all 3 seeds: drop the "panel reorders FT" claim and keep
+    only the level and cross-family findings.
+ K3 Any S protocol significantly reverses a P0-significant FT pair: that comparison is reported as
+    protocol-dependent in the paper, not as a win.
+PROTOCOL CARD (one line per scored table; signature modelled on sacreBLEU):
+  data=ktvic-test|N=558|ids=sha1:<..>|refs=5,field=caption,panel=KTVIC|norm=NFC+tone:vnc|case=lc|
+  punct=token(.)|seg=VnCoreNLP-1.2/RDR(hyp+ref)|cider=D,n4,s6,df=test-refs|bleu=closest|rouge=b1.2|
+  meteor=1.5,-l en|impl=pycocoevalcap-1.2|scale=x100|ckpt-select=dev300|vocab=train-only
+ROBUST REPORTING RULE:
+ R1 Compare a number only with numbers that carry an identical signature. Otherwise re-score the other
+    system's released predictions (as done for KTVIC T3), or do not compare.
+ R2 Claim "A > B" only if all three hold:
+      - the P0 paired-bootstrap 95% CI excludes 0;
+      - the sign holds under every protocol in S;
+      - the OpenViIC-panel delta is reported next to it, whatever its sign.
+ R3 Give each headline delta its protocol range [min, max] over S.
+ R4 Main table at word level (P0). Syllable level goes in the appendix with its own signature.
+    Never mix the two.
+
+5. CLAIMS GEMINI MUST VERIFY
+ 1 164.25 = mean(164.32, 164.11, 164.31), p1assist_s42/43/44 syllable. Reproduced here by
+   re-implementation; confirm with official pycocoevalcap (S1).
+ 2 RDR(ann['caption']) == ann['segment_caption'] for 2790/2790 KTVIC test refs (VnCoreNLP CLI). Confirm
+   with py_vncorenlp.word_segment.
+ 3 VnCoreNLP-1.2's tokenizer rewrites old-style tone placement (hòa->hoà, thủy->thuỷ). Observed on a
+   probe, and norm_tone changes 0 of 14,508 RDR outputs. Confirm through the Python API, which
+   evaluate.py uses.
+ 4 pycocoevalcap cider_scorer: IDF = log(N) - log(max(1, df)), so df=0 gets the maximum weight log(558).
+   This is the mechanism behind the punctuation penalty; check the source.
+ 5 The COCO server removes punctuation after PTB tokenisation (arXiv:1504.00325; PUNCTUATIONS list in
+   pycocoevalcap/tokenizer/ptbtokenizer.py).
+ 6 The P12 OpenViIC result survives capping at 5 refs and k-matched KTVIC controls (K2).
+ 7 Legacy T3 numbers: re-segmenting de-underscored legacy captions gives 21.8 / 36.8 (bug), 48.9 / 72.9
+   (word) and 52.9 / 79.1 (syllable), the same as Gemini's audit using the original segmented files.
+ 8 Citations: P11-2028; W18-6319 / arXiv:1804.08771; 10.18653/v1/2023.acl-long.107; arXiv:2106.15195;
+   arXiv:2109.13701; arXiv:2004.06063; arXiv:1504.00325; arXiv:1411.5726.
+   UNVERIFIED: arXiv:2202.06935; MeCab/jieba evaluation protocols of STAIR/COCO-CN/AI Challenger.
+ 9 Every repo *-short.json reporting "syllable (whitespace)" used punct=glued (evaluate.py whitespace
+   mode does not split "."). Confirm the card records this.
+
+6. RISKS AND FIT WITH PD-2
+Risks.
+- Reviewers may see "protocol matters" as known from MT (Post 2018). The Vietnamese segmentation numbers,
+  the T3 correction, the max-IDF punctuation mechanism and the panel test are what make it new; keep
+  claims modest.
+- The P12 panel uses variable ref counts (2-20) and a different guideline. Treat it as a style-robustness
+  check, not ground truth (K2).
+- The MBR punctuation finding cuts against nothing, but it changes how UPE/MBR CIDEr costs should be
+  described. Tell the owners of those sections.
+- Policy: OpenViIC is used only as an evaluation panel; scores are aggregate; no caption text is written
+  (U-002 respected).
+Fit with PD-2: this directly strengthens the evaluation/methodology pillar (the main contribution).
+- Section "Evaluation protocol": card, signature, lint, R1-R4.
+- Appendix table: 26 systems x 15 protocols.
+- Erratum-style footnote on KTVIC T3.
+- It also supports the paper's reference-style thesis: CIDEr on KTVIC rewards KTVIC style, and the
+  OpenViIC panel flattens FT differences.
+- It does not touch the count frontier and needs no GPU.
+
+7. SCORES (1-5)
+ Novelty     3  Known in MT/ROUGE. New for Vietnamese captioning: quantified rank stability, the max-IDF
+                punctuation mechanism, and a second-panel reordering.
+ Feasibility 5  Done on CPU in 6 min; extensions are about 1.5 CPU-h; 0 GPU-h.
+ Impact      3  Makes every CIDEr claim in the paper defensible, and corrects the MBR and zero-shot
+                narratives. It is not a headline method.
+ Risk        2  Low technical risk; the main exposure is K2 on the panel claim.

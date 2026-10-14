@@ -1,0 +1,250 @@
+R10 / E1 -- COUNT-CONTROLLED RE-EVALUATION OF PUBLISHED (ENGLISH) HALLUCINATION-REDUCTION METHODS
+2026-10-14. Agent E1. CPU only: one pilot, nice 19, 1 thread, 170 MB RSS, 3.3 min wall. No VLM loaded, no labels made.
+Files (all in research_r10/E1/): e1_chair_count.py (CHAIR re-implementation + count controls), e1_results.json/.log,
+e1_decomposition.txt, dl/ (downloaded public outputs and COCO annotations; untrusted data, never on sys.path).
+
+==================================================================================================================
+0. BOTTOM LINE
+==================================================================================================================
+- Idea: re-score PUBLISHED captions of English hallucination methods at matched per-image object count. Controls:
+  (a) MCP = matched-prefix: the first k_i distinct COCO classes of each caption, k_i = min(method_i, baseline_i);
+  (b) TRF = the baseline's own truncation frontier at the method's mean count.
+  Together they split a CHAIR gain into: mean-count shift + per-image count allocation + better object choice.
+- Pilot on released per-caption outputs (OPERA repo: 4 LVLMs; Less-is-More repo: VCD, OPERA, OPERA-fast, LiM-EOS):
+  - 12 of 15 method-vs-own-baseline gains are significant in raw class precision. Only 3 of 15 survive MCP.
+  - One gain reverses: OPERA-Shikra vs beam5, -1.23 [-2.37, -0.08].
+  - Mean dP falls from +3.4 (raw) to +0.6 at matched count: about 80% of the published precision gain is count.
+  - Examples: OPERA/LLaVA-1.5 +0.07 [-0.93, +1.21]; VCD/LLaVA-1.5 +0.06 [-0.42, +0.53]; LiM-EOS/LLaVA-1.5-7B
+    +7.9 raw -> +1.08 [-0.14, +2.25].
+- Why it is new: HallE-Control/CCEval balances MEAN length through prompting, and says it does not enforce it.
+  SumGD and others only report recall next to CHAIR. No verified work re-scores other groups' released outputs at
+  per-image matched count with paired CIs, or gives this three-part split.
+- Value: our KTVIC finding "no method survives count control" turns into a general, citable fact about the field.
+  Phase A is CPU-only (done for 2 repos); the Phase B GPU extension takes about 15 GPU-h.
+
+==================================================================================================================
+1. PROBLEM AND HYPOTHESES (falsifiable)
+==================================================================================================================
+Problem:
+- CHAIR is precision-type: naming fewer objects lowers it for free (early mentions are more precise). Papers report
+  CHAIR, sometimes recall or AMBER Cover next to it, but never AT matched count.
+H1 (decoding methods: VCD, OPERA, M3ID, ICD, DoLa, HALC, PAI ...):
+- Of pairs with raw CHAIR_i gain >= 1 point, >= 2/3 have |dP_MCP| < 1.0 or a CI covering 0. Falsified if > 1/3 keep
+  a Holm-significant dP_MCP >= +1.0.
+H2 (stopping or length methods: LiM-EOS, "Less is More"-style data filtering, EOS bias):
+- Gain = mean-count shift + per-image allocation: dP_TRF > 0, dP_MCP ~ 0. Falsified if Holm-significant
+  dP_MCP >= +1.0 on >= 2 of 3 base models.
+H3 (preference or RL training: RLHF-V, RLAIF-V, CHAIR-DPO, HA-DPO, POVID):
+- They change object CHOICE, so median dP_MCP(training) > median dP_MCP(decoding). A genuine prediction; can fail.
+H4: the base frontier TP = a * M^b has b in [0.5, 0.8] for English long captions (KTVIC 0.7468). Placebo: two
+sampling seeds of one model give |dP_MCP| < 0.5.
+
+==================================================================================================================
+2. CLOSEST PRIOR WORK (all ids resolved via the arXiv API on 2026-10-14; titles match)
+==================================================================================================================
+- 1809.02156 Rohrbach et al., CHAIR. Defines the metric; no count control.
+- 2305.10355 Li et al., POPE. Says CHAIR results depend on instruction and caption length. Their response is a QA
+  benchmark, not count matching.
+- 2310.01779 Zhai et al., HallE-Control / CCEval. CLOSEST PRIOR WORK. "Balances" mean length and object count via
+  prompting; App. A.4: "not strictly enforced". Mean only: no per-image matching, frontier or re-scoring of others.
+- 2311.07397 Wang et al., AMBER. Its Cover metric (recall of annotated objects) is reported next to CHAIR, but not at
+  matched count.
+- 2405.05256 Kaul et al., THRONE. Class-wise P/R/F for free-form text. Count is not controlled.
+- 2402.14545 Yue et al., "Less is More" (EOS). Shorter outputs; calls the recall loss a "beneficial compromise".
+  Released its outputs, which this pilot re-scores.
+- 2410.13321 Min et al., SumGD. Footnote: CHAIR "can be hacked by generating shorter captions or fewer objects".
+  Claims factuality-recall Pareto optimality from aggregate points; its 64-512 token sweep feeds section 3d.
+- 2508.11616 Manas et al., MRGD (ICCV 2025). Precision-recall knob at inference; no matched-count test of others.
+- 2312.03631 Ben-Kish et al., MOCHa. Multi-objective RL on hallucination vs detail.
+- 2404.02904 Petryk et al., ALOHa. Open-vocabulary hallucination measure; precision-type.
+- 2510.20229 "Why LVLMs Are More Prone to Hallucinations in Longer Responses". Mechanism; title verified only.
+- 2607.27823 Yang et al., VGD. Reports "@rec90" (undefined in the abstract; maybe recall-matched: VERIFY).
+- 2608.24966 Sandhu et al. Fixed token budgets vs truncation artifacts; recall 0.78 -> 0.70; no length matching.
+Methods to be re-evaluated (ids verified):
+- decoding: VCD 2311.16922, OPERA 2311.17911, HALC 2403.00425, M3ID 2403.14003, DoLa 2309.03883;
+- revision: Woodpecker 2310.16045, LURE 2310.00754;
+- training: RLHF-V 2312.00849, RLAIF-V 2405.17220, CHAIR-DPO 2508.20181 (BMVC 2025; reports Coverage);
+- SelfVal 2601.22451 (reports CHAIR-F1).
+New here: per-image matched-count controls with paired bootstrap; the three-part decomposition; re-scoring other
+groups' released outputs; a frontier exponent comparable across languages (KTVIC <-> COCO).
+NOVELTY: MODERATE. The length confound is known (CCEval, SumGD footnote, POPE); this protocol and re-evaluation are
+not in the verified literature. Claim "a count-matched re-evaluation", never "the first".
+
+==================================================================================================================
+3. EVIDENCE SO FAR
+==================================================================================================================
+3a. Public per-caption outputs found (GitHub API scan of 11 repos)
+- shikiw/OPERA, log/chair_eval_results/{instructblip, llava-1.5, minigpt4, shikra}/{greedy, beam5, ours}.jsonl:
+  12 files, 500 COCO val2014 images, 512-token setting.
+- yuezih/less-is-more, CHAIR-eval/data/Table1-results/r1..r12.jsonl, plus chair-500.jsonl.
+  r6-ours-cap is byte-identical to r5-ours-inst (sha256 7a7e2775...): a release error, so r6 is excluded.
+- No per-caption outputs in: LisaAnne/Hallucination, YiyangZhou/LURE, RLHF-V/RLHF-V, junyangwang0410/AMBER,
+  bronyayang/HallE_Control, aimagelab/CHAIR-DPO, DAMO-NLP-SG/VCD, BradyFU/Woodpecker.
+- The BillChan226/HALC query returned nothing (wrong branch or name?): RE-CHECK.
+- GT = COCO annotations_trainval2014.zip (instances + captions val2014, streamed) + CHAIR synonyms
+  (data/coco_probe/chair_synonyms.txt, identical to LisaAnne/Hallucination data/synonyms.txt).
+  1,467 of 1,478 images have instances.
+
+3b. Fidelity of the re-implementation
+- Our CHAIR_s/CHAIR_i/Recall reproduce LiM Table 1 within 0.6 points on all 11 distinct files:
+  - r1: 50.5 / 15.26 / 77.5 vs 50.0 / 15.4 / 77.1;
+  - r5: 36.8 / 11.16 / 74.6 vs 36.8 / 11.3 / 74.3;
+  - r12: 27.3 / 9.89 / 67.2 vs 27.0 / 9.8 / 66.6.
+- OPERA LLaVA-1.5: 44.9 / 12.67 vs 44.6 / 12.8 in the paper.
+
+3c. Count-matched results (e1_decomposition.txt; P = class-level precision; 1,000 paired bootstraps over images)
+Columns: raw dCHAIR_i | raw dP | raw dR | M ratio | dP vs TRF | dP at MCP [95% CI]
+OPERA repo (baseline = greedy or beam5, as released):
+- OPERA vs greedy:
+  - InstructBLIP: -9.33 | +4.7 | +3.7 | 0.99 | +4.2 | +3.88 [+2.50, +5.23]  SURVIVES (greedy loops; see 6)
+  - LLaVA-1.5:    +0.07 | +1.4 | -0.9 | 0.97 | +0.5 | +0.07 [-0.93, +1.21]  null
+  - MiniGPT-4:    -0.58 | +2.8 | -1.4 | 0.95 | +0.5 | +0.81 [-0.30, +1.79]  null
+  - Shikra:       -3.23 | +6.7 | -9.2 | 0.81 | -0.3 | -1.23 [-2.66, +0.07]  null, pure count shift
+- OPERA vs beam5 (OPERA's own base decoder):
+  - InstructBLIP: -1.60 | +3.9 | -1.5 | 0.93 | +1.4 | +1.09 [+0.07, +2.16]  barely survives
+  - LLaVA-1.5:    -1.06 | +1.4 | -0.8 | 0.97 | +0.8 | +0.48 [-0.55, +1.50]  null
+  - MiniGPT-4:    -0.08 | +1.7 | -1.6 | 0.95 | +0.0 | +0.19 [-0.39, +0.78]  null
+  - Shikra:       -0.93 | +3.5 | -9.4 | 0.84 | -2.2 | -1.23 [-2.37, -0.08]  WORSE at matched count
+Less-is-More repo (baseline = greedy of the same model):
+- VCD, LLaVA-1.5-7B:        -0.43 | +0.5 | +0.1 | 0.99 | +0.2 | +0.06 [-0.42, +0.53]  null
+- OPERA, LLaVA-1.5-7B:      -0.76 | +1.5 | -0.5 | 0.97 | +0.6 | +0.26 [-0.54, +1.07]  null (raw dP significant)
+- OPERA-fast, LLaVA-1.5-7B: -1.02 | +2.0 | -0.3 | 0.97 | +0.9 | +0.80 [-0.41, +2.02]  null (raw dP significant)
+- LiM-EOS, LLaVA-1.5-7B:    -4.10 | +7.9 | -2.8 | 0.87 | +3.0 | +1.08 [-0.14, +2.25]  null; gain = count + allocation
+- LiM-EOS, LLaVA-1.5-13B:   -1.61 | +3.6 | -1.7 | 0.93 | +1.9 | +0.43 [-0.78, +1.55]  null
+- LiM-EOS, LLaVA-7B:        -0.85 | +3.8 | -7.9 | 0.84 | -1.2 | -0.20 [-1.16, +0.69]  null, pure count shift
+- LiM-EOS, MiniGPT-v2:      -1.13 | +5.7 | +1.0 | 0.95 | +4.1 | +2.81 [+0.91, +4.87]  SURVIVES
+Tally over the 15 method claims:
+- raw dP significant: 12/15; MCP significant positive: 3/15; MCP significant negative: 1/15;
+- mean raw dP +3.4 -> mean dP_MCP +0.6.
+- The pairs share baselines, so this tally is descriptive, not a test.
+Baseline vs baseline, beam5 vs greedy, at MCP:
+- InstructBLIP +2.83 [+1.35, +4.41]; MiniGPT-4 +1.07 [+0.10, +2.08]; Shikra +1.12; LLaVA-1.5 -0.56: the baseline
+  decoder choice moves matched-count precision about as much as OPERA does.
+Reading of LiM-EOS on LLaVA-1.5-7B (raw +7.9 P): about 4.9 points mean-count shift, 1.9 per-image stopping
+(TRF minus MCP), 1.1 object choice (n.s.). This is the KTVIC PLAN-F1 pattern: the method mainly sets k_i.
+
+3d. Aggregate-only check on published numbers
+- Source: SumGD Table 7 (arXiv HTML), LLaVA-1.5-7B, CHAIR_S/CHAIR_I/Recall at 64/128/256/512 tokens.
+- Count proxy: M ~ R / (1 - CHAIR_i); TP ~ R.
+- Greedy frontier exponent between budgets: b = 0.75, 0.55, 0.59. The KTVIC value is 0.7468.
+- dCHAIR_i vs greedy at the same budget, then at matched count:
+  - M3ID: -1.0 to -3.2 -> -0.3 to -0.9 (70-90% of its gain is count);
+  - OPERA: about 0 -> about 0 (+-0.8);
+  - VCD / ICD / nucleus: WORSE at matched count, +1.7 to +4.1;
+  - SumGD (the authors' own method): keeps -1.0 to -2.5 (about 55% of its gain).
+- No CIs here. CHAIR_i is mention-weighted (r1: class precision 73.3 vs 1 - CHAIR_i 84.7, from repeated correct
+  mentions), so published aggregates are only a screen; per-caption outputs decide.
+
+==================================================================================================================
+4. PILOT / FULL META-EVALUATION FOR GEMINI TO RUN
+==================================================================================================================
+DATA TO DOWNLOAD
+- Phase A, CPU (about 250 MB):
+  - http://images.cocodataset.org/annotations/annotations_trainval2014.zip (241 MB; no images needed);
+  - raw.githubusercontent.com/shikiw/OPERA/main/log/chair_eval_results/<model>/<greedy|beam5|ours>.jsonl (12 files);
+  - raw.githubusercontent.com/yuezih/less-is-more/main/CHAIR-eval/data/Table1-results/r{1..12}*.jsonl, plus
+    chair-500.jsonl;
+  - synonyms: data/coco_probe/chair_synonyms.txt (already in the repo).
+- Phase A2: scan more repos for released captions, using the GitHub tree API with *.json/jsonl under log|result|output:
+  BillChan226/HALC, zjunlp/DeCo, LALBJ/PAI, huofushuo/SID, shengliu66/VTI, Ziwei-Zheng/Nullu, 1zhou-Wang/MemVR,
+  the AGLA, ICT, SumGD, MARINE and VGD repos, and HF datasets.
+  Add every hit with a published baseline from the same run.
+- Phase B, GPU:
+  - COCO val2014 images for the 500 LiM CHAIR ids (about 80 MB, per-image URLs);
+  - AMBER generative images (1,004);
+  - weights: llava-hf/llava-1.5-7b-hf; RLAIF-V-7B, CHAIR-DPO, HA-DPO and POVID LLaVA-1.5-7B checkpoints (exact HF ids:
+    VERIFY).
+PHASE A, CPU (done for 2 repos; about 0.1 CPU-h per rerun, plus 1 CPU-h of harvesting)
+- Command, with the script copied from research_r10/E1:
+  nice -n 19 env OMP_NUM_THREADS=1 python3 -E -P e1_chair_count.py chair_synonyms.txt annotations_trainval2014.zip \
+    <opera_dir> <lim_dir> out.json
+  - For new repos, add a loader entry: image_id -> caption.
+- Add before confirmatory use (about 30 lines): 2,000 bootstraps; Holm over pre-listed pairs; PLACEBO = two sampling
+  seeds of one model (expect dP_MCP ~ 0); POSITIVE CONTROL = baseline minus its first hallucinated class (uses GT;
+  power check only, never a method; expect dP_MCP >> 0).
+PHASE B, GPU (about 15 GPU-h minimum, 30 GPU-h full)
+- Model: LLaVA-1.5-7B on LiM CHAIR-500 at 512 tokens, saving token log-probs.
+- B1. Baseline frontier (about 5 GPU-h): greedy once (64/128/256 budgets are exact token truncations of it), plus
+  EOS-logit bias +2/+4/+6 as non-truncation count-knob points.
+- B2. Decoding (about 6-10 GPU-h), same prompt and base, authors' code or HALC repo baselines (VERIFY): VCD (2x),
+  M3ID (2x), DoLa (1.2x), OPERA (beam 5, about 4x); HALC on 200 images only (slow).
+- B3. Training (about 4 GPU-h): RLAIF-V-7B, CHAIR-DPO-7B, HA-DPO-7B, greedy, same prompt; MCP vs base greedy and
+  residual vs the base B1 frontier.
+- B4. Optional, about 10 GPU-h: AMBER generative for B1 greedy, the 2 best decoders and the 2 best training methods.
+  This replicates on Cover-type GT.
+- Extra B-only control: keep the baseline's k_i highest-probability classes instead of its first k_i (mirrors the
+  KTVIC "top-k_i by vote share" control).
+PRE-REGISTRATION (write before any Phase-B look)
+- Primary endpoint:
+  - dP_MCP = class-level precision of the first k_i* = min(k_method, k_base) distinct COCO classes, method minus its
+    own published baseline;
+  - paired bootstrap over images, 2,000 resamples, Holm over all listed pairs;
+  - SURVIVES iff Holm p < 0.05 AND dP_MCP >= +1.0 (SESOI).
+- Secondary:
+  - dP_TRF (uniform truncation at matched mean count), and the 3-part decomposition;
+  - dF1 at matched count, which equals dP_MCP by construction;
+  - b of the base frontier.
+- Exploratory: aggregate-table screen (3d) for papers without outputs.
+- Kill rules:
+  - K1 fidelity: our CHAIR differs from published by > 1.0 (CHAIR_i) or > 1.5 (CHAIR_s) on more than 20% of
+    reference rows -> fix the matcher before any confirmatory look.
+  - K2 placebo: |dP_MCP| > 1.0 or CI excludes 0 for the seed placebo -> the control is miscalibrated; stop.
+  - K3 power: positive control dP_MCP < +3 -> the test is underpowered; enlarge to 2,000 images (the COCO-2500
+    manifest exists).
+  - K4 thesis: if more than 1/3 of the pre-listed decoding pairs SURVIVE, drop the "published gains are count shifts"
+    headline and report "count control is necessary and changes the ranking".
+Decision: the paper writes up the result whichever way it falls; both outcomes support the count-matched endpoint.
+
+==================================================================================================================
+5. CLAIMS GEMINI MUST VERIFY
+==================================================================================================================
+1. Rerun e1_chair_count.py and reproduce the 3c table (same seed 0, 1,000 bootstraps), plus the 3b fidelity rows
+   against LiM Table 1 (arXiv 2402.14545).
+2. r6-ours-cap.jsonl == r5-ours-inst.jsonl byte-for-byte (sha256 7a7e2775127249dc...) in yuezih/less-is-more@main.
+3. SumGD (2410.13321) Table 7 numbers as transcribed in section 3d (taken via WebFetch of the arXiv HTML).
+   Also check that the b values (0.75/0.55/0.59) recompute.
+4. HallE-Control App. A.4 wording: "we do not strictly enforce consistent constraints (same coverage, average length,
+   and average objects)".
+5. VGD (2607.27823): definition of "@rec90". If it is a recall-matched operating point, add it as prior work and
+   lower novelty to low-moderate.
+6. That none of the scanned repos releases per-caption outputs except OPERA and LiM.
+   Re-check BillChan226/HALC (my query missed it).
+7. HF ids and base models of the RLAIF-V-7B, CHAIR-DPO, HA-DPO and POVID checkpoints. Use only LLaVA-1.5-7B-based ones
+   for B3.
+8. Whether HALC's repo implements DoLa, OPERA, VCD, LURE and Woodpecker as baselines under one interface.
+9. arXiv 2510.20229: content (title verified only).
+10. OPERA's released LLaVA-1.5 greedy log gives CHAIR_i 12.60 vs 12.67 for OPERA in the same release, i.e. no
+    instance-level gain in their own files. Check against OPERA's paper table and its stated decoding settings.
+
+==================================================================================================================
+6. RISKS AND FIT WITH PD-2
+==================================================================================================================
+Risks:
+- Prefix truncation is the natural count knob for released text, but it is still one choice.
+  - B1 EOS-bias points and the confidence-ranked control (B-only) test whether conclusions depend on it.
+  - Truncation breaks fluency, so the count-matched analysis is for object metrics only, never CIDEr.
+- Weak or degenerate baselines inflate survivors. Example: InstructBLIP greedy has CHAIR_i 23.0 vs 15.3 for beam5
+  (repetition loops). Report every method against both greedy and its own base decoder.
+- Small corpus (2 repos, 4+4 models); groups that release outputs may differ. Shared baselines make pairs
+  dependent: Holm, per-pair reporting, no pooled p-value.
+- CHAIR's 80-class vocabulary and synonym quirks; our regex/vocabulary matcher still reproduces published numbers
+  within 0.6.
+- Reviewer reply: "obviously shorter is more precise". The answer is the decomposition: the field reports the raw
+  number, and the per-image allocation share is a real but different contribution.
+Fit with PD-2: this strengthens the EVALUATION / METHODOLOGY pillar.
+- The count-matched primary endpoint is shown to be general (English, COCO, 8 LVLMs), not a KTVIC quirk.
+- It reframes "no method survives count control" as the field's norm.
+- One section (and one figure: raw vs MCP per method) fits the Q2 paper. A standalone short paper is possible if
+  Phase A2/B add 10+ methods.
+- It costs nothing from the KTVIC GPU queue unless Phase B runs.
+
+==================================================================================================================
+7. SCORES (1-5)
+==================================================================================================================
+- Novelty 3: the length confound is known (CCEval, SumGD footnote, POPE). The per-image matched-count re-scoring of
+  released outputs and the 3-part split are not found.
+- Feasibility 5: Phase A is done on CPU in 3 min. Phase B is about 15 GPU-h on one 3090 with public code and weights.
+- Expected impact 4: it gives a general methodological result that also defends our main negative result. Reviewers
+  can check it from public files.
+- Risk 2: the main risks are the small released-output corpus and dependence on the choice of control. Both are
+  addressed by A2 harvesting, the placebo and positive controls, and the B1/B-only alternative controls.

@@ -1,0 +1,249 @@
+R10 / M3 -- COUNT-MATCHED PREFERENCE OPTIMISATION (CM-DPO). 2026-10-14. CPU only (nice 19, 1 thread, 347 MB peak, 18 s).
+Folder: research_r10/M3/ (m3_pilot.py, m3_pairs.py, cm_pairs.py = draft builder; out/pilot.log, out/pairs.log,
+out/ktvic_rl1000_ids.txt, out/uitviic_train_keep_ids.json, out/smoke_*/_build_report.json). Repo untouched.
+Candidates in every pool below are MODEL-GENERATED samples (flagged); every label is a human reference or COCO label.
+
+====================================================================================================================
+0. BOTTOM LINE
+====================================================================================================================
+- Idea: DPO in which chosen and rejected are the policy's own samples for one image, naming the SAME number k of object
+  classes (and within 2 syllables of each other). The winner has more classes in the human gold (KTVIC: union of the
+  5 train references; UIT-ViIC: COCO instance labels). With within-(image, k) pairs, the DPO loss is exactly invariant
+  to any count-dependent reward c(x, k) (sec. 1), so the model gets no gradient toward saying more or less. It can only
+  learn which objects to name at a fixed count. That is the residual the PD-2 count frontier measures.
+- Why new (moderate): length control in DPO is loss-side (R-DPO, SimPO, SamPO). The nearest data-side priors are
+  substitution and minimal pairs (HALVA, HII-DPO), and they do not control or test count. Precision DPO is known to
+  cut coverage (CHAIR-DPO, OPA-DPO). No prior work found matches count by construction or tests against a count frontier.
+- Evidence (dev300 pools, held out): 3.68 usable pairs/img on 60% of images. dk = 0 and dsyl -0.03 by construction.
+  Only 12% of pairs are hypernym-linked naming variants; up to 88% swap the object. Human labels disagree with self-consistency
+  on 30% of pairs. At fixed count: in-sample oracle +6.64 F1 [+4.72, +8.66]; split-annotator +4.64 [+2.69, +6.72];
+  vote share only +0.24. The naive alternative (F1-preferred, count-unmatched) picks the caption naming MORE objects
+  in 76% of pairs (mean dk +0.69).
+- Expected value: realistic dev residual +0.5 to +2.0 F1. P(confirmatory T1 pass) about 25-30%.
+  First look: 4.2 GPU-h. All stages: about 33 GPU-h.
+  A null result is still a clean, pre-registered negative that closes the training-method question for PD-2.
+
+====================================================================================================================
+1. PROBLEM AND HYPOTHESIS
+====================================================================================================================
+Every landed method moves along the frontier TP = 1.3996 (M/1.7826)^0.7468. Examples: UPE (kill 2), PLAN-F1, fuse2,
+and in-house E5-DPO (N2: residual -1.97 [-4.33, +0.18]; vs P1 -1.33 [-3.42, +0.76]; CIDEr -26.7; CJK 4.1%).
+Preference data built from object F1 confounds quality with count. Remove the count channel from the DATA.
+Invariance (exact, 3 lines): r(x,y) = beta log pi/pi_ref. Replace pi by pi' ∝ pi * exp(c(x,k(y))/beta).
+  Then r' = r + c(x,k) - beta log Z'(x). For a pair with k(y_w) = k(y_l), r'_w - r'_l = r_w - r_l, so L_DPO(pi') =
+  L_DPO(pi): count-matched pairs carry zero information about the count marginal. (Parametric leakage is still possible;
+  guard G1.)
+  KTO has no such invariance (absolute per-sample rewards against a batch KL reference point). So DPO is primary;
+  KTO is not proposed.
+Hypotheses and falsifiable predictions (dev300 first; KTVIC test for the confirmatory look):
+  H1 (mechanism): CM-DPO keeps the count: |dm| <= 0.10 vs its start. The unmatched control C1 raises m by >= +0.15 and
+     lands within +-1.0 of the frontier (like E5-DPO, UPE and fuse2).
+  H2 (efficacy): CM-DPO frontier residual F1 rises: dev d-residual in [+0.5, +2.5], point about +1.0 to +1.5.
+  H3 (labels matter): the label-free control C2 (same count/length rule, winner = higher vote share) gives
+     d-residual within +-1.0. Reason: vote-share choice at fixed count is +0.24 [-1.11, +1.52] at decode time.
+  H4 (truth side): the OpenViIC panel residual moves the same way (>= +0.3). In the COCO arm, instance precision
+     rises at |dm| <= 0.10.
+  Falsified if: the H2 interval misses, or CM-DPO is not above C2, or m drifts (then it is a count method in disguise).
+
+====================================================================================================================
+2. CLOSEST PRIOR WORK (verified on arXiv abs pages / ACL Anthology this session unless marked)
+====================================================================================================================
+- CHAIR-DPO, 2508.20181 (Compagnoni et al., BMVC 2025). Winner and loser decided by CHAIR (detector gold), no count
+  matching. R9 C4/C6 found AMBER Cover 51.7 -> 46.6: a precision win paid for in coverage.
+  New here: count held fixed by construction; human gold; frontier test. Novelty vs it: high.
+- HA-DPO, 2311.16839 (Zhao et al.; no venue on the abs page). GPT-rewritten non-hallucinated vs hallucinated pairs, with
+  a "style-consistent" dataset; count not matched. Novelty vs it: high.
+- RLHF-V, 2312.00849 (Yu et al., CVPR 2024). Segment-level human corrections with dense DPO. A correction usually
+  deletes or replaces the hallucinated object, so count is not controlled. Human labels are new annotation; we use
+  existing labels only. Novelty vs it: moderate.
+- POVID, 2402.11411 (Zhou et al.; arXiv, no venue listed). GPT-4V injects hallucinations into the gold answer, plus
+  image distortion. Rejected answers typically add content. Novelty vs it: high.
+- mDPO, 2406.11839 (Wang et al., EMNLP 2024). Image-conditional preference plus a reward anchor that keeps the chosen
+  likelihood up. Orthogonal: its anchor idea is reused here as an SFT anchor. Novelty vs it: high.
+- HALVA / DPA, 2405.18654 (Sarkar et al., ICLR 2025). The CLOSEST prior. Negatives replace ground-truth concepts with
+  hallucinated ones, "keeping the overall structure intact" (count-preserving for object swaps, but generated, and
+  covering attributes and actions too). Phrase-level loss plus a token KL. AMBER Cover 51.0 -> 53.0, CHAIR 7.8 -> 6.6.
+  New here: the model's own samples, not generated negatives; human labels; count matching as an explicit rule with a
+  vote-matched control and a frontier test. Novelty vs it: moderate.
+- Length control: SimPO 2405.14734 (Meng et al., NeurIPS 2024; average log-prob reward); R-DPO 2403.19159 (Park et al.,
+  Findings of ACL 2024, DOI 10.18653/v1/2024.findings-acl.297; length regulariser); SamPO 2406.10957 (down-sampled KL).
+  All are loss-side fixes for a length confound. Here the confound is object count, removed on the data side.
+  Novelty vs them: moderate.
+- KTO 2402.01306 (Ethayarajh et al., ICML 2024). Unpaired desirable/undesirable labels; no within-stratum invariance
+  (sec. 1). Novelty vs it: n/a (design choice).
+- RPO 2404.19733 (Pang et al.; arXiv page lists no venue): DPO + NLL on the chosen answer. Not used here: chosen
+  captions are count-biased (mean k 1.95 vs 1.77, sec. 3), so NLL on chosen would push the count up.
+- Likelihood displacement 2410.08847 (Razin et al., ICLR 2025): displacement is driven by preferences with similar
+  embeddings (CHES). Count-matched one-object swaps are exactly that regime. This is the main risk (sec. 6).
+- Also seen (search snippets only, UNVERIFIED): HII-DPO 2602.10425 (identical-prefix minimal pairs);
+  OPA-DPO 2501.09695 (on-policy DPO, CVPR 2025 per its project page; lower Cover reported); HallE-Control 2310.01779
+  (compares models at roughly matched object count/length in evaluation).
+Scoop search: 7 web queries (count-matched / coverage-matched / same-number-of-objects pairs; length-balanced pairs;
+iso-coverage evaluation). Verdict: NONE FOUND for pairs matched in object count or for a count-frontier test.
+Partial: HALVA (substitution), HII-DPO (minimal pairs), HallE-Control (matched-count evaluation). Overall novelty:
+MODERATE. Claim "count-matched preference construction with a frontier test", never "first".
+
+====================================================================================================================
+3. EVIDENCE SO FAR (CPU, existing files; numbers from out/pilot.log and out/pairs.log)
+====================================================================================================================
+Pools:
+- DEV = P1_dev (35_a) greedy (.session_backup/machines/n2/ncs-data/rl/p1dev_s42-dev300-short.preds.json) plus 6
+  samples at T 0.5 and 6 at T 0.8 (data/results/upe/p1dev_s42-dev300-short-T{0.5,0.8}.jsonl). 300 held-out images.
+- E5 = fuse2_s42 detailed samples x6 on 1,500 KTVIC train images, with E5's own 1,327 DPO pairs (n2 mirror e5_round1/).
+Gold = union of the 5 train refs, objects_in v2. Frontier = prereg_ladder_check.at(), anchors from the prereg JSON.
+a) Pair supply (DEV, 12 samples + greedy):
+   - 1,690 count-matched informative pairs (5.63/img); 62.3% of images have >= 1; 70.8% within 2 syllables.
+   - Builder rule (samples only, same k, |dsyl| <= 2, dTP >= 1): 1,104 pairs (3.68/img, 60.3% of images); cap 4/img
+     leaves 621 (~2.07/img, i.e. ~2,070 per 1,000 images).
+   - cm_pairs.py smoke run with all guards (copy/CJK/fragment): 600 pairs on 177 images.
+   - dTP = 1 in 97.6% of pairs: one-object swaps.
+b) Length is not a channel: dsyl (winner - loser) mean -0.02 (all count-matched pairs) and -0.03 (builder set).
+c) What the pairs teach:
+   - only 12.0% are pure naming-variant swaps (hypernym-linked; a lower bound, since cô gái-người is unlinked);
+     up to 88% swap a different object;
+   - the human-label winner has the higher leave-one-out vote share in 70.0%: the labels add information on ~30%;
+   - split-annotator check (refs 0-1 vs 2-4): 0.3% of pairs reversed by one half; 63.8% strict winner under both.
+d) Count confounding of the naive design:
+   - E5-style best-vs-worst by per-caption F1 (DEV): winner names more objects 52.2%, same 28.5%, fewer 19.3%;
+     within-image Spearman(k, F1) +0.22.
+   - Same unmatched rule with the length filter (control C1 builder): 76% of winners name more; mean dk +0.69.
+   - E5's real DPO pairs: only 24.4% count-matched (chosen fewer objects 43.2%, more 32.4%, mean dk -0.22,
+     dsyl -0.70). N2 failed with count-unmatched pairs.
+e) Selection proxies at the greedy's own count (DEV, 300 imgs; paired B = 1000; residual = F1 - F̂1(m)):
+   | rule (count held at greedy k_i)      | m     | P     | R     | F1    | res   | dF1 vs greedy [95% CI] |
+   | greedy                               | 1.763 | 74.29 | 43.13 | 54.57 | +0.17 |                        |
+   | random same-count sample (expected)  | 1.763 | 71.44 | 41.20 | 52.26 | -2.13 | -2.31 [-3.66, -0.92]   |
+   | vote share (self-consistency)        | 1.763 | 74.86 | 43.23 | 54.81 | +0.41 | +0.24 [-1.11, +1.52]   |
+   | ORACLE by human gold (in-sample)     | 1.763 | 83.55 | 48.29 | 61.21 | +6.81 | +6.64 [+4.72, +8.66]   |
+   | count-FREE oracle (E5-style, any k)  | 2.030 | 91.46 | 58.67 | 71.48 |+14.52 | m +0.27 (count moves)  |
+   - Split annotators (choose with refs 0-1, score on refs 2-4): +4.64 [+2.69, +6.72] vs greedy. Surviving fraction
+     0.64 of the in-sample gain over random.
+   - Image-agnostic class prior learned from the other half's pairs (2-fold): -3.87 [-6.41, -1.65]. Below random.
+     So the signal is image-conditional: CM-DPO cannot win by learning class frequencies.
+f) Leakage: UIT-ViIC train has 2,695 images; 133 are in Karpathy test and 59 in the 2,500 manifest (reproduces R9 C6).
+   Kept 2,562 (out/uitviic_train_keep_ids.json); all have instance labels (3.51 classes/img, 99.9% >= 2).
+   The 1,000 KTVIC images = first 1,000 of train_rl.py's seed-42 order (out/ktvic_rl1000_ids.txt; first ids 10527,
+   7324, as in gold_p1dev): the same images as the RL gate v2 first look, so CM-DPO and CN-RLOO match on image budget.
+Reading: the signal exists, is plentiful, length-neutral, robust across annotators and not a class prior. The in-sample
+ceiling is +6.6 at fixed count. Policy-level DPO typically realises 10-30% of such best-of-n headroom (R9 C4: realistic
+RL +1.5 to +2.2 vs in-sample +11 to +15). Hence the +0.5 to +2.0 expectation.
+
+====================================================================================================================
+4. PILOT DESIGN FOR GEMINI TO RUN (one RTX 3090, QLoRA 4-bit; code mostly exists)
+====================================================================================================================
+Code to commit (via gatekeeper, hashes into the prereg):
+- scripts/cm_pairs.py = research_r10/M3/cm_pairs.py. Self-check passes; smoke-tested. Set VSPS_ROOT only when it is
+  run from outside scripts/.
+- scripts/train_stage2.py, ~12 lines:
+  (i) --anchor-sft ALPHA (default 0). pair_collate also returns
+      VLCollator(processor, assistant_only=True)([to_chat(processor, f, "ref") for f in features]), and the loop adds
+      ALPHA * model(**anchor).loss. This is response-only CE on the image's FIRST human caption (= P1's own SFT target):
+      count-neutral, and no model text in the anchor.
+  (ii) image_for(): use row["image_root"] when present (COCO arm only). cm_pairs.py must write image_root for UIT-ViIC
+       rows.
+  The DPO margin needs no mask change: prompt tokens are identical in chosen and rejected, so they cancel.
+Frozen settings:
+- sampler: e5_sample.py as in 36_z (short prompt, n 6 at T 0.5 and n 6 at T 0.8, top_p 0.95, seed 42);
+- builder: CAP 4, |dsyl| <= 2, copy m >= 0.90 dropped, CJK/fragment dropped, matcher v2;
+- DPO: beta 0.1, lr 5e-6, 1 epoch, grad-accum 8, LoRA continued from the start adapter, reference = pi_SFT (ref_sft
+  adapter), ALPHA = 1.0, seed 42.
+STAGE 1, first look (KTVIC arm; start = P1_dev 35_a). GPU about 4.2 h, CPU about 0.2 h.
+  python scripts/e5_sample.py --adapter $NCS_DATA/runs/p1dev_s42 --split train_data.json \
+    --images-file ktvic_rl1000_ids.txt --limit 0 --prompt short --n 6 --temperature $T --top-p 0.95 \
+    --out $S/p1dev_s42-rl1000-short-T$T.jsonl                                     # T in 0.5 0.8; ~2.1 GPU-h
+  (merge the two files per image into $S/p1dev_s42-rl1000-pool12.jsonl: 12 samples per row)
+  python scripts/cm_pairs.py --samples $S/p1dev_s42-rl1000-pool12.jsonl --dataset ktvic --mode cm \
+    --out $NCS_DATA/cm/A                                                          # CPU; expect ~2,000 pairs
+  python scripts/train_stage2.py --stage dpo --data $NCS_DATA/cm/A --adapter $NCS_DATA/runs/p1dev_s42 \
+    --out $NCS_DATA/runs/cmdpo_A_s42 --epochs 1 --beta 0.1 --anchor-sft 1.0 --seed 42   # ~1.8 GPU-h (3.3 s/pair)
+  (first a 20-pair dry run: gradient check, peak reserved <= 22 GB, ordering accuracy logged; ~0.1 h)
+  NCS_DATASET=ktvic_dev python scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/cmdpo_A_s42 \
+    --split dev_data.json --prompt short --name cmdpo_A_s42-dev300-short --out $NCS_DATA/cm/cmdpo_A_s42-dev300-short.json
+  Timing basis: 36_z did 3,600 short samples in 38 min; 22_e5_dpo did 1,327 pairs plus two test evals in 1 h 46 min.
+STAGE-1 GATE (dev300, paired with P1_dev greedy; B = 2000, numpy default_rng(0); official frontier at(), fixed):
+  d-res = [F1 - F̂1(m)]_CM-DPO - [F1 - F̂1(m)]_P1dev. P1_dev dev values: res +0.17, m 1.763, CIDEr-D 144.334,
+  11.877 syllables, 9 fragments, CJK assumed 0 (verify).
+  Guards: G1 |dm| <= 0.20; G2 dev CIDEr-D >= 141.33; G3 <= 1 of 300 captions with CJK; G4 mean syllables in
+  [10.69, 13.06]; G5 fragments <= 15 of 300.
+  PASS: d-res >= +1.5, LB > 0, all guards. GREY: all guards and either +0.5 <= d-res < +1.5, or d-res >= +1.5 with
+  LB <= 0. KILL: anything else (a guard failure is a kill).
+  Power: the paired CI half-width on 300 images is about 1.3-2.0, so a true +1.5 passes with about 40-50%
+  probability. That is why GREY continues to stage 2 (C2 only).
+STAGE 2, attribution and COCO arm (after PASS; after GREY only C2). GPU about 10.1 h.
+  - C1 (count-unmatched F1 pairs, same images and same per-image counts):
+    cm_pairs.py --mode unmatched --like cm/A --out cm/C1, then the same DPO and eval (~2.0 GPU-h).
+  - C2 (label-free vote pairs): cm_pairs.py --mode vote --like cm/A --out cm/C2, then the same (~2.0 GPU-h).
+  - A+C: sample P1_dev on 1,000 ids of out/uitviic_train_keep_ids.json (NCS_DATASET=uitviic, same sampler; ~2.1 h);
+    cm_pairs.py --dataset uitviic --keep ... --mode cm (COCO-80 AND lexicon counts matched; gold = instance labels);
+    DPO on A plus these (~2.7 h); evals dev300 + UIT-ViIC val short greedy for A+C, A, P1_dev (~1.35 h).
+  Rules (dev300; UIT-ViIC val for COCO):
+  - labels matter only if d-res(A) - d-res(C2) >= +1.0 with LB > 0;
+  - matching matters only if d-res(A) - d-res(C1) has LB > 0, and C1's dm >= +0.15 (H1);
+  - the COCO arm is kept only if instance dP > 0 (LB > 0) at |dm_coco| <= 0.10 and d-res(A+C) >= d-res(A) - 1.0.
+STAGE 3, confirmatory, ONE look on KTVIC test (pre-register before any test decode). GPU about 18.7 h.
+  - Starts: p1assist_s42/s43/s44. Per seed: on-policy pool on the same 1,000 images (2.1 h), CM-DPO (1.8 h; 2.7 h with
+    the COCO arm), test short greedy (0.25 h). Total 12.5 h.
+  - C2 at 3 seeds: +6.2 h. Cheaper option: one pool from s42 for all seeds, -4.2 h.
+  - T1 (PD-2 primary): the pooled 3-seed frontier residual F1 - F̂1(m) of cmdpo_3seed-short > 0 with a 95% CI
+    excluding 0. Method: PD2 B5-A (*_3seed rows, frontier fixed, image bootstrap B = 2000, matcher v2; v1 side by side).
+    Note that p1assist_3seed itself sits at +0.81 [-1.41, +3.00], so T1 needs a residual of about +2.3.
+  - T2 (attribution): paired d-res vs the same seeds' p1assist, LB > 0, and vs C2, LB > 0. Without T2 the gain is
+    called "DPO sharpening", not human-label precision.
+  - Secondary, never gating: OpenViIC panel residual (aggregate only); CIDEr-D (flag below 148.23 - 3); CHAIR_i; CJK
+    rate; m; prereg_ladder_check P-residual; coco_probe instance P/R/F1 with m (A+C variant).
+  - Kill of the paper claim: T1 fails, or the CIDEr-D loss exceeds 3, or CJK > 0.5%. Then report it as a pre-registered
+    negative with CIs.
+GPU total: 4.2 (stage 1) + 10.1 (stage 2) + 18.7 (stage 3) = about 33 GPU-h; 4.2 if killed at stage 1. CPU < 1 h.
+
+====================================================================================================================
+5. CLAIMS GEMINI MUST VERIFY
+====================================================================================================================
+1. Rerun m3_pilot.py and m3_pairs.py (repo paths are hard-coded). Expect the numbers of sec. 3. P1_dev dev residual
+   +0.17 here vs +0.13 in planf1/dev_plan_critique.json (R 43.13 vs 43.07): find the 0.06 source (matcher v1/v2?).
+2. The 133 / 59 overlap and 2,562 kept ids (regex scan of dataset_coco.json; compare R9 C6 p1_leak_ceiling.py).
+3. E5-DPO pair stats (24.4% count-matched; dk -0.22); 22_e5_dpo ran with defaults (beta 0.1, lr 5e-6).
+4. Timing bases: queue.log shows 36_z 00:02 -> 00:40 and 22_e5_dpo 22:56 -> 00:41. Short-pair DPO speed is assumed
+   (~3.3 s/pair with the anchor): measure it in the 20-pair dry run.
+5. train_stage2.run_dpo builds VLCollator(processor) with the legacy mask. Check that prompt tokens cancel in the
+   margin and that the anchor CE uses assistant_only=True. image_for() reads only KTVIC images.
+6. The invariance algebra of sec. 1. Also that train_stage2's ref_sft adapter is pi_SFT for the start adapter used.
+7. Citations: HALVA 2405.18654 (ICLR 2025; Cover 51.0 -> 53.0, CHAIR 7.8 -> 6.6, alpha 0.4). CHAIR-DPO 2508.20181
+   (BMVC 2025). RLHF-V 2312.00849 (CVPR 2024). mDPO 2406.11839 (EMNLP 2024). SimPO 2405.14734 (NeurIPS 2024).
+   R-DPO 2403.19159 (Findings ACL 2024). KTO 2402.01306 (ICML 2024). Razin 2410.08847 (ICLR 2025).
+   Venue unknown: HA-DPO 2311.16839, POVID 2402.11411, RPO 2404.19733.
+   UNVERIFIED (search snippets only): HII-DPO 2602.10425, OPA-DPO 2501.09695 (CVPR 2025?), HallE-Control 2310.01779,
+   SamPO 2406.10957.
+8. Scoop: re-run a count-matched / coverage-matched preference-pair search on Semantic Scholar (mine was web search,
+   7 queries).
+
+====================================================================================================================
+6. RISKS AND FIT WITH PD-2
+====================================================================================================================
+Risks:
+- Likelihood displacement. 97.6% of pairs are one-object swaps of near-identical sentences: the high-CHES regime of
+  Razin et al. E5-DPO already showed CJK leakage and -14.8 CIDEr vs its start. Mitigations: the SFT anchor, the CJK and
+  CIDEr guards; one fallback at lr 2.5e-6 after a guard kill is allowed if pre-registered.
+- Power. The realistic effect is the same size as the CI (+-2 dev, +-2.2 test). T1 needs about +1.5 over p1assist.
+  A null is the likely outcome (60-70%).
+- Typicality, not truth. The gold is the reference union. At least 12% of pairs are naming variants, and C3 found 56.5%
+  of P1 "false positives" are real objects. Truth-side checks: the OpenViIC panel residual and COCO instance labels.
+- Parametric count leakage despite invariance. Pairs sit mostly at k = 2 (61%); chosen captions have mean k 1.95 vs
+  1.77 in the pool. Guard G1, and never NLL on chosen.
+- Memorisation: train images were P1's targets (copy guard; G0 exact copies 0.67% train vs 0.50% dev). One
+  off-policy round only. COCO arm: P1 is ~90% precise on COCO, so pairs are scarce; VGR, not this, fixes vocabulary.
+Fit: the first TRAINING method built for the PD-2 primary endpoint (matched count) by construction. If T1 and T2
+pass, the method pillar gets its first win beyond the frontier. In every outcome the methodology pillar gains the
+recipe, the invariance lemma, the vote-matched control and a measured confound (76% "say more"). If it fails, it joins
+UPE, PLAN-F1 and E5-DPO as a pre-registered negative, supporting the claim that count explains the object metric.
+
+====================================================================================================================
+7. SCORES (1-5)
+====================================================================================================================
+- Novelty 3: the data-side count control, invariance lemma and frontier test are new in combination. Close priors
+  exist (HALVA substitution pairs, length-controlled DPO).
+- Feasibility 4: the DPO loop, pi_SFT reference, sampler, dev split and evaluation exist; the builder is drafted and
+  tested; the first look is 4.2 GPU-h.
+- Expected impact 3: if it passes, it is the only method beyond the count frontier. If not, it is a sharp negative,
+  plus a reusable recipe and control.
+- Risk 4 (high): the expected effect is about the CI width; DPO on minimal pairs is prone to displacement (E5-DPO
+  precedent).

@@ -1,0 +1,243 @@
+R10 / V1 -- Classifier- and compound-aware Vietnamese object extraction
+Agent V1, 2026-10-14. Repo read-only at HEAD 9193a3d. Files named "V1/..." are in research_r10/V1/.
+Pilot scripts: V1/discover.py, V1/rescore.py (holds the v3 extractor, with a _check()), V1/validate.py, V1/coverage.py.
+Outputs: V1/{discover,rescore,validate,coverage}.json. CPU only, each < 3 min and < 150 MB RSS.
+
+======================================================================================================
+0. BOTTOM LINE
+======================================================================================================
+- Idea: a v3 extractor for the 113-entry matcher (rescap.chair.objects_in). It parses classifiers by
+  reading the existing NOUN_CLASSIFIER agreement table in reverse: `cây cầu` -> bridge, not tree+bridge.
+  It adds a frequency-mined table of compound exceptions (`cửa hàng` is not a door), a negation scope, and
+  it merges classifier-split classes (`toà nhà`/`nhà`, `con đường`/`đường`).
+- Size: changes 17.4% of KTVIC test references and 34.9% of test gold sets. P1 short F1 rises by +1.34
+  (3-seed mean); zero-shot by +1.9 to +2.0; human 1-vs-4 F1 by +1.13.
+- No PD-2 conclusion moves. Paired contrasts change by <= 0.54 F1. P1 stays on the pre-registered frontier
+  (|residual| <= 0.01 TP/img). The P1-to-human gap moves by 0.24.
+- Validated with existing human labels only, no new gold:
+  * COCO instance labels: v2 pulls 3,806 `quả` ("fruit") mentions from UIT-ViIC human captions; they are
+    supported 0.2% of the time, and v3 removes 99.4% of them.
+  * KTVIC: a classifier-only `cây` is confirmed as a tree by another annotator 6.6% of the time, vs 77.8%
+    for the trees v3 keeps.
+- Value: a must-do measurement-validity fix, a robustness section for the evaluation pillar, and a small
+  releasable resource. NOT a headline novelty (novelty 2/5). Keep v2 as the pre-registered primary metric and
+  report v3 as a pre-registered sensitivity analysis.
+
+======================================================================================================
+1. PROBLEM AND HYPOTHESIS
+======================================================================================================
+Problem. Every KTVIC object number goes through rescap.chair.objects_in: Table IV (scripts/object_prf.py),
+CHAIR-vi, the count frontier (scripts/prereg_ladder_check.py L158/L166), UPE-MBR (scripts/upe_mbr.py L96-100)
+and PLAN-F1 (scripts/plan_f1.py L43-66). It also builds TRAINING targets (build_gold_sft.py, build_dpo_data.py,
+e5_select.py; plan_f1.py comment "D10: every training list equals objects_in(target)").
+objects_in is a greedy 3/2/1-syllable longest match over a stop-listed lexicon. Running it confirms:
+  (a) Classifier read as a noun: `một cây cầu` -> [cây, cầu]; `quả bóng` -> [quả, bóng].
+      `cây` and `quả` are not in the _NOT_OBJECTS stop list, although con/cái/chiếc/bức/tấm are.
+  (b) Compound truncation, head is not the referent:
+      `cửa hàng` -> [cửa] (door); `hoa quả` -> [hoa, quả]; `cầu thang` -> bridge; `bàn tay` -> table;
+      `chiếc xe hơi` -> [xe], never `ô tô` (the chair.py docstring claims they are one object).
+  (c) Classifier-split classes: `toà nhà`, `căn phòng`, `bức tranh`, `con đường` are lexicon keys separate from
+      `nhà`, `phòng`, `tranh`, `đường`. CHAIR merges them via canonical(); object_prf.py and the frontier tool
+      do NOT, while upe_mbr.py does. One lexicon, three definitions of "same object" (CHAIR / Table IV + frontier / UPE).
+  (d) Negation: `không có người nào` -> [người].
+  (e) Tone variants: already fixed by matcher v2 (data/results/tone_norm/SUMMARY.json; +0.2 to +0.5 F1,
+      zero-shot and legacy rows only).
+H1. The errors are frequent in references and outputs, so absolute object P/R/F1 is biased.
+H2. They are mostly common-mode: system contrasts, count-matched endpoints and the frontier are robust.
+H3. A rule-based classifier-aware extractor agrees better with independent human labels.
+Falsifiable predictions, to pre-register before the confirmatory run (§4):
+  F-1 P1 short 3-seed mean F1 rises by +1.0 to +1.8; detailed by +1.2 to +2.0.
+  F-2 Every paired contrast in the paper keeps its sign and CI-excludes-0 status; |change| <= 0.6 F1.
+  F-3 UPE vs same-count COUNT control: per-seed ΔF1 stays within ±0.3 of +0.07/+0.03/+0.17 (kill 2 still
+      fires). PLAN-F1 vs raw-vote control stays within ±0.5 of +0.08.
+  F-4 P1 response-only residuals vs the v2-fitted pre-registered frontier stay within ±0.03 TP/img.
+  F-5 UIT-ViIC x COCO: v2 `quả` instance support < 2%, and v3 removes > 95% of those mentions.
+  F-6 KTVIC: classifier-only `cây` cross-annotator confirmation < 15%; kept-tree confirmation > 60%.
+  If F-2, F-3 or F-4 fails, the paper must report extractor sensitivity. That is a finding, not a kill.
+
+======================================================================================================
+2. CLOSEST PRIOR WORK (V = verified by web search this session; U = unverified detail)
+======================================================================================================
+[1] Rohrbach et al., "Object Hallucination in Image Captioning", EMNLP 2018, arXiv:1809.02156 (V). CHAIR:
+    English COCO-80 lexicon with synonyms and double words (`hot dog`). New here: Vietnamese classifier
+    agreement used for parsing; frequency-mined compound exceptions; validation on human instance labels.
+    Novelty vs [1]: LOW-MODERATE (same family: lexicon + rules).
+[2] Petryk et al., "ALOHa", NAACL 2024 short, ACL 2024.naacl-short.30 (V; arXiv:2404.02904 U). LLM object
+    extraction plus Hungarian matching, English. New here: deterministic Vietnamese extractor with no LLM in
+    the measurement path (project rule: AI labels are not evidence). MODERATE.
+[3] Ben-Kish et al., "Mitigating Open-Vocabulary Caption Hallucinations" (MOCHa/OpenCHAIR), arXiv:2312.03631 (V).
+    Open-vocabulary benchmark built with an LLM and a T2I model, English. MODERATE.
+[4] Wada, Kaneda, Sugiura, "JaSPICE", CoNLL 2023, arXiv:2311.04192 / 2023.conll-1.28 (V). Closest non-English
+    analogue: a parser-based (dependency + predicate-argument) scene-graph metric for Japanese captions.
+    New here: object-hallucination P/R/F1 and Vietnamese classifier semantics. MODERATE.
+[5] Vu et al., "VnCoreNLP", NAACL 2018 demos, arXiv:1801.01331 (V). Nguyen & Nguyen, "PhoNLP", NAACL 2021
+    demos, arXiv:2101.01476 (V). VLSP tagset with Nc = classifier (V via arXiv:2206.06992 and BKTreebank
+    arXiv:1710.05519; VTB = ACL W09-3035, title U). They segment and tag Nc but have no visual-class mapping.
+    Pilot (§3.5): Nc cannot tell `cây cầu` (bridge) from `cây dừa` (coconut TREE). MODERATE (application layer).
+[6] Qu et al., arXiv:2408.00550 (V): multilingual POPE built by translating probes. CLAIM, arXiv:2506.11073 /
+    ACL 2025 long.640 (V listing): multilingual object-hallucination mitigation. Neither extracts objects from
+    free-form non-English captions. MODERATE.
+[7] Classifier semantics:
+    - Peinelt et al., "ClassifierGuesser", IJCNLP 2017 demos, ACL I17-3011 (V): Chinese classifier PREDICTION.
+    - Dao 2012, NSM study of Vietnamese con/cái, ALS proceedings pp. 58-74 (V listing).
+    - Tran, CLA 2019 (V listing): `cây` = long/tree-like, `quả` = round/fruit-like.
+    New here: agreement used in the PARSING direction, as an extraction signal. MODERATE.
+[8] KTVIC arXiv:2401.08100 (V); UIT-ViIC arXiv:2002.00175 (V listing); UIT-OpenViIC (arXiv id U). None reports
+    CHAIR-style object extraction. A search for Vietnamese CHAIR / object hallucination in captioning found
+    nothing (one search: U).
+Overall: LOW-MODERATE as science, MODERATE as a resource. No prior Vietnamese object-mention extractor with an
+existing-label validation protocol was found.
+
+======================================================================================================
+3. EVIDENCE SO FAR (CPU pilot on existing files; every number is from V1/*.json)
+======================================================================================================
+3.1 Error classes (discover.json; pyvi segmentation + regex contexts)
+  KTVIC test references, 2,790 captions:
+    `cây X`, X non-plant: cầu 26, đàn 7, bút 6, cột 6, xăng 3, viết 1, vợt 1 (about 50 spurious trees).
+    `cây X`, X plant: thông 25, xanh 17, cảnh 10, cổ(thụ) 8, đào 5.
+    Compounds: cửa hàng 133, quần áo 48, hoa quả 30, hoa màu 11, xe hơi 8, cửa sổ 8, bóng bay 8,
+      cầu trượt 4, cầu nguyện 3, cây xăng 3. Negation: 5 (0.2%).
+  KTVIC train references, 18,845 captions: cửa hàng 994, quần áo 312, cây cầu 160, hoa quả 126, đường ray 71,
+    tàu hoả 55, hoa màu 51, cầu thang 42, cửa sổ 39, xe hơi 38, bàn tay 32, cây xăng 31; about 100 negations.
+  Outputs:
+    zero-shot detailed (558): cửa hàng 418, cửa sổ 101, cầu thang 14, hoa văn 13,
+      cá nhân 6 (cá nhân, "personal", is read as FISH).
+    P1 s42 short: cửa hàng 26, hoa quả 12, quần áo 9; no negation.
+3.2 Extraction change (rescore.json). v3cls = classifier rules only; v3full = + compounds, negation, SYNONYMS.
+  Test refs changed: 228/2790 (8.2%) | 486/2790 (17.4%).  Train refs: 1436/18845 (7.6%) | 3374/18845 (17.9%).
+  Test gold sets changed: 96/558 (17.2%) | 195/558 (34.9%).  Gold classes/img: 3.72 -> 3.63 -> 3.41.
+  Class flux in test refs (v2 -> v3full): -cửa 140; toà nhà->nhà 82; -cây 50; căn phòng->phòng 48;
+    quần+áo->quần áo 48; -hoa 39; bức tranh->tranh 34; con đường->đường 20; -xe 14 (+ô tô 8); -cầu 14;
+    -bóng 13; -quả 6.
+  Captions changed by v3full: P1 s42 short 87/558 (15.6%); zero-shot detailed 385/558 (69%).
+3.3 Metric movement under v3full (object_prf definitions; Δ in F1 points)
+  P1 response-only short, seeds 42/43/44:
+    F1 55.5/55.1/55.7 -> 57.0/56.4/57.0 (+1.45/+1.31/+1.27; mean +1.34). v3cls alone: +1.08/+1.00/+0.77.
+    P +0.48/+0.35/+0.38; R +1.59/+1.46/+1.40; mentions/img M 1.82/1.77/1.76 -> 1.70/1.66/1.64.
+  P1 detailed: +1.49/+1.49/+1.56.  fuse2 short: +1.32/+1.01/+1.48.  fuse2 detailed: +1.43/+1.05/+1.43.
+  zero-shot: short +1.88 (P +2.57); detailed +2.03 (M 6.57 -> 5.90).
+  Legacy short rows: -0.5 to +1.1, with P down 1.1 to 2.7.
+  Human 1-vs-4 P/R/F1:
+    v2 85.25/46.90/60.51; reproduces data/results/human_parity.json (85.33/46.90/60.50) within 0.08.
+    v3cls 85.66/47.83/61.38; v3full 85.81/48.09/61.64. P1-to-human F1 gap: -5.08 -> -4.84.
+  Paired bootstrap (B=2000, same images), ΔF1 [95% CI], v2 -> v3full:
+    fuse2 - P1, short:         +2.60 [0.65, 4.55]     -> +2.47 [0.46, 4.49]
+    fuse2 - P1, detailed:      +8.77 [6.44, 11.09]    -> +8.73 [6.24, 11.15]
+    fuse2-MBR - P1, short:     +5.20 [3.18, 7.28]     -> +5.22 [3.16, 7.36]
+    zero-shot - P1, short:     -15.24 [-18.1, -12.5]  -> -14.81 [-17.8, -11.9]
+    zero-shot - P1, detailed:  -14.65 [-17.3, -11.9]  -> -14.11 [-16.8, -11.4]
+  Pre-registered frontier (prereg_ladder_check.at, fitted on v2 counts), residual TP/img, v2 -> v3full:
+    P1 response-only (6 rows): +0.009..+0.024 -> -0.009..+0.008
+    fuse2 (6 rows):            -0.027..+0.007 -> -0.041..-0.012
+    zero-shot detailed:        -1.619 -> -1.444
+    Points slide ALONG the curve because M and TP fall together.
+  A global power-law refit over all 68 rows describes the data poorly under any extractor (R2 0.455 / 0.425),
+  so it is not informative.
+  Not recomputed:
+    - CHAIR_i (uses canonical() and hypernym gold). P ≈ 1 - CHAIR_i suggests about -0.4 for P1 and about -2.6
+      for zero-shot short (VERIFY). CIDEr/BLEU/METEOR/ROUGE are untouched.
+    - UPE/PLAN-F1. These use objects_in INSIDE the method, so v3 changes the method itself (§4 step 3).
+3.4 Validation against EXISTING human labels only (validate.json; no new gold, no AI labels)
+  (a) UIT-ViIC human captions vs COCO instance labels (data/uitviic/instance_gold.json, 3,850 images).
+      Support = share of extracted mentions whose mapped COCO class is annotated in the image.
+        `quả`->apple/banana/orange: v2 n=3806, 0.2%   -> v3full n=23 (-99.4%), 0.0%
+        `bàn`->dining table:        v2 n=95,   18.9%  -> v3full n=53, 24.5%
+        `bóng`->sports ball:        14955 -> 14944, 100% in both
+        `người`->person:            99.9% in both (no regression)
+        `ô tô`->car:                n 4 -> 6, 75 -> 83%
+  (b) KTVIC cross-annotator confirmation (test + train references):
+      `cây` that v2 reads only via a classifier (n=286): another reference of the image names a tree in 6.6%.
+      `cây` that v3 keeps (n=878): confirmed in 77.8%.
+3.5 Tools and coverage (coverage.json; pyvi is installed, VnCoreNLP is not, locally)
+  pyvi POS tags `cây` as Nc in BOTH `cây cầu` and `cây dừa`; it mis-tags `toà` (in `toà nhà`) as V and gives
+  ô_tô/V in `xe ô tô`. Segmentation gets cửa_hàng, cầu_thang, quần_áo right. Design: segment + Nc +
+  semantic-head rule; POS alone does not work.
+  Lexicon coverage of classifier-marked NPs (Nc then N): KTVIC test refs 63.9% (n=2169); P1 short 73.6% (n=451);
+  zero-shot detailed 45.8% (n=2511, of which 705 are the meta phrase `bức ảnh`).
+  Top references outside the lexicon: chiếc đèn lồng 50, bức tường 49, con phố 42, bức tượng 35, tấm bia 33,
+  chiếc xuồng 29, tấm bảng hiệu 14, đứa bé 13, cậu bé 9.
+  Several are plain synonyms of existing classes, a RECALL gap: con phố -> đường, chiếc xuồng -> thuyền,
+  tấm bảng hiệu -> biển hiệu, đứa bé/cậu bé -> trẻ em/bé trai.
+  Mining classifier-headed NPs (Nc + N) gives a principled, frequency-ranked list for extending the lexicon.
+3.6 Disclosure. The discovery pass also looked at TEST references, so the test numbers here are EXPLORATORY.
+  The confirmatory run must re-derive and freeze the tables from train-minus-dev300 references. The train top
+  items are the same.
+
+======================================================================================================
+4. PILOT DESIGN FOR GEMINI TO RUN (CPU only; GPU-h = 0; about 0.5-1 CPU-h)
+======================================================================================================
+Step 0. Pre-register before any test look. The prereg JSON contains:
+  - SHA-256 of the v3 tables in V1/rescore.py (CAY_NONPLANT, QUA_NONFRUIT, CLS_KEYS, COMPOUNDS, NEG);
+  - predictions F-1..F-6;
+  - "v2 stays PRIMARY (pre-registered); v3 is a SENSITIVITY analysis".
+  Derive and edit the tables from train-minus-dev300 and dev300 references only (data/splits/*).
+  The tables are LEXICAL decisions drafted by an AI agent, i.e. model-generated. A human author must sign each
+  entry off against a dictionary sense (e.g., Hoàng Phê, Từ điển tiếng Việt) before the freeze; no image
+  judgments.
+Step 1. Reproduce the pilot from the repo root, with S=<scratchpad>/research_r10/V1, prefixing each command with
+  `nice -n 19 env OMP_NUM_THREADS=1 MKL_NUM_THREADS=1`:
+    python3 $S/rescore.py   (2 min, asserts _check())     python3 $S/validate.py   (1 min)
+    python3 $S/coverage.py  (1 min, needs pyvi)            python3 $S/discover.py   (30 s, needs pyvi)
+  Run them without -I: pyvi lives in user site-packages.
+Step 2. Gatekeeper edit of shared code:
+  - add RESCAP_EXTRACTOR=v3 to rescap/chair.objects_in (port v3() from V1/rescore.py; default stays v2);
+  - give object_prf.py, prereg_ladder_check.py and upe_mbr.py ONE canonicalisation (report that alone).
+Step 3. Re-run every KTVIC object result with RESCAP_EXTRACTOR=v3:
+  - object_prf.py --mode short|detailed --vs p1assist_s42;
+  - human_parity.py; second_panel.py (OpenViIC aggregates only, never caption text);
+  - prereg_ladder_check.py --check;
+  - upe_mbr.py and plan_f1.py on the EXISTING samples (data/results/upe/test/*-T0.5.jsonl, data/results/planf1/),
+    with argument lines copied from upe_mbr_ktvic_test.log and the plan_f1 logs. Report both variants:
+    v3 selection + v3 scoring, and v2 selection + v3 scoring.
+Step 4. Primary endpoint: paired ΔF1 at matched count for every count-control claim (UPE vs COUNT, PLAN-F1 vs
+  raw-vote) under v3 vs v2 (F-3). Secondary: F-1, F-2, F-4, F-5, F-6.
+Kill rules:
+  - Drop a single rule if it lowers instance support for any mapped class by > 5 points (3.4a), or if its
+    train-ref confirmation (3.4b) is not below the kept-class rate.
+  - Drop the v3 section if the frozen tables change < 5% of train references (pilot: 17.9%).
+  - If F-3 flips (a v3 count-control ΔF1 CI excludes 0), STOP and report it: "no method survives count
+    control" would be extractor-dependent and must be reworded.
+
+======================================================================================================
+5. CLAIMS GEMINI MUST VERIFY
+======================================================================================================
+ 1. objects_in outputs (checked here):
+      "một cây cầu" -> [cây, cầu]       "quả bóng" -> [quả, bóng]     "cửa hàng" -> [cửa]
+      "hoa quả" -> [hoa, quả]           "chiếc xe hơi" -> [xe]        "không có người nào" -> [người]
+      "một toà nhà" -> [toà nhà], but "một ngôi nhà" -> [nhà]
+ 2. Where canonical() is applied: object_prf.ktvic_block and prereg_ladder_check L158/L166 build sets without it;
+    chair.py L213/L258 and upe_mbr.py L100 apply it.
+ 3. objects_in builds training targets in build_gold_sft.py, build_dpo_data.py, e5_select.py and plan_f1.py (D10).
+    Count the training lists that carry a classifier `cây`/`quả`, or `cửa` from `cửa hàng`.
+ 4. All §3 numbers, by re-running Step 1.
+ 5. v2 human 1-vs-4 P is 85.25 here vs 85.33 in human_parity.json; explain the gap (probably pooling).
+ 6. The COCO mapping in validate.py (quả -> apple/banana/orange; bàn -> dining table, ...) is acceptable.
+ 7. Citations [1]-[8]: ALOHa arXiv:2404.02904, W09-3035's title, the UIT-OpenViIC arXiv id, Dao 2012 / Tran 2019.
+ 8. No prior Vietnamese CHAIR-style extractor exists (search the ACL Anthology, VLSP proceedings, arXiv 2023-26).
+ 9. CHAIR_i under v3, which was not computed here.
+
+======================================================================================================
+6. RISKS AND FIT WITH PD-2
+======================================================================================================
+Risks:
+  - Ad-hoc appearance. Mitigations: the agreement rule reuses the project's own NOUN_CLASSIFIER; compounds are
+    frequency-mined; every rule is validated on human labels (3.4); the tables get human sign-off (Step 0).
+  - Forking paths. The primary metric must not change after pre-registration, so v3 is a sensitivity analysis.
+  - Test contamination. Discovery saw test references; re-derive the tables on train (3.6).
+  - Small effect. About +1.3 F1 common-mode on P1: credibility, not a new result.
+  - Coverage is ~64% of classifier-marked NPs, so recall stays lexicon-bounded. Extending the lexicon would
+    move the frontier; keep that as a separate sensitivity analysis, or out of this paper.
+Fit with PD-2: strengthens the EVALUATION/METHODOLOGY pillar:
+  (i)   matched-count conclusions are shown to be robust to the extractor;
+  (ii)  it fixes the three-way "same object" inconsistency (CHAIR / Table IV + frontier / UPE);
+  (iii) a reusable Vietnamese object-mention extractor with a validation protocol built only on existing
+        human labels.
+  Paper footprint: one paragraph plus one table in the measurement section; the resource goes in the supplement.
+
+======================================================================================================
+7. SCORES (1-5)
+======================================================================================================
+Novelty 2: no Vietnamese precedent found, but it is lexicon-and-rules engineering in the CHAIR/JaSPICE family.
+Feasibility on 1x3090 5: zero GPU, about 1 CPU-h; the pilot code already runs.
+Expected impact 2: absolute F1 moves +1.3 to +2.0 and no conclusion changes; 3 as reviewer-facing credibility.
+Risk 1: worst case it is a supplement paragraph. If F-3 flips, that is itself a reportable finding.
