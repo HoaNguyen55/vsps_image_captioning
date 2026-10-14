@@ -1,0 +1,90 @@
+{
+ "tau": 0.9,
+ "tau_rule": "99th percentile of m over the k rollouts on the dev images",
+ "dev": {
+  "n_images": 300,
+  "k": 8,
+  "reward_x100": 71.85974365772667,
+  "greedy_reward_x100": 139.76245651795477,
+  "within_sd_x100_mean_median": [
+   53.18371118954288,
+   44.60301928078446
+  ],
+  "between_image_share": 0.4113146438196025,
+  "frac_groups_sd_lt_5": 0.01,
+  "frac_samples_beat_greedy": 0.20458333333333334,
+  "distinct_per_group": 7.88,
+  "finished_rate": 0.9995833333333334,
+  "syllables": 11.840833333333334,
+  "fw_end": {
+   "samples": 0.0020833333333333333,
+   "greedy": 0.0
+  },
+  "m_percentiles": {
+   "50": 0.36363636363636365,
+   "90": 0.6666666666666667,
+   "95": 0.7777777777777778,
+   "99": 0.9
+  },
+  "copy_rate": {
+   "exact": 0.005,
+   "near_le1_word_edit": 0.021666666666666667,
+   "at_tau": 0.012916666666666667
+  },
+  "copy_share_of_positive_rloo_advantage": {
+   "exact": 0.05503446043041144,
+   "near_le1_word_edit": 0.13480294853786015,
+   "at_tau": 0.09870842005766507
+  },
+  "mean_rloo_adv_x100_copies_at_tau": 192.40965709800997,
+  "mean_rloo_adv_x100_others": -2.5178131574665716,
+  "greedy_cider_x100": 144.40781005552793,
+  "oracle_best_of_k_minus_greedy_same_refs": "+27.8 [+18.2, +37.3]",
+  "best_of_k_A012_B34_minus_greedy": "+3.3 [-7.0, +14.2]",
+  "best_of_k_A234_B01_minus_greedy": "-20.9 [-37.1, -4.6]"
+ },
+ "train": {
+  "n_images": 300,
+  "k": 8,
+  "reward_x100": 78.07368015885167,
+  "greedy_reward_x100": 148.09308349325156,
+  "within_sd_x100_mean_median": [
+   59.418600695150104,
+   51.43814955528554
+  ],
+  "between_image_share": 0.3716777375244177,
+  "frac_groups_sd_lt_5": 0.013333333333333334,
+  "frac_samples_beat_greedy": 0.2225,
+  "distinct_per_group": 7.883333333333334,
+  "finished_rate": 0.9991666666666666,
+  "syllables": 11.96625,
+  "fw_end": {
+   "samples": 0.0008333333333333334,
+   "greedy": 0.0
+  },
+  "m_percentiles": {
+   "50": 0.3846153846153846,
+   "90": 0.7,
+   "95": 0.7857142857142857,
+   "99": 0.9090909090909091
+  },
+  "copy_rate": {
+   "exact": 0.006666666666666667,
+   "near_le1_word_edit": 0.02666666666666667,
+   "at_tau": 0.015416666666666667
+  },
+  "copy_share_of_positive_rloo_advantage": {
+   "exact": 0.05983294375555196,
+   "near_le1_word_edit": 0.1621334942200733,
+   "at_tau": 0.11107641915127328
+  },
+  "mean_rloo_adv_x100_copies_at_tau": 203.68949634873553,
+  "mean_rloo_adv_x100_others": -3.189382718960312,
+  "greedy_cider_x100": 151.35752738096664,
+  "oracle_best_of_k_minus_greedy_same_refs": "+35.5 [+25.1, +46.6]",
+  "best_of_k_A012_B34_minus_greedy": "-0.6 [-13.1, +11.8]",
+  "best_of_k_A234_B01_minus_greedy": "-27.5 [-45.1, -8.6]"
+ },
+ "skip_35d": false,
+ "skip_35d_rule": "copies at tau take 0.111 of the positive RLOO advantage on the SFT'd train images; 35_d (plain RLOO) is skipped below 0.05"
+}

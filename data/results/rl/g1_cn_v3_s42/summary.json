@@ -1,0 +1,39 @@
+{
+ "args": {
+  "adapter": "/root/ncs-data/runs/p1dev_s42",
+  "out": "/root/ncs-data/rl/g1_cn_v3_s42",
+  "resume": null,
+  "sample_only": null,
+  "images_file": "data/splits/ktvic_train_minus_dev300.txt",
+  "dev_file": "data/splits/ktvic_dev300.txt",
+  "dev_limit": 0,
+  "n_images": 1000,
+  "images_per_step": 5,
+  "k": 8,
+  "micro": 4,
+  "max_new_tokens": 40,
+  "temperature": 1.0,
+  "tau": 0.9,
+  "no_copy_mask": false,
+  "beta": 0.03,
+  "lr": 2e-05,
+  "eval_every": 250,
+  "dry_run": false,
+  "seed": 42,
+  "self_check": false
+ },
+ "images": [
+  0,
+  1000
+ ],
+ "steps": 200,
+ "dev_monitoring_first_last": [
+  142.37005339761123,
+  141.60477111656792
+ ],
+ "kl_caption_last": 1.7313750237226486,
+ "sec_per_image": 9.800016196250915,
+ "hours": 3.1528145882818435,
+ "peak_reserved_gb": 20.233322496,
+ "peak_allocated_gb": 19.722257408
+}
