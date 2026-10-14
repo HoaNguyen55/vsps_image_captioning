@@ -1,0 +1,69 @@
+# Paper A: outline
+
+Status: first draft, 2026-10-14. Scope: Paper A of the two-paper plan (`.session_backup/2026-10-14/two_paper/PLAN_2PAPERS.md`).
+Framing (PD-4 Q2, D17 §3a): measurement validity of object-level caption metrics under three threats: object count, gold completeness and reference exchangeability. Vietnamese captioning on KTVIC is the motivating case only. The Vietnamese system, the KTVIC dataset audit and the two-gold analysis belong to the companion paper (Paper B, `paperB_outline.md`).
+
+Venue: TACL (about 10 pages plus appendix) if the DOCCI-Critique human test is positive; otherwise TMLR (PD-4 Q3). Check the TMLR rule on conference extensions against FAIR 2026 before choosing TMLR.
+
+Source convention: every number carries an HTML comment `<!-- src: path :: key -->`. Paths are relative to the repo root. Numbers marked TODO are not yet traced or not yet computed.
+
+## Title options
+
+1. Counting Before Comparing: Count, Gold Completeness and Reference Exchangeability in Object-Level Caption Evaluation
+2. When Does an Object Metric Reward Verbosity? Measurement Validity of Object Hallucination Scores
+3. What Object Hallucination Metrics Measure: Count Control, Gold Completeness and Exchangeable References
+4. Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores
+
+Working choice: option 1 (short, names the three threats). Avoid "first", "novel" and "law".
+
+## Abstract (≤ 200 words)
+
+Object-level scores such as CHAIR, object precision and object F1 are the standard evidence for claims that a captioning or vision-language model hallucinates less. We argue that three properties of the measurement, not of the model, can decide such claims. First, the number of objects a caption names moves precision mechanically; when published decoding methods are re-scored at a matched object count per image, the number of significant precision gains depends on the control and falls from 12 of 15 to between 2 and 6 of 15. Second, the completeness of the gold set decides the sign of the verbosity reward. We give a proposition under which the frontier exponent rises monotonically with the number of references and the sign of F1's verbosity reward changes at most once; on COCO, with predictions frozen in advance, the slope moves from negative with one reference to positive with five references and with instance labels. Third, the proposition assumes exchangeable references; a simple adjacency statistic detects datasets where one writer produced all references of an image. Human judgments support count matching and complete gold as conditions for valid comparisons, but not the count-controlled score as a quality measure. We release the controls as a two-column reporting standard.
+
+<!-- word count ≈ 195. Numbers: 12/15 raw, 2/15 and 6/15: .session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json :: overview_15_pairs.raw_dP_sig_pos, mcp_prefix_survives_holm, mcp_rand_exact_survives_holm. -->
+<!-- TODO: "We release" requires the toolkit (H2 P4) and a licence check; keep or drop at submission. -->
+
+## Contributions
+
+1. **Count-matched object evaluation as a primary endpoint.** Two per-image controls (vote/greedy tie-averaged and POOL-VOTE), a corpus-total count match, and a Shapley decomposition of a score difference into count, allocation and ranking (CAR). Applied to 15 published decoding comparisons on public outputs, the number of surviving gains is reported as a specification curve over controls (2/15 to 6/15). We do not claim that count is a better unit than word length on English outputs (that registered test failed).
+2. **A gold-indexed account of the verbosity reward.** Under exchangeable references and salience-ordered mentions, the frontier exponent $b(k)$ is nondecreasing in the number of references $k$, and the sign of micro-F1's verbosity reward changes at most once (from negative to positive) as $k$ grows. The F1 half-threshold rule is Lipton et al. (2014); the propensity view of human precision versus $k$ is Chen et al. (2015, §4.2). Our part is the monotonicity, the single crossing, the two-channel split, and the tests on fixed outputs.
+3. **The verbosity sign is a property of the metric, tested out of sample.** Confirmatory on COCO-2500 (frozen predictions, 4 of 4 held). Exploratory elsewhere: on 20 public English LVLM outputs the five-reference slope stays negative, so the crossing point moves with the systems' verbosity; on UIT-ViIC the slope rises with completeness but the five-reference sign depends on the matcher.
+4. **A reference-exchangeability check.** An adjacent-doubleton statistic and two companion statistics separate independent annotators (COCO, UIT-ViIC) from corpora with a non-random reference order (Flickr30k; partly OpenViIC), and show what breaks in reference-count curves when exchangeability fails.
+5. **Human validity, stated narrowly.** On THumB 1.0 and the Composite set, object precision agrees with expert precision more under complete gold, and object metrics agree with humans most on count-matched pairs; the count-controlled residual is not a better overall quality score than raw CHAIR. Pending: Polaris-COCO and DOCCI-Critique (frozen predictions).
+6. **Preference data audit.** In public hallucination-preference sets, a large share of chosen/rejected pairs differ in object count, and in several sets the chosen response names fewer objects in most count-unmatched pairs; length matching does not remove this.
+
+## Section plan (TACL, ~10 pages + appendix)
+
+| § | Section | File | Status | Pages |
+|---|---|---|---|---|
+| 1 | Introduction | `sec1_introduction.md` | drafted | 1.2 |
+| 2 | Related work | `sec2_related_work.md` | drafted | 1.0 |
+| 3 | Measurement setup: count-matched controls, CAR, two-column reporting | `sec3_measurement_setup.md` | drafted | 1.5 |
+| 4 | Theory: gold-indexed frontier and the single crossing | `sec4_theory.md` | drafted | 1.5 |
+| 5 | Reference exchangeability | `sec5_exchangeability.md` | drafted | 0.8 |
+| 6 | Experiments I: re-scoring published methods (E1 spec curve; N9 leaderboard) | — | pending N9, E1 K2 placebo | 1.3 |
+| 7 | Experiments II: the verbosity sign across golds (COCO-2500 confirmatory; LVLM, UIT-ViIC exploratory; XM3600 frozen) | — | partly available; XM3600 pending | 1.2 |
+| 8 | Experiments III: human validity (THumB/Composite; Polaris; DOCCI-Critique) | — | THumB/Composite available; others pending | 1.0 |
+| 9 | Preference data audit | — | available | 0.4 |
+| 10 | Discussion and recommendations (two-column standard, checklist) | — | to write after §6–8 | 0.5 |
+| 11 | Limitations and ethics | `sec11_limitations_ethics.md` | drafted | 0.5 |
+| App. | A proofs; B matcher and lexicons; C spec curve per pair; D prereg ledger; E per-dataset adjacency tables; F numbers manifest | — | A partly in §4 | — |
+
+Companion-paper pointers (one line each in Paper A, citing Paper B as under review): the KTVIC baseline and ladder; the 11 families of pre-registered negatives; the single-writer, punctuation and matcher audit of KTVIC (including its adjacency value, which Paper A does not quote); the UPE control-dependence example; the two-gold analysis ("two caption panels disagree").
+
+## Figure and table plan
+
+| ID | Content | Data status (details in `results_plan.md`) |
+|---|---|---|
+| Fig. 1 | Motivating schematic: one image, 1 vs 5 references vs instance labels, a terse and a verbose caption; F1 ranks them in opposite orders | illustrative; no numbers |
+| Fig. 2 | Slope of F1 on $\log M$ versus gold completeness ($k=1..5$, instance, instance+refs) for COCO-2500 and the two English LVLM families (XM3600 to be added) | available |
+| Fig. 3 | Specification curve: 15 decoding pairs × controls (raw, prefix MCP, sentence tie-avg, random subset; unadjusted and Holm+SESOI) | available; add K2 placebo when run |
+| Fig. 4 | Single crossing: $\Lambda_k(M_0)$ and its b-channel / $\bar G$-channel split | available |
+| Fig. 5 | Adjacency statistic by dataset with CIs and the 0.40 null (COCO, UIT-ViIC, Flickr30k, OpenViIC aggregates; no KTVIC row) | available |
+| Tab. 1 | Notation and the three controls | text |
+| Tab. 2 | E1 spec-curve counts | available |
+| Tab. 3 | N9 count-matched leaderboard (9 LLaVA-1.5-7B checkpoints) | pending (N9) |
+| Tab. 4 | Verbosity slope by gold: COCO-2500 (confirmatory), English LVLM families, UIT-ViIC (exploratory), XM3600 (frozen) | XM3600 pending |
+| Tab. 5 | Human validity: pairwise agreement by gold and by count-equal vs count-differing pairs; THumB, Composite; Polaris and DOCCI rows pending | partly available |
+| Tab. 6 | Preference data audit (7 datasets) | available |
+| Tab. 7 | Prereg ledger: claim, registration time, first-look time, status | to compile |

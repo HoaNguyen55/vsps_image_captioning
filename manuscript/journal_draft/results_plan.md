@@ -1,0 +1,137 @@
+# Paper A: results plan and number status
+
+Date: 2026-10-15. For each planned table and figure: what exists (file + JSON key), what is pending, and what decides the text.
+Abbreviations: `C1J` = `.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json`; `H4J` = `.session_backup/2026-10-14/r12/H4/out/h4_check.json`; `H3J` = `.session_backup/2026-10-14/r12/H3/out/n1_results.json`; `H1J` = `.session_backup/2026-10-14/r12/H1/pilot_results.json` (reproduction: `.session_backup/2026-10-14/r12_verify/h1_pilot_repro.json`); `E1J` = `.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json`; `C2J` = `.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json`; `C6J` = `.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json`.
+
+Status legend: **READY** (all numbers traced) · **PARTIAL** · **PENDING** (needs a run) · **BLOCKED** (needs a decision or a fix first).
+
+## Do-not-use list (withdrawn or untraceable)
+
+| Value | Why | Source of the ruling |
+|---|---|---|
+| UIT-ViIC slopes −9.94 → +12.14 → +22.87, M* 1.97/3.06/4.50, key `FT_pooled_3sys` | in no artifact | RV4 item 1a; D17 §1(g) C2 |
+| md table −18.30 / +9.11 / +17.45 (UIT-ViIC) | contradicts its own JSON | RV4 item 1a |
+| Chao2 "debiased" human ceiling 0.9468 → 0.848 | script bug (b_pool(1) = 1.01) | R10_00 correction box; R11_00 §6.6 |
+| Chao2 0.7325 [0.7131, 0.7519]; LOO ceiling F1 0.7072 (P 0.9317, R 0.5698); "70.7% vs 61.5%" | hard-coded literals | H6 §1a(v); D17 §1(b) |
+| C4 log values −0.0431, −0.5841, −0.5690, −4.6143, etc. | in no artifact | RV4 item 2a |
+| UPE vs (v,g) "−0.12 [−0.29, +0.06]" | not reproduced | RV1 item 2 |
+| E4 75.56% / 99.82% / +8.22 | wrong | R11_00 §6.2 |
+| "count beats length" on English | X1 P-B killed | E1J `x1_pb_english.summary.x1_pb_verdict` = KILL_CI_CONTAINS_0 |
+| "N1 replicated on UIT-ViIC" | post hoc; 5-ref sign depends on matcher | PD-4 Q1; RV4 1d |
+| Any number from Gemini prose/logs/D-files without a JSON key | reliability pattern | CONTEXT_R12 §3; D17 binding cond. 2 |
+
+## Tables
+
+### Tab. 2 — E1 specification curve (15 published decoding comparisons) — PARTIAL
+
+| Quantity | Value | Source |
+|---|---|---|
+| comparisons | 15 | E1J `overview_15_pairs.n_pairs` |
+| raw precision gain significant | 12/15 | E1J `overview_15_pairs.raw_dP_sig_pos` |
+| MCP prefix (registered): unadjusted / Holm+SESOI | 3/15 / 2/15 | E1J `overview_15_pairs.mcp_prefix_sig_pos_unadj`, `.mcp_prefix_survives_holm` |
+| sentence tie-avg: unadjusted / Holm+SESOI | 4/15 / 2/15 | E1J `.mcp_sent_tieavg_sig_pos_unadj`, `.mcp_sent_tieavg_survives_holm` |
+| uniform random subset: unadjusted / Holm+SESOI | 11/15 / 6/15 | E1J `.mcp_rand_exact_sig_pos_unadj`, `.mcp_rand_exact_survives_holm` |
+| significant reversal (MCP prefix, unadjusted) | 1/15 | E1J `.mcp_prefix_sig_neg_unadj` |
+| mean ΔP: raw / prefix / sent tie-avg / random | 3.407 / 0.621 / 0.652 / 2.764 | E1J `.mean_dP_raw`, `.mean_dP_MCP_prefix`, `.mean_dP_MCP_sent_tieavg`, `.mean_dP_MCP_rand_exact` |
+| share of raw gain explained by count + allocation (descriptive; shared baselines) | 81.8% (prefix), 80.9% (sent) | E1J `.pct_gain_explained_by_count_and_alloc_prefix`, `_sent_tieavg` |
+| K4 verdict by control | NOT_TRIGGERED (prefix, sent), TRIGGERED (random) | E1J `.k4_en_verdict_*` |
+| K3 positive control (drop-1, ≥ +3 P) | 6/8 point, 3/8 CI lower bound | E1J `controls_K2_K3.registered_k3_en_summary.point_ge_3_count`, `.ci_lo_ge_3_count` |
+| per-pair rows | 15 rows | E1J `pairs_15.*` (TODO: write the table generator) |
+| X1 P-B (count vs length), signed | +0.186 [−0.257, +0.579] → KILL | E1J `x1_pb_english.summary.kill_rule_assessment_v2.PB_signed_mean_15pairs_est/_ci95` |
+
+Pending: **E1 K2 seed placebo** (2 sampling seeds of LLaVA-1.5-7B on CHAIR-500; ~0.5–1 GPU-h; in the N9 harness). It decides which control is primary (|ΔP| ≤ 0.5 and CI ∋ 0). Note: the random-subset control already fails its own two-seed check in 2/8 rows (D17 §1(d), key `passes_K2` in E1J; TODO: confirm key path). Pending: K3 action "enlarge to 2,000 images" (registered, not taken). Text rule: always report the curve, never one number.
+
+### Tab. 3 — N9 count-matched leaderboard of training-based methods — PENDING
+
+9 public LLaVA-1.5-7B checkpoints (POVID, RLAIF-V, HALVA, CHAIR-DPO, SENTINEL, HA-DPO, HSA-DPO, OPA-DPO, …) on CHAIR-500, scored raw / MCP / tie-avg / CAR. ~6 GPU-h, machine 1 after the ladder. Prereg must be committed first (L6 §3 D1 predictions; checkpoint revisions and licences; primary control by the placebo rule). No numbers exist.
+
+### Tab. 4 — verbosity slope by gold — PARTIAL
+
+| Row | Status | Values (slope of F1 on ln M, 95% CI) | Source |
+|---|---|---|---|
+| COCO-2500, 9 systems, **confirmatory** (frozen) | READY | refs1 −4.28 [−5.91, −2.45]; refs2 +2.82; refs3 +6.69; refs4 +9.16; refs5 +11.08 [+9.76, +12.43]; inst +22.41 [+21.27, +23.48]; inst+refs5 +24.16 [+23.10, +25.06] | C1J `B1_L1_mstar_and_stopping.check_coco_gold.<gold>.slope/.slope_ci`; frozen file `.session_backup/2026-10-14/r11_litmaps/L1/check_coco_PREDICTIONS.txt` |
+| COCO-2500 micro-F1 | READY | −1.84 [−3.14, −0.55]; +5.78; +9.96; +12.71; +14.69 | H4J `coco2500.T2_microF1_randk.{1..5}.slope` |
+| English LVLM F-B (OPERA, 9 systems), **frozen, FAILED** | READY | refs1 −35.18 [−40.38, −30.87]; refs5 −29.57 [−32.69, −26.37]; inst +4.24 [−0.09, +8.51] | H3J `families.F-B.gold.*`; frozen `.session_backup/2026-10-14/r12/H3/N1_PREDICTIONS.txt` |
+| English LVLM F-C (LiM, 11 systems), frozen | READY | refs1 −31.89 [−36.60, −27.21]; refs5 −22.86 [−26.71, −18.53]; inst +6.91 [+2.16, +11.17] | H3J `families.F-C.gold.*` |
+| KTVIC 36 FT, random-k — **Paper B owns (PD-6); not in A** | moved | −3.32 [−6.19, −0.48]; +3.77; +8.42; +11.94; +14.15 | C1J `check_mstar_gold.k{1..5}_randk.ft.slope_F1_per_logM` |
+| KTVIC slot-1 diagnostic (first-k) — **Paper B owns; not in A** | moved | −10.65 [−13.87, −7.28] | C1J `check_mstar_gold.k1_firstk.ft` |
+| UIT-ViIC test, 10 systems, exploratory, COCO-80 lexicon | READY | refs1(first) −15.90 [−20.69, −10.72]; refs5 +4.80 (CI touches 0); inst +37.52 | C2J `uitviic_test.lexicons.coco80.gold_variants.{refs1_firstk,refs5_randk,inst_only}.groups.all_10.slope_F1_mixed_per_logM` (+ `_ci95`) |
+| UIT-ViIC, vi_objects_in lexicon | READY | refs1 −16.42; refs5 −6.28 [−8.34, −3.96] (no flip) | C2J `uitviic_test.lexicons.vi_objects_in...all_10` |
+| UIT-ViIC paired differences | READY via RV4 | refs5 − refs1 +20.70 [16.35, 25.00]; inst − refs5 +32.72 [28.01, 37.27] (coco80, all_10) | `.session_backup/2026-10-14/review_gemini_r10/RV4/work/rv4_n1.json` (TODO: key path) |
+| **XM3600** (600 images, 2–3 VI refs, OIV7 verified labels), out-of-sample with b transferred from COCO | **PENDING** | — | prereg `manuscript/prereg/2026-10-14_xm3600_predictions.{md,json}` pre-registered in commit 4ccbee3 (2026-10-14 23:38 +07), before the first XM3600 result (00:29 +07); the registration is valid. Results not yet reviewed or used; results to be reviewed and keyed |
+
+Text rules: COCO is the only confirmatory row. No KTVIC number appears in Paper A (PD-6 Q1(a); coordinator ruling 2026-10-15). Do not claim the UIT-ViIC 1→5-ref flip. Kill rule (H6 P2): if ≥ 2 XM3600 sign predictions fail, the sign result moves from "core" to "explanatory".
+
+### Tab. 5 — human validity — PARTIAL
+
+| Quantity | THumB (500 img, 2,500 caps) | Composite (1,996 img) | Source |
+|---|---|---|---|
+| −CHAIR vs expert P, pairwise agreement, refs1 / refs4 / full gold | 0.736 / 0.797 / 0.903 | — | H1J `THumB.agree.negCHAIR|{refs1,refs4,full}|P|all.est` |
+| −CHAIR vs total, refs1 / refs4 / full | 0.627 / 0.714 / 0.793 | 0.743 / 0.838 / 0.873 | H1J `*.agree.negCHAIR|{refs1,refs4,full}|T|all.est` |
+| count-equal vs count-differing pairs (−CHAIR, full, vs total) | 0.846 vs 0.773 | (TODO key) | H1J `THumB.agree.negCHAIR|full|T|ceq.est`, `...|cdiff.est` |
+| P1b residual z minus −CHAIR vs total (count-differing) | −0.190 [−0.277, −0.108] | −0.083 [−0.101, −0.065] | H1J `*.P1b_acc(z->T)-acc(-CHAIR->T)` |
+| P1a −CHAIR minus z vs expert P | +0.325 [+0.247, +0.398] | +0.097 [+0.079, +0.116] | H1J `*.P1a_acc(-CHAIR->P)-acc(z->P)` |
+| human preference for larger-M caption | 0.481 [0.429, 0.530] | 0.525 [0.506, 0.544] | H1J `*.P2a_v_human` |
+| F1 preference for larger M: refs1 / refs4 / full | 0.41 / 0.66 / 0.83 | 0.54 / 0.66 / 0.73 | H1J `*.P2b_v_F1_{refs1,refs4,full}` |
+| P3: β(FP) vs β(pseudo-FP) on expert P | −1.16 vs −0.09 (diff +1.07 [+0.82, +1.32]) | −1.16 vs −0.48 (failed) | H1J `THumB.P3_ols_P.*`, `Composite.P3_ols_P.*` |
+| corr(M, total), caption level | −0.05 | −0.016 | H1J `THumB.corr_pearson_spearman.M|-|T` |
+| P4 matched-count wins agree with humans | 0.846 (n 91) | 0.946 (n 928) | H1J `*.P4_clean_T` |
+| Registered verdicts | P1a held ×2; P1b failed ×2; P2c failed (kill fired); P3 held (T) / failed (C); P4, P5 failed | | `.session_backup/2026-10-14/r12/H1/PREDICTIONS_FROZEN.txt`, H1 REPORT §1b |
+| **Polaris-COCO** | **PENDING** | | prereg `manuscript/prereg/2026-10-14_h1_polaris_docci.md`: the Polaris/DOCCI pre-registration was committed in 7f22d13 (23:47 +07) after the results JSON was written (23:25 +07); this order is disclosed. The registered G3 verdict, computed with the COCO-80 matcher, is pending; results with the ExpandedNouns lexicon are exploratory only |
+| **DOCCI-Critique** (14 VLMs, long paragraphs) | **PENDING** — registered G3 verdict (COCO-80 matcher) decides TACL vs TMLR; ExpandedNouns = exploratory | | same prereg and same timing disclosure; CC BY 4.0 |
+
+Licence: THumB and Composite have no licence file — aggregates only. Frozen-prediction caveat: H1's predictions were written and hashed before any human statistic, but not git-committed (label "timestamped").
+
+### Tab. 6 — preference-data count audit — READY
+
+| Dataset | pairs with objects | count-matched share | chosen names fewer, among unmatched [95% CI] | mean Δk | Source |
+|---|---|---|---|---|---|
+| POVID | 16,483 | 0.521 | 0.444 [0.433, 0.455] | +0.114 | C6J `summary_table_7_datasets.povid.*` |
+| HA-DPO | 5,181 | 0.473 | 0.882 [0.870, 0.894] | −0.691 | C6J `.hadpo_llava15.*` |
+| HSA-DPO | 8,076 | 0.692 | 0.817 [0.801, 0.832] | −0.250 | C6J `.hsadpo.*` |
+| mDPO (VLFeedback) | 9,281 | 0.408 | 0.498 [0.485, 0.511] | −0.103 | C6J `.mdpo_vlfeedback.*` |
+| SENTINEL | 8,600 | 0.349 | 0.897 [0.889, 0.904] | −0.736 | C6J `.sentinel_llava15_7b.*` |
+| RLHF-V | 5,120 | 0.632 | 0.702 [0.681, 0.722] | −0.234 | C6J `.rlhfv.*` |
+| RLAIF-V | 70,029 | 0.590 | 0.514 [0.509, 0.520] | −0.017 | C6J `.rlaifv.*` |
+| length-matched (|Δwords| ≤ 2) subsets | per row | | e.g. HA-DPO 0.854, SENTINEL 0.886 | | C6J `.<ds>.abs_dwords_le_2_chosen_fewer_among_unmatched` |
+
+Note: RLHF-V is count-biased and RLAIF-V near-neutral (Gemini's log had this reversed; RV4 2b). Matcher: CHAIR COCO-80.
+
+### Tab. 7 — prereg ledger — TO COMPILE
+
+Rows: COCO-2500 N1 (frozen file, L1), H3 LVLM N1 (frozen, FAILED), H1 THumB/Composite (frozen), E1 (registered in R10 E1 REPORT §1; K2 not run), X1 P-B (registered, killed), XM3600 (committed 4ccbee3 23:38 +07 before first result 00:29 +07: valid), Polaris/DOCCI (committed 7f22d13 23:47 +07 after results JSON 23:25 +07: disclosed; G3 COCO-80 verdict pending; ExpandedNouns exploratory), N9 (to register). Each row: registration commit/time, first-look time, verdict. Sources: H6 P9; RV4 1b.
+
+### Tab. 1 — notation and controls — READY (text, Section 3).
+
+## Figures
+
+| Fig. | Status | Data |
+|---|---|---|
+| 1 Schematic (terse vs verbose caption under three golds) | to draw; no numbers | — |
+| 2 Slope vs gold completeness | READY for COCO-2500 and English LVLM families; XM3600 to be added | C1J `check_coco_gold.*.slope/_ci`; H3J `families.*.gold.*` |
+| 3 Specification curve | READY except placebo column | E1J `overview_15_pairs.*`, `pairs_15.*` |
+| 4 Λ_k and channel split | READY | H4J `T4.coco_randk.Lambda.*`, `T4.coco_refs1_to_inst.*`, `.b_channel_share` (0.677, 0.742) |
+| 5 Adjacency by dataset (no KTVIC row; Paper B owns it) | READY; XM3600 3-ref row pending | C1J `B2_L2_exchangeability.datasets.*`; `.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json :: k5_exchangeability_audit.*` |
+| A1 Support profile r(n) | READY (COCO only) | H4J `coco2500.T2_profile.*` |
+| A2 Closed-form fit | READY ([MODEL] extrapolation) | H4J `T5_closed_form.*` |
+
+## Pending runs that feed Paper A
+
+| Run | Feeds | Cost / machine | Gate |
+|---|---|---|---|
+| DOCCI-Critique human test | Tab. 5; venue (TACL vs TMLR) | CPU | prereg committed after results JSON (disclosed); G3 verdict with COCO-80 matcher pending |
+| Polaris-COCO | Tab. 5 | CPU (~0.3 h) | same timing disclosure |
+| XM3600 58_z | Tab. 4, Fig. 5 | ~3 GPU-h, machine 2 | prereg committed 4ccbee3 before first result (valid); outputs exist, to be reviewed |
+| N9 | Tab. 3 | ~6 GPU-h, machine 1 | committed prereg |
+| E1 K2 placebo | Tab. 2 primary control | ~0.5–1 GPU-h | in N9 prereg |
+| B3 large-k (nocaps 10 refs, PASCAL-50S) | §4 asymptote | GPU 2–3 h | licence check |
+| Numbers manifest (H6 P1) | all | CPU | before submission |
+
+## Pending runs that belong to Paper B (listed because the user asked; Paper A only cites them)
+
+| Run | Paper B use | Paper A use |
+|---|---|---|
+| Ladder 55_multiref, 58_unf2, 56_cons, 57_rnd2 | frontier invariance across recipes | none (one-line pointer) |
+| B1 second backbone (3 seeds), B2 scoring | generality of baseline/frontier | if B1 fails its frozen prediction: report as boundary condition in both papers (plan kill rule) |
+| kNN P1 test (vs both controls + panel gate) | evidence-adding method | Remark in §3.5 (A ≠ 0 needs new evidence) may cite the outcome |
+| M3 count-matched DPO (gated) | method | none |
