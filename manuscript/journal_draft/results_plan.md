@@ -83,7 +83,10 @@ Text rules: COCO is the only confirmatory row with all predictions held; XM3600 
 Label: the gold-completeness agreement rows (THumB 0.736/0.797/0.903 vs P; 0.627/0.714/0.793 and Composite 0.743/0.838/0.873 vs total) and the ceq/cdiff rows are EXPLORATORY (H1 REPORT §1c); Polaris G2 H-a/H-b registers them. sec1 (Human validity paragraph) quotes 0.736→0.903 without the exploratory label — fix there.
 Licence: THumB and Composite have no licence file — aggregates only. Frozen-prediction caveat: H1's predictions were written and hashed before any human statistic, but not git-committed (label "timestamped").
 
-### Tab. 6 — preference-data count audit — READY
+| **LongCap-Arena** (PD-7 Q2; prereg 7254a39) | **READY — MIXED**: (i) PASS, Relevance slope −0.024/class [−0.029, −0.020]; (ii) FAIL + kill, Δτ_b −0.028 [−0.036, −0.019]; (iii) FAIL + kill, −0.017 [−0.035, +0.0003]. Declared design changes (pooled, caption-level, across-image pairs); COCO-80 finds 1.23 classes/caption. Run history: first run crashed writing JSON (numpy bool) after test (ii); re-run unchanged via wrapper 0cd8e9a; no console statistic, partial file (data_summary + test i) overwritten. Text §8.4 | `.session_backup/2026-10-15/r13_human/q2_longcap_arena.json` (50f3a8635fce) |
+| **CapArena** (PD-7 Q3) | DROPPED: no licence statement | `.session_backup/2026-10-15/r13_data/licence_check_2026-10-15.json` |
+
+### Tab. 6 — preference-data count audit — READY (+ VaPR positive control PASS: count-matched 0.849 [0.845, 0.853] vs 0.473/0.692/0.349; `.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json` 4fcea1cc1bf2; text §9)
 
 | Dataset | pairs with objects | count-matched share | chosen names fewer, among unmatched [95% CI] | mean Δk | Source |
 |---|---|---|---|---|---|

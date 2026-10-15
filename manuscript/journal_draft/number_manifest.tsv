@@ -348,13 +348,39 @@ False (DOCCI G3_ii.P_human_sent_maj.ci_excludes_zero)	A	.session_backup/2026-10-
 FALSE (L6 D2 prediction passed)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	l6_d2_evaluation.prediction_rlaifv_chosen_fewer_among_unmatched_ge_060.passed_on_all_obj_pairs	5d572461d174	keyed
 [0.45,0.55] (L6 D2 kill interval)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	l6_d2_evaluation.kill_rule_rlaifv_in_045_055.kill_interval	5d572461d174	keyed
 TRUE (RLAIF-V in kill interval)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	l6_d2_evaluation.kill_rule_rlaifv_in_045_055.in_kill_interval_all_obj_pairs	5d572461d174	keyed
+MIXED (q2_longcap_arena.json verdict; produced by the re-run via wrapper 0cd8e9a after the first run crashed writing JSON on a numpy bool after test ii; crashed run printed no statistic but had saved data_summary + test i to the file, overwritten by the re-run; outputs written after prereg push 02:50:11Z)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	verdict	50f3a8635fce	keyed
+1 (q2_longcap_arena.json n_primary_pass)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	n_primary_pass	50f3a8635fce	keyed
+5109 (q2_longcap_arena.json data_summary.n_captions)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	data_summary.n_captions	50f3a8635fce	keyed
+5109 (q2_longcap_arena.json data_summary.n_images)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	data_summary.n_images	50f3a8635fce	keyed
+100 (q2_longcap_arena.json data_summary.mean_words)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	data_summary.mean_words	50f3a8635fce	keyed
+1.23 (q2_longcap_arena.json data_summary.mean_M)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	data_summary.mean_M	50f3a8635fce	keyed
+1.0 (q2_longcap_arena.json data_summary.median_M)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	data_summary.median_M	50f3a8635fce	keyed
+-0.024 (q2_longcap_arena.json test_i_slope_rel_on_M.beta_M)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_i_slope_rel_on_M.beta_M	50f3a8635fce	keyed
+[-0.029, -0.02] (q2_longcap_arena.json test_i_slope_rel_on_M.beta_M_ci_95)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_i_slope_rel_on_M.beta_M_ci_95	50f3a8635fce	keyed
+True (q2_longcap_arena.json test_i_slope_rel_on_M.pass)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_i_slope_rel_on_M.pass	50f3a8635fce	keyed
+-0.028 (q2_longcap_arena.json test_ii_delta_tau.delta_tau)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_ii_delta_tau.delta_tau	50f3a8635fce	keyed
+[-0.036, -0.019] (q2_longcap_arena.json test_ii_delta_tau.delta_tau_ci_95)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_ii_delta_tau.delta_tau_ci_95	50f3a8635fce	keyed
+3413 (q2_longcap_arena.json test_ii_delta_tau.n_captions_M_ge_1)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_ii_delta_tau.n_captions_M_ge_1	50f3a8635fce	keyed
+True (q2_longcap_arena.json test_ii_delta_tau.kill_rule_fired)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_ii_delta_tau.kill_rule_fired	50f3a8635fce	keyed
+-0.017 (q2_longcap_arena.json test_iii_count_equal_vs_differing.diff_ceq_minus_cdiff)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_iii_count_equal_vs_differing.diff_ceq_minus_cdiff	50f3a8635fce	keyed
+[-0.035, 0.0003] (q2_longcap_arena.json test_iii_count_equal_vs_differing.diff_ci_95)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_iii_count_equal_vs_differing.diff_ci_95	50f3a8635fce	keyed
+True (q2_longcap_arena.json test_iii_count_equal_vs_differing.kill_rule_fired)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_iii_count_equal_vs_differing.kill_rule_fired	50f3a8635fce	keyed
+True (q2_longcap_arena.json script_sha_matches_prereg)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	script_sha_matches_prereg	50f3a8635fce	keyed
+DROPPED_NO_LICENCE (licence_check_2026-10-15.json CapArena.status)	A	.session_backup/2026-10-15/r13_data/licence_check_2026-10-15.json	CapArena.status	91e0397d1f73	keyed
+PASS (q4_vapr_count_control.json verdict)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	verdict	4fcea1cc1bf2	keyed
+0.849 (q4_vapr_count_control.json vapr.count_matched_share)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	vapr.count_matched_share	4fcea1cc1bf2	keyed
+[0.845, 0.853] (q4_vapr_count_control.json vapr.count_matched_share_wilson_ci95)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	vapr.count_matched_share_wilson_ci95	4fcea1cc1bf2	keyed
+25626 (q4_vapr_count_control.json vapr.pairs_with_objects)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	vapr.pairs_with_objects	4fcea1cc1bf2	keyed
+0.373 (q4_vapr_count_control.json vapr.chosen_fewer_among_unmatched)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	vapr.chosen_fewer_among_unmatched	4fcea1cc1bf2	keyed
+[0.358, 0.388] (q4_vapr_count_control.json vapr.chosen_fewer_among_unmatched_wilson_ci95)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	vapr.chosen_fewer_among_unmatched_wilson_ci95	4fcea1cc1bf2	keyed
+False (q4_vapr_count_control.json vapr_count_matched_exactly)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	vapr_count_matched_exactly	4fcea1cc1bf2	keyed
+0.473 (q4_vapr_count_control.json comparator_count_matched_share_from_sec9_json.HA-DPO)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	comparator_count_matched_share_from_sec9_json.HA-DPO	4fcea1cc1bf2	keyed
+0.692 (q4_vapr_count_control.json comparator_count_matched_share_from_sec9_json.HSA-DPO)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	comparator_count_matched_share_from_sec9_json.HSA-DPO	4fcea1cc1bf2	keyed
+0.349 (q4_vapr_count_control.json comparator_count_matched_share_from_sec9_json.SENTINEL)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	comparator_count_matched_share_from_sec9_json.SENTINEL	4fcea1cc1bf2	keyed
 N9 count-matched leaderboard (9 ckpts); prereg to be committed (L6 D1 predictions, sec6.4)	A	-	-	-	pending
 E1 K2 seed placebo; prereg E1 REPORT §4 K2 (sec6.3)	A	-	-	-	pending
 G2-B extended, Qwen3-VL-8B zero-shot ladder; prereg G2 REPORT §4, to be committed (sec7.6)	A	-	-	-	pending
 B3 large-k (nocaps, PASCAL-50S); prereg manuscript/prereg/2026-10-14_b3_licence_verification.md (sec7.7)	A	-	-	-	pending
-PD-7 Q2 LongCap-Arena human-validity test; prereg 2026-10-15_* (to commit; licence first) (sec8.4)	A	-	-	-	pending
-PD-7 Q3 CapArena count-equal vs count-differing; prereg 2026-10-15_* (to commit; licence first) (sec8.4)	A	-	-	-	pending
-PD-7 Q4 VaPR count audit positive control; prereg 2026-10-15_* (to commit) (sec9)	A	-	-	-	pending
 148.66	B	data/results/p1assist_s42-short.json	results.0.scores_scaled_x100.CIDEr	ea38b60e7dc5	keyed
 148.06	B	data/results/p1assist_s43-short.json	results.0.scores_scaled_x100.CIDEr	ce8576a440d5	keyed
 147.96	B	data/results/p1assist_s44-short.json	results.0.scores_scaled_x100.CIDEr	723d97653f89	keyed
