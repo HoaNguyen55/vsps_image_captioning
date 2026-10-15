@@ -1,0 +1,60 @@
+{
+ "prereg_id": "R13-Q2 LongCap-Arena (PD-7 Q2)",
+ "frozen_utc": "2026-10-15",
+ "status": "frozen before any metric-human statistic was computed",
+ "script": "scripts/r13/r13_q2_longcap_arena.py",
+ "script_sha256": "c0d8533fe3db9b3d0f090e7ef866956813a68b7d7e05b825fc74538781a658ec",
+ "data_source": {
+  "repo": "github.com/Ka2ukiMatsuda/VELA data/{train,val,test}/*.csv",
+  "repo_head_commit": "666e33c74b179028a5caabb3036b1f646503c1bd",
+  "hf_mirror": "huggingface.co/datasets/Ka2ukiMatsuda/LongCap-Arena",
+  "licence": "BSD-3-Clause (GitHub LICENSE); BSD-3-Clause-Clear (HF card)"
+ },
+ "input_sha256": {
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/test/desc_dci_test.csv": "cb07c1dd4e046a7f58382fd37fe9e82ab6ad76db1a7badeb3df386581a3d1438",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/test/desc_dci_val.csv": "b47f1f402ce6230a2e1f2eb4c573913b79835c974a07d5d8d00b189019f98a7f",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/test/desc_test.csv": "d986e9bb42b625f50066336848daa7becf5d571d9cffdfbbc685be4ee8ffd650",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/test/flu_dci_test.csv": "3c7240c9e43c4e6e165cc8eafa6a8dca89fa03a21b82898ad83f4090c208bfd4",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/test/flu_dci_val.csv": "9106a88ae2226dc2b0912495a853e826f5727e064c54741f937b0dd1cbd40609",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/test/flu_test.csv": "c0c9bf80a03c9aada8dc0deb94d0ccc336ad0fb4aa1fec5bf95bd05a61773fd4",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/test/rel_dci_test.csv": "167a0b3a036b2e1c2619bdd14397b3b82e567d88a1b24d5b7afe8aa34f0e89aa",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/test/rel_dci_val.csv": "69c27f2ac0e7687ce680eee5493da8005808a0d2bba94a28041e537f0ffab62c",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/test/rel_test.csv": "1c34b393148621277cf54de957e2ad61646608b83c62644a79c266f9cd32756e",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/train/desc_train.csv": "c6505a69144b33703590874ef9b4a194ef8477ccf45a3bf25c62dc6a5f26901c",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/train/flu_train.csv": "8689152e2ffc54b2a3062ce42c06c10ec879389278c5ac141ce32ba2e864d0a4",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/train/rel_train.csv": "bc80c99ca16aa15e3c5d6eded5d1a44efc715d20915d0fab360d4e5040323b2b",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/val/desc_val.csv": "660ec0b21954692ece3d4688bc7ae36897b802a133a3f3511b110b0ca08cdbb5",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/val/flu_val.csv": "8a56fbef3f2780e435b033ce32b1ed8e1301d9499f0683e21791df283dbe88c4",
+  ".session_backup/2026-10-15/r13_data/longcap_arena_vela_repo/val/rel_val.csv": "f50de384985e2a6d45ef276679581f83c9d68e5d5260e55bd17abc079a31dd6a",
+  "data/coco_probe/chair_synonyms.txt": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+  ".session_backup/2026-10-14/research_r10/E1/e1_chair_count.py": "1e59ff12100b4d489f92b88045ef99bee1f8c36045e449c37e282504653213b4"
+ },
+ "design": {
+  "unit": "caption (one candidate per image; no system label released)",
+  "human_primary": "Relevance score (rel_*.csv), all splits pooled",
+  "matcher": "E1 COCO-80 CHAIR matcher (e1_chair_count.nodes), ordered distinct classes",
+  "gold": "COCO-80 classes in the human reference(s) of the image",
+  "M": "distinct COCO-80 classes named",
+  "P_raw": "TP/M (M>=1)",
+  "negCHAIR": "-(M-TP)/max(M,1); 0 when M=0",
+  "z_P": "P_raw minus mean P_raw at the same M (registered G3 secondary count-matched estimator)",
+  "bootstrap": "2000 image-clustered multinomial resamples, seed 0, 95% percentile CI",
+  "deviations_from_DOCCI_G3": [
+   "no within-system slope: system IDs not released, so (i) is a pooled slope",
+   "no 14-VLM ranking: (ii) is caption-level tau_b; matched-prefix MCP needs same-image pairs and is replaced by z_P",
+   "(iii) pairs are across images because each image has one candidate"
+  ]
+ },
+ "frozen_predictions": {
+  "i": "beta_M (OLS slope of Relevance on M) < 0 AND bootstrap CI upper bound < 0",
+  "ii": "delta_tau = tau_b(z_P,Rel) - tau_b(P_raw,Rel) >= ii_delta_tau_min AND bootstrap CI lower bound > 0",
+  "ii_delta_tau_min": 0.1,
+  "iii": "acc_ceq(-CHAIR->Rel) - acc_cdiff(-CHAIR->Rel) > 0 AND bootstrap CI lower bound > 0",
+  "overall": "PASS if i, ii, iii all pass; FAIL if none; else MIXED"
+ },
+ "kill_rules": {
+  "ii": "delta_tau <= 0 -> kill the claim that count-matched precision tracks LongCap-Arena Relevance better than raw precision",
+  "iii": "diff <= 0 -> kill the claim that metric-human agreement is higher on count-equal pairs on LongCap-Arena"
+ },
+ "reporting": "report whichever way it falls; secondary OLS (M + words + G) is descriptive only; Descriptiveness not tested"
+}

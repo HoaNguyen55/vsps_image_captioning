@@ -1,0 +1,32 @@
+{
+ "prereg_id": "R13-Q4 VaPR count positive control (PD-7 Q4)",
+ "frozen_utc": "2026-10-15",
+ "status": "frozen before the VaPR count audit was computed",
+ "script": "scripts/r13/r13_q4_vapr_count_audit.py",
+ "script_sha256": "0e834cf703bed475cd11c356b8267f6549a635e6c4a2b2579a465f46233e8c75",
+ "data_source": {
+  "hf": "huggingface.co/datasets/VaPR-UCLA/vapr-30k",
+  "hf_commit_sha": "261940f246988367197c092ee43a051fddb31673",
+  "licence": "Apache-2.0"
+ },
+ "input_sha256": {
+  ".session_backup/2026-10-15/r13_data/vapr_30k/vapr-30k.json": "769676b17ed438b2ba44530785c2119d551845ffb5bc1d934690a0b073b946bb",
+  ".session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json": "5d572461d17412a9ebb061276d870bff9bb36871b7381b0440d297983c682d49",
+  "data/coco_probe/chair_synonyms.txt": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+  ".session_backup/2026-10-14/research_r10/E1/e1_chair_count.py": "1e59ff12100b4d489f92b88045ef99bee1f8c36045e449c37e282504653213b4"
+ },
+ "design": {
+  "procedure": "sec. 9 Table 9.1 procedure: E1 COCO-80 matcher, dk = classes(chosen) - classes(rejected) over gpt turns, drop pairs with no class in either response",
+  "comparators": "count_matched_share of HA-DPO, HSA-DPO, SENTINEL read from c6_n3_rlaifv_rlhfv_audit.json summary_table_7_datasets",
+  "ci": "Wilson 95% interval on VaPR count-matched share"
+ },
+ "frozen_predictions": {
+  "primary": "VaPR count-matched share Wilson CI lower bound > count_matched_share of each of HA-DPO, HSA-DPO, SENTINEL",
+  "verdict_rule": "PASS if primary holds; PARTIAL_POINT_ONLY if only the point estimate exceeds all three; else FAIL",
+  "not_predicted": "VaPR is not predicted to be exactly count-matched (share 1.0)"
+ },
+ "kill_rules": {
+  "primary": "if verdict is FAIL, sec. 9 does not cite VaPR as a positive control; the result is reported as is"
+ },
+ "claim_scope": "count channel only; the length channel is prior work (VaPR, HDPO)"
+}
