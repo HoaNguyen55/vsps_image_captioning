@@ -254,7 +254,12 @@ def _infer_adapter_dir_for_result(result_path: Path, payload: dict) -> Path | No
 
 
 def stamp_json_file(json_path: Path, adapter_dir: Path | None = None) -> bool:
-    if not json_path.is_file() or json_path.name.endswith(".preds.json"):
+    if (
+        not json_path.is_file()
+        or json_path.name.endswith(".preds.json")
+        or json_path.name.endswith(".orig.json")
+        or json_path.name.endswith(".provenance.json")
+    ):
         return False
     try:
         payload = json.loads(json_path.read_text(encoding="utf-8"))
@@ -265,14 +270,27 @@ def stamp_json_file(json_path: Path, adapter_dir: Path | None = None) -> bool:
 
     inferred_adapter = adapter_dir or _infer_adapter_dir_for_result(json_path, payload)
     meta = provenance_metadata(inferred_adapter)
-    changed = False
+    meta["result_file"] = json_path.name
+    meta["result_sha256"] = _file_sha256(json_path)
+
+    sidecar_path = json_path.with_suffix(".provenance.json")
+    existing: dict = {}
+    if sidecar_path.is_file():
+        try:
+            loaded = json.loads(sidecar_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                existing = loaded
+        except Exception:
+            existing = {}
+
+    merged = dict(existing)
+    changed = not sidecar_path.is_file()
     for k, v in meta.items():
-        if payload.get(k) != v:
-            payload[k] = v
+        if merged.get(k) != v:
+            merged[k] = v
             changed = True
     if changed:
-        indent = 1 if "scores_scaled_x100" in json_path.read_text(encoding="utf-8") else 2
-        json_path.write_text(json.dumps(payload, ensure_ascii=False, indent=indent) + "\n", encoding="utf-8")
+        sidecar_path.write_text(json.dumps(merged, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return changed
 
 
@@ -281,7 +299,11 @@ def stamp_results_tree(results_dir: Path, runs_dir: Path | None = None) -> int:
     if not results_dir.is_dir():
         return count
     for p in sorted(results_dir.rglob("*.json")):
-        if p.name.endswith(".preds.json"):
+        if (
+            p.name.endswith(".preds.json")
+            or p.name.endswith(".orig.json")
+            or p.name.endswith(".provenance.json")
+        ):
             continue
         if stamp_json_file(p):
             count += 1
@@ -305,7 +327,7 @@ def _install_evaluate_atexit_hook() -> None:
 
     def _on_exit():
         try:
-            argv = sys.argv
+            argv = getattr(sys, "orig_argv", None) or sys.argv
             out_arg = None
             name_arg = "system"
             adapter_arg = None
@@ -346,12 +368,18 @@ def _self_check() -> int:
         assert isinstance(meta["checkpoint_resume_hook_sha256"], str) and len(meta["checkpoint_resume_hook_sha256"]) == 64
 
         res_file = tmp_path / "dummy_s42-short.json"
-        res_file.write_text(json.dumps({"name": "dummy_s42-short", "adapter": str(run_dir)}), encoding="utf-8")
+        orig_bytes = json.dumps({"name": "dummy_s42-short", "adapter": str(run_dir)}).encode("utf-8")
+        res_file.write_bytes(orig_bytes)
+        orig_sha = _file_sha256(res_file)
         assert stamp_json_file(res_file, run_dir) is True
-        stamped = json.loads(res_file.read_text(encoding="utf-8"))
+        assert res_file.read_bytes() == orig_bytes, "result JSON must never be modified in place"
+        sidecar = res_file.with_suffix(".provenance.json")
+        assert sidecar.is_file(), "sidecar .provenance.json must be created"
+        stamped = json.loads(sidecar.read_text(encoding="utf-8"))
         assert stamped["resumed_from_step"] == [200], stamped
         assert stamped["checkpoint_resume_hook_sha256"] == meta["checkpoint_resume_hook_sha256"]
         assert stamped["machine_id"] == socket.gethostname()
+        assert stamped["result_sha256"] == orig_sha
     print("self-check ok")
     return 0
 
@@ -379,7 +407,8 @@ def _main() -> int:
 if __name__ == "__main__":
     sys.exit(_main())
 else:
-    if any("train_stage2.py" in a for a in sys.argv):
+    _argv = getattr(sys, "orig_argv", None) or sys.argv
+    if any("train_stage2.py" in a for a in _argv):
         _install_train_stage2_hooks()
-    elif any("evaluate.py" in a for a in sys.argv):
+    elif any("evaluate.py" in a for a in _argv):
         _install_evaluate_atexit_hook()

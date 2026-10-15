@@ -56,24 +56,40 @@ def stamp_once(host: str | None = None) -> int:
             continue
         for pat in cfg["patterns"]:
             for p in root.glob(pat):
-                if p.name.endswith(".preds.json"):
+                if (
+                    p.name.endswith(".preds.json")
+                    or p.name.endswith(".orig.json")
+                    or p.name.endswith(".provenance.json")
+                ):
                     continue
-                try:
-                    data = json.loads(p.read_text(encoding="utf-8"))
-                except Exception:
+                if not p.is_file():
                     continue
-                if not isinstance(data, dict):
+                sidecar = p.with_suffix(".provenance.json")
+                data: dict[str, object] = {}
+                if sidecar.is_file():
+                    try:
+                        loaded = json.loads(sidecar.read_text(encoding="utf-8"))
+                        if isinstance(loaded, dict):
+                            data = loaded
+                    except Exception:
+                        data = {}
+                res_sha = _sha256(p)
+                if (
+                    data.get("started_before_g1_pass") is True
+                    and data.get("g1_v2_gate_sha256") == v2_sha
+                    and data.get("result_sha256") == res_sha
+                ):
                     continue
-                if data.get("started_before_g1_pass") is True and data.get("g1_v2_gate_sha256") == v2_sha:
-                    continue
+                data["result_file"] = p.name
+                data["result_sha256"] = res_sha
                 data["started_before_g1_pass"] = True
                 data["job_name"] = cfg["job_name"]
                 data["job_started_utc"] = cfg["job_started_utc"]
                 data["g1_v2_pass_utc"] = g1_pass_utc
                 data["g1_v2_gate_file"] = str(v2_path)
                 data["g1_v2_gate_sha256"] = v2_sha
-                p.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-                print(f"STAMPED_PRE_G1 {p}")
+                sidecar.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+                print(f"STAMPED_PRE_G1_SIDECAR {sidecar}")
                 count += 1
     return count
 
