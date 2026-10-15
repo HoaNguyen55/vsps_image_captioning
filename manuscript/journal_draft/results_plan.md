@@ -45,7 +45,7 @@ Pending: **E1 K2 seed placebo** (2 sampling seeds of LLaVA-1.5-7B on CHAIR-500; 
 
 9 public LLaVA-1.5-7B checkpoints (POVID, RLAIF-V, HALVA, CHAIR-DPO, SENTINEL, HA-DPO, HSA-DPO, OPA-DPO, …) on CHAIR-500, scored raw / MCP / tie-avg / CAR. ~6 GPU-h, machine 1 after the ladder. Prereg must be committed first (L6 §3 D1 predictions; checkpoint revisions and licences; primary control by the placebo rule). No numbers exist.
 
-### Tab. 4 — verbosity slope by gold — PARTIAL (text §7; XM3600, G2-B, B3 pending)
+### Tab. 4 — verbosity slope by gold — PARTIAL (text §7; XM3600 done; G2-B, B3 pending)
 
 | Row | Status | Values (slope of F1 on ln M, 95% CI) | Source |
 |---|---|---|---|
@@ -58,9 +58,9 @@ Pending: **E1 K2 seed placebo** (2 sampling seeds of LLaVA-1.5-7B on CHAIR-500; 
 | UIT-ViIC test, 10 systems, exploratory, COCO-80 lexicon | READY | refs1(first) −15.90 [−20.69, −10.72]; refs5 +4.80 (CI touches 0); inst +37.52 | C2J `uitviic_test.lexicons.coco80.gold_variants.{refs1_firstk,refs5_randk,inst_only}.groups.all_10.slope_F1_mixed_per_logM` (+ `_ci95`) |
 | UIT-ViIC, vi_objects_in lexicon | READY | refs1 (random) −17.25 [−20.04, −14.53]; refs5 −6.28 [−8.31, −4.29] (no flip); inst +7.66 [+5.78, +9.58]. CORRECTED 2026-10-15: [−8.34, −3.96] is the `refs5_firstk` key, not `refs5_randk` (same gold at K=5, different bootstrap draws); sec11 §11.1 still quotes [−8.34, −3.96] against the randk key | C2J `uitviic_test.lexicons.vi_objects_in...all_10` |
 | UIT-ViIC paired differences | READY via RV4 | refs5 − refs1 +20.70 [16.35, 25.00]; inst − refs5 +32.72 [28.01, 37.27] (coco80, all_10) | `.session_backup/2026-10-15/paperA_keys/uitviic_paired_diffs.json :: coco80.all_10.{diff_refsall_minus_ref1first,diff_inst_minus_refsall}` (= RV4 `rv4_n1.json`, same keys) |
-| **XM3600** (600 images, 2–3 VI refs, OIV7 verified labels), out-of-sample with b transferred from COCO | **PENDING (detailed runs)**; interim 3 short systems keyed (§7.5, labelled not-a-test): refs1_randk +11.13 [−1.45, +24.50] at M 1.14–1.43 < M*_prior 1.471; gold sizes 14/15 IN, `GBAR-refs1_randk-Gbar_nonempty` OUT (1.8768 vs 1.8831); N2 K=3 adjacency 0.533 [0.414, 0.647] vs null 0.667 | `.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json` (aef0137c390b) | prereg `manuscript/prereg/2026-10-14_xm3600_predictions.{md,json}` pre-registered in commit 4ccbee3 (2026-10-14 23:38 +07), before the first XM3600 result (00:29 +07); the registration is valid. Results not yet reviewed or used; results to be reviewed and keyed |
+| **XM3600** (600 images, 2–3 VI refs, OIV7 verified labels), out-of-sample with b transferred from COCO | **READY — mixed** (6/6 systems): refs1_randk −8.99 [−10.89, −6.99] (N1-XM-1 PASS); refs_all −2.43 [−4.63, −0.30] (N1-XM-2 FAIL, >0 predicted); OIV7 +19.32 [+17.43, +21.13] (N1-XM-3 PASS); ordering PASS; N1-XM-5 FAIL (3/4 in-sample, 2/4 transferred-b); GBAR 14/15 IN (refs1_randk Gbar_nonempty OUT); N2-XM-FULL150 PASS. Kill rule (prereg .md line 64, ≥2 of 3 out-of-sample failures demote N1): 1/3 failed → N1 stays core. C3-XM-PANEL (Paper B) MIXED: no primary estimator registered; vi113→en80 κ CIs < 1, vi80→en80 CIs include 1. Interim +11.13 (3 short systems) withdrawn from text. PROVENANCE: the six XM3600 result JSONs were rewritten in place by Gemini to add provenance after the interim run (e.g. zeroshot-short now sha256 98b56686, zeroshot-detailed 7afd233e); manifest uses the current shas recorded in `landed_result_files` | `.session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json` (0b2b3aa5e1a3) `matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.*`, `prereg_comparisons[*]`; result files `data/results/xm3600/*.json` |
 
-Text rules: COCO is the only confirmatory row. No KTVIC number appears in Paper A (PD-6 Q1(a); coordinator ruling 2026-10-15). Do not claim the UIT-ViIC 1→5-ref flip. Kill rule (H6 P2): if ≥ 2 XM3600 sign predictions fail, the sign result moves from "core" to "explanatory".
+Text rules: COCO is the only confirmatory row with all predictions held; XM3600 is a committed out-of-sample test reported with its failure (N1-XM-2). No KTVIC number appears in Paper A (PD-6 Q1(a); coordinator ruling 2026-10-15). Do not claim the UIT-ViIC 1→5-ref flip. Kill rule (H6 P2): if ≥ 2 XM3600 sign predictions fail, the sign result moves from "core" to "explanatory".
 
 ### Tab. 5 — human validity — READY (all four sets; text §8)
 
@@ -109,10 +109,10 @@ Rows: COCO-2500 N1 (frozen file, L1), H3 LVLM N1 (frozen, FAILED), H1 THumB/Comp
 | Fig. | Status | Data |
 |---|---|---|
 | 1 Schematic (terse vs verbose caption under three golds) | to draw; no numbers | — |
-| 2 Slope vs gold completeness | READY for COCO-2500 and English LVLM families; XM3600 to be added | C1J `check_coco_gold.*.slope/_ci`; H3J `families.*.gold.*` |
+| 2 Slope vs gold completeness | READY for COCO-2500, English LVLM families and XM3600 | C1J `check_coco_gold.*.slope/_ci`; H3J `families.*.gold.*` |
 | 3 Specification curve | READY except placebo column | E1J `overview_15_pairs.*`, `pairs_15.*` |
 | 4 Λ_k and channel split | READY | H4J `T4.coco_randk.Lambda.*`, `T4.coco_refs1_to_inst.*`, `.b_channel_share` (0.677, 0.742) |
-| 5 Adjacency by dataset (no KTVIC row; Paper B owns it) | READY; XM3600 3-ref row pending | C1J `B2_L2_exchangeability.datasets.*`; `.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json :: k5_exchangeability_audit.*` |
+| 5 Adjacency by dataset (no KTVIC row; Paper B owns it) | READY; XM3600 3-ref row keyed (0.5333 vs null 0.6667) | C1J `B2_L2_exchangeability.datasets.*`; `.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json :: k5_exchangeability_audit.*` |
 | A1 Support profile r(n) | READY (COCO only) | H4J `coco2500.T2_profile.*` |
 | A2 Closed-form fit | READY ([MODEL] extrapolation) | H4J `T5_closed_form.*` |
 
@@ -123,7 +123,7 @@ Rows: COCO-2500 N1 (frozen file, L1), H3 LVLM N1 (frozen, FAILED), H1 THumB/Comp
 | DOCCI-Critique human test | Tab. 5 | CPU | DONE: MIXED (prereg committed after results JSON; disclosed) |
 | Polaris-COCO | Tab. 5 | CPU | DONE: PASS (same timing disclosure) |
 | G2-B extended (Qwen3-VL-8B zero-shot ladder) | §7.6, Tab. 4 | ~3.9 GPU-h | prereg = G2 REPORT §4, must be committed before outputs |
-| XM3600 58_z detailed (3 of 6 systems) | Tab. 4 | machine 2 | prereg 4ccbee3 valid; short-run interim keyed; N1-XM verdicts need all 6 |
+| XM3600 58_z (6 of 6 systems) | Tab. 4 | machine 2 | DONE: full verdict keyed (1/3 out-of-sample sign predictions failed) |
 | N9 | Tab. 3 | ~6 GPU-h, machine 1 | committed prereg |
 | E1 K2 placebo | Tab. 2 primary control | ~0.5–1 GPU-h | in N9 prereg |
 | B3 large-k (nocaps 10 refs, PASCAL-50S) | §4 asymptote | GPU 2–3 h | licence check |

@@ -42,7 +42,7 @@ Object-level scores such as CHAIR, object precision and object F1 are the standa
 | 4 | Theory: gold-indexed frontier and the single crossing | `sec4_theory.md` | drafted | 1.5 |
 | 5 | Reference exchangeability | `sec5_exchangeability.md` | drafted | 0.8 |
 | 6 | Experiments I: re-scoring published methods (E1 spec curve; N9 leaderboard) | `sec6_rescoring_published_methods.md` | drafted; [PENDING] N9, E1 K2 placebo | 1.3 |
-| 7 | Experiments II: the verbosity sign across golds (COCO-2500 confirmatory; LVLM failed frozen test; UIT-ViIC exploratory; XM3600, G2-B, B3 frozen) | `sec7_verbosity_sign.md` | drafted; [PENDING] XM3600 detailed, G2-B, B3 | 1.2 |
+| 7 | Experiments II: the verbosity sign across golds (COCO-2500 confirmatory; LVLM failed frozen test; UIT-ViIC exploratory; XM3600 frozen out-of-sample, 1/3 sign predictions failed; G2-B, B3 frozen) | `sec7_verbosity_sign.md` | drafted; XM3600 filled from full verdict; [PENDING] G2-B, B3 | 1.2 |
 | 8 | Experiments III: human validity (THumB/Composite; Polaris; DOCCI-Critique) | `sec8_human_validity.md` | drafted (all four sets) | 1.0 |
 | 9 | Preference data audit | `sec9_preference_audit.md` | drafted; conditional kill waits on N9 | 0.4 |
 | 10 | Discussion and recommendations (two-column standard, checklist) | `sec10_discussion.md` | drafted | 0.5 |
@@ -56,14 +56,14 @@ Companion-paper pointers (one line each in Paper A, citing Paper B as under revi
 | ID | Content | Data status (details in `results_plan.md`) |
 |---|---|---|
 | Fig. 1 | Motivating schematic: one image, 1 vs 5 references vs instance labels, a terse and a verbose caption; F1 ranks them in opposite orders | illustrative; no numbers |
-| Fig. 2 | Slope of F1 on $\log M$ versus gold completeness ($k=1..5$, instance, instance+refs) for COCO-2500 and the two English LVLM families (XM3600 to be added) | available |
+| Fig. 2 | Slope of F1 on $\log M$ versus gold completeness ($k=1..5$, instance, instance+refs) for COCO-2500 and the two English LVLM families and XM3600 (refs1, 2–3 refs, OIV7) | available |
 | Fig. 3 | Specification curve: 15 decoding pairs × controls (raw, prefix MCP, sentence tie-avg, random subset; unadjusted and Holm+SESOI) | available; add K2 placebo when run |
 | Fig. 4 | Single crossing: $\Lambda_k(M_0)$ and its b-channel / $\bar G$-channel split | available |
 | Fig. 5 | Adjacency statistic by dataset with CIs and the 0.40 null (COCO, UIT-ViIC, Flickr30k, OpenViIC aggregates; no KTVIC row); XM3600 3-ref row with its own 2/3 null | available (XM3600 row keyed, §7.5) |
 | Tab. 1 | Notation and the three controls | text |
 | Tab. 2 | E1 spec-curve counts | available |
 | Tab. 3 | N9 count-matched leaderboard (9 LLaVA-1.5-7B checkpoints) | pending (N9) |
-| Tab. 4 | Verbosity slope by gold: COCO-2500 (confirmatory), English LVLM families, UIT-ViIC (exploratory), XM3600 (frozen) | XM3600 pending |
+| Tab. 4 | Verbosity slope by gold: COCO-2500 (confirmatory), English LVLM families, UIT-ViIC (exploratory), XM3600 (frozen; N1-XM-2 failed) | available |
 | Tab. 5 | Human validity: THumB, Composite (Tab. 8.1), Polaris G2, DOCCI-Critique G3 | available |
 | Tab. 6 | Preference data audit (7 datasets) | available |
 | Tab. 7 | Prereg ledger: claim, registration time, first-look time, status | to compile |

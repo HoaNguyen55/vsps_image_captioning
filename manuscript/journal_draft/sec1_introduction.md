@@ -15,7 +15,7 @@ Claims that a captioning model or a large vision-language model (LVLM) "hallucin
 **Contributions.**
 1. A count-matched evaluation protocol with two per-image controls, a corpus-total match and a Shapley count–allocation–ranking decomposition, and a two-column reporting standard (raw score next to one pre-declared count-controlled score) (Section 3). Its application to 15 published decoding comparisons gives a specification curve from 2/15 to 6/15 surviving gains (Section 6); a count-matched leaderboard of 9 public training-based checkpoints is pending (TODO: N9).
 2. A proposition on the gold-indexed precision–count frontier: monotone exponent, single crossing of the verbosity sign, and a b-channel / $\bar G$-channel split, with proof sketch and checks on fixed outputs (Section 4).
-3. Tests of the verbosity sign across golds: confirmatory on COCO-2500, exploratory on English LVLM outputs and UIT-ViIC, and frozen predictions for XM3600 (Section 7; XM3600 TODO).
+3. Tests of the verbosity sign across golds: confirmatory on COCO-2500, exploratory on English LVLM outputs and UIT-ViIC, and a frozen out-of-sample test on XM3600 in which the one-reference and instance-label signs held and the 2–3-reference sign failed (Section 7).
 4. A reference-exchangeability diagnostic applied to five caption corpora, and its consequences for reference-count analyses (Section 5).
 5. Human-validity evidence, stated narrowly (Section 8), and an audit of object-count imbalance in public hallucination-preference data (Section 9).
 
