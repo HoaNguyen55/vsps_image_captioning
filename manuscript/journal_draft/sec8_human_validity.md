@@ -61,7 +61,17 @@ DOCCI-Critique (Gordon et al.; arXiv 2506.07631; CC BY 4.0) gives, for 100 DOCCI
 
 **Limits specific to this set.** The COCO-80 matcher sees few objects in long DOCCI paragraphs: a mean of 1.50 classes per paragraph (median 1), against a gold of 1.36 classes per image<!-- src: same :: registered_G3.data_summary.{mean_paragraph_M,median_paragraph_M,mean_gold_classes_G} -->. Most of what these paragraphs describe is outside the registered vocabulary. A larger noun vocabulary was tried after the fact; it is not in the pre-registration, is exploratory only, and supports no claim in this paper (Appendix F lists it with that label).
 
-## 8.4 What the human evidence supports
+## 8.4 Long-caption and pairwise-battle tests (frozen; pending)
+
+PD-7 added two human-validity tests on public long-caption judgments. Both run only after a licence check and a committed pre-registration, on CPU, and are dropped if not finished by the experiment freeze (2026-11-15).
+
+[PENDING: PD-7 Q2, LongCap-Arena (VELA; Matsuda et al., arXiv 2509.25818), prereg `manuscript/prereg/2026-10-15_*` (not yet committed; licence check first).]
+Frozen prediction (as specified in R13 idea 1 and PD-7 Q2; the committed prereg fixes the wording and thresholds): under the most complete gold available, object precision agrees with human Relevance judgments, and object metrics agree with human judgments more on count-matched than on count-differing caption pairs.
+
+[PENDING: PD-7 Q3, CapArena pairwise battles (Cheng et al., arXiv 2503.12329) split into count-equal and count-differing pairs, prereg `manuscript/prereg/2026-10-15_*` (not yet committed; licence check first).]
+Frozen prediction (PD-7 Q3, following H1): agreement between object metrics and the human battle winner is higher on count-equal than on count-differing pairs.
+
+## 8.5 What the human evidence supports
 
 On short COCO captions (THumB, Composite, Polaris), human judgments support two conditions for a valid object-level comparison: complete gold, and matched count. Agreement between object metrics and humans is higher under complete gold (registered on Polaris), and it is highest on pairs that name the same number of objects (registered on Polaris; exploratory on THumB and Composite). The same data do not support the count-controlled residual as a quality score (P1b failed twice), and they show humans to be close to count-neutral, so neither the one-reference penalty nor the complete-gold reward for verbosity is a human preference.
 
