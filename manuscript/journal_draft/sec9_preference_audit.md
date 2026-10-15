@@ -1,0 +1,30 @@
+# 9 The object-count channel in hallucination preference data
+
+Sections 6 and 7 show that a method can lower CHAIR by naming fewer objects. Training-based methods learn from preference pairs, so the same channel can enter through the data: if the chosen response of a pair tends to name fewer objects than the rejected one, a model optimized on the pairs can learn to name fewer objects, whatever else it learns. This section measures that channel in seven public preference sets used to train anti-hallucination methods for LVLMs. It describes the data; it does not test what models trained on them do, which is the job of the pending leaderboard (Section 6.4).
+
+**Method.** For each pair we match both responses to COCO-80 with the CHAIR matcher of Section 6 and compute $\Delta k$ = classes named by the chosen response minus classes named by the rejected one, and $\Delta$words likewise. Pairs in which neither response names a COCO-80 class are dropped. A pair is *count-matched* if $\Delta k = 0$. Among count-unmatched pairs we report the share in which the chosen response names fewer classes, with a 95% bootstrap interval; 0.5 means no direction. To check whether length matching removes the channel, we repeat the share on pairs whose responses differ by at most two words.
+
+**Table 9.1** (paper Tab. 6). Object-count imbalance in public preference data (COCO-80 matcher).
+
+| Dataset | Pairs with objects | Count-matched share | Chosen names fewer, among unmatched [95% CI] | Mean $\Delta k$ | Same, pairs with $\lvert\Delta\text{words}\rvert \le 2$ |
+|---|---|---|---|---|---|
+| POVID | 16,483 | 0.521 | 0.444 [0.433, 0.455] | +0.114 | 0.243 |
+| HA-DPO | 5,181 | 0.473 | 0.882 [0.870, 0.894] | −0.691 | 0.854 |
+| HSA-DPO | 8,076 | 0.692 | 0.817 [0.801, 0.832] | −0.250 | 0.763 |
+| mDPO (VLFeedback) | 9,281 | 0.408 | 0.498 [0.485, 0.511] | −0.103 | 0.551 |
+| SENTINEL | 8,600 | 0.349 | 0.897 [0.889, 0.904] | −0.736 | 0.886 |
+| RLHF-V | 5,120 | 0.632 | 0.702 [0.681, 0.722] | −0.234 | 0.791 |
+| RLAIF-V | 70,029 | 0.590 | 0.514 [0.509, 0.520] | −0.017 | 0.523 |
+
+<!-- src (all .session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json, sha256 5d572461d174):
+summary_table_7_datasets.{povid,hadpo_llava15,hsadpo,mdpo_vlfeedback,sentinel_llava15_7b,rlhfv,rlaifv}.{pairs_with_objects,count_matched_share,chosen_fewer_among_unmatched,chosen_fewer_among_unmatched_ci95,mean_dk,abs_dwords_le_2_chosen_fewer_among_unmatched}.
+Dataset citations: POVID, HA-DPO, HSA-DPO, mDPO, SENTINEL, RLHF-V, RLAIF-V [CITE: all seven to be checked on primary pages; identifiers not yet verified]. -->
+
+**Four sets carry a strong count channel.** In HA-DPO, HSA-DPO, SENTINEL and RLHF-V, the chosen response names fewer COCO classes in 70% to 90% of the count-unmatched pairs. Between 31% and 65% of all pairs are count-unmatched in these sets (one minus the count-matched share). Length matching does not remove the channel: among pairs whose responses differ by at most two words, the share stays at 0.854, 0.763, 0.886 and 0.791. In the same four sets, a logistic model of which response is chosen gives a clearly negative weight to $\Delta k$ after controlling for $\Delta$words (−1.54, −1.19, −1.85 and −1.13 per class)<!-- src: same :: summary_table_7_datasets.{hadpo_llava15,hsadpo,sentinel_llava15_7b,rlhfv}.logit_beta_dk_controlled_for_dwords -->. In these sets, "length-matched" does not mean "count-matched".
+
+**Three sets do not.** In mDPO and RLAIF-V the share is close to 0.5; in POVID it is below 0.5 (0.444), so its chosen responses name slightly more classes. Sets built by editing or rewriting a response to remove hallucinated objects can be expected to show the channel; sets built by sampling or ranking whole responses need not. We do not test this explanation.
+
+**A stated prediction that failed.** Before RLHF-V and RLAIF-V were audited, the planning report predicted that RLAIF-V's chosen-fewer share among unmatched pairs would be at least 0.60, and set a conditional kill: if the share fell in [0.45, 0.55] *and* the count-matched leaderboard (Section 6.4) showed no link between the count difference in the training data and the change in count of the trained model, the statement "length control leaves a count channel" would be withdrawn and Table 9.1 kept as description only<!-- src: .session_backup/2026-10-14/r11_litmaps/L6/REPORT.txt §6 (D2); prediction timestamped in the planning report, not committed -->. The share is 0.514 [0.509, 0.520], inside the kill interval, so the prediction failed and the first half of the kill condition is met<!-- src: .session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json :: l6_d2_evaluation.prediction_rlaifv_chosen_fewer_among_unmatched_ge_060.{rlaifv_all_obj_pairs, rlaifv_all_obj_pairs_ci95, passed_on_all_obj_pairs = False}; l6_d2_evaluation.kill_rule_rlaifv_in_045_055.in_kill_interval_all_obj_pairs = True -->. The second half depends on N9.
+[PENDING: N9 count-matched leaderboard, prediction D1(b) (Section 6.4), prereg to be committed. If the trained checkpoints show no link between the training data's $\Delta k$ and their own change in count, this section reports Table 9.1 as description only and drops the statement in the next paragraph.]
+
+**What the audit implies, and what it does not.** In four of seven public sets, a model trained to prefer the chosen response is also trained, in most of the pairs where the count differs, to name fewer objects; matching the pairs on length does not change that. A lower CHAIR after such training can therefore come from the count channel, from better object choice, or from both, and only a count-matched evaluation of the trained model separates them. The audit does not show that any method's published gain is a count effect. Its limits: the matcher covers only COCO-80, so responses about other objects are invisible to it, and many of these sets include images from outside COCO; and the audit uses the released pairs as they are, without checking their labels.

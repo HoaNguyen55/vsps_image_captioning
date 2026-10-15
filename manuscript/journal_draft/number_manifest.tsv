@@ -157,12 +157,185 @@ TRIGGERED	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	over
 71.86	A	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_32_leakage_disclosure.splits.ktvic_test_558.in_openviic_train_pct	a416b13f1e0f	keyed
 UIT-ViIC b(k) one dip -0.003 (vi_objects_in, first-k, 4->5 refs; 0.5385->0.5355)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar_v2.json	uitviic_test.lexicons.vi_objects_in.gold_variants.{refs4_firstk,refs5_firstk}.groups.transfer_6.b	03b99f565710	keyed
 133 UIT-ViIC train in Karpathy test (59 probe, 4 POPE; 21 POPE overall) [CORRECTED: was 8 POPE]	A	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_21_m3_checks.uitviic_overlap.{overlap_with_coco_karpathy_test_5000,overlap_with_coco_probe_manifest_2500,overlap_with_pope500_in_karpathy_test,overlap_with_pope500_all_val2014} (recomputed: .session_backup/2026-10-15/paperA_keys/uitviic_karpathy_overlap.json, 7e6e8a1d7239)	a416b13f1e0f	keyed
-N9 count-matched leaderboard (9 ckpts)	A	-	-	-	pending
-E1 K2 seed placebo	A	-	-	-	pending
-XM3600 58_z slopes/adjacency (prereg 4ccbee3 valid)	A	-	-	-	pending
-Polaris-COCO (prereg 7f22d13 after results; disclosed)	A	-	-	-	pending
-DOCCI-Critique G3 verdict, COCO-80 matcher (ExpandedNouns exploratory)	A	-	-	-	pending
-B3 large-k (nocaps, PASCAL-50S)	A	-	-	-	pending
+495-499 (n_img range per E1 pair)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.*.n_img (min,max)	184f9ccac1b9	keyed
+0.6 (K1 fidelity max abs diff)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	fidelity_K1.{lim_r1,lim_r5,lim_r12,opera_llava15}.{ours,published} max|diff|	184f9ccac1b9	keyed
+TRUE (passes_K1)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	fidelity_K1.passes_K1	184f9ccac1b9	keyed
+80.9	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	overview_15_pairs.pct_gain_explained_by_count_and_alloc_sent_tieavg	184f9ccac1b9	keyed
+5.0 (K4 threshold)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	overview_15_pairs.k4_threshold_gt_one_third	184f9ccac1b9	keyed
++3.88 (InstructBLIP OPERA vs greedy, MCP prefix)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/instructblip__ours vs opera/instructblip__greedy.dP_MCP_prefix.est	184f9ccac1b9	keyed
+[2.49,5.27]	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/instructblip__ours vs opera/instructblip__greedy.dP_MCP_prefix.ci95	184f9ccac1b9	keyed
+TRUE (survives Holm+SESOI)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/instructblip__ours vs opera/instructblip__greedy.dP_MCP_prefix.survives_holm_and_sesoi1	184f9ccac1b9	keyed
++2.81 (LiM r12 vs r11, MCP prefix)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.lim/r12-ours-cap vs lim/r11-minigptv2.dP_MCP_prefix.est	184f9ccac1b9	keyed
+[0.91,4.67]	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.lim/r12-ours-cap vs lim/r11-minigptv2.dP_MCP_prefix.ci95	184f9ccac1b9	keyed
+TRUE (survives Holm+SESOI)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.lim/r12-ours-cap vs lim/r11-minigptv2.dP_MCP_prefix.survives_holm_and_sesoi1	184f9ccac1b9	keyed
++3.47 (Shikra OPERA vs beam5, raw dP)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__beam5.dP_raw.est	184f9ccac1b9	keyed
+[0.75,6.03]	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__beam5.dP_raw.ci95	184f9ccac1b9	keyed
+-1.23 (Shikra OPERA vs beam5, MCP prefix)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__beam5.dP_MCP_prefix.est	184f9ccac1b9	keyed
+[-2.42,-0.08]	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__beam5.dP_MCP_prefix.ci95	184f9ccac1b9	keyed
+0.842 (M ratio, Shikra vs beam5)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__beam5.M_ratio.est	184f9ccac1b9	keyed
+0.808 (M ratio, Shikra vs greedy)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__greedy.M_ratio.est	184f9ccac1b9	keyed
+-1.23 (Shikra OPERA vs greedy, MCP prefix)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__greedy.dP_MCP_prefix.est	184f9ccac1b9	keyed
+[-2.62,0.08]	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__greedy.dP_MCP_prefix.ci95	184f9ccac1b9	keyed
++5.45 (Shikra OPERA vs greedy, random subset)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__greedy.dP_MCP_rand_exact.est	184f9ccac1b9	keyed
+[3.36,7.40]	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.opera/shikra__ours vs opera/shikra__greedy.dP_MCP_rand_exact.ci95	184f9ccac1b9	keyed
+6/8 (two-seed random-subset check passes)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	controls_K2_K3.placebos_K2.two_seed_random_subset.*.passes_K2	184f9ccac1b9	keyed
+15/15 (self-swap substitute placebo passes)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	controls_K2_K3.placebos_K2.self_swap_permutation.*.passes_K2	184f9ccac1b9	keyed
+FAIL_UNDERPOWERED_ON_2_OF_8_BASELINES_AT_N500 (K3 verdict)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	controls_K2_K3.registered_k3_en_summary.verdict	184f9ccac1b9	keyed
+PENDING_PHASE_B_TWO_SAMPLING_SEEDS (K2 status)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	controls_K2_K3.registered_k2_en_two_sampling_seeds.registered_k2_en_status	184f9ccac1b9	keyed
+KILL_CI_CONTAINS_0 (X1 P-B verdict)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	x1_pb_english.summary.x1_pb_verdict	184f9ccac1b9	keyed
+[0.84,2.14] (COCO-2500 M range)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B1_L1_mstar_and_stopping.check_coco_gold.refs1_randk.M_range	3d79842d4f2c	keyed
+1.41 (M*_micro refs1 COCO-2500)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B1_L1_mstar_and_stopping.check_coco_gold.refs1_randk.Mstar_micro	3d79842d4f2c	keyed
+12/12 (COCO-2500 sign agreement P4)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B1_L1_mstar_and_stopping.check_coco_sign_agree_mixed	3d79842d4f2c	keyed
+0.0 (COCO-2500 reproduction max abs diff)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B1_L1_mstar_and_stopping.check_coco_max_abs_diff	3d79842d4f2c	keyed
+[-40.38, -30.87] (F-B refs1 CI)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.refs1_randk.slope_ci	b82053f9aad5	keyed
+[-32.69, -26.37] (F-B refs5 CI)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.refs5_randk.slope_ci	b82053f9aad5	keyed
+[-0.09, 8.51] (F-B inst CI)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.inst.slope_ci	b82053f9aad5	keyed
+[2.18, 3.29] (F-B M range)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.refs1_randk.M_range	b82053f9aad5	keyed
+3.134 (F-B median M)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.refs1_randk.median_M	b82053f9aad5	keyed
+-33.87 (F-B refs2 slope)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.refs2_randk.slope	b82053f9aad5	keyed
+-32.49 (F-B refs3 slope)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.refs3_randk.slope	b82053f9aad5	keyed
+-30.59 (F-B refs4 slope)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.refs4_randk.slope	b82053f9aad5	keyed
+0.112 (F-B b refs1)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.refs1_randk.b	b82053f9aad5	keyed
+0.203 (F-B b refs5)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-B.gold.refs5_randk.b	b82053f9aad5	keyed
+[-36.6, -27.21] (F-C refs1 CI)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.refs1_randk.slope_ci	b82053f9aad5	keyed
+[-26.71, -18.53] (F-C refs5 CI)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.refs5_randk.slope_ci	b82053f9aad5	keyed
+[2.16, 11.17] (F-C inst CI)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.inst.slope_ci	b82053f9aad5	keyed
+[2.19, 3.37] (F-C M range)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.refs1_randk.M_range	b82053f9aad5	keyed
+3.026 (F-C median M)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.refs1_randk.median_M	b82053f9aad5	keyed
+-29.48 (F-C refs2 slope)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.refs2_randk.slope	b82053f9aad5	keyed
+-27.1 (F-C refs3 slope)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.refs3_randk.slope	b82053f9aad5	keyed
+-24.63 (F-C refs4 slope)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.refs4_randk.slope	b82053f9aad5	keyed
+0.153 (F-C b refs1)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.refs1_randk.b	b82053f9aad5	keyed
+0.282 (F-C b refs5)	A	.session_backup/2026-10-14/r12/H3/out/n1_results.json	families.F-C.gold.refs5_randk.b	b82053f9aad5	keyed
+-13.97 (UIT-ViIC coco80 refs1_randk slope_F1_mixed_per_logM)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.coco80.gold_variants.refs1_randk.groups.all_10.slope_F1_mixed_per_logM	bed1dc259aef	keyed
+[-19.24, -8.01] (UIT-ViIC coco80 refs1_randk slope_F1_mixed_ci95)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.coco80.gold_variants.refs1_randk.groups.all_10.slope_F1_mixed_ci95	bed1dc259aef	keyed
+[-0.57, 9.67] (UIT-ViIC coco80 refs5_randk slope_F1_mixed_ci95)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.coco80.gold_variants.refs5_randk.groups.all_10.slope_F1_mixed_ci95	bed1dc259aef	keyed
+[34.56, 40.08] (UIT-ViIC coco80 inst_only slope_F1_mixed_ci95)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.coco80.gold_variants.inst_only.groups.all_10.slope_F1_mixed_ci95	bed1dc259aef	keyed
+[1.074, 2.29] (UIT-ViIC coco80 refs1_randk M_range)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.coco80.gold_variants.refs1_randk.groups.all_10.M_range	bed1dc259aef	keyed
+1.392 (UIT-ViIC coco80 refs1_randk median_M)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.coco80.gold_variants.refs1_randk.groups.all_10.median_M	bed1dc259aef	keyed
+-17.25 (UIT-ViIC vi_objects_in refs1_randk slope_F1_mixed_per_logM)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.vi_objects_in.gold_variants.refs1_randk.groups.all_10.slope_F1_mixed_per_logM	bed1dc259aef	keyed
+[-20.04, -14.53] (UIT-ViIC vi_objects_in refs1_randk slope_F1_mixed_ci95)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.vi_objects_in.gold_variants.refs1_randk.groups.all_10.slope_F1_mixed_ci95	bed1dc259aef	keyed
+[-8.31, -4.29] (UIT-ViIC vi_objects_in refs5_randk slope_F1_mixed_ci95)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.vi_objects_in.gold_variants.refs5_randk.groups.all_10.slope_F1_mixed_ci95	bed1dc259aef	keyed
+7.66 (UIT-ViIC vi_objects_in inst_only slope_F1_mixed_per_logM)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.vi_objects_in.gold_variants.inst_only.groups.all_10.slope_F1_mixed_per_logM	bed1dc259aef	keyed
+[5.78, 9.58] (UIT-ViIC vi_objects_in inst_only slope_F1_mixed_ci95)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.vi_objects_in.gold_variants.inst_only.groups.all_10.slope_F1_mixed_ci95	bed1dc259aef	keyed
+[1.593, 6.944] (UIT-ViIC vi_objects_in refs1_randk M_range)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.vi_objects_in.gold_variants.refs1_randk.groups.all_10.M_range	bed1dc259aef	keyed
+1.991 (UIT-ViIC vi_objects_in refs1_randk median_M)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.lexicons.vi_objects_in.gold_variants.refs1_randk.groups.all_10.median_M	bed1dc259aef	keyed
+1.8831 (XM prereg Gbar_nonempty refs1_randk)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	prereg_comparisons.6.prereg_interval_or_threshold	aef0137c390b	keyed
+1.8768 (XM observed Gbar_nonempty refs1_randk)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	prereg_comparisons.6.observed_value	aef0137c390b	keyed
+OUT (GBAR-refs1_randk-Gbar_nonempty)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	prereg_comparisons.6.in_interval_or_pass	aef0137c390b	keyed
+14/15 IN (XM registered gold sizes)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	prereg_comparisons[1..15].in_interval_or_pass	aef0137c390b	keyed
+1.6 IN (XM Gbar_all_600 refs1_randk)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	prereg_comparisons.5.observed_value	aef0137c390b	keyed
+1.471 (XM M*_micro prior-b refs1_randk)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_randk.Mstar_micro_prior_b_all600	aef0137c390b	keyed
+2.8586 (XM M*_micro prior-b refs_all)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs_all.Mstar_micro_prior_b_all600	aef0137c390b	keyed
+11.2161 (XM M*_micro prior-b oiv7)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.oiv7_verified.Mstar_micro_prior_b_all600	aef0137c390b	keyed
+[1.1367,1.4333] (XM interim M range, 3 short)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_randk.M_range	aef0137c390b	keyed
+1.3333 (XM interim median M)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_randk.median_M	aef0137c390b	keyed
++11.13 (XM interim refs1_randk slope, 3 short; NOT the registered test)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_randk.slope_F1_per_logM	aef0137c390b	keyed
+[-1.45,24.50] (XM interim refs1_randk CI)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_randk.slope_ci95_b500	aef0137c390b	keyed
+0.5333 (XM3600 K=3 adjacency, 150 imgs)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	n2_reference_adjacency_verification.full_3600_150_3ref_images.adjacent_share	aef0137c390b	keyed
+[0.4141,0.6471]	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	n2_reference_adjacency_verification.full_3600_150_3ref_images.bootstrap_ci95_b5000	aef0137c390b	keyed
+48 (adjacent doubletons)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	n2_reference_adjacency_verification.full_3600_150_3ref_images.adjacent_doubletons	aef0137c390b	keyed
+90 (doubletons)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	n2_reference_adjacency_verification.full_3600_150_3ref_images.total_doubletons	aef0137c390b	keyed
+0.6667 (K=3 null)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	n2_reference_adjacency_verification.full_3600_150_3ref_images.exchangeable_null_for_K3	aef0137c390b	keyed
+150 (XM3600 3-ref images)	A	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	n2_reference_adjacency_verification.full_3600_150_3ref_images.n_images_3_refs	aef0137c390b	keyed
+500 (THumB images)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.n_img	224928834752	keyed
+5000 (THumB pairs)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.n_pairs	224928834752	keyed
+1996 (Composite images)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.n_img	224928834752	keyed
+8348 (Composite pairs)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.n_pairs	224928834752	keyed
+[0.2474, 0.398] (THumB P1a_acc(-CHAIR->P)-acc(z->P) CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P1a_acc(-CHAIR->P)-acc(z->P).ci	224928834752	keyed
+[0.0788, 0.1163] (Composite P1a_acc(-CHAIR->P)-acc(z->P) CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P1a_acc(-CHAIR->P)-acc(z->P).ci	224928834752	keyed
+[-0.2767, -0.1081] (THumB P1b_acc(z->T)-acc(-CHAIR->T) CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P1b_acc(z->T)-acc(-CHAIR->T).ci	224928834752	keyed
+[-0.1012, -0.0653] (Composite P1b_acc(z->T)-acc(-CHAIR->T) CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P1b_acc(z->T)-acc(-CHAIR->T).ci	224928834752	keyed
+[0.4294, 0.53] (THumB P2a_v_human CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P2a_v_human.ci	224928834752	keyed
+[0.5055, 0.5435] (Composite P2a_v_human CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P2a_v_human.ci	224928834752	keyed
+[-0.0734, 0.0375] (THumB P2c_acc(F1_full->T)-acc(F1_refs1->T) CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P2c_acc(F1_full->T)-acc(F1_refs1->T).ci	224928834752	keyed
+[-0.0219, 0.0104] (Composite P2c_acc(F1_full->T)-acc(F1_refs1->T) CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P2c_acc(F1_full->T)-acc(F1_refs1->T).ci	224928834752	keyed
+[0.6446, 0.7629] (Composite P4_confounded_T CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P4_confounded_T.ci	224928834752	keyed
+-0.0179 (THumB P2c)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P2c_acc(F1_full->T)-acc(F1_refs1->T).est	224928834752	keyed
+-0.0059 (Composite P2c)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P2c_acc(F1_full->T)-acc(F1_refs1->T).est	224928834752	keyed
+[0.8167,1.321] (THumB P3 PFP-FP CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P3_ols_P.PFP-FP.ci	224928834752	keyed
+0.6762 (Composite P3 PFP-FP)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P3_ols_P.PFP-FP.est	224928834752	keyed
+[0.542,0.8106] (Composite P3 PFP-FP CI)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P3_ols_P.PFP-FP.ci	224928834752	keyed
+0.415 (Composite beta_PFP/beta_FP, 'about 40%')	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P3_ols_P.PFP_refs1.est / Composite.P3_ols_P.FP_full.est	224928834752	keyed
+91 (THumB clean pairs)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P4_clean_T.n_untied	224928834752	keyed
+16 (THumB confounded pairs)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P4_confounded_T.n_untied	224928834752	keyed
+928 (Composite clean pairs)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P4_clean_T.n_untied	224928834752	keyed
+0.9461 (Composite ceq)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.agree.negCHAIR|full|T|ceq.est	224928834752	keyed
+0.8383 (Composite cdiff)	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.agree.negCHAIR|full|T|cdiff.est	224928834752	keyed
+2286 (Polaris n_coco_images)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.n_coco_images	718fc3f01743	keyed
+7252 (Polaris n_dedup_candidates)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.n_dedup_candidates	718fc3f01743	keyed
+10496 (Polaris n_within_image_pairs)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.n_within_image_pairs	718fc3f01743	keyed
+PASS (Polaris verdict)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.verdict	718fc3f01743	keyed
+False (Polaris kill_rule_fired)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.kill_rule_fired	718fc3f01743	keyed
+0.0606 (Polaris H_a.diff_full_minus_refs1_all.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_a.diff_full_minus_refs1_all.est	718fc3f01743	keyed
+[0.0535, 0.0679] (Polaris H_a.diff_full_minus_refs1_all.ci)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_a.diff_full_minus_refs1_all.ci	718fc3f01743	keyed
+0.09 (Polaris H_a.diff_full_minus_refs1_cdiff.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_a.diff_full_minus_refs1_cdiff.est	718fc3f01743	keyed
+[0.08, 0.101] (Polaris H_a.diff_full_minus_refs1_cdiff.ci)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_a.diff_full_minus_refs1_cdiff.ci	718fc3f01743	keyed
+0.92 (Polaris H_a.acc_negCHAIR_refs1_all.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_a.acc_negCHAIR_refs1_all.est	718fc3f01743	keyed
+0.981 (Polaris H_a.acc_negCHAIR_full_all.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_a.acc_negCHAIR_full_all.est	718fc3f01743	keyed
+0.025 (Polaris H_b.diff_ceq_minus_cdiff.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_b.diff_ceq_minus_cdiff.est	718fc3f01743	keyed
+[0.016, 0.035] (Polaris H_b.diff_ceq_minus_cdiff.ci)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_b.diff_ceq_minus_cdiff.ci	718fc3f01743	keyed
+0.996 (Polaris H_b.P4_clean_matched_count.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_b.P4_clean_matched_count.est	718fc3f01743	keyed
+0.667 (Polaris H_b.P4_confounded.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_b.P4_confounded.est	718fc3f01743	keyed
+108 (Polaris H_b.P4_confounded.n_untied)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_b.P4_confounded.n_untied	718fc3f01743	keyed
+0.33 (Polaris H_b.P4_clean_minus_confounded.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_b.P4_clean_minus_confounded.est	718fc3f01743	keyed
+[0.222, 0.437] (Polaris H_b.P4_clean_minus_confounded.ci)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_b.P4_clean_minus_confounded.ci	718fc3f01743	keyed
+0.067 (Polaris H_c.caption_level_pearson_spearman.0)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_c.caption_level_pearson_spearman.0	718fc3f01743	keyed
+0.063 (Polaris H_c.within_image_demeaned_pearson_spearman.0)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_c.within_image_demeaned_pearson_spearman.0	718fc3f01743	keyed
+MIXED (DOCCI verdict)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.verdict	718fc3f01743	keyed
+COCO-80_E1_CHAIR_registered (DOCCI matcher)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.matcher	718fc3f01743	keyed
+100 (DOCCI data_summary.n_images)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.data_summary.n_images	718fc3f01743	keyed
+14 (DOCCI data_summary.n_vlms)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.data_summary.n_vlms	718fc3f01743	keyed
+1398 (DOCCI data_summary.n_paragraphs)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.data_summary.n_paragraphs	718fc3f01743	keyed
+1.5 (DOCCI data_summary.mean_paragraph_M)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.data_summary.mean_paragraph_M	718fc3f01743	keyed
+1 (DOCCI data_summary.median_paragraph_M)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.data_summary.median_paragraph_M	718fc3f01743	keyed
+1.36 (DOCCI data_summary.mean_gold_classes_G)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.data_summary.mean_gold_classes_G	718fc3f01743	keyed
+0.000371 (DOCCI G3_i.P_human_sent_maj.median_within_vlm_slope)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_sent_maj.median_within_vlm_slope	718fc3f01743	keyed
+7 (DOCCI G3_i.P_human_sent_maj.n_vlms_negative_slope)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_sent_maj.n_vlms_negative_slope	718fc3f01743	keyed
+-0.0127 (DOCCI G3_i.P_human_sent_maj.mean_within_vlm_slope)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_sent_maj.mean_within_vlm_slope	718fc3f01743	keyed
+[-0.0265, 0.0007] (DOCCI G3_i.P_human_sent_maj.mean_within_vlm_slope_ci_95)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_sent_maj.mean_within_vlm_slope_ci_95	718fc3f01743	keyed
+-0.0157 (DOCCI G3_i.P_human_sent_maj.beta_FE)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_sent_maj.beta_FE	718fc3f01743	keyed
+[-0.0286, -0.0024] (DOCCI G3_i.P_human_sent_maj.beta_FE_ci_95)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_sent_maj.beta_FE_ci_95	718fc3f01743	keyed
+False (DOCCI G3_i.P_human_sent_maj.pass)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_sent_maj.pass	718fc3f01743	keyed
+median_within_vlm_slope_lt_0 (DOCCI G3_i.P_human_sent_maj.failed_clause)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_sent_maj.failed_clause	718fc3f01743	keyed
+-0.0045 (DOCCI G3_i.P_human_rater_mean.median_within_vlm_slope)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_rater_mean.median_within_vlm_slope	718fc3f01743	keyed
+-0.0134 (DOCCI G3_i.P_human_rater_mean.beta_FE)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_rater_mean.beta_FE	718fc3f01743	keyed
+[-0.0241, -0.0022] (DOCCI G3_i.P_human_rater_mean.beta_FE_ci_95)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_rater_mean.beta_FE_ci_95	718fc3f01743	keyed
+True (DOCCI G3_i.P_human_rater_mean.pass)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_i.P_human_rater_mean.pass	718fc3f01743	keyed
+0.1538 (DOCCI G3_ii.P_human_sent_maj.delta_tau_vs_micro.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.P_human_sent_maj.delta_tau_vs_micro.est	718fc3f01743	keyed
+[-0.2637, 0.3077] (DOCCI G3_ii.P_human_sent_maj.delta_tau_vs_micro.ci_95)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.P_human_sent_maj.delta_tau_vs_micro.ci_95	718fc3f01743	keyed
+0.2198 (DOCCI G3_ii.P_human_sent_maj.delta_tau_vs_macro_M_ge_1.est)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.P_human_sent_maj.delta_tau_vs_macro_M_ge_1.est	718fc3f01743	keyed
+[-0.2637, 0.3077] (DOCCI G3_ii.P_human_sent_maj.delta_tau_vs_macro_M_ge_1.ci_95)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.P_human_sent_maj.delta_tau_vs_macro_M_ge_1.ci_95	718fc3f01743	keyed
+False (DOCCI G3_ii.P_human_sent_maj.ci_excludes_zero)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.P_human_sent_maj.ci_excludes_zero	718fc3f01743	keyed
+1671 (DOCCI G3_ii.bootstrap_ci_coincidence_audit.P_human_sent_maj.n_resamples_where_dtau_mic_ne_dtau_mac)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.bootstrap_ci_coincidence_audit.P_human_sent_maj.n_resamples_where_dtau_mic_ne_dtau_mac	718fc3f01743	keyed
+[0.4332, 0.4551] (povid chosen-fewer CI)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.povid.chosen_fewer_among_unmatched_ci95	5d572461d174	keyed
+0.243 (povid chosen-fewer, |dwords|<=2)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.povid.abs_dwords_le_2_chosen_fewer_among_unmatched	5d572461d174	keyed
+[0.8695, 0.8937] (hadpo_llava15 chosen-fewer CI)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.hadpo_llava15.chosen_fewer_among_unmatched_ci95	5d572461d174	keyed
+0.854 (hadpo_llava15 chosen-fewer, |dwords|<=2)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.hadpo_llava15.abs_dwords_le_2_chosen_fewer_among_unmatched	5d572461d174	keyed
+[0.8013, 0.8317] (hsadpo chosen-fewer CI)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.hsadpo.chosen_fewer_among_unmatched_ci95	5d572461d174	keyed
+0.763 (hsadpo chosen-fewer, |dwords|<=2)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.hsadpo.abs_dwords_le_2_chosen_fewer_among_unmatched	5d572461d174	keyed
+[0.4847, 0.5111] (mdpo_vlfeedback chosen-fewer CI)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.mdpo_vlfeedback.chosen_fewer_among_unmatched_ci95	5d572461d174	keyed
+0.551 (mdpo_vlfeedback chosen-fewer, |dwords|<=2)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.mdpo_vlfeedback.abs_dwords_le_2_chosen_fewer_among_unmatched	5d572461d174	keyed
+[0.8885, 0.9044] (sentinel_llava15_7b chosen-fewer CI)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.sentinel_llava15_7b.chosen_fewer_among_unmatched_ci95	5d572461d174	keyed
+0.886 (sentinel_llava15_7b chosen-fewer, |dwords|<=2)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.sentinel_llava15_7b.abs_dwords_le_2_chosen_fewer_among_unmatched	5d572461d174	keyed
+[0.6812, 0.7224] (rlhfv chosen-fewer CI)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.rlhfv.chosen_fewer_among_unmatched_ci95	5d572461d174	keyed
+0.791 (rlhfv chosen-fewer, |dwords|<=2)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.rlhfv.abs_dwords_le_2_chosen_fewer_among_unmatched	5d572461d174	keyed
+[0.5086, 0.5202] (rlaifv chosen-fewer CI)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.rlaifv.chosen_fewer_among_unmatched_ci95	5d572461d174	keyed
+0.523 (rlaifv chosen-fewer, |dwords|<=2)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.rlaifv.abs_dwords_le_2_chosen_fewer_among_unmatched	5d572461d174	keyed
+-1.54 (hadpo_llava15 logit beta dk | dwords)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.hadpo_llava15.logit_beta_dk_controlled_for_dwords	5d572461d174	keyed
+-1.19 (hsadpo logit beta dk | dwords)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.hsadpo.logit_beta_dk_controlled_for_dwords	5d572461d174	keyed
+-1.85 (sentinel_llava15_7b logit beta dk | dwords)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.sentinel_llava15_7b.logit_beta_dk_controlled_for_dwords	5d572461d174	keyed
+-1.13 (rlhfv logit beta dk | dwords)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.rlhfv.logit_beta_dk_controlled_for_dwords	5d572461d174	keyed
+31%-65% (count-unmatched share, 4 count-biased sets)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	1 - summary_table_7_datasets.{hadpo_llava15,hsadpo,sentinel_llava15_7b,rlhfv}.count_matched_share (min,max)	5d572461d174	keyed
+0.6 (L6 D2 RLAIF-V threshold)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	l6_d2_evaluation.prediction_rlaifv_chosen_fewer_among_unmatched_ge_060.threshold	5d572461d174	keyed
+FALSE (L6 D2 prediction passed)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	l6_d2_evaluation.prediction_rlaifv_chosen_fewer_among_unmatched_ge_060.passed_on_all_obj_pairs	5d572461d174	keyed
+[0.45,0.55] (L6 D2 kill interval)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	l6_d2_evaluation.kill_rule_rlaifv_in_045_055.kill_interval	5d572461d174	keyed
+TRUE (RLAIF-V in kill interval)	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	l6_d2_evaluation.kill_rule_rlaifv_in_045_055.in_kill_interval_all_obj_pairs	5d572461d174	keyed
+N9 count-matched leaderboard (9 ckpts); prereg to be committed (L6 D1 predictions, sec6.4)	A	-	-	-	pending
+E1 K2 seed placebo; prereg E1 REPORT §4 K2 (sec6.3)	A	-	-	-	pending
+XM3600 58_z detailed runs (3 of 6 systems): N1-XM-1..5 verdicts; prereg 4ccbee3 valid (sec7.5)	A	-	-	-	pending
+G2-B extended, Qwen3-VL-8B zero-shot ladder; prereg G2 REPORT §4, to be committed (sec7.6)	A	-	-	-	pending
+B3 large-k (nocaps, PASCAL-50S); prereg manuscript/prereg/2026-10-14_b3_licence_verification.md (sec7.7)	A	-	-	-	pending
 148.66	B	data/results/p1assist_s42-short.json	results.0.scores_scaled_x100.CIDEr	ea38b60e7dc5	keyed
 148.06	B	data/results/p1assist_s43-short.json	results.0.scores_scaled_x100.CIDEr	ce8576a440d5	keyed
 147.96	B	data/results/p1assist_s44-short.json	results.0.scores_scaled_x100.CIDEr	723d97653f89	keyed

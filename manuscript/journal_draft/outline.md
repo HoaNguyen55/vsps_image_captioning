@@ -1,9 +1,9 @@
 # Paper A: outline
 
-Status: first draft, 2026-10-14. Scope: Paper A of the two-paper plan (`.session_backup/2026-10-14/two_paper/PLAN_2PAPERS.md`).
+Status: first draft, 2026-10-14; §6–§10 drafted 2026-10-15 (pending-run placeholders marked `[PENDING: run, prereg]`). Scope: Paper A of the two-paper plan (`.session_backup/2026-10-14/two_paper/PLAN_2PAPERS.md`).
 Framing (PD-4 Q2, D17 §3a): measurement validity of object-level caption metrics under three threats: object count, gold completeness and reference exchangeability. Vietnamese captioning on KTVIC is the motivating case only. The Vietnamese system, the KTVIC dataset audit and the two-gold analysis belong to the companion paper (Paper B, `paperB_outline.md`).
 
-Venue: TACL (about 10 pages plus appendix) if the DOCCI-Critique human test is positive; otherwise TMLR (PD-4 Q3). Check the TMLR rule on conference extensions against FAIR 2026 before choosing TMLR.
+Venue order: TACL (about 10 pages plus appendix), then ACL ARR (2027-01-04 cycle), then IP&M; TMLR last. Submission due 2026-12-20. The registered DOCCI-Critique verdict is MIXED (G3-(i) primary fails; G3-(ii) point estimate passes, CI includes 0), so the TACL framing rests on the metric-property results plus bounded human evidence (PD-6 follow-up ruling recorded in `h1_g3_registered_supplement_v2.json :: registered_G3.verdict_detail.pd6_tacl_implication`).
 
 Source convention: every number carries an HTML comment `<!-- src: path :: key -->`. Paths are relative to the repo root. Numbers marked TODO are not yet traced or not yet computed.
 
@@ -29,7 +29,7 @@ Object-level scores such as CHAIR, object precision and object F1 are the standa
 2. **A gold-indexed account of the verbosity reward.** Under exchangeable references and salience-ordered mentions, the frontier exponent $b(k)$ is nondecreasing in the number of references $k$, and the sign of micro-F1's verbosity reward changes at most once (from negative to positive) as $k$ grows. The F1 half-threshold rule is Lipton et al. (2014); the propensity view of human precision versus $k$ is Chen et al. (2015, §4.2). Our part is the monotonicity, the single crossing, the two-channel split, and the tests on fixed outputs.
 3. **The verbosity sign is a property of the metric, tested out of sample.** Confirmatory on COCO-2500 (frozen predictions, 4 of 4 held). Exploratory elsewhere: on 20 public English LVLM outputs the five-reference slope stays negative, so the crossing point moves with the systems' verbosity; on UIT-ViIC the slope rises with completeness but the five-reference sign depends on the matcher.
 4. **A reference-exchangeability check.** An adjacent-doubleton statistic and two companion statistics separate independent annotators (COCO, UIT-ViIC) from corpora with a non-random reference order (Flickr30k; partly OpenViIC), and show what breaks in reference-count curves when exchangeability fails.
-5. **Human validity, stated narrowly.** On THumB 1.0 and the Composite set, object precision agrees with expert precision more under complete gold, and object metrics agree with humans most on count-matched pairs; the count-controlled residual is not a better overall quality score than raw CHAIR. Pending: Polaris-COCO and DOCCI-Critique (frozen predictions).
+5. **Human validity, stated narrowly.** On THumB 1.0 and the Composite set, object precision agrees with expert precision more under complete gold, and object metrics agree with humans most on count-matched pairs; the count-controlled residual is not a better overall quality score than raw CHAIR. Polaris-COCO (registered, PASS) replicates the gold-completeness and matched-count patterns; DOCCI-Critique (long paragraphs) is MIXED. Both preregistrations were committed after the results JSON existed; disclosed.
 6. **Preference data audit.** In public hallucination-preference sets, a large share of chosen/rejected pairs differ in object count, and in several sets the chosen response names fewer objects in most count-unmatched pairs; length matching does not remove this.
 
 ## Section plan (TACL, ~10 pages + appendix)
@@ -41,11 +41,11 @@ Object-level scores such as CHAIR, object precision and object F1 are the standa
 | 3 | Measurement setup: count-matched controls, CAR, two-column reporting | `sec3_measurement_setup.md` | drafted | 1.5 |
 | 4 | Theory: gold-indexed frontier and the single crossing | `sec4_theory.md` | drafted | 1.5 |
 | 5 | Reference exchangeability | `sec5_exchangeability.md` | drafted | 0.8 |
-| 6 | Experiments I: re-scoring published methods (E1 spec curve; N9 leaderboard) | — | pending N9, E1 K2 placebo | 1.3 |
-| 7 | Experiments II: the verbosity sign across golds (COCO-2500 confirmatory; LVLM, UIT-ViIC exploratory; XM3600 frozen) | — | partly available; XM3600 pending | 1.2 |
-| 8 | Experiments III: human validity (THumB/Composite; Polaris; DOCCI-Critique) | — | THumB/Composite available; others pending | 1.0 |
-| 9 | Preference data audit | — | available | 0.4 |
-| 10 | Discussion and recommendations (two-column standard, checklist) | — | to write after §6–8 | 0.5 |
+| 6 | Experiments I: re-scoring published methods (E1 spec curve; N9 leaderboard) | `sec6_rescoring_published_methods.md` | drafted; [PENDING] N9, E1 K2 placebo | 1.3 |
+| 7 | Experiments II: the verbosity sign across golds (COCO-2500 confirmatory; LVLM failed frozen test; UIT-ViIC exploratory; XM3600, G2-B, B3 frozen) | `sec7_verbosity_sign.md` | drafted; [PENDING] XM3600 detailed, G2-B, B3 | 1.2 |
+| 8 | Experiments III: human validity (THumB/Composite; Polaris; DOCCI-Critique) | `sec8_human_validity.md` | drafted (all four sets) | 1.0 |
+| 9 | Preference data audit | `sec9_preference_audit.md` | drafted; conditional kill waits on N9 | 0.4 |
+| 10 | Discussion and recommendations (two-column standard, checklist) | `sec10_discussion.md` | drafted | 0.5 |
 | 11 | Limitations and ethics | `sec11_limitations_ethics.md` | drafted | 0.5 |
 | App. | A proofs; B matcher and lexicons; C spec curve per pair; D prereg ledger; E per-dataset adjacency tables; F numbers manifest | — | A partly in §4 | — |
 
@@ -59,11 +59,11 @@ Companion-paper pointers (one line each in Paper A, citing Paper B as under revi
 | Fig. 2 | Slope of F1 on $\log M$ versus gold completeness ($k=1..5$, instance, instance+refs) for COCO-2500 and the two English LVLM families (XM3600 to be added) | available |
 | Fig. 3 | Specification curve: 15 decoding pairs × controls (raw, prefix MCP, sentence tie-avg, random subset; unadjusted and Holm+SESOI) | available; add K2 placebo when run |
 | Fig. 4 | Single crossing: $\Lambda_k(M_0)$ and its b-channel / $\bar G$-channel split | available |
-| Fig. 5 | Adjacency statistic by dataset with CIs and the 0.40 null (COCO, UIT-ViIC, Flickr30k, OpenViIC aggregates; no KTVIC row) | available |
+| Fig. 5 | Adjacency statistic by dataset with CIs and the 0.40 null (COCO, UIT-ViIC, Flickr30k, OpenViIC aggregates; no KTVIC row); XM3600 3-ref row with its own 2/3 null | available (XM3600 row keyed, §7.5) |
 | Tab. 1 | Notation and the three controls | text |
 | Tab. 2 | E1 spec-curve counts | available |
 | Tab. 3 | N9 count-matched leaderboard (9 LLaVA-1.5-7B checkpoints) | pending (N9) |
 | Tab. 4 | Verbosity slope by gold: COCO-2500 (confirmatory), English LVLM families, UIT-ViIC (exploratory), XM3600 (frozen) | XM3600 pending |
-| Tab. 5 | Human validity: pairwise agreement by gold and by count-equal vs count-differing pairs; THumB, Composite; Polaris and DOCCI rows pending | partly available |
+| Tab. 5 | Human validity: THumB, Composite (Tab. 8.1), Polaris G2, DOCCI-Critique G3 | available |
 | Tab. 6 | Preference data audit (7 datasets) | available |
 | Tab. 7 | Prereg ledger: claim, registration time, first-look time, status | to compile |

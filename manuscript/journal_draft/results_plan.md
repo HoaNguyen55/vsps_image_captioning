@@ -1,6 +1,6 @@
 # Paper A: results plan and number status
 
-Date: 2026-10-15. For each planned table and figure: what exists (file + JSON key), what is pending, and what decides the text.
+Date: 2026-10-15 (updated after drafting §6–§10). For each planned table and figure: what exists (file + JSON key), what is pending, and what decides the text.
 Abbreviations: `C1J` = `.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json`; `H4J` = `.session_backup/2026-10-14/r12/H4/out/h4_check.json`; `H3J` = `.session_backup/2026-10-14/r12/H3/out/n1_results.json`; `H1J` = `.session_backup/2026-10-14/r12/H1/pilot_results.json` (reproduction: `.session_backup/2026-10-14/r12_verify/h1_pilot_repro.json`); `E1J` = `.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json`; `C2J` = `.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json`; `C6J` = `.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json`.
 
 Status legend: **READY** (all numbers traced) · **PARTIAL** · **PENDING** (needs a run) · **BLOCKED** (needs a decision or a fix first).
@@ -22,7 +22,7 @@ Status legend: **READY** (all numbers traced) · **PARTIAL** · **PENDING** (nee
 
 ## Tables
 
-### Tab. 2 — E1 specification curve (15 published decoding comparisons) — PARTIAL
+### Tab. 2 — E1 specification curve (15 published decoding comparisons) — PARTIAL (text §6; K2 placebo pending)
 
 | Quantity | Value | Source |
 |---|---|---|
@@ -36,16 +36,16 @@ Status legend: **READY** (all numbers traced) · **PARTIAL** · **PENDING** (nee
 | share of raw gain explained by count + allocation (descriptive; shared baselines) | 81.8% (prefix), 80.9% (sent) | E1J `.pct_gain_explained_by_count_and_alloc_prefix`, `_sent_tieavg` |
 | K4 verdict by control | NOT_TRIGGERED (prefix, sent), TRIGGERED (random) | E1J `.k4_en_verdict_*` |
 | K3 positive control (drop-1, ≥ +3 P) | 6/8 point, 3/8 CI lower bound | E1J `controls_K2_K3.registered_k3_en_summary.point_ge_3_count`, `.ci_lo_ge_3_count` |
-| per-pair rows | 15 rows | E1J `pairs_15.*` (TODO: write the table generator) |
+| per-pair rows | 15 rows; §6.2 quotes 3 pairs (InstructBLIP vs greedy, MiniGPT-v2 r12, Shikra vs beam5/greedy) | E1J `pairs_15.*` (TODO: Appendix C table generator, with per-pair MDE) |
 | X1 P-B (count vs length), signed | +0.186 [−0.257, +0.579] → KILL | E1J `x1_pb_english.summary.kill_rule_assessment_v2.PB_signed_mean_15pairs_est/_ci95` |
 
-Pending: **E1 K2 seed placebo** (2 sampling seeds of LLaVA-1.5-7B on CHAIR-500; ~0.5–1 GPU-h; in the N9 harness). It decides which control is primary (|ΔP| ≤ 0.5 and CI ∋ 0). Note: the random-subset control already fails its own two-seed check in 2/8 rows (D17 §1(d), key `passes_K2` in E1J; TODO: confirm key path). Pending: K3 action "enlarge to 2,000 images" (registered, not taken). Text rule: always report the curve, never one number.
+Pending: **E1 K2 seed placebo** (2 sampling seeds of LLaVA-1.5-7B on CHAIR-500; ~0.5–1 GPU-h; in the N9 harness). It decides which control is primary (|ΔP| ≤ 0.5 and CI ∋ 0). Note: the random-subset control fails its own two-seed check in 2/8 rows (key confirmed: E1J `controls_K2_K3.placebos_K2.two_seed_random_subset.<baseline>.passes_K2`, 6 true of 8). The self-swap substitute placebo passes 15/15 but is null by construction (`substitute_placebos_metadata.is_registered_two_seed_placebo` = False). `.session_backup/2026-10-14/r12_verify/n9_e1_k2_seed_placebo.json` is a KTVIC multi-seed band (Paper B data), NOT the registered English K2 placebo. Text: §6.2–6.3. Pending: K3 action "enlarge to 2,000 images" (registered, not taken). Text rule: always report the curve, never one number.
 
 ### Tab. 3 — N9 count-matched leaderboard of training-based methods — PENDING
 
 9 public LLaVA-1.5-7B checkpoints (POVID, RLAIF-V, HALVA, CHAIR-DPO, SENTINEL, HA-DPO, HSA-DPO, OPA-DPO, …) on CHAIR-500, scored raw / MCP / tie-avg / CAR. ~6 GPU-h, machine 1 after the ladder. Prereg must be committed first (L6 §3 D1 predictions; checkpoint revisions and licences; primary control by the placebo rule). No numbers exist.
 
-### Tab. 4 — verbosity slope by gold — PARTIAL
+### Tab. 4 — verbosity slope by gold — PARTIAL (text §7; XM3600, G2-B, B3 pending)
 
 | Row | Status | Values (slope of F1 on ln M, 95% CI) | Source |
 |---|---|---|---|
@@ -56,19 +56,19 @@ Pending: **E1 K2 seed placebo** (2 sampling seeds of LLaVA-1.5-7B on CHAIR-500; 
 | KTVIC 36 FT, random-k — **Paper B owns (PD-6); not in A** | moved | −3.32 [−6.19, −0.48]; +3.77; +8.42; +11.94; +14.15 | C1J `check_mstar_gold.k{1..5}_randk.ft.slope_F1_per_logM` |
 | KTVIC slot-1 diagnostic (first-k) — **Paper B owns; not in A** | moved | −10.65 [−13.87, −7.28] | C1J `check_mstar_gold.k1_firstk.ft` |
 | UIT-ViIC test, 10 systems, exploratory, COCO-80 lexicon | READY | refs1(first) −15.90 [−20.69, −10.72]; refs5 +4.80 (CI touches 0); inst +37.52 | C2J `uitviic_test.lexicons.coco80.gold_variants.{refs1_firstk,refs5_randk,inst_only}.groups.all_10.slope_F1_mixed_per_logM` (+ `_ci95`) |
-| UIT-ViIC, vi_objects_in lexicon | READY | refs1 −16.42; refs5 −6.28 [−8.34, −3.96] (no flip) | C2J `uitviic_test.lexicons.vi_objects_in...all_10` |
+| UIT-ViIC, vi_objects_in lexicon | READY | refs1 (random) −17.25 [−20.04, −14.53]; refs5 −6.28 [−8.31, −4.29] (no flip); inst +7.66 [+5.78, +9.58]. CORRECTED 2026-10-15: [−8.34, −3.96] is the `refs5_firstk` key, not `refs5_randk` (same gold at K=5, different bootstrap draws); sec11 §11.1 still quotes [−8.34, −3.96] against the randk key | C2J `uitviic_test.lexicons.vi_objects_in...all_10` |
 | UIT-ViIC paired differences | READY via RV4 | refs5 − refs1 +20.70 [16.35, 25.00]; inst − refs5 +32.72 [28.01, 37.27] (coco80, all_10) | `.session_backup/2026-10-15/paperA_keys/uitviic_paired_diffs.json :: coco80.all_10.{diff_refsall_minus_ref1first,diff_inst_minus_refsall}` (= RV4 `rv4_n1.json`, same keys) |
-| **XM3600** (600 images, 2–3 VI refs, OIV7 verified labels), out-of-sample with b transferred from COCO | **PENDING** | — | prereg `manuscript/prereg/2026-10-14_xm3600_predictions.{md,json}` pre-registered in commit 4ccbee3 (2026-10-14 23:38 +07), before the first XM3600 result (00:29 +07); the registration is valid. Results not yet reviewed or used; results to be reviewed and keyed |
+| **XM3600** (600 images, 2–3 VI refs, OIV7 verified labels), out-of-sample with b transferred from COCO | **PENDING (detailed runs)**; interim 3 short systems keyed (§7.5, labelled not-a-test): refs1_randk +11.13 [−1.45, +24.50] at M 1.14–1.43 < M*_prior 1.471; gold sizes 14/15 IN, `GBAR-refs1_randk-Gbar_nonempty` OUT (1.8768 vs 1.8831); N2 K=3 adjacency 0.533 [0.414, 0.647] vs null 0.667 | `.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json` (aef0137c390b) | prereg `manuscript/prereg/2026-10-14_xm3600_predictions.{md,json}` pre-registered in commit 4ccbee3 (2026-10-14 23:38 +07), before the first XM3600 result (00:29 +07); the registration is valid. Results not yet reviewed or used; results to be reviewed and keyed |
 
 Text rules: COCO is the only confirmatory row. No KTVIC number appears in Paper A (PD-6 Q1(a); coordinator ruling 2026-10-15). Do not claim the UIT-ViIC 1→5-ref flip. Kill rule (H6 P2): if ≥ 2 XM3600 sign predictions fail, the sign result moves from "core" to "explanatory".
 
-### Tab. 5 — human validity — PARTIAL
+### Tab. 5 — human validity — READY (all four sets; text §8)
 
 | Quantity | THumB (500 img, 2,500 caps) | Composite (1,996 img) | Source |
 |---|---|---|---|
 | −CHAIR vs expert P, pairwise agreement, refs1 / refs4 / full gold | 0.736 / 0.797 / 0.903 | — | H1J `THumB.agree.negCHAIR|{refs1,refs4,full}|P|all.est` |
 | −CHAIR vs total, refs1 / refs4 / full | 0.627 / 0.714 / 0.793 | 0.743 / 0.838 / 0.873 | H1J `*.agree.negCHAIR|{refs1,refs4,full}|T|all.est` |
-| count-equal vs count-differing pairs (−CHAIR, full, vs total) | 0.846 vs 0.773 | (TODO key) | H1J `THumB.agree.negCHAIR|full|T|ceq.est`, `...|cdiff.est` |
+| count-equal vs count-differing pairs (−CHAIR, full, vs total) — exploratory | 0.846 vs 0.773 | 0.946 vs 0.838 (`Composite.agree.negCHAIR|full|T|{ceq,cdiff}.est`) | H1J `THumB.agree.negCHAIR|full|T|ceq.est`, `...|cdiff.est` |
 | P1b residual z minus −CHAIR vs total (count-differing) | −0.190 [−0.277, −0.108] | −0.083 [−0.101, −0.065] | H1J `*.P1b_acc(z->T)-acc(-CHAIR->T)` |
 | P1a −CHAIR minus z vs expert P | +0.325 [+0.247, +0.398] | +0.097 [+0.079, +0.116] | H1J `*.P1a_acc(-CHAIR->P)-acc(z->P)` |
 | human preference for larger-M caption | 0.481 [0.429, 0.530] | 0.525 [0.506, 0.544] | H1J `*.P2a_v_human` |
@@ -77,9 +77,10 @@ Text rules: COCO is the only confirmatory row. No KTVIC number appears in Paper 
 | corr(M, total), caption level | −0.05 | −0.016 | H1J `THumB.corr_pearson_spearman.M|-|T` |
 | P4 matched-count wins agree with humans | 0.846 (n 91) | 0.946 (n 928) | H1J `*.P4_clean_T` |
 | Registered verdicts | P1a held ×2; P1b failed ×2; P2c failed (kill fired); P3 held (T) / failed (C); P4, P5 failed | | `.session_backup/2026-10-14/r12/H1/PREDICTIONS_FROZEN.txt`, H1 REPORT §1b |
-| **Polaris-COCO** | **PENDING** | | prereg `manuscript/prereg/2026-10-14_h1_polaris_docci.md`: the Polaris/DOCCI pre-registration was committed in 7f22d13 (23:47 +07) after the results JSON was written (23:25 +07); this order is disclosed. The registered G3 verdict, computed with the COCO-80 matcher, is pending; results with the ExpandedNouns lexicon are exploratory only |
-| **DOCCI-Critique** (14 VLMs, long paragraphs) | **PENDING** — registered G3 verdict (COCO-80 matcher) decides TACL vs TMLR; ExpandedNouns = exploratory | | same prereg and same timing disclosure; CC BY 4.0 |
+| **Polaris-COCO** (G2, registered) | **READY — PASS** (H-a, H-b, H-c all held; no kill). Text §8.2 | | prereg `manuscript/prereg/2026-10-14_h1_polaris_docci.md`: the Polaris/DOCCI pre-registration was committed in 7f22d13 (23:47 +07) after the results JSON was written (23:25 +07); this order is disclosed. The registered G3 verdict, computed with the COCO-80 matcher, is pending; results with the ExpandedNouns lexicon are exploratory only |
+| **DOCCI-Critique** (14 VLMs, long paragraphs) | **READY — MIXED** (G3-(i) primary FAILS: median within-VLM slope +0.000371; G3-(ii) Δτ +0.1538 micro / +0.2198 macro ≥ +0.10 but CI [−0.2637, +0.3077] ∋ 0). COCO-80 primary; ExpandedNouns exploratory, no numbers in text. Text §8.3 | `.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json` (718fc3f01743) `registered_G2.*`, `registered_G3.*` | same prereg and same timing disclosure; CC BY 4.0 |
 
+Label: the gold-completeness agreement rows (THumB 0.736/0.797/0.903 vs P; 0.627/0.714/0.793 and Composite 0.743/0.838/0.873 vs total) and the ceq/cdiff rows are EXPLORATORY (H1 REPORT §1c); Polaris G2 H-a/H-b registers them. sec1 (Human validity paragraph) quotes 0.736→0.903 without the exploratory label — fix there.
 Licence: THumB and Composite have no licence file — aggregates only. Frozen-prediction caveat: H1's predictions were written and hashed before any human statistic, but not git-committed (label "timestamped").
 
 ### Tab. 6 — preference-data count audit — READY
@@ -95,7 +96,7 @@ Licence: THumB and Composite have no licence file — aggregates only. Frozen-pr
 | RLAIF-V | 70,029 | 0.590 | 0.514 [0.509, 0.520] | −0.017 | C6J `.rlaifv.*` |
 | length-matched (|Δwords| ≤ 2) subsets | per row | | e.g. HA-DPO 0.854, SENTINEL 0.886 | | C6J `.<ds>.abs_dwords_le_2_chosen_fewer_among_unmatched` |
 
-Note: RLHF-V is count-biased and RLAIF-V near-neutral (Gemini's log had this reversed; RV4 2b). Matcher: CHAIR COCO-80.
+Note: RLHF-V is count-biased and RLAIF-V near-neutral (Gemini's log had this reversed; RV4 2b). Matcher: CHAIR COCO-80. The L6 D2 prediction (RLAIF-V ≥ 0.60) FAILED; RLAIF-V 0.514 is inside the kill interval [0.45, 0.55]; the conjunctive kill also needs N9 D1 (no Δk→Δm link) — PENDING N9 (§9). Status: READY (text §9).
 
 ### Tab. 7 — prereg ledger — TO COMPILE
 
@@ -119,9 +120,10 @@ Rows: COCO-2500 N1 (frozen file, L1), H3 LVLM N1 (frozen, FAILED), H1 THumB/Comp
 
 | Run | Feeds | Cost / machine | Gate |
 |---|---|---|---|
-| DOCCI-Critique human test | Tab. 5; venue (TACL vs TMLR) | CPU | prereg committed after results JSON (disclosed); G3 verdict with COCO-80 matcher pending |
-| Polaris-COCO | Tab. 5 | CPU (~0.3 h) | same timing disclosure |
-| XM3600 58_z | Tab. 4, Fig. 5 | ~3 GPU-h, machine 2 | prereg committed 4ccbee3 before first result (valid); outputs exist, to be reviewed |
+| DOCCI-Critique human test | Tab. 5 | CPU | DONE: MIXED (prereg committed after results JSON; disclosed) |
+| Polaris-COCO | Tab. 5 | CPU | DONE: PASS (same timing disclosure) |
+| G2-B extended (Qwen3-VL-8B zero-shot ladder) | §7.6, Tab. 4 | ~3.9 GPU-h | prereg = G2 REPORT §4, must be committed before outputs |
+| XM3600 58_z detailed (3 of 6 systems) | Tab. 4 | machine 2 | prereg 4ccbee3 valid; short-run interim keyed; N1-XM verdicts need all 6 |
 | N9 | Tab. 3 | ~6 GPU-h, machine 1 | committed prereg |
 | E1 K2 placebo | Tab. 2 primary control | ~0.5–1 GPU-h | in N9 prereg |
 | B3 large-k (nocaps 10 refs, PASCAL-50S) | §4 asymptote | GPU 2–3 h | licence check |
