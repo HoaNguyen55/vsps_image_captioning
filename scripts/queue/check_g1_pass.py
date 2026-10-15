@@ -252,12 +252,16 @@ def _current_machine_state(repo: Path) -> dict[str, str | None]:
     _, canon_sha, _ = _load_canonical_adapters(repo)
     site_venv = repo / ".venv/lib/python3.10/site-packages/sitecustomize.py"
     site_target = os.readlink(site_venv) if site_venv.is_symlink() else None
+    sys_site = Path("/usr/lib/python3.10/sitecustomize.py")
+    sys_site_target = os.readlink(sys_site) if sys_site.is_symlink() else None
     return {
         "head_sha": head_sha,
         "hook_sha": hook_sha,
         "canon_adapters_sha": canon_sha,
         "site_venv": str(site_venv),
         "site_target": site_target,
+        "sys_site": str(sys_site),
+        "sys_site_target": sys_site_target,
     }
 
 
@@ -306,6 +310,7 @@ def verify_g1_gate(
             and live_data_audit["all_ok"] is True
             and d.get("sitecustomize_symlink_target") == state["site_target"]
             and state["site_target"] == expected_target
+            and state["sys_site_target"] == expected_target
             and chair_v1.get("byte_exact_json_match_vs_committed") is True
             and chair_v1.get("exact_match_vs_committed") is True
             and d.get("max_metric_abs_diff") == 0
@@ -433,6 +438,7 @@ def run_g1_gate(
         and byte_exact_v1
         and got_v1["results"][0]["segmenter"] == "rdrsegmenter"
         and state["site_target"] == expected_target
+        and state["sys_site_target"] == expected_target
         and len(adapter_hashes) == MIN_ADAPTERS
         and len(adapter_mismatches) == 0
         and data_audit["all_ok"] is True
@@ -461,6 +467,8 @@ def run_g1_gate(
         "canonical_adapters_file_sha256": canon_sha,
         "sitecustomize_symlink": state["site_venv"],
         "sitecustomize_symlink_target": state["site_target"],
+        "sys_sitecustomize_symlink": state["sys_site"],
+        "sys_sitecustomize_symlink_target": state["sys_site_target"],
         "train_stage2_sha256": train_sha,
         "evaluate_py_sha256": eval_sha,
         "chair_py_sha256": chair_sha,

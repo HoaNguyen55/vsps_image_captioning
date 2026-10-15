@@ -135,13 +135,18 @@ def _install_train_stage2_hooks() -> None:
                 mirror_dir.mkdir(parents=True, exist_ok=True)
                 ckpt = out_dir / f"checkpoint-{state.global_step}"
                 if ckpt.is_dir():
-                    for old in _sorted_checkpoints(mirror_dir):
-                        if old.name != ckpt.name:
-                            shutil.rmtree(old, ignore_errors=True)
                     dst = mirror_dir / ckpt.name
                     if dst.exists():
                         shutil.rmtree(dst, ignore_errors=True)
                     shutil.copytree(ckpt, dst)
+                    limit = max(int(getattr(args, "save_total_limit", 2) or 2), 1)
+                    old_ckpts = [p for p in _sorted_checkpoints(mirror_dir) if p.name != ckpt.name]
+                    if limit > 1:
+                        to_prune = old_ckpts[: max(0, len(old_ckpts) - (limit - 1))]
+                    else:
+                        to_prune = old_ckpts
+                    for old in to_prune:
+                        shutil.rmtree(old, ignore_errors=True)
                 manifest = out_dir / "resume_manifest.json"
                 if manifest.is_file():
                     shutil.copy2(manifest, mirror_dir / "resume_manifest.json")
