@@ -1,0 +1,543 @@
+{
+ "schema": "vsps.g2b_score.v1.selfcheck",
+ "created_utc": "2026-10-18T19:51:33Z",
+ "scorer_sha256": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5",
+ "prereg_sha256": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+ "pinned_files_differing_from_prereg": [],
+ "system_counts": {
+  "COCO-2500": 9,
+  "UIT-ViIC": 10,
+  "XM3600": 6
+ },
+ "references_sha256": {
+  ".session_backup/2026-10-14/r11_litmaps/L1/check_coco.json": "cb21dd257f93a794fa7933c39a994a15825e95f705bdf3dd3e5cc1ad273593aa",
+  ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json": "bed1dc259aefe32fbb5a966e807022ccff9dc56cc90fc9f405ca45a152e7780b",
+  ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json": "0b2b3aa5e1a3f532e62e836c2b8011a46c811f7c01aaed4711aa9eae9a133dbf"
+ },
+ "verdict_rule_unit_failures": [],
+ "cells": [
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs1_firstk",
+   "stat": "slope",
+   "reference_key": "gold.refs1_firstk.slope",
+   "reference": -4.21,
+   "reproduced": -4.21,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs1_firstk",
+   "stat": "b",
+   "reference_key": "gold.refs1_firstk.b",
+   "reference": 0.478,
+   "reproduced": 0.478,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs2_firstk",
+   "stat": "slope",
+   "reference_key": "gold.refs2_firstk.slope",
+   "reference": 2.94,
+   "reproduced": 2.94,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs2_firstk",
+   "stat": "b",
+   "reference_key": "gold.refs2_firstk.b",
+   "reference": 0.552,
+   "reproduced": 0.552,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs3_firstk",
+   "stat": "slope",
+   "reference_key": "gold.refs3_firstk.slope",
+   "reference": 6.62,
+   "reproduced": 6.62,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs3_firstk",
+   "stat": "b",
+   "reference_key": "gold.refs3_firstk.b",
+   "reference": 0.589,
+   "reproduced": 0.589,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs4_firstk",
+   "stat": "slope",
+   "reference_key": "gold.refs4_firstk.slope",
+   "reference": 9.12,
+   "reproduced": 9.12,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs4_firstk",
+   "stat": "b",
+   "reference_key": "gold.refs4_firstk.b",
+   "reference": 0.619,
+   "reproduced": 0.619,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs5_firstk",
+   "stat": "slope",
+   "reference_key": "gold.refs5_firstk.slope",
+   "reference": 11.08,
+   "reproduced": 11.08,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "refs5_firstk",
+   "stat": "b",
+   "reference_key": "gold.refs5_firstk.b",
+   "reference": 0.643,
+   "reproduced": 0.643,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "inst",
+   "stat": "slope",
+   "reference_key": "gold.inst.slope",
+   "reference": 22.41,
+   "reproduced": 22.41,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "inst",
+   "stat": "b",
+   "reference_key": "gold.inst.b",
+   "reference": 0.846,
+   "reproduced": 0.846,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "inst+refs_all",
+   "stat": "slope",
+   "reference_key": "gold.inst+refs5.slope",
+   "reference": 24.16,
+   "reproduced": 24.16,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "COCO-2500 (check_coco)",
+   "gold": "inst+refs_all",
+   "stat": "b",
+   "reference_key": "gold.inst+refs5.b",
+   "reference": 0.867,
+   "reproduced": 0.867,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs1_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs1_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": -15.9,
+   "reproduced": -15.9,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs1_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs1_firstk.groups.all_10.b",
+   "reference": 0.3656,
+   "reproduced": 0.3656,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs2_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs2_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": -6.01,
+   "reproduced": -6.01,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs2_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs2_firstk.groups.all_10.b",
+   "reference": 0.4672,
+   "reproduced": 0.4672,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs3_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs3_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": 1.04,
+   "reproduced": 1.04,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs3_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs3_firstk.groups.all_10.b",
+   "reference": 0.5396,
+   "reproduced": 0.5396,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs4_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs4_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": 3.07,
+   "reproduced": 3.07,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs4_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs4_firstk.groups.all_10.b",
+   "reference": 0.5619,
+   "reproduced": 0.5619,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs5_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs5_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": 4.8,
+   "reproduced": 4.8,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "refs5_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.refs5_firstk.groups.all_10.b",
+   "reference": 0.5798,
+   "reproduced": 0.5798,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "inst",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.inst_only.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": 37.52,
+   "reproduced": 37.52,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "inst",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.inst_only.groups.all_10.b",
+   "reference": 0.9696,
+   "reproduced": 0.9696,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "inst+refs_all",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.inst_plus_refs5.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": 37.5,
+   "reproduced": 37.5,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "inst+refs_all",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.inst_plus_refs5.groups.all_10.b",
+   "reference": 0.9696,
+   "reproduced": 0.9696,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "inst+refs1_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.inst_plus_refs1_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": 37.5,
+   "reproduced": 37.5,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (coco80)",
+   "gold": "inst+refs1_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.coco80.gold_variants.inst_plus_refs1_firstk.groups.all_10.b",
+   "reference": 0.9696,
+   "reproduced": 0.9696,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs1_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs1_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": -16.42,
+   "reproduced": -16.42,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs1_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs1_firstk.groups.all_10.b",
+   "reference": 0.2799,
+   "reproduced": 0.2799,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs2_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs2_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": -12.86,
+   "reproduced": -12.86,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs2_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs2_firstk.groups.all_10.b",
+   "reference": 0.3211,
+   "reproduced": 0.3211,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs3_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs3_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": -9.9,
+   "reproduced": -9.9,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs3_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs3_firstk.groups.all_10.b",
+   "reference": 0.3549,
+   "reproduced": 0.3549,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs4_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs4_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": -7.39,
+   "reproduced": -7.39,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs4_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs4_firstk.groups.all_10.b",
+   "reference": 0.3756,
+   "reproduced": 0.3756,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs5_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs5_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": -6.28,
+   "reproduced": -6.28,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "refs5_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs5_firstk.groups.all_10.b",
+   "reference": 0.3848,
+   "reproduced": 0.3848,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "inst",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.inst_only.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": 7.66,
+   "reproduced": 7.66,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "inst",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.inst_only.groups.all_10.b",
+   "reference": 0.7105,
+   "reproduced": 0.7105,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "inst+refs_all",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.inst_plus_refs5.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": 7.71,
+   "reproduced": 7.71,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "inst+refs_all",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.inst_plus_refs5.groups.all_10.b",
+   "reference": 0.5629,
+   "reproduced": 0.5629,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "inst+refs1_firstk",
+   "stat": "slope",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.inst_plus_refs1_firstk.groups.all_10.slope_F1_mixed_per_logM",
+   "reference": 6.9,
+   "reproduced": 6.9,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "UIT-ViIC test all_10 (vi_objects_in)",
+   "gold": "inst+refs1_firstk",
+   "stat": "b",
+   "reference_key": "uitviic_test.lexicons.vi_objects_in.gold_variants.inst_plus_refs1_firstk.groups.all_10.b",
+   "reference": 0.5935,
+   "reproduced": 0.5935,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "XM3600 (full verdict, v2)",
+   "gold": "refs1_firstk",
+   "stat": "slope",
+   "reference_key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_firstk.slope_F1_per_logM",
+   "reference": -11.1911,
+   "reproduced": -11.1911,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "XM3600 (full verdict, v2)",
+   "gold": "refs1_firstk",
+   "stat": "b",
+   "reference_key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_firstk.b_in_sample",
+   "reference": 0.3783,
+   "reproduced": 0.3783,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "XM3600 (full verdict, v2)",
+   "gold": "refs_all",
+   "stat": "slope",
+   "reference_key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs_all.slope_F1_per_logM",
+   "reference": -2.4278,
+   "reproduced": -2.4278,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "XM3600 (full verdict, v2)",
+   "gold": "refs_all",
+   "stat": "b",
+   "reference_key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs_all.b_in_sample",
+   "reference": 0.5029,
+   "reproduced": 0.5029,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "XM3600 (full verdict, v2)",
+   "gold": "oiv7_verified",
+   "stat": "slope",
+   "reference_key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.oiv7_verified.slope_F1_per_logM",
+   "reference": 19.3247,
+   "reproduced": 19.3247,
+   "abs_diff": 0.0,
+   "ok": true
+  },
+  {
+   "family": "XM3600 (full verdict, v2)",
+   "gold": "oiv7_verified",
+   "stat": "b",
+   "reference_key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.oiv7_verified.b_in_sample",
+   "reference": 0.9731,
+   "reproduced": 0.9731,
+   "abs_diff": 0.0,
+   "ok": true
+  }
+ ],
+ "n_cells": 52,
+ "n_ok": 52,
+ "pass": true
+}
