@@ -27,7 +27,7 @@ Object-level metrics avoid the template problem but meet two others.
 3. **Publish the object matcher with object scores.** State whether its rules were checked by a human. Do not draw conclusions that depend on unattested rules (Section 3.5).
 4. **Compare object metrics at matched count**, or report the frontier residual, before claiming a precision gain.
 5. **Use a second gold where one exists:** COCO instance labels for UIT-ViIC, an independent caption panel (aggregates only) for KTVIC images.
-6. **Check image overlap across datasets** before training on one and testing on another (Section 3.6). Do not use a model trained on KTVIC (for example ViCLIP-OT) as an evaluator on KTVIC test.
+6. **Check image overlap across datasets** before training on one and testing on another (Section 3.6). Do not use a model whose training images overlap KTVIC test (for example ViCLIP-OT, trained on UIT-OpenViIC) as an evaluator on KTVIC test.
 7. **Do not call within-writer agreement a human ceiling** on KTVIC.
 
 ## 7.4 What the controlled system contributes

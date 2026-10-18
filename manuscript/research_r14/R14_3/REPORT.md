@@ -69,7 +69,7 @@ What the ceilings say:
   - **Not proposed.**
 - **Reference-free metrics.** Polos (2402.18091) and VELA (2509.25818) are trained or judged on English. Using them in Vietnamese requires
   translation, which adds noise, so they are not used as selectors. Multilingual CLIPScore (2502.06600) is an option for Vietnamese.
-  ViCLIP-OT (2602.22678) is trained on KTVIC, and 401 of the 558 test images near-duplicate OpenViIC train images, so it is ruled out as a selector (it may serve only for sensitivity).
+  ViCLIP-OT (2602.22678) is trained on UIT-OpenViIC, and 401 of the 558 test images near-duplicate OpenViIC train images, so it is ruled out as a selector (it may serve only for sensitivity).
 
 Design rules for any new method:
 - the evidence source must be a different model that looks at the image;
