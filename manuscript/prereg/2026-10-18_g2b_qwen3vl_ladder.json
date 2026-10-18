@@ -1,0 +1,1469 @@
+{
+ "prereg_id": "2026-10-18_g2b_qwen3vl_ladder",
+ "title": "G2-B extended, the Qwen3-VL-8B-Instruct zero-shot ladder (Paper A Section 7.6)",
+ "statement": "registered before any G2-B output",
+ "built_utc": "2026-10-18T18:26:41Z",
+ "git_head_at_build": "a513216222ade89038e06b9348b904772a1ca0a7",
+ "absence_check": {
+  "scanned": [
+   "data/results/",
+   ".session_backup/machines/ (backups of the rented machines)",
+   ".session_backup/2026-10-18/gpu_jobs/ (live monitor snapshots of M1 and M2)"
+  ],
+  "g2b_outputs_found": [],
+  "qwen3_caption_files_outside_g2b": [
+   "data/results/b1_qwen3vl/b1_qwen3vl_zs-dev300-detailed.preds.json",
+   "data/results/b1_qwen3vl/b1_qwen3vl_zs-dev300-short.preds.json"
+  ],
+  "unreadable_symlinks_skipped": [
+   ".session_backup/machines/O-2293424/root/.venv",
+   ".session_backup/machines/O-2293440/root/.venv",
+   ".session_backup/machines/O-2308423/root/.venv",
+   ".session_backup/machines/O-2308428/root/.venv",
+   ".session_backup/machines/n2/ncs-data/datasets/ktvic_dev/images"
+  ],
+  "last_backup_ok_utc": {
+   "O-2293424": "2026-10-15T03:03:38Z",
+   "O-2293440": "2026-10-15T03:08:33Z",
+   "O-2308423": "2026-10-18T18:00:37Z",
+   "O-2308428": "2026-10-18T10:01:25Z"
+  },
+  "live_monitor_snapshots": {
+   "M1_STATUS.md": {
+    "sha256": "7a0c948452dfea49d725935745328eb80ae6c2c5a9cd61dfa57b58e8f1d380ac",
+    "updated": "2026-10-18T17:44Z",
+    "mentions_g2b": false
+   },
+   "M1_EVENTS.log": {
+    "sha256": "41bf4646659a39fb17345f481420a678d09e2c9606a702f5a3a0740ad80e3ab8",
+    "updated": null,
+    "mentions_g2b": false
+   },
+   "M2_STATUS.md": {
+    "sha256": "d7c0f1f67d4b846e6c266fe4f0c1837388fe5650151bf789675f25903cbba12b",
+    "updated": "2026-10-18T18:20:08Z",
+    "mentions_g2b": false
+   },
+   "M2_EVENTS.log": {
+    "sha256": "b80927ee8d568341d0e10fadac1fd4bd6af6edcba791aa1879910ad2f2b9b23c",
+    "updated": null,
+    "mentions_g2b": false
+   }
+  }
+ },
+ "authority": {
+  "g2_report": "G2 report; section 4 'Pre-registration' (P1-P4, K1-K3)",
+  "h3_report": "H3 report; section 2 P3 (G2-B+), section 3 (N1 stop rule)",
+  "paperA_sec7": "Paper A section 7.6 placeholder",
+  "d15": "judge D15, MT19: G2-B scope",
+  "pd2": "judge PD-2, Q5: zero-shot dev300 guard",
+  "pd4": "judge PD-4, Q6: GPU order",
+  "pd6": "judge PD-6, Q1(a) ownership, Q3 G2-B extended",
+  "cc007": "judge CC-007, binding note on the multi-reference sign",
+  "xm3600_prereg_md": "format template; N1 kill rules",
+  "xm3600_prereg_json": "format template; N1 kill rules",
+  "b1_prereg_json": "model pin, decoding, guard",
+  "s0_prereg_md": "model pin; val2017 subset",
+  "gpu_job_plan": "M2 queue item 7"
+ },
+ "scope": {
+  "backbone_use": "zero-shot, no training",
+  "datasets": [
+   "cv295",
+   "uv231",
+   "xm600"
+  ],
+  "not_registered": [
+   "KTVIC runs: Paper B owns KTVIC numbers (PD-6 Q1(a)); D15 also allowed KTVIC test/dev300, but nothing on KTVIC is decoded or analysed under this registration",
+   "the C3 kappa (two-gold transfer) tests of H3 section 2 P3: Paper B owns C3 (PD-6 Q1(a))",
+   "any claim that one backbone is better (S0 contamination and MDE argument; D13(ii))"
+  ]
+ },
+ "model": {
+  "hub_id": "Qwen/Qwen3-VL-8B-Instruct",
+  "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+  "licence": "Apache-2.0",
+  "total_weight_bytes": 17545915883,
+  "checksum_manifest": {
+   "local_copy": ".session_backup/2026-10-13/research_r9/C8_backbone/SHA256SUMS",
+   "sha256": "dc7bd4a45eb3c56e00c56f68cd937871258b679b741949bd38a383950ffc52d8",
+   "n_entries": 14,
+   "entries": {
+    "model-00001-of-00004.safetensors": "d5d0aef0eb170fc7453a296c43c0849a56f510555d3588e4fd662bb35490aefa",
+    "model-00002-of-00004.safetensors": "8be88fb5501e4d5719a6d4cc212e6a13480330e74f3e8c77daa1a68f199106b5",
+    "model-00003-of-00004.safetensors": "83de00eafe6e0d57ccd009dbcf71c9974d74df2f016c27afb7e95aafd16b2192",
+    "model-00004-of-00004.safetensors": "0a88b98e9f96270973f567e6a2c103ede6ccdf915ca3075e21c755604d0377a5",
+    "chat_template.json": "5c72a170d2a4a1a3bc5adad2e689ae28138a9700e5b8c96c0266331e86c0acce",
+    "config.json": "5cd452860dc1e9c29dd71cc3cef7f39b338b7a40793f7a260655c2d3568f3661",
+    "generation_config.json": "8469742d1fce0de951c8909b26a2c0c0d8490837ce476efb114da9e0cefc4d44",
+    "model.safetensors.index.json": "520b2e05079402e9468a8701d03d1154d14b2599593afb6effa7fb60c1bff070",
+    "preprocessor_config.json": "27225450ac9c6529872ee1924fcb0962ff5634834f817040f444118116f4e516",
+    "tokenizer.json": "a5d85b6dcc535e6b93115a9ef287e6132fdbf30270da6218194ba742261173c7",
+    "tokenizer_config.json": "c2da771801886ad9ae98181793ffd3dfb7f1af30f6f7c6a4e15d7dbba52e2399",
+    "video_preprocessor_config.json": "7768af27c1fafa9cc9011c1dc20067e03f8915e03b63504550e11d5066986d13",
+    "vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+    "merges.txt": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3"
+   },
+   "machine_path": "/root/ncs-data/models/Qwen3-VL-8B-Instruct-0c351dd/SHA256SUMS",
+   "equals_b1_pin": true,
+   "shards_equal_b1_pin": true,
+   "local_config_copies_match_manifest": {
+    "config.json": true,
+    "preprocessor_config.json": true,
+    "tokenizer_config.json": true
+   }
+  },
+  "snapshot_path_on_machine": "/root/ncs-data/models/Qwen3-VL-8B-Instruct-0c351dd",
+  "venv": {
+   "packages": {
+    "torch": "2.5.1+cu121",
+    "torchvision": "0.20.1+cu121",
+    "transformers": "4.57.6",
+    "accelerate": "1.15.0"
+   },
+   "python": "3.10.12",
+   "freeze_local_copy": ".session_backup/2026-10-13/research_r9/C8_backbone/FREEZE.txt",
+   "freeze_sha256": "bf152944ea4389f609207c5f9589c214b2ff6a4ae3b2e2a9c877e64a57fbe605",
+   "freeze_equals_b1_pin": true,
+   "freeze_path_b1": "/root/venv-qwen3vl/FREEZE.txt"
+  },
+  "model_class": "Qwen3VLForConditionalGeneration",
+  "processor_class": "Qwen2VLImageProcessorFast",
+  "min_pixels": 262144,
+  "max_pixels": 1048576,
+  "dtype": "bfloat16",
+  "attn_implementation": "sdpa",
+  "max_new_tokens": {
+   "short": 60,
+   "detailed": 160
+  },
+  "source": "manuscript/prereg/2026-10-14_b1_qwen3vl_predictions.json"
+ },
+ "design_constants": {
+  "n_boot": {
+   "value": 1000,
+   "source": "manuscript/research_r10/G2/REPORT.txt",
+   "line": 184,
+   "quote": "B = 1000, draws shared within an image set"
+  },
+  "equiv_delta_b": {
+   "value": 0.05,
+   "source": "manuscript/research_r10/G2/REPORT.txt",
+   "line": 187,
+   "quote": "|b_EN - b_VI| <= 0.05 (CI inside +-0.05)"
+  },
+  "intercept_delta_P": {
+   "value": 2,
+   "source": "manuscript/research_r10/G2/REPORT.txt",
+   "line": 189,
+   "quote": "at least one pair > 2 P apart at matched M"
+  },
+  "rmse_max_P": {
+   "value": 3,
+   "source": "manuscript/research_r10/G2/REPORT.txt",
+   "line": 195,
+   "quote": "if power-law RMSE > 3 P within a style-matched family"
+  },
+  "temperatures": {
+   "value": [
+    0.0,
+    0.5,
+    0.8
+   ],
+   "source": "manuscript/research_r12/H3/REPORT.txt",
+   "line": 124,
+   "quote": "Keep the T in {0, 0.5, 0.8} x short/detailed ladder"
+  },
+  "pool_n_samples": {
+   "value": 6,
+   "source": "manuscript/research_r12/H3/REPORT.txt",
+   "line": 127,
+   "quote": "6 T=0.5 short samples on KT + UV"
+  },
+  "pool_temperature": {
+   "value": 0.5,
+   "source": "manuscript/research_r12/H3/REPORT.txt",
+   "line": 127,
+   "quote": "6 T=0.5 short samples on KT + UV"
+  },
+  "xm3600_all_600": {
+   "value": true,
+   "source": "manuscript/research_r12/H3/REPORT.txt",
+   "line": 126,
+   "quote": "XM3600 all 600 images instead of 100"
+  },
+  "n_random_subsets": {
+   "value": 20,
+   "source": ".session_backup/2026-10-14/r11_litmaps/L1/scripts/check_coco.py",
+   "line": 24,
+   "quote": "NBOOT, NSUB = 500, 20"
+  },
+  "top_p": {
+   "value": 0.95,
+   "source": "scripts/e5_sample.py",
+   "line": 63,
+   "quote": "ap.add_argument(\"--top-p\", type=float, default=0.95)"
+  },
+  "top_k": {
+   "value": 0,
+   "source": "scripts/e5_sample.py",
+   "line": 111,
+   "quote": "top_p=args.top_p, top_k=0"
+  },
+  "sampling_seed": {
+   "value": 42,
+   "source": "scripts/e5_sample.py",
+   "line": 68,
+   "quote": "ap.add_argument(\"--seed\", type=int, default=42)"
+  },
+  "ci_lo_percentile": {
+   "value": 2.5,
+   "source": ".session_backup/2026-10-14/research_r10/G2/g2_frontier.py",
+   "line": 58,
+   "quote": "np.percentile(v, 2.5)"
+  },
+  "ci_hi_percentile": {
+   "value": 97.5,
+   "source": ".session_backup/2026-10-14/research_r10/G2/g2_frontier.py",
+   "line": 58,
+   "quote": "np.percentile(v, 97.5)"
+  },
+  "tp_floor": {
+   "value": 1e-09,
+   "source": ".session_backup/2026-10-14/research_r10/G2/g2_frontier.py",
+   "line": 67,
+   "quote": "np.maximum(pt[:, 0], 1e-9)"
+  },
+  "bootstrap_draws": {
+   "value": "multinomial",
+   "source": ".session_backup/2026-10-14/research_r10/G2/g2_frontier.py",
+   "line": 48,
+   "quote": "multinomial(n, np.full(n, 1 / n), size=B)"
+  },
+  "set_by_this_registration": {
+   "bootstrap_seed": 0,
+   "subset_seed": 1,
+   "note": "new seeds; numpy.random.default_rng(seed)"
+  }
+ },
+ "decode": {
+  "model": "Qwen3VLForConditionalGeneration.from_pretrained(snapshot, attn_implementation='sdpa', device_map={'': 0}, **dtype_kwarg(torch.bfloat16))",
+  "processor": "AutoProcessor.from_pretrained(snapshot, min_pixels=262144, max_pixels=1048576)",
+  "message": "[{'role': 'user', 'content': [{'type': 'image'}, {'type': 'text', 'text': PROMPTS[mode]}]}]; apply_chat_template(tokenize=False, add_generation_prompt=True); processor(text=[text], images=[PIL.Image.open(path).convert('RGB')], return_tensors='pt')",
+  "max_new_tokens": {
+   "short": 60,
+   "short_en": 60,
+   "detailed": 160,
+   "detailed_en": 160
+  },
+  "greedy": "model.generate(**inputs, max_new_tokens=n, do_sample=False)",
+  "greedy_source": "T = 0; the call of coco_probe.generate and of B1 step 1",
+  "sampled": "model.generate(**inputs, max_new_tokens=n, do_sample=True, temperature=T, top_p=0.95, top_k=0, num_return_sequences=k)",
+  "sampled_source": "the call of e5_sample.py; k = sequences_per_image; every other generation setting comes from the snapshot's pinned generation_config.json",
+  "seed": "torch.manual_seed(42) once, before the first image of each sampled run; images in id order",
+  "text": "processor.batch_decode(ids[:, input_len:], skip_special_tokens=True), each stripped",
+  "prompts": {
+   "short": {
+    "text": "Mô tả bức ảnh này bằng MỘT câu tiếng Việt ngắn gọn, giống chú thích ảnh. Không liệt kê, không giải thích.",
+    "text_sha256": "8870589c4a32307cbbeb68e363490007682237c0b5a3a1ee7e21cb91fce93886"
+   },
+   "detailed": {
+    "text": "Mô tả chi tiết bức ảnh này bằng tiếng Việt.",
+    "text_sha256": "0addb5dd720e4f24ac912d6fede9cb718e4051bc6944a85d9e7a92b0abb7ed08"
+   },
+   "short_en": {
+    "text": "Describe this image in ONE short English sentence, like a caption. Do not list items or explain.",
+    "text_sha256": "0cdbdf77fae4c04bdf4cd626a9eaf9adec5ef0411aac5d816f6c916a69604893"
+   },
+   "detailed_en": {
+    "text": "Describe this image in detail in English.",
+    "text_sha256": "525a4e1bf5849e2c38e44cadceed724f66167ac95e621764c384865574913c4a"
+   }
+  },
+  "checks_before_decoding": [
+   "sha256 of SHA256SUMS in the snapshot equals model.checksum_manifest.sha256, then sha256sum -c SHA256SUMS passes",
+   "the venv pip freeze sha256 is recorded; torch, torchvision, transformers, accelerate must have the versions of model.venv.packages (otherwise KD); any other difference from model.venv.freeze_sha256 is recorded and reported as a deviation, and the outputs still test this registration",
+   "every image of the run exists; a sha256 list of the decoded image files is written per dataset. CV295 decodes the COCO-2014 files named in data/coco_probe/manifest.json; UV231 and XM600 decode the files named in their test_data.json"
+  ],
+  "provenance_fields": [
+   "prereg_id",
+   "run_id",
+   "machine_id",
+   "git_head",
+   "hook_sha256",
+   "job_sha256",
+   "venv_freeze_sha256",
+   "backbone",
+   "revision",
+   "dataset",
+   "prompt_mode",
+   "temperature",
+   "top_p",
+   "top_k",
+   "seed",
+   "max_new_tokens",
+   "sequences_per_image",
+   "n_images",
+   "started_utc",
+   "finished_utc"
+  ],
+  "output_format": {
+   "preds.json": "provenance fields + 'predictions': {image_id: caption}",
+   "samples.jsonl": "first line provenance; then one line per image: {'image_id': id, 'samples': [...]}",
+   "sidecar": "<output>.sha256 per file (GPU job plan rule)"
+  }
+ },
+ "runs": [
+  {
+   "run_id": "g2b_q3_cv295-short-T0",
+   "dataset": "cv295",
+   "prompt_mode": "short",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_cv295-short-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_cv295-detailed-T0",
+   "dataset": "cv295",
+   "prompt_mode": "detailed",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_cv295-detailed-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_uv231-short-T0",
+   "dataset": "uv231",
+   "prompt_mode": "short",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_uv231-short-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_uv231-detailed-T0",
+   "dataset": "uv231",
+   "prompt_mode": "detailed",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_uv231-detailed-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_xm600-short-T0",
+   "dataset": "xm600",
+   "prompt_mode": "short",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_xm600-short-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_xm600-detailed-T0",
+   "dataset": "xm600",
+   "prompt_mode": "detailed",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_xm600-detailed-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_cv295-short-T05",
+   "dataset": "cv295",
+   "prompt_mode": "short",
+   "temperature": 0.5,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_cv295-short-T05.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_cv295-detailed-T05",
+   "dataset": "cv295",
+   "prompt_mode": "detailed",
+   "temperature": 0.5,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_cv295-detailed-T05.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_uv231-short-T05",
+   "dataset": "uv231",
+   "prompt_mode": "short",
+   "temperature": 0.5,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_uv231-short-T05.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_uv231-detailed-T05",
+   "dataset": "uv231",
+   "prompt_mode": "detailed",
+   "temperature": 0.5,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_uv231-detailed-T05.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_xm600-short-T05",
+   "dataset": "xm600",
+   "prompt_mode": "short",
+   "temperature": 0.5,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_xm600-short-T05.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_xm600-detailed-T05",
+   "dataset": "xm600",
+   "prompt_mode": "detailed",
+   "temperature": 0.5,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_xm600-detailed-T05.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_cv295-short-T08",
+   "dataset": "cv295",
+   "prompt_mode": "short",
+   "temperature": 0.8,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_cv295-short-T08.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_cv295-detailed-T08",
+   "dataset": "cv295",
+   "prompt_mode": "detailed",
+   "temperature": 0.8,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_cv295-detailed-T08.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_uv231-short-T08",
+   "dataset": "uv231",
+   "prompt_mode": "short",
+   "temperature": 0.8,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_uv231-short-T08.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_uv231-detailed-T08",
+   "dataset": "uv231",
+   "prompt_mode": "detailed",
+   "temperature": 0.8,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_uv231-detailed-T08.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_xm600-short-T08",
+   "dataset": "xm600",
+   "prompt_mode": "short",
+   "temperature": 0.8,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_xm600-short-T08.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_xm600-detailed-T08",
+   "dataset": "xm600",
+   "prompt_mode": "detailed",
+   "temperature": 0.8,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_xm600-detailed-T08.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_cv295-short_en-T0",
+   "dataset": "cv295",
+   "prompt_mode": "short_en",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_cv295-short_en-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_cv295-detailed_en-T0",
+   "dataset": "cv295",
+   "prompt_mode": "detailed_en",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_cv295-detailed_en-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_uv231-short_en-T0",
+   "dataset": "uv231",
+   "prompt_mode": "short_en",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_uv231-short_en-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_uv231-detailed_en-T0",
+   "dataset": "uv231",
+   "prompt_mode": "detailed_en",
+   "temperature": 0.0,
+   "sequences_per_image": 1,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_uv231-detailed_en-T0.preds.json"
+  },
+  {
+   "run_id": "g2b_q3_uv231-short-T05x6",
+   "dataset": "uv231",
+   "prompt_mode": "short",
+   "temperature": 0.5,
+   "sequences_per_image": 6,
+   "output": "/root/outputs/g2b_qwen3vl/g2b_q3_uv231-short-T05x6.samples.jsonl"
+  }
+ ],
+ "datasets": {
+  "cv295": {
+   "n_images": 295,
+   "ids_file": "data/coco_probe/probe_val2017_ids.txt",
+   "id_key": "cocoid (decimal string); sorted numerically",
+   "image_file": "data/coco_probe/manifest.json images[].filename (COCO_val2014_<12-digit cocoid>.jpg)",
+   "all_in_probe_manifest": true,
+   "in_coco_val2017": 295,
+   "coco2014_split": {
+    "val2014": 295
+   },
+   "karpathy_refs_per_image_min_max": [
+    5,
+    6
+   ],
+   "images_with_refs": 295
+  },
+  "uv231": {
+   "n_images": 231,
+   "ids_file": "data/datasets/uitviic/test_data.json",
+   "id_key": "images[].id (decimal string); sorted numerically",
+   "image_file": "images[].file_name (COCO-2017 file name)",
+   "coco_url_split": {
+    "train2017": 231
+   },
+   "coco2014_split": {
+    "train2014": 231
+   },
+   "refs_per_image_min_max": [
+    5,
+    5
+   ]
+  },
+  "xm600": {
+   "n_images": 600,
+   "ids_file": "data/xm3600_subset.txt",
+   "id_key": "images[].id (string); sorted lexicographically",
+   "image_file": "images[].filename (Open Images id).jpg",
+   "ids_equal_subset_file": true,
+   "refs_per_image": {
+    "2": 573,
+    "3": 27
+   },
+   "coco_images": 0
+  }
+ },
+ "golds": {
+  "cv295": {
+   "variants": {
+    "refs1_randk": "union of 1 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs2_randk": "union of 2 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs3_randk": "union of 3 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs4_randk": "union of 4 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs_all": "union of the first 5 references (refs5)",
+    "inst": "COCO-2014 instance classes (complete gold)",
+    "inst+refs_all": "instance classes union refs_all (descriptive only)"
+   },
+   "one_ref": "refs1_randk",
+   "all_refs": "refs_all",
+   "complete": "inst",
+   "references": "English Karpathy sentences of the image, first 5 in file order",
+   "instance": "data/coco_probe/instance_gold.json [cocoid]['coco']",
+   "matcher_vi_outputs": "score_coco_probe.vi_objects(caption, load_vi_terms())",
+   "matcher_en_outputs": "score_coco_probe.en_classes(caption, load_synonyms())",
+   "matcher_references": "score_coco_probe.en_classes(sentence, load_synonyms())"
+  },
+  "uv231": {
+   "variants": {
+    "refs1_randk": "union of 1 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs2_randk": "union of 2 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs3_randk": "union of 3 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs4_randk": "union of 4 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs_all": "union of the first 5 references (refs5)",
+    "inst": "COCO-2014 instance classes (complete gold)",
+    "inst+refs_all": "instance classes union refs_all (descriptive only)"
+   },
+   "one_ref": "refs1_randk",
+   "all_refs": "refs_all",
+   "complete": "inst",
+   "references": "Vietnamese UIT-ViIC references, first 5 in file order",
+   "lexicons": {
+    "coco80 (primary)": {
+     "outputs_vi": "score_coco_probe.vi_objects",
+     "outputs_en": "score_coco_probe.en_classes",
+     "references": "score_coco_probe.vi_objects",
+     "instance": "data/uitviic/instance_gold.json [id]['coco']"
+    },
+    "vi_objects_in (secondary; Vietnamese outputs only)": {
+     "outputs_vi": "rescap.chair.objects_in",
+     "references": "rescap.chair.objects_in",
+     "instance": "union of objects_in(name) over data/uitviic/instance_gold.json [id]['vi']"
+    }
+   }
+  },
+  "xm600": {
+   "variants": {
+    "refs1_randk": "one of the image's 2-3 references, drawn at random; mean over the random draws",
+    "refs_all": "union of all 2-3 references",
+    "oiv7_verified": "OIV7 human-verified labels on the mapped lexicon classes (complete gold)"
+   },
+   "one_ref": "refs1_randk",
+   "all_refs": "refs_all",
+   "complete": "oiv7_verified",
+   "references": "Vietnamese XM3600 references (2-3 per image)",
+   "matcher": "rescap.chair.objects_in (outputs and references)",
+   "oiv7": "xm3600_oiv7.statuses(resolve_map(oidv7-class-descriptions.csv), oiv7_labels); P = verified precision over verified mapped mentions, R = recall over verified-present classes (micro), F1 = 2PR/(P+R) (F1_pos of evaluate_xm3600_predictions_v3); M on the x-axis = mentions per caption under objects_in"
+  }
+ },
+ "families": {
+  "cv295": {
+   "LADDER": [
+    "g2b_q3_cv295-short-T0",
+    "g2b_q3_cv295-detailed-T0",
+    "g2b_q3_cv295-short-T05",
+    "g2b_q3_cv295-detailed-T05",
+    "g2b_q3_cv295-short-T08",
+    "g2b_q3_cv295-detailed-T08"
+   ],
+   "GREEDY_VI": [
+    "g2b_q3_cv295-short-T0",
+    "g2b_q3_cv295-detailed-T0"
+   ],
+   "T05_PAIR": [
+    "g2b_q3_cv295-short-T05",
+    "g2b_q3_cv295-detailed-T05"
+   ],
+   "T08_PAIR": [
+    "g2b_q3_cv295-short-T08",
+    "g2b_q3_cv295-detailed-T08"
+   ],
+   "Q25_GREEDY": [
+    "data/results/coco5000/zeroshot-short.shard0of1.jsonl",
+    "data/results/coco5000/zeroshot-detailed.shard0of1.jsonl"
+   ],
+   "GREEDY_EN": [
+    "g2b_q3_cv295-short_en-T0",
+    "g2b_q3_cv295-detailed_en-T0"
+   ]
+  },
+  "uv231": {
+   "LADDER": [
+    "g2b_q3_uv231-short-T0",
+    "g2b_q3_uv231-detailed-T0",
+    "g2b_q3_uv231-short-T05",
+    "g2b_q3_uv231-detailed-T05",
+    "g2b_q3_uv231-short-T08",
+    "g2b_q3_uv231-detailed-T08"
+   ],
+   "GREEDY_VI": [
+    "g2b_q3_uv231-short-T0",
+    "g2b_q3_uv231-detailed-T0"
+   ],
+   "T05_PAIR": [
+    "g2b_q3_uv231-short-T05",
+    "g2b_q3_uv231-detailed-T05"
+   ],
+   "T08_PAIR": [
+    "g2b_q3_uv231-short-T08",
+    "g2b_q3_uv231-detailed-T08"
+   ],
+   "Q25_GREEDY": [
+    "data/results/uitviic/uitviic_zeroshot-short.preds.json",
+    "data/results/uitviic/uitviic_zeroshot-detailed.preds.json"
+   ],
+   "GREEDY_EN": [
+    "g2b_q3_uv231-short_en-T0",
+    "g2b_q3_uv231-detailed_en-T0"
+   ],
+   "VOTE": [
+    "g2b_q3_uv231-short-T05x6:vote>=1",
+    "g2b_q3_uv231-short-T05x6:vote>=2",
+    "g2b_q3_uv231-short-T05x6:vote>=3",
+    "g2b_q3_uv231-short-T05x6:vote>=4",
+    "g2b_q3_uv231-short-T05x6:vote>=5",
+    "g2b_q3_uv231-short-T05x6:vote>=6"
+   ]
+  },
+  "xm600": {
+   "LADDER": [
+    "g2b_q3_xm600-short-T0",
+    "g2b_q3_xm600-detailed-T0",
+    "g2b_q3_xm600-short-T05",
+    "g2b_q3_xm600-detailed-T05",
+    "g2b_q3_xm600-short-T08",
+    "g2b_q3_xm600-detailed-T08"
+   ],
+   "GREEDY_VI": [
+    "g2b_q3_xm600-short-T0",
+    "g2b_q3_xm600-detailed-T0"
+   ],
+   "T05_PAIR": [
+    "g2b_q3_xm600-short-T05",
+    "g2b_q3_xm600-detailed-T05"
+   ],
+   "T08_PAIR": [
+    "g2b_q3_xm600-short-T08",
+    "g2b_q3_xm600-detailed-T08"
+   ],
+   "Q25_GREEDY": [
+    "data/results/xm3600/xm3600_zeroshot-short.preds.json",
+    "data/results/xm3600/xm3600_zeroshot-detailed.preds.json"
+   ]
+  }
+ },
+ "comparators": {
+  "cv295": {
+   "short": {
+    "path": "data/results/coco5000/zeroshot-short.shard0of1.jsonl",
+    "role": "Qwen2.5-VL-7B-Instruct zero-shot greedy, short prompt",
+    "sha256": "15ca56156796605c02397d13c60047bc6260d34ac65b8cc54f7651d71717feba",
+    "bytes": 597027,
+    "git": "1e03989 2026-09-30T02:19:27+07:00",
+    "working_tree": "equals HEAD",
+    "covers_all_ids": true
+   },
+   "detailed": {
+    "path": "data/results/coco5000/zeroshot-detailed.shard0of1.jsonl",
+    "role": "Qwen2.5-VL-7B-Instruct zero-shot greedy, detailed prompt",
+    "sha256": "96e15f40cead64a993ff01ba2392857b1dae16155661ffddd7f2bac3af54365a",
+    "bytes": 3395621,
+    "git": "1e03989 2026-09-30T02:19:27+07:00",
+    "working_tree": "equals HEAD",
+    "covers_all_ids": true
+   }
+  },
+  "uv231": {
+   "short": {
+    "path": "data/results/uitviic/uitviic_zeroshot-short.preds.json",
+    "role": "Qwen2.5-VL-7B-Instruct zero-shot greedy, short prompt",
+    "sha256": "76361ccde3db90b9eaa8cf0bf2b7bb055f3535a013626de3dae924bce59baea8",
+    "bytes": 24042,
+    "git": "685580c 2026-10-13T08:54:54+07:00",
+    "working_tree": "equals HEAD",
+    "covers_all_ids": true
+   },
+   "detailed": {
+    "path": "data/results/uitviic/uitviic_zeroshot-detailed.preds.json",
+    "role": "Qwen2.5-VL-7B-Instruct zero-shot greedy, detailed prompt",
+    "sha256": "0589973c264b9de43da7e63f40b19ba267a3d08e272c75f51f106cad764828d9",
+    "bytes": 157792,
+    "git": "685580c 2026-10-13T08:54:54+07:00",
+    "working_tree": "equals HEAD",
+    "covers_all_ids": true
+   }
+  },
+  "xm600": {
+   "short": {
+    "path": "data/results/xm3600/xm3600_zeroshot-short.preds.json",
+    "role": "Qwen2.5-VL-7B-Instruct zero-shot greedy, short prompt",
+    "sha256": "1f3573324772c67de3eebcdef326f84a39ecbe7fd705ceb5dd4e6863a0d73d4c",
+    "bytes": 62799,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a",
+    "covers_all_ids": true
+   },
+   "detailed": {
+    "path": "data/results/xm3600/xm3600_zeroshot-detailed.preds.json",
+    "role": "Qwen2.5-VL-7B-Instruct zero-shot greedy, detailed prompt",
+    "sha256": "47db3b9d279508e89f0332482c3e268a119186af9e0cbf6426cc85ce1a52a32f",
+    "bytes": 380577,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a",
+    "covers_all_ids": true
+   }
+  }
+ },
+ "analysis_plan": {
+  "analysis_sets": "An analysis is one prediction on one dataset (all its parts), one kill-rule check or one descriptive table; its systems are the union of the families it names (analysis_set_families). Each analysis uses its clean subset: the images for which every caption of every one of its systems is clean. A Vietnamese caption is clean if rescap.vlm.mock.looks_vietnamese is true and clean_supervision.CJK_RE finds no match; an English caption is clean if CJK_RE finds no match; a sample pool is clean if all its samples are clean. Images missing from any run of the analysis are dropped from it. Verdicts use clean subsets only (H3 section 2 P3: score only the clean subset and say so). The same statistics on all images are reported as a sensitivity analysis, without verdicts. The clean-subset size of every analysis is reported.",
+  "analysis_set_families": {
+   "G2B-E1, G2B-E2, G2B-O1, G2B-P1, G2B-NS, G2B-O2, G2B-P3b, K3, descriptive LADDER tables": [
+    "LADDER"
+   ],
+   "G2B-P2": [
+    "GREEDY_VI",
+    "GREEDY_EN"
+   ],
+   "G2B-P3a": [
+    "GREEDY_VI",
+    "VOTE (its sample pool)"
+   ],
+   "G2B-P4": [
+    "GREEDY_VI",
+    "Q25_GREEDY"
+   ]
+  },
+  "local_copies": "The evaluator reads the backup copies under .session_backup/machines/<machine>/root/outputs/g2b_qwen3vl/ and checks each against its .sha256 sidecar first",
+  "random_subsets": "numpy.random.default_rng(1); for k = 1..K (K = 4 on cv295 and uv231, 1 on xm600), for r = 1..20, for each image of the FULL dataset in id order: choice(n_refs_image, k, replace=False). Drawn once per dataset, before any output is read, then restricted to the analysis set.",
+  "bootstrap": "1000 image-bootstrap draws per analysis set: numpy.random.default_rng(0).multinomial(N, [1/N]*N, size=1000) over the set's images in id order, shared by every system, gold and family of the analysis (paired). 95% CI = percentiles 2.5 and 97.5 of the replicates.",
+  "statistics": {
+   "per_system": "For system x, gold variant g with subsets s = 1..S (S = n_random_subsets for *_randk, else 1) and image weights w over the analysis set: TP_xs = sum_i w_i |m_xi & G_is|; Mtot_x = sum_i w_i |m_xi|; P_xs = TP_xs / Mtot_x; R_xs = mean over images with non-empty G_is of |m_xi & G_is| / |G_is| (w-weighted); F_xs = 2 P R / (P + R), 0 if P + R = 0. P_x, R_x, F_x = means over s; M_x = Mtot_x / sum_i w_i; TPbar_x = P_x * M_x (check_mstar.prf, mixed F1). For oiv7_verified, P, R and F1 are the OIV7 quantities of the gold definition (verified precision, micro recall over verified-present classes, F1_pos), w-weighted, and TPbar_x = P_x * M_x with M_x from objects_in.",
+   "slope[g](F)": "OLS slope of 100 * F_x on ln M_x over the systems x of family F (check_mstar.slope)",
+   "b[g](F)": "OLS slope of ln max(TPbar_x, 1e-09) on ln M_x over F (check_mstar.mstar b; two systems give the two-point slope)",
+   "res[g](y | F)": "100 * P_y - 100 * exp(a_F) * M_y ** (b_F - 1), with (a_F, b_F) the OLS fit of ln TPbar on ln M over F (g2_frontier.fit residual, in precision points)",
+   "mres[g](Y | F)": "mean of res[g](y | F) over the systems y of Y",
+   "rmse[g](F)": "sqrt(mean over x in F of res[g](x | F) ** 2), point estimate (g2_frontier rmse_ols_P)",
+   "differences": "a difference of two statistics is computed on the same bootstrap draw (paired)"
+  },
+  "descriptive_outputs": [
+   "per system and gold: P, R, F1, M and TPbar with CIs",
+   "slope[g](LADDER) and b[g](LADDER) for every gold variant, with CIs, including the multi-reference golds whose sign is not predicted (CC-007)",
+   "M*_mixed and sign(slope) vs sign(M*_mixed - median M) per gold (check_mstar.mstar): a goodness-of-fit check, not a prediction (H3 section 1a: close to built in)",
+   "every registered statistic on all images (sensitivity), and on the uv231 secondary lexicon",
+   "clean-subset sizes; share of captions failing each guard, per run"
+  ],
+  "evaluator": "Written after this registration, against Sections 'analysis_plan' and 'predictions'. It reuses the pinned matchers unchanged and reproduces the conventions of the pinned reference implementations. Its sha256 goes into its results JSON; it is committed through the gatekeeper before its results file exists (CHECKLIST C3)."
+ },
+ "verdict_rules": {
+  "sign_gt_0": "PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE",
+  "sign_lt_0": "PASS if ci95_hi < 0; FAIL if point >= 0; else INCONCLUSIVE",
+  "equiv_abs_le": "PASS if -delta <= ci95_lo and ci95_hi <= delta; FAIL if ci95_hi < -delta or ci95_lo > delta; else INCONCLUSIVE",
+  "diff_abs_gt": "PASS if ci95_lo > delta or ci95_hi < -delta; FAIL if -delta <= ci95_lo and ci95_hi <= delta; else INCONCLUSIVE",
+  "compound": "FAIL if any part is FAIL; else NOT_EVALUABLE if any part is NOT_EVALUABLE; else PASS if every part is PASS; else INCONCLUSIVE",
+  "not_evaluable": "NOT_EVALUABLE if the analysis set is empty or a statistic is undefined (a system with M_x = 0, or fewer than 2 distinct M_x in a family)",
+  "counting": "Kill rules count FAIL only. INCONCLUSIVE is reported as inconclusive and never as support. Earlier preregistrations scored sign and ordering claims on point estimates; 'not FAIL' here is that criterion, so the outcomes can be compared.",
+  "multiplicity": "No correction; every prediction is reported separately, per dataset, with its CI."
+ },
+ "predictions": [
+  {
+   "id": "G2B-E1",
+   "tier": "primary",
+   "datasets": [
+    "cv295",
+    "uv231",
+    "xm600"
+   ],
+   "source": "CC-007 binding note; H3 section 2 P3; H3 section 3 (KN1)",
+   "text": "one-reference endpoint: the verbosity slope is negative under one random reference (the empirical half of N1; Paper A does not derive this sign from Proposition 1)",
+   "parts": [
+    {
+     "stat": "slope[refs1_randk](LADDER)",
+     "rule": "sign_lt_0"
+    }
+   ]
+  },
+  {
+   "id": "G2B-E2",
+   "tier": "primary",
+   "datasets": [
+    "cv295",
+    "uv231",
+    "xm600"
+   ],
+   "source": "CC-007 binding note; H3 section 2 P3",
+   "text": "complete-gold endpoint: the verbosity slope is positive under the complete gold (the large-gold endpoint of Proposition 1)",
+   "parts": [
+    {
+     "stat": "slope[complete](LADDER)",
+     "rule": "sign_gt_0"
+    }
+   ]
+  },
+  {
+   "id": "G2B-O1",
+   "tier": "primary",
+   "datasets": [
+    "cv295",
+    "uv231",
+    "xm600"
+   ],
+   "source": "CC-007 binding note; H3 section 2 P3",
+   "text": "ordering (Proposition 1): slope(one reference) < slope(all references) < slope(complete gold)",
+   "parts": [
+    {
+     "stat": "slope[refs_all](LADDER) - slope[refs1_randk](LADDER)",
+     "rule": "sign_gt_0"
+    },
+    {
+     "stat": "slope[complete](LADDER) - slope[refs_all](LADDER)",
+     "rule": "sign_gt_0"
+    }
+   ]
+  },
+  {
+   "id": "G2B-P1",
+   "tier": "primary",
+   "datasets": [
+    "cv295",
+    "uv231",
+    "xm600"
+   ],
+   "source": "G2 section 4 P1",
+   "text": "exponent ordering: b(all references) - b(one reference) > 0 and b(complete) > b(all references)",
+   "parts": [
+    {
+     "stat": "b[refs_all](LADDER) - b[refs1_randk](LADDER)",
+     "rule": "sign_gt_0"
+    },
+    {
+     "stat": "b[complete](LADDER) - b[refs_all](LADDER)",
+     "rule": "sign_gt_0"
+    }
+   ]
+  },
+  {
+   "id": "G2B-NS",
+   "tier": "not predicted",
+   "datasets": [
+    "cv295",
+    "uv231",
+    "xm600"
+   ],
+   "source": "CC-007 binding note",
+   "text": "the sign of slope[refs_all](LADDER) and of slope[refsK_randk](LADDER), K >= 2, is NOT predicted; it is reported with its CI only",
+   "parts": []
+  },
+  {
+   "id": "G2B-O2",
+   "tier": "secondary",
+   "datasets": [
+    "cv295",
+    "uv231"
+   ],
+   "source": "H3 P6 and COCO-2500 P1 (k-step form)",
+   "text": "the verbosity slope rises at every added reference, k = 1..5",
+   "parts": [
+    {
+     "stat": "slope[refs2_randk](LADDER) - slope[refs1_randk](LADDER)",
+     "rule": "sign_gt_0"
+    },
+    {
+     "stat": "slope[refs3_randk](LADDER) - slope[refs2_randk](LADDER)",
+     "rule": "sign_gt_0"
+    },
+    {
+     "stat": "slope[refs4_randk](LADDER) - slope[refs3_randk](LADDER)",
+     "rule": "sign_gt_0"
+    },
+    {
+     "stat": "slope[refs_all](LADDER) - slope[refs4_randk](LADDER)",
+     "rule": "sign_gt_0"
+    }
+   ]
+  },
+  {
+   "id": "G2B-P2",
+   "tier": "secondary",
+   "datasets": [
+    "cv295",
+    "uv231"
+   ],
+   "source": "G2 section 4 P2",
+   "text": "language-free exponent: |b_EN - b_VI| <= 0.05 under the complete gold",
+   "parts": [
+    {
+     "stat": "b[complete](GREEDY_EN) - b[complete](GREEDY_VI)",
+     "rule": "equiv_abs_le",
+     "delta": 0.05
+    }
+   ]
+  },
+  {
+   "id": "G2B-P3a",
+   "tier": "secondary",
+   "datasets": [
+    "uv231"
+   ],
+   "source": "G2 section 4 P3",
+   "text": "vote family vs greedy prompt family: |b difference| <= 0.05 under the complete gold",
+   "parts": [
+    {
+     "stat": "b[complete](VOTE) - b[complete](GREEDY_VI)",
+     "rule": "equiv_abs_le",
+     "delta": 0.05
+    }
+   ]
+  },
+  {
+   "id": "G2B-P3b",
+   "tier": "secondary",
+   "datasets": [
+    "cv295",
+    "uv231",
+    "xm600"
+   ],
+   "source": "G2 H3; D15 MT19 (ladder rationale)",
+   "text": "temperature leaves the exponent within 0.05 and lowers the T=0.8 intercept (complete gold)",
+   "parts": [
+    {
+     "stat": "b[complete](T05_PAIR) - b[complete](GREEDY_VI)",
+     "rule": "equiv_abs_le",
+     "delta": 0.05
+    },
+    {
+     "stat": "b[complete](T08_PAIR) - b[complete](GREEDY_VI)",
+     "rule": "equiv_abs_le",
+     "delta": 0.05
+    },
+    {
+     "stat": "mres[complete](T08_PAIR | GREEDY_VI)",
+     "rule": "sign_lt_0"
+    }
+   ]
+  },
+  {
+   "id": "G2B-P4",
+   "tier": "secondary",
+   "datasets": [
+    "cv295",
+    "uv231",
+    "xm600"
+   ],
+   "source": "G2 section 4 P4",
+   "text": "backbones share the exponent within 0.05 but differ in intercept by more than 2 precision points at matched M (complete gold; Qwen2.5-VL-7B zero-shot comparator)",
+   "parts": [
+    {
+     "stat": "b[complete](GREEDY_VI) - b[complete](Q25_GREEDY)",
+     "rule": "equiv_abs_le",
+     "delta": 0.05
+    },
+    {
+     "stat": "mres[complete](GREEDY_VI | Q25_GREEDY)",
+     "rule": "diff_abs_gt",
+     "delta": 2
+    }
+   ]
+  }
+ ],
+ "kill_rules": [
+  {
+   "id": "K1",
+   "source": "G2 section 4 K1",
+   "rule": "G2B-P1 is FAIL on 2 or more of the 3 datasets (uv231 counts; primary lexicon)",
+   "action": "Section 7.6 drops the completeness account for this backbone and reports only that the exponent is dataset-specific"
+  },
+  {
+   "id": "K2",
+   "source": "G2 section 4 K2 (restricted form)",
+   "rule": "G2B-P2 is FAIL on both cv295 and uv231. G2's K2 counts backbones (2 or more of 3); here one backbone has English outputs, so K2 cannot be evaluated as written",
+   "action": "Section 7.6 reports the exponent per language for Qwen3-VL-8B"
+  },
+  {
+   "id": "K3",
+   "source": "G2 section 4 K3",
+   "rule": "rmse[g](LADDER) > 3 precision points (point estimate) for a gold variant g of a dataset (Section 5 variants, primary lexicon)",
+   "action": "for that dataset and gold the frontier is reported only as a local linearisation around its operating range: no extrapolated frontier value and no M* reading"
+  },
+  {
+   "id": "KN1",
+   "source": "H3 section 3; XM3600 prereg kill_rule.h3_p2_r11_stop_rule; Paper A section 7.6",
+   "rule": "G2B-E1 is FAIL (one-reference slope >= 0) on any dataset (uv231 counts)",
+   "action": "the sign-flip claim (N1) is dropped from Paper A; only the ordering result can remain"
+  },
+  {
+   "id": "KL",
+   "source": "H3 section 2 P3 (language guard); PD-2 Q5",
+   "rule": "always applied: verdicts are computed on clean subsets only",
+   "action": "Section 7.6 states that only clean captions were scored and gives the clean-subset sizes"
+  },
+  {
+   "id": "KD",
+   "source": "this registration",
+   "rule": "a run whose provenance shows a model file, prompt, decoding setting (Section 3), pinned package version or pinned instrument different from this registration",
+   "action": "the run does not test this registration; it is reported as a deviation and left out of every verdict"
+  }
+ ],
+ "departures_from_sources": [
+  "KTVIC is left out (D15 and H3 section 2 P3 include KTVIC test/dev300): Paper B owns KTVIC numbers (PD-6 Q1(a)), and Paper A Section 7.6 names only CV295, UIT-ViIC test and XM3600",
+  "the T=0.5 sample pool is decoded on UV231 only (H3 section 2 P3: on KTVIC and UV231), because KTVIC is left out",
+  "the C3 kappa tests of H3 section 2 P3 are left out: Paper B owns C3 (PD-6 Q1(a))",
+  "the English arm is the greedy short/detailed pair of this backbone on CV295 and UV231 (G2 section 4 planned English and Vietnamese prompt families for three backbones); XM600 has no English-to-OIV7 class map, so it has no English arm",
+  "K2 is evaluated in a restricted form, because only one backbone has English outputs",
+  "clean-subset scoring is applied in every case (H3 section 2 P3 makes it conditional on a failed dev300 language guard)",
+  "every sign and ordering claim, including the second part of G2 P1 (b(instance) > b(5 refs), stated there without an interval), is scored with the three-way rule of Section 8",
+  "G2B-P3b (temperature ladder) is added from G2's H3 and the D15 MT19 rationale for the ladder; G2 section 4 P3 itself is G2B-P3a",
+  "UV231 handling: D15's 'uncontaminated' premise does not hold for UV231 (Section 4)"
+ ],
+ "exposure": {
+  "criterion": "membership in COCO train2017, the criterion of D15 and the S0 contamination caveat; it is not proof that a backbone never saw an image",
+  "uv231_flag": "D15 MT19 lists UIT-ViIC test among the uncontaminated splits and says G2-B runs with 'zero touch of COCO train2017'. Every UV231 image is a COCO train2017 image (datasets.uv231.coco_url_split, datasets.uv231.coco2014_split), so that premise is wrong for UV231.",
+  "uv231_handling": "registered default, for the judge to confirm before the commit: UV231 is decoded and analysed as registered; its FAIL outcomes count toward every kill rule; a PASS on UV231 is not counted as support from images outside COCO train2017; Paper A labels UV231 results 'COCO train2017 images; exposure during pre-training possible'",
+  "cv295": "COCO val2017 images (datasets.cv295.in_coco_val2017)",
+  "xm600": "Open Images images, not COCO; exposure unknown"
+ },
+ "b1_guard_disclosure": {
+  "file": {
+   "path": "data/results/b1_qwen3vl/step1_dev300_guard.json",
+   "role": "B1 step-1 summary, Qwen3-VL-8B zero-shot on KTVIC dev300 (Paper B)",
+   "sha256": "c728db659a1912686dbadebc0394563e1b85706dad515110993251d8ea11db17",
+   "bytes": 2056,
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  "language_guard_pass": {
+   "short": false,
+   "detailed": true
+  },
+  "b1_step1_pass_field": false,
+  "rule": "vietnamese_share >= vietnamese_share_min and cjk_rate <= cjk_rate_max (B1 thresholds)",
+  "numbers_from_this_file_used_here": "none"
+ },
+ "paperA_placeholder": {
+  "path": "manuscript/journal_draft/sec7_verbosity_sign.md",
+  "version": "HEAD",
+  "section_7_6_lines": [
+   84,
+   95
+  ],
+  "section_7_6_same_on_disk": true
+ },
+ "frozen_files": {
+  "sources": [
+   {
+    "path": "manuscript/research_r10/G2/REPORT.txt",
+    "role": "G2 report; section 4 'Pre-registration' (P1-P4, K1-K3)",
+    "sha256": "1751952ee71d4f96bbc1c7d0b5d937a905fb67273739f00fff1c388892146e4d",
+    "bytes": 19629,
+    "git": "6c647a6 2026-10-14T14:01:40+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "manuscript/research_r12/H3/REPORT.txt",
+    "role": "H3 report; section 2 P3 (G2-B+), section 3 (N1 stop rule)",
+    "sha256": "626fef8cbddddd6253dc551be183ae0d8b42eb34cefc4f5a2addc9be00a3b3c3",
+    "bytes": 15797,
+    "git": "b7aa8af 2026-10-14T22:26:25+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "manuscript/journal_draft/sec7_verbosity_sign.md",
+    "role": "Paper A section 7.6 placeholder",
+    "sha256": "88496cea18a7a60dd646330197f91847a832f4c5a57e79bdfa2e7a9eb5a036a3",
+    "bytes": 21265,
+    "git": "5a81b8d 2026-10-15T08:47:52+07:00",
+    "working_tree": "differs from HEAD (disk sha256 9713daa538e27e8a3eb6851e634ebbe339a2ca8a7d8be673f6841b3d6db35b8a)"
+   },
+   {
+    "path": ".session_backup/2026-10-13/decisions/D15.txt",
+    "role": "judge D15, MT19: G2-B scope",
+    "sha256": "10f929349bdf20641007ef91667b6eee55337d0caffa2816b4ce922d775608b9",
+    "bytes": 28845,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-13/decisions/PD-2.txt",
+    "role": "judge PD-2, Q5: zero-shot dev300 guard",
+    "sha256": "ff23ade0884a3dde58be0e905e9af77cccf5b7adcd739208398daa59a3fa5578",
+    "bytes": 9580,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-13/decisions/PD-4.txt",
+    "role": "judge PD-4, Q6: GPU order",
+    "sha256": "16cc01b0d72288a832d8c519e2b38ada6b98649c5fd2af9b9b9be3bc264d26b0",
+    "bytes": 3786,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-13/decisions/PD-6.txt",
+    "role": "judge PD-6, Q1(a) ownership, Q3 G2-B extended",
+    "sha256": "2c48d6491af85ae5d8b2fe279e0c49a14d0f59b6fc547061ae2c3cdea79dad22",
+    "bytes": 3881,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-13/decisions/CC-007.txt",
+    "role": "judge CC-007, binding note on the multi-reference sign",
+    "sha256": "e2b2967cdba3aca6e08f71933c5004f5109ad36217e7f05785471e637a8b926b",
+    "bytes": 1139,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": "manuscript/prereg/2026-10-14_xm3600_predictions.md",
+    "role": "format template; N1 kill rules",
+    "sha256": "1dfaeb0f6d1bc10f662622a56a1c29538f16dc200b08f550584ba6b543984cc8",
+    "bytes": 10878,
+    "git": "4ccbee3 2026-10-14T23:38:04+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "manuscript/prereg/2026-10-14_xm3600_predictions.json",
+    "role": "format template; N1 kill rules",
+    "sha256": "5d0134bfded091d47153226c427ceb8ee29fe8b2a698daf8d533d8365fb5dc32",
+    "bytes": 7423,
+    "git": "4ccbee3 2026-10-14T23:38:04+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "manuscript/prereg/2026-10-14_b1_qwen3vl_predictions.json",
+    "role": "model pin, decoding, guard",
+    "sha256": "31f77dd5df4d718d1e22c6e9d92e5ddf3c8d69cf8351a1c06652a6bb614939a6",
+    "bytes": 13638,
+    "git": "16795cd 2026-10-14T23:57:52+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "manuscript/prereg/2026-10-13_s0_qwen3vl.md",
+    "role": "model pin; val2017 subset",
+    "sha256": "a9c616ca06503413224466d71d674c7655da0c371a1646b3ceb2c82f86ed69b8",
+    "bytes": 19666,
+    "git": "4592d69 2026-10-14T06:47:31+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+    "role": "M2 queue item 7",
+    "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+    "bytes": 4238,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   }
+  ],
+  "instruments": [
+   {
+    "path": "scripts/evaluate.py",
+    "role": "PROMPTS: the four prompt texts",
+    "sha256": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+    "bytes": 22472,
+    "git": "d4de7b0 2026-10-12T19:24:19+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "scripts/coco_probe.py",
+    "role": "greedy Qwen3-VL decode call (generate, do_sample=False)",
+    "sha256": "930a3899e229e22a1b9326951210e49da3be2904cecd1a4214f02ac8b261ebb8",
+    "bytes": 7894,
+    "git": "4592d69 2026-10-14T06:47:31+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "scripts/e5_sample.py",
+    "role": "sampling call (temperature, top_p, top_k=0, seed)",
+    "sha256": "35ec0d26622ac87138773d00454cd858e6e7fe7cda51217d0b0a2bbcc460baef",
+    "bytes": 6278,
+    "git": "a94fd5b 2026-10-12T11:16:45+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "scripts/score_coco_probe.py",
+    "role": "COCO-80 matchers: vi_objects/load_vi_terms (vi), en_classes/load_synonyms (en)",
+    "sha256": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070",
+    "bytes": 13166,
+    "git": "a0accb5 2026-10-14T06:47:37+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/coco_probe/coco80_vi.json",
+    "role": "Vietnamese COCO-80 lexicon (load_vi_terms)",
+    "sha256": "926e08571ef6e80a7f8aae8f2b73753d6c5c54c431a750ba2b67bfaae71b540b",
+    "bytes": 5337,
+    "git": "ee7cad1 2026-10-12T14:33:16+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/coco_probe/chair_synonyms.txt",
+    "role": "English synonyms (load_synonyms)",
+    "sha256": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+    "bytes": 3577,
+    "git": "1f30d09 2026-08-30T10:06:13+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "rescap/chair.py",
+    "role": "objects_in: 113-entry Vietnamese lexicon, tone-normalised by default",
+    "sha256": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+    "bytes": 18249,
+    "git": "a0accb5 2026-10-14T06:47:37+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "scripts/xm3600_oiv7.py",
+    "role": "resolve_map, statuses, caption_rows: OIV7 verified labels",
+    "sha256": "9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0",
+    "bytes": 20107,
+    "git": "e564ed6 2026-10-12T16:46:56+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "rescap/vlm/mock.py",
+    "role": "looks_vietnamese (language guard)",
+    "sha256": "33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7",
+    "bytes": 6068,
+    "git": "1f30d09 2026-08-30T10:06:13+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "rescap/vlm/base.py",
+    "role": "dtype_kwarg (bf16 loading, as in B1 step 1)",
+    "sha256": "e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93",
+    "bytes": 15153,
+    "git": "1f30d09 2026-08-30T10:06:13+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "scripts/clean_supervision.py",
+    "role": "CJK_RE (CJK guard)",
+    "sha256": "01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231",
+    "bytes": 26538,
+    "git": "93070e1 2026-10-10T13:48:37+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "scripts/abs_halluc.py",
+    "role": "CJK (re-export of CJK_RE)",
+    "sha256": "76819c8e1c439cce2c5651e50e2a86d28078c2cbb67db22bc6327401bbcfc481",
+    "bytes": 2919,
+    "git": "a0accb5 2026-10-14T06:47:37+07:00",
+    "working_tree": "equals HEAD"
+   }
+  ],
+  "reference_implementations": [
+   {
+    "path": ".session_backup/2026-10-14/r11_litmaps/L1/scripts/check_mstar.py",
+    "role": "per_image, prf, slope, mstar",
+    "sha256": "6e2c0042ac44fe3e111fd88bc4783cf12c73a54ae938ee0d1802222b3048fb95",
+    "bytes": 7011,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-14/r11_litmaps/L1/scripts/check_coco.py",
+    "role": "COCO gold: first 5 Karpathy refs, en_classes, instances",
+    "sha256": "6acd7f8af318484813d566a127d529387e677c9706d049af2336d4387ca34b00",
+    "bytes": 4457,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.py",
+    "role": "UIT-ViIC gold under both lexicons",
+    "sha256": "09a149d42fc2bd117433cecb2fff1ce8ae4b3309dc8f2a9a95e45bc9327be890",
+    "bytes": 13724,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-14/r12_verify/evaluate_xm3600_predictions_v3.py",
+    "role": "XM3600 gold: refs, OIV7 F1_pos, M on objects_in",
+    "sha256": "24356632c1c9b8023d8319de5ebc30b15c517f7f5b3ad7d519eea9c73d2c626d",
+    "bytes": 85340,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-14/research_r10/G2/g2_frontier.py",
+    "role": "fit (b_ols, residuals, rmse_ols_P), pool_points, ci",
+    "sha256": "0ac9198ec742f1f7e28c46573b4d18d0f806e39a66b093c542a20dde18b51649",
+    "bytes": 18469,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   }
+  ],
+  "data": [
+   {
+    "path": "data/coco_probe/probe_val2017_ids.txt",
+    "role": "CV295 image ids (cocoid)",
+    "sha256": "73f8698901f08e7b1bd53dd2842e77683af41e4e9e19276c3e8e6efba5273453",
+    "bytes": 2005,
+    "git": "4592d69 2026-10-14T06:47:31+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/coco_probe/manifest.json",
+    "role": "COCO probe image file names",
+    "sha256": "931e572ec8ea5eadf4c49aafcc062a837429b4e6bcc1f96fc0ec0ee1ecaa7e35",
+    "bytes": 192734,
+    "git": "1f30d09 2026-08-30T10:06:13+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/coco_probe/instance_gold.json",
+    "role": "COCO-2014 instance labels (CV295)",
+    "sha256": "963af2c6cc71e7a5e32c2f8f1ca6a0f1ef0a1f02dadf40926ddb05eebd04f81e",
+    "bytes": 184798,
+    "git": "d4de7b0 2026-10-12T19:24:19+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/datasets/karpathy/dataset_coco.json",
+    "role": "English Karpathy references (CV295)",
+    "sha256": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d",
+    "bytes": 144186139,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-13/research_r9/C8_backbone/s0/val2017_names.txt",
+    "role": "COCO val2017 file list",
+    "sha256": "612097d209d870b260f9b4cb9c5ccdc32586da617ccf0f25c0627e60f8877285",
+    "bytes": 125000,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": "data/datasets/uitviic/test_data.json",
+    "role": "UV231 images and Vietnamese references",
+    "sha256": "54abc0fb068ad1108d7d57b21328d4d68bcf8f41aa168f80ec7c275fb4ac8214",
+    "bytes": 209002,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": "data/uitviic/instance_gold.json",
+    "role": "COCO-2014 instance labels (UV231)",
+    "sha256": "278d15b97e3eeb9496a0282bb91deb365117becf24d174fbb1e0507203b12ea4",
+    "bytes": 589137,
+    "git": "093cbfc 2026-10-12T11:58:11+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/datasets/xm3600/test_data.json",
+    "role": "XM600 images and Vietnamese references",
+    "sha256": "0a613214f95605ff137879f70cb84f8160172c28a650317766ac4a1d9c3b72e8",
+    "bytes": 263927,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": "data/xm3600_subset.txt",
+    "role": "XM600 image ids",
+    "sha256": "f5ab86c7f3126ab6683e97b769e462aa149ca22b081a889d0a0027904d503952",
+    "bytes": 10200,
+    "git": "e564ed6 2026-10-12T16:46:56+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/xm3600/oiv7_labels.json",
+    "role": "OIV7 human-verified labels",
+    "sha256": "bac3953a511a9793c22e928a29b68ae05dbf9654502abcbe7b64fd9f6d74c8b2",
+    "bytes": 480262,
+    "git": "e564ed6 2026-10-12T16:46:56+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/xm3600/vi_oiv7_map.json",
+    "role": "lexicon class to OIV7 class map",
+    "sha256": "27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a",
+    "bytes": 9453,
+    "git": "e564ed6 2026-10-12T16:46:56+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv",
+    "role": "OIV7 class names (resolve_map)",
+    "sha256": "84a4373a0efb7fd6d93fe19b0e7ceb6c1b855c233d13b9b78a9a33655c9fdce3",
+    "bytes": 501178,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   }
+  ],
+  "model_copies": [
+   {
+    "path": ".session_backup/2026-10-13/research_r9/C8_backbone/SHA256SUMS",
+    "role": "checksum manifest (local copy)",
+    "sha256": "dc7bd4a45eb3c56e00c56f68cd937871258b679b741949bd38a383950ffc52d8",
+    "bytes": 1254,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   },
+   {
+    "path": ".session_backup/2026-10-13/research_r9/C8_backbone/FREEZE.txt",
+    "role": "venv pip freeze (local copy)",
+    "sha256": "bf152944ea4389f609207c5f9589c214b2ff6a4ae3b2e2a9c877e64a57fbe605",
+    "bytes": 868,
+    "git": "not in git (git-excluded or untracked)",
+    "working_tree": "n/a"
+   }
+  ]
+ },
+ "builder": {
+  "path": ".session_backup/2026-10-18/paperA_tasks/P2/build_g2b_prereg.py",
+  "sha256": "a16df2ebd4bdcb650da85a57e7c3575560b0a735b3d9105bc5224bfbbcaebb6d"
+ }
+}
