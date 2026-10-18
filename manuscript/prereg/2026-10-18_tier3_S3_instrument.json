@@ -1,0 +1,136 @@
+{
+ "addendum_id": "2026-10-18_tier3_S3_instrument",
+ "role": "Instrument freeze, step 2 of prereg §9: the sha256 of every new script and of the job file. It is committed through the gatekeeper before the job is queued and changes nothing registered.",
+ "written_utc": "2026-10-18T19:23:42Z",
+ "repo_head_at_writing": "0932ba18da89b207a8b59873f69bac777481bab8",
+ "registration": {
+  "prereg": {
+   "commit": "a68fb666787b1567be95f39bb039b99b0457054d",
+   "sha256": {
+    "manuscript/prereg/2026-10-18_tier3_S3.md": "2741c448019cbae2cc57101fd8c3487327e8482fa91457eea115e9442ec48311",
+    "manuscript/prereg/2026-10-18_tier3_S3.json": "b39f682f21e6794f5e966779c381bfe6c68ae65d542af4b5571e3b7b9abf361f"
+   }
+  },
+  "amendment1": {
+   "file": "manuscript/prereg/2026-10-18_tier3_S3_amendment1.json",
+   "sha256": "2aea5b27301792b0d7c301623797e3ca4db046adcbbf2227c1adfe768d943269",
+   "commit": "59901cce60b8",
+   "written_utc": "2026-10-18T09:19:13Z",
+   "before_any_output": true,
+   "decision": "judge CC-017 YES (92%), CP-017 YES (95%)",
+   "rule": "H5 KILL fires iff (dR_UB < 0) OR (dP_LB > 0 AND dR < 0); strict inequalities, so a value of exactly 0 never fires; H5 still changes no verdict",
+   "reason": "R14-2's 'dR < 0 with LB > 0' cannot hold as written (A-verifier flag)",
+   "implemented_in": "scripts/s3_gate.py h5(); reported as HOLDS, KILL or NOT_SHOWN with dP, dR and their CIs (judge note 2)"
+  }
+ },
+ "files_sha256": {
+  "scripts/s3_gate.py": "4d8e17c3e14752b968e2e3248d51b6f988ca3f5c7d9c77d3b620f70cc95e4934",
+  "scripts/cm_pairs.py": "c81feb0566c6b53eca77ff3fe98c1cbd595871c4e55437abf65dac9612c3189c",
+  "scripts/cm_rft.py": "863ced7ef635734b45bab1ef92b6b340d3ab0576c0ae6af79838bf7948416bef",
+  "scripts/train_stage2_anchor.py": "63377d0bbf39d6abecbe6c39cb6d58dbad5e7c6d08200cc3807768c428f89986",
+  "scripts/queue/jobs/t3_3_s3_cm_dpo_rft.sh": "eb51cecf232c1e412813a069b317b58131c53fab603ff885d770c07d59c0bfea"
+ },
+ "files": {
+  "scripts/s3_gate.py": "prereg §9 'scripts/s3_gate.py (analysis, verdicts)'. --check refuses to start unless the prereg, amendment and code_at_head shas, 72 registered constants and every input on the machine match; on a GPU machine it also checks the start adapter, the base snapshot (refs/main and the 5 shard shas) and these pins. Other subcommands: --prep (RL id files and evaluate.py datasets), --score (the JVM half: syllables, fragments, copy rates, paired CIDEr CI), --akl-trigger, --verdict (every registered estimate, guard and verdict) and --selftest",
+  "scripts/cm_pairs.py": "prereg §9 'scripts/cm_pairs.py (from the M3 draft)'; the byte differences are listed below",
+  "scripts/cm_rft.py": "prereg §9 'scripts/cm_rft.py (targets)'. --merge builds the 6 + 6 pool; --pool/--greedy builds the CM-RFT sft.jsonl and _rft_report.json",
+  "scripts/train_stage2_anchor.py": "prereg §9 'train_stage2.py with --anchor-sft ... and, if A-KL is triggered, the token KL', as a wrapper; see the deviation below",
+  "scripts/queue/jobs/t3_3_s3_cm_dpo_rft.sh": "the queue job file for t3_3_s3_cm_dpo_rft"
+ },
+ "code_at_head": {
+  "unchanged": true,
+  "files": 14,
+  "checked_at_head": "0932ba18da89b207a8b59873f69bac777481bab8",
+  "method": "the sha256 of `git show HEAD:<path>` equals the prereg's code_at_head for all 14 files; scripts/train_stage2.py stays 29312ef7 and scripts/queue/qrun.sh stays 2eaca17c (main ruling: Q-FIX stays out of HEAD until Tier 3 has run)"
+ },
+ "cm_pairs_vs_draft": {
+  "draft": ".session_backup/2026-10-14/research_r10/M3/cm_pairs.py",
+  "draft_sha256": "c3162b29e3a1f7e185e9364f8536484ebb9c3c34ecdce58b2ddc886c877f4426",
+  "committed_sha256": "c81feb0566c6b53eca77ff3fe98c1cbd595871c4e55437abf65dac9612c3189c",
+  "byte_differences": [
+   {
+    "lines": [
+     30
+    ],
+    "change": "'from collections import Counter, defaultdict' -> 'from collections import Counter'",
+    "reason": "aislop ai-slop/unused-import, a fixable warning: defaultdict is never used. Behaviour is unchanged"
+   },
+   {
+    "lines": [
+     109,
+     110,
+     111,
+     112,
+     113
+    ],
+    "change": "the draft's --self-check example captions (one reference, four samples) replaced by shorter ones with the same classes, counts and TP order, e.g. 'phụ nữ đứng cạnh xe máy' for the reference; the code and its assertion are unchanged",
+    "reason": "The draft's 10-15 syllable examples share 8-syllable sequences with captions of the git-excluded OpenViIC panel (local 8-gram scan against data/ktvic_openviic_refs.json). Synthetic captions under 8 syllables cannot, so no S3 file carries an OpenViIC 8-gram (CHECKLIST D3; constraint: no OpenViIC caption text)"
+   }
+  ],
+  "reproduction": "Input: the draft's own smoke run (the 300 dev pools, T 0.5 then T 0.8 merged, exclude list empty). The committed builder's _build_report.json is identical to the draft's out/smoke_cm/_build_report.json: 600 pairs on 177 images (cm_k1 139, cm_k2 360, cm_k3 93, cm_k4 8), 91 candidates dropped",
+  "checked_by": "s3_gate.py --check, wherever the draft is present: the draft's sha256 is checked with the other inputs, and the committed file differs from it on exactly lines 30 and 109-113 (line-for-line; DRAFT_CHANGED_LINES)"
+ },
+ "deviations": [
+  {
+   "id": "file_layout",
+   "decision": "D-W13-4 (main, PI); the judge rules on it with this addendum",
+   "registered": "files_expected: 'scripts/train_stage2.py with --anchor-sft (M3 §4, about 12 lines) and, if A-KL is triggered, the token KL'",
+   "instead": "scripts/train_stage2_anchor.py, which imports scripts/train_stage2.py unchanged (29312ef7) and adds only the regulariser term (plus the DPO checkpoints below). Every train_stage2 argument passes through to train_stage2's own parser, and run_dpo's loop, collator, reference and loss run as committed",
+   "reason": "train_stage2.py is registered byte for byte by the S1 and S5 preregs and used by every running GPU job",
+   "changes_registered": "none: no design, input, prediction, gate, kill rule or constant changes"
+  }
+ ],
+ "amendments_noted": [
+  "amendment1 (59901cc, 2026-10-18T09:19:13Z, before any output): the H5 kill rule above; listed in s3_verdict.json's deviations and due in the S3 report's and Paper B's deviations tables (judge note 3)"
+ ],
+ "implementation_notes": {
+  "anchor": "For each pair, --anchor-sft 1.0 back-propagates 1.0 x model(**VLCollator(processor, assistant_only=True)([to_chat(processor, row, 'ref')])).loss / grad_accum on the policy's chosen pass. This is the response-only CE on row['ref'] = refs[i][0], the image's first human caption, which equals P1's SFT target (prompt and response) on all 1,000 RL images (checked by --check). Gradients add, so each update equals one with run_dpo's loss + 1.0 x CE. There is no NLL on the chosen caption. run_dpo's logged loss is the DPO term; each pair's CE and DPO margin go to pairs_log.jsonl",
+  "token_kl": "--token-kl 0.4 (A-KL) replaces the anchor with the sum, over the chosen response's tokens (assistant-only positions), of the full-vocabulary KL(pi_SFT || pi_theta), divided by the batch size (1). pi_SFT is the frozen ref_sft adapter. This follows HALVA's L_d: github.com/pritamqu/HALVA llava/train/halva_trainer.py lines 585-590 at commit ce52b7022eca40a73b4110950b80a548598aadec ('divergence = ref*(log ref - log pol)', masked, '.sum()/batch_sz'; 'loss = alignment_loss + self.loss_alpha*divergence'). Settings: lr 2.5e-6, the same pairs and settings otherwise, its own 20-pair dry run first",
+  "akl_trigger": "A-KL runs iff arm A failed G2 or G3 (s3_gate.akl_triggered, which needs only the dev decode). Any guard failure makes the verdict KILL, so this equals the registered 'KILL and G2 or G3 failed'. The selftest asserts that the verdict is KILL whenever the trigger fires. s3_verdict.json shows arm A's verdict, its failed guards and the A-KL verdict together; A-KL's verdict replaces A's",
+  "reference": "The DPO reference must be pi_SFT (run_dpo's ref_sft adapter = runs/p1dev_s42). A base-anchored fallback is refused before training",
+  "dpo_checkpoints": "run_dpo has a hand-written loop, and the committed hook patches only the HF Trainer, so train_stage2_anchor.py writes OUT/checkpoint-<step> every 200 optimizer steps itself. Each holds the trainable weights, the AdamW state, the RNG states and the per-pair log, written atomically. Each is mirrored to /root/outputs/runs/<run>, keeping 2 (the hook's RESCAP_* settings and layout). A rerun resumes from the newest: the same seeded shuffle, minus step x grad_accum pairs. resume_manifest.json records resumed_from_step in the hook's format. The selftest shows that a resumed run's weights and log are bitwise equal to an uninterrupted run's. The SFT arm (train_stage2.py) is checkpointed by the committed hook. Only the last checkpoint is evaluated",
+  "dry_run": "train_stage2_anchor.py --dry-run trains run_dpo's --limit 20 (the first 20 rows of dpo.jsonl). It passes iff gradients flow at the first regulariser backward and at the first optimizer step, and peak reserved <= 22 GB (torch.cuda.max_memory_reserved()/1e9, train_rl.py's unit). The verdict is written into train_summary.json's dry_run block, and a failed dry run blocks the job on every rerun. The pair-ordering accuracy is logged",
+  "ordering_accuracy": "Computed over every trained pair from the per-pair margins (the float32 arithmetic of run_dpo), so it survives a resume. The selftest checks it against run_dpo's own per-type count",
+  "panel": "data/ktvic_openviic_refs.json is git-excluded. s3_gate.py reads it only to derive per-image classes (objects_in), checks its sha256 and the 296 dev images, and writes no caption text. If it is absent on the GPU machine, every other number is computed, and a verdict that depends on panel_cm is PENDING_PANEL (computed by trying both sides of the bound). The same pinned s3_gate.py --verdict is then rerun where the panel is, writing a new --out",
+  "cm_rft_tie_break": "CIDEr-D against references 1-4: rl_reward.CiderD with document frequencies from all 5 references of each of the 3,469 train-minus-dev300 images, tokens from rl_reward.Reward (RDRSegmenter, lowercase, as evaluate.py). This is a reading of 'train-minus-dev300 document frequencies'. The 'pool index' is the index of a sample's first occurrence among the 12 (T 0.5 then T 0.8)",
+  "copy_guard": "An exact copy is a greedy caption whose rl_reward.Reward copy statistic has smallest word edit distance 0 to one of the image's 5 references (segmented content words). Rates are counted on the first 250 RL ids in schedule order, for the arm (its own decode of those images) and for P1_dev (its decode of the 1,000 RL images, restricted to those 250)",
+  "decodes": "evaluate.py, short prompt, greedy, bf16, its defaults: dev300 via NCS_DATASET=ktvic_dev (ktvic_dev_split.py --json-dir); RL images via NCS_DATASET=ktvic_s3rl with rl1000_data.json and rl250_data.json (s3_gate.py --prep: the RL images' train references in KTVIC's layout). Predictions are kept, so a scoring failure is re-scored and never re-decoded",
+  "pool_resume": "e5_sample.py appends and skips the images already written. Its RNG is seeded once at start, so after a restart the remaining images' samples differ from an uninterrupted run's. A resume is logged in events.log",
+  "estimators": "s3_gate.py reproduces the registered P1_dev values from the committed n2 decode: P 74.291, R 43.126, F1 54.572, m 1.7633, residual +0.17, panel F1 40.653 on 296 images. Paired percentile bootstrap: indices numpy default_rng(0).integers(0, n, (2000, n)) and np.percentile 2.5/97.5, as rl_reward.boot, recomputing object_prf.scores and the frontier residual per draw. count-matched estimators keep the images with the same number of distinct classes in the arm and P1_dev and report the matched share",
+  "never_overwrite": "Every output is written once: an identical rewrite is a no-op and anything else is refused (write a _v2). Each job step is skipped when its output exists, and SHA256SUMS gets _vN names",
+  "provenance": "Every JSON written by these scripts embeds the committed hook's machine_id, git_head_sha, checkpoint_resume_hook_sha256 and train_stage2_sha256, plus the shas of the five files above; the DPO runs also record train_stage2_anchor_sha256 and resumed_from_step. evaluate.py's outputs get the hook's .provenance.json sidecars, and the job stamps $O at the end"
+ },
+ "self_tests": {
+  "run": "2026-10-18, locally, nice -n 19, 1 thread (torch 2.5.1+cpu and datasets 3.6.0 in a scratch venv for train_stage2_anchor.py); each job start reruns all four",
+  "s3_gate.py --selftest": "PASS (53 s). Covers: (1) pair construction through cm_pairs.build: count match, |dsyl| <= 2, TP(w) >= TP(l) + 1, empty/CJK/function-word-end/copy filters, dedup, CAP 4 with the largest dTP first, ref = refs[0], determinism; (2) the verdict table on its boundaries for A, AKL and R, including the panel-absent cases; (3) H5 (amendment 1): clause 1 only, clause 2 only, both, neither (HOLDS and NOT_SHOWN), dR_UB = 0, dP_LB = 0, dR = 0; (4) the estimators against hand-derived P, R, F1 and residual; (5) synthetic data whose verdicts come from the data: a fixed-count TP gain PASSES, a count rise KILLs through G1, no change KILLs, no panel gives PENDING_PANEL or KILL; G2-G6 on their boundaries; an A-KL trigger implies KILL; (6) the --verdict report end to end, without and with A-KL",
+  "cm_rft.py --selftest": "PASS. Covers: count match, the TP rule, the filters, the CIDEr and pool-index tie-breaks, the 1:1 rows, the merge order",
+  "train_stage2_anchor.py --selftest": "PASS. Uses the real train_stage2.run_dpo on a toy two-head model and a processor that expands the image placeholder only in __call__, like Qwen2.5-VL's. Per-pair anchor CE and token KL equal hand-derived values (1e-5), and the accumulated gradients equal a hand-derived autograd of sum[-logsigmoid(beta x margin) + alpha x term] / grad_accum (allclose 1e-6/1e-5). The DPO margins and run_dpo's own ordering accuracy agree. Resume after a simulated crash is bitwise equal (resumed_from_step [2]; 2 checkpoints kept in OUT and in the mirror). The dry run's pass follows its rule. Refused: a finished run, two regularisers, a base-anchored reference, SFT",
+  "cm_pairs.py --self-check": "PASS (the draft's own check)",
+  "mutation_probes": "Local only, not committed. 10 mutants were all caught. In s3_gate: the two strict H5 bounds, panel_lo >, d_res_lo >, G6 <=, and count matching switched off. In train_stage2_anchor: the anchor on the chosen caption, the legacy mask, no / grad_accum, and a mean instead of a sum for the KL",
+  "s3_gate.py --check (local)": "PASS: 72 registered constants, 14 code_at_head, 30 of 30 inputs present with matching sha256, the 1,000 RL ids and their sha, the anchor = P1's SFT target on 1000/1000, the draft diff. On the GPU machine --check --machine adds the adapter, the base snapshot and these pins",
+  "aislop": "Score 92 (Healthy) on the five files, with no error. Left as they are: 2 non-fixable warnings (complexity/file-too-large: s3_gate.py 781 lines and train_stage2_anchor.py 610, because the --selftest harnesses live in the files) and 1 info in the draft builder's own code (range(len))",
+  "openviic_8gram_scan": "0 hits in each of the five files and in amendment 1: every 8-syllable window of the whole file was checked against data/ktvic_openviic_refs.json, locally. The synthetic captions of the self-tests are under 8 syllables"
+ },
+ "job": {
+  "name": "t3_3_s3_cm_dpo_rft",
+  "file": "scripts/queue/jobs/t3_3_s3_cm_dpo_rft.sh",
+  "outputs": "/root/outputs/t3_3_s3_cm_dpo_rft: check_<utc>.json, events.log, the decodes (p1dev_s42_redecode-dev300-short, p1dev_s42-rl1000-short, <run>-dev300-short and <run>-rl250-short), the pool files, cm/A (dpo.jsonl, _build_report.json), cm/R (sft.jsonl, _rft_report.json), runs/<run> records, score_<arm>.json, s3_verdict.json, SHA256SUMS. Adapters: $NCS_DATA/runs/{cmdpo_A_s42, cmrft_s42, cmdpo_AKL_s42 if triggered}, with their final files copied to /root/outputs/runs",
+  "starts_with": "the job file's own sha in this addendum, check_g1_pass.py, s3_gate.py --check --machine, the four selftests, the dev split checks"
+ },
+ "gpu_h_estimate": {
+  "total": 5.7,
+  "parts": {
+   "step0_decode": 0.12,
+   "pool_T0.5_T0.8": 2.1,
+   "rl1000_greedy": 0.4,
+   "dry_run": 0.1,
+   "cm_dpo": 1.8,
+   "cm_rft": 0.2,
+   "arm_decodes": 0.45,
+   "model_loads_and_cpu_steps": 0.5
+  },
+  "if_A-KL": 2.3,
+  "note": "The registered estimate is 5.5 (+2.1 for A-KL). On the dev pools the CM-RFT rule keeps 46 of 300 images, so expect about 150 RL images and about 300 SFT rows"
+ },
+ "queue_rule": "Queue only after this addendum's commit is on the machine and G-1 v5 has passed for that HEAD. S3 runs last in the Tier-3 order (main). The job refuses to start if this file is missing or any sha it pins differs"
+}
