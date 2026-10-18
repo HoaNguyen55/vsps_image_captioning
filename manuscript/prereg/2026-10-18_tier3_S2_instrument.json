@@ -1,0 +1,212 @@
+{
+ "addendum_id": "2026-10-18_tier3_S2_instrument",
+ "status": "instrument freeze, step (2) of the two-step freeze in prereg section 9; changes nothing registered",
+ "prereg": "manuscript/prereg/2026-10-18_tier3_S2.json",
+ "prereg_sha256": "ac6404b6a0715deb351eae8fdeb9aea990415298ea3c8beaab2ab5d109a73db3",
+ "prereg_md": "manuscript/prereg/2026-10-18_tier3_S2.md",
+ "prereg_md_sha256": "04d410aaaf66898241e9e0478ade57b0ac56d128d4e4eda647acbb6e1cd6f6f1",
+ "prereg_commit": "a68fb666787b1567be95f39bb039b99b0457054d",
+ "job_name": "t3_1_s2_xvef1_g0",
+ "new_files": {
+  "scripts/xv_ef1.py": "c3c34667cfd0fe2f7798c81f09b3fb3019647ef60a29dc20e0aa55f0725c5e0e",
+  "scripts/queue/jobs/t3_1_s2_xvef1_g0.sh": "d68e7e5eda6f06eaee24f5b0bba8c4322ee475bdd937cb3469e5e03f5115b6a5"
+ },
+ "new_files_bytes": {
+  "scripts/xv_ef1.py": 37374,
+  "scripts/queue/jobs/t3_1_s2_xvef1_g0.sh": 2094
+ },
+ "code_at_head_unchanged": true,
+ "code_at_head_verified": {
+  "at_commit": "ca7812cea2dba1160fc8a079a727598a4605e49b",
+  "method": "sha256 of the working-tree file and of git show <commit>:<file>, both equal to the registered code_at_head; the new files modify none of them",
+  "files": {
+   "scripts/plan_f1.py": "b06a25dc7cecae168d4f7229c3be15702789ec61d51a2f240a3abb431a962bcc",
+   "scripts/knn_prior_eval.py": "5c75f3118a4a8c33416111c5004b87aa60bddc342317f78eb0ee1e5ddc3ed8c2",
+   "scripts/upe_mbr.py": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b",
+   "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+   "scripts/rl_reward.py": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+   "scripts/rl_report.py": "f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5",
+   "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+   "scripts/probe_existence.py": "af93954a82301e98adaf9d5eeed0da446fc8163a9b0bb9907381437a0a393e49",
+   "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+   "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+   "scripts/ktvic_dev_split.py": "b4adfb4c6c6538c735126f1423e8520b156ad6ec81fa3aec9efa0d8558ff7c92"
+  }
+ },
+ "changes_anything_registered": false,
+ "deviations": [],
+ "model_pin": {
+  "id": "OpenGVLab/InternVL3-8B",
+  "revision": "853e3a797a661694b1b8ece0cb72dc2b23e3dac9",
+  "source": "the prereg's own pin (models.verifier.revision, HF main on 2026-10-18); no new pin",
+  "shards_sha256": "models.verifier.shards_sha256 as registered; xv_ef1.py score checks all four after snapshot_download and before the model is loaded",
+  "readme_sha256": "dc7223faa8943185581d44b584d5ce15afeeff0f43155fc2dee291402caa16f7",
+  "remote_code_git_blob_sha1": {
+   "README.md": "88b449cdf3e0e6af92f290ef68e89f13dbdd60ec",
+   "added_tokens.json": "dd972e4080e791eab591742c1168ee7fd6279146",
+   "config.json": "7ae333225c8a81cb68f0a42222caa6b723e155e5",
+   "configuration_internvl_chat.py": "502772cc6e24e6d1fbc5bf91ce76c9b234101eaf",
+   "conversation.py": "5a771766f21ce3aeeb99b286fb8d188b0038a547",
+   "generation_config.json": "467e2ba8edc477ad1fb650f892ab5be9210522ab",
+   "modeling_intern_vit.py": "eb4aef44ddace5782035f0316de3834563b1c8dd",
+   "modeling_internvl_chat.py": "ccf2ab9cc83283f41aafb611d379c4cc50614132",
+   "preprocessor_config.json": "dfd7e50d9d4e67cd679b16b337b419a0c6cfa849",
+   "special_tokens_map.json": "ac23c0aaa2434523c494330aeb79c58395378103",
+   "tokenizer_config.json": "f18c701c825405350d5f0ae158749015b3239e6e"
+  },
+  "remote_code_check": "these files, fetched on 2026-10-18 from the model repo at the pinned revision, have the git blob ids of the registered HF API record (models.verifier.hf_api_record); score.json records the sha256 of every *.py of the snapshot it loads",
+  "prefetch": "main reports the snapshot prefetched on M2 at this revision, shard sha256 as registered (2026-10-19); the job downloads it only if it is not cached"
+ },
+ "licences": {
+  "verifier": {
+   "model": "OpenGVLab/InternVL3-8B @ 853e3a797a661694b1b8ece0cb72dc2b23e3dac9",
+   "card_metadata": {
+    "license": "apache-2.0",
+    "license_name": "qwen",
+    "license_link": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct/blob/main/LICENSE"
+   },
+   "readme_line_671": "This project is released under the MIT License. This project uses the pre-trained Qwen2.5 as a component, which is licensed under the Apache-2.0 License.",
+   "note": "the two statements differ: the card metadata gives apache-2.0 with license_name qwen and a link to the Qwen2.5-72B-Instruct licence; the README says MIT for the project and Apache-2.0 for its Qwen2.5 component. Both are recorded, as the prereg requires, and score.json copies them. Use: inference as a scorer only."
+  },
+  "pool_policy": {
+   "model": "Qwen/Qwen2.5-VL-7B-Instruct @ cc594898137f460bfe9f0759e9844b3ce807cfb5 + LoRA p1dev_s42",
+   "license": "apache-2.0",
+   "note": "no decode in S2: the committed dev300 pool is reused"
+  }
+ },
+ "implementation_notes": [
+  "Prompt and score: model.chat itself builds the prompt (template internvl2_5 with its default system message; '<image>\\n' + question with the image, the question alone and pixel_values None without it). Its generate call is wrapped to run one greedy step (max_new_tokens 1, do_sample False) with output_logits, and p = P(Yes + yes) / (P(Yes + yes) + P(No + no)) is read from the softmax of the raw logits at the first answer position; the token ids are tok.encode(w)[0] as in probe_existence.ask, recorded in score.json.",
+  "Image: the README's find_closest_aspect_ratio, dynamic_preprocess, build_transform and load_image are in xv_ef1.py without their comments; same_as_readme() compares them as code (Python AST) with the README of the snapshot, after checking its registered sha256, and refuses to run on any difference.",
+  "G0: A_within = knn_prior_eval.cell_auc and A_noimg = plan_f1.auroc on the N13 items, both imported unchanged (knn_prior_eval imports scikit-learn at module level, so the venv needs it); cells are round(k v) * 2 + g with k = 12 (N13) or 6 (N7_T0.5), as knn_prior_eval does.",
+  "CIs: one image resample, numpy default_rng(0) with B 2000 draws of the 300 dev images, is shared by every CI (the AUROC CIs of both pools and the CHAIR_i CI); the dev image without an N13 item is part of the resample. Per-cell item and pair counts are reported for both pools.",
+  "Readout (only on G0 PASS): upe_mbr.ktvic_views, utilities, pick, count_matched, compare, chair_counts and chair_delta unchanged, with EF1_V(c) = 2 sum p(o) / (|M(c)| + EG) over the caption's classes; before any endpoint it refuses unless the scorer reproduces P1_dev greedy's registered dev300 numbers (p1dev_reference_dev300: CIDEr-D, CHAIR_i, mentions per caption, P/R/F1 on ktvic5, panel F1).",
+  "Verdicts are computed: gate() for G0, prior_leak() for the kill, carried() for the carry rule, each from the registered thresholds in the prereg JSON.",
+  "Resume: the cache is append-only, keyed by (image_id, class); a restarted job scores only missing items. No result file is overwritten (a second one is written as _v2).",
+  "Outputs: /root/outputs/t3_1_s2_xvef1_g0/ (p_v.jsonl, score.json, g0.json, readout.json only on PASS, and t3_1_s2_xvef1_g0.sha256). The cache line goes to /root/outputs/sha256/t3_1_s2_xvef1_g0.sha256 and to the output directory's copy before analyse runs, and analyse refuses unless it is there; qrun.sh rewrites /root/outputs/sha256/<queued name>.sha256 after a job succeeds, so the job keeps its own copy, which analyse reads. Every result JSON records machine_id, git_head_sha and checkpoint_resume_hook_sha256 (checkpoint_resume_hook.provenance_metadata) and the prereg, addendum and script sha256. Only numbers, class names with their English phrases, pool indices and hashes are written: no caption, reference or OpenViIC text."
+ ],
+ "selftest": {
+  "command": "OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1 NCS_DATA=$PWD/data nice -n 19 python3 scripts/xv_ef1.py --selftest",
+  "script_sha256": "c3c34667cfd0fe2f7798c81f09b3fb3019647ef60a29dc20e0aa55f0725c5e0e",
+  "result": "xv_ef1 selftest ok",
+  "passed": true,
+  "wall_s": 13.1,
+  "utc": "2026-10-18T20:50:12Z",
+  "env": {
+   "python": "3.12.3",
+   "numpy": "2.5.2",
+   "device": "CPU, 1 thread, nice 19"
+  },
+  "cases": [
+   "check() on the committed files (all 29 registered inputs present locally and verified) and its refusal of an addendum that does not pin this script, a changed UPE constant, a changed class map, a changed code_at_head sha256, a changed input sha256 and a prereg the addendum does not pin",
+   "dev() on the real dev300 pools: the registered N13 and N7_T0.5 counts, every N7_T0.5 item an N13 item, and the refusal of a changed registered count",
+   "the cache: resume (only missing items are scored), the question with and without the '<image>\\n' prefix, the item-set and [0, 1] checks, the sha256-before-AUROC rule, and _v2 instead of an overwrite",
+   "the README image code: identical to the registered README as code, refusal of an edited README and of a README with another sha256, tile counts 1, 3 and 13 from dynamic_preprocess",
+   "G0 on synthetic items whose positive rate rises with the cell: PASS for a score that sees the image; KILL at chance; KILL for a score that only knows the cell's prior (A_within is within-cell); KILL for a no-image score that knows the prior (A_noimg is marginal); g0() gates on N13, not N7_T0.5; the gate and prior-leak boundaries; each carry clause at its threshold and one step past it",
+   "the full dev readout on a synthetic pool (whitespace tokens; upe_mbr, object_prf, rl_reward and rescap.chair unchanged): CARRIED with an informative verifier, KILL (prior leak) when the no-image score equals the image score, NOT CARRIED with an uninformative one; the greedy reproduction check passes on exact values and refuses a changed F1 (3 decimals) and a changed CIDEr-D (1e-6)"
+  ]
+ },
+ "local_cpu_checks": {
+  "note": "local CPU runs that test the instrument's code paths; not a result of this job",
+  "mutants": {
+   "killed": 30,
+   "of": 30,
+   "method": "one change to the source, run in-process under the real file name; each must make --selftest fail",
+   "wall_s": 121.8,
+   "cases": {
+    "G0 within-cell bound strict": "AssertionError: ",
+    "G0 no-image bound strict": "AssertionError: ",
+    "G0 thresholds swapped": "AssertionError: ",
+    "A_within marginal": "AssertionError: ['PASS', 'KILL', 'PASS', 'KILL']",
+    "A_noimg within-cell": "AssertionError: ['PASS', 'KILL', 'KILL', 'PASS']",
+    "A_within from p_without": "AssertionError: ['KILL', 'KILL', 'KILL', 'KILL']",
+    "G0 read from N7_T0.5": "AssertionError: ",
+    "leak without dF1 > 0": "AssertionError: ",
+    "leak bound strict": "AssertionError: ",
+    "leak at 140%": "AssertionError: ",
+    "carry ignores the leak": "AssertionError: ",
+    "carry CHAIR sign": "AssertionError: dCHAIRi_vs_COUNT_x100",
+    "carry without dF1": "AssertionError: dF1_vs_COUNT",
+    "carry without CIDEr": "AssertionError: dCIDEr_vs_greedy_x100",
+    "carry without panel": "AssertionError: panel_dF1_vs_COUNT",
+    "XV arms swapped": "AssertionError: ['NOT CARRIED', 'KILL (prior leak)', 'NOT CARRIED']",
+    "XV-EF1 on self-votes": "AssertionError: ['NOT CARRIED', 'NOT CARRIED', 'NOT CARRIED']",
+    "CHAIR delta reversed": "AssertionError: ['NOT CARRIED', 'KILL (prior leak)', 'NOT CARRIED']",
+    "leak not reported": "AssertionError: ['CARRIED', 'NOT CARRIED', 'NOT CARRIED']",
+    "cache with/without swapped": "AssertionError: [('Is there a cat in the image? Answer yes or no.', None), ('<image>\\nIs there a cat in the image? Answer yes or no.', 'pixels of 1'), ('Is there a ve",
+    "AUROC before the sha is recorded": "AssertionError: recorded ran where it must refuse",
+    "overwrite instead of _v2": "AssertionError: ",
+    "cache item set unchecked": "AssertionError: cached ran where it must refuse",
+    "constants unchecked": "AssertionError: check ran where it must refuse",
+    "CIDEr tolerance loose": "AssertionError: readout ran where it must refuse",
+    "README identity unchecked": "AssertionError: same_as_readme ran where it must refuse",
+    "code_at_head unchecked": "AssertionError: check ran where it must refuse",
+    "inputs unchecked": "AssertionError: check ran where it must refuse",
+    "addendum pin unchecked": "AssertionError: check ran where it must refuse",
+    "item counts unchecked": "AssertionError: dev ran where it must refuse"
+   }
+  },
+  "dry_run_real_items": {
+   "what": "dev(), g0() and readout() on the real dev300 pools with random scores and whitespace tokens, B 2000; nothing written. It exercises the path at full size; its statistics mean nothing",
+   "N13_items": 1306,
+   "N7_T0.5_items": 947,
+   "panel_images_checked": 296,
+   "seconds": {
+    "dev": 0.4,
+    "g0": 23.6,
+    "readout": 33.8
+   },
+   "greedy_reproduced_without_segmenter": {
+    "CHAIR_i": 0.23251417769376181,
+    "mentions_per_caption": 1.7633333333333334,
+    "P_ktvic5": 74.29111531190927,
+    "R_ktvic5": 43.125701459034794,
+    "F1_ktvic5": 54.57236106562468,
+    "F1_panel": 40.652821742296844
+   },
+   "cider_note": "the registered CIDEr-D (144.334) needs the RDRSegmenter; the machine run checks it, and with whitespace tokens the same scorer gives 156.894"
+  },
+  "analyse_cli": "analyse on a random cache in a temporary directory: refused before the cache sha256 was recorded (exit 1); then wrote g0.json and, on a rerun, g0_v2.json; the result JSON carries machine_id, git_head_sha and checkpoint_resume_hook_sha256",
+  "aislop": "aislop 0.17.0 on scripts/xv_ef1.py: 0 errors, 1 warning (complexity/file-too-large: more than 400 lines; not fixable without splitting the instrument the prereg registers as one script)"
+ },
+ "checks_at_job_start": {
+  "job_file": [
+   "this addendum, xv_ef1.py and the job file tracked and unmodified at HEAD",
+   "the sha256 of the queued copy found in this addendum",
+   "check_g1_pass.py (G-1 v5 for this HEAD)",
+   "import of einops, sklearn, timm and torchvision before any GPU work"
+  ],
+  "xv_ef1_check": [
+   "this addendum pins xv_ef1.py and the job file by sha256 and lists no deviation",
+   "the prereg JSON and MD have the sha256 above",
+   "the 11 code_at_head files have their registered sha256",
+   "every input the job reads is present with its registered sha256: the two splits, the KTVIC train JSON (where evaluate.py reads it, $NCS_DATA/datasets/ktvic/train_data.json), the three pool files, the OpenViIC panel and upe_temperature.txt",
+   "the registered constants equal the committed code's: UPE LAM/M/MARGIN/EG/RETRIEVE/K_SAMPLES, the COUNT grid (0 to 3, 61 values), 12 samples per image, T* 0.5, object_prf.paired n 5000 seed 0, rl_reward.boot b 2000 seed 0, B 2000 with default_rng(0), the 112-entry class map equal to the classes rescap.chair.objects_in can return, the '<image>\\n' prefix, the README image settings (448, 1 to 12 tiles, thumbnail), matcher v2 on KTVIC",
+   "score: the N13 (1,306 / 683 / 299) and N7_T0.5 (947 / 587 / 296) item counts before any GPU work; the four shard sha256 and the README sha256 and code before the model is loaded",
+   "analyse: the cache's sha256 already in the job's sha file; one row per N13 item, scores in [0, 1]"
+  ]
+ },
+ "inputs_not_read_by_this_job": {
+  ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/qwen25vl7b.json": "registration provenance in the local .session_backup; not on the machines (verified locally by the selftest's check)",
+  ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/adapter_config.json": "registration provenance in the local .session_backup; not on the machines (verified locally by the selftest's check)",
+  ".session_backup/machines/n2/ncs-data/gold_p1dev/sft.jsonl": "registration provenance in the local .session_backup; not on the machines (verified locally by the selftest's check)",
+  ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/metrics.jsonl": "registration provenance in the local .session_backup; not on the machines (verified locally by the selftest's check)",
+  ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/internvl3_8b_README_853e3a7.md": "registration provenance in the local .session_backup; not on the machines (verified locally by the selftest's check)",
+  ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/internvl3_8b.json": "registration provenance in the local .session_backup; not on the machines (verified locally by the selftest's check)"
+ },
+ "queue_preconditions": [
+  "this addendum's commit is the machine's HEAD and G-1 v5 has passed for it (qrun.sh and the job both run check_g1_pass.py)",
+  "scripts/queue/qrun.sh as committed (main ruling D-W14-1 keeps the uncommitted Q-FIX out of HEAD)",
+  "the venv imports einops, scikit-learn, timm and torchvision (the job checks before any GPU work)",
+  "data/ktvic_openviic_refs.json present, read only, sha256 4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d (git-excluded; copied as for UPE choose-t on n2); xv_ef1.py refuses to run without it",
+  "the InternVL3-8B snapshot at the pinned revision in the HF cache (prefetched on M2) or network access",
+  "JAVA_HOME and $NCS_DATA/vncorenlp for the RDRSegmenter of the readout's CIDEr-D, as for evaluate.py",
+  "machine: M2 = O-2308428, after K2 (main, 2026-10-19)"
+ ],
+ "cost": {
+  "registered_estimate_gpu_h": 1.5,
+  "this_job_estimate_gpu_h": 0.6,
+  "basis": "2,612 one-step passes: 1,306 with 9 to 13 image tiles (about 1 to 1.5 s each on an RTX 3090 with eager attention) and 1,306 text-only ones; about 5 min to hash the shards and load the model; no download on M2 (prefetched). Then about 5 min of CPU for G0 and the readout (local dry run on the real dev300 items: G0 24 s, readout 34 s with whitespace tokens; the RDRSegmenter adds a little).",
+  "registered_estimate_note": "the plan figure includes R14-3's test-seed queries, which this job does not run"
+ },
+ "written_utc": "2026-10-18T20:53:53Z"
+}
