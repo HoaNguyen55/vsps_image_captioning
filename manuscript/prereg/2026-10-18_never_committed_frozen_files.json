@@ -1,0 +1,192 @@
+{
+ "record": "Never-committed frozen prediction files: judge PD-10 (a), condition 1 (status rule D-W13-6)",
+ "created_utc": "2026-10-18T20:11:06Z",
+ "rule": "LOCALLY_FROZEN (never committed) if every copy has one sha256 and the file mtime is earlier than the test's first output; otherwise POST_HOC (PD-10). In claims such a test is exploratory and its times are given.",
+ "wording_template": "frozen locally (file timestamp t, never committed); treated as exploratory",
+ "source_task": ".session_backup/2026-10-18/paperA_tasks/A4.4 (tests_status.tsv, reconcile.tsv)",
+ "files": [
+  {
+   "test": "H1_TC",
+   "paper": "A",
+   "test_name": "H1 THumB/Composite predictions P1-P5",
+   "a4_2_ledger_row": "56",
+   "file": ".session_backup/2026-10-14/r12/H1/PREDICTIONS_FROZEN.txt",
+   "sha256": "c09ed9a3d00145e5c2f72146f917c1b6e19fd7575899e338b81a1cdee4922538",
+   "size_bytes": 3488,
+   "mtime_utc": "2026-10-14T12:52:33Z",
+   "git_blob": "736fcec8765c619c337cf51cd2bacf6fbec7b085",
+   "in_any_git_commit": false,
+   "copies_found": [
+    ".session_backup/2026-10-14/r12/H1/PREDICTIONS_FROZEN.txt"
+   ],
+   "copies_identical_sha256": true,
+   "freeze_record": null,
+   "later_report_quoting_sha256": {
+    "path": ".session_backup/2026-10-14/r12/H1/REPORT.txt",
+    "mtime_utc": "2026-10-14T15:14:07Z",
+    "line_quoting_sha256_prefix": 3,
+    "quoted_prefix_matches": true,
+    "note": "written after the first output, so it confirms the content only from its own mtime on"
+   },
+   "first_output": {
+    "file": ".session_backup/2026-10-14/r12/H1/pilot_results.json",
+    "mtime_utc": "2026-10-14T15:12:36Z",
+    "source": "A4.2 prereg_ledger_v2.tsv row 56 first_result_file, re-stat"
+   },
+   "earliest_file_after_freeze_in_output_folders": {
+    "file": ".session_backup/2026-10-14/r12/H1/pilot.err",
+    "mtime_utc": "2026-10-14T15:12:36Z"
+   },
+   "older_files_in_output_folders_not_counted": [
+    {
+     "file": ".session_backup/2026-10-14/r12/H1/arxiv_ids.tsv",
+     "mtime_utc": "2026-10-14T12:49:17Z",
+     "why": "text file; lines with statistics: 0; mentions 'COCO': yes"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r12/H1/arxiv_ids.xml",
+     "mtime_utc": "2026-10-14T12:49:17Z",
+     "why": "text file; lines with statistics: 12; mentions 'COCO': yes"
+    }
+   ],
+   "rule_check": {
+    "mtime_before_first_output": true,
+    "margin": "+02h20m03s",
+    "all_copies_identical": true,
+    "never_committed": true
+   },
+   "status_pd10": "LOCALLY_FROZEN",
+   "wording": "frozen locally (file timestamp 2026-10-14T12:52:33Z, never committed); treated as exploratory"
+  },
+  {
+   "test": "H3_N1",
+   "paper": "A",
+   "test_name": "H3 N1 English LVLM families F-B/F-C (frozen N1 predictions)",
+   "a4_2_ledger_row": "55",
+   "file": ".session_backup/2026-10-14/r12/H3/N1_PREDICTIONS.txt",
+   "sha256": "ba1f6bc7e47af37f921b38b5be7a37cc6760d3ce49cc29ac22574fd3de58fa1a",
+   "size_bytes": 3377,
+   "mtime_utc": "2026-10-14T12:43:39Z",
+   "git_blob": "c52c6df94104377ce5cfea76c2cf4609e1ee3c96",
+   "in_any_git_commit": false,
+   "copies_found": [
+    ".session_backup/2026-10-14/r12/H3/N1_PREDICTIONS.txt"
+   ],
+   "copies_identical_sha256": true,
+   "freeze_record": {
+    "path": ".session_backup/2026-10-14/r12/H3/N1_PREDICTIONS.frozen_at",
+    "mtime_utc": "2026-10-14T12:43:42Z",
+    "recorded_time": "2026-10-14T12:43:42Z",
+    "recorded_sha256": "ba1f6bc7e47af37f921b38b5be7a37cc6760d3ce49cc29ac22574fd3de58fa1a",
+    "matches_current_sha256": true
+   },
+   "later_report_quoting_sha256": null,
+   "first_output": {
+    "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+    "mtime_utc": "2026-10-14T12:47:47Z",
+    "source": "A4.2 prereg_ledger_v2.tsv row 55 first_result_file, re-stat"
+   },
+   "earliest_file_after_freeze_in_output_folders": {
+    "file": ".session_backup/2026-10-14/r12/H3/out/gt_cache.json",
+    "mtime_utc": "2026-10-14T12:45:34Z"
+   },
+   "older_files_in_output_folders_not_counted": [],
+   "rule_check": {
+    "mtime_before_first_output": true,
+    "margin": "+00h04m08s",
+    "all_copies_identical": true,
+    "never_committed": true
+   },
+   "status_pd10": "LOCALLY_FROZEN",
+   "wording": "frozen locally (file timestamp 2026-10-14T12:43:39Z, never committed); treated as exploratory"
+  },
+  {
+   "test": "L1_COCO",
+   "paper": "A",
+   "test_name": "L1 COCO-2500 sign predictions P1-P4 (check_coco)",
+   "a4_2_ledger_row": "54",
+   "file": ".session_backup/2026-10-14/r11_litmaps/L1/check_coco_PREDICTIONS.txt",
+   "sha256": "c7cad2b240d977bbba2a73a1cf2d336e61908bc05b5fb535b138ed294273fb09",
+   "size_bytes": 855,
+   "mtime_utc": "2026-10-14T07:22:14Z",
+   "git_blob": "1582bcf9121df281bf943686b8a74b0153daabfd",
+   "in_any_git_commit": false,
+   "copies_found": [
+    ".session_backup/2026-10-14/r11_litmaps/L1/check_coco_PREDICTIONS.txt"
+   ],
+   "copies_identical_sha256": true,
+   "freeze_record": null,
+   "later_report_quoting_sha256": null,
+   "first_output": {
+    "file": ".session_backup/2026-10-14/r11_litmaps/L1/check_coco.json",
+    "mtime_utc": "2026-10-14T07:25:31Z",
+    "source": "A4.2 prereg_ledger_v2.tsv row 54 first_result_file, re-stat"
+   },
+   "earliest_file_after_freeze_in_output_folders": {
+    "file": ".session_backup/2026-10-14/r11_litmaps/L1/check_coco.json",
+    "mtime_utc": "2026-10-14T07:25:31Z"
+   },
+   "older_files_in_output_folders_not_counted": [
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/arxiv_ids.err",
+     "mtime_utc": "2026-10-14T07:21:23Z",
+     "why": "text file; lines with statistics: 0; mentions '2500' or 'COCO': no"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/arxiv_ids.tsv",
+     "mtime_utc": "2026-10-14T07:21:43Z",
+     "why": "text file; lines with statistics: 2; mentions '2500' or 'COCO': yes"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/arxiv_q1.err",
+     "mtime_utc": "2026-10-14T07:11:56Z",
+     "why": "text file; lines with statistics: 0; mentions '2500' or 'COCO': no"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/arxiv_q1.txt",
+     "mtime_utc": "2026-10-14T07:16:21Z",
+     "why": "text file; lines with statistics: 4; mentions '2500' or 'COCO': no"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/arxiv_q2.err",
+     "mtime_utc": "2026-10-14T07:17:09Z",
+     "why": "text file; lines with statistics: 0; mentions '2500' or 'COCO': no"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/arxiv_q2.txt",
+     "mtime_utc": "2026-10-14T07:18:09Z",
+     "why": "text file; lines with statistics: 4; mentions '2500' or 'COCO': no"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/check_mstar.json",
+     "mtime_utc": "2026-10-14T07:14:41Z",
+     "why": "JSON with n_img 558, not the 2500-image set of this test"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/check_mstar.log",
+     "mtime_utc": "2026-10-14T07:14:41Z",
+     "why": "text file; lines with statistics: 10; mentions '2500' or 'COCO': no"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/check_stop.log",
+     "mtime_utc": "2026-10-14T07:16:12Z",
+     "why": "text file; lines with statistics: 9; mentions '2500' or 'COCO': no"
+    },
+    {
+     "file": ".session_backup/2026-10-14/r11_litmaps/L1/s2_hits.txt",
+     "mtime_utc": "2026-10-14T07:00:55Z",
+     "why": "text file; lines with statistics: 19; mentions '2500' or 'COCO': no"
+    }
+   ],
+   "rule_check": {
+    "mtime_before_first_output": true,
+    "margin": "+00h03m17s",
+    "all_copies_identical": true,
+    "never_committed": true
+   },
+   "status_pd10": "LOCALLY_FROZEN",
+   "wording": "frozen locally (file timestamp 2026-10-14T07:22:14Z, never committed); treated as exploratory"
+  }
+ ],
+ "caveat": "file-system times are supporting evidence, not proof; this record fixes the sha256 of each file as of the commit that adds this record"
+}
