@@ -1,0 +1,80 @@
+{
+ "amendment_id": "2026-10-18_tier3_S3_amendment1",
+ "amends": {
+  "prereg_id": "2026-10-18_tier3_S3",
+  "commit": "a68fb666787b1567be95f39bb039b99b0457054d",
+  "files_sha256": {
+   "manuscript/prereg/2026-10-18_tier3_S3.md": "2741c448019cbae2cc57101fd8c3487327e8482fa91457eea115e9442ec48311",
+   "manuscript/prereg/2026-10-18_tier3_S3.json": "b39f682f21e6794f5e966779c381bfe6c68ae65d542af4b5571e3b7b9abf361f"
+  },
+  "fields": [
+   "JSON gate.H5_claim",
+   "md §8, the H5 bullet (line 83)"
+  ]
+ },
+ "written_utc": "2026-10-18T09:19:13Z",
+ "authority": "main (PI) ruling to agent T3-S3 on 2026-10-18, after the A-verifier flagged the H5 kill text of R14-2",
+ "old_text": {
+  "json_gate.H5_claim": "the 'both P and R rise' reading holds iff dP > 0 and dR > 0 (point); it is withdrawn if dR < 0 with its 95% CI upper bound < 0 (R14-2 writes 'dR < 0 with LB > 0', read here as a recall loss whose CI excludes 0); it does not change the gate",
+  "md_§8_line_83": "- H5: the 'both P and R rise' reading holds iff dP > 0 and dR > 0 (point); it is withdrawn if dR < 0 with its 95% CI upper bound < 0 (R14-2 writes 'dR < 0 with LB > 0', read here as a recall loss whose CI excludes 0); it does not change the gate.",
+  "design_source": {
+   "path": "manuscript/research_r14/R14_2/REPORT.md",
+   "sha256": "faa1fc3775354634c04f2f3cea7287929cdb248f1078e184b40755a9596b04dd",
+   "line": 139,
+   "quote": "| P-1 H5 (new) | dP > 0 AND dR > 0 (both LB reported); dCHAIR_i <= -0.005 | both point estimates > 0 | dR < 0 with LB > 0 (precision-only drift) |"
+  }
+ },
+ "new_rule": {
+  "H5_kill": "(dR_UB < 0) OR (dP_LB > 0 AND dR < 0)",
+  "text": "the 'both P and R rise' reading holds iff dP > 0 and dR > 0 (point); H5 KILL (the reading is withdrawn as a precision-only drift) fires iff (dR_UB < 0) OR (dP_LB > 0 AND dR < 0); it does not change the gate",
+  "definitions": "dP, dR = arm minus P1_dev (same-machine re-decode) object precision and recall, object_prf.scores against the ktvic5 dev references on the 300 dev images (exact classes, matcher v2); dP_LB and dR_UB = the lower and upper ends of their registered 95% paired percentile bootstrap CIs (dev images, B = 2000, numpy default_rng(0)); dR = the point estimate. Same CIs, same dP/dR definitions and same dev300 images as registered."
+ },
+ "unchanged": [
+  "the 'holds' condition (dP > 0 and dR > 0, point estimates)",
+  "H5 does not change any arm verdict (prereg §8: 'it does not change the gate')",
+  "frozen prediction CM-DPO H5: 'dP > 0 and dR > 0; dCHAIR_i <= −0.005'",
+  "every other design element, input, prediction, gate, kill rule and constant of the prereg"
+ ],
+ "reason": "R14-2 §6 writes the H5 kill as 'dR < 0 with LB > 0 (precision-only drift)', which cannot hold as written: a negative point estimate cannot have a positive lower bound. The A-verifier flagged the contradiction; the prereg had read it as 'dR UB < 0'. The design intent is to catch precision-only gains (Paper A's count confound). The union honours both readings: a recall loss whose CI excludes 0, or a precision gain whose CI excludes 0 paired with a recall point loss. It is conservative against precision-only 'wins'.",
+ "no_output_statement": {
+  "checked_utc": "2026-10-18T09:19:13Z",
+  "method": "the prereg's own check (registered_before_output): file and directory names matched case-insensitively under each root",
+  "output_names": [
+   "cm_rft",
+   "cmdpo",
+   "cmrft",
+   "internvl3_dev300",
+   "p1dev_mbr3",
+   "p1dev_s42_f25",
+   "p1dev_s42_f50",
+   "p1dev_s42_redecode",
+   "p1dev_s43",
+   "p1dev_s44",
+   "p1dev_soup3",
+   "rl1000-short",
+   "t3_1_s2",
+   "t3_2_s1",
+   "t3_3_s3",
+   "t3_4_s5",
+   "xv_ef1",
+   "xvef1"
+  ],
+  "output_names_source": "registered_before_output.output_names of the four Tier-3 preregs (S1, S2, S3, S5)",
+  "roots": [
+   ".session_backup/machines/O-2308423/root/outputs",
+   ".session_backup/machines/O-2308423/root/queue",
+   ".session_backup/machines/O-2308423/root/vsps/data/results",
+   ".session_backup/machines/O-2308428/root/outputs",
+   ".session_backup/machines/O-2308428/root/queue",
+   ".session_backup/machines/O-2308428/root/vsps/data/results",
+   "data/results"
+  ],
+  "hits": [],
+  "last_mirror_backups": [
+   "2026-10-18T09:02:21Z O-2308423 OK 623M",
+   "2026-10-18T09:04:52Z O-2308428 OK 76M"
+  ],
+  "statement": "No Tier-3 output existed when this amendment was written (CHECKLIST C3 holds). It is committed through the gatekeeper as its own commit, before the S3 instrument addendum and before any S3 job is queued."
+ },
+ "implementation": "scripts/s3_gate.py implements the new rule; its --selftest has one case where only (dR_UB < 0) fires, one where only (dP_LB > 0 AND dR < 0) fires, and one where neither fires. The S3 instrument addendum (manuscript/prereg/2026-10-18_tier3_S3_instrument.json) records this amendment."
+}
