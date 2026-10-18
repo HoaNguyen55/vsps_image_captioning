@@ -1,0 +1,262 @@
+{
+ "addendum_id": "2026-10-18_tier3_S5_instrument",
+ "status": "instrument freeze, step (2) of the two-step freeze in prereg section 9; changes nothing registered",
+ "prereg": "manuscript/prereg/2026-10-18_tier3_S5.json",
+ "prereg_sha256": "39a8433b5d16774309f499d34627e3b186f7feb6acf6f825dec72f37c70e3cbe",
+ "prereg_md": "manuscript/prereg/2026-10-18_tier3_S5.md",
+ "prereg_md_sha256": "a5f7f6adf72ab484a0dc212b61d66459e53dd7f054fecf05c549a99cf0f2eea8",
+ "prereg_commit": "a68fb666787b1567be95f39bb039b99b0457054d",
+ "job_name": "t3_4_s5_data_scaling",
+ "new_files": {
+  "scripts/scaling_probe.py": "0342f6e59a6c6d1a89be0fac3ad87bafff76648415c9cf532b5eddc405abac28",
+  "scripts/queue/jobs/t3_4_s5_data_scaling.sh": "e5998596ad65462114e3c49dca18d4a52be8f7aeccd5e1c3cc3c01674f886136"
+ },
+ "new_files_bytes": {
+  "scripts/scaling_probe.py": 28581,
+  "scripts/queue/jobs/t3_4_s5_data_scaling.sh": 3420
+ },
+ "subset_id_files": {
+  "written_by": "python scripts/scaling_probe.py --subsets DIR (each ids file from the JSON, asserted equal to the rule's prefix and to its registered sha256), then build_gold_sft.py --annotations train_data.json --out DIR/gold_p1dev_f<pct> --images-file DIR/<ids file>: the job's commands, run here on CPU",
+  "f25": {
+   "file": "ktvic_train_minus_dev300_f25_s42.txt",
+   "n_images": 867,
+   "sha256": "0d18dfbd3803740c709f60f7afb640fdae60cf22e00720b9ffb4f0b65d20e41a",
+   "registered_sha256": "0d18dfbd3803740c709f60f7afb640fdae60cf22e00720b9ffb4f0b65d20e41a",
+   "sft_jsonl_sha256": "c140600eee2729420a9b23cd9cd3877530510ac099ae000f42f8492a63496c20",
+   "registered_sft_jsonl_sha256": "c140600eee2729420a9b23cd9cd3877530510ac099ae000f42f8492a63496c20",
+   "equal": true
+  },
+  "f50": {
+   "file": "ktvic_train_minus_dev300_f50_s42.txt",
+   "n_images": 1734,
+   "sha256": "a42f86b7ca496039bb71f45abeb96468654e8ed54e5605a5465b406d78586467",
+   "registered_sha256": "a42f86b7ca496039bb71f45abeb96468654e8ed54e5605a5465b406d78586467",
+   "sft_jsonl_sha256": "c350c296862c596691c2f407d14b77576c8aa586632a1804eedcd6bb60aa1c29",
+   "registered_sft_jsonl_sha256": "c350c296862c596691c2f407d14b77576c8aa586632a1804eedcd6bb60aa1c29",
+   "equal": true
+  },
+  "nested": true,
+  "disjoint_from_dev300": true,
+  "registered_sha256_file": {
+   "name": "registered.sha256",
+   "sha256": "e392bbf82329ec24309867f4890a66582a9a1b7173e0c71aaa6801077270299d",
+   "sha256sum_c": [
+    "ktvic_train_minus_dev300_f25_s42.txt: OK",
+    "gold_p1dev_f25/sft.jsonl: OK",
+    "ktvic_train_minus_dev300_f50_s42.txt: OK",
+    "gold_p1dev_f50/sft.jsonl: OK"
+   ],
+   "rc": 0
+  }
+ },
+ "code_at_head_unchanged": true,
+ "code_at_head_verified": {
+  "at_commit": "ca2b22e58c6961d43a9b32a6c82ae7da49112c71",
+  "method": "sha256 of git show <commit>:<file>, compared with the registered code_at_head; the new files modify none of them",
+  "files": {
+   "scripts/train_stage2.py": "29312ef765e3e49e5e1efefc5ad8b88fcf33c991b1a5f3a266a910ada3d1cab4",
+   "scripts/build_gold_sft.py": "18e7909f25cc5c94b194d1a4e13fe6d396b6a8debe73a354699534b1f009c60a",
+   "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+   "scripts/train_rl.py": "bd5743bb2c3a5e3e96cfb65011249471cb40658064db59cbc2d9a02432f8acc5",
+   "scripts/ktvic_dev_split.py": "b4adfb4c6c6538c735126f1423e8520b156ad6ec81fa3aec9efa0d8558ff7c92",
+   "scripts/rl_reward.py": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+   "scripts/rl_report.py": "f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5",
+   "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+   "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+   "scripts/checkpoint_resume_hook.py": "05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895",
+   "scripts/queue/check_g1_pass.py": "39fe181f38bd57a7de32111745bc91de6d684f89c1a931b805da80fe85e104bc",
+   "scripts/queue/qrun.sh": "2eaca17cc0748c0659eef7c166e62c0a05b641efabc57b573a03c085728f06b2"
+  }
+ },
+ "changes_anything_registered": false,
+ "deviations": [],
+ "implementation_notes": [
+  "Subsets: the job writes each ids file from the JSON's ids list once (an existing file must be byte-identical), after asserting it equals the rule's prefix (train_rl.schedule over all 3469 ids of train minus dev300, seed 42; floor(3469 x pct / 100) ids), holds no dev300 image and has its registered sha256; build_gold_sft.py (unchanged) builds the SFT rows and `sha256sum -c registered.sha256` asserts the ids files and the registered sft.jsonl sha256 before any training.",
+  "Step 0 first: p1dev_s42 is re-decoded on the job's machine as p1dev_s42_redecode (evaluate.py, short prompt, bf16, its defaults) before any training; it is the 100% point of every fit. Its agreement with the registered n2 decode (identical captions; CIDEr-D difference) is written to scaling.json and selects nothing.",
+  "Metrics on dev300 for p1dev_s42_f25, p1dev_s42_f50 and p1dev_s42_redecode: CIDEr-D x100 is the mean of rl_report.dev_scores per-image values (dev_scores asserts that mean equals evaluate.py's corpus CIDEr-D within 1e-6, and each result must be scored with rdrsegmenter); object F1 is object_prf.scores' exact-class F1 against the union of the five references' classes; CHAIR_i is rescap.chair's, called as evaluate.py calls it, and must equal each result's own CHAIR_i.",
+  "Bootstrap: one index draw numpy.random.default_rng(0).integers(0, 300, (2000, 300)), the draw rl_reward.boot makes, shared by the three models; per draw each corpus metric is recomputed (CIDEr-D mean, object_prf F1, hallucinated over all mentions) and the OLS slope on log2(N) refitted; the 95% interval is numpy.percentile at 2.5 and 97.5. One training seed per size, so it covers dev-image sampling only.",
+  "Decision: decide(b, CI_lo) evaluates the registered clauses in their written order: FUND_EXTERNAL_IMAGE_DATA if CI_lo(b) > +1, else CLOSE_DATA_VOLUME_LEVERS if b < +1, else INCONCLUSIVE; b is the full-sample OLS slope of CIDEr-D x100 on log2(N) (per doubling). The frozen predictions are reported as hits (bounds inclusive) and decide nothing.",
+  "Before any verdict, --analyse recomputes the registered n2 decode's P, R and F1 vs ktvic5 (to the registered three decimals), CHAIR_i and mentions per caption and exits unless they equal p1dev_reference_dev300.",
+  "Guards: HF_HUB_OFFLINE=1 with refs/main naming cc594898 and the five registered shard sha256, so the checked snapshot is the base every from_pretrained loads; NCS_DATASET and RESCAP_* are unset (the hook's defaults: save_steps 200, save_total_limit 2); each training log must show the hook (save_steps=200), the card rule (512 vision tokens, 4-bit) and 'loss mask: assistant'; each adapter's LoRA config must equal the registered r, alpha, dropout and target_modules on the registered base; the job file must carry the registered train/decode flags and none of --four-bit, --max-new-tokens, --max-vision-tokens, --limit or test_data.json.",
+  "Nothing is overwritten: a step whose output exists is skipped; training resumes from the hook's checkpoints; if a decode was saved but its scoring failed, the job scores the saved predictions (evaluate.py --predictions) instead of decoding again; scaling.json goes to the next _vN if it exists.",
+  "Outputs in /root/outputs/t3_4_s5_data_scaling/: ids files and registered.sha256, SFT rows, the three dev300 results with evaluate.py's .preds.json and the hook's .provenance.json, training logs, scaling.json (with machine_id, git_head_sha and the hook sha) and SHA256SUMS, which also lists the two new adapters' final files in $NCS_DATA/runs (qrun's post-job stamp copies those to /root/outputs/runs)."
+ ],
+ "selftest": {
+  "command": "OMP_NUM_THREADS=1 nice -n 19 python scripts/scaling_probe.py --selftest",
+  "script_sha256": "0342f6e59a6c6d1a89be0fac3ad87bafff76648415c9cf532b5eddc405abac28",
+  "tree": "git archive of ca2b22e58c6961d43a9b32a6c82ae7da49112c71 plus the two new files",
+  "result": "scaling_probe self-test ok",
+  "passed": true,
+  "wall_s": 5.8,
+  "utc": "2026-10-18T18:25:18Z",
+  "env": {
+   "python": "3.12.3",
+   "numpy": "2.5.2",
+   "device": "CPU, 1 thread"
+  },
+  "cases": [
+   "the registered checks: both prereg sha256, every constant against the JSON, the 12 code_at_head files and every registered input this job reads",
+   "refusals: a changed registered constant (B = 1999) and a changed file are refused; an existing output is never overwritten (write_once refuses other content; fresh() gives _v2, then _v3)",
+   "subsets on a synthetic pool of 101 ids: deterministic, independent of the pool's order, nested, floor sizes 25 and 50, seed-dependent; on the real pool: the registered ids and counts (867, 1734), nested, no dev300 image; ids files written once and at their registered sha256; a tampered ids file is refused",
+   "decision table: (b, CI_lo) = (1, 1) INCONCLUSIVE, (2, 1) INCONCLUSIVE, (0.99, 0.5) CLOSE, (1.5, 1.01) FUND, (5, 0.9) INCONCLUSIVE, (0.5, 1.5) FUND (the clauses in their written order)",
+   "corpus metrics on a hand-made model and a draw with a repeat: CIDEr-D the mean, F1 the exact F1 (not F1_spec), CHAIR_i all hallucinated over all mentions (2/5, not a mean of rates)",
+   "fit on synthetic models with known slopes: the paired CIDEr-D CI equals the slope plus slope(s) times rl_reward.boot's CI of mean(d) (same index draw); the F1 and CHAIR_i CIs collapse onto their slopes; the output is plain JSON and repeatable; each registered outcome is produced from data: slope 3 FUND, slope 0 CLOSE, slope 2 with spread 30 INCONCLUSIVE",
+   "the registered n2 decode: P, R, F1 vs ktvic5 (74.291, 43.126, 54.572), CHAIR_i and mentions per caption recomputed equal p1dev_reference_dev300"
+  ]
+ },
+ "local_cpu_checks": {
+  "note": "local CPU runs that test the instrument's code paths; not a result of this job",
+  "mutants": {
+   "killed": 15,
+   "of": 15,
+   "cases": {
+    "decision clauses in the other order": {
+     "killed": true,
+     "by": "AssertionError: (0.5, 1.5, 'CLOSE_DATA_VOLUME_LEVERS')"
+    },
+    "FUND on CI_lo >= 1": {
+     "killed": true,
+     "by": "AssertionError: (1, 1, 'FUND_EXTERNAL_IMAGE_DATA')"
+    },
+    "CLOSE on b <= 1": {
+     "killed": true,
+     "by": "AssertionError: (1, 1, 'CLOSE_DATA_VOLUME_LEVERS')"
+    },
+    "verdict from CI_hi": {
+     "killed": true,
+     "by": "AssertionError: (2, 30, {'verdict': 'FUND_EXTERNAL_IMAGE_DATA', 'b': 2.0000000000000018, 'ci_lo_b': -1.1993345849675472}"
+    },
+    "unpaired bootstrap (one draw per model)": {
+     "killed": true,
+     "by": "AssertionError"
+    },
+    "90% interval": {
+     "killed": true,
+     "by": "AssertionError"
+    },
+    "ceil instead of floor sizes": {
+     "killed": true,
+     "by": "AssertionError"
+    },
+    "F1_spec instead of exact F1": {
+     "killed": true,
+     "by": "AssertionError"
+    },
+    "CHAIR_i as a mean of per-image rates": {
+     "killed": true,
+     "by": "AssertionError"
+    },
+    "CIDEr-D as a median": {
+     "killed": true,
+     "by": "AssertionError"
+    },
+    "x = N instead of log2(N)": {
+     "killed": true,
+     "by": "AssertionError"
+    },
+    "existing output overwritten": {
+     "killed": true,
+     "by": "AssertionError"
+    },
+    "ids file without its final newline": {
+     "killed": true,
+     "by": "f25: the registered ids are not the rule's prefix, hold dev300 images or miss their sha256"
+    },
+    "registered constants not enforced": {
+     "killed": true,
+     "by": "AssertionError"
+    },
+    "sha256 mismatches ignored": {
+     "killed": true,
+     "by": "AssertionError"
+    }
+   }
+  },
+  "job_simulation": {
+   "method": "the job file with /root remapped into a sandbox git repo (HEAD export plus the new files and a sandbox addendum); check_g1_pass, evaluate.py, train_stage2.py, the --machine parts and --analyse stubbed; --check --instrument, --selftest, --subsets, ktvic_dev_split.py, build_gold_sft.py and every sha256 check real",
+   "scenarios": [
+    "1 fresh run: rc=0 evaluate_calls=3 train_calls=2",
+    "2 rerun after completion: nothing redone, nothing rewritten: rc=0 evaluate_calls=3 train_calls=2 unchanged=yes",
+    "3 tampered ids file is refused (never overwritten): rc=1",
+    "4 queued copy differs from the committed job file: refused before any output: rc=1 outputs_dir_exists=no",
+    "5 scoring crash after decoding, then resume: scored from the saved preds, preds untouched: rc1=1 rc2=0 result={\"sim\": \"rescored from preds\"} preds_unchanged=yes",
+    "6 training crash, then resume: training rerun, nothing else redone: rc1=1 rc2=0 train_calls=3 evaluate_calls=1->3 metrics=1",
+    "7 job file edited in the repo and the queue alike (cmp passes): refused as modified at HEAD: rc=1 outputs_dir_exists=no last_cmd=0 lines"
+   ]
+  },
+  "machine_adapter_check": {
+   "with": "NCS_DATA holding the harvested n2 p1dev_s42 adapter_model.safetensors and adapter_config.json (the registered 227a3312.../93f04228...)",
+   "result": "ok",
+   "passed": true
+  },
+  "base_snapshot_with_a_stub_hf_cache": {
+   "HF_HUB_OFFLINE unset": "refused",
+   "refs/main missing": "refused",
+   "refs/main names another revision": "refused",
+   "matching snapshot": "accepted",
+   "corrupt shard": "refused"
+  }
+ },
+ "checks_at_job_start": {
+  "job_file": [
+   "cmp of the queued copy with the committed job file",
+   "the job file, scaling_probe.py and this addendum tracked and unmodified at HEAD",
+   "the sha256 of the job file and of scaling_probe.py found in this addendum",
+   "check_g1_pass.py (G-1 v5 for this HEAD)"
+  ],
+  "scaling_probe_check": {
+   "prereg": [
+    "manuscript/prereg/2026-10-18_tier3_S5.json",
+    "manuscript/prereg/2026-10-18_tier3_S5.md"
+   ],
+   "code_at_head": 12,
+   "inputs": [
+    "data/datasets/ktvic/train_data.json",
+    "data/results/rl/g1_cn_v3_s42/gate.json",
+    "data/results/rl/p1dev_s42-dev300-short.json",
+    "data/results/rl/p1dev_s42-dev300-short.preds.json",
+    "data/splits/ktvic_dev300.txt",
+    "data/splits/ktvic_train_minus_dev300.txt",
+    "manuscript/research_r14/R14_3/oracle_headroom.json",
+    "rescap/chair.py",
+    "scripts/build_gold_sft.py",
+    "scripts/checkpoint_resume_hook.py",
+    "scripts/evaluate.py",
+    "scripts/ktvic_dev_split.py",
+    "scripts/object_prf.py",
+    "scripts/queue/adapters_canonical.sha256",
+    "scripts/queue/check_g1_pass.py",
+    "scripts/queue/qrun.sh",
+    "scripts/rl_report.py",
+    "scripts/rl_reward.py",
+    "scripts/train_rl.py",
+    "scripts/train_stage2.py"
+   ],
+   "machine": [
+    "$NCS_DATA/runs/p1dev_s42/adapter_model.safetensors",
+    "$NCS_DATA/runs/p1dev_s42/adapter_config.json"
+   ],
+   "base": "refs/main and the five shards of the registered revision (HF_HUB_OFFLINE=1)",
+   "instrument": "this addendum's prereg_sha256 and new_files, and the job file's flags"
+  }
+ },
+ "inputs_not_read_by_this_job": {
+  ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/qwen25vl7b.json": "registration provenance; not on the machines",
+  ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/adapter_config.json": "registration provenance; not on the machines",
+  ".session_backup/machines/n2/ncs-data/gold_p1dev/sft.jsonl": "registration provenance; not on the machines",
+  "data/ktvic_openviic_refs.json": "the OpenViIC panel: not in the registered analysis; never opened",
+  ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/metrics.jsonl": "registration provenance; not on the machines"
+ },
+ "queue_preconditions": [
+  "this addendum's commit is the machine's HEAD (the job checks the three files are tracked and unmodified there)",
+  "G-1 v5 has passed for that HEAD (qrun.sh and the job both run check_g1_pass.py)",
+  "scripts/queue/qrun.sh is the registered 2eaca17c (code_at_head; main ruling D-W14-1 keeps Q-FIX out of HEAD until every Tier-3 run is done)",
+  "machine: M1 = O-2308423, after 58 and prereg_ladder_check (main)"
+ ],
+ "cost": {
+  "registered_estimate_gpu_h": 1.8,
+  "basis": "p1dev_s42 trained 866 steps in 6318 s on n2 (7.30 s/step, its metrics.jsonl), so f25 216 steps ~0.44 h and f50 432 steps ~0.88 h; three dev300 decodes ~0.36 h (R14-4 3 C); with model loading about 1.8 GPU-h",
+  "cpu_steps_wall_min": "about 5 (the base shard hashing, the SFT builds, the segmenter for the analysis)"
+ },
+ "written_utc": "2026-10-18T18:25:22Z"
+}
