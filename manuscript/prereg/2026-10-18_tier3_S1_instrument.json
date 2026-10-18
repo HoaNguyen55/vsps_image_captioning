@@ -1,0 +1,188 @@
+{
+ "addendum_id": "2026-10-18_tier3_S1_instrument",
+ "status": "instrument freeze, step (2) of the two-step freeze in prereg section 9; changes nothing registered",
+ "prereg": "manuscript/prereg/2026-10-18_tier3_S1.json",
+ "prereg_sha256": "e485da949cce2ee97fbc569c0b977549e0f55c56a91ca43d8356b87f15686bd2",
+ "prereg_md": "manuscript/prereg/2026-10-18_tier3_S1.md",
+ "prereg_md_sha256": "4b1e7c6dd17f2d7e6b4f2bb389ddd7df9edd66609fc7243f4c8f0c376ec3c0a4",
+ "prereg_commit": "a68fb666787b1567be95f39bb039b99b0457054d",
+ "job_name": "t3_2_s1_seed_consensus",
+ "new_files": {
+  "scripts/seed_consensus.py": "2b72dc417d60c5ec6a0be9cfd3b69692a783e2ba9bd1fc7dcb14c5195296c486",
+  "scripts/queue/jobs/t3_2_s1_seed_consensus.sh": "3acd86835c728bf432f622c7bafc03a177e54047b3206570b23514c7a2080ffb"
+ },
+ "code_at_head_unchanged": true,
+ "code_at_head_verified": {
+  "at_commit": "b8b2500c2f7d7b55174666daceafe2cc642149eb",
+  "method": "sha256 of git show <commit>:<file>, all 12 equal to the registered code_at_head; this instrument modifies none of them",
+  "files": {
+   "scripts/train_stage2.py": "29312ef765e3e49e5e1efefc5ad8b88fcf33c991b1a5f3a266a910ada3d1cab4",
+   "scripts/build_gold_sft.py": "18e7909f25cc5c94b194d1a4e13fe6d396b6a8debe73a354699534b1f009c60a",
+   "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+   "scripts/ktvic_dev_split.py": "b4adfb4c6c6538c735126f1423e8520b156ad6ec81fa3aec9efa0d8558ff7c92",
+   "scripts/rl_reward.py": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+   "scripts/rl_report.py": "f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5",
+   "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+   "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+   "scripts/checkpoint_resume_hook.py": "05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895",
+   "scripts/queue/check_g1_pass.py": "39fe181f38bd57a7de32111745bc91de6d684f89c1a931b805da80fe85e104bc",
+   "scripts/queue/qrun.sh": "2eaca17cc0748c0659eef7c166e62c0a05b641efabc57b573a03c085728f06b2",
+   "scripts/upe_mbr.py": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+  }
+ },
+ "changes_anything_registered": false,
+ "deviations": [],
+ "implementation_notes": [
+  "Soup: the registered call PeftModel.add_weighted_adapter([p1dev_s42, p1dev_s43, p1dev_s44], [1/3]*3, adapter_name='soup', combination_type='cat') is made on a PeftModel over a float32 stand-in host built from the s42 adapter's own tensor names and shapes (zero-stride base weights, no memory); add_weighted_adapter never reads base weights. peft 0.21.2 gives a new adapter its base layer's dtype (tuners_utils._move_adapter_to_device_of_base_layer; the compute dtype for bnb 4-bit), so on the bf16 decode base or the 4-bit training base the soup's factors would be bf16 and the registered float32 allclose self-check would fail; the selftest shows both cases. The saved soup (rank 48, alpha 48) is decoded by evaluate.py on the bf16 base exactly like the members.",
+  "Soup self-check as registered (first and last q_proj and down_proj; torch.allclose default tolerances on float32 updates). In addition, every member factor is compared with its adapter file after loading (a silent load failure would pass the registered check trivially), and the saved soup file is compared with the checked factors. The soup is saved only if the self-check holds, and the job stops otherwise.",
+  "The s42 member in the MBR and in every delta is the same-machine re-decode p1dev_s42_redecode (procedure step 0); the registered n2 decode is used only for the step-0 agreement readout.",
+  "Order: check, step 0 (re-decode s42), train s43 and s44, soup and self-check, decode s43, s44 and the soup, MBR, score MBR (evaluate.py --predictions), gate.",
+  "Reuse: rl_report.dev_scores (per-image CIDEr-D, 1e-6 assert) and rl_report._dev_reward; rl_reward.CiderD, Segmenter (via the reward) and boot (B 2000, seed 0); object_prf.image_counts and scores with exact classes and rescap.chair.objects_in, as in R14-3 oracle_headroom.py; CHAIR_i, mentions per caption and BLEU-4 from the evaluate.py results; train_stage2._vision_token_budget for the card rule.",
+  "Base revision: the job sets HF_HUB_OFFLINE=1; check asserts refs/main equals the registered revision and hashes the five registered shards.",
+  "Inputs: check asserts every inputs_sha256 entry at its machine path (n2-backup entries under $NCS_DATA, data/datasets under $NCS_DATA/datasets) plus the p1dev_s42 adapter sha. Two provenance-only entries (the HF API record, the n2 metrics.jsonl) may be absent on the GPU machine. The panel data/ktvic_openviic_refs.json (git-excluded) must be present on the machine with its registered sha.",
+  "Outputs: /root/outputs/t3_2_s1_seed_consensus (evaluate.py results with the hook's provenance sidecars; check, soup_selfcheck, MBR selection and gate JSONs, each with machine_id, git_head_sha and the hook sha; training logs; SHA256SUMS over every file plus the three new adapters). Adapters p1dev_s43, p1dev_s44 and p1dev_soup3_s42s43s44 are in $NCS_DATA/runs, and their final files are copied with cp -n to /root/outputs/runs/<run>. qrun.sh still writes /root/outputs/sha256/<queue file>.sha256 (its 240-minute window), and SHA256SUMS covers the whole job. A JSON report that exists gets a _v2 name; the soup directory and the MBR captions are refused if they exist."
+ ],
+ "selftest": {
+  "command": "OMP_NUM_THREADS=1 nice -n 19 python scripts/seed_consensus.py --selftest",
+  "script_sha256": "2b72dc417d60c5ec6a0be9cfd3b69692a783e2ba9bd1fc7dcb14c5195296c486",
+  "result": "seed_consensus selftest ok",
+  "passed": true,
+  "wall_s": 6,
+  "utc": "2026-10-18T17:59:36Z",
+  "env": {
+   "python": "3.12.3",
+   "torch": "2.5.1+cpu",
+   "peft": "0.21.2",
+   "transformers": "4.51.3",
+   "numpy": "2.5.4",
+   "device": "CPU, 1 thread"
+  },
+  "cases": [
+   "soup, exact: synthetic r=16 members with update 2a at [0,0] for a = 3, 6, 9 (11 layers); the soup update is exactly 12 at [0,0] and 0 elsewhere on every module (torch.equal), float32, and the registered check picks layers 0 and 10 for q_proj and down_proj (string order would pick layer 9)",
+   "soup, three copies of one random member: the self-check holds and the soup reproduces that member on every module; the saved soup is rank 48, alpha 48 and equals the checked factors",
+   "soup, three random members: the registered self-check holds (max abs diff about 1e-8)",
+   "soup on a bf16 host: the soup's factors are bf16 and the registered self-check fails on all four modules (max abs diff about 2e-4), which is why the soup is built on a float32 host",
+   "MBR on synthetic candidates: an agreeing pair wins over the odd caption, ties go to the lower seed, and a caption between the other two is the medoid (utilities 1.59, 4.02, 5.22)",
+   "gate on synthetic per-image arrays: PASS carrying the soup (D = +1.5, dCHAIR_i = -1); KILL by K1 (D = +0.5, +0.25); KILL by K2 (D >= 1 with dCHAIR_i > 1); both at the bars eligible, the larger D carried; a D tie carries the soup; the frozen-prediction check in and out of range"
+  ]
+ },
+ "local_cpu_checks": {
+  "note": "local CPU runs of this instrument to test its code paths; not a result of this job. First run on an earlier build (837548ce...), re-run on the final scripts/seed_consensus.py 2b72dc417d60c5ec6a0be9cfd3b69692a783e2ba9bd1fc7dcb14c5195296c486 (zip strict=True and line wrapping only): the selftest passes, the soup file is byte-identical (adapter sha256 ce5cad45785e37509b347bc3833a1e59098fc542e50645e6f602f8e656e9de27), and the MBR captions and every gate number are identical",
+  "soup_real_shape": {
+   "members": "three copies of the real p1dev_s42 adapter (sha256 227a3312..., n2 backup) as p1dev_s42/43/44",
+   "self_check": [
+    {
+     "module": "base_model.model.model.layers.0.self_attn.q_proj",
+     "dtype": "torch.float32",
+     "max_abs_diff": 2.9103830456733704e-10,
+     "allclose": true
+    },
+    {
+     "module": "base_model.model.model.layers.27.self_attn.q_proj",
+     "dtype": "torch.float32",
+     "max_abs_diff": 4.656612873077393e-10,
+     "allclose": true
+    },
+    {
+     "module": "base_model.model.model.layers.0.mlp.down_proj",
+     "dtype": "torch.float32",
+     "max_abs_diff": 2.9103830456733704e-10,
+     "allclose": true
+    },
+    {
+     "module": "base_model.model.model.layers.27.mlp.down_proj",
+     "dtype": "torch.float32",
+     "max_abs_diff": 2.3283064365386963e-10,
+     "allclose": true
+    }
+   ],
+   "self_check_pass": true,
+   "soup_r_alpha": [
+    48,
+    48
+   ],
+   "n_tensors": 392,
+   "saved_equals_checked": true,
+   "soup_reproduces_s42": "allclose on v_proj L5, gate_proj L13, o_proj L27 (max abs diff 7e-10)",
+   "wall_s": 35,
+   "peak_rss_gb": 3.5
+  },
+  "check_with_NCS_DATA_n2_backup": {
+   "registered_data_inputs_ok": "13 of 13",
+   "code_inputs_ok": "13 of 13",
+   "code_at_head_ok": "12 of 12",
+   "failed_as_expected_off_machine": [
+    "instrument addendum",
+    "committed and unmodified at HEAD",
+    "base refs/main",
+    "base model-00001-of-00005.safetensors",
+    "base model-00002-of-00005.safetensors",
+    "base model-00003-of-00005.safetensors",
+    "base model-00004-of-00005.safetensors",
+    "base model-00005-of-00005.safetensors",
+    "machine",
+    "venv versions",
+    "card rule gives P1_dev's 512 vision tokens, 4-bit"
+   ]
+  },
+  "mbr_and_gate_real_dev300_stand_in_members": {
+   "members": "s42 slot: the registered n2 decode of p1dev_s42; s43, s44 and soup slots: T0.5 sample 1, T0.5 sample 2 and T0.8 sample 1 of p1dev_s42 (data/results/upe), each scored by evaluate.py --predictions",
+   "dev_scores_assert_1e-6": "held for all five systems",
+   "mbr_picked_counts": {
+    "s42": 204,
+    "s43": 61,
+    "s44": 35
+   },
+   "mbr_df_images": 3469,
+   "s42_reproduces_registered_p1dev_reference_dev300": {
+    "CIDEr_D_x100": [
+     144.33399744573353,
+     144.33399744573353
+    ],
+    "BLEU4_x100": [
+     42.54431591551573,
+     42.54431591551573
+    ],
+    "CHAIR_i_points": [
+     23.251417769376182,
+     23.251417769376182
+    ],
+    "mentions_per_caption": [
+     1.7633333333333334,
+     1.7633333333333334
+    ],
+    "P_ktvic5": [
+     74.29111531190927,
+     74.291
+    ],
+    "R_ktvic5": [
+     43.125701459034794,
+     43.126
+    ],
+    "F1_ktvic5": [
+     54.57236106562468,
+     54.572
+    ],
+    "F1_panel": [
+     40.652821742296844,
+     40.653
+    ]
+   },
+   "n_images": 300,
+   "n_panel_images": 296,
+   "verdict_on_stand_ins": "not reported: the stand-in members make it meaningless"
+  }
+ },
+ "queue_preconditions": [
+  "this addendum's commit is the machine's HEAD (check: the instrument files are tracked and unmodified there)",
+  "G-1 v5 has passed for that HEAD (qrun.sh and the job both run check_g1_pass.py)",
+  "data/ktvic_openviic_refs.json is on the machine with sha256 4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d",
+  "scripts/queue/qrun.sh is the registered 2eaca17c... (code_at_head)"
+ ],
+ "cost": {
+  "registered_estimate_gpu_h": 3.98,
+  "plan_gpu_h": 4.3,
+  "cpu_steps_wall_min": "about 10 (check with shard hashing, soup, MBR, gate)"
+ },
+ "written_utc": "2026-10-18T17:59:46Z"
+}
