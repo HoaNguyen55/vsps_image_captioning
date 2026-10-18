@@ -1,0 +1,671 @@
+{
+ "prereg_id": "N9 count-matched leaderboard of public LLaVA-1.5-7B anti-hallucination training checkpoints (L6 D1)",
+ "frozen_utc": "2026-10-18",
+ "status": "registered before any N9 output exists",
+ "mandate": [
+  "R11_FOR_GEMINI §D N9",
+  "PD-3 Q4",
+  "PD-4 Q6",
+  "PD-6 Q1(a), Q3, Q4(c)",
+  "D17 §3(c)4 and binding condition 4",
+  "PD-9 Q6"
+ ],
+ "companion": "manuscript/prereg/2026-10-18_e1_k2_placebo_addendum.md",
+ "committed_files_sha256": {
+  "scripts/lvlm/decode_llava.py": "522bfc1694e21d85ec8335d1ce6e3d9ee401c671da7fc304ec8b4d48c3063561",
+  "scripts/lvlm/e1_chair_count.py": "1e59ff12100b4d489f92b88045ef99bee1f8c36045e449c37e282504653213b4",
+  "data/coco_probe/chair500_ids.txt": "00c8458c9fbb19c6f21fcfb82cdac617842c0570e874e1540b19f52fab70f6ee",
+  "data/coco_probe/chair500_ids.provenance.json": "675f5cc2688eacba5565778bb17d5a4271b42aef84f24204e75eaa48ce75ca8b"
+ },
+ "scorer": {
+  "path": "scripts/lvlm/e1_chair_count.py",
+  "sha256": "1e59ff12100b4d489f92b88045ef99bee1f8c36045e449c37e282504653213b4",
+  "identical_to": ".session_backup/2026-10-14/research_r10/E1/e1_chair_count.py",
+  "pinned_by_7254a39_preregs": {
+   "manuscript/prereg/2026-10-15_q2_longcap_arena.json": "1e59ff12100b4d489f92b88045ef99bee1f8c36045e449c37e282504653213b4",
+   "manuscript/prereg/2026-10-15_q4_vapr_count_control.json": "1e59ff12100b4d489f92b88045ef99bee1f8c36045e449c37e282504653213b4"
+  },
+  "reproduction_check": ".session_backup/2026-10-18/paperA_tasks/P1/e1_scorer_repro_check.json"
+ },
+ "inputs_sha256": {
+  "data/coco_probe/chair_synonyms.txt": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+  ".session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json": "184f9ccac1b9a930e4b0f75d68d05fba43f41d855c76494eb3ebf58aa69c3591",
+  ".session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json": "5d572461d17412a9ebb061276d870bff9bb36871b7381b0440d297983c682d49",
+  ".session_backup/2026-10-14/research_r10/E1/e1_results.json": "a62c7925053ae9f44fcbf1c2479841ec29b4893baf1c37f8eacab280c331172b",
+  ".session_backup/2026-10-13/r10_cpu/run_e1_x1pb.py": "047d167cdaed8ada4c71b766586a46ff2c2507dc0572793a30d38b015fe8f6fa",
+  "annotations_trainval2014.zip": "031296bbc80c45a1d1f76bf9a90ead27e94e99ec629208449507a4917a3bf009"
+ },
+ "images": {
+  "id_list": "data/coco_probe/chair500_ids.txt",
+  "sha256": "00c8458c9fbb19c6f21fcfb82cdac617842c0570e874e1540b19f52fab70f6ee",
+  "n_ids": 500,
+  "n_scored_with_instances": 495,
+  "source": {
+   "repo": "github.com/yuezih/less-is-more",
+   "commit": "f26e187aadacc49a7cfc30443f0e9bae865b8e2e",
+   "path": "CHAIR-eval/data/chair-500.jsonl",
+   "url": "https://raw.githubusercontent.com/yuezih/less-is-more/f26e187aadacc49a7cfc30443f0e9bae865b8e2e/CHAIR-eval/data/chair-500.jsonl",
+   "sha256": "d4002b206d2439d96c5955172551ee1129e179f17898f7248b8743ee98dbe32a",
+   "bytes": 60390,
+   "licence": "Apache-2.0 (repository LICENSE at the same commit)",
+   "readme_statement": "LiM README: the CHAIR test set is chair-500.jsonl, randomly sampled from the MSCOCO validation set with random seed 0",
+   "also_used_by": "HALVA README (github.com/pritamqu/HALVA): \"We use the same 500 images ... as used in prior work\" (links this file)"
+  },
+  "image_files": "COCO val2014 (COCO_val2014_%012d.jpg or the same bytes as %012d.jpg); per-image sha256 recorded in every output"
+ },
+ "pins": {
+  "YiyangAiLab/llava_POVID_stage_one_lora": {
+   "revision": "d6c79d54be16246404f910a4453eb64b8b31af25",
+   "lastModified": "2024-02-17T03:38:51.000Z",
+   "licence": "Apache-2.0",
+   "card_license_field": null,
+   "repo_license_spdx": "Apache-2.0",
+   "how": "repository LICENSE (README links the HF models; card states none)",
+   "files": [
+    ".gitattributes",
+    "README.md",
+    "adapter_config.json",
+    "adapter_model.bin",
+    "checkpoint-45400/README.md",
+    "checkpoint-45400/adapter_config.json",
+    "checkpoint-45400/adapter_model.bin",
+    "checkpoint-45400/global_step45400/bf16_zero_pp_rank_0_mp_rank_00_optim_states.pt",
+    "checkpoint-45400/global_step45400/zero_pp_rank_0_mp_rank_00_model_states.pt",
+    "checkpoint-45400/latest",
+    "checkpoint-45400/rng_state.pth",
+    "checkpoint-45400/special_tokens_map.json",
+    "checkpoint-45400/tokenizer.model",
+    "checkpoint-45400/tokenizer_config.json",
+    "checkpoint-45400/training_args.bin",
+    "checkpoint-45400/zero_to_fp32.py",
+    "config.json",
+    "non_lora_trainables.bin"
+   ]
+  },
+  "YiyangAiLab/llava_POVID_stage_two_lora": {
+   "revision": "bdb48949e04cf7605a606b7159726ac161f96b25",
+   "lastModified": "2024-02-17T03:11:52.000Z",
+   "licence": "Apache-2.0",
+   "card_license_field": null,
+   "repo_license_spdx": "Apache-2.0",
+   "how": "repository LICENSE (README links the HF models; card states none)",
+   "files": [
+    ".gitattributes",
+    "README.md",
+    "adapter_config.json",
+    "adapter_model.bin",
+    "checkpoint-14000/README.md",
+    "checkpoint-14000/adapter_config.json",
+    "checkpoint-14000/adapter_model.bin",
+    "checkpoint-14000/latest",
+    "checkpoint-14000/rng_state.pth",
+    "checkpoint-14000/special_tokens_map.json",
+    "checkpoint-14000/tokenizer.model",
+    "checkpoint-14000/tokenizer_config.json",
+    "checkpoint-14000/trainer_state.json",
+    "checkpoint-14000/training_args.bin",
+    "checkpoint-14000/zero_to_fp32.py",
+    "config.json",
+    "non_lora_trainables.bin",
+    "trainer_state.json"
+   ]
+  },
+  "aimagelab/CHAIR-DPO_LLaVA-1.5-7B": {
+   "revision": "bd9ab77aa0f9183ad1a30e4cc8cecc2cd2b175b8",
+   "lastModified": "2025-11-22T16:06:48.000Z",
+   "licence": "apache-2.0",
+   "card_license_field": "apache-2.0",
+   "repo_license_spdx": null,
+   "how": "model card license field",
+   "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "generation_config.json",
+    "model-00001-of-00003.safetensors",
+    "model-00002-of-00003.safetensors",
+    "model-00003-of-00003.safetensors",
+    "model.safetensors.index.json",
+    "special_tokens_map.json",
+    "tokenizer.model",
+    "tokenizer_config.json"
+   ]
+  },
+  "juliozhao/hadpo-llava-1.5": {
+   "revision": "72b1bcf8d86e60937e1df1ca1386d1c97bf95eb1",
+   "lastModified": "2023-12-25T11:59:59.000Z",
+   "licence": "Apache-2.0",
+   "card_license_field": null,
+   "repo_license_spdx": "Apache-2.0",
+   "how": "repository LICENSE (README links the HF models; card states none)",
+   "files": [
+    ".gitattributes",
+    "README.md",
+    "adapter_config.json",
+    "adapter_model.bin",
+    "config.json",
+    "non_lora_trainables.bin"
+   ]
+  },
+  "liuhaotian/llava-v1.5-7b": {
+   "revision": "4481d270cc22fd5c4d1bb5df129622006ccd9234",
+   "lastModified": "2024-05-08T22:15:49.000Z",
+   "licence": "Llama 2 Community License",
+   "card_license_field": null,
+   "repo_license_spdx": null,
+   "how": "model card README, \"License\" section",
+   "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "generation_config.json",
+    "mm_projector.bin",
+    "pytorch_model-00001-of-00002.bin",
+    "pytorch_model-00002-of-00002.bin",
+    "pytorch_model.bin.index.json",
+    "special_tokens_map.json",
+    "tokenizer.model",
+    "tokenizer_config.json"
+   ]
+  },
+  "openai/clip-vit-large-patch14-336": {
+   "revision": "ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+   "lastModified": "2022-10-04T09:41:39.000Z",
+   "licence": "MIT",
+   "card_license_field": null,
+   "repo_license_spdx": "MIT",
+   "how": "official repository openai/CLIP LICENSE (HF card states none); card: research output",
+   "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "merges.txt",
+    "preprocessor_config.json",
+    "pytorch_model.bin",
+    "special_tokens_map.json",
+    "tf_model.h5",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json"
+   ]
+  },
+  "openbmb/RLAIF-V-7B": {
+   "revision": "90e8e7338297c7ee753ae706b1571d46225c5c19",
+   "lastModified": "2025-03-04T10:37:52.000Z",
+   "licence": "apache-2.0",
+   "card_license_field": "apache-2.0",
+   "repo_license_spdx": null,
+   "how": "model card license field; the repository README restricts use to research",
+   "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "generation_config.json",
+    "latest",
+    "model-00001-of-00003.safetensors",
+    "model-00002-of-00003.safetensors",
+    "model-00003-of-00003.safetensors",
+    "model.safetensors.index.json",
+    "rng_state_0.pth",
+    "rng_state_1.pth",
+    "rng_state_2.pth",
+    "rng_state_3.pth",
+    "rng_state_4.pth",
+    "rng_state_5.pth",
+    "rng_state_6.pth",
+    "rng_state_7.pth",
+    "scheduler.pt",
+    "special_tokens_map.json",
+    "tokenizer.model",
+    "tokenizer_config.json",
+    "trainer_state.json",
+    "training_args.bin",
+    "zero_to_fp32.py"
+   ]
+  },
+  "psp-dada/LLaVA-v1.5-7B-SENTINEL": {
+   "revision": "016b6dced6c24bd26b3736a8cab23ea874dca7c7",
+   "lastModified": "2026-07-02T09:17:43.000Z",
+   "licence": "apache-2.0",
+   "card_license_field": "apache-2.0",
+   "repo_license_spdx": "Apache-2.0",
+   "how": "model card license field and repository LICENSE",
+   "files": [
+    ".gitattributes",
+    "README.md",
+    "adapter_config.json",
+    "adapter_model.safetensors",
+    "config.json",
+    "non_lora_trainables.bin"
+   ]
+  },
+  "zhyang2226/opadpo-lora_llava-v1.5-7b": {
+   "revision": "f589492241ddfaf195cdedd20781edfa8d072717",
+   "lastModified": "2025-01-16T09:07:29.000Z",
+   "licence": "MIT",
+   "card_license_field": null,
+   "repo_license_spdx": "MIT",
+   "how": "repository LICENSE (card states none)",
+   "files": [
+    ".gitattributes",
+    "README.md",
+    "adapter_config.json",
+    "adapter_model.bin"
+   ]
+  }
+ },
+ "runs": [
+  {
+   "label": "n9_base",
+   "method": "LLaVA-1.5-7B (base)",
+   "role": "comparator",
+   "base": "liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234",
+   "vision": "openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+   "loras": [],
+   "drop_vision_lora": false,
+   "expected_lora_merges": [],
+   "command": "python3 scripts/lvlm/decode_llava.py \\\n    --label n9_base \\\n    --out $OUT/n9_base.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --max-new-tokens 512 \\\n    --batch-size 8"
+  },
+  {
+   "label": "n9_povid",
+   "method": "POVID",
+   "role": "method",
+   "base": "liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234",
+   "vision": "openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+   "loras": [
+    "YiyangAiLab/llava_POVID_stage_one_lora@d6c79d54be16246404f910a4453eb64b8b31af25",
+    "YiyangAiLab/llava_POVID_stage_two_lora@bdb48949e04cf7605a606b7159726ac161f96b25"
+   ],
+   "drop_vision_lora": true,
+   "expected_lora_merges": [
+    {
+     "lora": "YiyangAiLab/llava_POVID_stage_one_lora@d6c79d54be16246404f910a4453eb64b8b31af25",
+     "modules_by_component": {
+      "language_model": 64
+     },
+     "skipped_by_component": {
+      "vision": 48
+     },
+     "non_lora_tensors": 0
+    },
+    {
+     "lora": "YiyangAiLab/llava_POVID_stage_two_lora@bdb48949e04cf7605a606b7159726ac161f96b25",
+     "modules_by_component": {
+      "language_model": 224
+     },
+     "skipped_by_component": {
+      "vision": 72
+     },
+     "non_lora_tensors": 0
+    }
+   ],
+   "command": "python3 scripts/lvlm/decode_llava.py \\\n    --label n9_povid \\\n    --out $OUT/n9_povid.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --lora YiyangAiLab/llava_POVID_stage_one_lora@d6c79d54be16246404f910a4453eb64b8b31af25 \\\n    --lora YiyangAiLab/llava_POVID_stage_two_lora@bdb48949e04cf7605a606b7159726ac161f96b25 \\\n    --drop-vision-lora \\\n    --max-new-tokens 512 \\\n    --batch-size 8"
+  },
+  {
+   "label": "n9_rlaifv",
+   "method": "RLAIF-V",
+   "role": "method",
+   "base": "openbmb/RLAIF-V-7B@90e8e7338297c7ee753ae706b1571d46225c5c19",
+   "vision": "openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+   "loras": [],
+   "drop_vision_lora": false,
+   "expected_lora_merges": [],
+   "command": "python3 scripts/lvlm/decode_llava.py \\\n    --label n9_rlaifv \\\n    --out $OUT/n9_rlaifv.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base openbmb/RLAIF-V-7B@90e8e7338297c7ee753ae706b1571d46225c5c19 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --max-new-tokens 512 \\\n    --batch-size 8"
+  },
+  {
+   "label": "n9_chairdpo",
+   "method": "CHAIR-DPO",
+   "role": "method",
+   "base": "aimagelab/CHAIR-DPO_LLaVA-1.5-7B@bd9ab77aa0f9183ad1a30e4cc8cecc2cd2b175b8",
+   "vision": "openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+   "loras": [],
+   "drop_vision_lora": false,
+   "expected_lora_merges": [],
+   "command": "python3 scripts/lvlm/decode_llava.py \\\n    --label n9_chairdpo \\\n    --out $OUT/n9_chairdpo.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base aimagelab/CHAIR-DPO_LLaVA-1.5-7B@bd9ab77aa0f9183ad1a30e4cc8cecc2cd2b175b8 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --max-new-tokens 512 \\\n    --batch-size 8"
+  },
+  {
+   "label": "n9_sentinel",
+   "method": "SENTINEL",
+   "role": "method",
+   "base": "liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234",
+   "vision": "openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+   "loras": [
+    "psp-dada/LLaVA-v1.5-7B-SENTINEL@016b6dced6c24bd26b3736a8cab23ea874dca7c7"
+   ],
+   "drop_vision_lora": false,
+   "expected_lora_merges": [
+    {
+     "lora": "psp-dada/LLaVA-v1.5-7B-SENTINEL@016b6dced6c24bd26b3736a8cab23ea874dca7c7",
+     "modules_by_component": {
+      "language_model": 224
+     },
+     "skipped_by_component": {},
+     "non_lora_tensors": 4
+    }
+   ],
+   "command": "python3 scripts/lvlm/decode_llava.py \\\n    --label n9_sentinel \\\n    --out $OUT/n9_sentinel.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --lora psp-dada/LLaVA-v1.5-7B-SENTINEL@016b6dced6c24bd26b3736a8cab23ea874dca7c7 \\\n    --max-new-tokens 512 \\\n    --batch-size 8"
+  },
+  {
+   "label": "n9_hadpo",
+   "method": "HA-DPO",
+   "role": "method",
+   "base": "liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234",
+   "vision": "openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+   "loras": [
+    "juliozhao/hadpo-llava-1.5@72b1bcf8d86e60937e1df1ca1386d1c97bf95eb1"
+   ],
+   "drop_vision_lora": false,
+   "expected_lora_merges": [
+    {
+     "lora": "juliozhao/hadpo-llava-1.5@72b1bcf8d86e60937e1df1ca1386d1c97bf95eb1",
+     "modules_by_component": {
+      "language_model": 224
+     },
+     "skipped_by_component": {},
+     "non_lora_tensors": 4
+    }
+   ],
+   "command": "python3 scripts/lvlm/decode_llava.py \\\n    --label n9_hadpo \\\n    --out $OUT/n9_hadpo.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --lora juliozhao/hadpo-llava-1.5@72b1bcf8d86e60937e1df1ca1386d1c97bf95eb1 \\\n    --max-new-tokens 512 \\\n    --batch-size 8"
+  },
+  {
+   "label": "n9_opadpo",
+   "method": "OPA-DPO",
+   "role": "method",
+   "base": "liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234",
+   "vision": "openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+   "loras": [
+    "zhyang2226/opadpo-lora_llava-v1.5-7b@f589492241ddfaf195cdedd20781edfa8d072717"
+   ],
+   "drop_vision_lora": false,
+   "expected_lora_merges": [
+    {
+     "lora": "zhyang2226/opadpo-lora_llava-v1.5-7b@f589492241ddfaf195cdedd20781edfa8d072717",
+     "modules_by_component": {
+      "language_model": 224,
+      "vision": 144,
+      "projector": 2
+     },
+     "skipped_by_component": {},
+     "non_lora_tensors": 0
+    }
+   ],
+   "command": "python3 scripts/lvlm/decode_llava.py \\\n    --label n9_opadpo \\\n    --out $OUT/n9_opadpo.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --lora zhyang2226/opadpo-lora_llava-v1.5-7b@f589492241ddfaf195cdedd20781edfa8d072717 \\\n    --max-new-tokens 512 \\\n    --batch-size 8"
+  },
+  {
+   "label": "n9_povid_fullmerge",
+   "method": "POVID, full merge (sensitivity)",
+   "role": "sensitivity",
+   "base": "liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234",
+   "vision": "openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+   "loras": [
+    "YiyangAiLab/llava_POVID_stage_one_lora@d6c79d54be16246404f910a4453eb64b8b31af25",
+    "YiyangAiLab/llava_POVID_stage_two_lora@bdb48949e04cf7605a606b7159726ac161f96b25"
+   ],
+   "drop_vision_lora": false,
+   "expected_lora_merges": [
+    {
+     "lora": "YiyangAiLab/llava_POVID_stage_one_lora@d6c79d54be16246404f910a4453eb64b8b31af25",
+     "modules_by_component": {
+      "language_model": 64,
+      "vision": 48
+     },
+     "skipped_by_component": {},
+     "non_lora_tensors": 0
+    },
+    {
+     "lora": "YiyangAiLab/llava_POVID_stage_two_lora@bdb48949e04cf7605a606b7159726ac161f96b25",
+     "modules_by_component": {
+      "language_model": 224,
+      "vision": 72
+     },
+     "skipped_by_component": {},
+     "non_lora_tensors": 0
+    }
+   ],
+   "command": "python3 scripts/lvlm/decode_llava.py \\\n    --label n9_povid_fullmerge \\\n    --out $OUT/n9_povid_fullmerge.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --lora YiyangAiLab/llava_POVID_stage_one_lora@d6c79d54be16246404f910a4453eb64b8b31af25 \\\n    --lora YiyangAiLab/llava_POVID_stage_two_lora@bdb48949e04cf7605a606b7159726ac161f96b25 \\\n    --max-new-tokens 512 \\\n    --batch-size 8"
+  }
+ ],
+ "povid_readme_ids_resolve_to": {
+  "YiyangAiLab/llava_POVID_stage_one_lora": "POVID_stage_one_merged",
+  "YiyangAiLab/llava_POVID_stage_two_lora": "POVID_stage_two_LoRa"
+ },
+ "l6_povid_id_checked": {
+  "id": "YiyangZhou/POVID_stage_two_LoRa",
+  "http_status": 401,
+  "meaning": "not a public repository (HF API refused the request)"
+ },
+ "excluded": [
+  {
+   "method": "HALVA",
+   "repo": "pritamqu/halva7b-lora@9b96dbf31c5622157fbb90136dacf619addaf3c6",
+   "reason": "no licence statement: HF card has no licence, GitHub pritamqu/HALVA has no LICENSE file (API licence null) and its README states none; dropped under the CapArena rule (licence_check_2026-10-15.json)",
+   "consequence": "prediction (c) is not testable; revivable only by a committed addendum before any HALVA output"
+  },
+  {
+   "method": "HSA-DPO",
+   "repo": null,
+   "reason": "the only released model is a LLaVA-v1.5-13B LoRA on ModelScope (xiaowenyi/HSA-DPO); no 7B, no HF release",
+   "consequence": "chosen-fewer group of (b) = HA-DPO, SENTINEL"
+  },
+  {
+   "method": "mDPO",
+   "repo": null,
+   "reason": "no LLaVA-1.5-7B checkpoint released (README: preference data and a Bunny trainer only)",
+   "consequence": "near-balanced group of (b) = POVID"
+  }
+ ],
+ "decoding": {
+  "do_sample": false,
+  "num_beams": 1,
+  "max_new_tokens": 512,
+  "dtype": "float16",
+  "batch_size": 8,
+  "batch_size_fallback_if_base_oom": 4,
+  "prompt_template": "llava_v1",
+  "question": "Please describe this image in detail.",
+  "image_preprocess": "pad (expand2square with CLIP mean colour) + CLIPImageProcessor",
+  "suppressed_token_ids": ">= 32000",
+  "prompt_ids_identical_transformers_4.37.2_and_4.51.3": true
+ },
+ "scoring": {
+  "per_image_controls": [
+   "matched_prefix",
+   "sentence_tie_average",
+   "uniform_random_subset"
+  ],
+  "k_star": "min(k_method, k_base) per image",
+  "frontier": "E1 trunc_curve (K=12, prefix) + interp_loglog at the method mean count; dP_TRF = 100*(TP_j - TPhat_base(M_j))/M_j",
+  "car_single_caption": {
+   "C_count": "dP_raw - dP_TRF",
+   "B_allocation": "dP_TRF - dP_Cstar",
+   "A_choice": "dP_Cstar",
+   "D_base_rerank": 0
+  },
+  "n_boot": 5000,
+  "boot_seed": 0,
+  "same_image_draws_for_all_runs": true,
+  "p_value": "two-sided bootstrap, +1 correction (run_e1_x1pb.two_sided_boot_p)",
+  "holm": "six method-vs-base comparisons, per endpoint"
+ },
+ "primary_endpoints": {
+  "P1_object_choice": {
+   "statistic": "dP under C* at k*",
+   "C_star_rule": "first admissible control on K2 in control_order",
+   "survives": "Holm p < 0.05 AND dP_Cstar >= +1.0"
+  },
+  "P2_frontier_PD2_training_time": {
+   "statistic": "dP_TRF (base frontier residual at the method own count)",
+   "off_frontier": "Holm p < 0.05 AND dP_TRF >= +1.0",
+   "not_computable": "if M_j >= the frontier top point (E1 interp_loglog returns NaN)"
+  },
+  "never_headline": [
+   "dP_raw",
+   "dR_raw",
+   "CHAIR_s",
+   "CHAIR_i",
+   "M",
+   "words per caption"
+  ]
+ },
+ "frozen_predictions": {
+  "a": {
+   "statistic": "median over the 6 methods of dP_Cstar",
+   "comparator_E1_15pair_mean_same_control": {
+    "matched_prefix": {
+     "path": ".session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json",
+     "key": "overview_15_pairs.mean_dP_MCP_prefix",
+     "sha256": "184f9ccac1b9a930e4b0f75d68d05fba43f41d855c76494eb3ebf58aa69c3591",
+     "value": 0.621
+    },
+    "sentence_tie_average": {
+     "path": ".session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json",
+     "key": "overview_15_pairs.mean_dP_MCP_sent_tieavg",
+     "sha256": "184f9ccac1b9a930e4b0f75d68d05fba43f41d855c76494eb3ebf58aa69c3591",
+     "value": 0.652
+    },
+    "uniform_random_subset": {
+     "path": ".session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json",
+     "key": "overview_15_pairs.mean_dP_MCP_rand_exact",
+     "sha256": "184f9ccac1b9a930e4b0f75d68d05fba43f41d855c76494eb3ebf58aa69c3591",
+     "value": 2.764
+    }
+   },
+   "verdict": "HELD if median > comparator AND bootstrap 95% lower bound of the median > comparator; POINT_ONLY if only the point; else NOT_HELD",
+   "descriptive_E1_H3_median_prefix": {
+    "path": ".session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json",
+    "key": "median of pairs_15.*.dP_MCP_prefix.est",
+    "sha256": "184f9ccac1b9a930e4b0f75d68d05fba43f41d855c76494eb3ebf58aa69c3591",
+    "value": 0.427
+   }
+  },
+  "b": {
+   "primary": true,
+   "chosen_fewer": [
+    "HA-DPO",
+    "SENTINEL"
+   ],
+   "near_balanced": [
+    "POVID"
+   ],
+   "statistic": "D_b = dm(POVID) - mean(dm(HA-DPO), dm(SENTINEL)), classes per caption",
+   "training_data_mean_dk": {
+    "HA-DPO": {
+     "path": ".session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json",
+     "key": "summary_table_7_datasets.hadpo_llava15.mean_dk",
+     "sha256": "5d572461d17412a9ebb061276d870bff9bb36871b7381b0440d297983c682d49",
+     "value": -0.691
+    },
+    "SENTINEL": {
+     "path": ".session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json",
+     "key": "summary_table_7_datasets.sentinel_llava15_7b.mean_dk",
+     "sha256": "5d572461d17412a9ebb061276d870bff9bb36871b7381b0440d297983c682d49",
+     "value": -0.736
+    },
+    "POVID": {
+     "path": ".session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json",
+     "key": "summary_table_7_datasets.povid.mean_dk",
+     "sha256": "5d572461d17412a9ebb061276d870bff9bb36871b7381b0440d297983c682d49",
+     "value": 0.114
+    },
+    "RLAIF-V": {
+     "path": ".session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json",
+     "key": "summary_table_7_datasets.rlaifv.mean_dk",
+     "sha256": "5d572461d17412a9ebb061276d870bff9bb36871b7381b0440d297983c682d49",
+     "value": -0.017
+    }
+   },
+   "held": "D_b >= +0.3 AND 95% lower bound > 0",
+   "kill": "D_b < 0.1: drop (b); N9 shows no dk -> dm link (Paper A §9 D2 second half)",
+   "d2_first_half": {
+    "path": ".session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json",
+    "key": "l6_d2_evaluation.kill_rule_rlaifv_in_045_055.in_kill_interval_all_obj_pairs",
+    "sha256": "5d572461d17412a9ebb061276d870bff9bb36871b7381b0440d297983c682d49",
+    "value": true
+   },
+   "sensitivity_not_verdict": [
+    "D_b prime: near_balanced = POVID + RLAIF-V",
+    "D_b with n9_povid_fullmerge in place of n9_povid"
+   ]
+  },
+  "c": {
+   "statement": "HALVA |dm| <= 0.15",
+   "status": "NOT_TESTABLE (HALVA excluded: no licence statement)"
+  }
+ },
+ "kill_rules": {
+  "K_F_fidelity": {
+   "compare": "base CHAIR_i, CHAIR_s vs LiM published r1 on the same 500 images",
+   "published": {
+    "path": ".session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json",
+    "key": "fidelity_K1.lim_r1.published [CHAIR_s, CHAIR_i, Recall]",
+    "sha256": "184f9ccac1b9a930e4b0f75d68d05fba43f41d855c76494eb3ebf58aa69c3591",
+    "value": {
+     "CHAIR_s": 50.0,
+     "CHAIR_i": 15.4,
+     "Recall": 77.1
+    }
+   },
+   "max_abs_diff": {
+    "CHAIR_i": 1.0,
+    "CHAIR_s": 1.5
+   },
+   "action": "fix the protocol before any method is scored; keep and disclose the failed run",
+   "descriptive": {
+    "path": ".session_backup/2026-10-14/research_r10/E1/e1_results.json",
+    "key": "systems['lim/r1-llava1.5-7b'].{CHAIR_s,CHAIR_i,Recall}",
+    "sha256": "a62c7925053ae9f44fcbf1c2479841ec29b4893baf1c37f8eacab280c331172b",
+    "value": {
+     "CHAIR_s": 50.5,
+     "CHAIR_i": 15.26,
+     "Recall": 77.5
+    }
+   }
+  },
+  "K_b": "see frozen_predictions.b.kill",
+  "K_headline": ">= 3 of 6 methods SURVIVE on P1 -> headline \"training changes object choice\"",
+  "K_rank_PD6_Q4c": "no significantly reversed pair among the 7 systems (6 methods + base at 0) -> report N9 as consistent with the raw ranking; no claim rests on it",
+  "K_placebo_H6_P5": "no admissible control on K2 -> no primary per-image control; specification curve only; C1 wording \"count control changes the ranking\"",
+  "K_protocol": [
+   "same prompt_template_ids_sha256, id-list sha256, per-image image sha256s, decoding settings and batch size in every run",
+   "merged LoRA module counts equal expected_lora_merges",
+   "coverage check passed"
+  ],
+  "K_licence": "a checkpoint whose licence statement changes to a non-open one before its run is dropped"
+ },
+ "k2_addendum": {
+  "file": "manuscript/prereg/2026-10-18_e1_k2_placebo_addendum.md",
+  "parent": "manuscript/research_r10/E1/REPORT.txt §1 H4, §4 K2 (6c647a6)",
+  "temperature": 1.0,
+  "top_p": 1.0,
+  "top_k": 0,
+  "seeds": [
+   1,
+   2
+  ],
+  "n_boot": 2000,
+  "boot_seed": 0,
+  "prediction_abs_dP_lt": 0.5,
+  "kill_abs_dP_gt": 1.0,
+  "admissible_abs_dP_le": 0.5,
+  "control_order": [
+   "matched_prefix",
+   "sentence_tie_average",
+   "uniform_random_subset"
+  ],
+  "X_minus_B": "seed 2 minus seed 1",
+  "model": "liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234",
+  "vision": "openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1",
+  "commands": [
+   "python3 scripts/lvlm/decode_llava.py \\\n    --label k2_seed1 \\\n    --out $OUT/k2_seed1.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --do-sample --temperature 1.0 --top-p 1.0 --top-k 0 --seed 1 \\\n    --max-new-tokens 512 \\\n    --batch-size 8",
+   "python3 scripts/lvlm/decode_llava.py \\\n    --label k2_seed2 \\\n    --out $OUT/k2_seed2.json \\\n    --image-ids data/coco_probe/chair500_ids.txt \\\n    --image-dir $IMG \\\n    --base liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234 \\\n    --vision openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1 \\\n    --do-sample --temperature 1.0 --top-p 1.0 --top-k 0 --seed 2 \\\n    --max-new-tokens 512 \\\n    --batch-size 8"
+  ]
+ },
+ "analysis_script_requirement": "committed before the first K2 or N9 score; imports scripts/lvlm/e1_chair_count.py unchanged; first reproduces E1 pairs_15 dP_MCP_prefix, dP_MCP_sent_tieavg, dP_MCP_rand_exact, dP_TRF_prefix on the released E1 outputs",
+ "built_by": {
+  "script": ".session_backup/2026-10-18/paperA_tasks/P1/build_preregs.py",
+  "templates": [
+   "templates/n9.md.tpl",
+   "templates/k2_addendum.md.tpl"
+  ]
+ }
+}

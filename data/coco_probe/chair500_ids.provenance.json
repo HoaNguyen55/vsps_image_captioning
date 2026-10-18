@@ -1,0 +1,39 @@
+{
+ "file": "data/coco_probe/chair500_ids.txt",
+ "sha256": "00c8458c9fbb19c6f21fcfb82cdac617842c0570e874e1540b19f52fab70f6ee",
+ "format": "one COCO image id (integer) per line, in the question_id order of the source file",
+ "n_ids": 500,
+ "n_unique": 500,
+ "source": {
+  "repo": "github.com/yuezih/less-is-more",
+  "commit": "f26e187aadacc49a7cfc30443f0e9bae865b8e2e",
+  "path": "CHAIR-eval/data/chair-500.jsonl",
+  "url": "https://raw.githubusercontent.com/yuezih/less-is-more/f26e187aadacc49a7cfc30443f0e9bae865b8e2e/CHAIR-eval/data/chair-500.jsonl",
+  "sha256": "d4002b206d2439d96c5955172551ee1129e179f17898f7248b8743ee98dbe32a",
+  "bytes": 60390,
+  "licence": "Apache-2.0 (repository LICENSE at the same commit)",
+  "readme_statement": "LiM README: the CHAIR test set is chair-500.jsonl, randomly sampled from the MSCOCO validation set with random seed 0",
+  "also_used_by": "HALVA README (github.com/pritamqu/HALVA): \"We use the same 500 images ... as used in prior work\" (links this file)"
+ },
+ "derivation": "image \"%012d.jpg\" -> int; order kept; question_id checked to be 0..n-1",
+ "question_text_values": [
+  "Please describe this image in detail."
+ ],
+ "category_values": [
+  "detail"
+ ],
+ "coco_check": {
+  "annotations_zip_sha256": "031296bbc80c45a1d1f76bf9a90ead27e94e99ec629208449507a4917a3bf009",
+  "n_in_val2014_captions_images": 500,
+  "n_with_val2014_instance_annotations": 495,
+  "ids_without_instances": [
+   28156,
+   46633,
+   330535,
+   449546,
+   528977
+  ],
+  "note": "E1 (and CHAIR) drop images without instance annotations at scoring time; decoding uses all ids"
+ },
+ "built_by": ".session_backup/2026-10-18/paperA_tasks/P1/build_chair500_ids.py"
+}
