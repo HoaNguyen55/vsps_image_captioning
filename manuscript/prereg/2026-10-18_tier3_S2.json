@@ -1,0 +1,964 @@
+{
+ "prereg_id": "2026-10-18_tier3_S2",
+ "status": "frozen before any output of this job exists",
+ "job": {
+  "tier3_row": "T3.1",
+  "plan_id": "S2",
+  "job_name": "t3_1_s2_xvef1_g0",
+  "title": "XV-EF1 verifier gate G0 (InternVL3-8B as a scorer only, dev300)"
+ },
+ "frozen_utc": "2026-10-18T08:50:37Z",
+ "repo_head_at_freeze": "2d47ce7c962e8fca003223dad530bbe41eed721e",
+ "branch": "paper-v10",
+ "authority": [
+  "PD-9 Q1: Stage 1 approved; a separate prereg before each look; all selection on dev300",
+  "PD-9 Q7: InternVL3-8B allowed as a flagged model-generated scorer, AUROC measured on dev300 against human references (G0), never tuned on test",
+  "GPU_JOB_PLAN_v1.md Tier 3 row T3.1"
+ ],
+ "design_sources": [
+  "manuscript/research_r14/R14_3/REPORT.md §3 P1 (XV-EF1, G0, prereg sketch)",
+  "manuscript/research_r14/R14_00_SYNTHESIS.md Stage 1 row S2",
+  "manuscript/prereg/2026-10-13_upe_mbr.md (the frozen rule; XV-EF1 replaces only its evidence term)"
+ ],
+ "registered_before_output": {
+  "checked_utc": "2026-10-18T08:50:37Z",
+  "output_names": [
+   "xvef1",
+   "xv_ef1",
+   "internvl3_dev300",
+   "t3_1_s2"
+  ],
+  "roots": [
+   "data/results",
+   ".session_backup/machines/O-2308423/root/outputs",
+   ".session_backup/machines/O-2308423/root/queue",
+   ".session_backup/machines/O-2308423/root/vsps/data/results",
+   ".session_backup/machines/O-2308428/root/outputs",
+   ".session_backup/machines/O-2308428/root/queue",
+   ".session_backup/machines/O-2308428/root/vsps/data/results"
+  ],
+  "hits": [],
+  "last_mirror_backups": [
+   "2026-10-18T08:29:23Z O-2308423 OK 114M",
+   "2026-10-18T08:29:49Z O-2308428 OK 45M"
+  ],
+  "statement": "No output of this job exists at registration. The job is queued only after this file's commit is on the machine and G-1 v5 has passed for that HEAD; the A-verifier checks CHECKLIST C3 (commit time < mtime of the first output)."
+ },
+ "models": {
+  "verifier": {
+   "id": "OpenGVLab/InternVL3-8B",
+   "revision": "853e3a797a661694b1b8ece0cb72dc2b23e3dac9",
+   "lastModified": "2025-09-11T12:50:07.000Z",
+   "gated": false,
+   "shards_sha256": {
+    "model-00001-of-00004.safetensors": "7ea1f92eaae35cb927e7c7b0f87568ccc046a2446aa68066dfdccb7ebbe0c7f0",
+    "model-00002-of-00004.safetensors": "05f9f1bf63d946d2963bd68c9d1ee7f93bdc5fc05a9b39a3fb91734d5ef4362d",
+    "model-00003-of-00004.safetensors": "904aa0f2fbdbf504cd7bce1a8ec5633ee4e3e1769b48c5b3e08369a23875aaa1",
+    "model-00004-of-00004.safetensors": "50e048a88254db95e0aa397a4e4012a353eaf650a18d7b291e1522d16e83d389"
+   },
+   "licence": {
+    "card_metadata_license": "apache-2.0",
+    "card_metadata_license_name": "qwen",
+    "card_metadata_license_link": "https://huggingface.co/Qwen/Qwen2.5-72B-Instruct/blob/main/LICENSE",
+    "readme_sentence": "This project is released under the MIT License. This project uses the pre-trained Qwen2.5 as a component, which is licensed under the Apache-2.0 License.",
+    "readme_line": 671,
+    "readme_sha256": "dc7223faa8943185581d44b584d5ce15afeeff0f43155fc2dee291402caa16f7",
+    "readme_url": "https://huggingface.co/OpenGVLab/InternVL3-8B/resolve/853e3a797a661694b1b8ece0cb72dc2b23e3dac9/README.md"
+   },
+   "hf_api_record": {
+    "path": ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/internvl3_8b.json",
+    "sha256": "f79e21e41264528d6009015d9ba1acc6059dc28ab45a4e71435ff8aa4c008357",
+    "fetched_utc_date": "2026-10-18",
+    "url": "https://huggingface.co/api/models/OpenGVLab/InternVL3-8B?blobs=true"
+   },
+   "role": "scorer only ([MH] model-generated signal): P(yes) to an existence question; never a caption writer, a label, gold or an evaluation metric",
+   "load": "AutoModel.from_pretrained(id, revision=<pinned>, torch_dtype=bfloat16, low_cpu_mem_usage=True, use_flash_attn=False, trust_remote_code=True).eval().cuda(); AutoTokenizer.from_pretrained(id, revision=<pinned>, trust_remote_code=True, use_fast=False). The remote code is the code at the pinned revision."
+  },
+  "pool_policy": {
+   "base": {
+    "id": "Qwen/Qwen2.5-VL-7B-Instruct",
+    "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+    "lastModified": "2025-04-06T16:23:01.000Z",
+    "gated": false,
+    "licence": "apache-2.0",
+    "shards_sha256": {
+     "model-00001-of-00005.safetensors": "e97b877e47fde53a6c6e77aafb36e58e91ee9d95c4a3eeac6f1b5c0e6a1c986e",
+     "model-00002-of-00005.safetensors": "a9a300a43b4724eee2abe7c18ceb26768d0ab011eb0cad19d9bfd2476a24d024",
+     "model-00003-of-00005.safetensors": "111223d173e00bbee81cba1216fad28668df3476706b7fd26f4d5b50f8b3a507",
+     "model-00004-of-00005.safetensors": "ef47f634fa57d46ee134edcc09f34085a47da1e16c12a2abe0d67118be6d72ed",
+     "model-00005-of-00005.safetensors": "0c859795ad3a627a9b95bcb762e059d5b768a4a36fdd4affeff269d93fdecc67"
+    },
+    "hf_api_record": {
+     "path": ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/qwen25vl7b.json",
+     "sha256": "7e11891a5073603635631c60e2fce31f61aa33688e3ac2110a35f904524fd2e3",
+     "fetched_utc_date": "2026-10-18",
+     "url": "https://huggingface.co/api/models/Qwen/Qwen2.5-VL-7B-Instruct?blobs=true"
+    },
+    "machine_hf_cache_snapshot": {
+     "O-2308423": {
+      "path": ".session_backup/machines/O-2308423/root/outputs/claude_prefetch/prefetch.log",
+      "sha256": "bfb6177d842d0d9ed816028bf76d70c6d60ea34a95e1df6c6cc8ba25214bd971",
+      "line": 11,
+      "quote": "Qwen/Qwen2.5-VL-7B-Instruct -> /root/.cache/huggingface/hub/models--Qwen--Qwen2.5-VL-7B-Instruct/snapshots/cc594898137f460bfe9f0759e9844b3ce807cfb5"
+     },
+     "O-2308428": {
+      "path": ".session_backup/machines/O-2308428/root/outputs/claude_prefetch/prefetch.log",
+      "sha256": "45d9028ddaed254dca5c953c5d2a30df5c5044c66464e87ca5dde4386d1ae756",
+      "line": 19,
+      "quote": "Qwen/Qwen2.5-VL-7B-Instruct -> /root/.cache/huggingface/hub/models--Qwen--Qwen2.5-VL-7B-Instruct/snapshots/cc594898137f460bfe9f0759e9844b3ce807cfb5"
+     }
+    }
+   },
+   "adapter": "p1dev_s42",
+   "adapter_sha256": "227a3312a18cf69b355c20311ff1228167b2af1436e0cb443055dfdfcd40c5c3",
+   "adapter_sha256_source": {
+    "path": "scripts/queue/adapters_canonical.sha256",
+    "sha256": "031b7cc782c546f9746394370bb77a649de72aaaf9cc6b906bfc2ca6cd8c726d",
+    "line": 18,
+    "quote": "227a3312a18cf69b355c20311ff1228167b2af1436e0cb443055dfdfcd40c5c3 runs/p1dev_s42/adapter_model.safetensors"
+   },
+   "adapter_config_sha256": "93f042284aea64fcdf831590c592a7459849632dcb3ee4448b379177b7a298c5",
+   "lora": {
+    "r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "target_modules": "^(?!.*visual).*\\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)$"
+   },
+   "peft_version_at_training": "0.21.2",
+   "base_revision_pinned_in_config": null,
+   "trained_on": "machine n2 (RTX 3090 24 GB), job 35_a",
+   "note": "no decode in S2; its existing dev300 pool is reused"
+  }
+ },
+ "machines": {
+  "M1": "O-2308423",
+  "M2": "O-2308428",
+  "card": "RTX 3090 24 GB on either machine; bf16 inference",
+  "venv": {
+   "torch": "2.5.1+cu121",
+   "transformers": "4.51.3",
+   "peft": "0.21.2",
+   "source": {
+    "path": ".session_backup/2026-10-18/gpu_jobs/M1_EVENTS.log",
+    "sha256": "b780f7194c4bfa919388ad8e3bda3c1f8e8a16ad74cc9975dea30de79b83aa54",
+    "line": 44,
+    "quote": "torch 2.5.1+cu121 cuda True RTX 3090; transformers 4.51.3; peft 0.21.2;"
+   }
+  },
+  "provenance": "the committed hook stamps machine_id, git_head_sha, checkpoint_resume_hook_sha256, train_stage2_sha256 and resumed_from_step; save_steps 200; each job writes /root/outputs/sha256/<job>.sha256 (GPU_JOB_PLAN_v1 setup step 4)"
+ },
+ "data": {
+  "split": "dev300 only; no KTVIC test image, test reference, test pool or test prediction is read",
+  "test_split_read": false,
+  "splits": {
+   "data/splits/ktvic_dev300.txt": {
+    "sha256": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+    "n_images": 300
+   },
+   "data/splits/ktvic_train_minus_dev300.txt": {
+    "sha256": "006080b455a553ca9cc5d3f514ad76bfbe67f444c9c145a5696de681a4be1a58",
+    "n_images": 3469
+   },
+   "data/datasets/ktvic/train_data.json": {
+    "sha256": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f",
+    "note": "dev300 is a subset of KTVIC train; its 5 references per image are the dev gold"
+   }
+  },
+  "pool": {
+   "greedy": {
+    "path": "data/results/rl/p1dev_s42-dev300-short.preds.json",
+    "sha256": "1e183383e91daf32f4683fbea2bdb09d24b7deba956343ca16ef332014cba84b"
+   },
+   "samples_T0.5": {
+    "path": "data/results/upe/p1dev_s42-dev300-short-T0.5.jsonl",
+    "sha256": "876a1d420c20d06ae388613beb8e30eb6fab5d4380ee13b26bbfa8eede5bea26"
+   },
+   "samples_T0.8": {
+    "path": "data/results/upe/p1dev_s42-dev300-short-T0.8.jsonl",
+    "sha256": "60ebd6403910837ed4ed036f70458a5cfdba92923238f8d4167a0d941460cf05"
+   },
+   "samples_per_image": 12
+  },
+  "gold_ktvic5": "union of rescap.chair.objects_in classes over the image's 5 KTVIC references (matcher v2, tone-normalised default; matcher v3 has no committed implementation)",
+  "panel": {
+   "path": "data/ktvic_openviic_refs.json",
+   "sha256": "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d",
+   "dev_images_with_panel": 296,
+   "use": "aggregate scores only; no caption text is written anywhere"
+  },
+  "items": {
+   "N13": {
+    "n_items": 1306,
+    "n_positive": 683,
+    "n_images_with_items": 299
+   },
+   "N7_T0.5": {
+    "n_items": 947,
+    "n_positive": 587,
+    "n_images_with_items": 296
+   }
+  }
+ },
+ "verifier_protocol": {
+  "question_template": "Is there {np} in the image? Answer yes or no.",
+  "with_image": "'<image>\\n' + question",
+  "without_image": "question alone, pixel_values None (model.chat's pure-text path)",
+  "english_class_map": {
+   "biển báo": "a road sign",
+   "biển hiệu": "a shop sign",
+   "buồm": "a sail",
+   "bàn": "a table",
+   "bánh lái": "a steering wheel",
+   "báo": "a newspaper",
+   "bát": "a bowl",
+   "bãi biển": "a beach",
+   "bé gái": "a little girl",
+   "bé trai": "a little boy",
+   "bò": "a cow",
+   "bóng": "a ball",
+   "bút": "a pen",
+   "bướm": "a butterfly",
+   "bạn trẻ": "a young person",
+   "bầu trời": "sky",
+   "bức tranh": "a painting",
+   "chim": "a bird",
+   "chàng trai": "a young man",
+   "chén": "a small bowl",
+   "chó": "a dog",
+   "chổi": "a broom",
+   "chợ": "a market",
+   "con vật": "an animal",
+   "con đường": "a road",
+   "cá": "a fish",
+   "cánh đồng": "a field",
+   "cây": "a tree",
+   "cô gái": "a girl",
+   "cô gái trẻ": "a young woman",
+   "công nhân": "a worker",
+   "căn phòng": "a room",
+   "cầu": "a bridge",
+   "cặp đôi": "a couple",
+   "cọc neo": "a mooring post",
+   "cốc": "a cup",
+   "cửa": "a door",
+   "dao": "a knife",
+   "dãy nhà": "a row of houses",
+   "dép": "a pair of sandals",
+   "dòng sông": "a river",
+   "dù": "an umbrella",
+   "em bé": "a baby",
+   "ghế": "a chair",
+   "giày": "a pair of shoes",
+   "gà": "a chicken",
+   "hoa": "a flower",
+   "học sinh": "a student",
+   "khu rừng": "a forest",
+   "khỉ": "a monkey",
+   "kính": "a pair of glasses",
+   "ly": "a drinking glass",
+   "lợn": "a pig",
+   "mái chèo": "an oar",
+   "máy bay": "an airplane",
+   "mèo": "a cat",
+   "mô hình": "a scale model",
+   "mũ": "a hat",
+   "mặt trời": "the sun",
+   "mỏm đá": "a rocky outcrop",
+   "nam thanh niên": "a young man",
+   "người": "a person",
+   "ngựa": "a horse",
+   "nhà": "a house",
+   "nón": "a hat",
+   "nón lá": "a conical hat",
+   "núi": "a mountain",
+   "ong": "a bee",
+   "phòng": "a room",
+   "phụ nữ": "a woman",
+   "quả": "fruit",
+   "quần": "a pair of trousers",
+   "quầy hàng": "a market stall",
+   "rắn": "a snake",
+   "sách": "a book",
+   "sông": "a river",
+   "sạp hàng": "a market stall",
+   "thanh niên": "a young man",
+   "thuyền": "a boat",
+   "toà nhà": "a building",
+   "tranh": "a painting",
+   "trâu": "a water buffalo",
+   "trường": "a school",
+   "trẻ em": "a child",
+   "tàu": "a ship",
+   "túi": "a bag",
+   "tảng đá": "a large rock",
+   "voi": "an elephant",
+   "vật": "an object",
+   "vỉa hè": "a sidewalk",
+   "vịt": "a duck",
+   "xe": "a vehicle",
+   "xe ba gác": "a cargo tricycle",
+   "xe buýt": "a bus",
+   "xe máy": "a motorbike",
+   "xe tăng": "a military tank",
+   "xe tải": "a truck",
+   "xe đạp": "a bicycle",
+   "xe đẩy": "a cart",
+   "xích lô": "a cycle rickshaw",
+   "ánh sáng": "a beam of light",
+   "áo": "a shirt",
+   "ô": "an umbrella",
+   "ô tô": "a car",
+   "điện thoại": "a phone",
+   "đàn ông": "a man",
+   "đôi bạn": "a pair of friends",
+   "đĩa": "a plate",
+   "đường": "a road",
+   "đồ": "an item",
+   "đồng hồ": "a clock",
+   "đứa trẻ": "a child"
+  },
+  "n_classes_in_map": 112,
+  "image_preprocessing": {
+   "function": "the README's load_image / dynamic_preprocess at the pinned revision",
+   "input_size": 448,
+   "min_num": 1,
+   "max_num": 12,
+   "use_thumbnail": true,
+   "normalisation": "ImageNet mean/std, bicubic resize"
+  },
+  "prompt": "the model's own conversation template and default system message, built exactly as model.chat builds them at the pinned revision",
+  "score": "one forward pass, no sampling: at the first answer position p = P(Yes)/(P(Yes)+P(No)), where P(Yes) sums the next-token probabilities of the first token of 'Yes' and of 'yes', and P(No) those of 'No' and 'no' (scripts/probe_existence.ask's rule for có/không)",
+  "cache": "one JSONL row per item {image_id, class, np, p_with, p_without}; its sha256 goes into the job's sha file before any AUROC is computed",
+  "fallback_verifier": null,
+  "memory": "if these settings do not fit on the card the job stops; any change (e.g. fewer tiles) is a deviation filed and committed before the job restarts; no score made under other settings is used"
+ },
+ "analysis": {
+  "items_and_labels": "every (image, class) whose class one of the 13 pool captions names (plan_f1.items); y = class in ktvic5 gold (plan_f1.labels)",
+  "cell": "v = share of the 12 samples naming the class; g = 1 if the greedy caption names it; cell = round(12*v)*2 + g (the knn_prior_eval convention)",
+  "A_within": "knn_prior_eval.cell_auc(p_with, cell, y) over the N13 items: positive-negative pairs pooled over cells, ties count one half",
+  "A_noimg": "plan_f1.auroc(p_without, y): marginal AUROC over all N13 items, ties averaged",
+  "no_image_reading": "The plan's 'no-image AUROC' is the marginal AUROC of the no-image score: R14-3 states its no-image reference point as a marginal AUROC (scripts/probe_existence.py), and a no-image threshold above the within-cell one is coherent only for a different statistic. The within-cell no-image AUROC is reported, not gated.",
+  "reported_not_gating": [
+   "cell_auc(p_without, cell, y)",
+   "plan_f1.auroc(p_with, y)",
+   "all four statistics on the N7_T0.5 sub-pool (greedy + 6 T0.5 samples; cell = round(6*v)*2 + g)",
+   "item and pair counts per cell"
+  ],
+  "ci": {
+   "method": "image-clustered percentile bootstrap over the dev images",
+   "B": 2000,
+   "rng": "numpy default_rng(0)",
+   "level": "95%",
+   "role": "reported; the gate uses point estimates"
+  },
+  "dev_readout": {
+   "runs_only_if": "G0 PASS",
+   "pool": "N7_T0.5: greedy + 6 samples at T* = 0.5 (UPE-MBR's registered T* and pool size)",
+   "rule": "XV-EF1 = the UPE-MBR rule with q_o = p_with(o): U(c) = upe_mbr.utilities base (self-MBR + retrieval CIDEr-D, train-minus-dev300 references) + LAM*10*EF1_V(c), EF1_V(c) = 2*sum over o in M(c) of p_with(o) / (|M(c)| + EG); upe_mbr.pick keeps the greedy caption unless another wins by more than MARGIN",
+   "controls": {
+    "COUNT": "upe_mbr.count_matched: q_o = 1, lam on COUNT_GRID matched to XV-EF1's mean classes per caption, ties to the smaller lam",
+    "XV-EF1-noimg": "the same rule with p_without, with its own COUNT match (prior-leak control)"
+   },
+   "endpoints": {
+    "dF1_vs_COUNT": "object_prf.paired(COUNT rows, XV-EF1 rows): ktvic5 gold, exact classes, n 5000, seed 0",
+    "dCHAIRi_vs_COUNT_x100": "CHAIR-vi against the 5 KTVIC references (upe_mbr.chair_delta); CI from the image bootstrap above",
+    "dCIDEr_vs_greedy_x100": "per-image word-level CIDEr-D (DF over the dev reference sets) through rl_reward.boot (b 2000, seed 0)",
+    "panel_dF1_vs_COUNT": "object_prf.paired on the 296 panel images",
+    "reported": [
+     "dP, dR",
+     "share of images switched from greedy",
+     "classes per caption",
+     "the same endpoints for XV-EF1-noimg"
+    ]
+   }
+  }
+ },
+ "frozen_predictions": {
+  "A_within": [
+   0.65,
+   0.75
+  ],
+  "readout_dF1_vs_COUNT": [
+   0.5,
+   1.0
+  ],
+  "readout_dCHAIRi_vs_COUNT_x100": [
+   -3,
+   -1.5
+  ],
+  "readout_dCIDEr_vs_greedy": [
+   -1,
+   2
+  ],
+  "readout_panel_dF1_vs_COUNT_about": 0,
+  "source": "manuscript/research_r14/R14_3/REPORT.md §3 P1 'Expected effects'",
+  "reference_point": {
+   "qwen_own_p_co_marginal_auroc_with_image": 0.709,
+   "qwen_own_p_co_marginal_auroc_without_image": 0.453,
+   "note": "the policy's own probe, not within-cell (R14-3)"
+  }
+ },
+ "gate": {
+  "name": "G0",
+  "within_cell_auroc_min": 0.58,
+  "no_image_auroc_max": 0.6,
+  "rule": "PASS if A_within >= 0.58 and A_noimg <= 0.60 (point estimates); otherwise KILL",
+  "on_kill": "XV-EF1 is killed: no dev readout, no S4, no S6, and no test pool is ever scored with this verifier; reported as a pre-registered negative"
+ },
+ "kill_rules": [
+  "G0 fails: A_within < 0.58 or A_noimg > 0.60",
+  "prior leak (dev readout): dF1(XV-EF1 - COUNT) > 0 and dF1(XV-EF1-noimg - COUNT_noimg) >= 70% of it"
+ ],
+ "carry_rule": {
+  "rule": "XV-EF1 enters the single final stacked-system prereg (PD-9 Q4) only if G0 PASS, no prior-leak kill, and on dev300 (point estimates) dF1 vs COUNT >= +0.5, dCHAIR_i x100 vs COUNT <= −1.0, dCIDEr vs greedy >= −2.0 and panel dF1 vs COUNT >= −0.5; otherwise it is not carried and the result is reported",
+  "thresholds": {
+   "dF1_vs_COUNT_min": 0.5,
+   "dCHAIRi_vs_COUNT_x100_max": -1.0,
+   "dCIDEr_vs_greedy_min": -2.0,
+   "panel_dF1_vs_COUNT_min": -0.5
+  },
+  "from": "manuscript/research_r14/R14_3/REPORT.md prereg sketch (its test endpoints and guards) used as a dev carry rule; this is never a claim"
+ },
+ "downstream": {
+  "S6": "may be proposed, with its own prereg, only if G0 PASS (PD-9 Q3)",
+  "S4": "needs G0 PASS and an S3 DPO-arm PASS (R14 synthesis Stage 2)",
+  "stage2_start_by": "2026-11-05",
+  "stage2_start_source": {
+   "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+   "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   "line": 27,
+   "quote": "Every Stage-2 item must START by 2026-11-05"
+  }
+ },
+ "cost": {
+  "plan_estimate_gpu_h": 1.5,
+  "forward_passes": 2612,
+  "note": "the plan figure includes R14-3's test-seed queries, which this job does not run"
+ },
+ "instrument_freeze": {
+  "rule": "Two-step freeze. (1) This registration (design, inputs, predictions, gates, kill rules, analysis) is committed now. (2) An instrument addendum, manuscript/prereg/2026-10-18_tier3_S2_instrument.json, gives the sha256 of every new script and job file and is committed through the gatekeeper BEFORE the job is queued. The addendum may not change anything registered here; such a change is a deviation. A verdict from code whose sha differs from the addendum does not test this registration.",
+  "files_expected": [
+   "scripts/xv_ef1.py (GPU scoring; CPU G0 and dev readout)",
+   "the queue job file for t3_1_s2_xvef1_g0"
+  ],
+  "self_checks_required": [
+   "load this JSON and assert every registered constant and input sha256 at start",
+   "derive every verdict in code from the registered rule",
+   "never overwrite an existing output (write _v2)",
+   "record machine_id, git_head_sha and the hook sha in every result JSON"
+  ],
+  "job_start": "only after the commit is on the machine and G-1 v5 has passed for that HEAD"
+ },
+ "code_at_head": {
+  "scripts/plan_f1.py": "b06a25dc7cecae168d4f7229c3be15702789ec61d51a2f240a3abb431a962bcc",
+  "scripts/knn_prior_eval.py": "5c75f3118a4a8c33416111c5004b87aa60bddc342317f78eb0ee1e5ddc3ed8c2",
+  "scripts/upe_mbr.py": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b",
+  "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+  "scripts/rl_reward.py": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+  "scripts/rl_report.py": "f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5",
+  "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+  "scripts/probe_existence.py": "af93954a82301e98adaf9d5eeed0da446fc8163a9b0bb9907381437a0a393e49",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+  "scripts/ktvic_dev_split.py": "b4adfb4c6c6538c735126f1423e8520b156ad6ec81fa3aec9efa0d8558ff7c92"
+ },
+ "upe_constants": {
+  "LAM": 2.0,
+  "M": 5,
+  "MARGIN": 0.5,
+  "EG": 6.0,
+  "RETRIEVE": 10,
+  "K_SAMPLES": 6
+ },
+ "count_grid_min_max_n": [
+  0.0,
+  3.0,
+  61
+ ],
+ "p1dev_reference_dev300": {
+  "CIDEr_D_x100": 144.33399744573353,
+  "BLEU4_x100": 42.54431591551573,
+  "CHAIR_i": 0.23251417769376181,
+  "mentions_per_caption": 1.7633333333333334,
+  "mean_syllables": 11.876666666666667,
+  "fragments": 9,
+  "P_ktvic5": 74.291,
+  "R_ktvic5": 43.126,
+  "F1_ktvic5": 54.572,
+  "F1_panel": 40.653,
+  "preds_sha256": "1e183383e91daf32f4683fbea2bdb09d24b7deba956343ca16ef332014cba84b"
+ },
+ "framing": {
+  "statement": "Paper B's framing stays as it is (resource + validity audit, R15 DEBATE D2) unless the judge rules otherwise before B's framing freeze on 2026-11-30. A Tier-3 result changes Paper B only through such a new judge decision; otherwise Tier-3 results are kept for a later paper. Paper A may cite them only as a motivating example (PD-9 Q4).",
+  "sources": [
+   {
+    "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+    "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+    "line": 53,
+    "quote": "**Framing:** Paper B stays resource + audit (D2). A Tier-3 win changes B only through a new judge decision taken before B's framing freeze on 11-30. Otherwise Tier-3 results are kept for a later paper."
+   },
+   {
+    "path": "manuscript/research_r15/DEBATE.md",
+    "sha256": "5b11fd21a99bec1767d323cd12c62b2058cc7b3062185e569038e5dc4619bc98",
+    "line": 29,
+    "quote": "B's experiment freeze is 2026-11-30"
+   }
+  ]
+ },
+ "disclosures": [
+  "InternVL3 pretraining may have seen KTVIC, OpenViIC or COCO images (PD-9 Q7).",
+  "The dev pool, its ktvic5 labels and the panel were used in earlier dev analyses (UPE choose-t, PLAN-F1, the kNN prior, R14-3's oracle headroom, the M3 pilot). No verifier score exists for any image.",
+  "The English class map was written by the registrant on 2026-10-18 from the lexicon alone, before any verifier output and without reading a dev label.",
+  "R14-3 named MiniCPM-V 2.6 as a fallback verifier. None is registered: a second verifier would be a second chance at G0, and that model is gated under its own licence (R14-4). Another verifier needs a new judge decision and a new prereg.",
+  "R14-3 planned test-pool verifier queries in the same job; they are excluded (dev300 only)."
+ ],
+ "deviations": "Any change after this freeze goes into a new dated file, committed through the gatekeeper before the affected output exists, and is reported as a deviation next to every number it touches.",
+ "inputs_sha256": {
+  ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/qwen25vl7b.json": "7e11891a5073603635631c60e2fce31f61aa33688e3ac2110a35f904524fd2e3",
+  ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/adapter_config.json": "93f042284aea64fcdf831590c592a7459849632dcb3ee4448b379177b7a298c5",
+  "scripts/queue/adapters_canonical.sha256": "031b7cc782c546f9746394370bb77a649de72aaaf9cc6b906bfc2ca6cd8c726d",
+  "data/splits/ktvic_dev300.txt": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+  "data/splits/ktvic_train_minus_dev300.txt": "006080b455a553ca9cc5d3f514ad76bfbe67f444c9c145a5696de681a4be1a58",
+  "data/datasets/ktvic/train_data.json": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f",
+  ".session_backup/machines/n2/ncs-data/gold_p1dev/sft.jsonl": "971879742e85d710fc828fa526b735d0c0b6469b4988e3d5402a26fb1b666f16",
+  "data/ktvic_openviic_refs.json": "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d",
+  ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/metrics.jsonl": "006653318dfe96375ffcd069094ea006a5dc978e533694f64799036aa0dbc126",
+  "scripts/upe_mbr.py": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b",
+  "data/results/upe/upe_temperature.txt": "8d5c1b5a87c51f970807fc0c2057b3ab3aaf11638ab667dc5956edc8f5bcf138",
+  "scripts/plan_f1.py": "b06a25dc7cecae168d4f7229c3be15702789ec61d51a2f240a3abb431a962bcc",
+  "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+  "scripts/rl_reward.py": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+  "data/results/rl/p1dev_s42-dev300-short.preds.json": "1e183383e91daf32f4683fbea2bdb09d24b7deba956343ca16ef332014cba84b",
+  "data/results/upe/p1dev_s42-dev300-short-T0.5.jsonl": "876a1d420c20d06ae388613beb8e30eb6fab5d4380ee13b26bbfa8eede5bea26",
+  "data/results/upe/p1dev_s42-dev300-short-T0.8.jsonl": "60ebd6403910837ed4ed036f70458a5cfdba92923238f8d4167a0d941460cf05",
+  ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/internvl3_8b_README_853e3a7.md": "dc7223faa8943185581d44b584d5ce15afeeff0f43155fc2dee291402caa16f7",
+  ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/internvl3_8b.json": "f79e21e41264528d6009015d9ba1acc6059dc28ab45a4e71435ff8aa4c008357",
+  "data/results/rl/p1dev_s42-dev300-short.json": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0",
+  "data/results/rl/g1_cn_v3_s42/gate.json": "3b82c02b21042248b5240906117a7ef25d0da8ba8376749bca313c965b4e18f5",
+  "manuscript/research_r14/R14_3/oracle_headroom.json": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116",
+  "scripts/knn_prior_eval.py": "5c75f3118a4a8c33416111c5004b87aa60bddc342317f78eb0ee1e5ddc3ed8c2",
+  "scripts/rl_report.py": "f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5",
+  "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+  "scripts/probe_existence.py": "af93954a82301e98adaf9d5eeed0da446fc8163a9b0bb9907381437a0a393e49",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+  "scripts/ktvic_dev_split.py": "b4adfb4c6c6538c735126f1423e8520b156ad6ec81fa3aec9efa0d8558ff7c92"
+ },
+ "sources": {
+  "bootstrap.B": {
+   "value": 2000,
+   "path": "manuscript/prereg/2026-10-13_rl_gate_v2.md",
+   "sha256": "da9838ffe45ffd4db34ed52f2daf5f330fe36d22c8ebcc5ade0a020341bcdf23",
+   "line": 126,
+   "quote": "percentile bootstrap: B = 2000 resamples of images, numpy default_rng(0)"
+  },
+  "bootstrap.seed": {
+   "value": 0,
+   "path": "manuscript/prereg/2026-10-13_rl_gate_v2.md",
+   "sha256": "da9838ffe45ffd4db34ed52f2daf5f330fe36d22c8ebcc5ade0a020341bcdf23",
+   "line": 126,
+   "quote": "percentile bootstrap: B = 2000 resamples of images, numpy default_rng(0)"
+  },
+  "gate.G0[0]": {
+   "value": 0.58,
+   "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+   "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+   "line": 47,
+   "quote": "G0 requires within-cell AUROC ≥ 0.58 and no-image AUROC ≤ 0.60",
+   "as_written": "0.58"
+  },
+  "gate.G0[1]": {
+   "value": 0.6,
+   "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+   "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+   "line": 47,
+   "quote": "G0 requires within-cell AUROC ≥ 0.58 and no-image AUROC ≤ 0.60",
+   "as_written": "0.60"
+  },
+  "gate.G0_R14_3[0]": {
+   "value": 0.58,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 97,
+   "quote": "cell AUROC of p_V vs ktvic5 gold ≥ 0.58 (the EV-RANK threshold already used for M3), and the no-image AUROC must be ≤ 0.60.",
+   "as_written": "0.58"
+  },
+  "gate.G0_R14_3[1]": {
+   "value": 0.6,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 97,
+   "quote": "cell AUROC of p_V vs ktvic5 gold ≥ 0.58 (the EV-RANK threshold already used for M3), and the no-image AUROC must be ≤ 0.60.",
+   "as_written": "0.60"
+  },
+  "gate.G0_synthesis[0]": {
+   "value": 0.58,
+   "path": "manuscript/research_r14/R14_00_SYNTHESIS.md",
+   "sha256": "b51789751a77ffb42064e50fc627e983da4f52087567597b39740f5e73dc2244",
+   "line": 26,
+   "quote": "G0: within-cell AUROC ≥ 0.58; no-image AUROC ≤ 0.60",
+   "as_written": "0.58"
+  },
+  "gate.G0_synthesis[1]": {
+   "value": 0.6,
+   "path": "manuscript/research_r14/R14_00_SYNTHESIS.md",
+   "sha256": "b51789751a77ffb42064e50fc627e983da4f52087567597b39740f5e73dc2244",
+   "line": 26,
+   "quote": "G0: within-cell AUROC ≥ 0.58; no-image AUROC ≤ 0.60",
+   "as_written": "0.60"
+  },
+  "pred.A_within[0]": {
+   "value": 0.65,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 112,
+   "quote": "With an in-cell AUROC of about 0.65–0.75, expect",
+   "as_written": "0.65"
+  },
+  "pred.A_within[1]": {
+   "value": 0.75,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 112,
+   "quote": "With an in-cell AUROC of about 0.65–0.75, expect",
+   "as_written": "0.75"
+  },
+  "reference.qwen_p_co_marginal_auroc[0]": {
+   "value": 0.709,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 99,
+   "quote": "P(có) with the image has AUROC 0.709 against 0.453 without it",
+   "as_written": "0.709"
+  },
+  "reference.qwen_p_co_marginal_auroc[1]": {
+   "value": 0.453,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 99,
+   "quote": "P(có) with the image has AUROC 0.709 against 0.453 without it",
+   "as_written": "0.453"
+  },
+  "pred.readout[0]": {
+   "value": 0.5,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 112,
+   "quote": "**ΔF1 vs COUNT +0.5 to +1.0, CHAIR_i −1.5 to −3, CIDEr −1 to +2, panel ≈ 0.**",
+   "as_written": "0.5"
+  },
+  "pred.readout[1]": {
+   "value": 1.0,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 112,
+   "quote": "**ΔF1 vs COUNT +0.5 to +1.0, CHAIR_i −1.5 to −3, CIDEr −1 to +2, panel ≈ 0.**",
+   "as_written": "1.0"
+  },
+  "pred.readout[2]": {
+   "value": -1.5,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 112,
+   "quote": "**ΔF1 vs COUNT +0.5 to +1.0, CHAIR_i −1.5 to −3, CIDEr −1 to +2, panel ≈ 0.**",
+   "as_written": "−1.5"
+  },
+  "pred.readout[3]": {
+   "value": -3,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 112,
+   "quote": "**ΔF1 vs COUNT +0.5 to +1.0, CHAIR_i −1.5 to −3, CIDEr −1 to +2, panel ≈ 0.**",
+   "as_written": "−3"
+  },
+  "pred.readout[4]": {
+   "value": -1,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 112,
+   "quote": "**ΔF1 vs COUNT +0.5 to +1.0, CHAIR_i −1.5 to −3, CIDEr −1 to +2, panel ≈ 0.**",
+   "as_written": "−1"
+  },
+  "pred.readout[5]": {
+   "value": 2,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 112,
+   "quote": "**ΔF1 vs COUNT +0.5 to +1.0, CHAIR_i −1.5 to −3, CIDEr −1 to +2, panel ≈ 0.**",
+   "as_written": "2"
+  },
+  "pred.readout[6]": {
+   "value": 0,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 112,
+   "quote": "**ΔF1 vs COUNT +0.5 to +1.0, CHAIR_i −1.5 to −3, CIDEr −1 to +2, panel ≈ 0.**",
+   "as_written": "0"
+  },
+  "carry.dF1_vs_COUNT_min": {
+   "value": 0.5,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 103,
+   "quote": "ΔF1(XV-EF1 − COUNT) ≥ +0.5 with CI lower bound > 0",
+   "as_written": "0.5"
+  },
+  "carry.dCHAIRi_vs_COUNT_max": {
+   "value": -1.0,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 104,
+   "quote": "ΔCHAIR_i(XV-EF1 − COUNT) ≤ −1.0 with CI upper bound < 0",
+   "as_written": "−1.0"
+  },
+  "carry.guards[0]": {
+   "value": -2.0,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 105,
+   "quote": "Guards: CIDEr Δ vs greedy ≥ −2.0; panel ΔF1 vs COUNT ≥ −0.5",
+   "as_written": "−2.0"
+  },
+  "carry.guards[1]": {
+   "value": -0.5,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 105,
+   "quote": "Guards: CIDEr Δ vs greedy ≥ −2.0; panel ΔF1 vs COUNT ≥ −0.5",
+   "as_written": "−0.5"
+  },
+  "kill.prior_leak_pct": {
+   "value": 70,
+   "path": "manuscript/research_r14/R14_3/REPORT.md",
+   "sha256": "b5c09cb2e98a374fd9aba3b2aec8975842b366873bb97305a9aa2d4809f22e00",
+   "line": 110,
+   "quote": "the no-image verifier gives ≥ 70% of the with-image gain",
+   "as_written": "70"
+  },
+  "cost.plan_gpu_h": {
+   "value": 1.5,
+   "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+   "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+   "line": 47,
+   "quote": "| T3.1 | S2 XV-EF1 G0 verifier gate (InternVL3-8B as a scorer only, dev300) | ~1.5 h |",
+   "as_written": "1.5"
+  },
+  "upe.LAM": {
+   "value": 2.0,
+   "path": "scripts/upe_mbr.py",
+   "python_name": "LAM",
+   "sha256": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+  },
+  "upe.M": {
+   "value": 5,
+   "path": "scripts/upe_mbr.py",
+   "python_name": "M",
+   "sha256": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+  },
+  "upe.MARGIN": {
+   "value": 0.5,
+   "path": "scripts/upe_mbr.py",
+   "python_name": "MARGIN",
+   "sha256": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+  },
+  "upe.EG": {
+   "value": 6.0,
+   "path": "scripts/upe_mbr.py",
+   "python_name": "EG",
+   "sha256": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+  },
+  "upe.RETRIEVE": {
+   "value": 10,
+   "path": "scripts/upe_mbr.py",
+   "python_name": "RETRIEVE",
+   "sha256": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+  },
+  "upe.K_SAMPLES": {
+   "value": 6,
+   "path": "scripts/upe_mbr.py",
+   "python_name": "K_SAMPLES",
+   "sha256": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+  },
+  "upe.COUNT_GRID_min_max_n": {
+   "value": [
+    0.0,
+    3.0,
+    61
+   ],
+   "computed": "scripts/upe_mbr.py COUNT_GRID",
+   "inputs": {
+    "scripts/upe_mbr.py": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+   }
+  },
+  "upe.T_star": {
+   "value": "0.5",
+   "computed": "content of data/results/upe/upe_temperature.txt",
+   "inputs": {
+    "data/results/upe/upe_temperature.txt": "8d5c1b5a87c51f970807fc0c2057b3ab3aaf11638ab667dc5956edc8f5bcf138"
+   }
+  },
+  "pool.N13.samples_per_image": {
+   "value": 12,
+   "computed": "plan_f1.TEMPS x plan_f1.N_PER_T",
+   "inputs": {
+    "scripts/plan_f1.py": "b06a25dc7cecae168d4f7229c3be15702789ec61d51a2f240a3abb431a962bcc"
+   }
+  },
+  "object_prf.paired.defaults": {
+   "value": {
+    "n": 5000,
+    "seed": 0
+   },
+   "path": "scripts/object_prf.py",
+   "python_name": "paired",
+   "sha256": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc"
+  },
+  "rl_reward.boot.defaults": {
+   "value": {
+    "seed": 0,
+    "b": 2000
+   },
+   "path": "scripts/rl_reward.py",
+   "python_name": "boot",
+   "sha256": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b"
+  },
+  "items.N13.n_items": {
+   "value": 1306,
+   "computed": "plan_f1.pools + plan_f1.items",
+   "inputs": {
+    "data/results/rl/p1dev_s42-dev300-short.preds.json": "1e183383e91daf32f4683fbea2bdb09d24b7deba956343ca16ef332014cba84b",
+    "data/results/upe/p1dev_s42-dev300-short-T0.5.jsonl": "876a1d420c20d06ae388613beb8e30eb6fab5d4380ee13b26bbfa8eede5bea26",
+    "data/results/upe/p1dev_s42-dev300-short-T0.8.jsonl": "60ebd6403910837ed4ed036f70458a5cfdba92923238f8d4167a0d941460cf05",
+    "data/splits/ktvic_dev300.txt": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+    "data/datasets/ktvic/train_data.json": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f"
+   }
+  },
+  "items.N13.n_positive": {
+   "value": 683,
+   "computed": "plan_f1.labels vs ktvic5",
+   "inputs": {
+    "data/results/rl/p1dev_s42-dev300-short.preds.json": "1e183383e91daf32f4683fbea2bdb09d24b7deba956343ca16ef332014cba84b",
+    "data/results/upe/p1dev_s42-dev300-short-T0.5.jsonl": "876a1d420c20d06ae388613beb8e30eb6fab5d4380ee13b26bbfa8eede5bea26",
+    "data/results/upe/p1dev_s42-dev300-short-T0.8.jsonl": "60ebd6403910837ed4ed036f70458a5cfdba92923238f8d4167a0d941460cf05",
+    "data/splits/ktvic_dev300.txt": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+    "data/datasets/ktvic/train_data.json": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f"
+   }
+  },
+  "items.N7_T0.5.n_items": {
+   "value": 947,
+   "computed": "plan_f1.pools + plan_f1.items",
+   "inputs": {
+    "data/results/rl/p1dev_s42-dev300-short.preds.json": "1e183383e91daf32f4683fbea2bdb09d24b7deba956343ca16ef332014cba84b",
+    "data/results/upe/p1dev_s42-dev300-short-T0.5.jsonl": "876a1d420c20d06ae388613beb8e30eb6fab5d4380ee13b26bbfa8eede5bea26",
+    "data/results/upe/p1dev_s42-dev300-short-T0.8.jsonl": "60ebd6403910837ed4ed036f70458a5cfdba92923238f8d4167a0d941460cf05",
+    "data/splits/ktvic_dev300.txt": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+    "data/datasets/ktvic/train_data.json": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f"
+   }
+  },
+  "items.N7_T0.5.n_positive": {
+   "value": 587,
+   "computed": "plan_f1.labels vs ktvic5",
+   "inputs": {
+    "data/results/rl/p1dev_s42-dev300-short.preds.json": "1e183383e91daf32f4683fbea2bdb09d24b7deba956343ca16ef332014cba84b",
+    "data/results/upe/p1dev_s42-dev300-short-T0.5.jsonl": "876a1d420c20d06ae388613beb8e30eb6fab5d4380ee13b26bbfa8eede5bea26",
+    "data/results/upe/p1dev_s42-dev300-short-T0.8.jsonl": "60ebd6403910837ed4ed036f70458a5cfdba92923238f8d4167a0d941460cf05",
+    "data/splits/ktvic_dev300.txt": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+    "data/datasets/ktvic/train_data.json": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f"
+   }
+  },
+  "internvl.input_size": {
+   "value": 448,
+   "path": ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/internvl3_8b_README_853e3a7.md",
+   "sha256": "dc7223faa8943185581d44b584d5ce15afeeff0f43155fc2dee291402caa16f7",
+   "line": 333,
+   "quote": "def load_image(image_file, input_size=448, max_num=12):",
+   "as_written": "448"
+  },
+  "internvl.max_num": {
+   "value": 12,
+   "path": ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/internvl3_8b_README_853e3a7.md",
+   "sha256": "dc7223faa8943185581d44b584d5ce15afeeff0f43155fc2dee291402caa16f7",
+   "line": 333,
+   "quote": "def load_image(image_file, input_size=448, max_num=12):",
+   "as_written": "12"
+  },
+  "internvl.min_num": {
+   "value": 1,
+   "path": ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/internvl3_8b_README_853e3a7.md",
+   "sha256": "dc7223faa8943185581d44b584d5ce15afeeff0f43155fc2dee291402caa16f7",
+   "line": 295,
+   "quote": "def dynamic_preprocess(image, min_num=1, max_num=12, image_size=448, use_thumbnail",
+   "as_written": "1"
+  },
+  "p1dev.dev.CIDEr_D_x100": {
+   "value": 144.33399744573353,
+   "path": "data/results/rl/p1dev_s42-dev300-short.json",
+   "json_key": "results[0].scores_scaled_x100.CIDEr",
+   "sha256": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0"
+  },
+  "p1dev.dev.BLEU4_x100": {
+   "value": 42.54431591551573,
+   "path": "data/results/rl/p1dev_s42-dev300-short.json",
+   "json_key": "results[0].scores_scaled_x100.BLEU-4",
+   "sha256": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0"
+  },
+  "p1dev.dev.CHAIR_i": {
+   "value": 0.23251417769376181,
+   "path": "data/results/rl/p1dev_s42-dev300-short.json",
+   "json_key": "chair.CHAIR_i",
+   "sha256": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0"
+  },
+  "p1dev.dev.mentions_per_caption": {
+   "value": 1.7633333333333334,
+   "path": "data/results/rl/p1dev_s42-dev300-short.json",
+   "json_key": "chair.mentions_per_caption",
+   "sha256": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0"
+  },
+  "p1dev.dev.mean_syllables": {
+   "value": 11.876666666666667,
+   "path": "data/results/rl/g1_cn_v3_s42/gate.json",
+   "json_key": "caption_stats.p1dev.syllables",
+   "sha256": "3b82c02b21042248b5240906117a7ef25d0da8ba8376749bca313c965b4e18f5"
+  },
+  "p1dev.dev.fragments": {
+   "value": 9,
+   "path": "data/results/rl/g1_cn_v3_s42/gate.json",
+   "json_key": "caption_stats.p1dev.fragments",
+   "sha256": "3b82c02b21042248b5240906117a7ef25d0da8ba8376749bca313c965b4e18f5"
+  },
+  "p1dev.dev.P_ktvic5": {
+   "value": 74.291,
+   "path": "manuscript/research_r14/R14_3/oracle_headroom.json",
+   "json_key": "pools.N13.greedy.P_ktvic5",
+   "sha256": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116"
+  },
+  "p1dev.dev.R_ktvic5": {
+   "value": 43.126,
+   "path": "manuscript/research_r14/R14_3/oracle_headroom.json",
+   "json_key": "pools.N13.greedy.R_ktvic5",
+   "sha256": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116"
+  },
+  "p1dev.dev.F1_ktvic5": {
+   "value": 54.572,
+   "path": "manuscript/research_r14/R14_3/oracle_headroom.json",
+   "json_key": "pools.N13.greedy.F1_ktvic5",
+   "sha256": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116"
+  },
+  "p1dev.dev.F1_panel": {
+   "value": 40.653,
+   "path": "manuscript/research_r14/R14_3/oracle_headroom.json",
+   "json_key": "pools.N13.greedy.F1_panel",
+   "sha256": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116"
+  },
+  "cost.forward_passes": {
+   "value": 2612,
+   "computed": "N13 items x (with image, without image)",
+   "inputs": {}
+  }
+ },
+ "builder": {
+  "path": ".session_backup/2026-10-18/paperA_tasks/P3/build_tier3_prereg.py",
+  "sha256": "ded929ef0061528a52229d9f5a145d64f366eaca7fe850bd1f76b343e44cee7b",
+  "float_literals": 0
+ }
+}

@@ -1,0 +1,644 @@
+{
+ "prereg_id": "2026-10-18_tier3_S1",
+ "status": "frozen before any output of this job exists",
+ "job": {
+  "tier3_row": "T3.2",
+  "plan_id": "S1",
+  "job_name": "t3_2_s1_seed_consensus",
+  "title": "Seed consensus on P1_dev seeds: delta-space soup and cross-seed MBR (dev300)"
+ },
+ "frozen_utc": "2026-10-18T08:50:37Z",
+ "repo_head_at_freeze": "2d47ce7c962e8fca003223dad530bbe41eed721e",
+ "branch": "paper-v10",
+ "authority": [
+  "PD-9 Q1: S1 needs p1dev seeds trained with the P1_dev recipe; dev >= +1.0 CIDEr is a go/no-go gate, not a claim",
+  "PD-9 Q5: the test-pool proxy is a test look and never chooses the S1 variant; selection on dev with dev-trained seeds",
+  "GPU_JOB_PLAN_v1.md Tier 3 row T3.2"
+ ],
+ "design_sources": [
+  "manuscript/research_r14/R14_4/REPORT.md §3 A",
+  "manuscript/research_r14/R14_00_SYNTHESIS.md Stage 1 row S1"
+ ],
+ "registered_before_output": {
+  "checked_utc": "2026-10-18T08:50:37Z",
+  "output_names": [
+   "p1dev_s43",
+   "p1dev_s44",
+   "p1dev_soup3",
+   "p1dev_mbr3",
+   "p1dev_s42_redecode",
+   "t3_2_s1"
+  ],
+  "roots": [
+   "data/results",
+   ".session_backup/machines/O-2308423/root/outputs",
+   ".session_backup/machines/O-2308423/root/queue",
+   ".session_backup/machines/O-2308423/root/vsps/data/results",
+   ".session_backup/machines/O-2308428/root/outputs",
+   ".session_backup/machines/O-2308428/root/queue",
+   ".session_backup/machines/O-2308428/root/vsps/data/results"
+  ],
+  "hits": [],
+  "last_mirror_backups": [
+   "2026-10-18T08:29:23Z O-2308423 OK 114M",
+   "2026-10-18T08:29:49Z O-2308428 OK 45M"
+  ],
+  "statement": "No output of this job exists at registration. The job is queued only after this file's commit is on the machine and G-1 v5 has passed for that HEAD; the A-verifier checks CHECKLIST C3 (commit time < mtime of the first output)."
+ },
+ "models": {
+  "base": {
+   "id": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+   "lastModified": "2025-04-06T16:23:01.000Z",
+   "gated": false,
+   "licence": "apache-2.0",
+   "shards_sha256": {
+    "model-00001-of-00005.safetensors": "e97b877e47fde53a6c6e77aafb36e58e91ee9d95c4a3eeac6f1b5c0e6a1c986e",
+    "model-00002-of-00005.safetensors": "a9a300a43b4724eee2abe7c18ceb26768d0ab011eb0cad19d9bfd2476a24d024",
+    "model-00003-of-00005.safetensors": "111223d173e00bbee81cba1216fad28668df3476706b7fd26f4d5b50f8b3a507",
+    "model-00004-of-00005.safetensors": "ef47f634fa57d46ee134edcc09f34085a47da1e16c12a2abe0d67118be6d72ed",
+    "model-00005-of-00005.safetensors": "0c859795ad3a627a9b95bcb762e059d5b768a4a36fdd4affeff269d93fdecc67"
+   },
+   "hf_api_record": {
+    "path": ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/qwen25vl7b.json",
+    "sha256": "7e11891a5073603635631c60e2fce31f61aa33688e3ac2110a35f904524fd2e3",
+    "fetched_utc_date": "2026-10-18",
+    "url": "https://huggingface.co/api/models/Qwen/Qwen2.5-VL-7B-Instruct?blobs=true"
+   },
+   "machine_hf_cache_snapshot": {
+    "O-2308423": {
+     "path": ".session_backup/machines/O-2308423/root/outputs/claude_prefetch/prefetch.log",
+     "sha256": "bfb6177d842d0d9ed816028bf76d70c6d60ea34a95e1df6c6cc8ba25214bd971",
+     "line": 11,
+     "quote": "Qwen/Qwen2.5-VL-7B-Instruct -> /root/.cache/huggingface/hub/models--Qwen--Qwen2.5-VL-7B-Instruct/snapshots/cc594898137f460bfe9f0759e9844b3ce807cfb5"
+    },
+    "O-2308428": {
+     "path": ".session_backup/machines/O-2308428/root/outputs/claude_prefetch/prefetch.log",
+     "sha256": "45d9028ddaed254dca5c953c5d2a30df5c5044c66464e87ca5dde4386d1ae756",
+     "line": 19,
+     "quote": "Qwen/Qwen2.5-VL-7B-Instruct -> /root/.cache/huggingface/hub/models--Qwen--Qwen2.5-VL-7B-Instruct/snapshots/cc594898137f460bfe9f0759e9844b3ce807cfb5"
+    }
+   }
+  },
+  "member_s42": {
+   "adapter": "p1dev_s42",
+   "adapter_sha256": "227a3312a18cf69b355c20311ff1228167b2af1436e0cb443055dfdfcd40c5c3",
+   "adapter_sha256_source": {
+    "path": "scripts/queue/adapters_canonical.sha256",
+    "sha256": "031b7cc782c546f9746394370bb77a649de72aaaf9cc6b906bfc2ca6cd8c726d",
+    "line": 18,
+    "quote": "227a3312a18cf69b355c20311ff1228167b2af1436e0cb443055dfdfcd40c5c3 runs/p1dev_s42/adapter_model.safetensors"
+   },
+   "adapter_config_sha256": "93f042284aea64fcdf831590c592a7459849632dcb3ee4448b379177b7a298c5",
+   "lora": {
+    "r": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.05,
+    "target_modules": "^(?!.*visual).*\\.(q_proj|k_proj|v_proj|o_proj|gate_proj|up_proj|down_proj)$"
+   },
+   "peft_version_at_training": "0.21.2",
+   "base_revision_pinned_in_config": null,
+   "trained_on": "machine n2 (RTX 3090 24 GB), job 35_a"
+  },
+  "new_members": {
+   "p1dev_s43": "P1_dev recipe with seed 43; adapter sha256 recorded at job end",
+   "p1dev_s44": "P1_dev recipe with seed 44; adapter sha256 recorded at job end"
+  },
+  "soup": {
+   "name": "p1dev_soup3_s42s43s44",
+   "call": "PeftModel.add_weighted_adapter([s42, s43, s44], [1/3]*3, adapter_name='soup', combination_type='cat')",
+   "meaning": "The soup's weight update equals the mean of the three members' LoRA updates (delta space); no factor averaging and no norm-preserving variant",
+   "self_check": "before any decode, for the first and the last q_proj and down_proj modules, torch.allclose (default tolerances, float32) of the soup's update and the mean of the members' updates; the soup is saved with its sha256",
+   "peft": "0.21.2"
+  }
+ },
+ "machines": {
+  "M1": "O-2308423",
+  "M2": "O-2308428",
+  "card": "RTX 3090 24 GB on either machine. train_stage2.py's card rule then gives P1_dev's vision budget and 4-bit loading; P1_dev was trained on a 24 GB RTX 3090",
+  "venv": {
+   "torch": "2.5.1+cu121",
+   "transformers": "4.51.3",
+   "peft": "0.21.2",
+   "source": {
+    "path": ".session_backup/2026-10-18/gpu_jobs/M1_EVENTS.log",
+    "sha256": "b780f7194c4bfa919388ad8e3bda3c1f8e8a16ad74cc9975dea30de79b83aa54",
+    "line": 44,
+    "quote": "torch 2.5.1+cu121 cuda True RTX 3090; transformers 4.51.3; peft 0.21.2;"
+   }
+  },
+  "provenance": "the committed hook stamps machine_id, git_head_sha, checkpoint_resume_hook_sha256, train_stage2_sha256 and resumed_from_step; save_steps 200; each job writes /root/outputs/sha256/<job>.sha256 (GPU_JOB_PLAN_v1 setup step 4)"
+ },
+ "data": {
+  "split": "train on KTVIC train minus dev300; decode, select and gate on dev300 only; no test look",
+  "test_split_read": false,
+  "splits": {
+   "data/splits/ktvic_dev300.txt": {
+    "sha256": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+    "n_images": 300
+   },
+   "data/splits/ktvic_train_minus_dev300.txt": {
+    "sha256": "006080b455a553ca9cc5d3f514ad76bfbe67f444c9c145a5696de681a4be1a58",
+    "n_images": 3469
+   },
+   "data/datasets/ktvic/train_data.json": {
+    "sha256": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f",
+    "note": "dev300 is a subset of KTVIC train; its 5 references per image are the dev gold"
+   }
+  },
+  "sft_rows": {
+   "source": "gold_p1dev/sft.jsonl as built by job 35_a (build_gold_sft.py --images-file data/splits/ktvic_train_minus_dev300.txt, default seed)",
+   "sha256": "971879742e85d710fc828fa526b735d0c0b6469b4988e3d5402a26fb1b666f16",
+   "rows": 3469,
+   "rule": "the machine's copy must have this sha256"
+  },
+  "panel": {
+   "path": "data/ktvic_openviic_refs.json",
+   "sha256": "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d",
+   "dev_images_with_panel": 296
+  }
+ },
+ "procedure": {
+  "step0": "Step 0, before any training or scoring: re-decode p1dev_s42 on dev300 on this job's machine (evaluate.py, short prompt, bf16, its defaults) under the name p1dev_s42_redecode. Every paired comparison uses this same-machine decode. Its agreement with the registered n2 decode (share of identical captions, CIDEr-D difference) is reported, never used to select anything.",
+  "train": "job 35_a with only R and --seed changed: train_stage2.py --stage sft --data gold_p1dev --epochs 2 --seed <s> --loss-mask assistant (set_seed before the model is built) for s in 43, 44; the last checkpoint (end of training) only",
+  "decode": "evaluate.py --model qwen2.5-vl-7b --adapter <run> --split dev_data.json --prompt short (NCS_DATASET=ktvic_dev, its defaults) for p1dev_s43, p1dev_s44 and p1dev_soup3_s42s43s44",
+  "mbr": "per image, the medoid of the three members' greedy captions: argmax over a of the sum over b != a of rl_reward.CiderD(c_a, [c_b]), document frequencies from the references of the 3469 train-minus-dev300 images and rl_reward.Segmenter word segmentation (UPE-MBR's selection side, so the selection reads no dev reference); ties go to the lower seed",
+  "score": "MBR captions are scored with evaluate.py --predictions; every system's per-image CIDEr-D comes from rl_report.dev_scores, which asserts that their mean equals evaluate.py's corpus value within 1e-6"
+ },
+ "analysis": {
+  "delta": "for v in {soup, MBR}: D_v = mean over dev images of [CIDEr_i(v) - (1/3) * sum over the three members of CIDEr_i(member)], word-level CIDEr-D x100",
+  "ci": {
+   "method": "paired percentile bootstrap over dev images",
+   "B": 2000,
+   "rng": "numpy default_rng(0)",
+   "level": "95%"
+  },
+  "dchair": "CHAIR_i(v) minus the mean of the three members' CHAIR_i, CHAIR-vi against the 5 dev references, in points (x100)",
+  "reported": [
+   "BLEU-4, object P/R/F1 (ktvic5, exact classes), mentions per caption and CHAIR_i of every system, and as deltas vs the member mean",
+   "panel F1 on the 296 panel images (descriptive)",
+   "the members' spread of dev CIDEr-D",
+   "share of images on which all three members agree"
+  ]
+ },
+ "frozen_predictions": {
+  "source": "manuscript/research_r14/R14_4/REPORT.md §3 A, stated there for the test look vs the member mean and registered here for dev300",
+  "dCIDEr": [
+   1.0,
+   3.0
+  ],
+  "dCIDEr_central": 2.0,
+  "dBLEU4": [
+   0.5,
+   1.0
+  ],
+  "dF1": [
+   -1.0,
+   1.5
+  ],
+  "dCHAIRi_points": [
+   -1.0,
+   0.5
+  ],
+  "dmentions_abs_max": 0.1,
+  "applies_to": "the carried variant vs the member mean"
+ },
+ "gate": {
+  "dev_cider_min": 1.0,
+  "chair_margin_points": 1.0,
+  "eligible": "variant v is eligible iff D_v >= +1.0 and dCHAIR_i(v) <= +1.0 points (point estimates)",
+  "rule": "PASS iff at least one variant is eligible; the carried variant is the eligible one with the larger D_v (tie: the soup, a single model); KILL otherwise",
+  "kill_rules": {
+   "K1": "D_soup < +1.0 and D_MBR < +1.0",
+   "K2": "every variant with D_v >= +1.0 has dCHAIR_i > +1.0 points"
+  },
+  "status": "a go/no-go gate, not a claim (PD-9 Q1)"
+ },
+ "consequences": {
+  "PASS": "the carried variant is the S1 component of the single final stacked-system prereg (PD-9 Q4); a confirmatory S1 number comes only from that registration's one test look (PD-9 Q5)",
+  "KILL": "S1 is reported as a pre-registered negative; the test-pool proxy stays labelled exploratory",
+  "not_in_this_job": "no test decode: R14-4's test evaluation of the p1assist soup and its K3 (test F1 drop) belong to the final prereg"
+ },
+ "test_look_ledger": {
+  "proxy_cider": 3.05,
+  "proxy_ci": [
+   1.03,
+   5.11
+  ],
+  "source": "manuscript/research_r14/R14_4/soup_proxy.out",
+  "what": "MBR over the three p1assist seeds' test captions minus their mean, syllable-level CIDEr-D; an exploratory test look (PD-9 Q5), never used to choose the variant"
+ },
+ "cost": {
+  "plan_estimate_gpu_h": 4.3,
+  "estimate_gpu_h": 3.98,
+  "p1dev_train_h": 1.75,
+  "dev_decode_gpu_h_each": 0.12,
+  "within_plan_budget": true
+ },
+ "instrument_freeze": {
+  "rule": "Two-step freeze. (1) This registration (design, inputs, predictions, gates, kill rules, analysis) is committed now. (2) An instrument addendum, manuscript/prereg/2026-10-18_tier3_S1_instrument.json, gives the sha256 of every new script and job file and is committed through the gatekeeper BEFORE the job is queued. The addendum may not change anything registered here; such a change is a deviation. A verdict from code whose sha differs from the addendum does not test this registration.",
+  "files_expected": [
+   "scripts/seed_consensus.py (soup build and self-check, MBR, deltas, gate)",
+   "the queue job file for t3_2_s1_seed_consensus"
+  ],
+  "self_checks_required": [
+   "load this JSON and assert every registered constant and input sha256 at start",
+   "derive every verdict in code from the registered rule",
+   "never overwrite an existing output (write _v2)",
+   "record machine_id, git_head_sha and the hook sha in every result JSON"
+  ],
+  "job_start": "only after the commit is on the machine and G-1 v5 has passed for that HEAD"
+ },
+ "code_at_head": {
+  "scripts/train_stage2.py": "29312ef765e3e49e5e1efefc5ad8b88fcf33c991b1a5f3a266a910ada3d1cab4",
+  "scripts/build_gold_sft.py": "18e7909f25cc5c94b194d1a4e13fe6d396b6a8debe73a354699534b1f009c60a",
+  "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+  "scripts/ktvic_dev_split.py": "b4adfb4c6c6538c735126f1423e8520b156ad6ec81fa3aec9efa0d8558ff7c92",
+  "scripts/rl_reward.py": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+  "scripts/rl_report.py": "f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5",
+  "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "scripts/checkpoint_resume_hook.py": "05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895",
+  "scripts/queue/check_g1_pass.py": "39fe181f38bd57a7de32111745bc91de6d684f89c1a931b805da80fe85e104bc",
+  "scripts/queue/qrun.sh": "2eaca17cc0748c0659eef7c166e62c0a05b641efabc57b573a03c085728f06b2",
+  "scripts/upe_mbr.py": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+ },
+ "p1dev_reference_dev300": {
+  "CIDEr_D_x100": 144.33399744573353,
+  "BLEU4_x100": 42.54431591551573,
+  "CHAIR_i": 0.23251417769376181,
+  "mentions_per_caption": 1.7633333333333334,
+  "mean_syllables": 11.876666666666667,
+  "fragments": 9,
+  "P_ktvic5": 74.291,
+  "R_ktvic5": 43.126,
+  "F1_ktvic5": 54.572,
+  "F1_panel": 40.653,
+  "preds_sha256": "1e183383e91daf32f4683fbea2bdb09d24b7deba956343ca16ef332014cba84b"
+ },
+ "framing": {
+  "statement": "Paper B's framing stays as it is (resource + validity audit, R15 DEBATE D2) unless the judge rules otherwise before B's framing freeze on 2026-11-30. A Tier-3 result changes Paper B only through such a new judge decision; otherwise Tier-3 results are kept for a later paper. Paper A may cite them only as a motivating example (PD-9 Q4).",
+  "sources": [
+   {
+    "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+    "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+    "line": 53,
+    "quote": "**Framing:** Paper B stays resource + audit (D2). A Tier-3 win changes B only through a new judge decision taken before B's framing freeze on 11-30. Otherwise Tier-3 results are kept for a later paper."
+   },
+   {
+    "path": "manuscript/research_r15/DEBATE.md",
+    "sha256": "5b11fd21a99bec1767d323cd12c62b2058cc7b3062185e569038e5dc4619bc98",
+    "line": 29,
+    "quote": "B's experiment freeze is 2026-11-30"
+   }
+  ]
+ },
+ "disclosures": [
+  "The R14-4 test-pool proxy was seen before this registration. It is a test look (PD-9 Q5) and plays no part in choosing between soup and MBR.",
+  "R14-4's proxy MBR used syllable-level CIDEr with test-reference document frequencies; the registered MBR uses word-level CIDEr-D with train-minus-dev300 document frequencies.",
+  "p1dev_s42 was trained on n2 without a revision pin. HF main of the base has not changed since its lastModified date, so that run loaded the revision recorded here (inferred, not logged).",
+  "Choosing the better of two variants on the same 300 images is optimistic. The gate is go/no-go only; the confirmatory number comes from the final prereg."
+ ],
+ "deviations": "Any change after this freeze goes into a new dated file, committed through the gatekeeper before the affected output exists, and is reported as a deviation next to every number it touches.",
+ "inputs_sha256": {
+  ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/qwen25vl7b.json": "7e11891a5073603635631c60e2fce31f61aa33688e3ac2110a35f904524fd2e3",
+  ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/adapter_config.json": "93f042284aea64fcdf831590c592a7459849632dcb3ee4448b379177b7a298c5",
+  "scripts/queue/adapters_canonical.sha256": "031b7cc782c546f9746394370bb77a649de72aaaf9cc6b906bfc2ca6cd8c726d",
+  "data/splits/ktvic_dev300.txt": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+  "data/splits/ktvic_train_minus_dev300.txt": "006080b455a553ca9cc5d3f514ad76bfbe67f444c9c145a5696de681a4be1a58",
+  "data/datasets/ktvic/train_data.json": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f",
+  ".session_backup/machines/n2/ncs-data/gold_p1dev/sft.jsonl": "971879742e85d710fc828fa526b735d0c0b6469b4988e3d5402a26fb1b666f16",
+  "data/ktvic_openviic_refs.json": "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d",
+  ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/metrics.jsonl": "006653318dfe96375ffcd069094ea006a5dc978e533694f64799036aa0dbc126",
+  "data/results/rl/p1dev_s42-dev300-short.preds.json": "1e183383e91daf32f4683fbea2bdb09d24b7deba956343ca16ef332014cba84b",
+  "data/results/rl/p1dev_s42-dev300-short.json": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0",
+  "data/results/rl/g1_cn_v3_s42/gate.json": "3b82c02b21042248b5240906117a7ef25d0da8ba8376749bca313c965b4e18f5",
+  "manuscript/research_r14/R14_3/oracle_headroom.json": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116",
+  "scripts/train_stage2.py": "29312ef765e3e49e5e1efefc5ad8b88fcf33c991b1a5f3a266a910ada3d1cab4",
+  "scripts/build_gold_sft.py": "18e7909f25cc5c94b194d1a4e13fe6d396b6a8debe73a354699534b1f009c60a",
+  "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+  "scripts/ktvic_dev_split.py": "b4adfb4c6c6538c735126f1423e8520b156ad6ec81fa3aec9efa0d8558ff7c92",
+  "scripts/rl_reward.py": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+  "scripts/rl_report.py": "f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5",
+  "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "scripts/checkpoint_resume_hook.py": "05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895",
+  "scripts/queue/check_g1_pass.py": "39fe181f38bd57a7de32111745bc91de6d684f89c1a931b805da80fe85e104bc",
+  "scripts/queue/qrun.sh": "2eaca17cc0748c0659eef7c166e62c0a05b641efabc57b573a03c085728f06b2",
+  "scripts/upe_mbr.py": "4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b"
+ },
+ "sources": {
+  "bootstrap.B": {
+   "value": 2000,
+   "path": "manuscript/prereg/2026-10-13_rl_gate_v2.md",
+   "sha256": "da9838ffe45ffd4db34ed52f2daf5f330fe36d22c8ebcc5ade0a020341bcdf23",
+   "line": 126,
+   "quote": "percentile bootstrap: B = 2000 resamples of images, numpy default_rng(0)"
+  },
+  "bootstrap.seed": {
+   "value": 0,
+   "path": "manuscript/prereg/2026-10-13_rl_gate_v2.md",
+   "sha256": "da9838ffe45ffd4db34ed52f2daf5f330fe36d22c8ebcc5ade0a020341bcdf23",
+   "line": 126,
+   "quote": "percentile bootstrap: B = 2000 resamples of images, numpy default_rng(0)"
+  },
+  "gate.dev_cider_min": {
+   "value": 1.0,
+   "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+   "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+   "line": 48,
+   "quote": "| T3.2 | S1 seed consensus (train p1dev_s43/s44, then delta-soup/MBR on dev300) | ~4.3 h | PD-9 Q1. Gate: dev ≥ +1.0 CIDEr",
+   "as_written": "1.0"
+  },
+  "gate.dev_cider_min_PD9": {
+   "value": 1.0,
+   "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+   "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   "line": 7,
+   "quote": "\"dev >= +1.0 CIDEr\" is a go/no-go gate",
+   "as_written": "1.0"
+  },
+  "gate.dev_cider_min_R14_4": {
+   "value": 1.0,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 116,
+   "quote": "Carry the better one to test only if it is ≥ +1.0 CIDEr",
+   "as_written": "1.0"
+  },
+  "kill.K1": {
+   "value": 1.0,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 126,
+   "quote": "K1: on dev300, both soup and MBR are below the member mean + 1.0 CIDEr",
+   "as_written": "1.0"
+  },
+  "kill.K2_chairi_pp": {
+   "value": 1.0,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 127,
+   "quote": "K2: CHAIR_i is more than 1.0 pp above the member mean",
+   "as_written": "1.0"
+  },
+  "seeds.new[0]": {
+   "value": 43,
+   "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+   "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   "line": 9,
+   "quote": "S1 needs p1dev_s43/s44 trained with the P1_dev recipe",
+   "as_written": "43"
+  },
+  "seeds.new[1]": {
+   "value": 44,
+   "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+   "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   "line": 9,
+   "quote": "S1 needs p1dev_s43/s44 trained with the P1_dev recipe",
+   "as_written": "44"
+  },
+  "soup.weights": {
+   "value": "[1/3]*3",
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 105,
+   "quote": "add_weighted_adapter([...], [1/3]*3, combination_type=\"cat\")",
+   "as_written": "[1/3]*3"
+  },
+  "pred[0]": {
+   "value": 1.0,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "1.0"
+  },
+  "pred[1]": {
+   "value": 3.0,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "3.0"
+  },
+  "pred[2]": {
+   "value": 2.0,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "2.0"
+  },
+  "pred[3]": {
+   "value": 0.5,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "0.5"
+  },
+  "pred[4]": {
+   "value": 1.0,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "1.0"
+  },
+  "pred[5]": {
+   "value": -1.0,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "−1.0"
+  },
+  "pred[6]": {
+   "value": 1.5,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "1.5"
+  },
+  "pred[7]": {
+   "value": -1.0,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "−1.0"
+  },
+  "pred[8]": {
+   "value": 0.5,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "0.5"
+  },
+  "pred[9]": {
+   "value": 0.1,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 119,
+   "quote": "- CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10.",
+   "as_written": "0.10"
+  },
+  "test_look.proxy[0]": {
+   "value": 3.05,
+   "path": "manuscript/research_r14/R14_4/soup_proxy.out",
+   "sha256": "0a2aef243cf2d2d7ee532b30e4b7916811c47a0a947388813be3594249ab8345",
+   "line": 1,
+   "quote": "assist seed CIDEr(syl) [164.43, 164.21, 164.42] MBR-minus-seed-mean 3.05 CI (1.03, 5.11)",
+   "as_written": "3.05"
+  },
+  "test_look.proxy[1]": {
+   "value": 1.03,
+   "path": "manuscript/research_r14/R14_4/soup_proxy.out",
+   "sha256": "0a2aef243cf2d2d7ee532b30e4b7916811c47a0a947388813be3594249ab8345",
+   "line": 1,
+   "quote": "assist seed CIDEr(syl) [164.43, 164.21, 164.42] MBR-minus-seed-mean 3.05 CI (1.03, 5.11)",
+   "as_written": "1.03"
+  },
+  "test_look.proxy[2]": {
+   "value": 5.11,
+   "path": "manuscript/research_r14/R14_4/soup_proxy.out",
+   "sha256": "0a2aef243cf2d2d7ee532b30e4b7916811c47a0a947388813be3594249ab8345",
+   "line": 1,
+   "quote": "assist seed CIDEr(syl) [164.43, 164.21, 164.42] MBR-minus-seed-mean 3.05 CI (1.03, 5.11)",
+   "as_written": "5.11"
+  },
+  "test_look.proxy_PD9[0]": {
+   "value": 3.05,
+   "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+   "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   "line": 34,
+   "quote": "label the +3.05 [+1.03, +5.11] proxy as a test look",
+   "as_written": "3.05"
+  },
+  "test_look.proxy_PD9[1]": {
+   "value": 1.03,
+   "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+   "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   "line": 34,
+   "quote": "label the +3.05 [+1.03, +5.11] proxy as a test look",
+   "as_written": "1.03"
+  },
+  "test_look.proxy_PD9[2]": {
+   "value": 5.11,
+   "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+   "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   "line": 34,
+   "quote": "label the +3.05 [+1.03, +5.11] proxy as a test look",
+   "as_written": "5.11"
+  },
+  "cost.plan_gpu_h": {
+   "value": 4.3,
+   "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+   "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+   "line": 48,
+   "quote": "| T3.2 | S1 seed consensus (train p1dev_s43/s44, then delta-soup/MBR on dev300) | ~4.3 h |",
+   "as_written": "4.3"
+  },
+  "cost.dev_decode_gpu_h": {
+   "value": 0.12,
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "line": 141,
+   "quote": "plus 3 × 0.12 for dev evaluation",
+   "as_written": "0.12"
+  },
+  "recipe.35_a": {
+   "value": {
+    "epochs": 2,
+    "seed": 42,
+    "loss_mask": "assistant"
+   },
+   "path": ".session_backup/2026-10-13/local_job_copies/jobs/35_a_p1dev_sft.sh",
+   "sha256": "6d1a6d93f646f24dfdeaa64e126bed943da025b2324093133c2b2a70c2ef600b",
+   "line": 12,
+   "quote": "train_stage2.py --stage sft --data $NCS_DATA/gold_p1dev --out $NCS_DATA/runs/$R --epochs 2 --seed 42 --loss-mask assistant"
+  },
+  "cost.p1dev_train_h": {
+   "value": 1.75,
+   "computed": "train_runtime of p1dev_s42 / 3600",
+   "inputs": {
+    ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/metrics.jsonl": "006653318dfe96375ffcd069094ea006a5dc978e533694f64799036aa0dbc126"
+   }
+  },
+  "cost.estimate_gpu_h": {
+   "value": 3.98,
+   "computed": "2 trainings at p1dev_s42's runtime + 4 dev decodes (s42 re-decode, two new seeds, soup) at R14-4's per-decode cost",
+   "inputs": {
+    ".session_backup/machines/n2/ncs-data/runs/p1dev_s42/metrics.jsonl": "006653318dfe96375ffcd069094ea006a5dc978e533694f64799036aa0dbc126"
+   }
+  },
+  "p1dev.dev.CIDEr_D_x100": {
+   "value": 144.33399744573353,
+   "path": "data/results/rl/p1dev_s42-dev300-short.json",
+   "json_key": "results[0].scores_scaled_x100.CIDEr",
+   "sha256": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0"
+  },
+  "p1dev.dev.BLEU4_x100": {
+   "value": 42.54431591551573,
+   "path": "data/results/rl/p1dev_s42-dev300-short.json",
+   "json_key": "results[0].scores_scaled_x100.BLEU-4",
+   "sha256": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0"
+  },
+  "p1dev.dev.CHAIR_i": {
+   "value": 0.23251417769376181,
+   "path": "data/results/rl/p1dev_s42-dev300-short.json",
+   "json_key": "chair.CHAIR_i",
+   "sha256": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0"
+  },
+  "p1dev.dev.mentions_per_caption": {
+   "value": 1.7633333333333334,
+   "path": "data/results/rl/p1dev_s42-dev300-short.json",
+   "json_key": "chair.mentions_per_caption",
+   "sha256": "1fe467ed4ac0bb5111a9d2bde6dae4201f219702e40881a92eda55ec79b7f5d0"
+  },
+  "p1dev.dev.mean_syllables": {
+   "value": 11.876666666666667,
+   "path": "data/results/rl/g1_cn_v3_s42/gate.json",
+   "json_key": "caption_stats.p1dev.syllables",
+   "sha256": "3b82c02b21042248b5240906117a7ef25d0da8ba8376749bca313c965b4e18f5"
+  },
+  "p1dev.dev.fragments": {
+   "value": 9,
+   "path": "data/results/rl/g1_cn_v3_s42/gate.json",
+   "json_key": "caption_stats.p1dev.fragments",
+   "sha256": "3b82c02b21042248b5240906117a7ef25d0da8ba8376749bca313c965b4e18f5"
+  },
+  "p1dev.dev.P_ktvic5": {
+   "value": 74.291,
+   "path": "manuscript/research_r14/R14_3/oracle_headroom.json",
+   "json_key": "pools.N13.greedy.P_ktvic5",
+   "sha256": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116"
+  },
+  "p1dev.dev.R_ktvic5": {
+   "value": 43.126,
+   "path": "manuscript/research_r14/R14_3/oracle_headroom.json",
+   "json_key": "pools.N13.greedy.R_ktvic5",
+   "sha256": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116"
+  },
+  "p1dev.dev.F1_ktvic5": {
+   "value": 54.572,
+   "path": "manuscript/research_r14/R14_3/oracle_headroom.json",
+   "json_key": "pools.N13.greedy.F1_ktvic5",
+   "sha256": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116"
+  },
+  "p1dev.dev.F1_panel": {
+   "value": 40.653,
+   "path": "manuscript/research_r14/R14_3/oracle_headroom.json",
+   "json_key": "pools.N13.greedy.F1_panel",
+   "sha256": "685497af674ce7e991e87dbac8ca3ddd60368d31dd3f7817e9ddab8eae420116"
+  }
+ },
+ "builder": {
+  "path": ".session_backup/2026-10-18/paperA_tasks/P3/build_tier3_prereg.py",
+  "sha256": "ded929ef0061528a52229d9f5a145d64f366eaca7fe850bd1f76b343e44cee7b",
+  "float_literals": 0
+ }
+}
