@@ -1,0 +1,889 @@
+{
+ "lexicon": {
+  "COCO_any": 47,
+  "COCO_first": 34,
+  "OIV7": 69,
+  "person_sub": [
+   "bé gái",
+   "bé trai",
+   "phụ nữ",
+   "trẻ em",
+   "đàn ông"
+  ]
+ },
+ "dev300_p1dev_s42": {
+  "name": "dev300",
+  "n": 300,
+  "M": 529,
+  "H": 123,
+  "CHAIR_i": 0.23251417769376181,
+  "Hshare_coco_any": 0.5121951219512195,
+  "Hshare_coco_first": 0.34146341463414637,
+  "Hshare_oiv7": 0.5853658536585366,
+  "Hshare_person_sub": 0.11382113821138211,
+  "panel_images": 296,
+  "H_on_panel_images": 123,
+  "H_panel_confirmed": 0.5772357723577236,
+  "panel_confirmed_coco_any": [
+   0.6507936507936508,
+   63
+  ],
+  "panel_confirmed_coco_first": [
+   0.6190476190476191,
+   42
+  ],
+  "panel_confirmed_oiv7": [
+   0.6388888888888888,
+   72
+  ],
+  "panel_confirmed_person_sub": [
+   0.6428571428571429,
+   14
+  ],
+  "UB_oracle_coco_any": {
+   "CHAIR_i": 0.12875536480686695,
+   "P_mention": 0.8712446351931331,
+   "removed_TP": 0,
+   "removed_H": 63,
+   "M_after": 466
+  },
+  "UB_oracle_oiv7": {
+   "CHAIR_i": 0.11159737417943107,
+   "P_mention": 0.888402625820569,
+   "removed_TP": 0,
+   "removed_H": 72,
+   "M_after": 457
+  },
+  "UB_oracle_oiv7_noperson_sub": {
+   "CHAIR_i": 0.13800424628450106,
+   "P_mention": 0.861995753715499,
+   "removed_TP": 0,
+   "removed_H": 58,
+   "M_after": 471
+  },
+  "UB_oracle_all": {
+   "CHAIR_i": 0.0,
+   "P_mention": 1.0,
+   "removed_TP": 0,
+   "removed_H": 123,
+   "M_after": 406
+  },
+  "UB_presence_oiv7_panelimgs": {
+   "CHAIR_i": 0.20078740157480315,
+   "P_mention": 0.7992125984251969,
+   "removed_TP": 0,
+   "removed_H": 21,
+   "M_after": 508
+  },
+  "UB_presence_all_panelimgs": {
+   "CHAIR_i": 0.1488469601677149,
+   "P_mention": 0.8511530398322851,
+   "removed_TP": 0,
+   "removed_H": 52,
+   "M_after": 477
+  },
+  "panelimgs_base": null,
+  "PRF_base": {
+   "P": 73.35,
+   "R": 42.47,
+   "F1": 53.79
+  },
+  "PRF_UB_oracle_oiv7": {
+   "P": 84.9,
+   "R": 42.47,
+   "F1": 56.62
+  },
+  "PRF_UB_presence_oiv7": {
+   "P": 76.38,
+   "R": 42.47,
+   "F1": 54.59
+  },
+  "PRF_UB_presence_all": {
+   "P": 81.34,
+   "R": 42.47,
+   "F1": 55.8
+  },
+  "panel_conf_top": [
+   [
+    "đường",
+    14,
+    11
+   ],
+   [
+    "phụ nữ",
+    8,
+    7
+   ],
+   [
+    "người",
+    8,
+    6
+   ],
+   [
+    "cửa",
+    6,
+    4
+   ],
+   [
+    "cây",
+    6,
+    5
+   ],
+   [
+    "cô gái",
+    5,
+    5
+   ],
+   [
+    "đàn ông",
+    5,
+    2
+   ],
+   [
+    "nhà",
+    5,
+    4
+   ],
+   [
+    "quầy hàng",
+    5,
+    0
+   ],
+   [
+    "xe máy",
+    4,
+    3
+   ],
+   [
+    "chợ",
+    4,
+    1
+   ],
+   [
+    "đồ",
+    4,
+    2
+   ]
+  ],
+  "top_halluc": [
+   [
+    "đường",
+    14,
+    false,
+    false
+   ],
+   [
+    "phụ nữ",
+    8,
+    true,
+    true
+   ],
+   [
+    "người",
+    8,
+    true,
+    true
+   ],
+   [
+    "cửa",
+    6,
+    false,
+    false
+   ],
+   [
+    "cây",
+    6,
+    true,
+    true
+   ],
+   [
+    "cô gái",
+    5,
+    true,
+    true
+   ],
+   [
+    "đàn ông",
+    5,
+    true,
+    true
+   ],
+   [
+    "nhà",
+    5,
+    false,
+    true
+   ],
+   [
+    "quầy hàng",
+    5,
+    false,
+    false
+   ],
+   [
+    "xe máy",
+    4,
+    true,
+    true
+   ],
+   [
+    "chợ",
+    4,
+    false,
+    true
+   ],
+   [
+    "đồ",
+    4,
+    false,
+    false
+   ],
+   [
+    "ghế",
+    3,
+    true,
+    true
+   ],
+   [
+    "cầu",
+    3,
+    true,
+    false
+   ],
+   [
+    "căn phòng",
+    3,
+    false,
+    true
+   ],
+   [
+    "bàn",
+    3,
+    true,
+    false
+   ],
+   [
+    "hoa",
+    3,
+    true,
+    true
+   ],
+   [
+    "áo",
+    3,
+    false,
+    true
+   ],
+   [
+    "cá",
+    2,
+    false,
+    false
+   ],
+   [
+    "quả",
+    2,
+    true,
+    false
+   ]
+  ]
+ },
+ "test_p1assist_s42": {
+  "name": "test",
+  "n": 558,
+  "M": 1017,
+  "H": 186,
+  "CHAIR_i": 0.18289085545722714,
+  "Hshare_coco_any": 0.4731182795698925,
+  "Hshare_coco_first": 0.27956989247311825,
+  "Hshare_oiv7": 0.5376344086021505,
+  "Hshare_person_sub": 0.15053763440860216,
+  "panel_images": 555,
+  "H_on_panel_images": 186,
+  "H_panel_confirmed": 0.5376344086021505,
+  "panel_confirmed_coco_any": [
+   0.6590909090909091,
+   88
+  ],
+  "panel_confirmed_coco_first": [
+   0.6153846153846154,
+   52
+  ],
+  "panel_confirmed_oiv7": [
+   0.63,
+   100
+  ],
+  "panel_confirmed_person_sub": [
+   0.7142857142857143,
+   28
+  ],
+  "UB_oracle_coco_any": {
+   "CHAIR_i": 0.1054897739504844,
+   "P_mention": 0.8945102260495156,
+   "removed_TP": 0,
+   "removed_H": 88,
+   "M_after": 929
+  },
+  "UB_oracle_oiv7": {
+   "CHAIR_i": 0.09378407851690294,
+   "P_mention": 0.906215921483097,
+   "removed_TP": 0,
+   "removed_H": 100,
+   "M_after": 917
+  },
+  "UB_oracle_oiv7_noperson_sub": {
+   "CHAIR_i": 0.12063492063492064,
+   "P_mention": 0.8793650793650793,
+   "removed_TP": 0,
+   "removed_H": 72,
+   "M_after": 945
+  },
+  "UB_oracle_all": {
+   "CHAIR_i": 0.0,
+   "P_mention": 1.0,
+   "removed_TP": 0,
+   "removed_H": 186,
+   "M_after": 831
+  },
+  "UB_presence_oiv7_panelimgs": {
+   "CHAIR_i": 0.15890688259109312,
+   "P_mention": 0.8410931174089069,
+   "removed_TP": 0,
+   "removed_H": 29,
+   "M_after": 988
+  },
+  "UB_presence_all_panelimgs": {
+   "CHAIR_i": 0.10741138560687433,
+   "P_mention": 0.8925886143931256,
+   "removed_TP": 0,
+   "removed_H": 86,
+   "M_after": 931
+  },
+  "panelimgs_base": null,
+  "GDINO_remove_untagged_cocofirst": {
+   "CHAIR_i": 0.17588495575221239,
+   "P_mention": 0.8241150442477876,
+   "removed_TP": 86,
+   "removed_H": 27,
+   "M_after": 904
+  },
+  "GDINO_cocofirst_mentions": {
+   "all": 381,
+   "halluc": 52,
+   "untagged": 113,
+   "untagged_halluc": 27
+  },
+  "GDINO_dCHAIR_i_CI95": [
+   -0.01735241182411476,
+   0.002236151402127351
+  ],
+  "PRF_base": {
+   "P": 78.07,
+   "R": 42.37,
+   "F1": 54.93
+  },
+  "PRF_UB_oracle_oiv7": {
+   "P": 86.59,
+   "R": 42.37,
+   "F1": 56.9
+  },
+  "PRF_UB_presence_oiv7": {
+   "P": 80.36,
+   "R": 42.37,
+   "F1": 55.49
+  },
+  "PRF_UB_presence_all": {
+   "P": 85.28,
+   "R": 42.37,
+   "F1": 56.61
+  },
+  "PRF_GDINO_rule": {
+   "P": 78.32,
+   "R": 38.03,
+   "F1": 51.2
+  },
+  "panel_conf_top": [
+   [
+    "đường",
+    24,
+    13
+   ],
+   [
+    "quầy hàng",
+    21,
+    4
+   ],
+   [
+    "phụ nữ",
+    16,
+    13
+   ],
+   [
+    "đàn ông",
+    12,
+    7
+   ],
+   [
+    "quả",
+    9,
+    5
+   ],
+   [
+    "người",
+    9,
+    6
+   ],
+   [
+    "cửa",
+    8,
+    6
+   ],
+   [
+    "thuyền",
+    8,
+    7
+   ],
+   [
+    "xe",
+    6,
+    3
+   ],
+   [
+    "đồ",
+    6,
+    5
+   ],
+   [
+    "cặp đôi",
+    5,
+    1
+   ],
+   [
+    "vỉa hè",
+    5,
+    0
+   ]
+  ],
+  "top_halluc": [
+   [
+    "đường",
+    24,
+    false,
+    false
+   ],
+   [
+    "quầy hàng",
+    21,
+    false,
+    false
+   ],
+   [
+    "phụ nữ",
+    16,
+    true,
+    true
+   ],
+   [
+    "đàn ông",
+    12,
+    true,
+    true
+   ],
+   [
+    "quả",
+    9,
+    true,
+    false
+   ],
+   [
+    "người",
+    9,
+    true,
+    true
+   ],
+   [
+    "cửa",
+    8,
+    false,
+    false
+   ],
+   [
+    "thuyền",
+    8,
+    true,
+    true
+   ],
+   [
+    "xe",
+    6,
+    true,
+    true
+   ],
+   [
+    "đồ",
+    6,
+    false,
+    false
+   ],
+   [
+    "cặp đôi",
+    5,
+    false,
+    false
+   ],
+   [
+    "vỉa hè",
+    5,
+    false,
+    true
+   ],
+   [
+    "áo",
+    5,
+    false,
+    true
+   ],
+   [
+    "sông",
+    4,
+    false,
+    true
+   ],
+   [
+    "cô gái",
+    4,
+    true,
+    true
+   ],
+   [
+    "nhà",
+    4,
+    false,
+    true
+   ],
+   [
+    "cầu",
+    3,
+    true,
+    false
+   ],
+   [
+    "xe đẩy",
+    3,
+    false,
+    false
+   ],
+   [
+    "hoa",
+    3,
+    true,
+    true
+   ],
+   [
+    "cây",
+    3,
+    true,
+    true
+   ]
+  ]
+ },
+ "test_fuse2_s42": {
+  "name": "test",
+  "n": 558,
+  "M": 1167,
+  "H": 256,
+  "CHAIR_i": 0.21936589545844046,
+  "Hshare_coco_any": 0.4921875,
+  "Hshare_coco_first": 0.27734375,
+  "Hshare_oiv7": 0.6171875,
+  "Hshare_person_sub": 0.1328125,
+  "panel_images": 555,
+  "H_on_panel_images": 256,
+  "H_panel_confirmed": 0.54296875,
+  "panel_confirmed_coco_any": [
+   0.6111111111111112,
+   126
+  ],
+  "panel_confirmed_coco_first": [
+   0.5915492957746479,
+   71
+  ],
+  "panel_confirmed_oiv7": [
+   0.6012658227848101,
+   158
+  ],
+  "panel_confirmed_person_sub": [
+   0.7352941176470589,
+   34
+  ],
+  "UB_oracle_coco_any": {
+   "CHAIR_i": 0.12487992315081652,
+   "P_mention": 0.8751200768491835,
+   "removed_TP": 0,
+   "removed_H": 126,
+   "M_after": 1041
+  },
+  "UB_oracle_oiv7": {
+   "CHAIR_i": 0.09712586719524281,
+   "P_mention": 0.9028741328047571,
+   "removed_TP": 0,
+   "removed_H": 158,
+   "M_after": 1009
+  },
+  "UB_oracle_oiv7_noperson_sub": {
+   "CHAIR_i": 0.12655800575263662,
+   "P_mention": 0.8734419942473634,
+   "removed_TP": 0,
+   "removed_H": 124,
+   "M_after": 1043
+  },
+  "UB_oracle_all": {
+   "CHAIR_i": 0.0,
+   "P_mention": 1.0,
+   "removed_TP": 0,
+   "removed_H": 256,
+   "M_after": 911
+  },
+  "UB_presence_oiv7_panelimgs": {
+   "CHAIR_i": 0.18149146451033243,
+   "P_mention": 0.8185085354896675,
+   "removed_TP": 0,
+   "removed_H": 54,
+   "M_after": 1113
+  },
+  "UB_presence_all_panelimgs": {
+   "CHAIR_i": 0.13238095238095238,
+   "P_mention": 0.8676190476190476,
+   "removed_TP": 0,
+   "removed_H": 117,
+   "M_after": 1050
+  },
+  "panelimgs_base": null,
+  "GDINO_remove_untagged_cocofirst": {
+   "CHAIR_i": 0.208984375,
+   "P_mention": 0.791015625,
+   "removed_TP": 101,
+   "removed_H": 42,
+   "M_after": 1024
+  },
+  "GDINO_cocofirst_mentions": {
+   "all": 431,
+   "halluc": 71,
+   "untagged": 143,
+   "untagged_halluc": 42
+  },
+  "GDINO_dCHAIR_i_CI95": [
+   -0.020748175498812554,
+   0.0002685830429732805
+  ],
+  "PRF_base": {
+   "P": 75.15,
+   "R": 46.64,
+   "F1": 57.56
+  },
+  "PRF_UB_oracle_oiv7": {
+   "P": 86.92,
+   "R": 46.64,
+   "F1": 60.71
+  },
+  "PRF_UB_presence_oiv7": {
+   "P": 78.8,
+   "R": 46.64,
+   "F1": 58.6
+  },
+  "PRF_UB_presence_all": {
+   "P": 83.52,
+   "R": 46.64,
+   "F1": 59.86
+  },
+  "PRF_GDINO_rule": {
+   "P": 75.78,
+   "R": 41.46,
+   "F1": 53.59
+  },
+  "panel_conf_top": [
+   [
+    "phụ nữ",
+    20,
+    15
+   ],
+   [
+    "đường",
+    19,
+    13
+   ],
+   [
+    "áo",
+    19,
+    16
+   ],
+   [
+    "cửa",
+    16,
+    10
+   ],
+   [
+    "quầy hàng",
+    14,
+    3
+   ],
+   [
+    "đàn ông",
+    14,
+    10
+   ],
+   [
+    "đồ",
+    10,
+    6
+   ],
+   [
+    "xe",
+    10,
+    7
+   ],
+   [
+    "thuyền",
+    8,
+    7
+   ],
+   [
+    "quả",
+    8,
+    4
+   ],
+   [
+    "chàng trai",
+    8,
+    3
+   ],
+   [
+    "cô gái",
+    8,
+    6
+   ]
+  ],
+  "top_halluc": [
+   [
+    "phụ nữ",
+    20,
+    true,
+    true
+   ],
+   [
+    "đường",
+    19,
+    false,
+    false
+   ],
+   [
+    "áo",
+    19,
+    false,
+    true
+   ],
+   [
+    "cửa",
+    16,
+    false,
+    false
+   ],
+   [
+    "quầy hàng",
+    14,
+    false,
+    false
+   ],
+   [
+    "đàn ông",
+    14,
+    true,
+    true
+   ],
+   [
+    "đồ",
+    10,
+    false,
+    false
+   ],
+   [
+    "xe",
+    10,
+    true,
+    true
+   ],
+   [
+    "thuyền",
+    8,
+    true,
+    true
+   ],
+   [
+    "quả",
+    8,
+    true,
+    false
+   ],
+   [
+    "chàng trai",
+    8,
+    true,
+    true
+   ],
+   [
+    "cô gái",
+    8,
+    true,
+    true
+   ],
+   [
+    "người",
+    8,
+    true,
+    true
+   ],
+   [
+    "nhà",
+    7,
+    false,
+    true
+   ],
+   [
+    "cây",
+    6,
+    true,
+    true
+   ],
+   [
+    "vỉa hè",
+    5,
+    false,
+    true
+   ],
+   [
+    "cầu",
+    5,
+    true,
+    false
+   ],
+   [
+    "bàn",
+    5,
+    true,
+    false
+   ],
+   [
+    "căn phòng",
+    5,
+    false,
+    true
+   ],
+   [
+    "chợ",
+    5,
+    false,
+    true
+   ]
+  ]
+ }
+}
