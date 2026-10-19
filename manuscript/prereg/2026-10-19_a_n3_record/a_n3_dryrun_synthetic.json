@@ -1,0 +1,559 @@
+{
+ "id": "2026-10-19_a_n3_criterion_mhaldetect",
+ "mode": "dryrun",
+ "prereg": {
+  "path": "manuscript/prereg/2026-10-19_a_n3_criterion_mhaldetect.json",
+  "sha256": "d862cde5eadf50003a7f27685df43f6792b25797cc26e6b9ddbc14f79c1ca4ff"
+ },
+ "script_sha256": "99af29e2d11407d46afead3cf093e1be99d58725e254f917b7fad337550e477a",
+ "config": {
+  "kmax": 1,
+  "n_rep": 20,
+  "n_boot": 1000,
+  "bootstrap_seed": 0,
+  "subset_seed": 1,
+  "note": "new seeds; numpy.random.default_rng(seed)",
+  "ci": [
+   2.5,
+   97.5
+  ],
+  "min_records": 1000,
+  "min_images": 500,
+  "levels": {
+   "one_ref": "refs1_randk",
+   "all_refs": "refs_all",
+   "complete": "inst",
+   "union": "inst+refs_all"
+  },
+  "parts": {
+   "AN3-P1": {
+    "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)": [
+     [
+      "P",
+      "all_refs"
+     ],
+     [
+      "P",
+      "one_ref"
+     ]
+    ],
+    "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)": [
+     [
+      "P",
+      "complete"
+     ],
+     [
+      "P",
+      "all_refs"
+     ]
+    ]
+   },
+   "AN3-P2": {
+    "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)": [
+     [
+      "cF1",
+      "one_ref"
+     ],
+     [
+      "F1",
+      "one_ref"
+     ]
+    ],
+    "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)": [
+     [
+      "cF1",
+      "all_refs"
+     ],
+     [
+      "F1",
+      "all_refs"
+     ]
+    ]
+   }
+  },
+  "rules": {
+   "AN3-P1": "sign_gt_0",
+   "AN3-P2": "sign_gt_0"
+  },
+  "data_path_check": {
+   "overlap_images": 217,
+   "mismatches": 0
+  }
+ },
+ "toy_selftest_pass": true,
+ "SYNTHETIC": "made-up images, references, instance classes, responses and span labels; no M-HalDetect file, COCO file or ID list is read; HP tracks true precision with 15% label noise",
+ "release_counts_synthetic": {
+  "records": {
+   "train": 1402,
+   "val": 702
+  },
+  "records_total": 2104,
+  "unique_image_response": 2103,
+  "duplicate_records_removed_by_dedup": 1,
+  "spans_by_label": {
+   "ACCURATE": 3662,
+   "ANALYSIS": 2338,
+   "INACCURATE": 2011,
+   "UNSURE": 256
+  },
+  "records_without_spans": 0,
+  "span_text_mismatches": 0,
+  "distinct_prompts": 1
+ },
+ "analysis_set_synthetic": {
+  "images_all": 701,
+  "images_analysis": 700,
+  "images_excluded_no_instances": 1,
+  "records_after_dedup": 2103,
+  "records_analysis": 2100,
+  "records_analysis_by_split": {
+   "train": 1400,
+   "val": 700
+  },
+  "records_per_image_analysis": {
+   "3": 700
+  }
+ },
+ "n": {
+  "analysis_records": 2100,
+  "E0_records": 2086,
+  "E_records": 1659,
+  "E_images": 692
+ },
+ "excluded_independent": {
+  "no_gold_one_ref": 0,
+  "no_j_one_ref": 434,
+  "no_gold_all_refs": 0,
+  "no_j_all_refs": 19,
+  "no_labelled_mention": 14
+ },
+ "outcome": "SUPPORTED",
+ "predictions": {
+  "AN3-P1": {
+   "parts": [
+    {
+     "part": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)",
+     "point": 0.24365473749063143,
+     "ci95": [
+      0.21513510177481518,
+      0.272301076662001
+     ],
+     "verdict": "PASS"
+    },
+    {
+     "part": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)",
+     "point": 0.10476745028819845,
+     "ci95": [
+      0.0825720823050953,
+      0.1289312365650897
+     ],
+     "verdict": "PASS"
+    }
+   ],
+   "verdict": "PASS"
+  },
+  "AN3-P2": {
+   "parts": [
+    {
+     "part": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)",
+     "point": 0.09728196901569541,
+     "ci95": [
+      0.08720539581707466,
+      0.10758630795352456
+     ],
+     "verdict": "PASS"
+    },
+    {
+     "part": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)",
+     "point": 0.023974749043835675,
+     "ci95": [
+      0.01845046086389616,
+      0.02959136803826944
+     ],
+     "verdict": "PASS"
+    }
+   ],
+   "verdict": "PASS"
+  }
+ },
+ "descriptive": {
+  "tau_b": {
+   "P@one_ref": [
+    0.3434936201449284,
+    [
+     0.31196970020990045,
+     0.37693874306060676
+    ]
+   ],
+   "R@one_ref": [
+    0.32926044635859913,
+    [
+     0.2980081635776285,
+     0.359414997671652
+    ]
+   ],
+   "F1@one_ref": [
+    0.36311000858275905,
+    [
+     0.3334212836368338,
+     0.39502651447278914
+    ]
+   ],
+   "cF1@one_ref": [
+    0.46039197759845446,
+    [
+     0.4296203970276481,
+     0.49040865954194995
+    ]
+   ],
+   "P@all_refs": [
+    0.5871483576355598,
+    [
+     0.5553455079581974,
+     0.6174902039071197
+    ]
+   ],
+   "R@all_refs": [
+    0.3581959182486546,
+    [
+     0.32282197397407697,
+     0.3893425583522123
+    ]
+   ],
+   "F1@all_refs": [
+    0.4907622495260182,
+    [
+     0.45993982731618677,
+     0.5200338876771521
+    ]
+   ],
+   "cF1@all_refs": [
+    0.5147369985698539,
+    [
+     0.48563132600065634,
+     0.5421503508889574
+    ]
+   ],
+   "P@complete": [
+    0.6919158079237583,
+    [
+     0.6659626471230314,
+     0.7177553159431584
+    ]
+   ],
+   "R@complete": [
+    0.36908457317828086,
+    [
+     0.33487558277767765,
+     0.4011064896568216
+    ]
+   ],
+   "F1@complete": [
+    0.528145999605307,
+    [
+     0.49824548820870457,
+     0.5567629693647823
+    ]
+   ],
+   "P@union": [
+    0.6919158079237583,
+    [
+     0.6659626471230314,
+     0.7177553159431584
+    ]
+   ],
+   "R@union": [
+    0.36908457317828086,
+    [
+     0.33487558277767765,
+     0.4011064896568216
+    ]
+   ],
+   "F1@union": [
+    0.528145999605307,
+    [
+     0.49824548820870457,
+     0.5567629693647823
+    ]
+   ]
+  },
+  "mention_level": {
+   "one_ref": {
+    "hit_rate": 0.9662053346753899,
+    "false_alarm_rate": 0.529571332886805,
+    "youden_J": 0.4366340017885849
+   },
+   "all_refs": {
+    "hit_rate": 0.9375943633618521,
+    "false_alarm_rate": 0.08573342263898191,
+    "youden_J": 0.8518609407228702
+   },
+   "complete": {
+    "hit_rate": 0.9330649219929542,
+    "false_alarm_rate": 0.023107836570663093,
+    "youden_J": 0.9099570854222911
+   },
+   "union": {
+    "hit_rate": 0.9330649219929542,
+    "false_alarm_rate": 0.023107836570663093,
+    "youden_J": 0.9099570854222911
+   }
+  },
+  "E0_sensitivity": {
+   "AN3-P1": {
+    "parts": [
+     {
+      "part": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)",
+      "point": 0.31138737171772735,
+      "ci95": [
+       0.2827010302649156,
+       0.33892394935766634
+      ]
+     },
+     {
+      "part": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)",
+      "point": 0.1344820366793743,
+      "ci95": [
+       0.10840058558298123,
+       0.16087574625531892
+      ]
+     }
+    ]
+   },
+   "AN3-P2": {
+    "parts": [
+     {
+      "part": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)",
+      "point": 0.07598487388062422,
+      "ci95": [
+       0.06449966750172896,
+       0.08681069250936176
+      ]
+     },
+     {
+      "part": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)",
+      "point": 0.02335099702657828,
+      "ci95": [
+       0.018207673512230356,
+       0.028932700037937506
+      ]
+     }
+    ]
+   }
+  },
+  "subsets": {
+   "split_train": {
+    "AN3-P1": {
+     "parts": [
+      {
+       "part": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)",
+       "point": 0.2381048533287346,
+       "ci95": [
+        0.20578686183058204,
+        0.2729096078742618
+       ]
+      },
+      {
+       "part": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)",
+       "point": 0.11055423805725673,
+       "ci95": [
+        0.08395841608099655,
+        0.13762406061900576
+       ]
+      }
+     ]
+    },
+    "AN3-P2": {
+     "parts": [
+      {
+       "part": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)",
+       "point": 0.10022631537484789,
+       "ci95": [
+        0.08812616837044868,
+        0.1122230027360133
+       ]
+      },
+      {
+       "part": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)",
+       "point": 0.023952789594225588,
+       "ci95": [
+        0.017540496728805307,
+        0.03024197066543114
+       ]
+      }
+     ]
+    },
+    "records": 1110
+   },
+   "split_val": {
+    "AN3-P1": {
+     "parts": [
+      {
+       "part": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)",
+       "point": 0.25662104923949053,
+       "ci95": [
+        0.20691096183225516,
+        0.3050668184366708
+       ]
+      },
+      {
+       "part": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)",
+       "point": 0.09265557964617377,
+       "ci95": [
+        0.06256397810263634,
+        0.12616266700995737
+       ]
+      }
+     ]
+    },
+    "AN3-P2": {
+     "parts": [
+      {
+       "part": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)",
+       "point": 0.09204155495585814,
+       "ci95": [
+        0.07490243818968952,
+        0.10783478917779793
+       ]
+      },
+      {
+       "part": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)",
+       "point": 0.023566066658590124,
+       "ci95": [
+        0.015271261387931976,
+        0.033285387160203815
+       ]
+      }
+     ]
+    },
+    "records": 549
+   },
+   "overlap_cv295": {
+    "AN3-P1": {
+     "parts": [
+      {
+       "part": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)",
+       "point": 0.21296388813767286,
+       "ci95": [
+        0.035787261308739354,
+        0.3709984696628772
+       ]
+      },
+      {
+       "part": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)",
+       "point": 0.11029208916352257,
+       "ci95": [
+        0.00912141093253788,
+        0.2493291068833258
+       ]
+      }
+     ]
+    },
+    "AN3-P2": {
+     "parts": [
+      {
+       "part": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)",
+       "point": 0.05634079492952904,
+       "ci95": [
+        0.010556261244810239,
+        0.09988521252895564
+       ]
+      },
+      {
+       "part": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)",
+       "point": 0.01172538982806276,
+       "ci95": [
+        -0.001663756452340842,
+        0.035870170276362155
+       ]
+      }
+     ]
+    },
+    "records": 68
+   },
+   "overlap_coco2500": {
+    "AN3-P1": {
+     "parts": [
+      {
+       "part": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)",
+       "point": 0.21869704651565236,
+       "ci95": [
+        0.17225346596403843,
+        0.27439817418879714
+       ]
+      },
+      {
+       "part": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)",
+       "point": 0.12252530277715423,
+       "ci95": [
+        0.07586673089802579,
+        0.17186228209706342
+       ]
+      }
+     ]
+    },
+    "AN3-P2": {
+     "parts": [
+      {
+       "part": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)",
+       "point": 0.09919605342215393,
+       "ci95": [
+        0.08019003340384105,
+        0.12072567167586344
+       ]
+      },
+      {
+       "part": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)",
+       "point": 0.02948085481070256,
+       "ci95": [
+        0.016169020821654983,
+        0.042872252880410334
+       ]
+      }
+     ]
+    },
+    "records": 419
+   }
+  },
+  "mention_counts": {
+   "analysis": {
+    "supported": 3661,
+    "hallucinated": 2007,
+    "unlabelled": 490
+   },
+   "E": {
+    "supported": 2986,
+    "hallucinated": 1987,
+    "unlabelled": 433
+   }
+  }
+ },
+ "inputs_sha256": {
+  "manuscript/prereg/2026-10-19_a_n3_criterion_mhaldetect.json": "d862cde5eadf50003a7f27685df43f6792b25797cc26e6b9ddbc14f79c1ca4ff",
+  "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+  "scripts/score_coco_probe.py": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070",
+  "scripts/g2b/score_g2b.py": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5",
+  "scripts/g2b/an1/measures.py": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6",
+  "data/coco_probe/chair_synonyms.txt": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+  "rescap/vlm/mock.py": "33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7",
+  "scripts/person_uncap.py": "d16b19f6597f84597db7865dea4058f0bb1fecf914d71d34d6406d66283fa5bb",
+  "rescap/vlm/__init__.py": "13de9854599acedd32ea1798ea1acc475703fcd3aa4eb4dd715dc8eadcd632cd",
+  "rescap/vi/__init__.py": "f898963e95fec7d9fb236295649404815634a1d949bfd74cd7c3b90ed493bf6c",
+  "rescap/svp/entailment.py": "4462f44df80faa0adc620d98aa5d8bbb307243d450e9aee4801bb17a3a06db23",
+  "scripts/xm3600_oiv7.py": "9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0",
+  "rescap/__init__.py": "b712bea4d66e5e2e0f0cec1624ab244a025560ecc5d86f96cada2e0160a4890f",
+  "rescap/vlm/registry.py": "6c261406bde3d34a73f77ce961aff7d241e2a440ba75e154fccf3ae8d4a70297",
+  "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+  "rescap/metrics.py": "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960",
+  "rescap/vi/classifier.py": "966cdab1fed8471ac57d225698e63f1e2a055435a5d669e9cca10eed703fed16",
+  "rescap/svp/__init__.py": "5b7f52920de75cf59bde0ae657e292a876efc63292ca6db6a4d085bb9fec1424",
+  "scripts/clean_supervision.py": "01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231",
+  "rescap/vi/color.py": "242fc46f68ecb06c8eefde23350481d99e60566b3da64ab90cfa79db38fd3875",
+  "rescap/svp/matching.py": "a9253060131aacfca8eaab9a4b2c473c487db96a7c1222f0b8e31f9f61b24003",
+  "rescap/vlm/base.py": "e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93",
+  "rescap/repro.py": "723200190818cd61a56527e6a0a1596b95f9d1ed1ebc0cabe1b29135cf03b70d",
+  "rescap/vocab.py": "c9143b2d973fc48a2231335844cd91ab702329c0b1aabb802884225e155967ec",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "data/coco_probe/coco80_vi.json": "926e08571ef6e80a7f8aae8f2b73753d6c5c54c431a750ba2b67bfaae71b540b"
+ }
+}

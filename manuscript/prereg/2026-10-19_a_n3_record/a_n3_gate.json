@@ -1,0 +1,197 @@
+{
+ "id": "2026-10-19_a_n3_criterion_mhaldetect",
+ "mode": "gate",
+ "prereg": {
+  "path": "manuscript/prereg/2026-10-19_a_n3_criterion_mhaldetect.json",
+  "sha256": "d862cde5eadf50003a7f27685df43f6792b25797cc26e6b9ddbc14f79c1ca4ff"
+ },
+ "script_sha256": "99af29e2d11407d46afead3cf093e1be99d58725e254f917b7fad337550e477a",
+ "config": {
+  "kmax": 1,
+  "n_rep": 20,
+  "n_boot": 1000,
+  "bootstrap_seed": 0,
+  "subset_seed": 1,
+  "note": "new seeds; numpy.random.default_rng(seed)",
+  "ci": [
+   2.5,
+   97.5
+  ],
+  "min_records": 1000,
+  "min_images": 500,
+  "levels": {
+   "one_ref": "refs1_randk",
+   "all_refs": "refs_all",
+   "complete": "inst",
+   "union": "inst+refs_all"
+  },
+  "parts": {
+   "AN3-P1": {
+    "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)": [
+     [
+      "P",
+      "all_refs"
+     ],
+     [
+      "P",
+      "one_ref"
+     ]
+    ],
+    "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)": [
+     [
+      "P",
+      "complete"
+     ],
+     [
+      "P",
+      "all_refs"
+     ]
+    ]
+   },
+   "AN3-P2": {
+    "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)": [
+     [
+      "cF1",
+      "one_ref"
+     ],
+     [
+      "F1",
+      "one_ref"
+     ]
+    ],
+    "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)": [
+     [
+      "cF1",
+      "all_refs"
+     ],
+     [
+      "F1",
+      "all_refs"
+     ]
+    ]
+   }
+  },
+  "rules": {
+   "AN3-P1": "sign_gt_0",
+   "AN3-P2": "sign_gt_0"
+  },
+  "data_path_check": {
+   "overlap_images": 217,
+   "mismatches": 0
+  }
+ },
+ "toy_selftest_pass": true,
+ "checks": {
+  "release_counts": {
+   "ok": true,
+   "reproduced": {
+    "records": {
+     "train": 10979,
+     "val": 3164
+    },
+    "records_total": 14143,
+    "unique_image_response": 14141,
+    "duplicate_records_removed_by_dedup": 2,
+    "spans_by_label": {
+     "ACCURATE": 51979,
+     "ANALYSIS": 22496,
+     "INACCURATE": 21554,
+     "UNSURE": 1690
+    },
+    "records_without_spans": 6,
+    "span_text_mismatches": 0,
+    "distinct_prompts": 44
+   }
+  },
+  "analysis_set": {
+   "ok": true,
+   "reproduced": {
+    "images_all": 3454,
+    "images_analysis": 3419,
+    "images_excluded_no_instances": 35,
+    "records_after_dedup": 14141,
+    "records_analysis": 13997,
+    "records_analysis_by_split": {
+     "train": 10865,
+     "val": 3132
+    },
+    "records_per_image_analysis": {
+     "1": 1,
+     "4": 3337,
+     "8": 81
+    }
+   }
+  },
+  "id_lists_and_instance_gold_keys": {
+   "ok": true,
+   "reproduced": true
+  },
+  "overlap_and_refs": {
+   "ok": true,
+   "reproduced": [
+    26,
+    217,
+    3454
+   ]
+  },
+  "data_path_check": {
+   "ok": true,
+   "reproduced": {
+    "overlap_images": 217,
+    "mismatches": 0
+   }
+  },
+  "cf1_equals_f1_at_complete_first_25_records": {
+   "ok": true,
+   "reproduced": true
+  }
+ },
+ "all_pass": true,
+ "a_n3_statistics_computed": false,
+ "inputs_sha256": {
+  "manuscript/prereg/2026-10-19_a_n3_criterion_mhaldetect.json": "d862cde5eadf50003a7f27685df43f6792b25797cc26e6b9ddbc14f79c1ca4ff",
+  "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+  "scripts/score_coco_probe.py": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070",
+  "scripts/g2b/score_g2b.py": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5",
+  "scripts/g2b/an1/measures.py": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6",
+  "data/coco_probe/chair_synonyms.txt": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+  "rescap/vi/color.py": "242fc46f68ecb06c8eefde23350481d99e60566b3da64ab90cfa79db38fd3875",
+  "rescap/vlm/base.py": "e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93",
+  "rescap/metrics.py": "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960",
+  "rescap/svp/__init__.py": "5b7f52920de75cf59bde0ae657e292a876efc63292ca6db6a4d085bb9fec1424",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "scripts/clean_supervision.py": "01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231",
+  "rescap/vlm/mock.py": "33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7",
+  "rescap/__init__.py": "b712bea4d66e5e2e0f0cec1624ab244a025560ecc5d86f96cada2e0160a4890f",
+  "rescap/svp/entailment.py": "4462f44df80faa0adc620d98aa5d8bbb307243d450e9aee4801bb17a3a06db23",
+  "rescap/repro.py": "723200190818cd61a56527e6a0a1596b95f9d1ed1ebc0cabe1b29135cf03b70d",
+  "rescap/vi/classifier.py": "966cdab1fed8471ac57d225698e63f1e2a055435a5d669e9cca10eed703fed16",
+  "scripts/xm3600_oiv7.py": "9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0",
+  "rescap/vlm/__init__.py": "13de9854599acedd32ea1798ea1acc475703fcd3aa4eb4dd715dc8eadcd632cd",
+  "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+  "rescap/vocab.py": "c9143b2d973fc48a2231335844cd91ab702329c0b1aabb802884225e155967ec",
+  "scripts/person_uncap.py": "d16b19f6597f84597db7865dea4058f0bb1fecf914d71d34d6406d66283fa5bb",
+  "rescap/vi/__init__.py": "f898963e95fec7d9fb236295649404815634a1d949bfd74cd7c3b90ed493bf6c",
+  "rescap/vlm/registry.py": "6c261406bde3d34a73f77ce961aff7d241e2a440ba75e154fccf3ae8d4a70297",
+  "rescap/svp/matching.py": "a9253060131aacfca8eaab9a4b2c473c487db96a7c1222f0b8e31f9f61b24003",
+  "data/coco_probe/coco80_vi.json": "926e08571ef6e80a7f8aae8f2b73753d6c5c54c431a750ba2b67bfaae71b540b",
+  ".session_backup/2026-10-19/HL_human_labels/dl_mhaldetect/LICENSE.md": "0eccbb3dd40a0d89c45e59ea64e8b05038cbf8389b0c4ae27df77b5b940ae38e",
+  ".session_backup/2026-10-19/HL_human_labels/dl_mhaldetect/README.md": "1640ea4e96284c3fbb1ebf164fdfd772f2d8ed1e73169769133efd52549f5cd8",
+  ".session_backup/2026-10-19/HL_human_labels/dl_mhaldetect/train_raw.json": "03b088d113d94e6f7ebd939fe2040d9fb968f26878b088da77ed8d885ae17624",
+  ".session_backup/2026-10-19/HL_human_labels/dl_mhaldetect/val_raw.json": "2cbc7942f2ceafb0312f4f41b79390fe600605ffda9a9591fd2346213d0389af",
+  ".session_backup/2026-10-19/HL_human_labels/a_n3_instance_gold.json": "00e19c285fa459176de508344d12d88112fc7aa50e151f01e1469e11d512bcad",
+  ".session_backup/2026-10-19/HL_human_labels/code/derive_inst.py": "66547ec24276bcfcc0f3ceb4005e66efb57b47a0b46526572a5fbc1c1767d585",
+  "data/datasets/coco_probe/annotations/instances_val2014.json": "e1b4d1bc54906827b1a029981b1c77f2088bd4462569b7615db7929070c3ab47",
+  "data/coco_probe/chair500_ids.provenance.json": "675f5cc2688eacba5565778bb17d5a4271b42aef84f24204e75eaa48ce75ca8b",
+  "annotations_trainval2014.zip": "031296bbc80c45a1d1f76bf9a90ead27e94e99ec629208449507a4917a3bf009",
+  "data/an3/mhaldetect_analysis_set.json": "74624e57187d605d27aec01c0d4f8ee57cc8c7b50725c5168da7177590582054",
+  "data/an3/mhaldetect_analysis_image_ids.txt": "e47fc762b16e8f9fdf1c48ef5612860960ca19a40e3348a6dd6f52d786757599",
+  "data/an3/mhaldetect_excluded_no_instance_ids.txt": "c7934a79feb15ae5ca71d60a9c943c7847f14b2b8b6a44ee16001eae93004006",
+  "data/an3/mhaldetect_release_counts.json": "7f9fecfe4a3e472187bdd8ef8d504bbf03ef8e1e6da786f00d964a3fb63da944",
+  "data/an3/mhaldetect_overlap.json": "fd97a3b0259b8f1463afa180eebdc93ab5fce7373e58fd51c1eb0fa33a157a32",
+  "data/datasets/karpathy/dataset_coco.json": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d",
+  "data/coco_probe/cv295_val2014.sha256": "5aee7a6b1d357444294ffc0bc4e183ed6b26f6bd5b24217cecce6af3da62c0e8",
+  "data/coco_probe/manifest.json": "931e572ec8ea5eadf4c49aafcc062a837429b4e6bcc1f96fc0ec0ee1ecaa7e35",
+  "data/coco_probe/instance_gold.json": "963af2c6cc71e7a5e32c2f8f1ca6a0f1ef0a1f02dadf40926ddb05eebd04f81e"
+ }
+}
