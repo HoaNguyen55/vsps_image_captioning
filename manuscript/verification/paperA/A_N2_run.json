@@ -1,0 +1,701 @@
+{
+ "task": "A_N2_run",
+ "verifier": "Claude A-verifier (Paper A)",
+ "written_utc": "2026-10-19T20:28Z",
+ "deliverable": {
+  "data/results/a_n2/a_n2_run.json": "1f6ce422e0163d81661bf5711787086b2f11ae177f3dbc6b06ae6cd4ebc3dfdc",
+  "scripts/lb/score_a_n2.py": "6946bc4be389b6b340450551bba57d15df0149ef4535f589b1f75d7f16986921",
+  "manuscript/prereg/2026-10-19_a_n2_record/a_n2_gate.json": "217f171c16343a3596941f68198538040289e348008c211a5d89280849b9cbad",
+  "manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json": "d5714e2b25e5f1d36fa42813cc5891a82d0b80a73e69fb08d940e05e2055f309",
+  "scripts/queue/jobs/lb_a_n2_decode.sh": "efdde495987b477e96cf2fd4114709b0a03218e7aac2357bc4e19f677998330a",
+  "scripts/lb/decode_hf_vlm.py": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+  "data/results/g2b/g2b_score.json": "68be2b7a0904027ccb6723129fe86cc10c4976a9e59fbc7862251fe715090824",
+  "a_n2_run/outputs (32 preds, digest of sorted 'sha256 run_id' lines)": "f4c57ce5da6c8fc4ba32bec02906517c7f2a352cfc3031db53505302a02cd960"
+ },
+ "overall": "VERIFIED",
+ "overall_reason": "The 32 frozen decodes are byte-identical to the source and to their sidecars and are exactly the prereg's 32 runs; all 32 pass the CC-033b/KD provenance (job efdde495, decoder e2de1881, git_head = 327191c) so an empty excluded_runs is correct; the scorer, gate, prereg, job, decoder, g2b_score.json and all 21 imported repo modules are tracked and equal HEAD, and every other input matches a registered pin; the run started 385.1 s after the G2-B commit and 4209.1 s after the scorer commit; my single re-run is byte-identical (sha256 1f6ce422..., no time fields); every verdict recomputes from the prereg rule text; an independent re-implementation from raw captions reproduces all points and CIs to float rounding (worst 4.1e-14). Main's reading is confirmed: LBA-P1 PASS on both sets; LBA-P2 FAIL on cv295 (qwen3vl_8b, a point <= 0 FAIL whose CI includes 0) and PASS on uv231en; KA2 fires, KA1 does not.",
+ "rows": [
+  {
+   "claim_id": "A-N2-run",
+   "source_msg": "main: A-N2 verification brief (run records in .session_backup/2026-10-20/a_n2_run/, output sha256 1f6ce422e0163d81661bf5711787086b2f11ae177f3dbc6b06ae6cd4ebc3dfdc)",
+   "claim": "scripts/lb/score_a_n2.py (269046e) with gate 217f171c ran once at 2026-10-19T20:05:47.100Z at HEAD 1c153fa on the 32 frozen decodes and G2-B's committed results (R7); verdicts: cv295 LBA-P1 PASS, LBA-P2 FAIL (qwen3vl_8b); uv231en LBA-P1 PASS, LBA-P2 PASS; KA2 fires, KA1 does not",
+   "items": {
+    "A1": {
+     "status": "PASS",
+     "evidence": "The prereg lists 32 runs (32 distinct ids). The source folder holds exactly 96 files = 32 preds + 32 sidecars + 32 partial.jsonl (listing equals the expected set: True); the frozen folder holds exactly 64 = 32 + 32 (True). All 32 preds and 32 sidecars in a_n2_run/outputs are byte-identical to the source (differences: 0); every sidecar is '<sha256>  <name>' and its sha256 equals the sha256 of the file (mismatches: 0); run.log has 32 OK lines that equal the files (True). Each output's run_id/model/dataset/prompt_mode equals the prereg run it is named for. The 32 incremental .partial.jsonl files agree with the final preds on every image (caption, image sha256, n_tokens, hit_max): inconsistent runs [], runs with duplicate images []. The source preds mtimes span 2026-10-19T09:45:52Z..2026-10-19T13:03:30Z, which ends at the last finished_utc (2026-10-19T13:03:30Z), so nothing was touched after decoding. Digest over the 32 sorted (sha256 run-id) lines: f4c57ce5da6c8fc4."
+    },
+    "A2": {
+     "status": "PASS",
+     "evidence": "scripts/queue/jobs/lb_a_n2_decode.sh at HEAD: sha256 efdde495987b477e96cf2fd4114709b0a03218e7aac2357bc4e19f677998330a (starts efdde495: True; work tree equals HEAD: True). scripts/lb/decode_hf_vlm.py at HEAD: sha256 e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4 (starts e2de1881: True; equals the prereg decoder pin: True). Both blobs at 327191c equal HEAD, and no commit since 327191c touches the job, decoder, prereg md/json or data/lb/sets ([]). My own comparison of every output against the prereg (not the scorer's code): schema, prereg_id, prereg_sha256 (= sha256 of the committed prereg json, d5714e2b), decoder_sha256, job_sha256, hub_id, revision, batch_size, dtype, attn_implementation, processor_kwargs, prompt_text_sha256, manifest_sha256, max_new_tokens, generate_kwargs (do_sample false, num_beams 1), packages, n_images, image_sha256 (= the manifest rows), prediction ids = manifest ids, all captions str: 0 deviations over 32 runs. git_head values: ['327191c'] (one value); git merge-base --is-ancestor 327191c <git_head> succeeds for all 32 (the head equals the registration commit itself: True); HEAD descends from 327191c (True). git_dirty [False], resumed [False], one venv_freeze_sha256 (6c3805fb; logged in WORKFLOW_LOG as the venv-lb freeze: True), generation_config constant per model (True). The model table in the prereg md equals models.* in the json (8/8). Both manifests: sha256 = prereg pin (True), equal HEAD (True), 295 and 231 rows."
+    },
+    "A3": {
+     "status": "PASS",
+     "evidence": "excluded_runs in the output is {}; kill_rules.KM is {'cv295': [], 'uv231en': []} (all 8 models kept on both sets). My independent admission test finds 0 failing runs of 32, so an empty excluded_runs is the correct result. Not a KD condition (prereg: 'recorded, no gate'): parity_slice0 (batch vs batch-1 captions on slice 0) is all-identical in 9 of 32 runs. Captions are non-empty in every run (empty captions: 0 runs)."
+    },
+    "B1": {
+     "status": "PASS",
+     "evidence": "Tracked and equal to HEAD (ls-files --error-unmatch; git diff --quiet HEAD; bytes == blob at HEAD): scripts/lb/score_a_n2.py (6946bc4be389b6b3, last commit 269046e); manuscript/prereg/2026-10-19_a_n2_record/a_n2_gate.json (217f171c16343a35, last commit 269046e); manuscript/prereg/2026-10-19_a_n2_record/a_n2_gate.log (f9946127ba896abf, last commit 269046e); manuscript/prereg/2026-10-19_a_n2_record/a_n2_run_refusal.log (7598955cf748baba, last commit 269046e); manuscript/prereg/2026-10-19_a_n2_record/a_n2_dryrun_synthetic.json (16c11feabc06ff8e, last commit 269046e); manuscript/prereg/2026-10-19_a_n2_record/a_n2_dryrun_synthetic.log (02744d544e2ccba1, last commit 269046e); manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json (d5714e2b25e5f1d3, last commit 327191c); manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.md (4789d998d3f52199, last commit 327191c); scripts/queue/jobs/lb_a_n2_decode.sh (efdde495987b477e, last commit 327191c); scripts/lb/decode_hf_vlm.py (e2de18811e2ffeb6, last commit 327191c); data/results/g2b/g2b_score.json (68be2b7a0904027c, last commit 47de6b6); manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json (c506bc777b483f50, last commit 0932ba1). Count: 12 of 12. Identity chain: scorer sha256 6946bc4be389b6b3 equals its blob at 269046e (True), the gate file's script_sha256 (True) and the run json's script_sha256 (True); the gate file equals its blob at 269046e (True) and the run json's gate.sha256 (True); gate record: mode 'gate', all_pass True, decode_outputs_read False; the gate, run json and my prereg hash agree on the prereg sha256 (True). Commits that touch the scorer: ['269046e']; the gate: ['269046e']; the prereg json: ['327191c']; g2b_score.json: ['47de6b6']. data/results/a_n2/a_n2_run.json is not tracked (True). HEAD unchanged since the run (1c153fa): True."
+    },
+    "B2": {
+     "status": "PASS",
+     "evidence": "inputs_sha256 of the output lists 85 inputs: 46 tracked files equal to HEAD (includes every imported repo module), 7 untracked inputs (Karpathy references, UIT-ViIC English references, L1 check_coco.json, and the 4 G2-B GREEDY_EN decodes), each equal to a registered pin (prereg frozen_files; selfcheck.json references_sha256; g2b_score.json outputs_sha256; all equal: True), and 32 decode outputs equal to their sidecars. Every recorded sha256 equals the file's sha256 now (bad: []). Modules actually imported in my re-run (python -X importtime, 912 import lines): 21 repo .py files (rescap/*, scripts/clean_supervision.py, scripts/g2b/score_g2b.py, scripts/person_uncap.py, scripts/score_coco_probe.py, scripts/xm3600_oiv7.py); 0 of them are missing from inputs_sha256, so all are tracked, equal to HEAD and pinned."
+    },
+    "B3": {
+     "status": "PASS",
+     "evidence": "On the WSL clock (commit times and run.log use the same clock): registration 327191c 2026-10-19T03:29:25Z; first decode started 2026-10-19T09:44:11Z (+22486 s); last decode finished 2026-10-19T13:03:30Z; scorer+gate commit 269046e 2026-10-19T18:55:38Z; G2-B score commit 47de6b6 2026-10-19T19:59:22Z; HEAD 1c153fa 2026-10-19T19:59:48Z; run start 2026-10-19T20:05:47.100Z (rc 0), end 2026-10-19T20:06:19.737Z. Run start minus 269046e = 4209.1 s; minus 47de6b6 = 385.1 s; minus HEAD = 359.1 s: the run began after the scorer commit and after the G2-B commit (R7). The decodes preceded the scorer commit by design (CC-033 'decode as decode only'); the gate read no decode output. Pushes to the private remote (remote-tracking reflog, same clock): 269046e at 2026-10-19T18:57:34Z and 1c153fa (contains 47de6b6: True) at 2026-10-19T20:00:11Z, both before the run start (CP-039: run after the push). Host-clock file mtimes (the Windows-mounted drive) run about 9 s ahead of the WSL clock (RAN_ONCE touched 2026-10-19T20:05:56.284358Z on the host clock, run start 2026-10-19T20:05:47.100Z on the WSL clock, a few ms apart); that offset is far below every gap above and does not affect the commit-versus-run ordering, which uses one clock."
+    },
+    "C1": {
+     "status": "PASS",
+     "evidence": "Re-run once at HEAD 1c153fa (HEAD_after 1c153fa), 2026-10-19T20:14:09.860Z to 2026-10-19T20:14:45.934Z, rc 0, python 3.12.3 numpy 2.5.2 scipy 1.18.1. Output sha256 1f6ce422e0163d81661bf5711787086b2f11ae177f3dbc6b06ae6cd4ebc3dfdc == main's 1f6ce422e0163d81661bf5711787086b2f11ae177f3dbc6b06ae6cd4ebc3dfdc; byte compare: identical (189892 bytes); stdout identical to main's run.stdout; main's run.stderr is 0 bytes; differences: none. The output holds no time field (keys matching utc/time/date/start/finish/_at: []), so no field had to be excluded and the canonical-JSON comparison was not needed."
+    },
+    "C2": {
+     "status": "PASS",
+     "evidence": "Settings differ from main's only in ways that cannot reach the output: PYTHONDONTWRITEBYTECODE=1 (no __pycache__ written, so the tree stays untouched), python -X importtime (diagnostic lines on stderr; used to list the imported modules), --outputs given as the repo-relative path (main passed the absolute path of the same folder; the output records only relative input names), and the output written to <verifier scratch>. Same: env -i HOME=$HOME PATH=/usr/bin:/bin LANG=C.UTF-8, OMP/OPENBLAS/MKL_NUM_THREADS=2, nice -n 15, python3 -E -P, the same --gate, --g2b-results and --g2b-outputs. git status --porcelain before and after the re-run is identical (195 lines; equal: True), HEAD unchanged, nothing under data/results/ written."
+    },
+    "D1": {
+     "status": "PASS",
+     "evidence": "Rule lines applied (prereg): LBA-P1 '`tau_b(F1[refs1_randk](DETAILED), F1[complete](DETAILED))` tau_lt (tau0 0.9; with 8 models: at least 2 discordant pairs of 28 (no ties))'; tau_lt: 'PASS if ci95_hi < tau0; FAIL if point >= tau0; else INCONCLUSIVE'; tau0 = 0.9. The verdict function is built by parsing these rule strings, not typed. cv295: tau_b point -0.286, 95% CI [-0.571, 0.000], 8 models; ci95_hi 0.000 < tau0 -> PASS (output: PASS). uv231en: tau_b point -0.857, 95% CI [-0.929, -0.500]; ci95_hi -0.500 < tau0 -> PASS (output: PASS). KM does not bite (kept models: 8 of 8 on both sets; LBA-P1 is NOT_EVALUABLE only below 6). Mismatches with the output: []."
+    },
+    "D2": {
+     "status": "PASS",
+     "evidence": "Rule lines applied: LBA-P2 'per model m, compound of `slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)` sign_gt_0, `slope[complete](PAIR_m) - slope[refs_all](PAIR_m)` sign_gt_0 and `slope[complete](PAIR_m)` sign_gt_0; per set models_compound'; sign_gt_0: 'PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE'; compound: 'FAIL if any part is FAIL; else NOT_EVALUABLE if any part is NOT_EVALUABLE; else PASS if every part is PASS; else INCONCLUSIVE'; models_compound: 'over the models evaluable on the set: FAIL if any model is FAIL; PASS if every model is PASS; else INCONCLUSIVE; NOT_EVALUABLE if fewer than half of the registered models are evaluable'. All 48 part verdicts (models x 3 parts x 2 sets), the 16 per-model compounds and the 2 set verdicts were recomputed from the stored point and CI: mismatches with the output = 0. cv295 per-model compounds: llava15_7b PASS, llava_ov_7b INCONCLUSIVE, qwen25vl_3b PASS, qwen25vl_7b PASS, qwen3vl_8b FAIL, internvl3_8b PASS, idefics3_8b INCONCLUSIVE, smolvlm2_2b PASS -> models_compound FAIL (8 of 8 evaluable; both readings of the NOT_EVALUABLE clause agree: True). llava_ov_7b is INCONCLUSIVE because slope[complete](PAIR_m) = 2.724 [-3.710, 8.085] has ci95_lo <= 0 and point > 0; idefics3_8b is INCONCLUSIVE because slope[complete] - slope[refs_all] = 4.977 [-2.750, 12.690] has ci95_lo <= 0 and point > 0; the other 5 models PASS on all three parts. uv231en: all 8 models PASS -> models_compound PASS (output: PASS); cv295 set verdict FAIL (output: FAIL). Points re-derived from the output's own per-run score table (two-point slopes, scipy kendalltau-b): max |diff| over 48 part points 7.1e-15, over the 2 LBA-P1 taus 0.0e+00; every pair's M differ (min |ln M ratio| 0.328), so no slope is undefined."
+    },
+    "D3": {
+     "status": "PASS",
+     "evidence": "Kill rules applied: KA1 'fires when LBA-P1 is FAIL on cv295'; KA2 'fires when LBA-P2 is FAIL on cv295 or uv231en'; KM 'a model has a run missing or excluded by KD on a set -> the model leaves every analysis of that set; LBA-P1 is NOT_EVALUABLE there if fewer than 6 of the 8 models remain (fewer than 15 pairs)'; KL 'verdicts use the clean analysis set only; its size is reported'; KD 'a run whose provenance shows a model file, prompt, decoding setting, batch size or package version other than registered'; counting: 'Kill rules count FAIL only. INCONCLUSIVE is reported as inconclusive and never as support.'. KA1: LBA-P1 on cv295 is PASS -> does not fire (output False). KA2: LBA-P2 on cv295 is FAIL -> fires; failing models {'cv295': ['qwen3vl_8b'], 'uv231en': []} (output True, {'cv295': ['qwen3vl_8b'], 'uv231en': []}). KM: no model leaves either set. KL: analysis sets {'cv295': 291, 'uv231en': 231} (cv295 291 of 295; uv231en 231 of 231). KD: no exclusions. Main's reading is confirmed."
+    },
+    "D4": {
+     "status": "PASS",
+     "evidence": "qwen3vl_8b on cv295 fails on part 3, slope[complete](PAIR_m): point -1.124, 95% CI [-11.522, 6.618]. The rule is sign_gt_0 = 'PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE': ci95_lo is not > 0 and the point is <= 0, so the part is FAIL through the 'point <= 0' clause. The CI contains 0 (ci95_hi = 6.618 > 0), so this is NOT a significant negative slope: the interval also contains positive slopes (up to 6.618). 'compound' ('FAIL if any part is FAIL') makes the model FAIL, 'models_compound' ('FAIL if any model is FAIL') makes cv295 FAIL and KA2 fires; per the prereg's 'counting' rule kill rules count FAIL only, so the firing is mechanical. Its other parts: slope[refs_all] - slope[refs1_randk] = 21.157 [15.330, 26.848] PASS; slope[complete] - slope[refs_all] = 5.355 [-2.588, 13.321] INCONCLUSIVE. Sensitivity on all 295 images (registered without verdicts): slope[complete] -1.962 [-12.967, 6.499], the same sign, so the point-estimate FAIL does not come from the 4-image KL restriction. Wording for the paper: 'the point estimate is <= 0 (CI includes 0)', never 'significantly negative'."
+    },
+    "E1": {
+     "status": "PASS",
+     "evidence": "Extra, not requested (CC-039 R4-R6: the English caption path has no committed reference value): I re-derived every statistic from the raw frozen captions with my own code (scoring, registered random subsets default_rng(1), image bootstrap default_rng(0) x 1000, tau-b, two-point slopes, percentile CIs), sharing only the registered matcher (score_coco_probe.en_classes, load_synonyms) and the CJK language guard. Against the scorer's numbers: max |diff| LBA-P1 point/CI 0.0e+00/0.0e+00; LBA-P2 point/CI 3.2e-14/4.1e-14 (worst 4.1e-14, float rounding); descriptive P/R/F1/M points and CIs over 16 runs x 7 golds per set: 0.0e+00 / 0.0e+00. My verdicts (rule text) match the output in all cells (mismatches: 0); my analysis-set sizes are 291 and 231 (output 291, 231). cv295 images dropped by KL come from empty or CJK captions in detailed_en runs: {'lbA_llava_ov_7b_cv295-detailed_en': 2, 'lbA_qwen25vl_7b_cv295-detailed_en': 2, 'lbA_qwen3vl_8b_cv295-detailed_en': 3} (image counts per run); none on uv231en. My qwen3vl_8b cv295 slope[complete]: -1.124 [-11.522, 6.618] FAIL."
+    },
+    "E2": {
+     "status": "PASS",
+     "evidence": "R7 exact-match share (descriptive): G2-B's hub_id maps to qwen3vl_8b; the 4 G2-B GREEDY_EN decodes (cv295 and uv231 x short_en/detailed_en, T0) hash to the sha256 in g2b_score.json outputs_sha256 and have the same image ids as the A-N2 runs. qwen3vl_8b_cv295-short_en vs g2b_q3_cv295-short_en-T0: 0.7051 (n 295; output 0.7051, equal True); qwen3vl_8b_cv295-detailed_en vs g2b_q3_cv295-detailed_en-T0: 0.0644 (n 295; output 0.0644, equal True); qwen3vl_8b_uv231en-short_en vs g2b_q3_uv231-short_en-T0: 0.6970 (n 231; output 0.6970, equal True); qwen3vl_8b_uv231en-detailed_en vs g2b_q3_uv231-detailed_en-T0: 0.0649 (n 231; output 0.0649, equal True). g2b_score.json is committed in 47de6b6, before the run (B3)."
+    }
+   },
+   "overall": "VERIFIED",
+   "required_fix": "None.",
+   "notes_for_writer": [
+    "Reporting constraint (prereg section 9): A-N2 verdicts are registered SECONDARY, body only (never abstract or conclusions); every cv295 verdict must say that CV295 lies inside COCO-2500 (replication with new models on discovery images, not an image-out-of-sample test); uv231en results carry the exposure label 'COCO train2014 images; exposure during pre-training possible'. KA2 consequence: Paper A reports C2 as not holding for every public LVLM, names qwen3vl_8b, and does not write 'replicates across models'.",
+    "Disclose in the body (registered descriptive item): hit_max share is 1.0 (every detailed_en caption ran to the 160-token limit) for ['idefics3_8b', 'qwen3vl_8b'] on both sets. No effect on any verdict is inferred here: the share is the same for qwen3vl_8b on uv231en, where its slope[complete] verdict is PASS, and for idefics3_8b on both sets, where its slope[complete] verdicts are PASS (cv295) and PASS (uv231en).",
+    "parity_slice0 (slice 0 decoded at the registered batch size and at batch size 1) is not all-identical in 23 of 32 runs; the prereg records it with no gate, so it is not a KD condition, but it shows batch-size sensitivity of greedy bf16/fp16 decodes.",
+    "This record does not re-verify the scorer's design choices already ruled in CC-039 (R1-R7); it checks that the scorer as committed ran on the registered inputs and that its numbers and verdicts reproduce, also from an independent implementation."
+   ]
+  }
+ ],
+ "verdicts_recomputed": {
+  "LBA-P1": {
+   "cv295": {
+    "point": -0.2857142857142857,
+    "ci95": [
+     -0.5714285714285714,
+     0.0
+    ],
+    "verdict": "PASS",
+    "verdict_in_output": "PASS"
+   },
+   "uv231en": {
+    "point": -0.8571428571428571,
+    "ci95": [
+     -0.9285714285714286,
+     -0.5
+    ],
+    "verdict": "PASS",
+    "verdict_in_output": "PASS"
+   }
+  },
+  "LBA-P2": {
+   "cv295": {
+    "set_verdict": "FAIL",
+    "set_verdict_in_output": "FAIL",
+    "models": {
+     "llava15_7b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 13.732048954740623,
+        "ci95": [
+         11.154019045915636,
+         16.336306007807096
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 20.725850819132702,
+        "ci95": [
+         16.404002597042393,
+         25.053601034721922
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 4.487288014269237,
+        "ci95": [
+         0.5976282264242525,
+         8.252683586912877
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "llava_ov_7b": {
+      "verdict": "INCONCLUSIVE",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 18.97590857709471,
+        "ci95": [
+         14.763031171709452,
+         23.807380521233274
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 15.291384430443863,
+        "ci95": [
+         8.368509918648858,
+         21.77885308317558
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 2.7236384881310904,
+        "ci95": [
+         -3.7104457610074033,
+         8.0851722113988
+        ],
+        "verdict": "INCONCLUSIVE"
+       }
+      ]
+     },
+     "qwen25vl_3b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 20.039077647530892,
+        "ci95": [
+         16.177861318011363,
+         23.978654997970736
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 16.631049616590655,
+        "ci95": [
+         10.475514241291767,
+         22.786136676580245
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 10.439446014757685,
+        "ci95": [
+         5.769582406222264,
+         15.098934253722309
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "qwen25vl_7b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 20.107141279965678,
+        "ci95": [
+         16.757175764769077,
+         23.604726590905173
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 9.830199364976345,
+        "ci95": [
+         5.309310503814206,
+         14.520023525243277
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 10.123646378480084,
+        "ci95": [
+         5.59799699951046,
+         14.253977010707752
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "qwen3vl_8b": {
+      "verdict": "FAIL",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 21.157281156763652,
+        "ci95": [
+         15.329692657640749,
+         26.848234440858505
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 5.354939322413848,
+        "ci95": [
+         -2.587846327790881,
+         13.320793266818415
+        ],
+        "verdict": "INCONCLUSIVE"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": -1.123778094531302,
+        "ci95": [
+         -11.522487239181793,
+         6.618142740490225
+        ],
+        "verdict": "FAIL"
+       }
+      ]
+     },
+     "internvl3_8b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 19.802233441375414,
+        "ci95": [
+         16.182921551955207,
+         23.504514052848283
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 19.918857581647238,
+        "ci95": [
+         13.92135440941732,
+         25.847501601896436
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 10.21710898301679,
+        "ci95": [
+         5.269649901441335,
+         14.658626586039652
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "idefics3_8b": {
+      "verdict": "INCONCLUSIVE",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 20.673320697887178,
+        "ci95": [
+         16.00856069195159,
+         25.403802342624825
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 4.977307686308254,
+        "ci95": [
+         -2.750085876839888,
+         12.689718166050445
+        ],
+        "verdict": "INCONCLUSIVE"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 15.02348479604997,
+        "ci95": [
+         6.989353249388349,
+         22.314745237010797
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "smolvlm2_2b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 20.342657627301673,
+        "ci95": [
+         15.750565591337914,
+         24.74394497365436
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 18.907375267844497,
+        "ci95": [
+         12.555111846442577,
+         26.2039977995379
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 14.708461473036259,
+        "ci95": [
+         8.847092423785737,
+         20.824768775302044
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     }
+    }
+   },
+   "uv231en": {
+    "set_verdict": "PASS",
+    "set_verdict_in_output": "PASS",
+    "models": {
+     "llava15_7b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 20.856424904659214,
+        "ci95": [
+         17.612641626609562,
+         24.039287408180282
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 33.90715379773203,
+        "ci95": [
+         29.182795268137188,
+         39.06100423400295
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 33.71997623806495,
+        "ci95": [
+         31.06520462872932,
+         36.418808038969296
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "llava_ov_7b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 33.65983182688227,
+        "ci95": [
+         30.216778184816754,
+         37.267435843352665
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 19.841179516555336,
+        "ci95": [
+         15.111338449345826,
+         25.43801435078002
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 37.88091687401952,
+        "ci95": [
+         35.17560964494013,
+         40.69082092140212
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "qwen25vl_3b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 26.670870699228225,
+        "ci95": [
+         22.482616377454125,
+         30.480522982480817
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 26.93877748306008,
+        "ci95": [
+         20.77865851943263,
+         33.3227902851008
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 35.085277872660185,
+        "ci95": [
+         31.63880384661659,
+         37.982386769239014
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "qwen25vl_7b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 29.50260832886508,
+        "ci95": [
+         26.00291365347297,
+         33.107390875591214
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 16.5459679044438,
+        "ci95": [
+         12.062060205865595,
+         21.267135911126687
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 35.61096487398239,
+        "ci95": [
+         32.66948490352012,
+         38.55989202237887
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "qwen3vl_8b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 37.22241501130657,
+        "ci95": [
+         32.746934535399916,
+         42.19658576800924
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 15.713325605205362,
+        "ci95": [
+         9.601525194756647,
+         22.602679126615847
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 32.92688389428493,
+        "ci95": [
+         28.257801380093735,
+         36.80911503797006
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "internvl3_8b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 26.42869469076173,
+        "ci95": [
+         22.729562244188056,
+         30.08355746045422
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 29.103853251259395,
+        "ci95": [
+         23.72013340832351,
+         34.72445272565548
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 34.39399412966498,
+        "ci95": [
+         31.080919274344037,
+         37.35896605143878
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "idefics3_8b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 28.278150669889936,
+        "ci95": [
+         23.777159605396328,
+         32.854304761068974
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 15.124561314317283,
+        "ci95": [
+         8.7050992339156,
+         21.236827215285036
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 39.377359454845866,
+        "ci95": [
+         35.9570782969629,
+         42.77978705304655
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     },
+     "smolvlm2_2b": {
+      "verdict": "PASS",
+      "parts": [
+       {
+        "stat": "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+        "point": 31.28290943196928,
+        "ci95": [
+         26.852700610965748,
+         35.86456885268752
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+        "point": 21.397145664414513,
+        "ci95": [
+         14.942405984634984,
+         28.289482927891775
+        ],
+        "verdict": "PASS"
+       },
+       {
+        "stat": "slope[complete](PAIR_m)",
+        "point": 37.76907141866483,
+        "ci95": [
+         34.138158078600654,
+         41.03803570210341
+        ],
+        "verdict": "PASS"
+       }
+      ]
+     }
+    }
+   }
+  },
+  "kill_rules": {
+   "KA1_fires": false,
+   "KA2_fires": true,
+   "KA2_failing_models": {
+    "cv295": [
+     "qwen3vl_8b"
+    ],
+    "uv231en": []
+   },
+   "KM_models_left": {
+    "cv295": [],
+    "uv231en": []
+   },
+   "KL_analysis_set_n": {
+    "cv295": 291,
+    "uv231en": 231
+   },
+   "KD_exclusions": {}
+  },
+  "mismatches_with_output": []
+ },
+ "rerun": {
+  "command": "env -i HOME=$HOME PATH=/usr/bin:/bin LANG=C.UTF-8 OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 PYTHONDONTWRITEBYTECODE=1 nice -n 15 python3 -E -P -X importtime scripts/lb/score_a_n2.py run <verifier scratch>/a_n2_run.json --gate manuscript/prereg/2026-10-19_a_n2_record/a_n2_gate.json --outputs .session_backup/2026-10-20/a_n2_run/outputs --g2b-results data/results/g2b/g2b_score.json --g2b-outputs .session_backup/2026-10-20/g2b_score/outputs",
+  "head": [
+   "1c153fa5e4d8d7fbfcf5de753037d6111fec6a89",
+   "1c153fa5e4d8d7fbfcf5de753037d6111fec6a89"
+  ],
+  "start": "2026-10-19T20:14:09.860Z",
+  "end": "2026-10-19T20:14:45.934Z",
+  "rc": 0,
+  "env": {
+   "python": "3.12.3",
+   "numpy": "2.5.2",
+   "scipy": "1.18.1"
+  },
+  "main_run": {
+   "head_claimed": "1c153fa",
+   "start": "2026-10-19T20:05:47.100Z",
+   "end": "2026-10-19T20:06:19.737Z",
+   "rc": 0
+  },
+  "comparison": {
+   "bytes_identical": true,
+   "sha256_main": "1f6ce422e0163d81661bf5711787086b2f11ae177f3dbc6b06ae6cd4ebc3dfdc",
+   "sha256_verifier": "1f6ce422e0163d81661bf5711787086b2f11ae177f3dbc6b06ae6cd4ebc3dfdc",
+   "stdout_identical": true,
+   "time_fields_excluded": [],
+   "key_set_differences": [],
+   "value_differences": [],
+   "result": "PASS"
+  }
+ },
+ "method": {
+  "scripts": [
+   "<verifier scratch>/check_ab.py (sha256 f268511face85b0f)",
+   "<verifier scratch>/check_d.py (sha256 9df0d41c9ae8913d)",
+   "<verifier scratch>/check_e.py (sha256 9a725b240367ac7f)",
+   "<verifier scratch>/make_record.py (sha256 1ced798c20af300b)",
+   "one env -i re-run of the committed scorer"
+  ],
+  "network": "none",
+  "task_agent_scripts_run": "none",
+  "tracked_files_modified": "none; git status --porcelain identical before and after the re-run; no commit, push, stash or checkout"
+ }
+}
