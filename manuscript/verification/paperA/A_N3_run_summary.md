@@ -1,0 +1,4 @@
+# A-N3 run (main, 88a6616): VERIFIED (PASS)
+- Re-run equals main's data/results/a_n3/a_n3_run.json (sha 7a5a614d20680ba8..) in canonical form (CC-038b): 0 value / 0 key-set differences over 294 leaves; bytes identical: False; key order differs only at ['inputs_sha256']; time fields removed: [].
+- Outcome NOT_SUPPORTED (recomputed NOT_SUPPORTED; E 9736 records, 2415 images of 13997): AN3-P1 FAIL (0.0570 [0.0428, 0.0708] PASS; -0.0211 [-0.0435, 0.0023] FAIL); AN3-P2 INCONCLUSIVE (0.0492 [0.0330, 0.0641] PASS; 0.0099 [-0.0022, 0.0227] INCONCLUSIVE).
+- Reading 4 NOT_TRIGGERED (0 NOT_EVALUABLE part(s) in AN3-P1; outcome NOT_SUPPORTED). Reading 8 PASS: overlap_cv295 70 / overlap_coco2500 577 records under descriptive, no verdict key, nested in data; no 'nested' label in the run JSON (writer binding; drafts mentioning A-N3: 0).

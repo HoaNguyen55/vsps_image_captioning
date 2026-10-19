@@ -1,0 +1,336 @@
+{
+ "task": "A-N3-VERIFY",
+ "verifier": "Claude A-verifier",
+ "written_utc": "2026-10-19T10:08:45.632768+00:00",
+ "result": "PASS",
+ "overall": "VERIFIED",
+ "rerun": {
+  "command": "OMP_NUM_THREADS=2 nice -n 19 python3 -E -P scripts/an3/score_an3.py run .session_backup/2026-10-19/verify_a_n3/a_n3_run_verify.json --gate manuscript/prereg/2026-10-19_a_n3_record/a_n3_gate.json",
+  "head": [
+   "88a6616ed7eadc29bbac7bf7a840f45c0bbdd8a6",
+   "88a6616ed7eadc29bbac7bf7a840f45c0bbdd8a6"
+  ],
+  "start": "2026-10-19T09:54:33.517Z",
+  "end": "2026-10-19T09:55:20.188Z",
+  "rc": 0,
+  "env": {
+   "python": "3.12.3",
+   "numpy": "2.5.2",
+   "scipy": "1.18.1"
+  },
+  "settings": "main's command and interpreter flags; nice 19 instead of 15 (scheduling only)"
+ },
+ "main_run": {
+  "command": "OMP_NUM_THREADS=2 nice -n 15 python3 -E -P scripts/an3/score_an3.py run data/results/a_n3/a_n3_run.json --gate manuscript/prereg/2026-10-19_a_n3_record/a_n3_gate.json",
+  "head_claimed": "88a6616",
+  "start": "2026-10-19T09:51:34.998Z",
+  "end": "2026-10-19T09:52:32.458Z",
+  "rc": 0
+ },
+ "comparison": {
+  "rule": "CC-038b",
+  "canonical_equal": true,
+  "canonical_sha256": [
+   "6366a742fa50cb9b33173f905ec2766acab37afe5631eebd8be2415bf73820d2",
+   "6366a742fa50cb9b33173f905ec2766acab37afe5631eebd8be2415bf73820d2"
+  ],
+  "bytes_identical": false,
+  "sha256_main": "7a5a614d20680ba825ef0920c92a016a954fd1a85786a448ac2a0967ed8aea1d",
+  "sha256_verifier": "7352677b315b884e6bcad0805627910d900214dd4ae12dc91679aefa504620e4",
+  "n_leaves": [
+   294,
+   294
+  ],
+  "inputs_sha256_entries": [
+   45,
+   45
+  ],
+  "time_fields_excluded": [],
+  "key_set_differences": [],
+  "value_differences": [],
+  "key_order_differs_at": [
+   "inputs_sha256"
+  ],
+  "result": "PASS"
+ },
+ "verdicts_recomputed": {
+  "parts": [
+   {
+    "key": "predictions.AN3-P1.parts[0]",
+    "part": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)",
+    "point": 0.05700042186657939,
+    "ci95": [
+     0.04282446725052737,
+     0.07078226851545023
+    ],
+    "verdict": "PASS",
+    "verdict_recomputed": "PASS",
+    "part_text_equals_prereg": true,
+    "point_equals_tau_b_difference": true
+   },
+   {
+    "key": "predictions.AN3-P1.parts[1]",
+    "part": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)",
+    "point": -0.02108513948276458,
+    "ci95": [
+     -0.04345657807954133,
+     0.0022708669930419935
+    ],
+    "verdict": "FAIL",
+    "verdict_recomputed": "FAIL",
+    "part_text_equals_prereg": true,
+    "point_equals_tau_b_difference": true
+   },
+   {
+    "key": "predictions.AN3-P2.parts[0]",
+    "part": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)",
+    "point": 0.04921892852623727,
+    "ci95": [
+     0.032999780855919106,
+     0.06406059169002926
+    ],
+    "verdict": "PASS",
+    "verdict_recomputed": "PASS",
+    "part_text_equals_prereg": true,
+    "point_equals_tau_b_difference": true
+   },
+   {
+    "key": "predictions.AN3-P2.parts[1]",
+    "part": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)",
+    "point": 0.00993171285888006,
+    "ci95": [
+     -0.002232434223516108,
+     0.02273233011022727
+    ],
+    "verdict": "INCONCLUSIVE",
+    "verdict_recomputed": "INCONCLUSIVE",
+    "part_text_equals_prereg": true,
+    "point_equals_tau_b_difference": true
+   }
+  ],
+  "compounds": {
+   "AN3-P1": {
+    "role": "primary",
+    "verdict": "FAIL",
+    "verdict_recomputed": "FAIL"
+   },
+   "AN3-P2": {
+    "role": "secondary",
+    "verdict": "INCONCLUSIVE",
+    "verdict_recomputed": "INCONCLUSIVE"
+   }
+  },
+  "testable": true,
+  "outcome": "NOT_SUPPORTED",
+  "outcome_recomputed": "NOT_SUPPORTED",
+  "outcome_in_registered_order": true,
+  "status": "PASS"
+ },
+ "provenance": {
+  "A2_D1_pins": {
+   "scripts/an3/score_an3.py": {
+    "want": "99af29e2",
+    "ok": true
+   },
+   "manuscript/prereg/2026-10-19_a_n3_record/a_n3_gate.json": {
+    "want": "ea79ab7c",
+    "ok": true
+   },
+   "data/results/a_n3/a_n3_run.json": {
+    "want": "7a5a614d",
+    "ok": true
+   }
+  },
+  "A3_json_mtime_le_times_mtime": true,
+  "A3_host_minus_wsl_seconds": {
+   "main": 5.846,
+   "verifier": 6.05
+  },
+  "A4_tracked_in_git": false,
+  "C3_commits_before_run_start": {
+   "9f4097f": {
+    "committed": "2026-10-19T13:17:27+07:00",
+    "ok": true
+   },
+   "88a6616": {
+    "committed": "2026-10-19T16:49:23+07:00",
+    "ok": true
+   }
+  }
+ },
+ "reporting_checks": {
+  "R1_reading4_not_evaluable_next_to_mixed": {
+   "status": "NOT_TRIGGERED",
+   "not_evaluable_primary_parts": [],
+   "outcome": "NOT_SUPPORTED",
+   "evidence": "0 NOT_EVALUABLE part(s) in AN3-P1; outcome NOT_SUPPORTED"
+  },
+  "R2_reading8_nested_descriptive": {
+   "status": "PASS",
+   "keys": [
+    "descriptive.subsets.overlap_cv295",
+    "descriptive.subsets.overlap_coco2500"
+   ],
+   "records": {
+    "cv295": 70,
+    "coco2500": 577
+   },
+   "verdict_key_present": false,
+   "cv295_subset_of_coco2500_images": true,
+   "image_counts": {
+    "cv295": 295,
+    "coco2500": 2500
+   },
+   "ci95_null_parts": {
+    "cv295": 4,
+    "coco2500": 0
+   },
+   "nested_label_in_run_json": false,
+   "drafts_mentioning_a_n3": [],
+   "evidence": "both subsets sit under descriptive with no verdict key; CV295 images within COCO-2500 and its records within; the run JSON carries no 'nested' label, so the label is the writer's binding"
+  },
+  "R3_verdicts_follow_prereg_md_50_60": {
+   "status": "PASS",
+   "evidence": "sign_gt_0 and compound per part from point and ci95; outcome_rule order"
+  }
+ },
+ "numbers": [
+  {
+   "name": "outcome",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "outcome",
+   "value": "NOT_SUPPORTED"
+  },
+  {
+   "name": "n analysis_records",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "n.analysis_records",
+   "value": 13997
+  },
+  {
+   "name": "n E0_records",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "n.E0_records",
+   "value": 13914
+  },
+  {
+   "name": "n E_records",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "n.E_records",
+   "value": 9736
+  },
+  {
+   "name": "n E_images",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "n.E_images",
+   "value": 2415
+  },
+  {
+   "name": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP) point",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P1.parts[0].point",
+   "value": 0.05700042186657939
+  },
+  {
+   "name": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP) ci95",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P1.parts[0].ci95",
+   "value": [
+    0.04282446725052737,
+    0.07078226851545023
+   ]
+  },
+  {
+   "name": "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP) verdict",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P1.parts[0].verdict",
+   "value": "PASS"
+  },
+  {
+   "name": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP) point",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P1.parts[1].point",
+   "value": -0.02108513948276458
+  },
+  {
+   "name": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP) ci95",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P1.parts[1].ci95",
+   "value": [
+    -0.04345657807954133,
+    0.0022708669930419935
+   ]
+  },
+  {
+   "name": "tau_b(P@complete, HP) - tau_b(P@all_refs, HP) verdict",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P1.parts[1].verdict",
+   "value": "FAIL"
+  },
+  {
+   "name": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP) point",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P2.parts[0].point",
+   "value": 0.04921892852623727
+  },
+  {
+   "name": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP) ci95",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P2.parts[0].ci95",
+   "value": [
+    0.032999780855919106,
+    0.06406059169002926
+   ]
+  },
+  {
+   "name": "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP) verdict",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P2.parts[0].verdict",
+   "value": "PASS"
+  },
+  {
+   "name": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP) point",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P2.parts[1].point",
+   "value": 0.00993171285888006
+  },
+  {
+   "name": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP) ci95",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P2.parts[1].ci95",
+   "value": [
+    -0.002232434223516108,
+    0.02273233011022727
+   ]
+  },
+  {
+   "name": "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP) verdict",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P2.parts[1].verdict",
+   "value": "INCONCLUSIVE"
+  },
+  {
+   "name": "AN3-P1 compound",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P1.verdict",
+   "value": "FAIL"
+  },
+  {
+   "name": "AN3-P2 compound",
+   "source": "data/results/a_n3/a_n3_run.json",
+   "key": "predictions.AN3-P2.verdict",
+   "value": "INCONCLUSIVE"
+  }
+ ],
+ "sources_sha256": {
+  "data/results/a_n3/a_n3_run.json": "7a5a614d20680ba825ef0920c92a016a954fd1a85786a448ac2a0967ed8aea1d",
+  ".session_backup/2026-10-19/verify_a_n3/a_n3_run_verify.json": "7352677b315b884e6bcad0805627910d900214dd4ae12dc91679aefa504620e4",
+  "scripts/an3/score_an3.py": "99af29e2d11407d46afead3cf093e1be99d58725e254f917b7fad337550e477a",
+  "manuscript/prereg/2026-10-19_a_n3_record/a_n3_gate.json": "ea79ab7c3e506265d584cb9b617b0a035505c411f4a50eef1fd29b0d014204d6",
+  "manuscript/prereg/2026-10-19_a_n3_criterion_mhaldetect.md": "da3714d1b378fca843a36fe5c64840f86dd5305e5230627f8d03b363fe512f21",
+  "manuscript/prereg/2026-10-19_a_n3_criterion_mhaldetect.json": "d862cde5eadf50003a7f27685df43f6792b25797cc26e6b9ddbc14f79c1ca4ff",
+  "data/an3/mhaldetect_overlap.json": "fd97a3b0259b8f1463afa180eebdc93ab5fce7373e58fd51c1eb0fa33a157a32",
+  ".session_backup/2026-10-13/decisions/CC-038.txt": "5b519906c414394c299883f36160f71f02369343872ecd4a6934ec64b7b6906d",
+  ".session_backup/2026-10-13/decisions/CC-038b.txt": "3534f4fb95f7c699b6363413209a34a79b83f7d1e754eb064dbc95c8cb3e9a55"
+ }
+}
