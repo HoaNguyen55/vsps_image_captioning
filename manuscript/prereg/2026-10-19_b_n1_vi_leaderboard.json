@@ -1,0 +1,1290 @@
+{
+ "prereg_id": "2026-10-19_b_n1_vi_leaderboard",
+ "statement": "DRAFT (task LB, 2026-10-19): not registered until the gatekeeper commits it before any output of its runs",
+ "title": "B-N1, a protocol-card leaderboard of public VLMs on Vietnamese benchmarks (Paper B)",
+ "schema": "vsps.lb_prereg.v1",
+ "built_utc": "2026-10-19T03:12:44Z",
+ "git_head_at_build": "cbed6dbc88b80ee0dc92f5891d82af0ce7772060",
+ "venv": {
+  "packages": {
+   "torch": "2.5.1+cu121",
+   "torchvision": "0.20.1+cu121",
+   "transformers": "4.57.6",
+   "accelerate": "1.15.0"
+  },
+  "add_only": {
+   "num2words": "0.5.14"
+  },
+  "how": "a copy of the G2-B venv (/root/venv-qwen3vl) as /root/venv-lb plus num2words 0.5.14, which SmolVLMProcessor needs; nothing else in the venv changes (PD-17 J5); package versions and the pip freeze sha256 are recorded in EVENTS before queueing",
+  "source": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json :: model.venv.packages; hf_api/pypi_num2words.json :: info.version"
+ },
+ "models": {
+  "qwen25vl_3b": {
+   "hub_id": "Qwen/Qwen2.5-VL-3B-Instruct",
+   "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+   "licence": "qwen-research",
+   "gated": false,
+   "params": 3754622976,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 8,
+   "processor_kwargs": {
+    "min_pixels": 262144,
+    "max_pixels": 1048576
+   },
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "732bd68bc5427d1fb6c06a59b3bf2456b2155d24"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "0ae1866f05ab0153ad293bdc92bb1b842c4d95b1"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "1dfafa23e24b68b694722c6211e7da36730e9917"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+    },
+    "model-00001-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "41a8895c164b4d32bae6b302f4603fcbc1797f32dafa45c7e9bcda23c6755df8"
+    },
+    "model-00002-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "365531ff8752420e89dee707b79d021fb2d6e25abafe486f080555a4fe6972e4"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "7a3ec4f48662e38593f8cab48fe12a4f28003aba"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "7f3b746825e5eef53ed8ed57a91df9e86ee62c0a"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "443909a61d429dff23010e5bddd28ff530edda00"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "91684ea3dc135a7d815e2c932054ce88c1aab41f"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+   },
+   "weights_gb_on_disk": 7.51,
+   "weights_gb_loaded": 7.51,
+   "chat_template_file": "chat_template.json",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": true,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen2.5-7B-Instruct.md ('Vietnamese')",
+   "source": {
+    "info": "hf_api/Qwen__Qwen2.5-VL-3B-Instruct.info.json",
+    "info_sha256": "595e127ac0af48def2af445a47375e970ac48a5d01af467ba27c8b3fd6234c89",
+    "tree": "hf_api/Qwen__Qwen2.5-VL-3B-Instruct.tree.json",
+    "tree_sha256": "96fe2dd92d557c09ae2a1cd050a09d22093f010f61b01e24fa54d4ccee9ee671"
+   }
+  },
+  "qwen25vl_7b": {
+   "hub_id": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 8292166656,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 4,
+   "processor_kwargs": {
+    "min_pixels": 262144,
+    "max_pixels": 1048576
+   },
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "732bd68bc5427d1fb6c06a59b3bf2456b2155d24"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "58ee12a9fb3d8708a1e41e49cb9aa5ac5017b6a6"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "1088c9865dbf2e8152485664bb07495e89a14efb"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+    },
+    "model-00001-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "e97b877e47fde53a6c6e77aafb36e58e91ee9d95c4a3eeac6f1b5c0e6a1c986e"
+    },
+    "model-00002-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "a9a300a43b4724eee2abe7c18ceb26768d0ab011eb0cad19d9bfd2476a24d024"
+    },
+    "model-00003-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "111223d173e00bbee81cba1216fad28668df3476706b7fd26f4d5b50f8b3a507"
+    },
+    "model-00004-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "ef47f634fa57d46ee134edcc09f34085a47da1e16c12a2abe0d67118be6d72ed"
+    },
+    "model-00005-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "0c859795ad3a627a9b95bcb762e059d5b768a4a36fdd4affeff269d93fdecc67"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "f0c9e9b8e043f5de0ac99fd8b2ea75515d811e7b"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "7f3b746825e5eef53ed8ed57a91df9e86ee62c0a"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "443909a61d429dff23010e5bddd28ff530edda00"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "91684ea3dc135a7d815e2c932054ce88c1aab41f"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+   },
+   "weights_gb_on_disk": 16.58,
+   "weights_gb_loaded": 16.58,
+   "chat_template_file": "chat_template.json",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": true,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen2.5-7B-Instruct.md ('Vietnamese')",
+   "source": {
+    "info": "hf_api/Qwen__Qwen2.5-VL-7B-Instruct.info.json",
+    "info_sha256": "e14a77ff74900ec45e3eb3a533607713d187b3c2ba2adc3b003d564a370c889d",
+    "tree": "hf_api/Qwen__Qwen2.5-VL-7B-Instruct.tree.json",
+    "tree_sha256": "dc9fb97fe125df9628c35f9cd7eb812aaa187e0b81a19f03c2631c97f67f95dd"
+   }
+  },
+  "qwen3vl_8b": {
+   "hub_id": "Qwen/Qwen3-VL-8B-Instruct",
+   "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 8767123696,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 4,
+   "processor_kwargs": {
+    "min_pixels": 262144,
+    "max_pixels": 1048576
+   },
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "1081bacf1af7c7c6de4a585ce02cd0fd34e382da"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "0e2df614c5fe1ad2b6b540c8625bebf2d7ec43ca"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "e116347d7ef42621c7a5957f82c015c38d939c1f"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "d5d0aef0eb170fc7453a296c43c0849a56f510555d3588e4fd662bb35490aefa"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "8be88fb5501e4d5719a6d4cc212e6a13480330e74f3e8c77daa1a68f199106b5"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "83de00eafe6e0d57ccd009dbcf71c9974d74df2f016c27afb7e95aafd16b2192"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "0a88b98e9f96270973f567e6a2c103ede6ccdf915ca3075e21c755604d0377a5"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "5857ec62530eb589b1876034dd5386f1d98131a6"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "c6cc1014128b19d1fc46b1d30a23e3b1d35db421"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "d3d3763207692c78780f4bf42d4dadf49a5c8012"
+    },
+    "video_preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+   },
+   "weights_gb_on_disk": 17.53,
+   "weights_gb_loaded": 17.53,
+   "chat_template_file": "chat_template.json",
+   "card_languages": null,
+   "vietnamese_documented": true,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen3-8B.md ('100+ languages')",
+   "source": {
+    "info": "hf_api/Qwen__Qwen3-VL-8B-Instruct.info.json",
+    "info_sha256": "dfd342867284b9ea787f1bc9377bdfdb3cb667298cadb33d46948a3cd8348563",
+    "tree": "hf_api/Qwen__Qwen3-VL-8B-Instruct.tree.json",
+    "tree_sha256": "13901b0c2702f46e541fae48f20309fb5b2413a74326eed4eb1f963a60b6d623"
+   }
+  },
+  "internvl3_8b": {
+   "hub_id": "OpenGVLab/InternVL3-8B-hf",
+   "revision": "259a3b64a14623c0ec91a045cb43f7c5af5fa6af",
+   "licence": "qwen",
+   "gated": false,
+   "params": 7944373760,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "processor_kwargs": {},
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "0a9f9d06987f6742b9b7400602993942f6e420b8"
+    },
+    "chat_template.jinja": {
+     "kind": "git_blob",
+     "hash": "0b19f45e0cd40b10374f24065639b0c2eee18a22"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "7c8a0ff0332c77c2e1f0531948cb856eb79f1c7c"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "ca5b455bc4e6053fd7d790c2bc01b7f9dd312154"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "7a34fa2f58c41aa1e6dbf28e9f4e43be590fb6077d33e4befe54a8413db03641"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "11a0e1a80e29b9451771e03b9b2da118cfd8da0912631b6de0d4e1137f63dffc"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "8b578604029b9046396b61bf4ae223e0e85c9e89e138da067505bc6f7f9de921"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "6814f162cc1ca061db92cb8808c7202876d8c1a56a0e7e856db12b21cba23a28"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "3874f5938bc915748d19c439e4b9fa3186f8d716"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "a7b376e0a83f26eaa784db792ef61be7aac5494f"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "e543bcb3b7550029f450d28cf138706d7f9a5ef5"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "253d50d9027f558bd5478163a49ccd263fc27959"
+    },
+    "tokenizer.json": {
+     "kind": "sha256",
+     "hash": "7cc80b7e20adf8bf6f6ca442bf1abfac8056bb3b7d3e0b11c9d497d3e79398c9"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "2f1a515133aa18a5f828c497aba8b7e81056b3b0"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+   },
+   "weights_gb_on_disk": 15.89,
+   "weights_gb_loaded": 15.89,
+   "chat_template_file": "chat_template.jinja",
+   "card_languages": [
+    "multilingual"
+   ],
+   "vietnamese_documented": true,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen2.5-7B-Instruct.md ('Vietnamese')",
+   "source": {
+    "info": "hf_api/OpenGVLab__InternVL3-8B-hf.info.json",
+    "info_sha256": "6ac5308f0ac2d37edaab5b9a81e4d14600eef6133965b1bf3e90bc000234fd18",
+    "tree": "hf_api/OpenGVLab__InternVL3-8B-hf.tree.json",
+    "tree_sha256": "c9e4264bd505d6a353b1aa6d9dba145f099fa0c212d400a7f23dd514e6d579cd"
+   }
+  }
+ },
+ "model_list": "frozen in the commit of this file (PD-17 J5)",
+ "decoder": {
+  "path": "scripts/lb/decode_hf_vlm.py",
+  "draft_file": "decode_hf_vlm_v2.py",
+  "sha256": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+  "rule": "committed with this prereg; a run stops unless the decoder's own sha256 equals this pin, and the job checks it with every other pin (PD-17 (d))"
+ },
+ "decode": {
+  "prompts": {
+   "short": {
+    "text_sha256": "8870589c4a32307cbbeb68e363490007682237c0b5a3a1ee7e21cb91fce93886"
+   },
+   "detailed": {
+    "text_sha256": "0addb5dd720e4f24ac912d6fede9cb718e4051bc6944a85d9e7a92b0abb7ed08"
+   }
+  },
+  "max_new_tokens": {
+   "short": 60,
+   "detailed": 160
+  },
+  "loader": "AutoProcessor.from_pretrained(snapshot, trust_remote_code=False, **processor_kwargs); tokenizer.padding_side='left'; AutoModelForImageTextToText.from_pretrained(snapshot, trust_remote_code=False, attn_implementation, device_map={'': 'cuda:0'}, dtype)",
+  "message": "[{'role': 'user', 'content': [{'type': 'image', 'image': PIL.Image.open(path).convert('RGB')}, {'type': 'text', 'text': PROMPTS[mode]}]}], one conversation per image; processor.apply_chat_template(batch, add_generation_prompt=True, tokenize=True, return_dict=True, return_tensors='pt', padding=True), cast to the model dtype",
+  "greedy": "model.generate(**inputs, max_new_tokens=n, do_sample=False, num_beams=1); every other setting from the snapshot's generation_config.json (recorded in each output)",
+  "text": "tokens up to and including the first EOS, decoded with skip_special_tokens=True, stripped; n_tokens and hit_max (no EOS within n) recorded per image",
+  "batching": "fixed slices of the manifest order of the model's registered batch size; slice 0 is also decoded at batch size 1 and the identical-caption count is recorded (no gate)",
+  "checks": "package versions equal venv.packages (else KD); every pinned snapshot file hashes to its pin; the set manifest hashes to its pin; each image hashes to its manifest row",
+  "prompt_source": "scripts/evaluate.py PROMPTS (texts read and sha-checked by the decoder)"
+ },
+ "runs": [
+  {
+   "run_id": "lbB_qwen25vl_3b_ktvic_test-short",
+   "model": "qwen25vl_3b",
+   "dataset": "ktvic_test",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "lbB_qwen25vl_3b_ktvic_test-detailed",
+   "model": "qwen25vl_3b",
+   "dataset": "ktvic_test",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "lbB_qwen25vl_3b_uitviic_test-short",
+   "model": "qwen25vl_3b",
+   "dataset": "uitviic_test",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "lbB_qwen25vl_3b_uitviic_test-detailed",
+   "model": "qwen25vl_3b",
+   "dataset": "uitviic_test",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "lbB_qwen25vl_7b_ktvic_test-short",
+   "model": "qwen25vl_7b",
+   "dataset": "ktvic_test",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "lbB_qwen25vl_7b_ktvic_test-detailed",
+   "model": "qwen25vl_7b",
+   "dataset": "ktvic_test",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "lbB_qwen25vl_7b_uitviic_test-short",
+   "model": "qwen25vl_7b",
+   "dataset": "uitviic_test",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "lbB_qwen25vl_7b_uitviic_test-detailed",
+   "model": "qwen25vl_7b",
+   "dataset": "uitviic_test",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "lbB_qwen3vl_8b_ktvic_test-short",
+   "model": "qwen3vl_8b",
+   "dataset": "ktvic_test",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "lbB_qwen3vl_8b_ktvic_test-detailed",
+   "model": "qwen3vl_8b",
+   "dataset": "ktvic_test",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "lbB_qwen3vl_8b_uitviic_test-short",
+   "model": "qwen3vl_8b",
+   "dataset": "uitviic_test",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "lbB_qwen3vl_8b_uitviic_test-detailed",
+   "model": "qwen3vl_8b",
+   "dataset": "uitviic_test",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "lbB_internvl3_8b_ktvic_test-short",
+   "model": "internvl3_8b",
+   "dataset": "ktvic_test",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "lbB_internvl3_8b_ktvic_test-detailed",
+   "model": "internvl3_8b",
+   "dataset": "ktvic_test",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "lbB_internvl3_8b_uitviic_test-short",
+   "model": "internvl3_8b",
+   "dataset": "uitviic_test",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "lbB_internvl3_8b_uitviic_test-detailed",
+   "model": "internvl3_8b",
+   "dataset": "uitviic_test",
+   "prompt_mode": "detailed"
+  }
+ ],
+ "design_constants": {
+  "tau0": {
+   "value": 0.9,
+   "why": "IR convention for equivalent system rankings (Voorhees, SIGIR 2001; Buckley & Voorhees, SIGIR 2004 use it for incomplete judgments); chosen before any LB output; citation to be checked in bib v4 (A-N6)"
+  },
+  "n_boot": {
+   "value": 1000,
+   "source": "manuscript/research_r10/G2/REPORT.txt",
+   "line": 184,
+   "quote": "B = 1000, draws shared within an image set"
+  },
+  "ci_percentiles": [
+   2.5,
+   97.5
+  ],
+  "bootstrap": "1000 image-bootstrap draws per analysis set: numpy.random.default_rng(0).multinomial(N, [1/N]*N, size=1000) over the set's images in id order, shared by every system, gold and family of the analysis (paired). 95% CI = percentiles 2.5 and 97.5 of the replicates."
+ },
+ "status_rules": {
+  "D-W13-6": "REGISTERED only if the commit of this file precedes the first output of any run listed here; LOCALLY_FROZEN (sha-matching file on disk before, commit after) is EXPLORATORY in claims with the times disclosed; POST_HOC if written at or after an output; EXPLORATORY without a prereg.",
+  "here": "DRAFT v2 (revised per PD-17): nothing is registered until the gatekeeper commits this pair together with the decoder and the set manifests, and that commit precedes the first decode; the paper cites that commit; the job checks every pin (tracked, equal to HEAD, sha256)."
+ },
+ "absence_check": {
+  "utc": "2026-10-19T03:12:44Z",
+  "scanned": [
+   "data/results",
+   ".session_backup/machines"
+  ],
+  "found": []
+ },
+ "cost": {
+  "anchor": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md line '56_multiref_s42': eval of KTVIC test, short + detailed, Qwen2.5-VL-7B = 0.7 h -> 2.26 s per caption (batch-1 harness, upper bound); models <= 5B params at half that (planning assumption)",
+  "gpu_h_by_model": {
+   "qwen25vl_3b": 0.49,
+   "qwen25vl_7b": 0.99,
+   "qwen3vl_8b": 0.99,
+   "internvl3_8b": 0.99
+  },
+  "gpu_h_total": 3.46,
+  "disk_gb": 57.5,
+  "network": "snapshots are fetched at the pinned revision, pinned files only"
+ },
+ "datasets": {
+  "ktvic_test": {
+   "manifest": {
+    "path": "data/lb/sets/ktvic_test.tsv",
+    "sha256": "456243c0cfc82b0c3cc4ad52c694e11b4d9702f3ca14cd8103c3a82cd74a90eb"
+   },
+   "n_images": 558,
+   "image_dir": "ktvic/images",
+   "split": {
+    "rule": "leaked = a KTVIC test image with a matched copy in the UIT-OpenViIC TRAIN split (data/ktvic_openviic_refs.json _pairs.test, split field; ids only); clean = the rest",
+    "leaked": {
+     "path": "data/lb/splits/ktvic_test_openviic_train_leaked.txt",
+     "n": 401,
+     "sha256": "56e57ea468e48b692ed704ab4655f53cb878309bc3953cfb8dfd57b56590380f"
+    },
+    "clean": {
+     "path": "data/lb/splits/ktvic_test_openviic_train_clean.txt",
+     "n": 157,
+     "sha256": "4832c16b4499a70b5b6d5c3967a22f551283b45b3a885ba011301b6a4e90015e"
+    },
+    "checks": {
+     "count_equals": "_provenance.summary.per_split.test.matched_openviic_train_copy = 401",
+     "same_set_as_viclip_ot_rule_sscd_ge_0.8": true
+    },
+    "panel": {
+     "path": "data/ktvic_openviic_refs.json",
+     "sha256": "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d",
+     "in_git": false
+    },
+    "deriving_script": {
+     "path": ".session_backup/2026-10-19/LB_leaderboards/build_lb_v2.py",
+     "sha256": "e7ac1054964e2d7cc629ce40b9db5a0fe0e44ffbe27c94d819e010f7266a02fe",
+     "function": "ktvic_split"
+    },
+    "eight_gram_scan": {
+     "scanner": ".session_backup/2026-10-14/r11_litmaps/openviic_leak_scan.py",
+     "scanner_sha256": "3c56217ec71d6856a5f51f79ffe899a4056f1318d606ff77515b19229789138b",
+     "scanned": 2,
+     "flagged": 0,
+     "summary": "openviic 8-grams 611387; not in KTVIC refs 608386"
+    },
+    "provenance_file": "data/lb/splits/ktvic_test_openviic_train_lists_v2.provenance.json",
+    "commit": "the two ID-only lists and their provenance file are committed with this prereg (PD-17 J6)"
+   }
+  },
+  "uitviic_test": {
+   "manifest": {
+    "path": "data/lb/sets/uitviic_test.tsv",
+    "sha256": "dbadc28724d7a07b599325cd996084934d76e6c4c6a885e64e8de333d6a6665b"
+   },
+   "n_images": 231,
+   "image_dir": "uitviic/images"
+  }
+ },
+ "inclusion_rule": "a public VLM enters B-N1 if its card lists 'vi', or the card of its language model names Vietnamese or claims >= 100 languages (fixed before any output); sources in models.*.vietnamese_source",
+ "replacement_rule": {
+  "rule": "PD-17 J5, written before any decode and applied at drafting time: a candidate replaces Gemma-3 only if it is ungated, HF-native (no remote code; its class ships with transformers 4.57.6), Vietnamese documented (the inclusion rule), pinned to a revision with per-file hashes, and its licence is recorded; candidates are the fixed list of the LB brief and the gap analysis, checked in order",
+  "pool": [
+   "llava-hf/llava-1.5-7b-hf",
+   "llava-hf/llava-1.5-13b-hf",
+   "llava-hf/llava-onevision-qwen2-7b-ov-hf",
+   "HuggingFaceM4/Idefics3-8B-Llama3",
+   "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+   "openbmb/MiniCPM-V-2_6",
+   "5CD-AI/Vintern-1B-v3_5",
+   "Vi-VLM/Vistral-V-7B"
+  ],
+  "applied": [
+   {
+    "repo": "llava-hf/llava-1.5-7b-hf",
+    "revision": "b234b804b114d9e37bb655e11cbbb5f5e971b7a9",
+    "licence": "llama2",
+    "ungated": true,
+    "hf_native": true,
+    "vietnamese_documented": false,
+    "pinned_per_file": true,
+    "licence_recorded": true,
+    "first_failure": "vietnamese_documented",
+    "source": "hf_api/llava-hf__llava-1.5-7b-hf.info.json"
+   },
+   {
+    "repo": "llava-hf/llava-1.5-13b-hf",
+    "revision": "5dda2880bda009266dda7c4baff660b95ca64540",
+    "licence": "llama2",
+    "ungated": true,
+    "hf_native": true,
+    "vietnamese_documented": false,
+    "pinned_per_file": false,
+    "licence_recorded": true,
+    "first_failure": "vietnamese_documented",
+    "source": "hf_api/llava-hf__llava-1.5-13b-hf.info.json"
+   },
+   {
+    "repo": "llava-hf/llava-onevision-qwen2-7b-ov-hf",
+    "revision": "0d50680527681998e456c7b78950205bedd8a068",
+    "licence": "apache-2.0",
+    "ungated": true,
+    "hf_native": true,
+    "vietnamese_documented": false,
+    "pinned_per_file": true,
+    "licence_recorded": true,
+    "first_failure": "vietnamese_documented",
+    "source": "hf_api/llava-hf__llava-onevision-qwen2-7b-ov-hf.info.json"
+   },
+   {
+    "repo": "HuggingFaceM4/Idefics3-8B-Llama3",
+    "revision": "fddb4ff79181e55a994674777e06cd5456ce3dc3",
+    "licence": "apache-2.0",
+    "ungated": true,
+    "hf_native": true,
+    "vietnamese_documented": false,
+    "pinned_per_file": true,
+    "licence_recorded": true,
+    "first_failure": "vietnamese_documented",
+    "source": "hf_api/HuggingFaceM4__Idefics3-8B-Llama3.info.json"
+   },
+   {
+    "repo": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+    "revision": "482adb537c021c86670beed01cd58990d01e72e4",
+    "licence": "apache-2.0",
+    "ungated": true,
+    "hf_native": true,
+    "vietnamese_documented": false,
+    "pinned_per_file": true,
+    "licence_recorded": true,
+    "first_failure": "vietnamese_documented",
+    "source": "hf_api/HuggingFaceTB__SmolVLM2-2.2B-Instruct.info.json"
+   },
+   {
+    "repo": "openbmb/MiniCPM-V-2_6",
+    "revision": "6c04d9e3022bcff6e6738dfb1fc19a5cfd2a855f",
+    "licence": null,
+    "ungated": false,
+    "hf_native": false,
+    "vietnamese_documented": false,
+    "pinned_per_file": false,
+    "licence_recorded": false,
+    "first_failure": "ungated",
+    "source": "hf_api/openbmb__MiniCPM-V-2_6.info.json"
+   },
+   {
+    "repo": "5CD-AI/Vintern-1B-v3_5",
+    "revision": "b98f263eab246eb5269ade64edbdca8a887dc44d",
+    "licence": "mit",
+    "ungated": true,
+    "hf_native": false,
+    "vietnamese_documented": true,
+    "pinned_per_file": true,
+    "licence_recorded": true,
+    "first_failure": "hf_native",
+    "source": "hf_api/5CD-AI__Vintern-1B-v3_5.info.json"
+   },
+   {
+    "repo": "Vi-VLM/Vistral-V-7B",
+    "revision": "6c8313eb59048d33799a651a8d9437ee376f92b9",
+    "licence": "apache-2.0",
+    "ungated": false,
+    "hf_native": false,
+    "vietnamese_documented": true,
+    "pinned_per_file": true,
+    "licence_recorded": true,
+    "first_failure": "ungated",
+    "source": "hf_api/Vi-VLM__Vistral-V-7B.info.json"
+   }
+  ],
+  "result": "no candidate qualifies, so B-N1 runs with 4 models and the 4-model tau0 applies"
+ },
+ "reference_rows": {
+  "what": "our fine-tuned systems, existing outputs: reference rows only; they enter no verdict and no tau (PD-17 (c))",
+  "files": [
+   {
+    "path": "data/results/p1_s43-short.preds.json",
+    "sha256": "819b48ef577bec6bc4d1c2d77c3ed93f8f9bb60cf197c7a5482e5af8e502a89c",
+    "role": "reference row",
+    "git": "81c97c4 2026-10-12T12:04:50+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/results/p1_s43-detailed.preds.json",
+    "sha256": "25fdd846d20da6e5fa42e9f7be4084fd4470aa9b7bc144fb22665f1005a76d82",
+    "role": "reference row",
+    "git": "81c97c4 2026-10-12T12:04:50+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/results/fuse2_s42-short.preds.json",
+    "sha256": "8c659897383489710598f4890aa6cbc3e242e9ede271f4d8a59f47ee85dc446b",
+    "role": "reference row",
+    "git": "29c5ee7 2026-10-12T00:22:13+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/results/fuse2_s42-detailed.preds.json",
+    "sha256": "348b822b057a6c0990bec81586bdac9a544bc22db35941a2ccfa5cf17d27cd24",
+    "role": "reference row",
+    "git": "29c5ee7 2026-10-12T00:22:13+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/results/uitviic/uitviic_p1_s43-short.preds.json",
+    "sha256": "42ad49eebac92c8167721f629d4bbed75b284ac7efaa941482c4235611610d22",
+    "role": "reference row",
+    "git": "685580c 2026-10-13T08:54:54+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/results/uitviic/uitviic_p1_s43-detailed.preds.json",
+    "sha256": "46cb0033cb222222b957a6e06d8269117819f1b8628c8ea0a2565a831b4e1196",
+    "role": "reference row",
+    "git": "685580c 2026-10-13T08:54:54+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/results/uitviic/uitviic_fuse2_s42-short.preds.json",
+    "sha256": "42122e7ada5a04ba512543f05a02a8aac077f16b3d9b2cb93de67733d68b7142",
+    "role": "reference row",
+    "git": "685580c 2026-10-13T08:54:54+07:00",
+    "working_tree": "equals HEAD"
+   },
+   {
+    "path": "data/results/uitviic/uitviic_fuse2_s42-detailed.preds.json",
+    "sha256": "82f34b94cf50e788f3bfb6d024141f2fc211c1bd311813748784030148b5670e",
+    "role": "reference row",
+    "git": "685580c 2026-10-13T08:54:54+07:00",
+    "working_tree": "equals HEAD"
+   }
+  ]
+ },
+ "scoring": {
+  "cider": "scripts/evaluate.py (committed protocol-card scorer): RDRSegmenter word level, CIDEr-D x100 (rescap.metrics.CaptionMetrics), NCS_DATASET in {ktvic, uitviic}, predictions as {image_id: caption}; the segmenter name it records must not be a whitespace fallback",
+  "fix": "the punctuation fix: strip trailing whitespace and the characters . ! ? ... (U+2026) from the end of every candidate AND every reference before segmentation (Paper B Section 3.3, 'final period stripped'), then the same scorer; as written = the committed scorer unchanged",
+  "per_image": "per-image CIDEr-D from one scorer call per set, system and variant (IDF from the full set's references); bootstrap replicates are means of per-image scores over the shared draws",
+  "objects": "object P/R/F1 as scripts/object_prf.py's KTVIC convention (unique classes, reference-derived gold, exact matches): matcher v1 = rescap.chair.objects_in with RESCAP_RAW_TONE=1, v2 = the tone-normalised default; both sets",
+  "sets_for_verdicts": "LBB-P1 and LBB-P2 use the FULL KTVIC test set (558 images); both are also reported on the clean 157 as a sensitivity analysis that changes no verdict, because the models' training data is unknown (PD-17 (b))",
+  "language_guard": "share of captions failing rescap.vlm.mock.looks_vietnamese or matching CJK_RE, per run; verdicts use full sets (evaluate.py refuses subset scoring); clean-intersection values are a sensitivity analysis",
+  "evaluator": "written after this registration, committed through the gatekeeper before any output is scored"
+ },
+ "verdict_rules": {
+  "sign_gt_0": "PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE",
+  "compound": "FAIL if any part is FAIL; else NOT_EVALUABLE if any part is NOT_EVALUABLE; else PASS if every part is PASS; else INCONCLUSIVE",
+  "counting": "Kill rules count FAIL only. INCONCLUSIVE is reported as inconclusive and never as support. Earlier preregistrations scored sign and ordering claims on point estimates; 'not FAIL' here is that criterion, so the outcomes can be compared.",
+  "multiplicity": "No correction; every prediction is reported separately, per dataset, with its CI.",
+  "tau_lt": "PASS if ci95_hi < tau0; FAIL if point >= tau0; else INCONCLUSIVE",
+  "tau_ge": "PASS if ci95_lo >= tau0; FAIL if point < tau0; else INCONCLUSIVE",
+  "tau_b": "Kendall tau-b between two vectors of per-model point estimates (ties handled as in tau-b); the CI comes from the same statistic on every shared bootstrap draw (both rankings recomputed on each draw)"
+ },
+ "predictions": [
+  {
+   "id": "LBB-P1",
+   "tier": "primary",
+   "sets": [
+    "ktvic_test"
+   ],
+   "claim": "the punctuation fix changes the zero-shot CIDEr-D ranking on KTVIC test (short prompt)",
+   "rule": "`tau_b(CIDEr_as_written(ZS), CIDEr_fix(ZS))` on the full KTVIC test set, tau_lt (tau0 1: at least 1 discordant pair of 6 (no ties)); ZS = the B-N1 zero-shot models",
+   "tau0": 1.0,
+   "source": "Paper B Section 3.3 (KTVIC references carry no final period)"
+  },
+  {
+   "id": "LBB-P2",
+   "tier": "primary",
+   "sets": [
+    "ktvic_test",
+    "uitviic_test"
+   ],
+   "claim": "under the fix, KTVIC test and UIT-ViIC test rank the zero-shot systems equivalently (short prompt)",
+   "rule": "`tau_b(CIDEr_fix(ZS) on the full ktvic_test, CIDEr_fix(ZS) on uitviic_test)` tau_ge (tau0 0.6: at most 1 discordant pair of 6 (no ties))",
+   "tau0": 0.6,
+   "why_tau0": "departs from the 0.9 convention cited for LBA-P1: with n = 4 (or 5) one discordant pair is the smallest possible disagreement, so tau0 lets exactly one swapped pair count as agreement (PD-17 J7); the bootstrap-CI rule stays, and with so few systems INCONCLUSIVE is a likely and honest outcome",
+   "source": "gap analysis B-N1"
+  },
+  {
+   "id": "LBB-P3",
+   "tier": "secondary",
+   "sets": [
+    "ktvic_test",
+    "uitviic_test"
+   ],
+   "claim": "the fix raises cross-benchmark agreement",
+   "rule": "`tau_b(fix) - tau_b(as written)` (the LBB-P2 statistic minus its as-written twin) sign_gt_0",
+   "source": "Paper B Section 3.3 recommendation"
+  },
+  {
+   "id": "LBB-D1",
+   "tier": "descriptive",
+   "sets": [
+    "ktvic_test"
+   ],
+   "claim": "leaked minus clean gap per model and reference row: CIDEr-D (both variants), object F1 (v1, v2)",
+   "rule": "reported with CIs from bootstrap draws within each part, no verdict",
+   "source": "B-N1 brief; B-G2"
+  },
+  {
+   "id": "LBB-S1",
+   "tier": "sensitivity",
+   "sets": [
+    "ktvic_test"
+   ],
+   "claim": "LBB-P1 and LBB-P2 recomputed on the clean 157 KTVIC test images",
+   "rule": "reported with CIs; changes no verdict (the models' training data is unknown)",
+   "source": "PD-17 (b)"
+  },
+  {
+   "id": "LBB-D2",
+   "tier": "descriptive",
+   "sets": [
+    "ktvic_test",
+    "uitviic_test"
+   ],
+   "claim": "the leaderboard: CIDEr-D (both variants), BLEU-4, ROUGE-L, object P/R/F1 (v1, v2), end-punctuation rate, length, language-guard share, hit_max share, parity, both prompts",
+   "rule": "reported, no verdict; reference rows shown beside, outside every tau",
+   "source": "B-N1; protocol card"
+  }
+ ],
+ "kill_rules": [
+  {
+   "id": "KB1",
+   "when": "LBB-P1 is FAIL",
+   "then": "Paper B does not claim that the fix re-ranks public zero-shot systems; it reports the shifts only"
+  },
+  {
+   "id": "KB2",
+   "when": "LBB-P2 is FAIL",
+   "then": "Paper B does not claim that KTVIC rankings transfer to UIT-ViIC; it reports the discordant pairs"
+  },
+  {
+   "id": "KM",
+   "when": "a model has a run missing or excluded by KD on a set",
+   "then": "the model leaves every tau on that set; a tau with fewer than 4 models is NOT_EVALUABLE"
+  },
+  {
+   "id": "KD",
+   "when": "a run whose provenance differs from this registration (model file, prompt, decoding, batch size, package version)",
+   "then": "the run does not test this registration"
+  }
+ ],
+ "reporting": [
+  "Every verdict is quoted as computed, with the protocol card (segmenter, CIDEr-D, x100, punctuation variant).",
+  "Exposure labels: KTVIC leaked/clean by OpenViIC train copy; UIT-ViIC test = COCO train2014 images. The training data of the public models are not verified by this registration.",
+  "B-N1 belongs to Paper B, and its claims follow KB1 and KB2 (PD-17 (e)); Paper A cites none of its numbers.",
+  "PD-6 (c) note for Paper B: Paper A's G2-B uses the same model (Qwen3-VL-8B) on the same UIT-ViIC test images (UV231) with a different statistic (verbosity slopes under gold levels), so no number is primary in both papers."
+ ],
+ "overlap": [
+  "UIT-ViIC test images are also Paper A images (G2-B in Vietnamese; A-N2 in English). B-N1 decodes its own Qwen3-VL runs; they use the same prompts, new-token limits and pixel bounds as G2-B's *-short-T0 and *-detailed-T0 UV231 runs, at another batch size, and no G2-B output is read (PD-17 J3).",
+  "XM600 is dropped: XM3600 belongs to Paper A (PD-6; PD-17 J3)."
+ ],
+ "departures": [
+  "XM3600-vi (gap analysis B-N1) is dropped (PD-17 J3).",
+  "Gemma-3-4b-it is dropped (gated: no tokens or credentials on rented machines, PD-17 J5); the replacement rule found no qualifying model, so B-N1 has 4 models.",
+  "Vintern-1B-v3.5 is left out for scope: one HF-native decoder for every model, so that every model runs through the same audited code path (PD-17 J4). Vistral-V-7B is not HF-native and is gated.",
+  "LLaVA-OneVision-7B, LLaVA-1.5-7B, Idefics3-8B and SmolVLM2-2.2B fail the inclusion rule.",
+  "Qwen2.5-VL-7B is decoded again with this harness; the existing zero-shot outputs (older harness) stay Paper B's backbone baseline, and their exact-match share with the new decodes is reported."
+ ],
+ "author_saw": [
+  "Paper B Sections 3 and 5 (punctuation audit, transfer table), the overlap file's summary counts (ids only), the r10 leakage counts, PD-17. No B-N1 output exists (absence_check); no caption of any public model on these sets was opened for this draft."
+ ],
+ "rulings": [
+  "J3: XM600 dropped; B-N1 decodes its own Qwen3-VL runs; PD-6 (c) note in Section 9.",
+  "J4: Vintern-1B-v3.5 excluded for scope (one audited HF-native decoder), disclosed in Section 11.",
+  "J5: num2words added, nothing else changes; Gemma-3 dropped; replacement rule applied: none qualifies, 4 models.",
+  "J6: ID-only lists committed; panel sha256 4eb02cc4, deriving script sha256 e7ac1054, counts 401/157, 8-gram scan: 0 of 2 files flagged.",
+  "J7: LBB-P2 tau0 = 0.6 with 4 models (at most 1 discordant pair of 6 (no ties)); bootstrap-CI rules kept.",
+  "(b) full KTVIC test set for LBB-P1/P2, clean set as sensitivity; (c) reference rows outside every verdict and tau; (d) decoder pinned with the prereg; (e) Paper B, KB1/KB2.",
+  "GPU plan: B-N1 runs on M2 after G2-B and S2; check disk space before prefetching."
+ ],
+ "gpu_plan": "M2, after G2-B and S2 (PD-17)",
+ "frozen_files": [
+  {
+   "path": "manuscript/GAP_ANALYSIS_Q1Q2_2026-10-19.md",
+   "sha256": "0a71aa436a10b74b3d7ed5151c7cc705ad1eca9986e41199c3f9d5de778d6845",
+   "role": "source plan (section 3)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "manuscript/paperA_plan/AGENT_RULES.md",
+   "sha256": "9109261d247270c4d8306a116a72ce14157eed5b891b4eda3eb558f033470f99",
+   "role": "agent rules",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-10.txt",
+   "sha256": "4d4122659d9d9c20f0f3d441a803ea2edb87ad2dba078be7f2c3faabce80f2cd",
+   "role": "binding 3 (overlap wording); confirmation map",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-15.txt",
+   "sha256": "81d94e742d4e120e0eb1e9ca6fac11b371135b07f89cdaf293ef38c2c1be7dd3",
+   "role": "C1 NOT-TESTABLE",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-16.txt",
+   "sha256": "06eedc3385ee1279fc2859d0a3213147a092712c6554c916422cd5fa5e7eb403",
+   "role": "registration route; preregs before any decode",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-17.txt",
+   "sha256": "62c69969c405baa8a2367000d1e217fb2e42aa9703274df03670a365cbd35948",
+   "role": "rulings on the LB drafts (J1, J3-J7, (a)-(e))",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/CC-027.txt",
+   "sha256": "a00da9db5e19d756647b3397ba95a0a511b1a0b07a456e5efddbee1c9db9c386",
+   "role": "G2-B outputs unread until scoring",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json",
+   "sha256": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+   "role": "format; prompts; new tokens; venv; constants",
+   "git": "0932ba1 2026-10-19T01:31:57+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.md",
+   "sha256": "2e6b3e87114478f7664a02b3c1b04eaca8dc7a24337dc1ce0293dbc4a0d2608b",
+   "role": "format template",
+   "git": "0932ba1 2026-10-19T01:31:57+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "scripts/queue/jobs/m2_07_g2b_qwen3vl_ladder.sh",
+   "sha256": "c3ded1997e00ae0d0dc4c92fd5733a93c2b84166188c27dc42ea944c61a44446",
+   "role": "job format",
+   "git": "f942714 2026-10-19T03:11:56+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+   "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+   "role": "cost anchor",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/decode_hf_vlm_v2.py",
+   "sha256": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+   "role": "the decoder (draft v2; committed as scripts/lb/decode_hf_vlm.py)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "scripts/g2b/decode_qwen3vl.py",
+   "sha256": "8a855ef483c933621776099b6f9de3b60c4fbfaaf706bb40c74e7d84d9dfb5e5",
+   "role": "prompt_text, sha256_file, utc (imported unchanged)",
+   "git": "f942714 2026-10-19T03:11:56+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "scripts/evaluate.py",
+   "sha256": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+   "role": "PROMPTS; protocol-card scorer",
+   "git": "d4de7b0 2026-10-12T19:24:19+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "rescap/vlm/base.py",
+   "sha256": "e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93",
+   "role": "dtype_kwarg",
+   "git": "1f30d09 2026-08-30T10:06:13+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "scripts/clean_supervision.py",
+   "sha256": "01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231",
+   "role": "CJK_RE (language guard)",
+   "git": "93070e1 2026-10-10T13:48:37+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/uv231_images.sha256",
+   "sha256": "17545f03a29a592f611625eb0dd4957132ce44ddefbdad9db642cc78fcd378d4",
+   "role": "UIT-ViIC test image hashes (G2-B --check-inputs on M2)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/sets/uitviic_test.tsv",
+   "sha256": "dbadc28724d7a07b599325cd996084934d76e6c4c6a885e64e8de333d6a6665b",
+   "role": "UIT-ViIC test manifest (draft; data/lb/sets/)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "data/datasets/uitviic/test_data.json",
+   "sha256": "54abc0fb068ad1108d7d57b21328d4d68bcf8f41aa168f80ec7c275fb4ac8214",
+   "role": "UIT-ViIC test ids, files, Vietnamese references",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/fetch_log.json",
+   "sha256": "3fec7086e4322b9a87dbd205e3ed0ff9b57c02592d55b5eb7659fbd6f2a5deee",
+   "role": "fetch record",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/llava-hf__llava-1.5-7b-hf.info.json",
+   "sha256": "2aae954650cade9d8d6049b8579c2b7ce63883623a340899cef0d1e849931b98",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/llava-hf__llava-1.5-7b-hf.tree.json",
+   "sha256": "5894b5e041c6f6565eac35af3c837141a1da608f960ca7b7f0192f3184b6eabc",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/llava-hf__llava-onevision-qwen2-7b-ov-hf.info.json",
+   "sha256": "180be64ccbe1bf557c2bf2fbeda7c31de38aeb93e74cdd8529e66be07309889f",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/llava-hf__llava-onevision-qwen2-7b-ov-hf.tree.json",
+   "sha256": "91fec816d5fadbfe18716386c29f8e762026048d8cbc87299a2c3aa6a11bcc9f",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen2.5-VL-3B-Instruct.info.json",
+   "sha256": "595e127ac0af48def2af445a47375e970ac48a5d01af467ba27c8b3fd6234c89",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen2.5-VL-3B-Instruct.tree.json",
+   "sha256": "96fe2dd92d557c09ae2a1cd050a09d22093f010f61b01e24fa54d4ccee9ee671",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen2.5-VL-7B-Instruct.info.json",
+   "sha256": "e14a77ff74900ec45e3eb3a533607713d187b3c2ba2adc3b003d564a370c889d",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen2.5-VL-7B-Instruct.tree.json",
+   "sha256": "dc9fb97fe125df9628c35f9cd7eb812aaa187e0b81a19f03c2631c97f67f95dd",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen3-VL-8B-Instruct.info.json",
+   "sha256": "dfd342867284b9ea787f1bc9377bdfdb3cb667298cadb33d46948a3cd8348563",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen3-VL-8B-Instruct.tree.json",
+   "sha256": "13901b0c2702f46e541fae48f20309fb5b2413a74326eed4eb1f963a60b6d623",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/OpenGVLab__InternVL3-8B-hf.info.json",
+   "sha256": "6ac5308f0ac2d37edaab5b9a81e4d14600eef6133965b1bf3e90bc000234fd18",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/OpenGVLab__InternVL3-8B-hf.tree.json",
+   "sha256": "c9e4264bd505d6a353b1aa6d9dba145f099fa0c212d400a7f23dd514e6d579cd",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/HuggingFaceM4__Idefics3-8B-Llama3.info.json",
+   "sha256": "429c06cbf10728ab71be88d3533abe8242edde839ba6365a593327ba672befd1",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/HuggingFaceM4__Idefics3-8B-Llama3.tree.json",
+   "sha256": "61b33af5dfe4d7f351b52231f2d2cfa59d2c905fb8c47e00f931da68cf61795b",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/HuggingFaceTB__SmolVLM2-2.2B-Instruct.info.json",
+   "sha256": "8e2e30701e7c625bdfd1e530648341ec2e6fd0ab1c8455a2e3bf9e13eca9afaf",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/HuggingFaceTB__SmolVLM2-2.2B-Instruct.tree.json",
+   "sha256": "92848655b3609167165ef0b31c89bbaac86d39ab46780b753f2d54744e6d25b3",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/build_lb_v2.py",
+   "sha256": "e7ac1054964e2d7cc629ce40b9db5a0fe0e44ffbe27c94d819e010f7266a02fe",
+   "role": "builder (v2)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "rescap/chair.py",
+   "sha256": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+   "role": "objects_in: matchers v1 (raw tone) and v2",
+   "git": "a0accb5 2026-10-14T06:47:37+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "scripts/object_prf.py",
+   "sha256": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+   "role": "object P/R/F1",
+   "git": "20ea9d4 2026-10-12T19:53:25+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "rescap/vlm/mock.py",
+   "sha256": "33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7",
+   "role": "looks_vietnamese",
+   "git": "1f30d09 2026-08-30T10:06:13+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "data/datasets/ktvic/test_data.json",
+   "sha256": "cc22ec6a8883773cb23c87ad5b64925f5a53c21982117274b53621f454e7ebbf",
+   "role": "KTVIC test",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "data/ktvic_openviic_refs.json",
+   "sha256": "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d",
+   "role": "overlap panel (ids and split fields only; not in git)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-14/r11_litmaps/openviic_leak_scan.py",
+   "sha256": "3c56217ec71d6856a5f51f79ffe899a4056f1318d606ff77515b19229789138b",
+   "role": "OpenViIC 8-gram scanner (counts only)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/sets/ktvic_test.tsv",
+   "sha256": "456243c0cfc82b0c3cc4ad52c694e11b4d9702f3ca14cd8103c3a82cd74a90eb",
+   "role": "KTVIC test manifest (draft)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/splits/ktvic_test_openviic_train_lists_v2.provenance.json",
+   "sha256": "95717c89cc28c029eae3a04f8f462671e1b4a581844c74e0017af6e4d03ae3ba",
+   "role": "list provenance (draft)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/splits/ktvic_test_openviic_train_leaked.txt",
+   "sha256": "56e57ea468e48b692ed704ab4655f53cb878309bc3953cfb8dfd57b56590380f",
+   "role": "leaked ids (draft)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/splits/ktvic_test_openviic_train_clean.txt",
+   "sha256": "4832c16b4499a70b5b6d5c3967a22f551283b45b3a885ba011301b6a4e90015e",
+   "role": "clean ids (draft)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/readme_Qwen__Qwen2-7B-Instruct.md",
+   "sha256": "174c5a5d83d0f9670e0b96df86f2dddb2de5ab958f885653525b3d2c977f24b5",
+   "role": "Vietnamese documentation",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/readme_Qwen__Qwen2.5-7B-Instruct.md",
+   "sha256": "f366f33bbf6bcadbb7d87f0a21a7b65584a56b8d58b0743c77c88bee625b93a6",
+   "role": "Vietnamese documentation",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/readme_Qwen__Qwen3-8B.md",
+   "sha256": "0f36caaff9c2516411a7738db384606263ba653c1e63e61d72f511606164d5a6",
+   "role": "Vietnamese documentation",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/pypi_num2words.json",
+   "sha256": "04e1409b01edb7099c8f89c52e8e8c8446df7aef96e760985cff450ed011d228",
+   "role": "num2words version",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/llava-hf__llava-1.5-13b-hf.info.json",
+   "sha256": "a2d3a6487196b431a398d7a7b28e54fef208477c66a7bf21a3952260959c73be",
+   "role": "replacement-rule candidate",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/openbmb__MiniCPM-V-2_6.info.json",
+   "sha256": "e399dc2ad29bef68f21600ea252733773719ae8a92c8e021699164364161e320",
+   "role": "replacement-rule candidate",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/5CD-AI__Vintern-1B-v3_5.info.json",
+   "sha256": "f713d511e10a33a96196c7a6f722b7481bf749cced14904c645cbc69e248a4ef",
+   "role": "replacement-rule candidate",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Vi-VLM__Vistral-V-7B.info.json",
+   "sha256": "14b90c261fdff2db60ef1fc2ded5ede731ddb37ac4598622b830558f7c831281",
+   "role": "replacement-rule candidate",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  }
+ ]
+}

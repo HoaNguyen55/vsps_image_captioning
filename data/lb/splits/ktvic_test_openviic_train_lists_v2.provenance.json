@@ -1,0 +1,34 @@
+{
+ "n_leaked": 401,
+ "n_clean": 157,
+ "viclip_rule_same_set": true,
+ "summary_key": "_provenance.summary.per_split.test.matched_openviic_train_copy",
+ "summary_value": 401,
+ "panel": {
+  "path": "data/ktvic_openviic_refs.json",
+  "sha256": "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d",
+  "in_git": false
+ },
+ "deriving_script": {
+  "path": ".session_backup/2026-10-19/LB_leaderboards/build_lb_v2.py",
+  "sha256": "e7ac1054964e2d7cc629ce40b9db5a0fe0e44ffbe27c94d819e010f7266a02fe",
+  "function": "ktvic_split"
+ },
+ "eight_gram_scan": {
+  "scanner": ".session_backup/2026-10-14/r11_litmaps/openviic_leak_scan.py",
+  "scanner_sha256": "3c56217ec71d6856a5f51f79ffe899a4056f1318d606ff77515b19229789138b",
+  "scanned": 2,
+  "flagged": 0,
+  "summary": "openviic 8-grams 611387; not in KTVIC refs 608386"
+ },
+ "lists": {
+  "leaked": {
+   "path": "splits/ktvic_test_openviic_train_leaked.txt",
+   "sha256": "56e57ea468e48b692ed704ab4655f53cb878309bc3953cfb8dfd57b56590380f"
+  },
+  "clean": {
+   "path": "splits/ktvic_test_openviic_train_clean.txt",
+   "sha256": "4832c16b4499a70b5b6d5c3967a22f551283b45b3a885ba011301b6a4e90015e"
+  }
+ }
+}

@@ -1,0 +1,1612 @@
+{
+ "prereg_id": "2026-10-19_a_n2_lvlm_gold_ladder",
+ "statement": "DRAFT (task LB, 2026-10-19): not registered until the gatekeeper commits it before any output of its runs",
+ "title": "A-N2, a multi-LVLM leaderboard under gold completeness (Paper A Section 7)",
+ "schema": "vsps.lb_prereg.v1",
+ "built_utc": "2026-10-19T03:12:44Z",
+ "git_head_at_build": "cbed6dbc88b80ee0dc92f5891d82af0ce7772060",
+ "venv": {
+  "packages": {
+   "torch": "2.5.1+cu121",
+   "torchvision": "0.20.1+cu121",
+   "transformers": "4.57.6",
+   "accelerate": "1.15.0"
+  },
+  "add_only": {
+   "num2words": "0.5.14"
+  },
+  "how": "a copy of the G2-B venv (/root/venv-qwen3vl) as /root/venv-lb plus num2words 0.5.14, which SmolVLMProcessor needs; nothing else in the venv changes (PD-17 J5); package versions and the pip freeze sha256 are recorded in EVENTS before queueing",
+  "source": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json :: model.venv.packages; hf_api/pypi_num2words.json :: info.version"
+ },
+ "models": {
+  "llava15_7b": {
+   "hub_id": "llava-hf/llava-1.5-7b-hf",
+   "revision": "b234b804b114d9e37bb655e11cbbb5f5e971b7a9",
+   "licence": "llama2",
+   "gated": false,
+   "params": 7063427072,
+   "checkpoint_dtype": [
+    "F16"
+   ],
+   "dtype": "float16",
+   "attn_implementation": "sdpa",
+   "batch_size": 8,
+   "processor_kwargs": {},
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "4bd5222947172917d6a7770e47e797f3253c669a"
+    },
+    "chat_template.jinja": {
+     "kind": "git_blob",
+     "hash": "b432799326738da5fedb3458dfd18ccf373554de"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "c998e15e4dfb9f8559cad83653555ccd696cd7ec"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "5de92935009a2c670e07576ed411be82fd58b2ee"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "8d7eb9299fc02285ea047807e43b0688944ff6d0"
+    },
+    "model-00001-of-00003.safetensors": {
+     "kind": "sha256",
+     "hash": "c11dbf016ee7d35ee130c19b67e20eb04873996006f424b7bcbd453b6517ee66"
+    },
+    "model-00002-of-00003.safetensors": {
+     "kind": "sha256",
+     "hash": "46df6c6e5fad297fe7fbca4963dcf180cb1d0528cabc884d1f603311fed01328"
+    },
+    "model-00003-of-00003.safetensors": {
+     "kind": "sha256",
+     "hash": "4f06177c37ca13944e73b57dd6d051767b950dffc12400c700dfa2509c24c697"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "695b1d57193f2740ecab31f39297a4fd2a2ed050"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "38f4d736a2e2b34af9eaef607847407c0efc7980"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "af0ccfc7718788d1bdd1b747d6298d91ed48ffa4"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "a782b2f1cdab4d0bacb2dc0f85d02c4b1e31f0bd"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "ed9b377d211618c8274de275f3d9d64257406615"
+    },
+    "tokenizer.model": {
+     "kind": "sha256",
+     "hash": "9e556afd44213b6bd1be2b850ebbbd98f5481437a8021afaf58ee7fb1818d347"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "04d334b028b1c479e0a1152eb71348ae509bb2d5"
+    }
+   },
+   "weights_gb_on_disk": 14.13,
+   "weights_gb_loaded": 14.13,
+   "chat_template_file": "chat_template.jinja",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": false,
+   "vietnamese_source": null,
+   "source": {
+    "info": "hf_api/llava-hf__llava-1.5-7b-hf.info.json",
+    "info_sha256": "2aae954650cade9d8d6049b8579c2b7ce63883623a340899cef0d1e849931b98",
+    "tree": "hf_api/llava-hf__llava-1.5-7b-hf.tree.json",
+    "tree_sha256": "5894b5e041c6f6565eac35af3c837141a1da608f960ca7b7f0192f3184b6eabc"
+   }
+  },
+  "llava_ov_7b": {
+   "hub_id": "llava-hf/llava-onevision-qwen2-7b-ov-hf",
+   "revision": "0d50680527681998e456c7b78950205bedd8a068",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 8030807584,
+   "checkpoint_dtype": [
+    "F16"
+   ],
+   "dtype": "float16",
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "processor_kwargs": {},
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "f4d12380a35b1f8032caad7bc7a006f5d3fa759e"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "68724c68b1612e9ab2e31f84e3279099ad656ff6"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "8d521d1a36cf77226122b007ef02e1ac4ee33968"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "9f451858a72667b8ed295a9c44c14cefb99deb8f"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "ad4cb27d2a3f6e987147619cf2508a5bbb1b6b4c2d5533501fcc4a287a90e5af"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "cfaed9e4ba187283a936fd6df5d55148a6de5a8416f1279778b364232c05f39a"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "86cb0bb7f7d57873b27f16fd66b54be71055e582a48ce26e30884bfb209dffd4"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "a2d1e40e47e9b524efcbbcab68e97fe4e7aadfe9a51bc14b54cc2331c48ebff6"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "7633dacca90a226592e47853d352026bce8f90a8"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "1ff68626f165d5d9e234e1d6d293e646f7d269bf"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "7779c690fef0fe2026261c1f68eac18c57448319"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "2c53454aff27c6d22873cc28c884c2b2d5d07693"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "532b756b16b09479d11b1b5696d96d773555a053"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "56b32ac3b80eecdfd02f54f03daf1c14a3b78c84"
+    },
+    "video_preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "54bfac33b4d586990eabc014123202e3322e1f22"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+   },
+   "weights_gb_on_disk": 16.06,
+   "weights_gb_loaded": 16.06,
+   "chat_template_file": "chat_template.json",
+   "card_languages": [
+    "en",
+    "zh"
+   ],
+   "vietnamese_documented": false,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen2-7B-Instruct.md ('Vietnamese')",
+   "source": {
+    "info": "hf_api/llava-hf__llava-onevision-qwen2-7b-ov-hf.info.json",
+    "info_sha256": "180be64ccbe1bf557c2bf2fbeda7c31de38aeb93e74cdd8529e66be07309889f",
+    "tree": "hf_api/llava-hf__llava-onevision-qwen2-7b-ov-hf.tree.json",
+    "tree_sha256": "91fec816d5fadbfe18716386c29f8e762026048d8cbc87299a2c3aa6a11bcc9f"
+   }
+  },
+  "qwen25vl_3b": {
+   "hub_id": "Qwen/Qwen2.5-VL-3B-Instruct",
+   "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+   "licence": "qwen-research",
+   "gated": false,
+   "params": 3754622976,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 8,
+   "processor_kwargs": {
+    "min_pixels": 262144,
+    "max_pixels": 1048576
+   },
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "732bd68bc5427d1fb6c06a59b3bf2456b2155d24"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "0ae1866f05ab0153ad293bdc92bb1b842c4d95b1"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "1dfafa23e24b68b694722c6211e7da36730e9917"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+    },
+    "model-00001-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "41a8895c164b4d32bae6b302f4603fcbc1797f32dafa45c7e9bcda23c6755df8"
+    },
+    "model-00002-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "365531ff8752420e89dee707b79d021fb2d6e25abafe486f080555a4fe6972e4"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "7a3ec4f48662e38593f8cab48fe12a4f28003aba"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "7f3b746825e5eef53ed8ed57a91df9e86ee62c0a"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "443909a61d429dff23010e5bddd28ff530edda00"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "91684ea3dc135a7d815e2c932054ce88c1aab41f"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+   },
+   "weights_gb_on_disk": 7.51,
+   "weights_gb_loaded": 7.51,
+   "chat_template_file": "chat_template.json",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": true,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen2.5-7B-Instruct.md ('Vietnamese')",
+   "source": {
+    "info": "hf_api/Qwen__Qwen2.5-VL-3B-Instruct.info.json",
+    "info_sha256": "595e127ac0af48def2af445a47375e970ac48a5d01af467ba27c8b3fd6234c89",
+    "tree": "hf_api/Qwen__Qwen2.5-VL-3B-Instruct.tree.json",
+    "tree_sha256": "96fe2dd92d557c09ae2a1cd050a09d22093f010f61b01e24fa54d4ccee9ee671"
+   }
+  },
+  "qwen25vl_7b": {
+   "hub_id": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 8292166656,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 4,
+   "processor_kwargs": {
+    "min_pixels": 262144,
+    "max_pixels": 1048576
+   },
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "732bd68bc5427d1fb6c06a59b3bf2456b2155d24"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "58ee12a9fb3d8708a1e41e49cb9aa5ac5017b6a6"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "1088c9865dbf2e8152485664bb07495e89a14efb"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+    },
+    "model-00001-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "e97b877e47fde53a6c6e77aafb36e58e91ee9d95c4a3eeac6f1b5c0e6a1c986e"
+    },
+    "model-00002-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "a9a300a43b4724eee2abe7c18ceb26768d0ab011eb0cad19d9bfd2476a24d024"
+    },
+    "model-00003-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "111223d173e00bbee81cba1216fad28668df3476706b7fd26f4d5b50f8b3a507"
+    },
+    "model-00004-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "ef47f634fa57d46ee134edcc09f34085a47da1e16c12a2abe0d67118be6d72ed"
+    },
+    "model-00005-of-00005.safetensors": {
+     "kind": "sha256",
+     "hash": "0c859795ad3a627a9b95bcb762e059d5b768a4a36fdd4affeff269d93fdecc67"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "f0c9e9b8e043f5de0ac99fd8b2ea75515d811e7b"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "7f3b746825e5eef53ed8ed57a91df9e86ee62c0a"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "443909a61d429dff23010e5bddd28ff530edda00"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "91684ea3dc135a7d815e2c932054ce88c1aab41f"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+   },
+   "weights_gb_on_disk": 16.58,
+   "weights_gb_loaded": 16.58,
+   "chat_template_file": "chat_template.json",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": true,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen2.5-7B-Instruct.md ('Vietnamese')",
+   "source": {
+    "info": "hf_api/Qwen__Qwen2.5-VL-7B-Instruct.info.json",
+    "info_sha256": "e14a77ff74900ec45e3eb3a533607713d187b3c2ba2adc3b003d564a370c889d",
+    "tree": "hf_api/Qwen__Qwen2.5-VL-7B-Instruct.tree.json",
+    "tree_sha256": "dc9fb97fe125df9628c35f9cd7eb812aaa187e0b81a19f03c2631c97f67f95dd"
+   }
+  },
+  "qwen3vl_8b": {
+   "hub_id": "Qwen/Qwen3-VL-8B-Instruct",
+   "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 8767123696,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 4,
+   "processor_kwargs": {
+    "min_pixels": 262144,
+    "max_pixels": 1048576
+   },
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "1081bacf1af7c7c6de4a585ce02cd0fd34e382da"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "0e2df614c5fe1ad2b6b540c8625bebf2d7ec43ca"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "e116347d7ef42621c7a5957f82c015c38d939c1f"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "d5d0aef0eb170fc7453a296c43c0849a56f510555d3588e4fd662bb35490aefa"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "8be88fb5501e4d5719a6d4cc212e6a13480330e74f3e8c77daa1a68f199106b5"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "83de00eafe6e0d57ccd009dbcf71c9974d74df2f016c27afb7e95aafd16b2192"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "0a88b98e9f96270973f567e6a2c103ede6ccdf915ca3075e21c755604d0377a5"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "5857ec62530eb589b1876034dd5386f1d98131a6"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "2ea84a437d448ff71b08df68fdd949d5cc4ebb64"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "c6cc1014128b19d1fc46b1d30a23e3b1d35db421"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "d3d3763207692c78780f4bf42d4dadf49a5c8012"
+    },
+    "video_preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "3ba673a5ad7d4d13f54155ecd38b2a94a6dac8fe"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+   },
+   "weights_gb_on_disk": 17.53,
+   "weights_gb_loaded": 17.53,
+   "chat_template_file": "chat_template.json",
+   "card_languages": null,
+   "vietnamese_documented": true,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen3-8B.md ('100+ languages')",
+   "source": {
+    "info": "hf_api/Qwen__Qwen3-VL-8B-Instruct.info.json",
+    "info_sha256": "dfd342867284b9ea787f1bc9377bdfdb3cb667298cadb33d46948a3cd8348563",
+    "tree": "hf_api/Qwen__Qwen3-VL-8B-Instruct.tree.json",
+    "tree_sha256": "13901b0c2702f46e541fae48f20309fb5b2413a74326eed4eb1f963a60b6d623"
+   }
+  },
+  "internvl3_8b": {
+   "hub_id": "OpenGVLab/InternVL3-8B-hf",
+   "revision": "259a3b64a14623c0ec91a045cb43f7c5af5fa6af",
+   "licence": "qwen",
+   "gated": false,
+   "params": 7944373760,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "processor_kwargs": {},
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "0a9f9d06987f6742b9b7400602993942f6e420b8"
+    },
+    "chat_template.jinja": {
+     "kind": "git_blob",
+     "hash": "0b19f45e0cd40b10374f24065639b0c2eee18a22"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "7c8a0ff0332c77c2e1f0531948cb856eb79f1c7c"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "ca5b455bc4e6053fd7d790c2bc01b7f9dd312154"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "7a34fa2f58c41aa1e6dbf28e9f4e43be590fb6077d33e4befe54a8413db03641"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "11a0e1a80e29b9451771e03b9b2da118cfd8da0912631b6de0d4e1137f63dffc"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "8b578604029b9046396b61bf4ae223e0e85c9e89e138da067505bc6f7f9de921"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "6814f162cc1ca061db92cb8808c7202876d8c1a56a0e7e856db12b21cba23a28"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "3874f5938bc915748d19c439e4b9fa3186f8d716"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "a7b376e0a83f26eaa784db792ef61be7aac5494f"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "e543bcb3b7550029f450d28cf138706d7f9a5ef5"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "253d50d9027f558bd5478163a49ccd263fc27959"
+    },
+    "tokenizer.json": {
+     "kind": "sha256",
+     "hash": "7cc80b7e20adf8bf6f6ca442bf1abfac8056bb3b7d3e0b11c9d497d3e79398c9"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "2f1a515133aa18a5f828c497aba8b7e81056b3b0"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569"
+    }
+   },
+   "weights_gb_on_disk": 15.89,
+   "weights_gb_loaded": 15.89,
+   "chat_template_file": "chat_template.jinja",
+   "card_languages": [
+    "multilingual"
+   ],
+   "vietnamese_documented": true,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen2.5-7B-Instruct.md ('Vietnamese')",
+   "source": {
+    "info": "hf_api/OpenGVLab__InternVL3-8B-hf.info.json",
+    "info_sha256": "6ac5308f0ac2d37edaab5b9a81e4d14600eef6133965b1bf3e90bc000234fd18",
+    "tree": "hf_api/OpenGVLab__InternVL3-8B-hf.tree.json",
+    "tree_sha256": "c9e4264bd505d6a353b1aa6d9dba145f099fa0c212d400a7f23dd514e6d579cd"
+   }
+  },
+  "idefics3_8b": {
+   "hub_id": "HuggingFaceM4/Idefics3-8B-Llama3",
+   "revision": "fddb4ff79181e55a994674777e06cd5456ce3dc3",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 8462086384,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "processor_kwargs": {},
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "00911fc317ce4e0c16d2047a51298f7bfcbef244"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "85d5cab0ae3aa514a23a550e63f2f9dbef7a56be"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "de0aafa3d30b6785a14a741114ee689c6918c5fe"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "ef19d72d25d0040a591043b47be6f46cc05d208eb3f9317581577e3723f5b1fc"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "8068f285e43b7278553738613a378718de214c2a43d019be1ba81586c0cd62b4"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "532b89a16785817830280bd198d93200fd1af082dedaa2b650c3c364716cb250"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "cda6d4ab485b2cbce9dfac23bc028757af9cd75fc715d1396085393ae9768204"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "3c6ef6a31793fb7593a3bd21042a83d87ea5f34c"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "1fbf22ae5a1007e24b06ffd88f1f710a7bba2dbf"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "ce4483dcd7fdb385039cd3262aa8e58a79767fcc"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "7d56ca39148be0911c7088aac61837758259e858"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "c21236688663320a9448dbfb7d36c3c7c4c2bcba"
+    }
+   },
+   "weights_gb_on_disk": 16.92,
+   "weights_gb_loaded": 16.92,
+   "chat_template_file": "chat_template.json",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": false,
+   "vietnamese_source": null,
+   "source": {
+    "info": "hf_api/HuggingFaceM4__Idefics3-8B-Llama3.info.json",
+    "info_sha256": "429c06cbf10728ab71be88d3533abe8242edde839ba6365a593327ba672befd1",
+    "tree": "hf_api/HuggingFaceM4__Idefics3-8B-Llama3.tree.json",
+    "tree_sha256": "61b33af5dfe4d7f351b52231f2d2cfa59d2c905fb8c47e00f931da68cf61795b"
+   }
+  },
+  "smolvlm2_2b": {
+   "hub_id": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+   "revision": "482adb537c021c86670beed01cd58990d01e72e4",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 2246784880,
+   "checkpoint_dtype": [
+    "F32"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 4,
+   "processor_kwargs": {},
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "71dc811700b6aa9274d3697ee7d4fb2d5375e766"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "1d342e4f070c962a14ba4ece4e06212bc70d8e36"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "6a01472ec2a0595b85ac601a4e99efdcaa1ff108"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "eace9aa6d392fd94dbe0c90825074c53fd7ecd4a"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "69503b13f727ba3812b6803e97442a6de05ef5eb"
+    },
+    "model-00001-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "7c88a90e78f567460b2369a0369cc4dafbfda5607c9cb090b30fa4437b0282f2"
+    },
+    "model-00002-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "cf3d0958a8240f71054a6812038f2a6bfbe2e5124573a3b363f6b120c9a52657"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "9401d792de4308a3844189f61673670dc8c09349"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "9b5b2a5a98428bac8ba0257a59bc74da5d826e5c"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "093f7dbbd52805fca7e747f569d2c7906227499a"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "2b5aee28d56c0e9d89ff6bc70818fba986a90ca9"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "a4005d1cf3170a31600a5c96f95768166cbc2b28"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "d986ab355a4a4de5aa4485fdfba4625eb737928c"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "0ad5ecc2035b7031b88afb544ee95e2d49baa484"
+    }
+   },
+   "weights_gb_on_disk": 8.99,
+   "weights_gb_loaded": 4.49,
+   "chat_template_file": "chat_template.json",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": false,
+   "vietnamese_source": null,
+   "source": {
+    "info": "hf_api/HuggingFaceTB__SmolVLM2-2.2B-Instruct.info.json",
+    "info_sha256": "8e2e30701e7c625bdfd1e530648341ec2e6fd0ab1c8455a2e3bf9e13eca9afaf",
+    "tree": "hf_api/HuggingFaceTB__SmolVLM2-2.2B-Instruct.tree.json",
+    "tree_sha256": "92848655b3609167165ef0b31c89bbaac86d39ab46780b753f2d54744e6d25b3"
+   }
+  }
+ },
+ "model_list": "frozen in the commit of this file (PD-17 J5)",
+ "decoder": {
+  "path": "scripts/lb/decode_hf_vlm.py",
+  "draft_file": "decode_hf_vlm_v2.py",
+  "sha256": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+  "rule": "committed with this prereg; a run stops unless the decoder's own sha256 equals this pin, and the job checks it with every other pin (PD-17 (d))"
+ },
+ "decode": {
+  "prompts": {
+   "short_en": {
+    "text_sha256": "0cdbdf77fae4c04bdf4cd626a9eaf9adec5ef0411aac5d816f6c916a69604893"
+   },
+   "detailed_en": {
+    "text_sha256": "525a4e1bf5849e2c38e44cadceed724f66167ac95e621764c384865574913c4a"
+   }
+  },
+  "max_new_tokens": {
+   "short_en": 60,
+   "detailed_en": 160
+  },
+  "loader": "AutoProcessor.from_pretrained(snapshot, trust_remote_code=False, **processor_kwargs); tokenizer.padding_side='left'; AutoModelForImageTextToText.from_pretrained(snapshot, trust_remote_code=False, attn_implementation, device_map={'': 'cuda:0'}, dtype)",
+  "message": "[{'role': 'user', 'content': [{'type': 'image', 'image': PIL.Image.open(path).convert('RGB')}, {'type': 'text', 'text': PROMPTS[mode]}]}], one conversation per image; processor.apply_chat_template(batch, add_generation_prompt=True, tokenize=True, return_dict=True, return_tensors='pt', padding=True), cast to the model dtype",
+  "greedy": "model.generate(**inputs, max_new_tokens=n, do_sample=False, num_beams=1); every other setting from the snapshot's generation_config.json (recorded in each output)",
+  "text": "tokens up to and including the first EOS, decoded with skip_special_tokens=True, stripped; n_tokens and hit_max (no EOS within n) recorded per image",
+  "batching": "fixed slices of the manifest order of the model's registered batch size; slice 0 is also decoded at batch size 1 and the identical-caption count is recorded (no gate)",
+  "checks": "package versions equal venv.packages (else KD); every pinned snapshot file hashes to its pin; the set manifest hashes to its pin; each image hashes to its manifest row",
+  "prompt_source": "scripts/evaluate.py PROMPTS (texts read and sha-checked by the decoder)"
+ },
+ "runs": [
+  {
+   "run_id": "lbA_llava15_7b_cv295-short_en",
+   "model": "llava15_7b",
+   "dataset": "cv295",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_llava15_7b_cv295-detailed_en",
+   "model": "llava15_7b",
+   "dataset": "cv295",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_llava15_7b_uv231en-short_en",
+   "model": "llava15_7b",
+   "dataset": "uv231en",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_llava15_7b_uv231en-detailed_en",
+   "model": "llava15_7b",
+   "dataset": "uv231en",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_llava_ov_7b_cv295-short_en",
+   "model": "llava_ov_7b",
+   "dataset": "cv295",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_llava_ov_7b_cv295-detailed_en",
+   "model": "llava_ov_7b",
+   "dataset": "cv295",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_llava_ov_7b_uv231en-short_en",
+   "model": "llava_ov_7b",
+   "dataset": "uv231en",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_llava_ov_7b_uv231en-detailed_en",
+   "model": "llava_ov_7b",
+   "dataset": "uv231en",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_qwen25vl_3b_cv295-short_en",
+   "model": "qwen25vl_3b",
+   "dataset": "cv295",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_qwen25vl_3b_cv295-detailed_en",
+   "model": "qwen25vl_3b",
+   "dataset": "cv295",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_qwen25vl_3b_uv231en-short_en",
+   "model": "qwen25vl_3b",
+   "dataset": "uv231en",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_qwen25vl_3b_uv231en-detailed_en",
+   "model": "qwen25vl_3b",
+   "dataset": "uv231en",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_qwen25vl_7b_cv295-short_en",
+   "model": "qwen25vl_7b",
+   "dataset": "cv295",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_qwen25vl_7b_cv295-detailed_en",
+   "model": "qwen25vl_7b",
+   "dataset": "cv295",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_qwen25vl_7b_uv231en-short_en",
+   "model": "qwen25vl_7b",
+   "dataset": "uv231en",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_qwen25vl_7b_uv231en-detailed_en",
+   "model": "qwen25vl_7b",
+   "dataset": "uv231en",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_qwen3vl_8b_cv295-short_en",
+   "model": "qwen3vl_8b",
+   "dataset": "cv295",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_qwen3vl_8b_cv295-detailed_en",
+   "model": "qwen3vl_8b",
+   "dataset": "cv295",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_qwen3vl_8b_uv231en-short_en",
+   "model": "qwen3vl_8b",
+   "dataset": "uv231en",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_qwen3vl_8b_uv231en-detailed_en",
+   "model": "qwen3vl_8b",
+   "dataset": "uv231en",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_internvl3_8b_cv295-short_en",
+   "model": "internvl3_8b",
+   "dataset": "cv295",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_internvl3_8b_cv295-detailed_en",
+   "model": "internvl3_8b",
+   "dataset": "cv295",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_internvl3_8b_uv231en-short_en",
+   "model": "internvl3_8b",
+   "dataset": "uv231en",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_internvl3_8b_uv231en-detailed_en",
+   "model": "internvl3_8b",
+   "dataset": "uv231en",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_idefics3_8b_cv295-short_en",
+   "model": "idefics3_8b",
+   "dataset": "cv295",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_idefics3_8b_cv295-detailed_en",
+   "model": "idefics3_8b",
+   "dataset": "cv295",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_idefics3_8b_uv231en-short_en",
+   "model": "idefics3_8b",
+   "dataset": "uv231en",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_idefics3_8b_uv231en-detailed_en",
+   "model": "idefics3_8b",
+   "dataset": "uv231en",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_smolvlm2_2b_cv295-short_en",
+   "model": "smolvlm2_2b",
+   "dataset": "cv295",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_smolvlm2_2b_cv295-detailed_en",
+   "model": "smolvlm2_2b",
+   "dataset": "cv295",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "lbA_smolvlm2_2b_uv231en-short_en",
+   "model": "smolvlm2_2b",
+   "dataset": "uv231en",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "lbA_smolvlm2_2b_uv231en-detailed_en",
+   "model": "smolvlm2_2b",
+   "dataset": "uv231en",
+   "prompt_mode": "detailed_en"
+  }
+ ],
+ "design_constants": {
+  "tau0": {
+   "value": 0.9,
+   "why": "IR convention for equivalent system rankings (Voorhees, SIGIR 2001; Buckley & Voorhees, SIGIR 2004 use it for incomplete judgments); chosen before any LB output; citation to be checked in bib v4 (A-N6)"
+  },
+  "n_boot": {
+   "value": 1000,
+   "source": "manuscript/research_r10/G2/REPORT.txt",
+   "line": 184,
+   "quote": "B = 1000, draws shared within an image set"
+  },
+  "ci_percentiles": [
+   2.5,
+   97.5
+  ],
+  "bootstrap": "1000 image-bootstrap draws per analysis set: numpy.random.default_rng(0).multinomial(N, [1/N]*N, size=1000) over the set's images in id order, shared by every system, gold and family of the analysis (paired). 95% CI = percentiles 2.5 and 97.5 of the replicates."
+ },
+ "status_rules": {
+  "D-W13-6": "REGISTERED only if the commit of this file precedes the first output of any run listed here; LOCALLY_FROZEN (sha-matching file on disk before, commit after) is EXPLORATORY in claims with the times disclosed; POST_HOC if written at or after an output; EXPLORATORY without a prereg.",
+  "here": "DRAFT v2 (revised per PD-17): nothing is registered until the gatekeeper commits this pair together with the decoder and the set manifests, and that commit precedes the first decode; the paper cites that commit; the job checks every pin (tracked, equal to HEAD, sha256)."
+ },
+ "absence_check": {
+  "utc": "2026-10-19T03:12:44Z",
+  "scanned": [
+   "data/results",
+   ".session_backup/machines"
+  ],
+  "found": []
+ },
+ "cost": {
+  "anchor": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md line '56_multiref_s42': eval of KTVIC test, short + detailed, Qwen2.5-VL-7B = 0.7 h -> 2.26 s per caption (batch-1 harness, upper bound); models <= 5B params at half that (planning assumption)",
+  "gpu_h_by_model": {
+   "llava15_7b": 0.66,
+   "llava_ov_7b": 0.66,
+   "qwen25vl_3b": 0.33,
+   "qwen25vl_7b": 0.66,
+   "qwen3vl_8b": 0.66,
+   "internvl3_8b": 0.66,
+   "idefics3_8b": 0.66,
+   "smolvlm2_2b": 0.33
+  },
+  "gpu_h_total": 4.62,
+  "disk_gb": 113.6,
+  "network": "snapshots are fetched at the pinned revision, pinned files only"
+ },
+ "datasets": {
+  "cv295": {
+   "manifest": {
+    "path": "data/lb/sets/cv295.tsv",
+    "sha256": "16d1ddd47385aedab6422bf308b0a202846321171aa20cd481a1042829d3f4b1"
+   },
+   "n_images": 295,
+   "image_dir": "coco_probe/val2014"
+  },
+  "uv231en": {
+   "manifest": {
+    "path": "data/lb/sets/uitviic_test.tsv",
+    "sha256": "dbadc28724d7a07b599325cd996084934d76e6c4c6a885e64e8de333d6a6665b"
+   },
+   "n_images": 231,
+   "image_dir": "uitviic/images"
+  }
+ },
+ "golds": {
+  "cv295": {
+   "refs": "English Karpathy sentences, first 5 in file order (score_g2b.coco_context)",
+   "complete": "inst: data/coco_probe/instance_gold.json [cocoid]['coco']",
+   "matcher": "score_coco_probe.en_classes(text, load_synonyms()) for outputs and references",
+   "variants": {
+    "refs1_randk": "union of 1 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs2_randk": "union of 2 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs3_randk": "union of 3 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs4_randk": "union of 4 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs_all": "union of the first 5 references (refs5)",
+    "inst": "COCO-2014 instance classes (complete gold)",
+    "inst+refs_all": "instance classes union refs_all (descriptive only)"
+   }
+  },
+  "uv231en": {
+   "refs": "data/datasets/uitviic_en/test_data.json: the first 5 COCO English captions of each image in Karpathy order (crosslingual_gap.py build)",
+   "complete": "inst: data/uitviic/instance_gold.json [id]['coco']",
+   "matcher": "score_coco_probe.en_classes(text, load_synonyms()) for outputs and references",
+   "variants": {
+    "refs1_randk": "union of 1 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs2_randk": "union of 2 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs3_randk": "union of 3 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs4_randk": "union of 4 of the image's first 5 references, drawn without replacement; mean over the random subsets",
+    "refs_all": "union of the first 5 references (refs5)",
+    "inst": "COCO-2014 instance classes (complete gold)",
+    "inst+refs_all": "instance classes union refs_all (descriptive only)"
+   }
+  }
+ },
+ "families": {
+  "cv295": {
+   "PAIR_llava15_7b": [
+    "lbA_llava15_7b_cv295-short_en",
+    "lbA_llava15_7b_cv295-detailed_en"
+   ],
+   "PAIR_llava_ov_7b": [
+    "lbA_llava_ov_7b_cv295-short_en",
+    "lbA_llava_ov_7b_cv295-detailed_en"
+   ],
+   "PAIR_qwen25vl_3b": [
+    "lbA_qwen25vl_3b_cv295-short_en",
+    "lbA_qwen25vl_3b_cv295-detailed_en"
+   ],
+   "PAIR_qwen25vl_7b": [
+    "lbA_qwen25vl_7b_cv295-short_en",
+    "lbA_qwen25vl_7b_cv295-detailed_en"
+   ],
+   "PAIR_qwen3vl_8b": [
+    "lbA_qwen3vl_8b_cv295-short_en",
+    "lbA_qwen3vl_8b_cv295-detailed_en"
+   ],
+   "PAIR_internvl3_8b": [
+    "lbA_internvl3_8b_cv295-short_en",
+    "lbA_internvl3_8b_cv295-detailed_en"
+   ],
+   "PAIR_idefics3_8b": [
+    "lbA_idefics3_8b_cv295-short_en",
+    "lbA_idefics3_8b_cv295-detailed_en"
+   ],
+   "PAIR_smolvlm2_2b": [
+    "lbA_smolvlm2_2b_cv295-short_en",
+    "lbA_smolvlm2_2b_cv295-detailed_en"
+   ],
+   "DETAILED": [
+    "lbA_llava15_7b_cv295-detailed_en",
+    "lbA_llava_ov_7b_cv295-detailed_en",
+    "lbA_qwen25vl_3b_cv295-detailed_en",
+    "lbA_qwen25vl_7b_cv295-detailed_en",
+    "lbA_qwen3vl_8b_cv295-detailed_en",
+    "lbA_internvl3_8b_cv295-detailed_en",
+    "lbA_idefics3_8b_cv295-detailed_en",
+    "lbA_smolvlm2_2b_cv295-detailed_en"
+   ],
+   "SHORT": [
+    "lbA_llava15_7b_cv295-short_en",
+    "lbA_llava_ov_7b_cv295-short_en",
+    "lbA_qwen25vl_3b_cv295-short_en",
+    "lbA_qwen25vl_7b_cv295-short_en",
+    "lbA_qwen3vl_8b_cv295-short_en",
+    "lbA_internvl3_8b_cv295-short_en",
+    "lbA_idefics3_8b_cv295-short_en",
+    "lbA_smolvlm2_2b_cv295-short_en"
+   ]
+  },
+  "uv231en": {
+   "PAIR_llava15_7b": [
+    "lbA_llava15_7b_uv231en-short_en",
+    "lbA_llava15_7b_uv231en-detailed_en"
+   ],
+   "PAIR_llava_ov_7b": [
+    "lbA_llava_ov_7b_uv231en-short_en",
+    "lbA_llava_ov_7b_uv231en-detailed_en"
+   ],
+   "PAIR_qwen25vl_3b": [
+    "lbA_qwen25vl_3b_uv231en-short_en",
+    "lbA_qwen25vl_3b_uv231en-detailed_en"
+   ],
+   "PAIR_qwen25vl_7b": [
+    "lbA_qwen25vl_7b_uv231en-short_en",
+    "lbA_qwen25vl_7b_uv231en-detailed_en"
+   ],
+   "PAIR_qwen3vl_8b": [
+    "lbA_qwen3vl_8b_uv231en-short_en",
+    "lbA_qwen3vl_8b_uv231en-detailed_en"
+   ],
+   "PAIR_internvl3_8b": [
+    "lbA_internvl3_8b_uv231en-short_en",
+    "lbA_internvl3_8b_uv231en-detailed_en"
+   ],
+   "PAIR_idefics3_8b": [
+    "lbA_idefics3_8b_uv231en-short_en",
+    "lbA_idefics3_8b_uv231en-detailed_en"
+   ],
+   "PAIR_smolvlm2_2b": [
+    "lbA_smolvlm2_2b_uv231en-short_en",
+    "lbA_smolvlm2_2b_uv231en-detailed_en"
+   ],
+   "DETAILED": [
+    "lbA_llava15_7b_uv231en-detailed_en",
+    "lbA_llava_ov_7b_uv231en-detailed_en",
+    "lbA_qwen25vl_3b_uv231en-detailed_en",
+    "lbA_qwen25vl_7b_uv231en-detailed_en",
+    "lbA_qwen3vl_8b_uv231en-detailed_en",
+    "lbA_internvl3_8b_uv231en-detailed_en",
+    "lbA_idefics3_8b_uv231en-detailed_en",
+    "lbA_smolvlm2_2b_uv231en-detailed_en"
+   ],
+   "SHORT": [
+    "lbA_llava15_7b_uv231en-short_en",
+    "lbA_llava_ov_7b_uv231en-short_en",
+    "lbA_qwen25vl_3b_uv231en-short_en",
+    "lbA_qwen25vl_7b_uv231en-short_en",
+    "lbA_qwen3vl_8b_uv231en-short_en",
+    "lbA_internvl3_8b_uv231en-short_en",
+    "lbA_idefics3_8b_uv231en-short_en",
+    "lbA_smolvlm2_2b_uv231en-short_en"
+   ]
+  }
+ },
+ "analysis_plan": {
+  "analysis_set": "per dataset, the images whose caption is clean in every run of every model kept by KM (English: non-empty and clean_supervision.CJK_RE finds no match); every statistic of the dataset uses this one set; its size is reported; all-image values are a sensitivity analysis without verdicts",
+  "random_subsets": "numpy.random.default_rng(1); for k = 1..K (K = 4 on cv295 and uv231en), for r = 1..20, for each image of the FULL dataset in id order: choice(n_refs_image, k, replace=False). Drawn once per dataset, before any output is read, then restricted to the analysis set.",
+  "bootstrap": "1000 image-bootstrap draws per analysis set: numpy.random.default_rng(0).multinomial(N, [1/N]*N, size=1000) over the set's images in id order, shared by every system, gold and family of the analysis (paired). 95% CI = percentiles 2.5 and 97.5 of the replicates.",
+  "scores": "per run and gold: P, R, F1, M as score_g2b.scores (check_mstar.prf mixed F1, mean over random subsets), imported unchanged",
+  "slope": "slope[g](F): OLS slope of 100 * F1_x on ln M_x over the runs x of family F (score_g2b.stat_slope); for PAIR_m the two-point slope",
+  "tau": "tau_b(F1[g1](DETAILED), F1[g2](DETAILED)) over the models' detailed_en runs; [complete] = inst on both sets",
+  "descriptive": "per model and gold: P, R, F1, M with CIs; slope[refs1_randk](PAIR_m) and slope[refsK_randk] (signs not predicted); tau_b for refs_all vs complete and for the SHORT family; the ranking table; share of hit_max captions; parity_slice0; Qwen3-VL exact-match share against G2-B's GREEDY_EN decodes on cv295 and uv231 (read only after G2-B is scored, CC-027 (c))",
+  "evaluator": "written after this registration, against this file; imports score_g2b.py functions unchanged; committed through the gatekeeper before its results file exists (CHECKLIST C3)"
+ },
+ "verdict_rules": {
+  "sign_gt_0": "PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE",
+  "sign_lt_0": "PASS if ci95_hi < 0; FAIL if point >= 0; else INCONCLUSIVE",
+  "equiv_abs_le": "PASS if -delta <= ci95_lo and ci95_hi <= delta; FAIL if ci95_hi < -delta or ci95_lo > delta; else INCONCLUSIVE",
+  "diff_abs_gt": "PASS if ci95_lo > delta or ci95_hi < -delta; FAIL if -delta <= ci95_lo and ci95_hi <= delta; else INCONCLUSIVE",
+  "compound": "FAIL if any part is FAIL; else NOT_EVALUABLE if any part is NOT_EVALUABLE; else PASS if every part is PASS; else INCONCLUSIVE",
+  "not_evaluable": "NOT_EVALUABLE if the analysis set is empty or a statistic is undefined (a system with M_x = 0, or fewer than 2 distinct M_x in a family)",
+  "counting": "Kill rules count FAIL only. INCONCLUSIVE is reported as inconclusive and never as support. Earlier preregistrations scored sign and ordering claims on point estimates; 'not FAIL' here is that criterion, so the outcomes can be compared.",
+  "multiplicity": "No correction; every prediction is reported separately, per dataset, with its CI.",
+  "tau_lt": "PASS if ci95_hi < tau0; FAIL if point >= tau0; else INCONCLUSIVE",
+  "tau_ge": "PASS if ci95_lo >= tau0; FAIL if point < tau0; else INCONCLUSIVE",
+  "models_compound": "over the models evaluable on the set: FAIL if any model is FAIL; PASS if every model is PASS; else INCONCLUSIVE; NOT_EVALUABLE if fewer than half of the registered models are evaluable",
+  "tau_b": "Kendall tau-b between two vectors of per-model point estimates (ties handled as in tau-b); the CI comes from the same statistic on every shared bootstrap draw (both rankings recomputed on each draw)"
+ },
+ "predictions": [
+  {
+   "id": "LBA-P1",
+   "tier": "primary",
+   "sets": [
+    "cv295",
+    "uv231en"
+   ],
+   "claim": "one-reference F1 does not rank public LVLMs as complete gold does",
+   "rule": "`tau_b(F1[refs1_randk](DETAILED), F1[complete](DETAILED))` tau_lt (tau0 0.9; with 8 models: at least 2 discordant pairs of 28 (no ties))",
+   "tau0": 0.9,
+   "source": "gap analysis A-N2 P1; A-G2/A-G3"
+  },
+  {
+   "id": "LBA-P2",
+   "tier": "primary",
+   "sets": [
+    "cv295",
+    "uv231en"
+   ],
+   "claim": "C2 per model: the verbosity slope rises with gold completeness and is positive under complete gold",
+   "rule": "per model m, compound of `slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)` sign_gt_0, `slope[complete](PAIR_m) - slope[refs_all](PAIR_m)` sign_gt_0 and `slope[complete](PAIR_m)` sign_gt_0; per set models_compound",
+   "source": "gap analysis A-N2 P2; Paper A C2; G2-B G2B-O1 and G2B-E2 forms"
+  },
+  {
+   "id": "LBA-NS",
+   "tier": "not predicted",
+   "sets": [
+    "cv295",
+    "uv231en"
+   ],
+   "claim": "the one-reference and multi-reference slope signs and every other tau are reported with CIs only",
+   "rule": "reported, no verdict",
+   "source": "CC-007 (no multi-reference sign)"
+  }
+ ],
+ "kill_rules": [
+  {
+   "id": "KA1",
+   "when": "LBA-P1 is FAIL on cv295",
+   "then": "Paper A states that one-reference F1 ranked these LVLMs as complete gold did (tau >= tau0) and makes no claim that incomplete gold reorders public-model rankings"
+  },
+  {
+   "id": "KA2",
+   "when": "LBA-P2 is FAIL on cv295 or uv231en",
+   "then": "Paper A reports C2 as not holding for every public LVLM, names the failing models, and does not write 'replicates across models'"
+  },
+  {
+   "id": "KM",
+   "when": "a model has a run missing or excluded by KD on a set",
+   "then": "the model leaves every analysis of that set; LBA-P1 is NOT_EVALUABLE there if fewer than 6 of the 8 models remain (fewer than 15 pairs)"
+  },
+  {
+   "id": "KL",
+   "when": "always",
+   "then": "verdicts use the clean analysis set only; its size is reported"
+  },
+  {
+   "id": "KD",
+   "when": "a run whose provenance shows a model file, prompt, decoding setting, batch size or package version other than registered",
+   "then": "the run does not test this registration; it is reported as a deviation"
+  }
+ ],
+ "reporting": [
+  "LB-A verdicts are registered SECONDARY: they appear in the body (Section 7) as computed (PASS, FAIL, INCONCLUSIVE, NOT_EVALUABLE) with the clean-set sizes, never in the abstract or the conclusions (confirmation map section 6; PD-16; PD-17 (e)).",
+  "CV295 lies inside COCO-2500, so on CV295 A-N2 is a replication with new models on discovery images, not an image-out-of-sample test (binding 3, PD-10; PD-17 J1). The paper says so wherever a CV295 verdict appears.",
+  "uv231en results carry the exposure label 'COCO train2014 images; exposure during pre-training possible' (PD-17 J1).",
+  "No count-control (C1) prediction: C1 is NOT-TESTABLE (PD-15) and the map cannot be amended."
+ ],
+ "overlap": [
+  "Binding 3 (PD-10): CV295 lies inside COCO-2500, so A-N2 on CV295 is a new-model replication on 295 discovery images with the same references and instance gold, not an image-out-of-sample test.",
+  "uv231en shares no image with COCO-2500 (PD-10), but its 231 images are COCO train2014 images, also used by G2-B (Vietnamese captions) and by B-N1 (Paper B, Vietnamese captions); A-N2 uses English captions and English references only, and no KTVIC data (PD-6).",
+  "Qwen3-VL-8B is the G2-B backbone. G2-B's GREEDY_EN runs (cv295, uv231) use the same prompts and new-token limits at batch size 1; A-N2 decodes them again with this harness so that every model shares one harness."
+ ],
+ "departures": [
+  "XM600 is not decoded: English captions have no complete gold there (no English-to-OIV7 class map, G2-B Section 12), and building one would be new annotation (PD-17 J1). UIT-ViIC test, with COCO's existing English captions and its COCO instance gold, takes its place.",
+  "Qwen3-VL-8B is decoded again instead of reusing G2-B (one harness; G2-B outputs stay unread, CC-027 (c)).",
+  "Optional P3 (count control) is left out (PD-15).",
+  "Gemma-3-4b-it is dropped (gated: no tokens or credentials on rented machines, PD-17 J5). LLaVA-1.5-13B (VRAM), MiniCPM-V-2.6 (remote code, gated), Vintern-1B-v3.5 (scope, PD-17 J4) and Vistral-V-7B (not HF-native, gated) are left out (MODELS_v2.md)."
+ ],
+ "author_saw": [
+  "Paper A Section 7 (Table 7.1 slopes, families F-B and F-C), the G2-B prereg, PD-10, PD-15, PD-16, CC-027 and the gap analysis. No A-N2 output exists (absence_check).",
+  "The image sha256 lists that G2-B's --check-inputs wrote on M2 (inputs; no G2-B caption or partial file was opened). Hugging Face metadata (hf_api/). No caption of any model on these sets was opened for this draft.",
+  "tau0 = 0.9 is the IR equivalence convention, fixed before any output.",
+  "The UIT-ViIC test English references already enter Paper A Section 5 (exchangeability, stage 1); A-N2 uses them as gold, and no model output on them was opened."
+ ],
+ "rulings": [
+  "J1: English XM600 dropped (a new English-to-OIV7 map would be new annotation); UIT-ViIC test in English with COCO's existing English captions and instance gold; exposure label kept; binding-3 wording for CV295.",
+  "J5: num2words added, nothing else in the venv changes; Gemma-3 dropped.",
+  "J7: LBA-P1 keeps tau0 = 0.9: with 8 models, at least 2 discordant pairs of 28 (no ties).",
+  "(d): the decoder is committed and sha-pinned with this prereg; the decoder and the job check the pins.",
+  "(e): registered secondary, body only (map section 6).",
+  "GPU plan: A-N2 runs on M1 after S3; check disk space before prefetching."
+ ],
+ "gpu_plan": "M1, after S3 (PD-17)",
+ "frozen_files": [
+  {
+   "path": "manuscript/GAP_ANALYSIS_Q1Q2_2026-10-19.md",
+   "sha256": "0a71aa436a10b74b3d7ed5151c7cc705ad1eca9986e41199c3f9d5de778d6845",
+   "role": "source plan (section 3)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "manuscript/paperA_plan/AGENT_RULES.md",
+   "sha256": "9109261d247270c4d8306a116a72ce14157eed5b891b4eda3eb558f033470f99",
+   "role": "agent rules",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-10.txt",
+   "sha256": "4d4122659d9d9c20f0f3d441a803ea2edb87ad2dba078be7f2c3faabce80f2cd",
+   "role": "binding 3 (overlap wording); confirmation map",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-15.txt",
+   "sha256": "81d94e742d4e120e0eb1e9ca6fac11b371135b07f89cdaf293ef38c2c1be7dd3",
+   "role": "C1 NOT-TESTABLE",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-16.txt",
+   "sha256": "06eedc3385ee1279fc2859d0a3213147a092712c6554c916422cd5fa5e7eb403",
+   "role": "registration route; preregs before any decode",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-17.txt",
+   "sha256": "62c69969c405baa8a2367000d1e217fb2e42aa9703274df03670a365cbd35948",
+   "role": "rulings on the LB drafts (J1, J3-J7, (a)-(e))",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/CC-027.txt",
+   "sha256": "a00da9db5e19d756647b3397ba95a0a511b1a0b07a456e5efddbee1c9db9c386",
+   "role": "G2-B outputs unread until scoring",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json",
+   "sha256": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+   "role": "format; prompts; new tokens; venv; constants",
+   "git": "0932ba1 2026-10-19T01:31:57+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.md",
+   "sha256": "2e6b3e87114478f7664a02b3c1b04eaca8dc7a24337dc1ce0293dbc4a0d2608b",
+   "role": "format template",
+   "git": "0932ba1 2026-10-19T01:31:57+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "scripts/queue/jobs/m2_07_g2b_qwen3vl_ladder.sh",
+   "sha256": "c3ded1997e00ae0d0dc4c92fd5733a93c2b84166188c27dc42ea944c61a44446",
+   "role": "job format",
+   "git": "f942714 2026-10-19T03:11:56+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": ".session_backup/2026-10-18/gpu_jobs/GPU_JOB_PLAN_v1.md",
+   "sha256": "9a8ae864fc2a393ea9d35c75e4ce4578d84e298f90ad4c7d81c07ce1d40bcba3",
+   "role": "cost anchor",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/decode_hf_vlm_v2.py",
+   "sha256": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+   "role": "the decoder (draft v2; committed as scripts/lb/decode_hf_vlm.py)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "scripts/g2b/decode_qwen3vl.py",
+   "sha256": "8a855ef483c933621776099b6f9de3b60c4fbfaaf706bb40c74e7d84d9dfb5e5",
+   "role": "prompt_text, sha256_file, utc (imported unchanged)",
+   "git": "f942714 2026-10-19T03:11:56+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "scripts/evaluate.py",
+   "sha256": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+   "role": "PROMPTS; protocol-card scorer",
+   "git": "d4de7b0 2026-10-12T19:24:19+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "rescap/vlm/base.py",
+   "sha256": "e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93",
+   "role": "dtype_kwarg",
+   "git": "1f30d09 2026-08-30T10:06:13+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "scripts/clean_supervision.py",
+   "sha256": "01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231",
+   "role": "CJK_RE (language guard)",
+   "git": "93070e1 2026-10-10T13:48:37+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/uv231_images.sha256",
+   "sha256": "17545f03a29a592f611625eb0dd4957132ce44ddefbdad9db642cc78fcd378d4",
+   "role": "UIT-ViIC test image hashes (G2-B --check-inputs on M2)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/sets/uitviic_test.tsv",
+   "sha256": "dbadc28724d7a07b599325cd996084934d76e6c4c6a885e64e8de333d6a6665b",
+   "role": "UIT-ViIC test manifest (draft; data/lb/sets/)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "data/datasets/uitviic/test_data.json",
+   "sha256": "54abc0fb068ad1108d7d57b21328d4d68bcf8f41aa168f80ec7c275fb4ac8214",
+   "role": "UIT-ViIC test ids, files, Vietnamese references",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/fetch_log.json",
+   "sha256": "3fec7086e4322b9a87dbd205e3ed0ff9b57c02592d55b5eb7659fbd6f2a5deee",
+   "role": "fetch record",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/llava-hf__llava-1.5-7b-hf.info.json",
+   "sha256": "2aae954650cade9d8d6049b8579c2b7ce63883623a340899cef0d1e849931b98",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/llava-hf__llava-1.5-7b-hf.tree.json",
+   "sha256": "5894b5e041c6f6565eac35af3c837141a1da608f960ca7b7f0192f3184b6eabc",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/llava-hf__llava-onevision-qwen2-7b-ov-hf.info.json",
+   "sha256": "180be64ccbe1bf557c2bf2fbeda7c31de38aeb93e74cdd8529e66be07309889f",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/llava-hf__llava-onevision-qwen2-7b-ov-hf.tree.json",
+   "sha256": "91fec816d5fadbfe18716386c29f8e762026048d8cbc87299a2c3aa6a11bcc9f",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen2.5-VL-3B-Instruct.info.json",
+   "sha256": "595e127ac0af48def2af445a47375e970ac48a5d01af467ba27c8b3fd6234c89",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen2.5-VL-3B-Instruct.tree.json",
+   "sha256": "96fe2dd92d557c09ae2a1cd050a09d22093f010f61b01e24fa54d4ccee9ee671",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen2.5-VL-7B-Instruct.info.json",
+   "sha256": "e14a77ff74900ec45e3eb3a533607713d187b3c2ba2adc3b003d564a370c889d",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen2.5-VL-7B-Instruct.tree.json",
+   "sha256": "dc9fb97fe125df9628c35f9cd7eb812aaa187e0b81a19f03c2631c97f67f95dd",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen3-VL-8B-Instruct.info.json",
+   "sha256": "dfd342867284b9ea787f1bc9377bdfdb3cb667298cadb33d46948a3cd8348563",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/Qwen__Qwen3-VL-8B-Instruct.tree.json",
+   "sha256": "13901b0c2702f46e541fae48f20309fb5b2413a74326eed4eb1f963a60b6d623",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/OpenGVLab__InternVL3-8B-hf.info.json",
+   "sha256": "6ac5308f0ac2d37edaab5b9a81e4d14600eef6133965b1bf3e90bc000234fd18",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/OpenGVLab__InternVL3-8B-hf.tree.json",
+   "sha256": "c9e4264bd505d6a353b1aa6d9dba145f099fa0c212d400a7f23dd514e6d579cd",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/HuggingFaceM4__Idefics3-8B-Llama3.info.json",
+   "sha256": "429c06cbf10728ab71be88d3533abe8242edde839ba6365a593327ba672befd1",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/HuggingFaceM4__Idefics3-8B-Llama3.tree.json",
+   "sha256": "61b33af5dfe4d7f351b52231f2d2cfa59d2c905fb8c47e00f931da68cf61795b",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/HuggingFaceTB__SmolVLM2-2.2B-Instruct.info.json",
+   "sha256": "8e2e30701e7c625bdfd1e530648341ec2e6fd0ab1c8455a2e3bf9e13eca9afaf",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/hf_api/HuggingFaceTB__SmolVLM2-2.2B-Instruct.tree.json",
+   "sha256": "92848655b3609167165ef0b31c89bbaac86d39ab46780b753f2d54744e6d25b3",
+   "role": "HF metadata",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/build_lb_v2.py",
+   "sha256": "e7ac1054964e2d7cc629ce40b9db5a0fe0e44ffbe27c94d819e010f7266a02fe",
+   "role": "builder (v2)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "scripts/g2b/score_g2b.py",
+   "sha256": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5",
+   "role": "scores, slopes, golds (imported unchanged)",
+   "git": "f942714 2026-10-19T03:11:56+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "scripts/score_coco_probe.py",
+   "sha256": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070",
+   "role": "en_classes, load_synonyms",
+   "git": "a0accb5 2026-10-14T06:47:37+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "data/coco_probe/chair_synonyms.txt",
+   "sha256": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+   "role": "English synonyms",
+   "git": "1f30d09 2026-08-30T10:06:13+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "data/coco_probe/probe_val2017_ids.txt",
+   "sha256": "73f8698901f08e7b1bd53dd2842e77683af41e4e9e19276c3e8e6efba5273453",
+   "role": "CV295 ids",
+   "git": "4592d69 2026-10-14T06:47:31+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "data/coco_probe/manifest.json",
+   "sha256": "931e572ec8ea5eadf4c49aafcc062a837429b4e6bcc1f96fc0ec0ee1ecaa7e35",
+   "role": "file names",
+   "git": "1f30d09 2026-08-30T10:06:13+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "data/coco_probe/cv295_val2014.sha256",
+   "sha256": "5aee7a6b1d357444294ffc0bc4e183ed6b26f6bd5b24217cecce6af3da62c0e8",
+   "role": "CV295 image hashes (official val2014 bytes)",
+   "git": "f942714 2026-10-19T03:11:56+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "data/coco_probe/instance_gold.json",
+   "sha256": "963af2c6cc71e7a5e32c2f8f1ca6a0f1ef0a1f02dadf40926ddb05eebd04f81e",
+   "role": "CV295 complete gold",
+   "git": "d4de7b0 2026-10-12T19:24:19+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": "data/datasets/karpathy/dataset_coco.json",
+   "sha256": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d",
+   "role": "CV295 English references",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "data/datasets/uitviic_en/test_data.json",
+   "sha256": "07734c7434d78eb5968dc4d986727487366a361b6714b4e98415a99fb8d7a01c",
+   "role": "UIT-ViIC test English references",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": "data/uitviic/instance_gold.json",
+   "sha256": "278d15b97e3eeb9496a0282bb91deb365117becf24d174fbb1e0507203b12ea4",
+   "role": "UIT-ViIC test complete gold",
+   "git": "093cbfc 2026-10-12T11:58:11+07:00",
+   "working_tree": "equals HEAD"
+  },
+  {
+   "path": ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/cv295_images.sha256",
+   "sha256": "5aee7a6b1d357444294ffc0bc4e183ed6b26f6bd5b24217cecce6af3da62c0e8",
+   "role": "cross-check of the CV295 manifest",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  },
+  {
+   "path": ".session_backup/2026-10-19/LB_leaderboards/sets/cv295.tsv",
+   "sha256": "16d1ddd47385aedab6422bf308b0a202846321171aa20cd481a1042829d3f4b1",
+   "role": "CV295 manifest (draft)",
+   "git": "not in git (git-excluded or untracked)",
+   "working_tree": "n/a"
+  }
+ ]
+}
