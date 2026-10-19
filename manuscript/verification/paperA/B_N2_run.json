@@ -1,0 +1,240 @@
+{
+ "task": "B-N2-VERIFY",
+ "verifier": "Claude A-verifier",
+ "written_utc": "2026-10-19T08:27:37.942539+00:00",
+ "result": "PASS",
+ "overall": "VERIFIED",
+ "rerun": {
+  "command": "score_b_n2.py run .session_backup/2026-10-19/verify_b_n2/b_n2_verify_run.json --gate manuscript/prereg/2026-10-19_b_n2_record/b_n2_gate.json",
+  "head": [
+   "0adb03c5fee6dd26343760a1d70354a1396b2ea1",
+   "0adb03c5fee6dd26343760a1d70354a1396b2ea1"
+  ],
+  "start": "2026-10-19T06:49:59.878Z",
+  "end": "2026-10-19T07:02:48.106Z",
+  "rc": 0,
+  "env": {
+   "python": "3.12.3",
+   "numpy": "2.5.4",
+   "pycocoevalcap": "1.2",
+   "py_vncorenlp": "0.1.4",
+   "pyjnius": "1.7.0",
+   "VnCoreNLP-1.2.jar": "9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793",
+   "wordsegmenter.rdr": "9e62f96bd93e37a24f364238e8d8ae986fa5dad6dbc9f4eae622ab3651b7fa06"
+  },
+  "settings": "main's venv_b2, JAVA_HOME=$HOME/jdk21, NCS_DATA=<repo>/data, VNCORENLP_DIR=<repo>/.session_backup/machines/n2/ncs-data/vncorenlp, PYTHONDONTWRITEBYTECODE=1, nice 15, 2 threads; scorer run from the repo path (committed copy)"
+ },
+ "comparison": {
+  "bytes_identical": true,
+  "sha256_main": "59463c4c73e66349f047c5661823a6c49e1d37ac30b7d2728f42579ce68174ab",
+  "sha256_verifier": "59463c4c73e66349f047c5661823a6c49e1d37ac30b7d2728f42579ce68174ab",
+  "n_leaves": [
+   400,
+   400
+  ],
+  "time_fields_excluded": [],
+  "differences": []
+ },
+ "reporting_checks": {
+  "R1_verdict_primary_only": {
+   "status": "PASS",
+   "evidence": "the only verdict key is ['primary_cider_d_df558.DiD_PL.verdict']; my v2.md §6 rule on ci95 [-13.967661789172865, 14.67478230944735] with delta 3.0 (prereg JSON delta.value) gives INCONCLUSIVE; JSON says INCONCLUSIVE; K_PL is null (set only on FAIL)"
+  },
+  "R2_S1_points_only": {
+   "status": "PASS",
+   "evidence": "S1_subset_df_points: 14 reported quantities (gaps, DiD_PL, seed-matched), every ci95 null, every point a float"
+  },
+  "R3_S2_F1_descriptive_no_verdict": {
+   "status": "PASS",
+   "evidence": "S2_punct_fix_df558 and object_F1: 42/42 quantities (with primary_cider_d_df558) carry a 2-sided ci95, no verdict key; note: the run JSON holds no explicit 'descriptive' label ('descriptive' in file: False), so the writer must label S2/F1 descriptive in text"
+  },
+  "R4_draws_order": {
+   "status": "PASS",
+   "evidence": "draws = {'B': 5000, 'seed': 0, 'order': 'rng.integers(0,|L|,(B,|L|)) then rng.integers(0,|C|,(B,|C|)); L and C in sorted-id order; the same draws for every system and metric'}; prereg methods.bootstrap B 5000, rng numpy.random.default_rng(0)"
+  }
+ },
+ "rows": [
+  {
+   "claim_id": "B-N2-RUN",
+   "source_msg": "main: B-N2-VERIFY brief; run 06:37:00Z-06:48:20Z at 0adb03c",
+   "claim": "data/results/b_n2/b_n2_run.json (sha 59463c4c..) is the output of the committed scorer scripts/b_n2/score_b_n2.py with gate manuscript/prereg/2026-10-19_b_n2_record/b_n2_gate.json",
+   "items": {
+    "A1": {
+     "status": "PASS",
+     "evidence": "main's run JSON, my run JSON, the scorer, the gate record, prereg v2 md+json and CC-037 exist"
+    },
+    "A2": {
+     "status": "PASS",
+     "evidence": "sha256: data/results/b_n2/b_n2_run.json 59463c4c73e66349.., scripts/b_n2/score_b_n2.py 2f46ea3ba7e45190.., manuscript/prereg/2026-10-19_b_n2_record/b_n2_gate.json 83e3ea160c50ef28.. (brief cites 59463c4c, 2f46ea3b, 83e3ea16); script_sha256 and gate.sha256 in both run JSONs equal the files"
+    },
+    "A3": {
+     "status": "PASS",
+     "evidence": "mtimes corrected by the measured drive-vs-WSL clock skew +5.76 s (1 s tolerance): main's JSON 2026-10-19T06:48:20.344972+00:00 in its run 2026-10-19T06:37:00.058Z..2026-10-19T06:48:20.742Z rc 0; mine 2026-10-19T07:02:47.659762+00:00 in 2026-10-19T06:49:59.878Z..2026-10-19T07:02:48.106Z rc 0"
+    },
+    "A4": {
+     "status": "PASS",
+     "evidence": "last commits: scripts/b_n2/score_b_n2.py 0adb03c, manuscript/prereg/2026-10-19_b_n2_record/b_n2_gate.json 0adb03c, manuscript/prereg/2026-10-19_b_n2_leakage_did_prereg_v2.md 9f7e6bf, manuscript/prereg/2026-10-19_b_n2_leakage_did_prereg_v2.json 9f7e6bf; all equal their HEAD blob; HEAD at my start and end 0adb03c; data/results/b_n2/b_n2_run.json untracked: True"
+    },
+    "B1_B3": {
+     "status": "PASS",
+     "evidence": "the numbers below are read in code from main's JSON at the keys given; CIs from the same file"
+    },
+    "B2": {
+     "status": "PASS",
+     "evidence": "manuscript/WORKFLOW_LOG.md B-N2 RUN entry quotes CI [−13.97, +14.67] INCONCLUSIVE: JSON ci95 [-13.967661789172865, 14.67478230944735], INCONCLUSIVE; 'every one covers 0': True. NOTE: its gap CIs 'about −35 to +7' are not the envelope [-38.05, 13.02]; the per-system bounds have medians (-35.33, 5.60), lows -27.63 to -38.05, highs 2.67 to 13.02; text should cite the per-system CIs from the JSON"
+    },
+    "B4": {
+     "status": "PASS",
+     "evidence": "independent: my recomputation of every gap, DiD_PL and seed-matched point of the 4 metric blocks from the JSON points: failures []; plus the full re-run (all 558-image scoring, S1/S2/F1 and 5000 draws) is byte-identical"
+    },
+    "C1": {
+     "status": "PASS",
+     "evidence": "scripts/b_n2/score_b_n2.py:141 verdict() branches on the CI against delta (PASS/FAIL/INCONCLUSIVE), the dry run asserts 5 cases; delta read from prereg JSON delta.value; see R1 for my own rule"
+    },
+    "C3": {
+     "status": "PASS",
+     "evidence": "prereg commit 2026-10-19T12:06:08+07:00 and scorer commit 2026-10-19T13:35:00+07:00 precede main's run start 2026-10-19T06:37:00.058Z"
+    },
+    "C4": {
+     "status": "PASS",
+     "evidence": "gap.<system> = one per-run leaked-minus-clean gap for each of 10 D1 systems (K_COV_dropped []); DiD_PL is the pooled K' minus K mean"
+    },
+    "C5": {
+     "status": "N/A",
+     "evidence": "re-analysis of existing outputs; nothing is tuned or selected"
+    },
+    "D1": {
+     "status": "PASS",
+     "evidence": "main's JSON still 59463c4c73e66349..; files under data/results modified since my start: []"
+    },
+    "D3": {
+     "status": "PASS",
+     "evidence": "the record holds keys, shas and numbers only (no caption text, host or secret); the writer refuses if a session scratchpad path would enter it"
+    }
+   },
+   "overall": "VERIFIED"
+  }
+ ],
+ "numbers": [
+  {
+   "name": "placebo DiD_PL (fuse2 - P1), primary CIDEr-D df558",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.DiD_PL",
+   "est": 0.19566535771815552,
+   "ci95": [
+    -13.967661789172865,
+    14.67478230944735
+   ],
+   "verdict": "INCONCLUSIVE"
+  },
+  {
+   "name": "leaked - clean gap, p1-gold",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.p1-gold",
+   "gap": -12.08217378801541,
+   "ci95": [
+    -32.969580160705654,
+    7.158390935209231
+   ]
+  },
+  {
+   "name": "leaked - clean gap, p1_s43",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.p1_s43",
+   "gap": -15.043612235003962,
+   "ci95": [
+    -35.91300740475101,
+    5.352130536565089
+   ]
+  },
+  {
+   "name": "leaked - clean gap, p1_s44",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.p1_s44",
+   "gap": -17.211662543610885,
+   "ci95": [
+    -38.052459517025156,
+    2.8725630837311376
+   ]
+  },
+  {
+   "name": "leaked - clean gap, p1assist_s42",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.p1assist_s42",
+   "gap": -16.0240472716132,
+   "ci95": [
+    -37.63749793699541,
+    4.388534909197803
+   ]
+  },
+  {
+   "name": "leaked - clean gap, p1assist_s43",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.p1assist_s43",
+   "gap": -6.727195197098524,
+   "ci95": [
+    -27.625430180967545,
+    13.01574989361465
+   ]
+  },
+  {
+   "name": "leaked - clean gap, p1assist_s44",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.p1assist_s44",
+   "gap": -17.21223450721135,
+   "ci95": [
+    -37.66588356681872,
+    2.6735473324765042
+   ]
+  },
+  {
+   "name": "leaked - clean gap, fuse2_s42",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.fuse2_s42",
+   "gap": -13.39215937811693,
+   "ci95": [
+    -34.068011298026086,
+    6.346000581760367
+   ]
+  },
+  {
+   "name": "leaked - clean gap, fuse2_s43",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.fuse2_s43",
+   "gap": -14.111166702824534,
+   "ci95": [
+    -34.73786188349982,
+    5.8513722908396275
+   ]
+  },
+  {
+   "name": "leaked - clean gap, fuse2_s44",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.fuse2_s44",
+   "gap": -16.247126412534328,
+   "ci95": [
+    -36.96372565834657,
+    4.232906499219453
+   ]
+  },
+  {
+   "name": "leaked - clean gap, mr5assist_s42",
+   "source": "data/results/b_n2/b_n2_run.json",
+   "key": "primary_cider_d_df558.gap.mr5assist_s42",
+   "gap": -11.746502759359231,
+   "ci95": [
+    -32.96309872590038,
+    8.744881020710576
+   ]
+  }
+ ],
+ "sources_sha256": {
+  "data/results/b_n2/b_n2_run.json": "59463c4c73e66349f047c5661823a6c49e1d37ac30b7d2728f42579ce68174ab",
+  ".session_backup/2026-10-19/verify_b_n2/b_n2_verify_run.json": "59463c4c73e66349f047c5661823a6c49e1d37ac30b7d2728f42579ce68174ab",
+  "scripts/b_n2/score_b_n2.py": "2f46ea3ba7e45190b23e2fc1aff2e13eb4bb7ab064fab0377b263a8e53d8b922",
+  "manuscript/prereg/2026-10-19_b_n2_record/b_n2_gate.json": "83e3ea160c50ef28392ce8e2625885fc2ce35927b19e9683c26c7874e81d189f",
+  "manuscript/prereg/2026-10-19_b_n2_leakage_did_prereg_v2.md": "0ddb2ddcfec8915b2edfcdd9f76e0f6d30f1b2a335de8e5a3540de5311a056d9",
+  "manuscript/prereg/2026-10-19_b_n2_leakage_did_prereg_v2.json": "675d37a9da2b26a0472ff0fd58a370dd55705602c78006bc1a52d96245d15972",
+  ".session_backup/2026-10-13/decisions/CC-037.txt": "24a0fe35765218f027e9284b13e834deb9e86e460c2e69739da934b2f54a7daf"
+ }
+}
