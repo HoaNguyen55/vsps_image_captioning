@@ -1,0 +1,6 @@
+$ score_b_n2.py run .session_backup/2026-10-19/SC_B2/never_written.json --gate .session_backup/2026-10-19/SC_B2/b_n2_gate.json
+REFUSED: .session_backup/2026-10-19/SC_B2/score_b_n2.py is not committed unmodified at HEAD
+exit 1
+$ score_b_n2.py gate .session_backup/2026-10-19/SC_B2/b_n2_gate.json   (the output already exists)
+REFUSED: .session_backup/2026-10-19/SC_B2/b_n2_gate.json exists (outputs are never overwritten), or NCS_DATA/VNCORENLP_DIR is unset
+exit 1

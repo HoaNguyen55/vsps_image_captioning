@@ -1,0 +1,278 @@
+{
+ "id": "B-N2",
+ "mode": "gate",
+ "prereg": {
+  "path": "manuscript/prereg/2026-10-19_b_n2_leakage_did_prereg_v2.json",
+  "sha256": "675d37a9da2b26a0472ff0fd58a370dd55705602c78006bc1a52d96245d15972"
+ },
+ "script_sha256": "2f46ea3ba7e45190b23e2fc1aff2e13eb4bb7ab064fab0377b263a8e53d8b922",
+ "config": {
+  "B": 5000,
+  "seed": 0,
+  "q": [
+   2.5,
+   97.5
+  ],
+  "tol": 1e-09,
+  "delta": 3.0,
+  "n_L": 401,
+  "n_C": 157
+ },
+ "env": {
+  "python": "3.12.3",
+  "numpy": "2.5.4",
+  "pycocoevalcap": "1.2",
+  "py_vncorenlp": "0.1.4",
+  "pyjnius": "1.7.0",
+  "VnCoreNLP-1.2.jar": "9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793",
+  "wordsegmenter.rdr": "9e62f96bd93e37a24f364238e8d8ae986fa5dad6dbc9f4eae622ab3651b7fa06"
+ },
+ "inputs": {
+  "ktvic_test_data.json": "cc22ec6a8883773cb23c87ad5b64925f5a53c21982117274b53621f454e7ebbf",
+  "leaked": {
+   "path": "data/lb/splits/ktvic_test_openviic_train_leaked.txt",
+   "sha256": "56e57ea468e48b692ed704ab4655f53cb878309bc3953cfb8dfd57b56590380f",
+   "n": 401
+  },
+  "clean": {
+   "path": "data/lb/splits/ktvic_test_openviic_train_clean.txt",
+   "sha256": "4832c16b4499a70b5b6d5c3967a22f551283b45b3a885ba011301b6a4e90015e",
+   "n": 157
+  }
+ },
+ "systems": {
+  "p1-gold": {
+   "results": {
+    "path": "data/results/p1-gold-short.json",
+    "sha256": "d333cdb0a7ef4109aaceecae0653cc90785ff00509b069ca388d042c9a5fe968",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 149.79263923796074
+   },
+   "preds": {
+    "path": "data/results/p1-gold-short.preds.json",
+    "sha256": "4d87519afad988b73524b86fd29eac1cd22102a2c9d4a93f8f3db87c844d093c",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 149.79263923796074,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 149.79263923796074,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "p1_s43": {
+   "results": {
+    "path": "data/results/p1_s43-short.json",
+    "sha256": "451fa02d522979c3ccbb75b1c183b876a796797b55db9c21729abf966ed7af21",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 143.9168855669574
+   },
+   "preds": {
+    "path": "data/results/p1_s43-short.preds.json",
+    "sha256": "819b48ef577bec6bc4d1c2d77c3ed93f8f9bb60cf197c7a5482e5af8e502a89c",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 143.9168855669574,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 143.9168855669574,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "p1_s44": {
+   "results": {
+    "path": "data/results/p1_s44-short.json",
+    "sha256": "71a8c25c9d7cb1a10b835c1c2be1ea9e4f3e1e84d6900e009065cae21604346e",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 143.69655631780907
+   },
+   "preds": {
+    "path": "data/results/p1_s44-short.preds.json",
+    "sha256": "764eaf92e88cf72c525d6aa20e226ad1f3e9aafba38f338190935f75990ea5ff",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 143.69655631780907,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 143.69655631780907,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "p1assist_s42": {
+   "results": {
+    "path": "data/results/p1assist_s42-short.json",
+    "sha256": "ea38b60e7dc5c243356b98b8ac19b91165cb93ecb6f8a6f2badcbeb7053dbfa9",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 148.66403869141925
+   },
+   "preds": {
+    "path": "data/results/p1assist_s42-short.preds.json",
+    "sha256": "ca5ce25366b04def1ca1099344a0e4a610bf767e357140525e4290913ffe2fef",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 148.66403869141925,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 148.66403869141925,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "p1assist_s43": {
+   "results": {
+    "path": "data/results/p1assist_s43-short.json",
+    "sha256": "ce8576a440d55888c2954070cef7c916f8030de94f5e171d9e6a02aef79137eb",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 148.06296896003204
+   },
+   "preds": {
+    "path": "data/results/p1assist_s43-short.preds.json",
+    "sha256": "13343482926cade1e3640185e3c5bd7cd504df5f2a2099ffb614d7a9bcb51861",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 148.06296896003204,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 148.06296896003204,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "p1assist_s44": {
+   "results": {
+    "path": "data/results/p1assist_s44-short.json",
+    "sha256": "723d97653f895e98306a4dbbbf85a1dcd1d6df9012422711bfd85f98b2cca2ad",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 147.96149059506558
+   },
+   "preds": {
+    "path": "data/results/p1assist_s44-short.preds.json",
+    "sha256": "9344cb3504f3b925156ee59952735e946a97de29b682583d217de4198060f248",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 147.96149059506558,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 147.96149059506558,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "fuse2_s42": {
+   "results": {
+    "path": "data/results/fuse2_s42-short.json",
+    "sha256": "70b007f9992a337d33fe10c3710f2ad2c773f564743d69a6ca8874a2e30739cb",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 143.8961821923926
+   },
+   "preds": {
+    "path": "data/results/fuse2_s42-short.preds.json",
+    "sha256": "8c659897383489710598f4890aa6cbc3e242e9ede271f4d8a59f47ee85dc446b",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 143.8961821923926,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 143.8961821923926,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "fuse2_s43": {
+   "results": {
+    "path": "data/results/fuse2_s43-short.json",
+    "sha256": "c7013b16958b3debee24957817377bd059c7b9a0add010905571cdc61f37e0de",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 145.0918579536471
+   },
+   "preds": {
+    "path": "data/results/fuse2_s43-short.preds.json",
+    "sha256": "551269ba36c71a0e3423a34d8100a782e55bfb9e4f37f3368ef4d43ddbe08ddf",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 145.0918579536471,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 145.0918579536471,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "fuse2_s44": {
+   "results": {
+    "path": "data/results/fuse2_s44-short.json",
+    "sha256": "df30730e20a63738b9e9a2605307d9ac9ab2fd5fe7e04284e2f31bf2925ba4a9",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 142.21289642374794
+   },
+   "preds": {
+    "path": "data/results/fuse2_s44-short.preds.json",
+    "sha256": "2c69b0a885eef583a37cb2853da0637200ac1b4b523acc7c2fc8338951aa5c7f",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 142.21289642374794,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 142.21289642374794,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "mr5assist_s42": {
+   "results": {
+    "path": "data/results/mr5assist_s42-short.json",
+    "sha256": "ecfb787e7bb270a254e6bf8f49139df2a56f65b4cf0adb84e3c0e9a19d7798c2",
+    "key": "results[segmenter=rdrsegmenter].scores_scaled_x100.CIDEr",
+    "CIDEr_x100": 147.54934857537972
+   },
+   "preds": {
+    "path": "data/results/mr5assist_s42-short.preds.json",
+    "sha256": "76e332a64b4ff61c32d7934b1f06c035267e89c594fa038245bc0913a193406f",
+    "n": 558
+   },
+   "self_check": {
+    "evaluate_py_CIDEr_x100": 147.54934857537972,
+    "segmenter": "rdrsegmenter",
+    "pass": true
+   },
+   "F0": {
+    "mean_c_x100": 147.54934857537972,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  }
+ },
+ "all_pass": true,
+ "K_COV_dropped": [],
+ "subset_statistics_computed": false
+}
