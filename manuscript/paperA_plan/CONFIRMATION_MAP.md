@@ -8,6 +8,7 @@
 - Amendment 1 (2026-10-18, PD-12): wording-only; abstract sentences shortened; no verdict rule, selection logic, precondition, qualifier or placeholder changed.
 **Fixed frame (Amendment 1).** "Object-hallucination metrics such as CHAIR and object F1 score captions against gold; registered tests examine whether gold completeness and object count change them." The abstract opens with this text in every outcome; it carries no result claim.
 **Brace fill format (Amendment 1).** "Each brace is filled mechanically, with no other words: {S}, {R}, {R'} and {k} take the integer the evaluator prints; {C*} takes the control name the evaluator prints (matched_prefix, sentence_tie_average or uniform_random_subset); {passed | failed | not run}, {selected {C*} | no control passed | not run} and {; a run was invalid under the registered protocol check, with no valid re-run | ; its runs were not scored by the freeze} take exactly one listed alternative, verbatim; {G2B-O1 and G2B-E2 verdict per set} takes 'O1/E2: CV295 v/v, XM600 v/v, UV231 v/v'; {G2B-E1 verdict per set} takes 'E1: CV295 v, XM600 v, UV231 v'; {failing verdicts} takes 'c: CV295 v, XM600 v, UV231 v', where c lists each of O1, E2 and P1, in that order, that is FAIL on at least one set, joined by '/', and each v gives those claims' verdicts in the same order, joined by '/'; {; if K1 fired: its exponent is dataset-specific} takes '; its exponent is dataset-specific' if K1 fired and nothing otherwise; every v is the evaluator's verdict token (PASS, FAIL, INCONCLUSIVE or NOT_EVALUABLE)."
+- Amendment 2 (PD-18): ADDS the A-N1 registered-secondary outcome sentences; no existing verdict rule, selection logic, precondition, qualifier or placeholder changed.
 
 **Sources.**
 - PD-10 (`.session_backup/2026-10-13/decisions/PD-10.txt`): bindings 1–5 and the GitHub push times.
@@ -63,6 +64,14 @@ Times are UTC. "Push" is the GitHub server-side log (PD-10); the local reflog di
 **Scope (binding 3).** On CV295, G2-B is a NEW-BACKBONE replication on 295 discovery images, with the same references and instance gold. CV295 ⊂ COCO-2500: all 295 cocoids are in `data/coco_probe/manifest.json`. It is NOT an image-out-of-sample test. Image-disjoint confirmation comes from UV231, XM600 and XM3600 N1 (binding 3). Under CC-024, a FAIL on UV231 counts against the claim, but a PASS there is not counted as support: its images are COCO train2017 images, which the backbone may have seen (G2-B prereg §4).
 
 **Completed tests.** Any registered C2 test that completes, B3 included, enters §7.7 and §10.1 with its verdict as computed, failures included (judge, CC-029; §6).
+
+**A-N1 outcome sentence (Amendment 2, PD-18).**
+- **Selection:** "A-N1 is the registered secondary test of condensed F1 on the G2-B outputs. The outcome is the one score_an1.py computes (score_an1.outcome, the A-N1 addendum's rule): SUPPORTED, MIXED, NOT_SUPPORTED or NOT_TESTABLE. The sentence for that outcome is used verbatim; it has no braces."
+- **Position:** "Right after the C2 sentence and its one-reference clause, in every outcome."
+- **SUPPORTED:** "In a registered secondary test (second backbone on development images), condensed F1 given verified negatives shrinks the slope's gold-completeness dependence; XM600 is the informative set."
+- **MIXED:** "In a registered secondary test (second backbone on development images) of condensed F1 given verified negatives, the result is mixed; XM600 is the informative set."
+- **NOT_SUPPORTED:** "In a registered secondary test (second backbone on development images), condensed F1 given verified negatives does not shrink the slope's gold-completeness dependence."
+- **NOT_TESTABLE:** "The registered secondary test (second backbone on development images) of condensed F1 given verified negatives was not evaluable."
 
 ## 3. C1: count control (second in the abstract)
 

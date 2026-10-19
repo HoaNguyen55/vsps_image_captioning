@@ -1,0 +1,742 @@
+{
+ "schema": "vsps.an1_stage1.v1",
+ "status": "EXPLORATORY: stage 1 of A-N1 (DESIGN.md, STAGE1_PLAN.md)",
+ "started_utc": "2026-10-19T02:05:46Z",
+ "finished_utc": "2026-10-19T02:06:02Z",
+ "code_at_head": "cbed6dbc88b80ee0dc92f5891d82af0ce7772060",
+ "measures_py_sha256": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6",
+ "score_g2b_sha256": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5",
+ "prereg_sha256": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+ "selfcheck_sha256": "e29f0a4f8078e72d334f2b421b9e703bd788606ba02c96f7232fe8bc96bc5acc",
+ "settings_from_prereg": {
+  "n_boot": 1000,
+  "ci": [
+   2.5,
+   97.5
+  ],
+  "tp_floor": 1e-09,
+  "n_random_subsets": 20,
+  "bootstrap_seed": 0,
+  "subset_seed": 1,
+  "note": "new seeds; numpy.random.default_rng(seed)"
+ },
+ "system_files": {
+  "COCO-2500": {
+   "distill-detailed": [
+    "data/results/coco5000/distill-detailed.shard0of1.jsonl",
+    "6453bfd5a2f7667d0cc879d3e4ca359553b9bda994760d227785da141ec001fd"
+   ],
+   "distill-short": [
+    "data/results/coco5000/distill-short.shard0of1.jsonl",
+    "12ab5a6e2b707068a48f2247832bcd125559a291ea8f265946e9031d3ccef1b0"
+   ],
+   "zeroshot-detailed": [
+    "data/results/coco5000/zeroshot-detailed.shard0of1.jsonl",
+    "96e15f40cead64a993ff01ba2392857b1dae16155661ffddd7f2bac3af54365a"
+   ],
+   "zeroshot-short": [
+    "data/results/coco5000/zeroshot-short.shard0of1.jsonl",
+    "15ca56156796605c02397d13c60047bc6260d34ac65b8cc54f7651d71717feba"
+   ],
+   "fuse2_s42-detailed": [
+    "data/results/coco_transfer/fuse2_s42-detailed.shard0of1.jsonl",
+    "87d1ee42f87f7ad11da5f8cb41cfef652de44340368d11a841e975d756439cc8"
+   ],
+   "fuse2_s42-short": [
+    "data/results/coco_transfer/fuse2_s42-short.shard0of1.jsonl",
+    "f2285267dd58b3214cf3974a4c6f7d52c1de46113e96cc6a68171fe95d6475b0"
+   ],
+   "p1_s43-detailed": [
+    "data/results/coco_transfer/p1_s43-detailed.shard0of1.jsonl",
+    "64ac2c9e9c2cfa3cacf9f8ac2675a2b2145a324d6aeb27c0119e166b489fa301"
+   ],
+   "p1_s43-short": [
+    "data/results/coco_transfer/p1_s43-short.shard0of1.jsonl",
+    "6f1be27242a0eff45e07c1ad3548a1149dc65b9bae4065294b6fb06faca4cf9d"
+   ],
+   "zeroshot-detailed+vcd": [
+    "data/results/coco5000_vcd/zeroshot-detailed.shard0of1.jsonl",
+    "d6173e34823383202298ea7dc00afdd92604277a70bff5a9f1d93e1173396bbd"
+   ]
+  },
+  "UIT-ViIC test": {
+   "transfer_fuse2_s42-detailed": [
+    "data/results/uitviic/uitviic_fuse2_s42-detailed.preds.json",
+    "82f34b94cf50e788f3bfb6d024141f2fc211c1bd311813748784030148b5670e"
+   ],
+   "transfer_fuse2_s42-short": [
+    "data/results/uitviic/uitviic_fuse2_s42-short.preds.json",
+    "42122e7ada5a04ba512543f05a02a8aac077f16b3d9b2cb93de67733d68b7142"
+   ],
+   "transfer_p1_s43-detailed": [
+    "data/results/uitviic/uitviic_p1_s43-detailed.preds.json",
+    "46cb0033cb222222b957a6e06d8269117819f1b8628c8ea0a2565a831b4e1196"
+   ],
+   "transfer_p1_s43-short": [
+    "data/results/uitviic/uitviic_p1_s43-short.preds.json",
+    "42ad49eebac92c8167721f629d4bbed75b284ac7efaa941482c4235611610d22"
+   ],
+   "zeroshot-detailed": [
+    "data/results/uitviic/uitviic_zeroshot-detailed.preds.json",
+    "0589973c264b9de43da7e63f40b19ba267a3d08e272c75f51f106cad764828d9"
+   ],
+   "zeroshot-short": [
+    "data/results/uitviic/uitviic_zeroshot-short.preds.json",
+    "76361ccde3db90b9eaa8cf0bf2b7bb055f3535a013626de3dae924bce59baea8"
+   ],
+   "ind_fuse2_s42-detailed": [
+    "data/results/uitviic_ind_test/uitviic_fuse2_s42-detailed.preds.json",
+    "c7757cc734137a291bfa073d4fed31946f4351481c40c901e1fb27823113c4de"
+   ],
+   "ind_fuse2_s42-short": [
+    "data/results/uitviic_ind_test/uitviic_fuse2_s42-short.preds.json",
+    "ebf68bca65b4009937b4e7b902892a9b6391551fc84ddd38dc981bdbfff7a8e2"
+   ],
+   "ind_p1_s42-detailed": [
+    "data/results/uitviic_ind_test/uitviic_p1_s42-detailed.preds.json",
+    "56aac8a6e8733c4287443ea353bdee13c0716b4a9817c45779545310d01573db"
+   ],
+   "ind_p1_s42-short": [
+    "data/results/uitviic_ind_test/uitviic_p1_s42-short.preds.json",
+    "94b87b4933d8dd7bf9f6108a2eeedd7fc0c8dd62f5b51313a182bc90db9444f7"
+   ]
+  },
+  "XM3600": {
+   "xm3600_fuse2_s42-detailed": [
+    "data/results/xm3600/xm3600_fuse2_s42-detailed.preds.json",
+    "b941181c7b118c73fdac8f3f66797beee9d07891096a98927b1aa30f36b31203"
+   ],
+   "xm3600_fuse2_s42-short": [
+    "data/results/xm3600/xm3600_fuse2_s42-short.preds.json",
+    "426c2d8140a912d17d296dddfcaa807aa93b5e673d3ee8fd5dea6c44885a2943"
+   ],
+   "xm3600_p1_s43-detailed": [
+    "data/results/xm3600/xm3600_p1_s43-detailed.preds.json",
+    "296a26bfe17635afe61ab28ba16fae40714577b4981b96786cc021700410c7e2"
+   ],
+   "xm3600_p1_s43-short": [
+    "data/results/xm3600/xm3600_p1_s43-short.preds.json",
+    "1150a046e63470c09268f0045b7b4976b6cad2a571453873277a9fc82fd2aad9"
+   ],
+   "xm3600_zeroshot-detailed": [
+    "data/results/xm3600/xm3600_zeroshot-detailed.preds.json",
+    "47db3b9d279508e89f0332482c3e268a119186af9e0cbf6426cc85ce1a52a32f"
+   ],
+   "xm3600_zeroshot-short": [
+    "data/results/xm3600/xm3600_zeroshot-short.preds.json",
+    "1f3573324772c67de3eebcdef326f84a39ecbe7fd705ceb5dd4e6863a0d73d4c"
+   ]
+  }
+ },
+ "sets": {
+  "COCO-2500": {
+   "family_in_selfcheck": "COCO-2500 (check_coco)",
+   "lexicon": "coco80",
+   "n_images": 2500,
+   "systems": [
+    "distill-detailed",
+    "distill-short",
+    "zeroshot-detailed",
+    "zeroshot-short",
+    "fuse2_s42-detailed",
+    "fuse2_s42-short",
+    "p1_s43-detailed",
+    "p1_s43-short",
+    "zeroshot-detailed+vcd"
+   ],
+   "levels": [
+    "refs1_randk",
+    "refs_all",
+    "inst"
+   ],
+   "data_path_check": [
+    {
+     "gold": "refs1_firstk",
+     "selfcheck_reproduced": -4.21,
+     "stage1_path": -4.206378176360686,
+     "ok": true
+    },
+    {
+     "gold": "refs2_firstk",
+     "selfcheck_reproduced": 2.94,
+     "stage1_path": 2.936182510949837,
+     "ok": true
+    },
+    {
+     "gold": "refs3_firstk",
+     "selfcheck_reproduced": 6.62,
+     "stage1_path": 6.6205155560130535,
+     "ok": true
+    },
+    {
+     "gold": "refs4_firstk",
+     "selfcheck_reproduced": 9.12,
+     "stage1_path": 9.124172053982674,
+     "ok": true
+    },
+    {
+     "gold": "refs5_firstk",
+     "selfcheck_reproduced": 11.08,
+     "stage1_path": 11.07830119982918,
+     "ok": true
+    },
+    {
+     "gold": "inst",
+     "selfcheck_reproduced": 22.41,
+     "stage1_path": 22.411580454777095,
+     "ok": true
+    },
+    {
+     "gold": "inst+refs_all",
+     "selfcheck_reproduced": 24.16,
+     "stage1_path": 24.156269067389143,
+     "ok": true
+    }
+   ],
+   "measures": {
+    "F1": {
+     "slope": {
+      "refs1_randk": [
+       -4.141885018577763,
+       [
+        -5.568698707611783,
+        -2.7152831635259003
+       ]
+      ],
+      "refs_all": [
+       11.07830119982919,
+       [
+        9.663903346954571,
+        12.513930749017184
+       ]
+      ],
+      "inst": [
+       22.411580454777102,
+       [
+        21.21693698266753,
+        23.46226483307169
+       ]
+      ]
+     },
+     "range": [
+      26.553465473354866,
+      [
+       25.338547722852415,
+       27.722573722631907
+      ]
+     ]
+    },
+    "cF1": {
+     "slope": {
+      "refs1_randk": [
+       8.634545160451243,
+       [
+        7.160354272361511,
+        10.006902244394103
+       ]
+      ],
+      "refs_all": [
+       18.157375975772773,
+       [
+        16.856493141734617,
+        19.416673372039295
+       ]
+      ],
+      "inst": [
+       22.411580454777102,
+       [
+        21.21693698266753,
+        23.46226483307169
+       ]
+      ]
+     },
+     "range": [
+      13.77703529432586,
+      [
+       12.89297685556708,
+       14.615778198498212
+      ]
+     ],
+     "rho": [
+      0.51884132819313,
+      [
+       0.5019919858867222,
+       0.5350477639109869
+      ]
+     ],
+     "Q_theta1": [
+      12.776430179029006,
+      [
+       12.177225861839366,
+       13.342635929988404
+      ]
+     ]
+    },
+    "bpref": {
+     "slope": {
+      "refs1_randk": [
+       17.95738333480246,
+       [
+        16.377268453866016,
+        19.54900146144745
+       ]
+      ],
+      "refs_all": [
+       25.045915425444004,
+       [
+        23.62625948357756,
+        26.402272089532172
+       ]
+      ],
+      "inst": [
+       27.682045787470102,
+       [
+        26.359668528717815,
+        28.837505440936457
+       ]
+      ]
+     },
+     "range": [
+      9.72466245266764,
+      [
+       8.69412325863693,
+       10.75092776778137
+      ]
+     ],
+     "rho": [
+      0.3662295026020568,
+      [
+       0.3381051671676395,
+       0.39371779323143136
+      ]
+     ],
+     "Q_theta1": [
+      16.828803020687225,
+      [
+       16.09177225451941,
+       17.54351646883606
+      ]
+     ]
+    }
+   },
+   "diagnostics": {
+    "unjudged_share": {
+     "refs1_randk": 0.24106857012185162,
+     "refs_all": 0.0869622031295939,
+     "inst": 0.0
+    },
+    "conflict_pairs_all_refs": 761,
+    "positive_pairs_all_refs": 5191,
+    "images_without_negatives": 0
+   }
+  },
+  "UIT-ViIC test": {
+   "family_in_selfcheck": "UIT-ViIC test all_10 (coco80)",
+   "lexicon": "coco80",
+   "n_images": 231,
+   "systems": [
+    "transfer_fuse2_s42-detailed",
+    "transfer_fuse2_s42-short",
+    "transfer_p1_s43-detailed",
+    "transfer_p1_s43-short",
+    "zeroshot-detailed",
+    "zeroshot-short",
+    "ind_fuse2_s42-detailed",
+    "ind_fuse2_s42-short",
+    "ind_p1_s42-detailed",
+    "ind_p1_s42-short"
+   ],
+   "levels": [
+    "refs1_randk",
+    "refs_all",
+    "inst"
+   ],
+   "data_path_check": [
+    {
+     "gold": "refs1_firstk",
+     "selfcheck_reproduced": -15.9,
+     "stage1_path": -15.902169385198725,
+     "ok": true
+    },
+    {
+     "gold": "refs2_firstk",
+     "selfcheck_reproduced": -6.01,
+     "stage1_path": -6.013676075808354,
+     "ok": true
+    },
+    {
+     "gold": "refs3_firstk",
+     "selfcheck_reproduced": 1.04,
+     "stage1_path": 1.0396309953654435,
+     "ok": true
+    },
+    {
+     "gold": "refs4_firstk",
+     "selfcheck_reproduced": 3.07,
+     "stage1_path": 3.0731601840412237,
+     "ok": true
+    },
+    {
+     "gold": "refs5_firstk",
+     "selfcheck_reproduced": 4.8,
+     "stage1_path": 4.795653559003236,
+     "ok": true
+    },
+    {
+     "gold": "inst",
+     "selfcheck_reproduced": 37.52,
+     "stage1_path": 37.517318015503804,
+     "ok": true
+    },
+    {
+     "gold": "inst+refs_all",
+     "selfcheck_reproduced": 37.5,
+     "stage1_path": 37.49824242758797,
+     "ok": true
+    },
+    {
+     "gold": "inst+refs1_firstk",
+     "selfcheck_reproduced": 37.5,
+     "stage1_path": 37.5003812122388,
+     "ok": true
+    }
+   ],
+   "measures": {
+    "F1": {
+     "slope": {
+      "refs1_randk": [
+       -15.79352025393716,
+       [
+        -19.65443344095466,
+        -11.376732221740093
+       ]
+      ],
+      "refs_all": [
+       4.795653559003235,
+       [
+        0.04565322106053887,
+        10.221226837247576
+       ]
+      ],
+      "inst": [
+       37.51731801550379,
+       [
+        34.70480386225445,
+        40.04420945439595
+       ]
+      ]
+     },
+     "range": [
+      53.31083826944095,
+      [
+       48.907599521361654,
+       56.953636745841365
+      ]
+     ]
+    },
+    "cF1": {
+     "slope": {
+      "refs1_randk": [
+       9.395645689280324,
+       [
+        5.530988581291767,
+        13.360966972769063
+       ]
+      ],
+      "refs_all": [
+       20.090772197459852,
+       [
+        16.169547897191936,
+        24.187002901227828
+       ]
+      ],
+      "inst": [
+       37.51731801550379,
+       [
+        34.70480386225445,
+        40.04420945439595
+       ]
+      ]
+     },
+     "range": [
+      28.121672326223468,
+      [
+       25.15215830658191,
+       30.394194969797994
+      ]
+     ],
+     "rho": [
+      0.5275038479810115,
+      [
+       0.5029477362484813,
+       0.5520365253681494
+      ]
+     ],
+     "Q_theta1": [
+      25.189165943217482,
+      [
+       22.927457746553248,
+       27.2732011963
+      ]
+     ]
+    },
+    "bpref": {
+     "slope": {
+      "refs1_randk": [
+       19.599155991683887,
+       [
+        14.431786428613703,
+        24.988343445265564
+       ]
+      ],
+      "refs_all": [
+       31.98496952330082,
+       [
+        27.133898933642996,
+        37.145290718115454
+       ]
+      ],
+      "inst": [
+       40.6457674053811,
+       [
+        37.55415021941769,
+        43.477866513941976
+       ]
+      ]
+     },
+     "range": [
+      21.046611413697214,
+      [
+       16.251061445331533,
+       25.017679792863834
+      ]
+     ],
+     "rho": [
+      0.39479047970179143,
+      [
+       0.3246426906997694,
+       0.45179279985277154
+      ]
+     ],
+     "Q_theta1": [
+      32.264226855743736,
+      [
+       29.040353519923954,
+       35.13238780199164
+      ]
+     ]
+    }
+   },
+   "diagnostics": {
+    "unjudged_share": {
+     "refs1_randk": 0.2341952353282975,
+     "refs_all": 0.11708309122603133,
+     "inst": 0.0
+    },
+    "conflict_pairs_all_refs": 2,
+    "positive_pairs_all_refs": 429,
+    "images_without_negatives": 0
+   }
+  },
+  "XM3600": {
+   "family_in_selfcheck": "XM3600 (full verdict, v2)",
+   "lexicon": "objects_in",
+   "n_images": 600,
+   "systems": [
+    "xm3600_fuse2_s42-detailed",
+    "xm3600_fuse2_s42-short",
+    "xm3600_p1_s43-detailed",
+    "xm3600_p1_s43-short",
+    "xm3600_zeroshot-detailed",
+    "xm3600_zeroshot-short"
+   ],
+   "levels": [
+    "refs1_randk",
+    "refs_all",
+    "oiv7_verified"
+   ],
+   "data_path_check": [
+    {
+     "gold": "refs1_firstk",
+     "selfcheck_reproduced": -11.1911,
+     "stage1_path": -11.191114857043377,
+     "ok": true
+    },
+    {
+     "gold": "refs_all",
+     "selfcheck_reproduced": -2.4278,
+     "stage1_path": -2.4278487605925334,
+     "ok": true
+    },
+    {
+     "gold": "oiv7_verified",
+     "selfcheck_reproduced": 19.3247,
+     "stage1_path": 19.324662824869616,
+     "ok": true
+    }
+   ],
+   "measures": {
+    "F1": {
+     "slope": {
+      "refs1_randk": [
+       -9.298863360980974,
+       [
+        -11.363419697633104,
+        -7.304199056290281
+       ]
+      ],
+      "refs_all": [
+       -2.4278487605925334,
+       [
+        -4.725330846571569,
+        -0.22168869548827116
+       ]
+      ],
+      "oiv7_verified": [
+       19.324662824869616,
+       [
+        17.675242915529992,
+        21.00192109808897
+       ]
+      ]
+     },
+     "range": [
+      28.62352618585059,
+      [
+       26.20951990358353,
+       31.018886278075655
+      ]
+     ]
+    },
+    "cF1": {
+     "slope": {
+      "refs1_randk": [
+       14.940013858768046,
+       [
+        13.177529385400568,
+        16.530476522190963
+       ]
+      ],
+      "refs_all": [
+       18.051833364666766,
+       [
+        16.33516949567122,
+        19.700353290931314
+       ]
+      ],
+      "oiv7_verified": [
+       19.324662824869616,
+       [
+        17.675242915529992,
+        21.00192109808897
+       ]
+      ]
+     },
+     "range": [
+      4.384648966101571,
+      [
+       2.8948535333693455,
+       6.53683547752015
+      ]
+     ],
+     "rho": [
+      0.15318339667979222,
+      [
+       0.10532879468923148,
+       0.21247514745821452
+      ]
+     ],
+     "Q_theta1": [
+      24.23887721974902,
+      [
+       22.844802251973395,
+       25.129735100367533
+      ]
+     ]
+    },
+    "bpref": {
+     "slope": {
+      "refs1_randk": [
+       19.72952046470647,
+       [
+        17.678275779483105,
+        21.55687265338595
+       ]
+      ],
+      "refs_all": [
+       21.75623518418093,
+       [
+        19.860892355534467,
+        23.517070753961153
+       ]
+      ],
+      "oiv7_verified": [
+       19.958438206045567,
+       [
+        17.95910209303477,
+        22.00250876693999
+       ]
+      ]
+     },
+     "range": [
+      2.026714719474459,
+      [
+       1.3846992775456661,
+       4.423803481109846
+      ]
+     ],
+     "rho": [
+      0.07080590652301674,
+      [
+       0.048365839185331334,
+       0.1613690136601446
+      ]
+     ],
+     "Q_theta1": [
+      26.59681146637613,
+      [
+       22.334869599503058,
+       28.597622255460628
+      ]
+     ]
+    }
+   },
+   "diagnostics": {
+    "unjudged_share": {
+     "refs1_randk": 0.5444494652809156,
+     "refs_all": 0.42431089019430634,
+     "oiv7_verified": 0.6043078776924236
+    },
+    "conflict_pairs_all_refs": 44,
+    "positive_pairs_all_refs": 1409,
+    "images_without_negatives": 231
+   }
+  }
+ },
+ "choice": {
+  "shrink_point": {
+   "cF1": {
+    "COCO-2500": 0.48115867180687,
+    "UIT-ViIC test": 0.47249615201898854,
+    "XM3600": 0.8468166033202078
+   },
+   "bpref": {
+    "COCO-2500": 0.6337704973979432,
+    "UIT-ViIC test": 0.6052095202982086,
+    "XM3600": 0.9291940934769832
+   }
+  },
+  "admissible": [
+   "cF1",
+   "bpref"
+  ],
+  "score_min_shrink": {
+   "cF1": 0.47249615201898854,
+   "bpref": 0.6052095202982086
+  },
+  "primary": "bpref",
+  "kill": false,
+  "theta": 0.5,
+  "theta_source": "max over sets of the 97.5th percentile of rho, rounded up to a multiple of STEP, capped"
+ }
+}

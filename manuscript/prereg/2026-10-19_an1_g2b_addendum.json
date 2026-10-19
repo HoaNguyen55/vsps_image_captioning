@@ -1,0 +1,189 @@
+{
+ "addendum_id": "2026-10-19_an1_g2b_addendum",
+ "title": "A-N1: object measures robust to incomplete gold on the G2-B outputs (registered secondary analysis)",
+ "status": "DRAFT for the judge (PD-16 final ruling). Registered only if committed before the first computation of the statistic on G2-B data, and only as computed by the committed score_an1.py",
+ "parent_prereg": {
+  "path": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json",
+  "sha256": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+  "commit": "0932ba1"
+ },
+ "does_not_change": "any G2-B prediction, verdict rule, kill rule, family or gold; score_g2b.py, the G2-B prereg and the confirmation map stay byte-identical",
+ "tier": "registered secondary; body only, never the abstract or conclusions as confirmatory (map section 6; PD-16 item 1)",
+ "preconditions": [
+  "all registered G2-B decodes present with sidecars (prereg runs)",
+  "CC-027 (b) provenance check: score_g2b.load_runs (KD)",
+  "clean subsets (KL)",
+  "main's go for G2-B scoring (CC-027 (c))"
+ ],
+ "sets": [
+  "cv295",
+  "xm600",
+  "uv231"
+ ],
+ "scope": "NEW-BACKBONE test on development images, not image-out-of-sample: CV295 is part of COCO-2500, XM600 is the Paper A XM3600 image set, UV231 is UIT-ViIC test (PD-16 item 4; binding 3). UV231 follows prereg exposure.uv231_handling: a FAIL counts, a PASS is never counted as support",
+ "scope_given_verified_negatives": {
+  "text": "The claim holds given verified negatives. On CV295 and UV231 the negatives are U80 minus the image's instance classes, the exhaustive complement of the complete gold, so cF1 carries complete-gold negatives at every ladder level and part of the shrinkage on those sets is by construction. XM600's OIV7 absent labels are not exhaustive, so XM600 is the informative set.",
+  "authority": "PD-16 final (b)",
+  "stage1_conflicts_all_refs": {
+   "COCO-2500": {
+    "conflict_pairs_all_refs": 761,
+    "positive_pairs_all_refs": 5191
+   },
+   "UIT-ViIC test": {
+    "conflict_pairs_all_refs": 2,
+    "positive_pairs_all_refs": 429
+   },
+   "XM3600": {
+    "conflict_pairs_all_refs": 44,
+    "positive_pairs_all_refs": 1409
+   },
+   "source": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json",
+   "sha256": "d70cb94bc3bebae5908b740fa23e7a3290b0585302bff0a7acfee5bb897872d1",
+   "keys": "sets.<set>.diagnostics.{conflict_pairs_all_refs, positive_pairs_all_refs}"
+  },
+  "stage1_xm3600_images_without_negatives": {
+   "value": 231,
+   "of": 600,
+   "source": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json",
+   "sha256": "d70cb94bc3bebae5908b740fa23e7a3290b0585302bff0a7acfee5bb897872d1",
+   "keys": "sets.XM3600.diagnostics.images_without_negatives, sets.XM3600.n_images"
+  },
+  "registered_sets": "score_an1.py reports the same counts per set: sets.<set>.primary_analysis.diagnostics_all_images"
+ },
+ "family": "LADDER (prereg families.<set>.LADDER), clean subset as for G2B-E1/E2/O1",
+ "lexicon": "the primary lexicon of each set (score_g2b.score: the first lexicon); uv231's secondary lexicon is not analysed (DESIGN.md D7)",
+ "gold_levels": "prereg golds.<set>.one_ref, all_refs, complete",
+ "verified_negatives": {
+  "coco80": "U80 minus the instance classes of the image (U80 = the 80 classes of score_coco_probe.load_vi_terms)",
+  "objects_in": "OIV7 classes with status absent (xm3600_oiv7.statuses)"
+ },
+ "measures": {
+  "F1": "registered mixed F1 (score_g2b.scores)",
+  "cF1": "condensed F1: precision over judged mentions J = G | (N - G), registered recall; equals F1 at the complete level (DESIGN.md D3)",
+  "bpref": "bpref_set, trec_eval min(R, N) form, random order of the mentioned classes"
+ },
+ "primary": {
+  "measure": "cF1",
+  "statistic": "Q = theta * Range_F1 - Range_cF1; Range = max - min over the three gold levels of the OLS slope of 100 * measure on ln M over LADDER (score_g2b.stat_slope)",
+  "direction": "Q > 0",
+  "rule": "sign_gt_0",
+  "theta": {
+   "value": 0.6,
+   "source": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json",
+   "sha256": "d70cb94bc3bebae5908b740fa23e7a3290b0585302bff0a7acfee5bb897872d1",
+   "derivation": "STAGE1_PLAN.md section 3 step 5 applied to cF1: max over the stage-1 sets of sets.<set>.measures.cF1.rho[1][1], rounded up to a multiple of measures.STEP, capped at measures.CAP"
+  }
+ },
+ "deviation_from_stage1_plan": {
+  "plan_choice": "bpref",
+  "plan_theta": 0.5,
+  "frozen_choice": "cF1",
+  "reason": "stage1_diagnostic.json (computed after the choice was seen): bpref_set / R is close to 1 on every set (bpref_over_R_median), so bpref_set's larger shrink comes mostly from dropping precision, a near form of degenerate case D1 the rule did not screen; cF1 keeps precision, equals F1 under complete gold, and has the larger stage-1 rho, so the deviation makes the test harder",
+  "diagnostic": {
+   "source": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_diagnostic.json",
+   "sha256": "ab3f55c78439af333788526d1d12adba703d4133452bf0cd8f7bbbae7425ade7"
+  },
+  "note_pd16_final": "bpref_set's Q is now reported per set as a descriptive output without a verdict (descriptive_bpref_set_Q)"
+ },
+ "alternative_if_rule_kept": {
+  "measure": "bpref",
+  "theta": {
+   "value": 0.5,
+   "source": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json",
+   "sha256": "d70cb94bc3bebae5908b740fa23e7a3290b0585302bff0a7acfee5bb897872d1",
+   "key": "choice.theta"
+  }
+ },
+ "descriptive": "slopes per level, Range and rho for F1, cF1 and bpref_set; the non-primary candidate's Q at theta; unjudged shares, D2 and D6 counts; every statistic on all images (sensitivity); no verdicts",
+ "descriptive_bpref_set_Q": {
+  "statistic": "theta * Range_F1 - Range_bpref_set, per set",
+  "output_keys": [
+   "sets.<set>.primary_analysis.descriptive_Q_at_theta.bpref",
+   "sets.<set>.sensitivity_full_set.descriptive_Q_at_theta.bpref"
+  ],
+  "same_as_primary": "theta, bootstrap draws, clean LADDER subset, gold levels and lexicon",
+  "verdict": "none; bpref_set enters no verdict(), outcome() or kill rule",
+  "code": "score_an1.py analyse_set (descriptive_Q_at_theta); sha unchanged, see code.score_an1",
+  "authority": "PD-16 final (a)"
+ },
+ "bootstrap": "prereg analysis_plan.bootstrap: default_rng(design_constants.set_by_this_registration.bootstrap_seed).multinomial(N, [1/N]*N, size=design_constants.n_boot) over the clean LADDER subset in id order; CI percentiles design_constants.ci_lo_percentile and ci_hi_percentile",
+ "verdict_rules": "prereg verdict_rules: sign_gt_0, not_evaluable, counting",
+ "outcome_rule": {
+  "order": [
+   "NOT_TESTABLE",
+   "NOT_SUPPORTED",
+   "SUPPORTED",
+   "MIXED"
+  ],
+  "not_supported_min_fail_sets": 2,
+  "support_sets": [
+   "cv295",
+   "xm600"
+  ],
+  "text": "NOT_TESTABLE if no set is PASS, FAIL or INCONCLUSIVE; NOT_SUPPORTED if 2 or more sets are FAIL (uv231 counts); SUPPORTED if cv295 and xm600 are PASS and no set is FAIL; MIXED otherwise"
+ },
+ "consequences": {
+  "SUPPORTED": "section 7 body, labelled registered secondary, per-set verdicts and the D1 scope (verified negatives needed); cF1 may be offered as the adoptable measure with that scope",
+  "MIXED": "per-set verdicts verbatim; no general claim; cF1 stays exploratory",
+  "NOT_SUPPORTED": "a registered negative; cF1 is not proposed (A-N1 kill); the IR framing stays as discussion",
+  "NOT_TESTABLE": "the paper says the test was not run or not evaluable"
+ },
+ "code": {
+  "score_g2b": {
+   "path": "scripts/g2b/score_g2b.py",
+   "sha256": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5"
+  },
+  "prereg": {
+   "path": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json",
+   "sha256": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055"
+  },
+  "measures": {
+   "path": "scripts/g2b/an1/measures.py",
+   "sha256": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6"
+  },
+  "score_an1": {
+   "path": "scripts/g2b/an1/score_an1.py",
+   "sha256": "6543ff58f4f8ef07ebe8da7285fff2b7aab83c3f5cee7062136b3e1c883949ef"
+  }
+ },
+ "code_at_head": "cbed6dbc88b80ee0dc92f5891d82af0ce7772060",
+ "proposed_commit_paths": {
+  "measures": "scripts/g2b/an1/measures.py",
+  "score_an1": "scripts/g2b/an1/score_an1.py",
+  "addendum_json": "manuscript/prereg/2026-10-19_an1_g2b_addendum.json",
+  "addendum_md": "manuscript/prereg/2026-10-19_an1_g2b_addendum.md",
+  "stage1_record": "manuscript/prereg/2026-10-19_an1_stage1/ (every other file of the task folder)"
+ },
+ "no_overwrite": "measures.py, stage1_diag.py, score_an1.py and build_addendum.py refuse an existing output; a delivered file is never overwritten (a new version is _v2)",
+ "stage1_record": {
+  "status": "EXPLORATORY",
+  "plan": {
+   "path": ".session_backup/2026-10-19/A-N1_ir_measures/STAGE1_PLAN.md",
+   "sha256": "19fde9eb44f505340ca11c1cdf1893057f626944860d873a4bdca4ab35ddb289",
+   "written_utc": "2026-10-19T01:44:19Z"
+  },
+  "design": {
+   "path": ".session_backup/2026-10-19/A-N1_ir_measures/DESIGN.md",
+   "sha256": "1536755eeef2d4bb2babb540ba989da70d1429d75f0fec4b1e6b4c1d8c9f57b9"
+  },
+  "pre_stage1_hashes": {
+   "path": ".session_backup/2026-10-19/A-N1_ir_measures/pre_stage1.sha256",
+   "sha256": "52326ecbd6f0882ae3fa683f7d81caa260434f1bd461b1f989a5f399931a4bc6",
+   "recorded_utc": "2026-10-19T02:05:42Z"
+  },
+  "run": {
+   "path": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json",
+   "sha256": "d70cb94bc3bebae5908b740fa23e7a3290b0585302bff0a7acfee5bb897872d1",
+   "started_utc": "2026-10-19T02:05:46Z",
+   "finished_utc": "2026-10-19T02:06:02Z",
+   "measures_py_sha256": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6"
+  },
+  "diagnostic": {
+   "path": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_diagnostic.json",
+   "sha256": "ab3f55c78439af333788526d1d12adba703d4133452bf0cd8f7bbbae7425ade7"
+  }
+ },
+ "g2b_outputs_read": "none; data/results/g2b/selfcheck.json is the only file read under data/results/g2b",
+ "paper_b_numbers": "none; no Paper-B manifest is read",
+ "open_models_only": "Qwen3-VL-8B-Instruct (prereg model.licence)"
+}

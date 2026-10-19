@@ -7,6 +7,17 @@
   "fixed_frame": "Object-hallucination metrics such as CHAIR and object F1 score captions against gold; registered tests examine whether gold completeness and object count change them.",
   "brace_fill_format": "Each brace is filled mechanically, with no other words: {S}, {R}, {R'} and {k} take the integer the evaluator prints; {C*} takes the control name the evaluator prints (matched_prefix, sentence_tie_average or uniform_random_subset); {passed | failed | not run}, {selected {C*} | no control passed | not run} and {; a run was invalid under the registered protocol check, with no valid re-run | ; its runs were not scored by the freeze} take exactly one listed alternative, verbatim; {G2B-O1 and G2B-E2 verdict per set} takes 'O1/E2: CV295 v/v, XM600 v/v, UV231 v/v'; {G2B-E1 verdict per set} takes 'E1: CV295 v, XM600 v, UV231 v'; {failing verdicts} takes 'c: CV295 v, XM600 v, UV231 v', where c lists each of O1, E2 and P1, in that order, that is FAIL on at least one set, joined by '/', and each v gives those claims' verdicts in the same order, joined by '/'; {; if K1 fired: its exponent is dataset-specific} takes '; its exponent is dataset-specific' if K1 fired and nothing otherwise; every v is the evaluator's verdict token (PASS, FAIL, INCONCLUSIVE or NOT_EVALUABLE)."
  },
+ "amendment_2": {
+  "note": "Amendment 2 (PD-18): ADDS the A-N1 registered-secondary outcome sentences; no existing verdict rule, selection logic, precondition, qualifier or placeholder changed.",
+  "selection": "A-N1 is the registered secondary test of condensed F1 on the G2-B outputs. The outcome is the one score_an1.py computes (score_an1.outcome, the A-N1 addendum's rule): SUPPORTED, MIXED, NOT_SUPPORTED or NOT_TESTABLE. The sentence for that outcome is used verbatim; it has no braces.",
+  "position": "Right after the C2 sentence and its one-reference clause, in every outcome.",
+  "a_n1_sentences": {
+   "SUPPORTED": "In a registered secondary test (second backbone on development images), condensed F1 given verified negatives shrinks the slope's gold-completeness dependence; XM600 is the informative set.",
+   "MIXED": "In a registered secondary test (second backbone on development images) of condensed F1 given verified negatives, the result is mixed; XM600 is the informative set.",
+   "NOT_SUPPORTED": "In a registered secondary test (second backbone on development images), condensed F1 given verified negatives does not shrink the slope's gold-completeness dependence.",
+   "NOT_TESTABLE": "The registered secondary test (second backbone on development images) of condensed F1 given verified negatives was not evaluable."
+  }
+ },
  "precondition": "No K2, N9 or G2-B output scored or read when written (Claude main stopped the local scorer; A4.2 v3 ledger rows 41-45, 65, 66: NO_RESULT_ON_DISK).",
  "sources": {
   "PD-10": ".session_backup/2026-10-13/decisions/PD-10.txt",

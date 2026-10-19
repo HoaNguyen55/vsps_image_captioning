@@ -1,0 +1,185 @@
+{
+ "task": "A-N1 REV (for CC-032b)",
+ "schema": "vsps.task_manifest.v1",
+ "created_utc": "2026-10-19T03:28:44Z",
+ "code_at_head": "cbed6dbc88b80ee0dc92f5891d82af0ce7772060",
+ "authority": "PD-16-final.txt; CC-032 correction (decisions/LOG.md 2026-10-19T03:04:55Z); main's REV brief",
+ "files": {
+  "ADDENDUM_DRAFT.json": {
+   "sha256": "fd3804b6542bd2e2c3fe2b09fe590afc95f17e2436194e32bd9bfa7cc7dc6094",
+   "bytes": 7945,
+   "role": "machine-readable addendum (primary measure, theta, outcome rule, code pins)"
+  },
+  "ADDENDUM_DRAFT.md": {
+   "sha256": "e3001302eb172e16108c5cf3d96699292c0021a8e5ee606bccbd0c7227b7923a",
+   "bytes": 16301,
+   "role": "rendered addendum, ends with the number-sources table"
+  },
+  "ADDENDUM_DRAFT.template.md": {
+   "sha256": "aac79675c97fd8316eecd12ab3829868c3e1adb2be8089e60432ff20f851b7f4",
+   "bytes": 11448,
+   "role": "addendum text with {{alias:key}} placeholders"
+  },
+  "ADDENDUM_v2.json": {
+   "sha256": "73c879b6f70f7667b9319c99ed49866703c3422f56241093347d5e8af44d1c20",
+   "bytes": 10042,
+   "role": "REV: reviewed draft JSON + (i) scope_given_verified_negatives, (ii) descriptive_bpref_set_Q, (iv) code paths scripts/g2b/an1/, (v) deviation note"
+  },
+  "ADDENDUM_v2.md": {
+   "sha256": "516cf49e085c76d9506ee36ddbc98c2fe611c2286218d93b412cb3ee2f76af59",
+   "bytes": 18925,
+   "role": "REV: reviewed draft md + the same additions and the scorer path in the command; new number-source rows"
+  },
+  "DESIGN.md": {
+   "sha256": "1536755eeef2d4bb2babb540ba989da70d1429d75f0fec4b1e6b4c1d8c9f57b9",
+   "bytes": 9352,
+   "role": "design note (IR mapping, definitions, degenerate cases, prediction, DOIs)"
+  },
+  "MANIFEST.json": {
+   "sha256": "b0f9336d7c9f190d8fc945290a7d9c67f12cd57df6a4f261ca43a94dc0f1a6c3",
+   "bytes": 8860,
+   "role": "first-round manifest (reviewed, unchanged)"
+  },
+  "STAGE1_PLAN.md": {
+   "sha256": "19fde9eb44f505340ca11c1cdf1893057f626944860d873a4bdca4ab35ddb289",
+   "bytes": 3956,
+   "role": "timestamped stage-1 plan: candidates and choice rule (PD-16 3(a))"
+  },
+  "build_addendum.py": {
+   "sha256": "b95aff6b4e7ee912bbd6b0e125df1a212a75cb8baed0a5b2e2525f16bb78ec11",
+   "bytes": 12390,
+   "role": "builds ADDENDUM_DRAFT.json and renders ADDENDUM_DRAFT.md from the template (numbers from files)"
+  },
+  "build_addendum_v2.py": {
+   "sha256": "21fc7d004359a32c052101f5dcc3802c3b17c5b1b3d5f3ad89e208b83a1bd873",
+   "bytes": 7703,
+   "role": "REV: builds ADDENDUM_v2.{json,md} from the reviewed drafts (additions only; numbers read from files)"
+  },
+  "diff_json_draft_to_v2.diff": {
+   "sha256": "6253bc756fc94720fcce4ed94c90c623e4a922db3f3257e6211b2ac709e3a2ed",
+   "bytes": 4384,
+   "role": "unified diff ADDENDUM_DRAFT.json -> ADDENDUM_v2.json"
+  },
+  "diff_md_draft_to_v2.diff": {
+   "sha256": "bebabb0cc8cb97d56333250e40d7b97057721870898b10ba0f8d5aea0cf76549",
+   "bytes": 4557,
+   "role": "unified diff ADDENDUM_DRAFT.md -> ADDENDUM_v2.md"
+  },
+  "dryrun_stage1_standins.json": {
+   "sha256": "052b43a8aa72d16de3853af49d7a8ccf1904d5f01418e734e8f0877cd6dbddf5",
+   "bytes": 23723,
+   "role": "score_an1.py dryrun: stage-1 captions stand in for LADDER; a code test, not a result"
+  },
+  "dryrun_stage1_standins.json.sha256": {
+   "sha256": "c276ea070b07ec097833ecc5a8e54b003b81ae1cf3f4301254f325f5fa647ce4",
+   "bytes": 94,
+   "role": "sidecar"
+  },
+  "dryrun_stage1_standins_v2.json": {
+   "sha256": "7f2f7c94fa104ca24e0c227cc4115ea88f14d17bf8ad2ef9b8fe66d545ce8b34",
+   "bytes": 23723,
+   "role": "REV dry run (score_an1.py with ADDENDUM_v2.json); code test, not a result"
+  },
+  "dryrun_stage1_standins_v2.json.sha256": {
+   "sha256": "67edc10635d9f016cb76261c87161c95c5f372837bb603de19f59d86a41a64e7",
+   "bytes": 97,
+   "role": "sidecar"
+  },
+  "measures.py": {
+   "sha256": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6",
+   "bytes": 17664,
+   "role": "the A-N1 instrument (measures, self-test, stage-1 runner); imports score_g2b.py unchanged"
+  },
+  "pre_stage1.sha256": {
+   "sha256": "52326ecbd6f0882ae3fa683f7d81caa260434f1bd461b1f989a5f399931a4bc6",
+   "bytes": 290,
+   "role": "sha256 of DESIGN.md, STAGE1_PLAN.md, measures.py recorded before the stage-1 run"
+  },
+  "score_an1.py": {
+   "sha256": "6543ff58f4f8ef07ebe8da7285fff2b7aab83c3f5cee7062136b3e1c883949ef",
+   "bytes": 9621,
+   "role": "registered scorer for the G2-B outputs (score / dryrun / selftest); imports score_g2b.py and measures.py"
+  },
+  "stage1_diag.py": {
+   "sha256": "63d0ba19f91e4bde6967ba36692a4d7cfe20d91eca206fe4b9bb2a3a6a36e40e",
+   "bytes": 2908,
+   "role": "post-choice diagnostic script (bpref_set / recall), EXPLORATORY"
+  },
+  "stage1_diagnostic.json": {
+   "sha256": "ab3f55c78439af333788526d1d12adba703d4133452bf0cd8f7bbbae7425ade7",
+   "bytes": 21686,
+   "role": "post-choice diagnostic output, EXPLORATORY"
+  },
+  "stage1_diagnostic.json.sha256": {
+   "sha256": "d3c744e19af8cb06bfcd4f635c651d9006afef8f00fdce8c7d1e3459f2a2fb92",
+   "bytes": 89,
+   "role": "sidecar"
+  },
+  "stage1_results.json": {
+   "sha256": "d70cb94bc3bebae5908b740fa23e7a3290b0585302bff0a7acfee5bb897872d1",
+   "bytes": 16768,
+   "role": "stage-1 results, EXPLORATORY"
+  },
+  "stage1_results.json.sha256": {
+   "sha256": "baddbbbdcc2a1a92632e3379abc42310b642540f0d3e32a401135b37a973bfc6",
+   "bytes": 86,
+   "role": "sidecar"
+  }
+ },
+ "first_round_files_unchanged": {
+  "ADDENDUM_DRAFT.json": true,
+  "ADDENDUM_DRAFT.md": true,
+  "ADDENDUM_DRAFT.template.md": true,
+  "DESIGN.md": true,
+  "STAGE1_PLAN.md": true,
+  "build_addendum.py": true,
+  "dryrun_stage1_standins.json": true,
+  "dryrun_stage1_standins.json.sha256": true,
+  "measures.py": true,
+  "pre_stage1.sha256": true,
+  "score_an1.py": true,
+  "stage1_diag.py": true,
+  "stage1_diagnostic.json": true,
+  "stage1_diagnostic.json.sha256": true,
+  "stage1_results.json": true,
+  "stage1_results.json.sha256": true
+ },
+ "point1_score_an1": {
+  "v2_written": false,
+  "sha256": "6543ff58f4f8ef07ebe8da7285fff2b7aab83c3f5cee7062136b3e1c883949ef",
+  "reason": "score_an1.py already reports bpref_set's Q per set descriptively: analyse_set computes q for both measures.CANDIDATES and returns descriptive_Q_at_theta (point and CI from the same bootstrap draws, clean LADDER subset and levels); only the primary measure named in the JSON gets verdict(); outcome() reads only the primary verdicts",
+  "evidence_keys": [
+   "dryrun_stage1_standins.json sets.<set>.primary_analysis.descriptive_Q_at_theta.bpref",
+   "dryrun_stage1_standins.json sets.<set>.sensitivity_full_set.descriptive_Q_at_theta.bpref"
+  ],
+  "diff_score_an1_to_v2": "none (no v2 file; the script is unchanged)"
+ },
+ "point2_measures": {
+  "sha256": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6",
+  "changed": false
+ },
+ "point3_addendum_v2": {
+  "json": "73c879b6f70f7667b9319c99ed49866703c3422f56241093347d5e8af44d1c20",
+  "md": "516cf49e085c76d9506ee36ddbc98c2fe611c2286218d93b412cb3ee2f76af59",
+  "reviewed_drafts": {
+   "json": "fd3804b6542bd2e2c3fe2b09fe590afc95f17e2436194e32bd9bfa7cc7dc6094",
+   "md": "e3001302eb172e16108c5cf3d96699292c0021a8e5ee606bccbd0c7227b7923a"
+  },
+  "diffs": [
+   "diff_json_draft_to_v2.diff",
+   "diff_md_draft_to_v2.diff"
+  ],
+  "unchanged_in_json": "primary, outcome_rule and every other key; deviation_from_stage1_plan gains only note_pd16_final; code shas unchanged, only code.measures.path and code.score_an1.path changed"
+ },
+ "point4_checks": {
+  "selftest": "score_an1.py selftest: selftest ok (outcome rule + measures.py selftest)",
+  "dryrun_v2_pin_problems": [],
+  "dryrun_v2_sets_identical_to_reviewed_dryrun": true,
+  "dryrun_v2_primary_identical": true,
+  "bpref_descriptive_present": true,
+  "eight_gram_scan": "openviic_leak_scan.py on this folder: openviic 8-grams 611387; not in KTVIC refs 608386; scanned 17 files; flagged 0",
+  "absolute_paths_identifiers_attribution": "none (grep for /tmp/, /root/, /home/, Co-Authored, Claude-Session, user email: no match)"
+ },
+ "g2b_outputs_read": "none",
+ "committed": "nothing"
+}

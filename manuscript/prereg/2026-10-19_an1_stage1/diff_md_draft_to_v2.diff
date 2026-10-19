@@ -1,0 +1,64 @@
+--- ADDENDUM_DRAFT.md	2026-10-19 09:59:39.671870700 +0700
++++ ADDENDUM_v2.md	2026-10-19 10:27:50.657427400 +0700
+@@ -80,6 +80,8 @@
+ 
+   bpref_set becomes descriptive. If the judge keeps the rule's choice, `primary` takes the values in
+   `alternative_if_rule_kept` of the JSON. No code changes, because the scripts read the measure and θ from the JSON.
++
++  PD-16 final (a): bpref_set's Q is now reported per set, descriptively and without a verdict (§3, "Descriptive: bpref_set Q").
+ - **Other stage-1 facts:**
+   - Under both measures the one-reference slope is positive on all three sets (table). The negative one-reference F1
+     slope therefore depends on scoring unjudged mentions as errors.
+@@ -111,6 +113,10 @@
+   - the slopes per level, Range and ρ for F1, cF1 and bpref_set;
+   - bpref_set's Q at the same θ;
+   - the unjudged shares, D2 counts and D6 counts.
++- **Descriptive: bpref_set Q (PD-16 final (a)).** Q_bpref = θ · Range_F1 − Range_bpref_set per set, with the
++  primary's θ, bootstrap draws, clean LADDER subset, levels and lexicon. Output keys
++  `sets.<set>.primary_analysis.descriptive_Q_at_theta.bpref` and `sets.<set>.sensitivity_full_set.descriptive_Q_at_theta.bpref`.
++  It has no verdict and enters no verdict, outcome or kill rule.
+ 
+ ## 4. Scope (PD-16, item 4; binding 3)
+ 
+@@ -121,6 +127,20 @@
+   - its images are COCO train2017 images;
+   - a FAIL there counts;
+   - a PASS there is never counted as support.
++- **Given verified negatives (PD-16 final (b)).** The claim holds given verified negatives.
++  - On CV295 and UV231 the negatives are U80 \ inst_i, the exhaustive complement of the complete gold. cF1 therefore
++    carries the complete gold's negatives at every ladder level, and part of the shrinkage on these sets is by
++    construction.
++  - XM600's OIV7 `absent` labels are not exhaustive: 231 of the
++    600 stage-1 XM3600 images carry none (D2). XM600 is therefore the informative set.
++  - Conflict rates at all_refs, stage 1: reference positives that the complete gold marks absent, where the positive
++    wins (D6). COCO-2500 761 of
++    5191; UIT-ViIC test
++    2 of
++    429; XM3600
++    44 of 1409
++    (keys `sets.<set>.diagnostics.conflict_pairs_all_refs` and `positive_pairs_all_refs`). The scorer reports the same
++    counts for each registered set under `sets.<set>.primary_analysis.diagnostics_all_images`.
+ 
+ ## 5. Outcome rule and consequences (applied in code, `score_an1.outcome`)
+ 
+@@ -148,7 +168,7 @@
+ - the clean subsets (KL);
+ - main's go for scoring (CC-027 (c)).
+ 
+-`python3 score_an1.py score --addendum <committed JSON> --outputs-dir <G2-B outputs> --out <new file>` refuses to run in
++`python3 scripts/g2b/an1/score_an1.py score --addendum <committed JSON> --outputs-dir <G2-B outputs> --out <new file>` refuses to run in
+ any of these cases:
+ - a pin differs: score_g2b.py, the prereg, its frozen files, measures.py or score_an1.py;
+ - score_an1.py, measures.py or the addendum JSON is not committed and unchanged at HEAD;
+@@ -217,3 +237,11 @@
+ | 2 | `.session_backup/2026-10-19/A-N1_ir_measures/ADDENDUM_DRAFT.json` | fd3804b6542bd2e2 | `outcome_rule.not_supported_min_fail_sets` |
+ | 23 | `manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json` | c506bc777b483f50 | `runs|len` |
+ | Apache-2.0 | `manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json` | c506bc777b483f50 | `model.licence` |
++| 231 | `.session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json` | d70cb94bc3bebae5 | `sets.XM3600.diagnostics.images_without_negatives` |
++| 600 | `.session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json` | d70cb94bc3bebae5 | `sets.XM3600.n_images` |
++| 761 | `.session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json` | d70cb94bc3bebae5 | `sets.COCO-2500.diagnostics.conflict_pairs_all_refs` |
++| 5191 | `.session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json` | d70cb94bc3bebae5 | `sets.COCO-2500.diagnostics.positive_pairs_all_refs` |
++| 2 | `.session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json` | d70cb94bc3bebae5 | `sets.UIT-ViIC test.diagnostics.conflict_pairs_all_refs` |
++| 429 | `.session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json` | d70cb94bc3bebae5 | `sets.UIT-ViIC test.diagnostics.positive_pairs_all_refs` |
++| 44 | `.session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json` | d70cb94bc3bebae5 | `sets.XM3600.diagnostics.conflict_pairs_all_refs` |
++| 1409 | `.session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json` | d70cb94bc3bebae5 | `sets.XM3600.diagnostics.positive_pairs_all_refs` |

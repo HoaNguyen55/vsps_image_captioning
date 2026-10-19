@@ -1,0 +1,80 @@
+--- ADDENDUM_DRAFT.json	2026-10-19 09:59:39.401905000 +0700
++++ ADDENDUM_v2.json	2026-10-19 10:27:50.580797500 +0700
+@@ -21,6 +21,35 @@
+   "uv231"
+  ],
+  "scope": "NEW-BACKBONE test on development images, not image-out-of-sample: CV295 is part of COCO-2500, XM600 is the Paper A XM3600 image set, UV231 is UIT-ViIC test (PD-16 item 4; binding 3). UV231 follows prereg exposure.uv231_handling: a FAIL counts, a PASS is never counted as support",
++ "scope_given_verified_negatives": {
++  "text": "The claim holds given verified negatives. On CV295 and UV231 the negatives are U80 minus the image's instance classes, the exhaustive complement of the complete gold, so cF1 carries complete-gold negatives at every ladder level and part of the shrinkage on those sets is by construction. XM600's OIV7 absent labels are not exhaustive, so XM600 is the informative set.",
++  "authority": "PD-16 final (b)",
++  "stage1_conflicts_all_refs": {
++   "COCO-2500": {
++    "conflict_pairs_all_refs": 761,
++    "positive_pairs_all_refs": 5191
++   },
++   "UIT-ViIC test": {
++    "conflict_pairs_all_refs": 2,
++    "positive_pairs_all_refs": 429
++   },
++   "XM3600": {
++    "conflict_pairs_all_refs": 44,
++    "positive_pairs_all_refs": 1409
++   },
++   "source": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json",
++   "sha256": "d70cb94bc3bebae5908b740fa23e7a3290b0585302bff0a7acfee5bb897872d1",
++   "keys": "sets.<set>.diagnostics.{conflict_pairs_all_refs, positive_pairs_all_refs}"
++  },
++  "stage1_xm3600_images_without_negatives": {
++   "value": 231,
++   "of": 600,
++   "source": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_results.json",
++   "sha256": "d70cb94bc3bebae5908b740fa23e7a3290b0585302bff0a7acfee5bb897872d1",
++   "keys": "sets.XM3600.diagnostics.images_without_negatives, sets.XM3600.n_images"
++  },
++  "registered_sets": "score_an1.py reports the same counts per set: sets.<set>.primary_analysis.diagnostics_all_images"
++ },
+  "family": "LADDER (prereg families.<set>.LADDER), clean subset as for G2B-E1/E2/O1",
+  "lexicon": "the primary lexicon of each set (score_g2b.score: the first lexicon); uv231's secondary lexicon is not analysed (DESIGN.md D7)",
+  "gold_levels": "prereg golds.<set>.one_ref, all_refs, complete",
+@@ -53,7 +82,8 @@
+   "diagnostic": {
+    "source": ".session_backup/2026-10-19/A-N1_ir_measures/stage1_diagnostic.json",
+    "sha256": "ab3f55c78439af333788526d1d12adba703d4133452bf0cd8f7bbbae7425ade7"
+-  }
++  },
++  "note_pd16_final": "bpref_set's Q is now reported per set as a descriptive output without a verdict (descriptive_bpref_set_Q)"
+  },
+  "alternative_if_rule_kept": {
+   "measure": "bpref",
+@@ -65,6 +95,17 @@
+   }
+  },
+  "descriptive": "slopes per level, Range and rho for F1, cF1 and bpref_set; the non-primary candidate's Q at theta; unjudged shares, D2 and D6 counts; every statistic on all images (sensitivity); no verdicts",
++ "descriptive_bpref_set_Q": {
++  "statistic": "theta * Range_F1 - Range_bpref_set, per set",
++  "output_keys": [
++   "sets.<set>.primary_analysis.descriptive_Q_at_theta.bpref",
++   "sets.<set>.sensitivity_full_set.descriptive_Q_at_theta.bpref"
++  ],
++  "same_as_primary": "theta, bootstrap draws, clean LADDER subset, gold levels and lexicon",
++  "verdict": "none; bpref_set enters no verdict(), outcome() or kill rule",
++  "code": "score_an1.py analyse_set (descriptive_Q_at_theta); sha unchanged, see code.score_an1",
++  "authority": "PD-16 final (a)"
++ },
+  "bootstrap": "prereg analysis_plan.bootstrap: default_rng(design_constants.set_by_this_registration.bootstrap_seed).multinomial(N, [1/N]*N, size=design_constants.n_boot) over the clean LADDER subset in id order; CI percentiles design_constants.ci_lo_percentile and ci_hi_percentile",
+  "verdict_rules": "prereg verdict_rules: sign_gt_0, not_evaluable, counting",
+  "outcome_rule": {
+@@ -97,11 +138,11 @@
+    "sha256": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055"
+   },
+   "measures": {
+-   "path": ".session_backup/2026-10-19/A-N1_ir_measures/measures.py",
++   "path": "scripts/g2b/an1/measures.py",
+    "sha256": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6"
+   },
+   "score_an1": {
+-   "path": ".session_backup/2026-10-19/A-N1_ir_measures/score_an1.py",
++   "path": "scripts/g2b/an1/score_an1.py",
+    "sha256": "6543ff58f4f8ef07ebe8da7285fff2b7aab83c3f5cee7062136b3e1c883949ef"
+   }
+  },

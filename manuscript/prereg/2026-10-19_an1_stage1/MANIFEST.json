@@ -1,0 +1,177 @@
+{
+ "task": "A-N1",
+ "schema": "vsps.task_manifest.v1",
+ "created_utc": "2026-10-19T03:01:19Z",
+ "code_at_head": "cbed6dbc88b80ee0dc92f5891d82af0ce7772060",
+ "status": "stage 1 EXPLORATORY; addendum DRAFT for the judge (PD-16 final ruling); nothing committed",
+ "files": {
+  "ADDENDUM_DRAFT.json": {
+   "sha256": "fd3804b6542bd2e2c3fe2b09fe590afc95f17e2436194e32bd9bfa7cc7dc6094",
+   "bytes": 7945,
+   "role": "machine-readable addendum (primary measure, theta, outcome rule, code pins)"
+  },
+  "ADDENDUM_DRAFT.md": {
+   "sha256": "e3001302eb172e16108c5cf3d96699292c0021a8e5ee606bccbd0c7227b7923a",
+   "bytes": 16301,
+   "role": "rendered addendum, ends with the number-sources table"
+  },
+  "ADDENDUM_DRAFT.template.md": {
+   "sha256": "aac79675c97fd8316eecd12ab3829868c3e1adb2be8089e60432ff20f851b7f4",
+   "bytes": 11448,
+   "role": "addendum text with {{alias:key}} placeholders"
+  },
+  "DESIGN.md": {
+   "sha256": "1536755eeef2d4bb2babb540ba989da70d1429d75f0fec4b1e6b4c1d8c9f57b9",
+   "bytes": 9352,
+   "role": "design note (IR mapping, definitions, degenerate cases, prediction, DOIs)"
+  },
+  "STAGE1_PLAN.md": {
+   "sha256": "19fde9eb44f505340ca11c1cdf1893057f626944860d873a4bdca4ab35ddb289",
+   "bytes": 3956,
+   "role": "timestamped stage-1 plan: candidates and choice rule (PD-16 3(a))"
+  },
+  "build_addendum.py": {
+   "sha256": "b95aff6b4e7ee912bbd6b0e125df1a212a75cb8baed0a5b2e2525f16bb78ec11",
+   "bytes": 12390,
+   "role": "builds ADDENDUM_DRAFT.json and renders ADDENDUM_DRAFT.md from the template (numbers from files)"
+  },
+  "dryrun_stage1_standins.json": {
+   "sha256": "052b43a8aa72d16de3853af49d7a8ccf1904d5f01418e734e8f0877cd6dbddf5",
+   "bytes": 23723,
+   "role": "score_an1.py dryrun: stage-1 captions stand in for LADDER; a code test, not a result"
+  },
+  "dryrun_stage1_standins.json.sha256": {
+   "sha256": "c276ea070b07ec097833ecc5a8e54b003b81ae1cf3f4301254f325f5fa647ce4",
+   "bytes": 94,
+   "role": "sidecar"
+  },
+  "measures.py": {
+   "sha256": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6",
+   "bytes": 17664,
+   "role": "the A-N1 instrument (measures, self-test, stage-1 runner); imports score_g2b.py unchanged"
+  },
+  "pre_stage1.sha256": {
+   "sha256": "52326ecbd6f0882ae3fa683f7d81caa260434f1bd461b1f989a5f399931a4bc6",
+   "bytes": 290,
+   "role": "sha256 of DESIGN.md, STAGE1_PLAN.md, measures.py recorded before the stage-1 run"
+  },
+  "score_an1.py": {
+   "sha256": "6543ff58f4f8ef07ebe8da7285fff2b7aab83c3f5cee7062136b3e1c883949ef",
+   "bytes": 9621,
+   "role": "registered scorer for the G2-B outputs (score / dryrun / selftest); imports score_g2b.py and measures.py"
+  },
+  "stage1_diag.py": {
+   "sha256": "63d0ba19f91e4bde6967ba36692a4d7cfe20d91eca206fe4b9bb2a3a6a36e40e",
+   "bytes": 2908,
+   "role": "post-choice diagnostic script (bpref_set / recall), EXPLORATORY"
+  },
+  "stage1_diagnostic.json": {
+   "sha256": "ab3f55c78439af333788526d1d12adba703d4133452bf0cd8f7bbbae7425ade7",
+   "bytes": 21686,
+   "role": "post-choice diagnostic output, EXPLORATORY"
+  },
+  "stage1_diagnostic.json.sha256": {
+   "sha256": "d3c744e19af8cb06bfcd4f635c651d9006afef8f00fdce8c7d1e3459f2a2fb92",
+   "bytes": 89,
+   "role": "sidecar"
+  },
+  "stage1_results.json": {
+   "sha256": "d70cb94bc3bebae5908b740fa23e7a3290b0585302bff0a7acfee5bb897872d1",
+   "bytes": 16768,
+   "role": "stage-1 results, EXPLORATORY"
+  },
+  "stage1_results.json.sha256": {
+   "sha256": "baddbbbdcc2a1a92632e3379abc42310b642540f0d3e32a401135b37a973bfc6",
+   "bytes": 86,
+   "role": "sidecar"
+  }
+ },
+ "time_order_utc": [
+  {
+   "event": "stage-1 plan written",
+   "utc": "2026-10-19T01:44:19Z",
+   "source": "ADDENDUM_DRAFT.json stage1_record.plan.written_utc"
+  },
+  {
+   "event": "pre-stage-1 hashes recorded",
+   "utc": "2026-10-19T02:05:42Z",
+   "source": "ADDENDUM_DRAFT.json stage1_record.pre_stage1_hashes.recorded_utc"
+  },
+  {
+   "event": "stage-1 run start",
+   "utc": "2026-10-19T02:05:46Z",
+   "source": "stage1_results.json started_utc"
+  },
+  {
+   "event": "stage-1 run end",
+   "utc": "2026-10-19T02:06:02Z",
+   "source": "stage1_results.json finished_utc"
+  },
+  {
+   "event": "post-choice diagnostic",
+   "utc": "2026-10-19T02:18:31Z",
+   "source": "stage1_diagnostic.json created_utc"
+  },
+  {
+   "event": "addendum JSON built (mtime)",
+   "utc": "2026-10-19T02:59:39Z",
+   "source": "file mtime"
+  },
+  {
+   "event": "dry run (after the freeze in the JSON)",
+   "utc": "2026-10-19T02:59:52Z",
+   "source": "dryrun_stage1_standins.json created_utc"
+  }
+ ],
+ "inputs_sha256": {
+  "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+  "scripts/g2b/score_g2b.py": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5",
+  "data/results/g2b/selfcheck.json": "e29f0a4f8078e72d334f2b421b9e703bd788606ba02c96f7232fe8bc96bc5acc",
+  "scripts/score_coco_probe.py": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070",
+  "scripts/xm3600_oiv7.py": "9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0",
+  "scripts/clean_supervision.py": "01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "rescap/vlm/mock.py": "33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7",
+  "data/coco_probe/manifest.json": "931e572ec8ea5eadf4c49aafcc062a837429b4e6bcc1f96fc0ec0ee1ecaa7e35",
+  "data/coco_probe/instance_gold.json": "963af2c6cc71e7a5e32c2f8f1ca6a0f1ef0a1f02dadf40926ddb05eebd04f81e",
+  "data/coco_probe/coco80_vi.json": "926e08571ef6e80a7f8aae8f2b73753d6c5c54c431a750ba2b67bfaae71b540b",
+  "data/coco_probe/chair_synonyms.txt": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+  "data/coco_probe/probe_val2017_ids.txt": "73f8698901f08e7b1bd53dd2842e77683af41e4e9e19276c3e8e6efba5273453",
+  "data/datasets/karpathy/dataset_coco.json": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d",
+  "data/uitviic/instance_gold.json": "278d15b97e3eeb9496a0282bb91deb365117becf24d174fbb1e0507203b12ea4",
+  "data/datasets/uitviic/test_data.json": "54abc0fb068ad1108d7d57b21328d4d68bcf8f41aa168f80ec7c275fb4ac8214",
+  "data/datasets/xm3600/test_data.json": "0a613214f95605ff137879f70cb84f8160172c28a650317766ac4a1d9c3b72e8",
+  "data/xm3600/oiv7_labels.json": "bac3953a511a9793c22e928a29b68ae05dbf9654502abcbe7b64fd9f6d74c8b2",
+  "data/xm3600/vi_oiv7_map.json": "27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a",
+  "data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv": "84a4373a0efb7fd6d93fe19b0e7ceb6c1b855c233d13b9b78a9a33655c9fdce3",
+  ".session_backup/2026-10-14/r11_litmaps/openviic_leak_scan.py": "3c56217ec71d6856a5f51f79ffe899a4056f1318d606ff77515b19229789138b",
+  ".session_backup/2026-10-13/decisions/PD-16.txt": "06eedc3385ee1279fc2859d0a3213147a092712c6554c916422cd5fa5e7eb403"
+ },
+ "system_files": "stage1_results.json key system_files (path and sha256 of every stage-1 caption file); dryrun_stage1_standins.json key standins",
+ "number_sources": {
+  "stage1_results.json": "computed by measures.py stage1 (sha in measures_py_sha256) from inputs_sha256 and system_files; settings from the prereg (settings_from_prereg)",
+  "stage1_diagnostic.json": "computed by stage1_diag.py (this_sha256) with measures.py",
+  "dryrun_stage1_standins.json": "computed by score_an1.py dryrun (code_sha256 in ADDENDUM_DRAFT.json code) - not a result",
+  "ADDENDUM_DRAFT.json primary.theta.value": "theta rule (STAGE1_PLAN.md section 3 step 5) on stage1_results.json sets.<set>.measures.cF1.rho[1][1]",
+  "ADDENDUM_DRAFT.json alternative_if_rule_kept.theta.value": "stage1_results.json choice.theta",
+  "ADDENDUM_DRAFT.md": "every number is a placeholder resolved by build_addendum.py; its file, sha256 and key are in the md's 'Number sources' table; Table S1 cites stage1_results.json keys sets.<set>.measures.<measure>.{slope,range,rho}",
+  "rule constants (not results)": "measures.py TIE, STEP, CAP, KILL_MIN_SETS, REPRO_TOL (STAGE1_PLAN.md); ADDENDUM_DRAFT.json outcome_rule"
+ },
+ "selftests": {
+  "measures.py selftest": "selftest ok",
+  "score_an1.py selftest": "selftest ok (outcome rule + measures.py selftest)"
+ },
+ "eight_gram_scan": {
+  "scanner": ".session_backup/2026-10-14/r11_litmaps/openviic_leak_scan.py",
+  "command": "python3 -I openviic_leak_scan.py <repo> .session_backup/2026-10-19/A-N1_ir_measures",
+  "result": "openviic 8-grams 611387; not in KTVIC refs 608386; scanned 12 files; flagged 0",
+  "note": "run before this MANIFEST was written; text files only"
+ },
+ "g2b_outputs_read": "none (only data/results/g2b/selfcheck.json)",
+ "n9_outputs_touched": "none",
+ "not_done": [
+  "infAP-style estimator not run (DESIGN.md D8)",
+  "uv231 secondary lexicon not analysed (DESIGN.md D7)",
+  "nothing committed; no file outside this folder written"
+ ]
+}
