@@ -1,0 +1,6 @@
+$ score_a_n2.py run .session_backup/2026-10-19/SC_LB/never_written.json --gate .session_backup/2026-10-19/SC_LB/a_n2_gate.json --outputs <scratch>/no_outputs
+PROVENANCE FAIL: .session_backup/2026-10-19/SC_LB/score_a_n2.py (sha256 6946bc4be389b6b340450551bba57d15df0149ef4535f589b1f75d7f16986921) differs from its pin or from its blob at HEAD
+exit 1
+$ score_a_n2.py gate .session_backup/2026-10-19/SC_LB/a_n2_gate.json   (the output already exists)
+REFUSED: OUT exists (never overwritten), run lacks --gate/--outputs, or one --g2b-* is alone
+exit 1

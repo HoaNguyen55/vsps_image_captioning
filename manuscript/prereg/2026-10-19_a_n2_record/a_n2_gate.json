@@ -1,0 +1,169 @@
+{
+ "id": "2026-10-19_a_n2_lvlm_gold_ladder",
+ "mode": "gate",
+ "prereg": {
+  "path": "manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json",
+  "sha256": "d5714e2b25e5f1d36fa42813cc5891a82d0b80a73e69fb08d940e05e2055f309"
+ },
+ "script_sha256": "6946bc4be389b6b340450551bba57d15df0149ef4535f589b1f75d7f16986921",
+ "config": {
+  "subset_seed": 1,
+  "K": 4,
+  "n_rep": 20,
+  "boot_seed": 0,
+  "n_boot": 1000,
+  "ci": [
+   2.5,
+   97.5
+  ],
+  "tau0": 0.9,
+  "p1": {
+   "g1": "refs1_randk",
+   "fam": "DETAILED",
+   "g2": "complete"
+  },
+  "p2": [
+   [
+    "slope[refs_all](PAIR_m) - slope[refs1_randk](PAIR_m)",
+    "sign_gt_0"
+   ],
+   [
+    "slope[complete](PAIR_m) - slope[refs_all](PAIR_m)",
+    "sign_gt_0"
+   ],
+   [
+    "slope[complete](PAIR_m)",
+    "sign_gt_0"
+   ]
+  ],
+  "km_min_models": 6,
+  "ka_sets": {
+   "KA1": [
+    "cv295"
+   ],
+   "KA2": [
+    "cv295",
+    "uv231en"
+   ]
+  },
+  "complete": {
+   "cv295": "inst",
+   "uv231en": "inst"
+  }
+ },
+ "toy_selftest_pass": true,
+ "sets": {
+  "cv295": {
+   "n_images": 295,
+   "refs_per_image_min_max": [
+    5,
+    5
+   ],
+   "random_subsets_sha256": "9010345f32f41852e620c99e01fa2a2ea26d3c171430c42c93ba3589d82f47c1"
+  },
+  "uv231en": {
+   "n_images": 231,
+   "refs_per_image_min_max": [
+    5,
+    5
+   ],
+   "random_subsets_sha256": "5fa804a7b5259bdc34be4991514b77fff57e0121bdc4b882eb10cb69450f8cdc"
+  }
+ },
+ "self_check": {
+  "family": "COCO-2500 (check_coco)",
+  "cells": [
+   {
+    "gold": "refs1_firstk",
+    "reference": -4.21,
+    "reproduced": -4.21,
+    "ok": true
+   },
+   {
+    "gold": "refs2_firstk",
+    "reference": 2.94,
+    "reproduced": 2.94,
+    "ok": true
+   },
+   {
+    "gold": "refs3_firstk",
+    "reference": 6.62,
+    "reproduced": 6.62,
+    "ok": true
+   },
+   {
+    "gold": "refs4_firstk",
+    "reference": 9.12,
+    "reproduced": 9.12,
+    "ok": true
+   },
+   {
+    "gold": "refs5_firstk",
+    "reference": 11.08,
+    "reproduced": 11.08,
+    "ok": true
+   },
+   {
+    "gold": "inst",
+    "reference": 22.41,
+    "reproduced": 22.41,
+    "ok": true
+   },
+   {
+    "gold": "inst+refs_all",
+    "reference": 24.16,
+    "reproduced": 24.16,
+    "ok": true
+   }
+  ]
+ },
+ "all_pass": true,
+ "decode_outputs_read": false,
+ "inputs_sha256": {
+  "manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json": "d5714e2b25e5f1d36fa42813cc5891a82d0b80a73e69fb08d940e05e2055f309",
+  "scripts/g2b/score_g2b.py": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5",
+  "scripts/score_coco_probe.py": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070",
+  "scripts/clean_supervision.py": "01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231",
+  "data/coco_probe/chair_synonyms.txt": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+  "data/coco_probe/coco80_vi.json": "926e08571ef6e80a7f8aae8f2b73753d6c5c54c431a750ba2b67bfaae71b540b",
+  "rescap/__init__.py": "b712bea4d66e5e2e0f0cec1624ab244a025560ecc5d86f96cada2e0160a4890f",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "rescap/metrics.py": "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960",
+  "rescap/repro.py": "723200190818cd61a56527e6a0a1596b95f9d1ed1ebc0cabe1b29135cf03b70d",
+  "rescap/svp/__init__.py": "5b7f52920de75cf59bde0ae657e292a876efc63292ca6db6a4d085bb9fec1424",
+  "rescap/svp/entailment.py": "4462f44df80faa0adc620d98aa5d8bbb307243d450e9aee4801bb17a3a06db23",
+  "rescap/svp/matching.py": "a9253060131aacfca8eaab9a4b2c473c487db96a7c1222f0b8e31f9f61b24003",
+  "rescap/vi/__init__.py": "f898963e95fec7d9fb236295649404815634a1d949bfd74cd7c3b90ed493bf6c",
+  "rescap/vi/classifier.py": "966cdab1fed8471ac57d225698e63f1e2a055435a5d669e9cca10eed703fed16",
+  "rescap/vi/color.py": "242fc46f68ecb06c8eefde23350481d99e60566b3da64ab90cfa79db38fd3875",
+  "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+  "rescap/vlm/__init__.py": "13de9854599acedd32ea1798ea1acc475703fcd3aa4eb4dd715dc8eadcd632cd",
+  "rescap/vlm/base.py": "e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93",
+  "rescap/vlm/mock.py": "33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7",
+  "rescap/vlm/registry.py": "6c261406bde3d34a73f77ce961aff7d241e2a440ba75e154fccf3ae8d4a70297",
+  "rescap/vocab.py": "c9143b2d973fc48a2231335844cd91ab702329c0b1aabb802884225e155967ec",
+  "scripts/person_uncap.py": "d16b19f6597f84597db7865dea4058f0bb1fecf914d71d34d6406d66283fa5bb",
+  "scripts/xm3600_oiv7.py": "9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0",
+  "scripts/lb/decode_hf_vlm.py": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+  "scripts/queue/jobs/lb_a_n2_decode.sh": "efdde495987b477e96cf2fd4114709b0a03218e7aac2357bc4e19f677998330a",
+  "data/lb/sets/cv295.tsv": "16d1ddd47385aedab6422bf308b0a202846321171aa20cd481a1042829d3f4b1",
+  "data/coco_probe/probe_val2017_ids.txt": "73f8698901f08e7b1bd53dd2842e77683af41e4e9e19276c3e8e6efba5273453",
+  "data/coco_probe/instance_gold.json": "963af2c6cc71e7a5e32c2f8f1ca6a0f1ef0a1f02dadf40926ddb05eebd04f81e",
+  "data/datasets/karpathy/dataset_coco.json": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d",
+  "data/lb/sets/uitviic_test.tsv": "dbadc28724d7a07b599325cd996084934d76e6c4c6a885e64e8de333d6a6665b",
+  "data/datasets/uitviic_en/test_data.json": "07734c7434d78eb5968dc4d986727487366a361b6714b4e98415a99fb8d7a01c",
+  "data/uitviic/instance_gold.json": "278d15b97e3eeb9496a0282bb91deb365117becf24d174fbb1e0507203b12ea4",
+  "data/results/g2b/selfcheck.json": "e29f0a4f8078e72d334f2b421b9e703bd788606ba02c96f7232fe8bc96bc5acc",
+  ".session_backup/2026-10-14/r11_litmaps/L1/check_coco.json": "cb21dd257f93a794fa7933c39a994a15825e95f705bdf3dd3e5cc1ad273593aa",
+  "data/coco_probe/manifest.json": "931e572ec8ea5eadf4c49aafcc062a837429b4e6bcc1f96fc0ec0ee1ecaa7e35",
+  "data/results/coco5000/distill-detailed.shard0of1.jsonl": "6453bfd5a2f7667d0cc879d3e4ca359553b9bda994760d227785da141ec001fd",
+  "data/results/coco5000/distill-short.shard0of1.jsonl": "12ab5a6e2b707068a48f2247832bcd125559a291ea8f265946e9031d3ccef1b0",
+  "data/results/coco5000/zeroshot-detailed.shard0of1.jsonl": "96e15f40cead64a993ff01ba2392857b1dae16155661ffddd7f2bac3af54365a",
+  "data/results/coco5000/zeroshot-short.shard0of1.jsonl": "15ca56156796605c02397d13c60047bc6260d34ac65b8cc54f7651d71717feba",
+  "data/results/coco5000_vcd/zeroshot-detailed.shard0of1.jsonl": "d6173e34823383202298ea7dc00afdd92604277a70bff5a9f1d93e1173396bbd",
+  "data/results/coco_transfer/fuse2_s42-detailed.shard0of1.jsonl": "87d1ee42f87f7ad11da5f8cb41cfef652de44340368d11a841e975d756439cc8",
+  "data/results/coco_transfer/fuse2_s42-short.shard0of1.jsonl": "f2285267dd58b3214cf3974a4c6f7d52c1de46113e96cc6a68171fe95d6475b0",
+  "data/results/coco_transfer/p1_s43-detailed.shard0of1.jsonl": "64ac2c9e9c2cfa3cacf9f8ac2675a2b2145a324d6aeb27c0119e166b489fa301",
+  "data/results/coco_transfer/p1_s43-short.shard0of1.jsonl": "6f1be27242a0eff45e07c1ad3548a1149dc65b9bae4065294b6fb06faca4cf9d"
+ }
+}
