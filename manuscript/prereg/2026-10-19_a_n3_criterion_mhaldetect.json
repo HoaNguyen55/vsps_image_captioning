@@ -1,0 +1,250 @@
+{
+ "prereg_id": "2026-10-19_a_n3_criterion_mhaldetect",
+ "title": "A-N3: criterion validity of object metrics under incomplete gold against existing human hallucination labels (M-HalDetect)",
+ "status": "FINAL DRAFT for commit. Registered only if committed before any agreement statistic is computed. The scorer passes the gate before any statistic, with a self-check and a provenance check of its inputs; it reads the git-excluded M-HalDetect copy by sha pin only (PD-21, SCORERS).",
+ "tier": "registered secondary; Paper A body only; not in the abstract unless the confirmation map is amended before scoring (PD-21 (b))",
+ "git_head_at_build": "80852f48366ead2d67739330fa2ee281763904b6",
+ "data": {
+  "name": "M-HalDetect (Gunjal et al., AAAI 2024, arXiv 2308.06394)",
+  "licence": {
+   "annotations": "CC BY-NC 4.0 (LICENSE.md at the commit, quoted in the md)",
+   "images": "not redistributed; Flickr terms per LICENSE.md; COCO images already used by Paper A"
+  },
+  "labels": "human segment labels ACCURATE / INACCURATE / ANALYSIS / UNSURE on InstructBLIP responses",
+  "counts_source": {
+   "path": ".session_backup/2026-10-19/HL_human_labels/a_n3_mhaldetect_counts.json"
+  },
+  "overlap_source": {
+   "path": ".session_backup/2026-10-19/HL_human_labels/a_n3_overlap.json",
+   "sha256": "fd97a3b0259b8f1463afa180eebdc93ab5fce7373e58fd51c1eb0fa33a157a32",
+   "key": "mhaldetect.all"
+  },
+  "release_pin": {
+   "repo": "github.com/hendryx-scale/mhal-detect",
+   "commit": "6ef75f547c81a65dbb4883624a4bc34321c43b9c",
+   "blobs": {
+    "LICENSE.md": "19aa14a69b323d973c6237135c03b83f9a4c3487",
+    "README.md": "661ead73914bfce7906b0de776a137ef0719ffe0",
+    "train_raw.json": "197616c477215476ce1717cf12fdfdbe12fa897b",
+    "val_raw.json": "4685df4fb82c0f24d0a580eb12366617aa33716a"
+   },
+   "sha256": {
+    "LICENSE.md": "0eccbb3dd40a0d89c45e59ea64e8b05038cbf8389b0c4ae27df77b5b940ae38e",
+    "README.md": "1640ea4e96284c3fbb1ebf164fdfd772f2d8ed1e73169769133efd52549f5cd8",
+    "train_raw.json": "03b088d113d94e6f7ebd939fe2040d9fb968f26878b088da77ed8d885ae17624",
+    "val_raw.json": "2cbc7942f2ceafb0312f4f41b79390fe600605ffda9a9591fd2346213d0389af"
+   }
+  }
+ },
+ "hat": {
+  "status": "DROPPED (PD-21 (c))",
+  "disclosure": "no licence found (aloha@7da6b90e)",
+  "commit": "7da6b90ebe392228ea532a84d78eab830c2b3cb2"
+ },
+ "units": {
+  "record": "one M-HalDetect record (image, response, spans)",
+  "dedup": "on (image, response): keep the first record in file order (train, then val)",
+  "image_id": "int of COCO_val2014_%012d.jpg",
+  "splits": "train and val pooled; clustered by image"
+ },
+ "matcher": {
+  "function": "score_coco_probe.en_classes(text, score_coco_probe.load_synonyms())",
+  "universe": "measures.U80",
+  "mentions": "M_r = en_classes(response)",
+  "human_labels": {
+   "supported": "c in M_r and c in en_classes(span.text) for some ACCURATE span",
+   "hallucinated": "c in M_r, c in en_classes(span.text) for some INACCURATE span and for no ACCURATE span",
+   "unlabelled": "any other c in M_r (only in ANALYSIS or UNSURE spans, or outside every span)"
+  },
+  "criterion": "HP_r = |S_r| / (|S_r| + |H_r|), defined when |S_r| + |H_r| >= 1"
+ },
+ "golds": {
+  "references": "first 5 Karpathy sentences (score_g2b.karpathy_refs), each through en_classes",
+  "one_ref": "refs1_randk: score_g2b.random_subsets([5]*N, kmax=1, n_rep=20, seed=1) over the images in id order; score_g2b.gold_variants",
+  "all_refs": "refs_all",
+  "complete": "inst",
+  "union": "inst+refs_all (descriptive only, as in G2-B)",
+  "instance_classes": {
+   "path": ".session_backup/2026-10-19/HL_human_labels/a_n3_instance_gold.json",
+   "sha256": "00e19c285fa459176de508344d12d88112fc7aa50e151f01e1469e11d512bcad",
+   "derivation": ".session_backup/2026-10-19/HL_human_labels/code/derive_inst.py",
+   "derivation_sha256": "66547ec24276bcfcc0f3ceb4005e66efb57b47a0b46526572a5fbc1c1767d585",
+   "from": {
+    "path": "data/datasets/coco_probe/annotations/instances_val2014.json",
+    "sha256": "e1b4d1bc54906827b1a029981b1c77f2088bd4462569b7615db7929070c3ab47",
+    "official_zip_sha256": "031296bbc80c45a1d1f76bf9a90ead27e94e99ec629208449507a4917a3bf009",
+    "zip_ref": "data/coco_probe/chair500_ids.provenance.json :: coco_check.annotations_zip_sha256"
+   },
+   "data_path_check": {
+    "overlap_images": 217,
+    "mismatches": 0
+   }
+  },
+  "verified_negatives": "measures.negatives({'complete': inst}, 'coco80') = U80 minus the instance classes",
+  "constants_source": {
+   "path": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json",
+   "keys": [
+    "design_constants.n_random_subsets",
+    "design_constants.set_by_this_registration",
+    "design_constants.n_boot"
+   ]
+  }
+ },
+ "measures": {
+  "F1": "score_g2b.rows + score_g2b.scores with W = identity over records (per-record P, R, F; mean over draws)",
+  "cF1": "measures.condensed(measures.judged_rows(ment, gold, neg), idx, W) with the same W",
+  "P": "precision component of F1 = 1 - per-record CHAIR_i over unique classes",
+  "identity_at_complete": "cF1 equals F1 at complete and union (measures.analyse asserts it, DESIGN D3); cF1 is therefore compared with F1 only at one_ref and all_refs",
+  "imported_unchanged": [
+   {
+    "path": "scripts/score_coco_probe.py",
+    "sha256": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070"
+   },
+   {
+    "path": "scripts/g2b/score_g2b.py",
+    "sha256": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5"
+   },
+   {
+    "path": "scripts/g2b/an1/measures.py",
+    "sha256": "c41fe6d98dcf33719545e1dc3ed1d9999b3b6395f0de11c97e4219137f354ac6"
+   },
+   {
+    "path": "data/coco_probe/chair_synonyms.txt",
+    "sha256": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2"
+   }
+  ]
+ },
+ "evaluable_set": {
+  "E": "records of the analysis set with |S_r| + |H_r| >= 1, non-empty gold at one_ref (every draw) and all_refs, and j_r > 0 at one_ref (every draw) and all_refs",
+  "E0": "records with |S_r| + |H_r| >= 1, committed conventions as they are (sensitivity only)",
+  "reported": "exclusion counts by reason"
+ },
+ "statistic": {
+  "tau_b": "scipy.stats.kendalltau(measure, HP, variant='b') over E",
+  "bootstrap": "1000 image-cluster draws: numpy.random.default_rng(0).multinomial(N_img, [1/N_img]*N_img, size=n_boot) over images in id order; each record takes its image's multiplicity; all statistics share the draws (paired)",
+  "ci": "percentiles 2.5 and 97.5"
+ },
+ "predictions": {
+  "AN3-P1": {
+   "what": "per-record precision P agrees better with HP as gold completeness grows",
+   "parts": [
+    "tau_b(P@all_refs, HP) - tau_b(P@one_ref, HP)",
+    "tau_b(P@complete, HP) - tau_b(P@all_refs, HP)"
+   ],
+   "rule": "compound of sign_gt_0",
+   "role": "primary"
+  },
+  "AN3-P2": {
+   "what": "cF1 agrees with HP better than F1 at the incomplete levels",
+   "parts": [
+    "tau_b(cF1@one_ref, HP) - tau_b(F1@one_ref, HP)",
+    "tau_b(cF1@all_refs, HP) - tau_b(F1@all_refs, HP)"
+   ],
+   "rule": "compound of sign_gt_0",
+   "role": "secondary"
+  }
+ },
+ "verdict_rules": {
+  "sign_gt_0": "PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE",
+  "compound": "FAIL if any part FAIL; else PASS if every part PASS; else INCONCLUSIVE",
+  "source": "manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.md section 6 (same wording)"
+ },
+ "outcome_rule": {
+  "order": [
+   "NOT_TESTABLE",
+   "NOT_SUPPORTED",
+   "SUPPORTED",
+   "MIXED"
+  ],
+  "NOT_TESTABLE": "|E| < 1000 records or < 500 images, or the data-path check fails",
+  "NOT_SUPPORTED": "AN3-P1 FAIL",
+  "SUPPORTED": "AN3-P1 PASS and AN3-P2 PASS",
+  "MIXED": "otherwise"
+ },
+ "kill": "If AN3-P1 FAILs, Paper A does not state that agreement with human hallucination labels rises with gold completeness; the failed registered prediction is reported in the body.",
+ "descriptive": [
+  "union level",
+  "mention level hit rate, false-alarm rate and Youden J per level",
+  "tau_b of R and F1 per level",
+  "per split (train, val)",
+  "the CV295 and COCO-2500 overlap images as a subset (not a confirmation on Paper A sets)",
+  "E0 sensitivity",
+  "counts of supported, hallucinated and unlabelled mentions"
+ ],
+ "testability_floor": {
+  "min_records": 1000,
+  "min_images": 500,
+  "tau_se_h0_at_min_records": 0.0211,
+  "formula": "sqrt(2(2n+5) / (9n(n-1)))"
+ },
+ "scorer": {
+  "path": "scripts/an3/score_an3.py (written after registration)",
+  "rules": [
+   "imports the committed modules unchanged",
+   "refuses an existing output",
+   "--selftest on toy cases with known answers",
+   "reads M-HalDetect by sha from the local dir"
+  ]
+ },
+ "count_matched": "not registered: C1 is NOT-TESTABLE (PD-15) and M-HalDetect has one generator, so there is no between-system verbosity to match",
+ "paper_b_numbers": "none",
+ "version": "v2 (judge PD-21 (b)-(d)); supersedes the v1 draft",
+ "supersedes": {
+  "path": ".session_backup/2026-10-19/HL_human_labels/prereg_draft/2026-10-19_a_n3_criterion_mhaldetect.json",
+  "sha256": "f90603f2bb4f588b662348448adba984af9b8ea7def2e74528c9c5e42e7979cd"
+ },
+ "decision": {
+  "path": ".session_backup/2026-10-13/decisions/PD-21.txt",
+  "sha256": "2e87e4322f06e8964d97d1dc36ef3cb3040dfabf7a531fab4566694cf8069d5b",
+  "items": [
+   "(b)",
+   "(c)",
+   "(d)"
+  ]
+ },
+ "licence_handling": {
+  "attribution": "M-HalDetect: Gunjal, Yin and Bas, 'Detecting and Preventing Hallucinations in Large Vision Language Models', AAAI 2024 (arXiv 2308.06394). Annotations (c) 2023 Scale AI, CC BY-NC 4.0; images under the Flickr terms via COCO. Used for non-commercial research only; not redistributed; cited and attributed in Paper A.",
+  "download": ".session_backup/2026-10-19/HL_human_labels/dl_mhaldetect stays git-excluded (.git/info/exclude: .session_backup/); never staged",
+  "source_pin": {
+   "repo": "github.com/hendryx-scale/mhal-detect",
+   "commit": "6ef75f547c81a65dbb4883624a4bc34321c43b9c",
+   "blobs": {
+    "LICENSE.md": "19aa14a69b323d973c6237135c03b83f9a4c3487",
+    "README.md": "661ead73914bfce7906b0de776a137ef0719ffe0",
+    "train_raw.json": "197616c477215476ce1717cf12fdfdbe12fa897b",
+    "val_raw.json": "4685df4fb82c0f24d0a580eb12366617aa33716a"
+   },
+   "sha256": {
+    "LICENSE.md": "0eccbb3dd40a0d89c45e59ea64e8b05038cbf8389b0c4ae27df77b5b940ae38e",
+    "README.md": "1640ea4e96284c3fbb1ebf164fdfd772f2d8ed1e73169769133efd52549f5cd8",
+    "train_raw.json": "03b088d113d94e6f7ebd939fe2040d9fb968f26878b088da77ed8d885ae17624",
+    "val_raw.json": "2cbc7942f2ceafb0312f4f41b79390fe600605ffda9a9591fd2346213d0389af"
+   }
+  },
+  "commit_only": "aggregates, COCO image-ID lists and this source pin (PD-21 (b)); the stage list is in MANIFEST_v2.json :: commit_set_a_n3"
+ },
+ "overlap_disclosure": {
+  "text": "The captions are M-HalDetect's own InstructBLIP outputs, so this is new evidence on partly familiar images (PD-21 (b)).",
+  "cv295": 26,
+  "coco2500": 217,
+  "chair500": 40,
+  "coco5000_karpathy_test": 419,
+  "source": {
+   "path": ".session_backup/2026-10-19/HL_human_labels/a_n3_overlap.json",
+   "sha256": "fd97a3b0259b8f1463afa180eebdc93ab5fce7373e58fd51c1eb0fa33a157a32",
+   "key": "mhaldetect.all.overlap"
+  }
+ },
+ "analysis_set": {
+  "images": "the 3419 M-HalDetect images with at least one COCO-2014 instance annotation (ID list pinned below); the 35 images without instances are excluded because their complete gold is empty",
+  "records": "every record of train_raw.json and val_raw.json (pinned) on those images, after dedup on (image, response) keeping the first in file order (train, then val)",
+  "multiple_responses": "each record is its own unit; the records of an image share its gold and its refs1_randk draws; no averaging or selection over responses; the bootstrap resamples images, so an image's records move together (the train/val shared images are one cluster)",
+  "analysis_unsure": "ANALYSIS and UNSURE spans stay in the response, so their classes count in the metric's mentions M_r; they never label a class: a class named only in ANALYSIS or UNSURE spans (or outside every span) is unlabelled and does not enter HP_r",
+  "evaluable_E": "records of the analysis set with |S_r| + |H_r| >= 1, non-empty gold at one_ref (every draw) and all_refs, and j_r > 0 at one_ref (every draw) and all_refs",
+  "aggregates": {
+   "path": ".session_backup/2026-10-19/HL_human_labels/a_n3_analysis_set_v2.json",
+   "sha256": "74624e57187d605d27aec01c0d4f8ee57cc8c7b50725c5168da7177590582054"
+  }
+ },
+ "cf1_at_complete": "cF1 = F1 at complete gold by construction (no unjudged mention when G = inst; measures.py D3 assert), so AN3-P2 is tested at one_ref and all_refs only (PD-21 (d))"
+}

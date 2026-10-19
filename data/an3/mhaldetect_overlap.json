@@ -1,0 +1,114 @@
+{
+ "_what": "A-N3 inventory: overlap counts of M-HalDetect images with our gold and sets (no metric computed)",
+ "sources": {
+  "mhaldetect_train": {
+   "path": ".session_backup/2026-10-19/HL_human_labels/dl_mhaldetect/train_raw.json",
+   "sha256": "03b088d113d94e6f7ebd939fe2040d9fb968f26878b088da77ed8d885ae17624"
+  },
+  "mhaldetect_val": {
+   "path": ".session_backup/2026-10-19/HL_human_labels/dl_mhaldetect/val_raw.json",
+   "sha256": "2cbc7942f2ceafb0312f4f41b79390fe600605ffda9a9591fd2346213d0389af"
+  },
+  "instances_val2014": {
+   "path": "data/datasets/coco_probe/annotations/instances_val2014.json",
+   "sha256": "e1b4d1bc54906827b1a029981b1c77f2088bd4462569b7615db7929070c3ab47"
+  },
+  "karpathy": {
+   "path": "data/datasets/karpathy/dataset_coco.json",
+   "sha256": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d"
+  },
+  "cv295": {
+   "path": "data/coco_probe/cv295_val2014.sha256",
+   "sha256": "5aee7a6b1d357444294ffc0bc4e183ed6b26f6bd5b24217cecce6af3da62c0e8"
+  },
+  "coco2500": {
+   "path": "data/coco_probe/manifest.json",
+   "sha256": "931e572ec8ea5eadf4c49aafcc062a837429b4e6bcc1f96fc0ec0ee1ecaa7e35"
+  },
+  "coco5000_karpathy_test": {
+   "path": "data/coco_probe/manifest_full5000.json",
+   "sha256": "699769100c572675dfc4ae9f2a45f01bf387c4b1d67e9019feafc8c14fc88f7e"
+  },
+  "chair500": {
+   "path": "data/coco_probe/chair500_ids.txt",
+   "sha256": "00c8458c9fbb19c6f21fcfb82cdac617842c0570e874e1540b19f52fab70f6ee"
+  },
+  "uitviic_test": {
+   "path": "data/datasets/uitviic/test_data.json",
+   "sha256": "54abc0fb068ad1108d7d57b21328d4d68bcf8f41aa168f80ec7c275fb4ac8214"
+  }
+ },
+ "mhaldetect": {
+  "train": {
+   "n_images": 2695,
+   "in_val2014_image_list": 2695,
+   "with_val2014_instance_annotations": 2667,
+   "in_karpathy": 2695,
+   "karpathy_filepath_val2014": 2695,
+   "karpathy_ge5_refs": 2695,
+   "karpathy_split": {
+    "restval": 2027,
+    "test": 329,
+    "val": 339
+   },
+   "overlap": {
+    "cv295": 21,
+    "coco2500": 173,
+    "coco5000_karpathy_test": 329,
+    "chair500": 30,
+    "uitviic_test": 0
+   },
+   "overlap_uitviic_test_val2014_part": 0
+  },
+  "val": {
+   "n_images": 786,
+   "in_val2014_image_list": 786,
+   "with_val2014_instance_annotations": 779,
+   "in_karpathy": 786,
+   "karpathy_filepath_val2014": 786,
+   "karpathy_ge5_refs": 786,
+   "karpathy_split": {
+    "restval": 599,
+    "test": 91,
+    "val": 96
+   },
+   "overlap": {
+    "cv295": 5,
+    "coco2500": 44,
+    "coco5000_karpathy_test": 91,
+    "chair500": 10,
+    "uitviic_test": 0
+   },
+   "overlap_uitviic_test_val2014_part": 0
+  },
+  "all": {
+   "n_images": 3454,
+   "in_val2014_image_list": 3454,
+   "with_val2014_instance_annotations": 3419,
+   "in_karpathy": 3454,
+   "karpathy_filepath_val2014": 3454,
+   "karpathy_ge5_refs": 3454,
+   "karpathy_split": {
+    "restval": 2601,
+    "test": 419,
+    "val": 434
+   },
+   "overlap": {
+    "cv295": 26,
+    "coco2500": 217,
+    "coco5000_karpathy_test": 419,
+    "chair500": 40,
+    "uitviic_test": 0
+   },
+   "overlap_uitviic_test_val2014_part": 0
+  },
+  "train_val_image_overlap": 27
+ },
+ "set_sizes": {
+  "cv295": 295,
+  "coco2500": 2500,
+  "coco5000_karpathy_test": 5000,
+  "chair500": 500,
+  "uitviic_test": 231
+ }
+}
