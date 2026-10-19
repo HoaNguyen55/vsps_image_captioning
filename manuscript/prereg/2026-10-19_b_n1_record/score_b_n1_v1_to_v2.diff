@@ -1,0 +1,91 @@
+--- a/score_b_n1.py
++++ b/score_b_n1.py
+@@ -42,6 +42,9 @@
+ fix = functools.partial(re.compile("[\\s.!?…]+$").sub, "")  # FIX, as B-N2's S2 (same pinned sentence)
+ V1 = "import json, sys; from rescap.chair import objects_in; json.dump([objects_in(t) for t in json.load(sys.stdin)], sys.stdout)"
+ VARIANTS = (("as_written", None), ("fix", fix))
++R14 = ("R14 (CC-039): no caption of this run names an object under the pinned matcher (rescap.chair.chair as "
++       "scripts/evaluate.py calls it: chair_i is None, so evaluate.py:421 raises); excluded before scripts/evaluate.py "
++       "is called")
+ SEEN: dict[str, str] = {}  # every input read, with its sha256
+ 
+ 
+@@ -168,10 +171,15 @@
+ 
+ 
+ def load_runs(P: dict, odir: Path, S: dict) -> tuple[dict, dict]:
+-    """Admitted ZS systems (with their per-run facts) by run id, and every exclusion with its reasons, in prereg order."""
++    """Admitted ZS systems (with their per-run facts) by run id, and every exclusion with its reasons, in prereg order;
++    an admitted run none of whose captions names an object is excluded before scripts/evaluate.py is called (R14). The
++    fix strips only trailing [\\s.!?…], which no matcher token holds, so the fixed captions name the same objects."""
++    from rescap.chair import chair
+     zs, excluded = {}, {}
+     for run in P["runs"]:
+         o, why = admit(P, run, odir, S[run["dataset"]])
++        if not why and chair(o["predictions"], S[run["dataset"]]["refs"], strict_ids=False).chair_i is None:
++            why = [R14]
+         if why:
+             excluded[run["run_id"]] = why
+             continue
+@@ -434,7 +442,7 @@
+     zs, excluded = load_runs(P, Path(a.outputs), S)
+     R |= score_all(zs, S, data)
+     out = analyse(P, cfg, S, zs | refs, R, obj_rows(S, zs | refs))
+-    out["kill_rules"]["KD_and_CC-033b_exclusions"] = excluded
++    out["kill_rules"]["KD_CC-033b_and_R14_exclusions"] = excluded
+     return {"gate": {"path": rel, "sha256": SEEN[rel]}, "self_check": body["self_check"], "excluded_runs": excluded} | out
+ 
+ 
+@@ -467,7 +475,9 @@
+     the registered provenance and a made-up reference system go through admission, both scorer variants, F0, KM and
+     every statistic. Built in: model 0 copies a reference ending ' . . .' and model 1 drops its last word, so the fix
+     reorders them on KTVIC (LBB-P1 point < 1); model 3 copies a reference on leaked ids only (LBB-D1 gap > 0); one CJK
+-    caption (KTVIC guard intersection 29 of 30); a copy with a wrong job sha is excluded, and KM below 4 models."""
++    caption (KTVIC guard intersection 29 of 30); a copy with a wrong job sha is excluded, and KM below 4 models. Model
++    3's UIT-ViIC detailed run names no object: R14 excludes it before scripts/evaluate.py is called, so KM keeps 3
++    models on UIT-ViIC and LBB-P2 and LBB-P3 are NOT_EVALUABLE."""
+     objs = ["người đàn ông", "con chó", "con mèo", "chiếc xe máy", "cái bàn", "cái ghế", "cái cây", "chiếc ô tô"]
+     where, verbs = ["trên đường phố", "trong căn phòng", "ở công viên", "bên bờ sông"], ["đang đứng", "đang ngồi", "đang đi"]
+     head = subprocess.run(["git", "-C", str(ROOT), "rev-parse", "HEAD"], capture_output=True, text=True).stdout.strip()
+@@ -494,6 +504,8 @@
+             caps = caps if run["prompt_mode"] == "short" else {i: f"{c} và {rs[i][2]}" for i, c in caps.items()}
+             if k == 2 and run["dataset"] == "ktvic_test" and run["prompt_mode"] == "detailed":
+                 caps[K[5]] = "一只狗"  # fails the language guard
++            if k == 3 and run["dataset"] == "uitviic_test" and run["prompt_mode"] == "detailed":
++                caps = {i: "một bức ảnh rất đẹp" for i in caps}  # names no object: excluded by R14
+             o = registered(P, run, S[run["dataset"]]) | {"git_head": head, "git_dirty": False, "machine_id": "synthetic",
+                                                          "parity_slice0": {"n": 2, "identical": 1}, "predictions": caps,
+                                                          "hit_max": {i: False for i in caps}}
+@@ -505,12 +517,21 @@
+         bad_excluded = load_runs(P, bad, S)[1]
+         refs = {f"ref_syn_{ds}-{md}": {"set": ds, "mode": md, "caps": {i: r[3] for i, r in S[ds]["refs"].items()}}
+                 for ds in S for md in ("short", "detailed")}
+-        R = score_all(zs | refs, S, data)
++        calls, real = [], globals()["evaluate"]  # every scripts/evaluate.py call, by system name
++        globals()["evaluate"] = lambda caps, name, *rest: calls.append(name) or real(caps, name, *rest)
++        try:
++            R = score_all(zs | refs, S, data)
++        finally:
++            globals()["evaluate"] = real
+         out = analyse(P, cfg, S, zs | refs, R, obj_rows(S, zs | refs))
+     rid = {(r["model"], r["dataset"], r["prompt_mode"]): r["run_id"] for r in P["runs"]}
+     pr, (r0, r1) = out["predictions"], (R[rid[(models[k], "ktvic_test", "short")]] for k in (0, 1))
+-    assert not excluded and len(bad_excluded) == 16 and all(v == ["job_sha256 differs from the registration"]
+-                                                            for v in bad_excluded.values())
++    zero = rid[(models[3], "uitviic_test", "detailed")]
++    assert excluded == {zero: [R14]} and len(bad_excluded) == 16 and all(v == ["job_sha256 differs from the "
++                                                                              "registration"] for v in bad_excluded.values())
++    assert zero not in calls and sorted(calls) == sorted(n for n in zs | refs for _ in VARIANTS)  # never on the R14 run
++    assert out["KM_models_kept"] == {"ktvic_test": models, "uitviic_test": models[:3]} and pr["LBB-P1"]["models"] == models
++    assert pr["LBB-P2"]["verdict"] == pr["LBB-P3"]["verdict"] == "NOT_EVALUABLE" and pr["LBB-P2"]["models"] == models[:3]
+     assert pr["LBB-P1"]["point"] < 1 and pr["LBB-P1"]["verdict"] != "FAIL" and all(p["ci95"] for p in pr.values())
+     assert r1["fix"]["CIDEr"] == r1["as_written"]["CIDEr"] < r0["fix"]["CIDEr"] and r0["as_written"]["CIDEr"] < r0["fix"]["CIDEr"]
+     assert out["LBB-D1"][rid[(models[3], "ktvic_test", "short")]]["CIDEr_as_written"]["gap"] > 0 and len(out["LBB-D1"]) == 10
+@@ -522,6 +543,7 @@
+               {"ktvic_test": models[:3], "uitviic_test": models}, cfg, True)
+     assert all(v["verdict"] == "NOT_EVALUABLE" for v in km.values())  # 3 models: KM leaves every tau NOT_EVALUABLE
+     return {"SYNTHETIC": "made-up references, splits and captions; no reference, split, manifest or decode file is read",
++            "excluded_runs": excluded, "evaluate_py_called_on": sorted(set(calls)),
+             "excluded_runs_of_the_wrong_job_copies": bad_excluded, "KM_check_3_models": km} | out
+ 
+ 

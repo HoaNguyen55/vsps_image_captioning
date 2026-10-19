@@ -1,0 +1,6 @@
+$ score_b_n1.py run .session_backup/2026-10-19/SC_LB/v2/never_written.json --gate .session_backup/2026-10-19/SC_LB/v2/b_n1_gate.json --outputs <scratch>/no_outputs
+PROVENANCE FAIL: .session_backup/2026-10-19/SC_LB/v2/score_b_n1.py (sha256 b7c96ac0d3d36de600bef1d20e1ec6ac3d6b60c34ccc94f59c172ac310f76824) differs from its pin or from its blob at HEAD
+exit 1
+$ score_b_n1.py gate .session_backup/2026-10-19/SC_LB/v2/b_n1_gate.json   (the output already exists)
+REFUSED: OUT exists (never overwritten), NCS_DATA or VNCORENLP_DIR is unset, RESCAP_RAW_TONE is set, or run lacks --gate/--outputs
+exit 1
