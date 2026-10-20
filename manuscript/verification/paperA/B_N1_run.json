@@ -1,0 +1,204 @@
+{
+ "task": "B_N1_run",
+ "verifier": "Claude B-N1 verifier (Paper B)",
+ "written_utc": "2026-10-20T15:34Z",
+ "deliverable": {
+  "data/results/b_n1/b_n1_run.json": "adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7",
+  "scripts/lb/score_b_n1.py": "b7c96ac0d3d36de600bef1d20e1ec6ac3d6b60c34ccc94f59c172ac310f76824",
+  "manuscript/prereg/2026-10-19_b_n1_record/b_n1_gate.json": "d50c1331911145a628b0e0d9140b1c1f170a2b42d23f7a73c2350ec1c217b74d",
+  "manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json": "9ff02dc259258de1add426abd02131f2122e3476a81f9a076066ed6d74906134",
+  "scripts/queue/jobs/lb_b_n1_decode.sh": "836612617f456deb112986a6f9b0b7b949528fcd85ea9393c9d62a4fa1ff7372",
+  "scripts/lb/decode_hf_vlm.py": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+  "b_n1_run/outputs (16 preds, digest of sorted 'sha256 run_id' lines)": "db7ffe13985ec5b3b8a7562d540180f9a0cb511fb8bc0574faac474c36ed1b2e"
+ },
+ "overall": "VERIFIED",
+ "overall_reason": "The 16 frozen decodes are byte-identical to the source and to their sidecars and are exactly the prereg's 16 runs; all 16 pass the CC-033b/KD provenance (job 83661261, decoder e2de1881, git_head = 327191c) and every one names objects under the pinned matcher, so an empty excluded_runs is correct; the scorer, gate, prereg, job, decoder and all imported repo modules are tracked and equal HEAD, and every other input matches a registered pin; the run started 561.8 s after the scorer commit; my single re-run is byte-identical (sha256 adad454d..., no time fields); every verdict recomputes from the prereg rule text. Main's reading is confirmed: LBB-P1 FAIL, LBB-P2 INCONCLUSIVE, LBB-P3 FAIL; KB1 fires, KB2 does not; KM keeps all 4 models on both sets; no exclusions.",
+ "rows": [
+  {
+   "claim_id": "B-N1-run",
+   "source_msg": "main: B-N1 verification brief (run records in .session_backup/2026-10-20/b_n1_run/, output sha256 adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7)",
+   "claim": "scripts/lb/score_b_n1.py v2 (b7c96ac0) with gate d50c1331 ran once at 2026-10-19T22:02:29.788Z at HEAD bdbe3cf on the 16 frozen decodes; verdicts: LBB-P1 FAIL (tau_b 1.0, CI [1.0, 1.0]), LBB-P2 INCONCLUSIVE (tau_b 0.667, CI [0.333, 0.667], tau0 0.6), LBB-P3 FAIL (difference 0.0, CI [-0.333, 0.0]); KB1 fires, KB2 does not; KM keeps all 4 models on both sets; no KD/R14 exclusions",
+   "items": {
+    "A1": {
+     "status": "PASS",
+     "evidence": "The prereg lists 16 runs (16 distinct ids; they are the full product 4 models x 2 sets x 2 prompts: True). The frozen folder b_n1_run/outputs holds exactly 32 files = 16 preds + 16 sidecars (listing equals the expected set: True); the source folder holds exactly 48 = 16 preds + 16 sidecars + 16 partial.jsonl (listing equals the expected set: True). All 32 frozen files are byte-identical to the source (differences: 0); every sidecar is '<sha256>  <name>' and its sha256 equals the sha256 of the file (mismatches: 0); run.log has 16 OK lines that equal the files (True). Each output's run_id/model/dataset/prompt_mode equals the prereg run it is named for (mismatches: 0). The 16 incremental .partial.jsonl files agree with the final preds on every image (caption, image sha256, n_tokens, hit_max): inconsistent runs [], runs with duplicate images []. Source preds mtimes span 2026-10-19T14:04:31Z..2026-10-19T16:22:02Z and the last finished_utc is 2026-10-19T16:22:02Z (max |mtime - finished_utc| = 0.0 s), so nothing was touched after decoding. Digest over the 16 sorted 'sha256 run_id' lines (LF-joined, final LF): db7ffe13985ec5b3. No run has an empty caption (runs with empty captions: 0)."
+    },
+    "A2": {
+     "status": "PASS",
+     "evidence": "scripts/queue/jobs/lb_b_n1_decode.sh at HEAD: sha256 836612617f456deb112986a6f9b0b7b949528fcd85ea9393c9d62a4fa1ff7372 (starts 83661261: True; work tree equals HEAD: True). scripts/lb/decode_hf_vlm.py at HEAD: sha256 e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4 (starts e2de1881: True; equals the prereg decoder pin: True). The blobs of job, decoder, prereg md and json, both set manifests and both split lists at 327191c equal HEAD (True), and no commit since 327191c touches any of them ([[], [], [], [], [], [], [], [], []]). My own comparison of every output against the prereg (my code, not the scorer's): 22 fields (attn_implementation, batch_size, dataset, decoder_sha256, dtype, generate_kwargs, hub_id, image_sha256, job_sha256, manifest_sha256, max_new_tokens, model, n_images, packages, prereg_id, prereg_sha256, processor_kwargs, prompt_mode, prompt_text_sha256, revision, run_id, schema), plus prediction ids and order equal to the manifest, all captions str, per-image dicts on the same keys: 0 deviations over 16 runs. The prompt text read from scripts/evaluate.py PROMPTS hashes to the prereg value for all runs (True); the decoder's schema constant is vsps.lb_decode.v1; both manifests: sha256 = prereg pin (True), rows {'ktvic_test': 558, 'uitviic_test': 231}. git_head values: ['327191c'] (one value); git merge-base --is-ancestor 327191c <git_head> succeeds for all 16 ({'327191c': True}; the head equals the registration commit itself: True); HEAD descends from 327191c (True). git_dirty [False], resumed [False], one venv_freeze_sha256 (6c3805fb), one machine, generation_config constant per model (True)."
+    },
+    "A3": {
+     "status": "PASS",
+     "evidence": "R14 (as the scorer states it): 'no caption of this run names an object under the pinned matcher (rescap.chair.chair as scripts/evaluate.py calls it: chair_i is None, so evaluate.py:421 raises)'. chair_i is None exactly when n_mentions is 0 (rescap/chair.py ChairResult.chair_i). I ran the pinned matcher with the gate venv (RESCAP_RAW_TONE unset, so the tone-normalised default that evaluate.py uses) with my own reference reader and my own per-caption unique-object counts, then rescap.chair.chair(strict_ids=False): runs with zero objects as written: 0 of 16; in the fixed variant (fixed captions against fixed references, the call evaluate.py makes for the fix): 0; smallest n_mentions of any run 450; smallest number of captions naming at least one object 221 (share 0.903); my unique-object count equals chair's n_mentions in all runs (True); all caption ids are in the references (True). The fix changes the matched objects of 0 captions in total, which supports the scorer's statement that the fixed captions name the same objects. So R14 excludes nothing, and with A2 (0 provenance deviations) the empty excluded_runs ({}) and kill_rules.KD_CC-033b_and_R14_exclusions ({}) are the correct result. Not a KD condition (prereg: 'slice 0 ... the identical-caption count is recorded (no gate)'): parity_slice0 is all-identical in 4 of 16 runs."
+    },
+    "B1": {
+     "status": "PASS",
+     "evidence": "Tracked and equal to HEAD (git ls-files --error-unmatch; git diff --quiet HEAD; bytes == blob at HEAD): scripts/lb/score_b_n1.py (b7c96ac0d3d36de6, last commit bdbe3cf); manuscript/prereg/2026-10-19_b_n1_record/b_n1_gate.json (d50c1331911145a6, last commit bdbe3cf); manuscript/prereg/2026-10-19_b_n1_record/b_n1_gate.log (d4329143bb59cb02, last commit bdbe3cf); manuscript/prereg/2026-10-19_b_n1_record/b_n1_run_refusal.log (3bbc4ce6e567a60f, last commit bdbe3cf); manuscript/prereg/2026-10-19_b_n1_record/b_n1_dryrun_synthetic.json (02cf52cb8228c21d, last commit bdbe3cf); manuscript/prereg/2026-10-19_b_n1_record/b_n1_dryrun_synthetic.log (9e424de02cbf3c52, last commit bdbe3cf); manuscript/prereg/2026-10-19_b_n1_record/score_b_n1_v1_to_v2.diff (59e1ba80e9f574d0, last commit bdbe3cf); manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json (9ff02dc259258de1, last commit 327191c); manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.md (804f144542afb6ab, last commit 327191c); scripts/queue/jobs/lb_b_n1_decode.sh (836612617f456deb, last commit 327191c); scripts/lb/decode_hf_vlm.py (e2de18811e2ffeb6, last commit 327191c). Count: 11 of 11. Identity chain: scorer sha256 b7c96ac0d3d36de6 equals its blob at bdbe3cf (True), the gate file's script_sha256 (True) and the run json's script_sha256 (True); the gate file (d50c1331911145a6) equals the run json's gate.sha256 (True); gate record: mode 'gate', all_pass True, decode_outputs_read False; the gate, the run json, the prereg file and all 16 outputs agree on the prereg sha256 ([True, True, True]); the scorer's own PREREG, JOB and REGISTERED pins equal the files (True, True, True). data/results/b_n1/b_n1_run.json is not tracked (True); its sha256 is adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7."
+    },
+    "B2": {
+     "status": "PASS",
+     "evidence": "inputs_sha256 of the output lists 63 inputs: 45 tracked files equal to HEAD (includes the scorer, gate, prereg, job, decoder and every imported repo module), 2 untracked inputs (data/datasets/ktvic/test_data.json, data/datasets/uitviic/test_data.json), each equal to its prereg frozen_files pin, and 16 decode outputs equal to the sidecars (A1). Every recorded sha256 equals the file's sha256 now (problems: []). Modules imported by my re-run (python -X importtime, 324 import lines): 14 repo .py files; missing from inputs_sha256: []. Static AST import closure (scorer, the evaluate.py child process and the V1 child process, including function-level imports): ['rescap/vlm/qwen_vl.py', 'rescap/vlm/vintern.py', 'scripts/score_coco_probe.py'] are the only repo files not in inputs_sha256; they are lazy imports that this flow never runs: rescap/vlm/registry.py _factory() imports qwen_vl and vintern only when get_vlm() is called, and in scripts/evaluate.py get_vlm() is reached through model_id() from load_model()/generate(), i.e. the `elif args.model` generation branch, never with --predictions; scripts/score_coco_probe.py is imported lazily by evaluate.py's English-only chair_en() and by COCO-only object_prf functions. The same files are absent from the dynamic import list of the scorer process."
+    },
+    "B3": {
+     "status": "PASS",
+     "evidence": "On the WSL clock (commit times and run.log use the same clock): registration 327191c 2026-10-19T03:29:25Z; first decode started 2026-10-19T14:00:08Z (+37843 s, so the registration commit precedes the first output); last decode finished 2026-10-19T16:22:02Z; scorer+gate commit bdbe3cf 2026-10-19T21:53:08Z (19866 s after the last decode, by design: CC-033 'decode as decode only'; the gate read no decode output); run start 2026-10-19T22:02:29.788Z (rc 0), end 2026-10-19T22:12:14.155Z. Run start minus bdbe3cf = 561.8 s. run.log records HEAD bdbe3cf, which is still HEAD now (bdbe3cf). The push of bdbe3cf to the private remote (remote-tracking reflog of the upstream of paper-v10, same clock): 2026-10-19T21:53:29Z, 540.8 s before the run start (CP-039: run after the push). Host-clock file mtimes (Windows-mounted drive) run about 9 s ahead of the WSL clock (RAN_ONCE touched 2026-10-19T22:02:39.508Z on the host clock, a few ms before the run's date call on the WSL clock 2026-10-19T22:02:29.788Z); that offset is far below the gap above and does not touch the commit-versus-run ordering, which uses one clock."
+    },
+    "C1": {
+     "status": "PASS",
+     "evidence": "Re-run once at HEAD bdbe3cf (HEAD_after bdbe3cf), 2026-10-19T23:54:10.284Z to 2026-10-20T00:04:22.866Z, rc 0, python 3.12.3 numpy 2.5.4 (pycocoevalcap 1.2, py_vncorenlp 0.1.4, pyjnius 1.7.0; the VnCoreNLP jar and wordsegmenter.rdr hashes equal main's: True). Output sha256 adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7 == main's adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7; byte compare: identical (38980 bytes); key-set differences []; value differences [] (leaf values compared: 836 vs 836); canonical JSON equal True. The output holds no time field (keys matching utc/time/date/start/finish/_at: []), so no field had to be excluded. stdout: the JSON summary line is identical to main's run.stdout (True); the other stdout line(s) are the segmenter's log line(s) with a wall-clock timestamp (['<timestamp> INFO  WordSegmenter:24 - Loading Word Segmentation model']), equal to main's after the timestamp is removed (True). main's run.stderr is 0 bytes; mine holds only the 333 'import time:' diagnostic lines (non-diagnostic stderr lines: []). Differences: none."
+    },
+    "C2": {
+     "status": "PASS",
+     "evidence": "Settings differ from main's only in ways that cannot reach the output: python -B and PYTHONDONTWRITEBYTECODE=1 (no new .pyc written, so the tree stays untouched), python -X importtime (diagnostics on stderr; used to list the imported modules), --outputs given as the repo-relative path (main passed the absolute path of the same folder; the output records only relative input names), TMPDIR set to <verifier scratch>/tmp (the scorer's temporary NCS_DATA copies and evaluate.py inputs land there; none is recorded in the output), and the output written to <verifier scratch>. Same: env -i HOME=$HOME LANG=C.UTF-8 JAVA_HOME=$HOME/jdk21 PATH=$HOME/jdk21/bin:/usr/bin:/bin NCS_DATA=<repo>/data VNCORENLP_DIR=<repo>/.session_backup/machines/n2/ncs-data/vncorenlp, OMP/OPENBLAS/MKL_NUM_THREADS=2, RESCAP_RAW_TONE unset, nice -n 15, <gate venv>/bin/python -E -P, the same --gate. git status --porcelain before and after the re-run: [195, 195] lines, differences []; scorer, gate, prereg, job and decoder sha256 unchanged (True); HEAD unchanged; nothing under data/results/ written by me."
+    },
+    "D1": {
+     "status": "PASS",
+     "evidence": "Rule lines applied (prereg): LBB-P1 \"`tau_b(CIDEr_as_written(ZS), CIDEr_fix(ZS))` on the full KTVIC test set, tau_lt (tau0 1: at least 1 discordant pair of 6 (no ties)); ZS = the B-N1 zero-shot models\"; tau_lt: \"PASS if ci95_hi < tau0; FAIL if point >= tau0; else INCONCLUSIVE\"; tau0 = 1. The verdict function is built by parsing these strings, not typed. Statistic in the output: tau_b = 1.000, 95% CI [1.000, 1.000], 4 models. ci95_hi 1 < tau0 1? no; point 1 >= tau0? yes -> FAIL (output: FAIL). Reading: with 4 models, tau_b = 1 with no ties means 0 discordant pairs of 6 (independent count from the leaderboard CIDEr-D values: 0), and the CI is the single point on all 1000 shared draws, so the punctuation fix leaves the 4-model ranking unchanged on KTVIC test (short prompt): order by CIDEr-D, as written and fix alike: internvl3_8b > qwen25vl_7b > qwen3vl_8b > qwen25vl_3b (equal: True). The fix raises every model's CIDEr-D (x100): as written [17.47, 27.64, 24.314, 34.024], fix [20.548, 31.584, 28.508, 39.331] in the prereg model order ['qwen25vl_3b', 'qwen25vl_7b', 'qwen3vl_8b', 'internvl3_8b']; the smallest gap between adjacent models is 3.326 (as written) and 3.075 (fix). Main's reading is confirmed: LBB-P1 FAIL."
+    },
+    "D2": {
+     "status": "PASS",
+     "evidence": "Rule lines applied: LBB-P2 \"`tau_b(CIDEr_fix(ZS) on the full ktvic_test, CIDEr_fix(ZS) on uitviic_test)` tau_ge (tau0 0.6: at most 1 discordant pair of 6 (no ties))\"; tau_ge: \"PASS if ci95_lo >= tau0; FAIL if point < tau0; else INCONCLUSIVE\"; tau0 = 0.6. Statistic: tau_b(KTVIC fix, UIT-ViIC fix) = 0.667, 95% CI [0.333, 0.667], 4 models. ci95_lo 0.333 >= tau0 0.6? no; point 0.667 < tau0? no -> INCONCLUSIVE (output: INCONCLUSIVE). The point is the registered 'at most 1 discordant pair of 6': independent count 1; the discordant pair is [['qwen25vl_7b', 'qwen3vl_8b']] (order on KTVIC internvl3_8b > qwen25vl_7b > qwen3vl_8b > qwen25vl_3b; on UIT-ViIC internvl3_8b > qwen3vl_8b > qwen25vl_7b > qwen25vl_3b). Under the prereg 'counting' rule, \"Kill rules count FAIL only.\" INCONCLUSIVE is neither support nor a kill: KB2 does not fire. Main's reading is confirmed."
+    },
+    "D3": {
+     "status": "PASS",
+     "evidence": "Rule lines applied: LBB-P3 \"`tau_b(fix) - tau_b(as written)` (the LBB-P2 statistic minus its as-written twin) sign_gt_0\"; sign_gt_0: \"PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE\". Statistic: tau_b(fix) - tau_b(as written) = 0.000, 95% CI [-0.333, 0.000], 4 models. ci95_lo -0.333 > 0? no; point 0 <= 0? yes -> FAIL (output: FAIL) through the 'point <= 0' clause, not through a significantly negative difference (ci95_hi = 0). The fix and as-written twins have the same discordant pair: as written 1 discordant pair(s) [['qwen25vl_7b', 'qwen3vl_8b']] -> tau_b 0.667, fix 1 -> 0.667; their difference is exactly 0 in float (both are 4/6 from the same arithmetic). Main's reading is confirmed. LBB-P3 is a registered secondary with no kill rule."
+    },
+    "D4": {
+     "status": "PASS",
+     "evidence": "Kill rules applied: KB1 when \"LBB-P1 is FAIL\"; KB2 when \"LBB-P2 is FAIL\"; KM when \"a model has a run missing or excluded by KD on a set\" then \"the model leaves every tau on that set; a tau with fewer than 4 models is NOT_EVALUABLE\"; KD when \"a run whose provenance differs from this registration (model file, prompt, decoding, batch size, package version)\"; counting: \"Kill rules count FAIL only.\" KB1: LBB-P1 is FAIL -> fires (recomputed True, output True); consequence: \"Paper B does not claim that the fix re-ranks public zero-shot systems; it reports the shifts only\". KB2: LBB-P2 is INCONCLUSIVE, not FAIL -> does not fire (recomputed False, output False). KM: no run is missing or excluded (A1-A3), so every model keeps its place on both sets: KM_models_kept = {'ktvic_test': ['qwen25vl_3b', 'qwen25vl_7b', 'qwen3vl_8b', 'internvl3_8b'], 'uitviic_test': ['qwen25vl_3b', 'qwen25vl_7b', 'qwen3vl_8b', 'internvl3_8b']}, kill_rules.KM = {'ktvic_test': [], 'uitviic_test': []}; each tau has 4 models and the NOT_EVALUABLE threshold is fewer than 4, so all three are evaluable. KD/R14: exclusions in the output {'excluded_runs': {}, 'KD_CC-033b_and_R14_exclusions': {}}, as A2 and A3 find independently. Main's reading is confirmed."
+    },
+    "D5": {
+     "status": "PASS",
+     "evidence": "Extra, not requested: the three point estimates re-derived from the output's own leaderboard (LBB-D2) CIDEr-D values of the 4 short zero-shot runs with my own tau-b pair count and scipy.stats.kendalltau(variant='b'): LBB-P1 1.000000, LBB-P2 0.666667, LBB-P3 0.000000; max |difference| to the output 2.2e-16; ties in the four vectors: False. The bootstrap CIs need the per-image vectors, which the output does not store; they are reproduced by C1 (same code, same data, same draws), not by an independent re-implementation."
+    }
+   },
+   "overall": "VERIFIED",
+   "required_fix": "None.",
+   "notes_for_writer": [
+    "Reporting (prereg section 9): every verdict is quoted as computed with the protocol card (RDRSegmenter word level, CIDEr-D x100, punctuation variant). KB1 fires: Paper B does not claim that the punctuation fix re-ranks public zero-shot systems; it reports the shifts only (the fix raises every model's CIDEr-D but leaves the 4-model order unchanged on KTVIC test, short prompt). LBB-P2 is INCONCLUSIVE, which the 'counting' rule says is reported as inconclusive and never as support, so Paper B may not write that KTVIC rankings transfer to UIT-ViIC; report the discordant pair. LBB-P3 FAIL: the fix does not raise cross-benchmark agreement here (difference exactly 0.0; the same single pair is discordant as written and with the fix).",
+    "Exposure labels (prereg section 9): KTVIC leaked/clean by OpenViIC train copy; UIT-ViIC test = COCO train2014 images. The models' training data are not verified by this registration; LBB-S1 (clean 157) and the language-guard clean intersection are sensitivity analyses without verdicts and change no verdict.",
+    "Disclose (registered descriptive items, LBB-D2): hit_max share (captions that ran to the new-token limit) is qwen25vl_3b_uitviic_test-short 0.268, qwen25vl_3b_uitviic_test-detailed 0.286, qwen25vl_7b_ktvic_test-detailed 0.534, qwen25vl_7b_uitviic_test-detailed 0.429, qwen3vl_8b_ktvic_test-detailed 1.000, qwen3vl_8b_uitviic_test-detailed 0.991, internvl3_8b_ktvic_test-detailed 0.590, internvl3_8b_uitviic_test-detailed 0.290 (runs at or above 0.25); parity_slice0 (slice 0 at the registered batch size vs batch size 1) is all-identical in only 4 of 16 runs; the prereg records it with no gate, so it is not a KD condition, but it shows batch-size sensitivity of greedy bf16 decodes.",
+    "This record does not re-verify the scorer's design choices already ruled (CC-039 R1-R15, CP-039 (2)); it checks that the scorer as committed ran on the registered inputs, that its output reproduces byte for byte, and that the verdicts follow from the prereg rule text. The bootstrap CIs were not re-derived by an independent implementation (see D5)."
+   ]
+  }
+ ],
+ "verdicts_recomputed": {
+  "LBB-P1": {
+   "point": 1.0,
+   "ci95": [
+    1.0,
+    1.0
+   ],
+   "n_models": 4,
+   "rule": "tau_lt",
+   "tau0": 1.0,
+   "verdict": "FAIL",
+   "verdict_in_output": "FAIL"
+  },
+  "LBB-P2": {
+   "point": 0.6666666666666666,
+   "ci95": [
+    0.3333333333333333,
+    0.6666666666666666
+   ],
+   "n_models": 4,
+   "rule": "tau_ge",
+   "tau0": 0.6,
+   "verdict": "INCONCLUSIVE",
+   "verdict_in_output": "INCONCLUSIVE"
+  },
+  "LBB-P3": {
+   "point": 0.0,
+   "ci95": [
+    -0.3333333333333333,
+    0.0
+   ],
+   "n_models": 4,
+   "rule": "sign_gt_0",
+   "tau0": null,
+   "verdict": "FAIL",
+   "verdict_in_output": "FAIL"
+  },
+  "kill_rules": {
+   "KB1": true,
+   "KB2": false,
+   "KM_models_kept": {
+    "ktvic_test": [
+     "qwen25vl_3b",
+     "qwen25vl_7b",
+     "qwen3vl_8b",
+     "internvl3_8b"
+    ],
+    "uitviic_test": [
+     "qwen25vl_3b",
+     "qwen25vl_7b",
+     "qwen3vl_8b",
+     "internvl3_8b"
+    ]
+   },
+   "exclusions": {
+    "excluded_runs": {},
+    "KD_CC-033b_and_R14_exclusions": {}
+   }
+  }
+ },
+ "rerun": {
+  "command": "env -i HOME=$HOME LANG=C.UTF-8 JAVA_HOME=$HOME/jdk21 PATH=$HOME/jdk21/bin:/usr/bin:/bin NCS_DATA=<repo>/data VNCORENLP_DIR=<repo>/.session_backup/machines/n2/ncs-data/vncorenlp OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 PYTHONDONTWRITEBYTECODE=1 TMPDIR=<verifier scratch>/tmp nice -n 15 <gate venv>/bin/python -E -P -B -X importtime scripts/lb/score_b_n1.py run <verifier scratch>/b_n1_run.json --gate manuscript/prereg/2026-10-19_b_n1_record/b_n1_gate.json --outputs .session_backup/2026-10-20/b_n1_run/outputs",
+  "head": [
+   "bdbe3cf2146eaeaed714a9c55a6f6c33adefe4e6",
+   "bdbe3cf2146eaeaed714a9c55a6f6c33adefe4e6"
+  ],
+  "start": "2026-10-19T23:54:10.284Z",
+  "end": "2026-10-20T00:04:22.866Z",
+  "rc": 0,
+  "env": {
+   "python": "3.12.3",
+   "numpy": "2.5.4",
+   "pycocoevalcap": "1.2",
+   "py_vncorenlp": "0.1.4",
+   "pyjnius": "1.7.0",
+   "VnCoreNLP-1.2.jar": "9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793",
+   "wordsegmenter.rdr": "9e62f96bd93e37a24f364238e8d8ae986fa5dad6dbc9f4eae622ab3651b7fa06",
+   "gate_venv": "python 3.12.3 with numpy 2.5.4"
+  },
+  "main_run": {
+   "head_claimed": "bdbe3cf",
+   "start": "2026-10-19T22:02:29.788Z",
+   "end": "2026-10-19T22:12:14.155Z",
+   "rc": 0
+  },
+  "comparison": {
+   "bytes_identical": true,
+   "sha256_main": "adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7",
+   "sha256_verifier": "adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7",
+   "stdout_json_line_identical": true,
+   "time_fields_excluded": [],
+   "key_set_differences": [],
+   "value_differences": [],
+   "result": "PASS"
+  }
+ },
+ "method": {
+  "scripts": [
+   "<verifier scratch>/check_ab.py",
+   "<verifier scratch>/check_r14.py",
+   "<verifier scratch>/check_b2.py",
+   "<verifier scratch>/check_c.py",
+   "<verifier scratch>/check_d.py",
+   "<verifier scratch>/rerun.sh",
+   "<verifier scratch>/make_record.py"
+  ],
+  "script_sha256_16": {
+   "check_ab.py": "a95d5ca6a66e491b",
+   "check_r14.py": "292581c8e0475a9c",
+   "check_b2.py": "2b86d612d9d5b245",
+   "check_c.py": "e01258d77c9ecb1c",
+   "check_d.py": "66f184ebcdf796bd",
+   "rerun.sh": "2179928eceefd6c3"
+  },
+  "network": "none",
+  "task_agent_scripts_run": "none",
+  "files_never_read": "data/ktvic_openviic_refs.json (the OpenViIC panel); no OpenViIC text; no caption text is printed or stored in this record",
+  "tracked_files_modified": "none; git status --porcelain identical before and after the re-run; no commit, push, stash or checkout"
+ }
+}

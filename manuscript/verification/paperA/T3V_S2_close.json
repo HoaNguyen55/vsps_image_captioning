@@ -1,0 +1,52 @@
+{
+ "task": "T3V_S2_close",
+ "by": "Claude main, closing step named by the T3-V verifier (T3V_S1_S3_S5.json, S2 item CC-030 (c))",
+ "written_utc": "2026-10-19T19:34Z",
+ "source": "https://huggingface.co/OpenGVLab/InternVL3-8B/resolve/<revision>/<file>",
+ "revision": "853e3a797a661694b1b8ece0cb72dc2b23e3dac9",
+ "hf_api_record": {
+  "path": ".session_backup/2026-10-18/paperA_tasks/P3/hf_meta/internvl3_8b.json",
+  "sha256": "f79e21e41264528d6009015d9ba1acc6059dc28ab45a4e71435ff8aa4c008357",
+  "sha": "853e3a797a661694b1b8ece0cb72dc2b23e3dac9"
+ },
+ "score_json": ".session_backup/machines/O-2308428/root/outputs/t3_1_s2_xvef1_g0/score.json (verifier.remote_code_sha256)",
+ "files": {
+  "configuration_intern_vit.py": {
+   "sha256": "22dd687a5f142985407675fc6b1dc688c2ded93e54192543ecf28ef495a6efa8",
+   "git_blob_sha1": "7e630c456eb9cf350e55bf850c3ff72f445a7e17",
+   "sha256_eq_score_json": true,
+   "blob_eq_hf_api_record": true,
+   "blob_eq_instrument_pin": "not pinned in the instrument"
+  },
+  "configuration_internvl_chat.py": {
+   "sha256": "6524e6deae6c318543d1022a599f011120f5a970eaa25f1118e7f5d0e346710c",
+   "git_blob_sha1": "502772cc6e24e6d1fbc5bf91ce76c9b234101eaf",
+   "sha256_eq_score_json": true,
+   "blob_eq_hf_api_record": true,
+   "blob_eq_instrument_pin": true
+  },
+  "conversation.py": {
+   "sha256": "b1b9f280e9cb9211e519e2b8071002b57cc742aadb2f49b05fa674ee3c7d83ee",
+   "git_blob_sha1": "5a771766f21ce3aeeb99b286fb8d188b0038a547",
+   "sha256_eq_score_json": true,
+   "blob_eq_hf_api_record": true,
+   "blob_eq_instrument_pin": true
+  },
+  "modeling_intern_vit.py": {
+   "sha256": "d3e0f68f29e86be1f3e6e101dc45303ec24e5115e0034de101665972576eb348",
+   "git_blob_sha1": "eb4aef44ddace5782035f0316de3834563b1c8dd",
+   "sha256_eq_score_json": true,
+   "blob_eq_hf_api_record": true,
+   "blob_eq_instrument_pin": true
+  },
+  "modeling_internvl_chat.py": {
+   "sha256": "76fe595f04acd077d168f038a15c697d1c66093a0c000bffb0568dfa90095ba8",
+   "git_blob_sha1": "ccf2ab9cc83283f41aafb611d379c4cc50614132",
+   "sha256_eq_score_json": true,
+   "blob_eq_hf_api_record": true,
+   "blob_eq_instrument_pin": true
+  }
+ },
+ "all_match": true,
+ "conclusion": "S2 item CC-030 (c) closed: the five remote-code files the job loaded (sha256 in score.json) equal the files at the pinned revision, whose git blob ids equal the registered HF API record; S2 is VERIFIED per the verifier's stated condition"
+}
