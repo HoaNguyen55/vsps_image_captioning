@@ -1,0 +1,104 @@
+{
+ "task": "SCAR_null_run",
+ "verifier": "Claude A-verifier (Paper A)",
+ "written_utc": "2026-10-20T23:50Z",
+ "deliverable": {
+  "data/results/scar/scar_null_result.json": "242fc04ed80893307aaf93350bb885864d66ea06c9531691da642bcc3e2f6c0b",
+  "scripts/scar/scar_null.py": "b0e3825eaa48ba496ec2723010e6125a0c4d8abbf1d5aa3fcf0b3a6dfd94bb3b",
+  "manuscript/prereg/2026-10-21_scar_null/SCAR_DESIGN.md": "319b738cd788459a7787e2569944b5a281a6d2ec0fd3d49450c267a7cc225376"
+ },
+ "overall": "VERIFIED",
+ "overall_reason": "Script and design equal their HEAD blobs (59a4887, 2026-10-20T23:34:17Z), 33 s before the single run began (23:34:50Z). All input pins match. My single re-run at HEAD with the same environment is byte-identical (sha256 242fc04e...). The design rules (R = 1000, default_rng(0), one shared permutation per (image, level) in the order set -> level -> replicate -> image, k_i from the registered subsets, linear 2.5/97.5 percentiles, share_same_sign) hold: an independent replay reproduces 8 spot-checked replicates exactly and all 8 cells' null summaries recompute from the stored null_slopes. POST_HOC exploratory; no verdict is computed or added.",
+ "rows": [
+  {
+   "claim_id": "SCAR-null-run",
+   "source_msg": "main: SCAR null verification brief (run record in .session_backup/2026-10-21/SCAR/run/)",
+   "items": {
+    "A": {
+     "status": "PASS",
+     "evidence": "scripts/scar/scar_null.py sha256 b0e3825eaa48ba49 and SCAR_DESIGN.md sha256 319b738cd788459a each equal the HEAD blob, git diff against HEAD is clean, and both were last changed by 59a4887 (the only commit that touches them). Commit time 2026-10-21T06:34:17+07:00 = 2026-10-20T23:34:17Z; run.log: RUN rc=0 start=2026-10-20T23:34:50Z end=2026-10-20T23:35:53Z, HEAD 59a4887343fe in run.log equals HEAD now. The commit precedes the run by 33 s. RAN_ONCE was touched at 23:34:49.8Z. The result's script_sha256 and design_sha256 equal these blobs. Not checked: whether 59a4887 was pushed before the run (the brief does not ask)."
+    },
+    "B": {
+     "status": "PASS",
+     "evidence": "The result's 'pins' hold 61 path entries (the brief says 60): 59 carry a registered expected sha256 and 2 are recorded only (the git-excluded evaluate_xm3600_predictions.py, dc00c456, and PD-23.txt, 3c719a6b; no committed pin, as the design's R5 discloses). Re-checked from the sources, not from the script: all 61 recorded sha256 equal the file's sha256 now; the 5 tracked files equal their HEAD blobs; g2b_score.json equals its .sha256 file; scorer_sha256 and prereg_sha256 in g2b_score.json equal the files; the 24 prereg frozen_files (instruments + data) equal their pins; the 23 g2b decodes equal precheck.json runs.*.sha256 (23 of 23); xm3600_full_verdict.json equals selfcheck.json references_sha256; the 6 xm3600 preds equal landed_result_files. Mismatches: []. all_cells_ok True (the registered cells reproduce)."
+    },
+    "C": {
+     "status": "PASS",
+     "evidence": "Re-ran 'run' once at HEAD 59a4887 (HEAD unchanged after), 2026-10-20T23:37:28Z to 23:38:33Z, rc 0, python 3.12.3 numpy 2.5.2. Environment as main: env -i HOME PATH=/usr/bin:/bin LANG=C.UTF-8, OMP/OPENBLAS/MKL_NUM_THREADS=2, nice -n 15, python3 -E -P -B (plus PYTHONDONTWRITEBYTECODE=1). The script hard-codes its output path, so I copied the result to <verifier scratch>, removed it from data/results/scar/ (the script refuses otherwise), ran in place, moved the new output to <verifier scratch> and copied the original back with cp -p. Output sha256 242fc04ed80893307aaf93350bb885864d66ea06c9531691da642bcc3e2f6c0b == main's; byte compare (cmp): identical (215731 bytes); stdout identical to main's run.stdout line; stderr byte-identical to main's run.stderr. The output has no time field, so a separate canonical-JSON comparison adds nothing beyond byte identity. After the restore: scar_null_result.json sha256 242fc04e, git status --porcelain identical before and after (174 lines), HEAD unchanged; only the mtime of the data/results/scar/ directory changed."
+    },
+    "D": {
+     "status": "PASS",
+     "evidence": "R and seed: 1000 and 0 re-read from PD-23.txt equal the result's R and seed; the percentile constants 2.5 and 97.5 are the prereg design_constants and equal the result's null_percentiles; each cell holds 1000 finite null_slopes. Summaries: for all 8 cells I recomputed null_mean (tol 1e-12), null_lo/null_hi (own linear-interpolation code, tol 1e-9) and share_same_sign (sign of null slope equals sign of observed slope) from the stored null_slopes: all 8 match (the brief asked for 2). Draws: I replayed one numpy default_rng(0) stream with my own loop (one rng.permutation per image per replicate, images in registered id order, cells in the order cv295, uv231, xm600, s75, each refs1_randk then refs_all), kept the first k_i^(s) classes of each permutation with k_i^(s) = |G_L,i^(s) intersect G_complete,i| from the registered subsets (20 for refs1_randk, 1 for refs_all), shared the gold over the ladder systems, and scored with score_g2b.scores/stat_slope. The stored null_slopes agree exactly (==) at cv295/refs1_randk replicates 0, 1, 999; cv295/refs_all 0, 1; uv231/refs_all 0; s75/refs1_randk 0, 999 (8 replicates in 4 cells; the later cells fix the stream position, so the order set -> level -> replicate -> image holds across cell boundaries). k_i <= |G_complete,i| in every image of every cell. n_images, sum_complete_scored and sum_k_scored_mean_over_subsets recompute for all 8 cells. Image order is integer-sorted for cv295/uv231 and string-sorted for xm600/s75. Limits: the replay reuses score_g2b and the dataset loaders (as the design requires), so it does not re-derive the registered golds; the gate's reproduction of the committed slopes covers them. I did not replay all 8000 replicates.",
+     "cells": {
+      "cv295/refs1_randk": {
+       "obs": -14.4031,
+       "null_mean": -0.0567,
+       "lo": -4.5007,
+       "hi": 4.6104,
+       "share_same_sign": 0.506
+      },
+      "cv295/refs_all": {
+       "obs": -6.2088,
+       "null_mean": 4.5971,
+       "lo": 0.0105,
+       "hi": 9.3082,
+       "share_same_sign": 0.025
+      },
+      "uv231/refs1_randk": {
+       "obs": -20.9556,
+       "null_mean": 15.6048,
+       "lo": 10.3462,
+       "hi": 20.9052,
+       "share_same_sign": 0.0
+      },
+      "uv231/refs_all": {
+       "obs": 1.8037,
+       "null_mean": 22.5971,
+       "lo": 18.1007,
+       "hi": 26.9131,
+       "share_same_sign": 1.0
+      },
+      "xm600/refs1_randk": {
+       "obs": -17.007,
+       "null_mean": -9.4239,
+       "lo": -10.9931,
+       "hi": -7.8267,
+       "share_same_sign": 1.0
+      },
+      "xm600/refs_all": {
+       "obs": -16.38,
+       "null_mean": -9.5939,
+       "lo": -11.1481,
+       "hi": -8.1051,
+       "share_same_sign": 1.0
+      },
+      "s75/refs1_randk": {
+       "obs": -14.1895,
+       "null_mean": -7.913,
+       "lo": -9.4112,
+       "hi": -6.3222,
+       "share_same_sign": 1.0
+      },
+      "s75/refs_all": {
+       "obs": -12.649,
+       "null_mean": -7.1846,
+       "lo": -8.6372,
+       "hi": -5.6484,
+       "share_same_sign": 1.0
+      }
+     }
+    }
+   }
+  }
+ ],
+ "method": {
+  "scripts": [
+   "<verifier scratch>/check_d.py (sha256 58ce0f32fe7eeccecdef63bb2543c1a26a90d3e4b36eca7e0a92fcc938a87699)",
+   "one env -i re-run of the committed script"
+  ],
+  "network": "none",
+  "gpu": "none",
+  "tracked_files_modified": "none; no commit, push, stash or checkout",
+  "repo_touch": "data/results/scar/scar_null_result.json was moved aside for the re-run and restored byte-identical (sha256 242fc04e)"
+ }
+}
