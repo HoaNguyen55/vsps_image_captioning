@@ -22,7 +22,7 @@
 
 ## 7.2 Data, licences and release
 
-We redistribute no images, reference captions or other dataset text. The evaluation kit contains only our own code and documentation, under [AUTHOR TO CHOOSE LICENCE], archived on Zenodo (DOI: [AUTHOR TO PROVIDE]); readers obtain the datasets from their original sources (Section 3.7). We obtained KTVIC, UIT-ViIC and UIT-OpenViIC under [AUTHOR TO PROVIDE: terms under which KTVIC, UIT-ViIC and UIT-OpenViIC were obtained]. KTVIC ships no licence file. The matcher lexicons, system outputs on KTVIC or UIT-ViIC images, and fine-tuned weights are not released. Qwen2.5-VL-7B-Instruct is under Apache-2.0 and Qwen2.5-VL-3B-Instruct under the non-commercial Qwen Research License Agreement (Section 3.7).
+We redistribute no images, reference captions or other dataset text. The evaluation kit contains only our own code and documentation, under [AUTHOR TO CHOOSE LICENCE], archived on Zenodo (DOI: [AUTHOR TO PROVIDE]); readers obtain the datasets from their original sources (Section 3.7). We obtained UIT-ViIC from the UIT NLP group's dataset distribution (https://sites.google.com/uit.edu.vn/uit-nlp/datasets; accessed 2026-10-21), which offers it for research purposes and states no licence and no redistribution terms. KTVIC and UIT-OpenViIC were obtained from [AUTHOR TO PROVIDE SOURCE AND TERMS]. KTVIC ships no licence file. The matcher lexicons, system outputs on KTVIC or UIT-ViIC images, and fine-tuned weights are not released. Qwen2.5-VL-7B-Instruct is under Apache-2.0 and Qwen2.5-VL-3B-Instruct under the non-commercial Qwen Research License Agreement (Section 3.7).
 
 **UIT-OpenViIC** is used only through aggregate statistics. No OpenViIC caption, n-gram or per-image derived file appears in this paper or its kit.
 
@@ -62,3 +62,5 @@ Much of the analysis code and many intermediate reports were produced by AI codi
 5. Every cited identifier is checked on a primary page, and unread papers are cited without their numbers.
 
 The authors take responsibility for all analyses and text.
+
+**Funding.** This research received no external funding; all costs, including rented GPU time and AI-tool subscriptions, were borne by the authors' team.

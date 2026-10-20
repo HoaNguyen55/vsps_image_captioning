@@ -29,7 +29,7 @@ No new human annotation was collected and no human subjects were involved; all h
 
 ## Funding
 
-[AUTHOR TO CONFIRM: funding sources and grant numbers.]
+This research received no external funding; all costs, including rented GPU time and AI-tool subscriptions, were borne by the authors' team.
 
 ## CRediT authorship contribution statement
 
