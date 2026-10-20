@@ -1,0 +1,1633 @@
+{
+ "prereg_id": "2026-10-20_b_f1_final_stack",
+ "title": "B-F1: Paper B's single final KTVIC test look of the stacked system, P1 + the S1 seed-consensus MBR-3",
+ "status": "frozen before any B-F1 output exists; REGISTERED only if this file is committed before any B-F1 decode output (D-W13-6; CHECKLIST C3: commit time < output mtime)",
+ "frozen_utc": "2026-10-20T15:43:08Z",
+ "repo_head_at_freeze": "ff17599d14fd83620188e9628e8abbb2c014eebd",
+ "branch": "paper-v10",
+ "authority": {
+  "ruling": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "decision": {
+    "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+    "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+    "lines": [
+     3,
+     4
+    ],
+    "quote": "DECISION: Option (A). Register B-F1 now as P1 + S1 MBR-3 and run its one KTVIC test look on M1 this week. (C) is optional under conditions C1-C4 below. (B) is rejected. S6 and S8 never enter the KTVIC stack. CONFIDENCE: 88%."
+   }
+  },
+  "PD-9": {
+   "Q4": {
+    "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+    "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+    "lines": [
+     28,
+     32
+    ],
+    "quote": "Q4 Paper B owns the stacked system (88%). Under the PD-6 claim ledger, the KTVIC system belongs to B, so B becomes method + audit. Its venue choice is revisited if the system wins. - Paper A may cite it only as a motivating example of evidence-adding, never as a primary result. - The single test evaluation is pre-registered once. Components already tested on test (UPE, PLAN-F1, the seed-MBR proxy) are disclosed in a test-look ledger."
+   },
+   "Q5": {
+    "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+    "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+    "lines": [
+     33,
+     36
+    ],
+    "quote": "Q5 YES, acceptable as exploratory (85%): - label the +3.05 [+1.03, +5.11] proxy as a test look, in the paper and in the test-look ledger; - never use it to choose the S1 variant; selection is on dev with dev-trained seeds; - the confirmatory S1 test number comes only from the pre-registered final evaluation."
+   }
+  }
+ },
+ "bindings": {
+  "b1": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    7,
+    14
+   ],
+   "quote": "1. Members. - Use exactly the S1 members p1dev_s42, p1dev_s43 and p1dev_s44, with the adapter sha256 values from the S1 record. They are decoded fresh on KTVIC test (558 images), with S1's greedy short-prompt settings. - NOT the p1assist seeds. Their test captions have already been seen: the +3.05 proxy is MBR over exactly those captions, and UPE and B-N2 also used them. MBR over them would only recompute a look already made. - Judge check: no p1dev test decode exists anywhere (106 p1dev files, all dev300). - Optional: p1assist MBR under the registered utility, as a descriptive row labelled \"previously seen captions\", with no verdict."
+  },
+  "b2": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    15,
+    21
+   ],
+   "quote": "2. Variant and code. - The carried variant stays unchanged: the per-image medoid by rl_reward.CiderD, with document frequencies from the 3,469 train-minus-dev300 references. No test reference enters the selection. - Use the committed S1 code path (seed_consensus.py). No new MBR implementation. No change of utility, document frequencies, prompt or decode settings. Short prompt only. - Self-check before any test statistic: reproduce the S1 gate (D_MBR 2.5498 [0.0035, 5.2374], dCHAIR_i -0.193) from the S1 dev outputs. If the self-check fails, stop."
+  },
+  "b3": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    22,
+    29
+   ],
+   "quote": "3. Primary endpoint and rule, fixed before the look. - D_MBR = mean over the 558 images of [CIDEr_i(MBR) - member mean], word-level CIDEr-D x100. - Scoring: the evaluate.py protocol card; per-image values are asserted equal to the corpus value within 1e-6; F0 is required. - CI: paired percentile bootstrap over test images, B = 5000 (R14-4), default_rng(0), sorted-id order. - Verdict: sign_gt_0, as worded in B-N1 section 6. - The frozen R14-4 and S1 prediction table (dCIDEr +1.0 to +3.0, and the rest) is reported as a check of whether the point lies inside its interval. It is not the verdict."
+  },
+  "b4": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    30,
+    35
+   ],
+   "quote": "4. Secondary endpoints, word for word from R14-4 section 3 A and S1: - K2: CHAIR_i more than 1.0 pp above the member mean is reported as harm. - K3: a test F1 drop whose CI excludes 0 is reported as a negative. - Object claims need the PD-2 count-matched primary plus a registered panel side. Without both, object metrics are descriptive and enter no abstract sentence. - BLEU-4 and mentions per caption are descriptive, against the predictions."
+  },
+  "b5": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    36,
+    39
+   ],
+   "quote": "5. Test set. - The full 558 images are primary. - The clean 157 is a descriptive sensitivity only, with no verdict (B-N2 MDE about +/-14). - State that the PD-19 leakage finding does not apply, because training is KTVIC-only."
+  },
+  "b6": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    40,
+    49
+   ],
+   "quote": "6. Test-look ledger, complete inside the prereg: - Every earlier KTVIC-test computation on P1-family outputs: the P1/p1assist test scores, UPE, PLAN-F1, the +3.05 proxy (p1assist, syllable level, test-reference document frequencies) and B-N2's subset statistics. - State that none of them used a p1dev member, and none informed the choice of variant (dev gate only). - Record the Stage-2 status: - S6 and S8 were eligible but not run, decided in PD-22 before any B-F1 output (reasons: cost, and R14-4's expected KTVIC effect of +/-1); - S4 is not eligible (S3 FAIL); - S7 is closed (D14); - XV-EF1 was not carried."
+  },
+  "b7": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    50,
+    56
+   ],
+   "quote": "7. Procedure (CC-018 precedent). - Commit the prereg; commit the instrument addendum (scorer and job sha); pass the scorer through the gate with a synthetic dry run, all before any test decode. - Decode once on M1. Nobody reads the test captions before scoring. - Score once from the committed copy. An independent verifier re-runs it (CC-038b canonical form). Commit through the gatekeeper. - No re-decode or re-score after any output has been read. A failure stops the work and comes back to the judge."
+  },
+  "b8": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    57,
+    59
+   ],
+   "quote": "8. Closure. After B-F1, Paper B makes no further KTVIC-test look for any method. Any later KTVIC-side item is dev300-only and exploratory. "
+  }
+ },
+ "files_of_this_registration": {
+  "prereg_json": "manuscript/prereg/2026-10-20_b_f1_final_stack.json",
+  "prereg_md": "manuscript/prereg/2026-10-20_b_f1_final_stack.md",
+  "addendum": "manuscript/prereg/2026-10-20_b_f1_instrument.json",
+  "scorer": "scripts/b_f1/score_b_f1.py",
+  "job": "scripts/queue/jobs/b_f1_ktvic_test_decode.sh"
+ },
+ "registered_before_output": {
+  "checked_utc": "2026-10-20T15:43:08Z",
+  "roots": [
+   "data/results",
+   ".session_backup/machines/O-2308423/root/outputs",
+   ".session_backup/machines/O-2308423/root/queue",
+   ".session_backup/machines/O-2308428/root/outputs",
+   ".session_backup/machines/O-2308428/root/queue"
+  ],
+  "output_names": [
+   "b_f1",
+   "p1dev_s42-test",
+   "p1dev_s43-test",
+   "p1dev_s44-test",
+   "p1dev_mbr3-test"
+  ],
+  "hits": [],
+  "p1dev_paths": {
+   "roots": [
+    "data",
+    ".session_backup/machines",
+    "manuscript",
+    "scripts"
+   ],
+   "n": 296,
+   "n_with_test_in_path": 0,
+   "evaluate_results_by_split": {
+    "dev_data.json": 15,
+    "rl1000_data.json": 1
+   }
+  },
+  "judge_check": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    12,
+    12
+   ],
+   "quote": "- Judge check: no p1dev test decode exists anywhere (106 p1dev files, all dev300)."
+  }
+ },
+ "members": {
+  "p1dev_s42": {
+   "adapter_sha256": "227a3312a18cf69b355c20311ff1228167b2af1436e0cb443055dfdfcd40c5c3",
+   "adapter_config_sha256": "93f042284aea64fcdf831590c592a7459849632dcb3ee4448b379177b7a298c5",
+   "source": {
+    "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+    "keys": [
+     "models.member_s42.adapter_sha256",
+     "models.member_s42.adapter_config_sha256"
+    ]
+   }
+  },
+  "p1dev_s43": {
+   "adapter_sha256": "d74d3dd4b4c620fdd18e0ab0f6fe4b0ed751dc0e008b5a49b79ea85612e613a7",
+   "adapter_config_sha256": "93f042284aea64fcdf831590c592a7459849632dcb3ee4448b379177b7a298c5",
+   "source": {
+    "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/SHA256SUMS",
+    "lines": [
+     "p1dev_s43/adapter_model.safetensors",
+     "p1dev_s43/adapter_config.json"
+    ]
+   }
+  },
+  "p1dev_s44": {
+   "adapter_sha256": "b04354c86eede3bb6ba21842fdef876f6ae73d6d18b225b8f75b2a4b706b51d7",
+   "adapter_config_sha256": "93f042284aea64fcdf831590c592a7459849632dcb3ee4448b379177b7a298c5",
+   "source": {
+    "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/SHA256SUMS",
+    "lines": [
+     "p1dev_s44/adapter_model.safetensors",
+     "p1dev_s44/adapter_config.json"
+    ]
+   }
+  }
+ },
+ "members_order": [
+  "p1dev_s42",
+  "p1dev_s43",
+  "p1dev_s44"
+ ],
+ "members_rule": {
+  "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+  "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+  "lines": [
+   8,
+   9
+  ],
+  "quote": "- Use exactly the S1 members p1dev_s42, p1dev_s43 and p1dev_s44, with the adapter sha256 values from the S1 record. They are decoded fresh on KTVIC test (558 images), with S1's greedy short-prompt settings."
+ },
+ "adapter_mirror_copies_match": {
+  "p1dev_s42/adapter_model.safetensors": true,
+  "p1dev_s42/adapter_config.json": true,
+  "p1dev_s43/adapter_model.safetensors": true,
+  "p1dev_s43/adapter_config.json": true,
+  "p1dev_s44/adapter_model.safetensors": true,
+  "p1dev_s44/adapter_config.json": true
+ },
+ "not_members": {
+  "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+  "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+  "lines": [
+   10,
+   11
+  ],
+  "quote": "- NOT the p1assist seeds. Their test captions have already been seen: the +3.05 proxy is MBR over exactly those captions, and UPE and B-N2 also used them. MBR over them would only recompute a look already made."
+ },
+ "decode": {
+  "machine": {
+   "rule": "one host decodes all three members in one job; the host has exactly one GPU with >= 24 GB; check records its machine_id and card, and all three provenances must carry that same machine_id and card; every other pin stays exact",
+   "min_gpu_memory_gb": 24,
+   "n_gpus": 1,
+   "source": {
+    "path": ".session_backup/2026-10-13/decisions/CC-042.txt",
+    "sha256": "4401a68a90608ad885479d48875f280be7b2dde927e358319d8a92adc139524f",
+    "lines": [
+     12,
+     16
+    ],
+    "quote": "- one host decodes all three members in one job; - the host has one GPU with >= 24 GB; - the machine_id and card are recorded at `check` and must be identical in all three provenances; - every other pin stays exact: venv versions, base snapshot revision, adapters, evaluate.py, test images and settings."
+   },
+   "s1_dev_card": "RTX 3090"
+  },
+  "venv": {
+   "torch": "2.5.1+cu121",
+   "transformers": "4.51.3",
+   "peft": "0.21.2"
+  },
+  "base": {
+   "id": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+   "shards_sha256": {
+    "model-00001-of-00005.safetensors": "e97b877e47fde53a6c6e77aafb36e58e91ee9d95c4a3eeac6f1b5c0e6a1c986e",
+    "model-00002-of-00005.safetensors": "a9a300a43b4724eee2abe7c18ceb26768d0ab011eb0cad19d9bfd2476a24d024",
+    "model-00003-of-00005.safetensors": "111223d173e00bbee81cba1216fad28668df3476706b7fd26f4d5b50f8b3a507",
+    "model-00004-of-00005.safetensors": "ef47f634fa57d46ee134edcc09f34085a47da1e16c12a2abe0d67118be6d72ed",
+    "model-00005-of-00005.safetensors": "0c859795ad3a627a9b95bcb762e059d5b768a4a36fdd4affeff269d93fdecc67"
+   }
+  },
+  "settings": "S1's greedy short-prompt decode (S1 procedure.decode): scripts/evaluate.py --model qwen2.5-vl-7b --adapter <member> --prompt short, bf16 (no --four-bit), greedy (do_sample=False), its defaults",
+  "evaluate_defaults": {
+   "max-new-tokens": 160,
+   "max-vision-tokens": 512
+  },
+  "s1_decode_rule": "evaluate.py --model qwen2.5-vl-7b --adapter <run> --split dev_data.json --prompt short (NCS_DATASET=ktvic_dev, its defaults) for p1dev_s43, p1dev_s44 and p1dev_soup3_s42s43s44",
+  "split": "the 558 KTVIC test images (data/datasets/ktvic/test_data.json): evaluate.py gets --split <a copy of test_data.json holding its images list only>, so it writes predictions and scores nothing (its caption-free split path); NCS_DATASET unset, so images load from the KTVIC images folder",
+  "image_check": "every image is checked against data/lb/sets/ktvic_test.tsv (id, file name, sha256) before any decode",
+  "outputs": {
+   "dir": "/root/outputs/b_f1_ktvic_test",
+   "names": {
+    "p1dev_s42": "p1dev_s42-test-short",
+    "p1dev_s43": "p1dev_s43-test-short",
+    "p1dev_s44": "p1dev_s44-test-short"
+   },
+   "per_decode": [
+    "<name>.preds.json",
+    "<name>.preds.json.sha256",
+    "<name>.provenance.json",
+    "<name>.log (stdout and stderr of evaluate.py)"
+   ],
+   "also": [
+    "check.json",
+    "ktvic_test_images_only.json",
+    "SHA256SUMS"
+   ]
+  },
+  "decode_once": "a decode whose predictions exist is skipped; nothing is overwritten; nobody reads a prediction before score_b_f1.py run"
+ },
+ "variant": {
+  "name": "MBR-3 (S1's carried variant)",
+  "carried_by": {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json",
+   "keys": {
+    "verdict": "PASS",
+    "carried": "mbr"
+   }
+  },
+  "rule": "per image, the medoid of the three members' greedy captions: argmax over a of the sum over b != a of rl_reward.CiderD(c_a, [c_b]), document frequencies from the references of the 3469 train-minus-dev300 images and rl_reward.Segmenter word segmentation (UPE-MBR's selection side, so the selection reads no dev reference); ties go to the lower seed",
+  "code": {
+   "path": "scripts/seed_consensus.py",
+   "sha256": "2b72dc417d60c5ec6a0be9cfd3b69692a783e2ba9bd1fc7dcb14c5195296c486",
+   "functions": [
+    "seed_consensus.medoid",
+    "the selection lines of seed_consensus.mbr (CiderD over the train-minus-dev300 references, Segmenter words, SEEDS order for ties)"
+   ]
+  },
+  "df_images": 3469,
+  "df_split": "data/splits/ktvic_train_minus_dev300.txt",
+  "seed_order": [
+   "s42",
+   "s43",
+   "s44"
+  ],
+  "mbr_name": "p1dev_mbr3-test-short",
+  "unchanged": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    16,
+    19
+   ],
+   "quote": "- The carried variant stays unchanged: the per-image medoid by rl_reward.CiderD, with document frequencies from the 3,469 train-minus-dev300 references. No test reference enters the selection. - Use the committed S1 code path (seed_consensus.py). No new MBR implementation. No change of utility, document frequencies, prompt or decode settings. Short prompt only."
+  },
+  "no_test_reference_in_selection": true
+ },
+ "self_check": {
+  "rule": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    20,
+    21
+   ],
+   "quote": "- Self-check before any test statistic: reproduce the S1 gate (D_MBR 2.5498 [0.0035, 5.2374], dCHAIR_i -0.193) from the S1 dev outputs. If the self-check fails, stop."
+  },
+  "expect": {
+   "D_MBR": [
+    2.5498,
+    0.0035,
+    5.2374
+   ],
+   "dCHAIR_i": -0.193,
+   "decimals": {
+    "D_MBR": 4,
+    "dCHAIR_i": 3
+   }
+  },
+  "s1_outputs_dir": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus",
+  "s1_results": {
+   "s42": "p1dev_s42_redecode-dev300-short.json",
+   "s43": "p1dev_s43-dev300-short.json",
+   "s44": "p1dev_s44-dev300-short.json",
+   "soup": "p1dev_soup3_s42s43s44-dev300-short.json",
+   "mbr": "p1dev_mbr3-dev300-short.json"
+  },
+  "s1_gate": {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json",
+   "keys": [
+    "D_cider_x100_mean_lo_hi.mbr",
+    "dCHAIR_i_points.mbr"
+   ],
+   "D_MBR": [
+    2.549769997943729,
+    0.0035420358476320433,
+    5.23740337283106
+   ],
+   "dCHAIR_i": -0.1930673085061798
+  },
+  "s1_bootstrap": {
+   "B": 2000,
+   "rng": "numpy default_rng(0)",
+   "key": "manuscript/prereg/2026-10-18_tier3_S1.json:analysis.ci"
+  },
+  "checks": [
+   "per-image CIDEr-D of the S1 systems (members, soup, MBR) recomputed by rl_report.dev_scores (1e-6 assert) equal gate.json per_image_cider_x100 exactly",
+   "D_MBR and dCHAIR_i recomputed by seed_consensus.variant_deltas equal gate.json exactly and the quoted values at their decimals",
+   "the MBR selection run by the B-F1 code on the S1 dev decodes equals S1's picked_member list and the sha256 of S1's MBR prediction file",
+   "S1 is not void (s1_void_check.json void false) and T-3V marks S1 VERIFIED"
+  ],
+  "void": {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/s1_void_check.json",
+   "key": "void",
+   "value": false
+  },
+  "t3v": {
+   "path": "manuscript/verification/paperA/T3V_S1_S3_S5.json",
+   "key": "overall.S1",
+   "value": "VERIFIED"
+  },
+  "on_failure": "stop: no test statistic is computed (K-SC)"
+ },
+ "primary": {
+  "estimand": "D_MBR = mean over the 558 test images of [CIDEr_i(MBR) - (1/3) * sum over the three members of CIDEr_i(member)], word-level CIDEr-D x100",
+  "rule_quote": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    22,
+    29
+   ],
+   "quote": "3. Primary endpoint and rule, fixed before the look. - D_MBR = mean over the 558 images of [CIDEr_i(MBR) - member mean], word-level CIDEr-D x100. - Scoring: the evaluate.py protocol card; per-image values are asserted equal to the corpus value within 1e-6; F0 is required. - CI: paired percentile bootstrap over test images, B = 5000 (R14-4), default_rng(0), sorted-id order. - Verdict: sign_gt_0, as worded in B-N1 section 6. - The frozen R14-4 and S1 prediction table (dCIDEr +1.0 to +3.0, and the rest) is reported as a check of whether the point lies inside its interval. It is not the verdict."
+  },
+  "scoring": "scripts/evaluate.py --predictions <file> --split test_data.json --prompt short (the protocol card: RDRSegmenter word level, CIDEr-D x100, rescap.metrics.CaptionMetrics), run once per system in a fresh process by score_b_f1.py run; per-image CIDEr-D from rl_report.dev_scores with the test references, which asserts that their mean equals evaluate.py's corpus value",
+  "f0": {
+   "tolerance": 1e-06,
+   "tolerance_text": "1e-6",
+   "rule": "F0: for each member and the MBR, the word-level row's segmenter is rdrsegmenter, the ids are exactly the 558 test ids, and |mean of per-image CIDEr-D - corpus CIDEr-D| < tolerance; any failure stops the work before D_MBR (K-F0)"
+  },
+  "n_images": 558,
+  "ci": {
+   "method": "paired percentile bootstrap over test images",
+   "B": 5000,
+   "rng": "numpy default_rng(0)",
+   "seed": 0,
+   "order": "sorted-id order (ids sorted as strings)",
+   "level": "95%",
+   "percentiles": "rl_reward.boot's two-sided 95% percentiles",
+   "draws": "rl_reward.boot(d, seed, B): default_rng(seed).integers(0, n, (B, n)); every CI of this registration uses these same draws (paired)"
+  },
+  "verdict_rule": {
+   "name": "sign_gt_0",
+   "text": "PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE",
+   "source": {
+    "path": "manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json",
+    "sha256": "9ff02dc259258de1add426abd02131f2122e3476a81f9a076066ed6d74906134",
+    "key": "verdict_rules.sign_gt_0"
+   }
+  },
+  "absolute_cider": "each system's absolute test CIDEr-D is reported descriptively, with the PD-22 risk note on the members' smaller training set; the claim is the paired delta"
+ },
+ "prediction_check": {
+  "values": {
+   "source": "manuscript/research_r14/R14_4/REPORT.md §3 A, stated there for the test look vs the member mean and registered here for dev300",
+   "dCIDEr": [
+    1.0,
+    3.0
+   ],
+   "dCIDEr_central": 2.0,
+   "dBLEU4": [
+    0.5,
+    1.0
+   ],
+   "dF1": [
+    -1.0,
+    1.5
+   ],
+   "dCHAIRi_points": [
+    -1.0,
+    0.5
+   ],
+   "dmentions_abs_max": 0.1,
+   "applies_to": "the carried variant vs the member mean"
+  },
+  "key": "manuscript/prereg/2026-10-18_tier3_S1.json:frozen_predictions",
+  "r14_4": {
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "lines": [
+    118,
+    123
+   ],
+   "quote": "**Prereg sketch: frozen predictions (test, against the member mean, paired bootstrap B=5000)** - CIDEr +1.0 to +3.0 (central +2.0). - B-4 +0.5 to +1.0. - F1 −1.0 to +1.5. - CHAIR_i −1.0 to +0.5 pp. - Mentions per caption within ±0.10."
+  },
+  "use": "inside/outside check of the point estimates vs the member mean (seed_consensus.predictions_hold); not the verdict"
+ },
+ "secondaries": {
+  "K2": {
+   "text": "K2: CHAIR_i is more than 1.0 pp above the member mean.",
+   "source": {
+    "path": "manuscript/research_r14/R14_4/REPORT.md",
+    "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+    "lines": [
+     127,
+     127
+    ],
+    "quote": "- K2: CHAIR_i is more than 1.0 pp above the member mean."
+   },
+   "threshold_pp": 1.0,
+   "estimate": "point estimate: CHAIR_i(MBR) - mean of the members' CHAIR_i, CHAIR-vi against the test references, x100",
+   "consequence": "K2: CHAIR_i more than 1.0 pp above the member mean is reported as harm."
+  },
+  "K3": {
+   "text": "K3: a test F1 drop whose CI excludes 0 is reported as a negative.",
+   "source": {
+    "path": "manuscript/research_r14/R14_4/REPORT.md",
+    "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+    "lines": [
+     128,
+     128
+    ],
+    "quote": "- K3: a test F1 drop whose CI excludes 0 is reported as a negative."
+   },
+   "estimate": "dF1 = F1_ktvic5(MBR) - mean of the members' F1_ktvic5 (object_prf.scores, exact classes, gold from the test references), CI from the primary's draws; a drop is ci_hi < 0"
+  },
+  "object_rule": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    33,
+    34
+   ],
+   "quote": "- Object claims need the PD-2 count-matched primary plus a registered panel side. Without both, object metrics are descriptive and enter no abstract sentence."
+  },
+  "count_matched_primary_registered": false,
+  "panel_side_registered": false,
+  "object_note": "no PD-2 count-matched object primary and no panel side are registered for KTVIC test (the OpenViIC panel is not read); object metrics are descriptive and enter no abstract sentence",
+  "descriptive": [
+   "BLEU-4 and mentions per caption against the predictions",
+   "object P / R / F1 (ktvic5) and CHAIR_i of every system and as deltas",
+   "absolute CIDEr-D of every system",
+   "the members' spread of test CIDEr-D",
+   "the share of images on which all three members agree",
+   "the MBR pick counts"
+  ],
+  "p1assist_previously_seen_row": "not run (optional in binding 1; it would recompute a look already made)"
+ },
+ "test_set": {
+  "primary": {
+   "n": 558,
+   "ids": "data/lb/sets/ktvic_test.tsv"
+  },
+  "clean": {
+   "n": 157,
+   "path": "data/lb/splits/ktvic_test_openviic_train_clean.txt",
+   "role": "descriptive sensitivity only, no verdict (binding 5); D_MBR and its CI on these ids, same per-image values (document frequencies of all 558)"
+  },
+  "pd19": "The PD-19 leakage finding does not apply: every B-F1 member is trained on KTVIC train minus dev300 only (S1 prereg data.split), so no member saw OpenViIC train.",
+  "quote": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    36,
+    39
+   ],
+   "quote": "5. Test set. - The full 558 images are primary. - The clean 157 is a descriptive sensitivity only, with no verdict (B-N2 MDE about +/-14). - State that the PD-19 leakage finding does not apply, because training is KTVIC-only."
+  }
+ },
+ "test_look_ledger": {
+  "entries": [
+   {
+    "id": "L1",
+    "what": "P1-family KTVIC test scores (evaluate.py results on test_data.json)",
+    "files": [
+     {
+      "path": "data/results/p1-gold-detailed.json",
+      "sha256": "1055c4e05d5791ad1cde9ae07d43e228abbc3956eb99f22f0025b78f9c189c46",
+      "git": "1f30d09",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1-gold-short.json",
+      "sha256": "d333cdb0a7ef4109aaceecae0653cc90785ff00509b069ca388d042c9a5fe968",
+      "git": "1f30d09",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1_s43-detailed.json",
+      "sha256": "0d0034f3a95c998b85a11233706e57d16f295d9764b7680bbd236c12b2aa52b6",
+      "git": "81c97c4",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1_s43-short.json",
+      "sha256": "451fa02d522979c3ccbb75b1c183b876a796797b55db9c21729abf966ed7af21",
+      "git": "81c97c4",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1_s43-two.json",
+      "sha256": "52b07e685e27bc7d8164bf628f8b63dfd0674d93b36159f0c7dd2d51f5e9bb21",
+      "git": "e564ed6",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1_s43mbr-short.json",
+      "sha256": "5eb84e2631510a76f2da268244d98f2a814c38399cc51564a59666eecd6215f2",
+      "git": "63761c0",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1_s43selffuse-two.json",
+      "sha256": "1e0453983fb3be027ad14dd45aada16b11c8d96bb2e21d5836353507f1d0274e",
+      "git": "63761c0",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1_s44-detailed.json",
+      "sha256": "0beaf55193e293bb50666542c149166017b36da478853e9a8e1dc76cacf75e80",
+      "git": "e564ed6",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1_s44-short.json",
+      "sha256": "71a8c25c9d7cb1a10b835c1c2be1ea9e4f3e1e84d6900e009065cae21604346e",
+      "git": "e564ed6",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1assist_s42-detailed.json",
+      "sha256": "87dd4fa70dda94ae8abe37280f1d638eb1c7a31fb8ed1e99c730f3982514763b",
+      "git": "423ea81",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1assist_s42-short.json",
+      "sha256": "ea38b60e7dc5c243356b98b8ac19b91165cb93ecb6f8a6f2badcbeb7053dbfa9",
+      "git": "423ea81",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1assist_s43-detailed.json",
+      "sha256": "06e314bfe0ebe23a5e115c866c38db532a047ef7eafb4aed60429c9687a77153",
+      "git": "eafe7ba",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1assist_s43-short.json",
+      "sha256": "ce8576a440d55888c2954070cef7c916f8030de94f5e171d9e6a02aef79137eb",
+      "git": "eafe7ba",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1assist_s44-detailed.json",
+      "sha256": "550d2613591286e5bf4608177de77e326ad92581fa10e8cbdbda5aa3bf1d82e6",
+      "git": "9d81fe5",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1assist_s44-short.json",
+      "sha256": "723d97653f895e98306a4dbbbf85a1dcd1d6df9012422711bfd85f98b2cca2ad",
+      "git": "9d81fe5",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1ep4_s42-detailed.json",
+      "sha256": "5f896014a3f7e344522550fb1f4a6005b07965e9d5256029e9bf7f5703acb470",
+      "git": "fece3c7",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1ep4_s42-short.json",
+      "sha256": "de233a37ed8fd841d1a1ab65a5a5a3ebbbce08bdee743f2932dd1fa8eee3b75a",
+      "git": "fece3c7",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1ep4_s42-two.json",
+      "sha256": "2ed5bad78fc8eae9a5c965004a74c4f35d0bea6b4ea9cac64d2d7093b3dc54c2",
+      "git": "fece3c7",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1mask_s42-detailed.json",
+      "sha256": "bd63b9af1bc34b13453998d9f0d41bed3c9e9ec8bbeb75ed61a68ab9b55e6b41",
+      "git": "d576a2a",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1mask_s42-short.json",
+      "sha256": "00c9655f4aaa5b09cb0cafb4fcd051c16c6223d5bba5655233bea104afc04851",
+      "git": "d576a2a",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/p1mask_s42-two.json",
+      "sha256": "2e9fd7991e29165366e01ffe1bd3beec2289a3b84251f4026eb3088224527ec9",
+      "git": "d576a2a",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/tags_p1_s43-detailed.json",
+      "sha256": "67ed5270722e148436b968b5933302caa9f52a4ce8b7744873fef1aa37db36f7",
+      "git": "e564ed6",
+      "n_images": 558
+     },
+     {
+      "path": "data/results/tags_p1_s43-short.json",
+      "sha256": "081ac7544ef13ee39ec7c105e1cea557a79d51934714872c378c745c18c2adca",
+      "git": "e564ed6",
+      "n_images": 558
+     }
+    ],
+    "systems": [
+     "p1-gold",
+     "p1_s43",
+     "p1_s43mbr",
+     "p1_s43selffuse",
+     "p1_s44",
+     "p1assist_s42",
+     "p1assist_s43",
+     "p1assist_s44",
+     "p1ep4_s42",
+     "p1mask_s42",
+     "tags_p1_s43"
+    ],
+    "used_p1dev_member": false,
+    "informed_variant_choice": false
+   },
+   {
+    "id": "L2",
+    "what": "UPE-MBR on KTVIC test (sample pools of p1assist_s42/s43/s44 and its statistics)",
+    "files": [
+     {
+      "path": "data/results/upe/test/upe_mbr_ktvic_test.json",
+      "sha256": "b75a1304a13406f1db6b7f5cd2bc5c80d6743f8ebbead4fda7b673e2b75fb99a",
+      "git": "ba351f8"
+     },
+     {
+      "path": "data/results/upe/test/upe_mbr_ktvic_test.log",
+      "sha256": "b8863b7c1df10fdf51caaf7c2d4d29d517a7e3da4d2bef02b8d3e34db6dffdeb",
+      "git": "ba351f8"
+     },
+     {
+      "path": "data/results/upe/test/p1assist_s42-test-short-T0.5.jsonl",
+      "sha256": "87341261a3d541506ff3758373cf983475b26fe711f62b0c807261b4d82a2021",
+      "git": "ba351f8"
+     },
+     {
+      "path": "data/results/upe/test/p1assist_s43-test-short-T0.5.jsonl",
+      "sha256": "9c2b917b4d771d1d25a2ef5b436363cc36908f269248c80226dcefbe557f2708",
+      "git": "ba351f8"
+     },
+     {
+      "path": "data/results/upe/test/p1assist_s44-test-short-T0.5.jsonl",
+      "sha256": "14dee7feca45f8e2e38041a83e69f4128e5b1281ce82874f6f931c47079c0bdd",
+      "git": "ba351f8"
+     }
+    ],
+    "systems": [
+     "p1assist_s42",
+     "p1assist_s43",
+     "p1assist_s44"
+    ],
+    "sources": [
+     {
+      "path": "manuscript/prereg/2026-10-13_upe_mbr.md",
+      "sha256": "f4d2a5424a25c478d7d3c13817efe5193c93a9be849cd78602effbf83b041688",
+      "lines": [
+       16,
+       16
+      ],
+      "quote": "- the same on KTVIC test with the three response-only P1 seeds (F1, F3);"
+     },
+     {
+      "path": "manuscript/prereg/2026-10-13_upe_mbr.md",
+      "sha256": "f4d2a5424a25c478d7d3c13817efe5193c93a9be849cd78602effbf83b041688",
+      "lines": [
+       125,
+       125
+      ],
+      "quote": "| C | n3 GPU | 50_f_upe_test_samples: after 50_e (p1assist_s44), before 52_a | KTVIC test, p1assist_s42/s43/s44, 6 samples at T* | ~1.7 GPU-h |"
+     },
+     {
+      "path": ".session_backup/2026-10-13/decisions/LOG.md",
+      "sha256_at_build": "55349bdf0fc7456cb94141369f5aa7bc06a206bf3cbabc409fa00e464bafbc25",
+      "line": 41,
+      "quote": "(i) YES (Kill 2 fired on 3/3 seeds, F1a/F1b false, F3 true; negative on KTVIC, run 52_c on UIT-ViIC); (ii) YES (keep frozen fd1d0123/f8cc96bc on GPU during 51/52_c, Phase 2 to data/results/tone_norm/); (iii) YES (tiers 1-7 with lexical-queue & restore guards)"
+     }
+    ],
+    "used_p1dev_member": false,
+    "informed_variant_choice": false
+   },
+   {
+    "id": "L3",
+    "what": "PLAN-F1: its registered test step never ran (dev pilot parked on CPU, D12)",
+    "files": [
+     {
+      "path": "data/results/planf1/dev_plan_critique.json",
+      "sha256": "f2c3a901496cda1ac77a1834b85b6eb39bb589128744db2b1e19c356ba8b8e0f"
+     }
+    ],
+    "systems": [],
+    "test_computation": "none",
+    "sources": [
+     {
+      "path": "manuscript/prereg/2026-10-13_plan_f1.md",
+      "sha256": "e5550673f17c9962d4f7f99d9f6c980ddf647f11c786c107a883a0103cc7a722",
+      "lines": [
+       16,
+       16
+      ],
+      "quote": "- Test step: once, frozen, only after a dev pass (`verdict == \"PASS\"`)."
+     },
+     {
+      "path": ".session_backup/2026-10-13/decisions/LOG.md",
+      "sha256_at_build": "55349bdf0fc7456cb94141369f5aa7bc06a206bf3cbabc409fa00e464bafbc25",
+      "line": 47,
+      "quote": "(i) YES: PARK/KILL 51_planf1_dev.sh on CPU (save ~3.45 GPU-h), report CPU plan-level audit, advance 36_s0 & 52_a..c; (ii) YES: commit updated C-024 (b06a25dc/e5550673/33c84d38)"
+     },
+     {
+      "path": "manuscript/WORKFLOW_LOG.md",
+      "sha256_at_build": "e3b979e6240e79309b2ca0c5408741cdd399b5b45c2fc96df27ec3d4512e5675",
+      "line": 481,
+      "quote": "- PLAN-F1 was never run."
+     }
+    ],
+    "used_p1dev_member": false,
+    "informed_variant_choice": false
+   },
+   {
+    "id": "L4",
+    "what": "MBR over the three p1assist seeds' test captions minus their mean, syllable-level CIDEr-D; an exploratory test look (PD-9 Q5), never used to choose the variant",
+    "value": {
+     "proxy_cider": 3.05,
+     "proxy_ci": [
+      1.03,
+      5.11
+     ],
+     "keys": [
+      "manuscript/prereg/2026-10-18_tier3_S1.json:test_look_ledger.proxy_cider",
+      "manuscript/prereg/2026-10-18_tier3_S1.json:test_look_ledger.proxy_ci"
+     ]
+    },
+    "files": [
+     {
+      "path": "manuscript/research_r14/R14_4/soup_proxy.out",
+      "sha256": "0a2aef243cf2d2d7ee532b30e4b7916811c47a0a947388813be3594249ab8345",
+      "git": "5a6e8ac"
+     }
+    ],
+    "systems": [
+     "p1assist_s42",
+     "p1assist_s43",
+     "p1assist_s44"
+    ],
+    "level": "R14-4's proxy MBR used syllable-level CIDEr with test-reference document frequencies; the registered MBR uses word-level CIDEr-D with train-minus-dev300 document frequencies.",
+    "used_p1dev_member": false,
+    "informed_variant_choice": false
+   },
+   {
+    "id": "L5",
+    "what": "B-N2 leaked/clean subset statistics on KTVIC test (run once from the committed scorer)",
+    "files": [
+     {
+      "path": "data/results/b_n2/b_n2_run.json",
+      "sha256": "59463c4c73e66349f047c5661823a6c49e1d37ac30b7d2728f42579ce68174ab",
+      "git": "6f12bad"
+     }
+    ],
+    "systems": [
+     "fuse2_s42",
+     "fuse2_s43",
+     "fuse2_s44",
+     "mr5assist_s42",
+     "p1-gold",
+     "p1_s43",
+     "p1_s44",
+     "p1assist_s42",
+     "p1assist_s43",
+     "p1assist_s44"
+    ],
+    "registration": {
+     "path": "manuscript/prereg/2026-10-19_b_n2_leakage_did_prereg_v2.json",
+     "sha256": "675d37a9da2b26a0472ff0fd58a370dd55705602c78006bc1a52d96245d15972",
+     "key": "systems.D1_all_KTVIC_only_short"
+    },
+    "used_p1dev_member": false,
+    "informed_variant_choice": false
+   }
+  ],
+  "none_used_p1dev_member": true,
+  "none_informed_variant_choice": true,
+  "variant_chosen_on": "dev300",
+  "quote": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    40,
+    49
+   ],
+   "quote": "6. Test-look ledger, complete inside the prereg: - Every earlier KTVIC-test computation on P1-family outputs: the P1/p1assist test scores, UPE, PLAN-F1, the +3.05 proxy (p1assist, syllable level, test-reference document frequencies) and B-N2's subset statistics. - State that none of them used a p1dev member, and none informed the choice of variant (dev gate only). - Record the Stage-2 status: - S6 and S8 were eligible but not run, decided in PD-22 before any B-F1 output (reasons: cost, and R14-4's expected KTVIC effect of +/-1); - S4 is not eligible (S3 FAIL); - S7 is closed (D14); - XV-EF1 was not carried."
+  }
+ },
+ "stage2_status": {
+  "quote": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    44,
+    49
+   ],
+   "quote": "- Record the Stage-2 status: - S6 and S8 were eligible but not run, decided in PD-22 before any B-F1 output (reasons: cost, and R14-4's expected KTVIC effect of +/-1); - S4 is not eligible (S3 FAIL); - S7 is closed (D14); - XV-EF1 was not carried."
+  },
+  "S6": "eligible, not run (PD-22, decided before any B-F1 output)",
+  "S8": "eligible, not run (PD-22, decided before any B-F1 output); if run, it is a separate UIT-ViIC item under PD-22 C1-C4 and never enters this stack",
+  "S4": "not eligible",
+  "S4_rule_input": {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_3_s3_cm_dpo_rft/s3_verdict.json",
+   "key": "outcome",
+   "value": "FAIL"
+  },
+  "S7": "closed (D14; PD-9 Q3)",
+  "XV-EF1": "not carried"
+ },
+ "procedure": {
+  "precedent": "CC-018",
+  "steps": [
+   "1. Commit this prereg pair through the gatekeeper.",
+   "2. Commit the instrument addendum (scorer and job sha256), the scorer, the job file and the gate and dry-run records; all before any test decode.",
+   "3. Queue the job once on one host under decode.machine.rule; it decodes the three members and writes sidecars and provenance; nobody reads a prediction before scoring.",
+   "4. Score once from the committed copy: score_b_f1.py run --gate <committed gate record> --outputs <mirror of the decode folder>.",
+   "5. An independent verifier re-runs it (CC-038b canonical form); commit through the gatekeeper.",
+   "6. No re-decode or re-score after any output has been read; a failure stops the work and comes back to the judge."
+  ],
+  "quote": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    50,
+    56
+   ],
+   "quote": "7. Procedure (CC-018 precedent). - Commit the prereg; commit the instrument addendum (scorer and job sha); pass the scorer through the gate with a synthetic dry run, all before any test decode. - Decode once on M1. Nobody reads the test captions before scoring. - Score once from the committed copy. An independent verifier re-runs it (CC-038b canonical form). Commit through the gatekeeper. - No re-decode or re-score after any output has been read. A failure stops the work and comes back to the judge."
+  }
+ },
+ "closure": {
+  "rule": "After B-F1, Paper B makes no further KTVIC-test look for any method; any later KTVIC-side item is dev300-only and exploratory.",
+  "quote": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "lines": [
+    57,
+    59
+   ],
+   "quote": "8. Closure. After B-F1, Paper B makes no further KTVIC-test look for any method. Any later KTVIC-side item is dev300-only and exploratory. "
+  }
+ },
+ "kill_rules": {
+  "K-SC": "the self-check fails: stop before any test statistic",
+  "K-PROV": "a decode fails admission (sha256 sidecar, SHA256SUMS, provenance: machine, job, evaluate.py, adapter, base revision, test data, commit carrying this registration, decoded after its commit): stop",
+  "K-COV": "a member lacks a prediction for a test id: stop",
+  "K-F0": "F0 fails for any system: stop; D_MBR is not computed",
+  "after_stop": "the record states which rule fired; the work comes back to the judge"
+ },
+ "records": {
+  "gate": "manuscript/prereg/2026-10-20_b_f1_record/b_f1_gate.json",
+  "dryrun": "manuscript/prereg/2026-10-20_b_f1_record/b_f1_dryrun_synthetic.json",
+  "run": "data/results/b_f1/b_f1_run.json"
+ },
+ "disclosures": [
+  "The +3.05 [+1.03, +5.11] proxy (L4) was seen before this registration; it is a test look (PD-9 Q5) and played no part in choosing the variant, which the S1 dev300 gate chose.",
+  "PD-22 risks, quoted: - The one look is spent on a single-component stack. A stronger later lever cannot be confirmed on KTVIC. - The p1dev members are trained on 300 fewer images, so the absolute test CIDEr will sit a little below full-train P1. The claim is the paired delta; report the absolute number descriptively and with that note. - The dev lower bound is 0.0035, so the test verdict may be INCONCLUSIVE. Report it as it comes. ",
+  "Decode-only: evaluate.py receives the images list of test_data.json without captions, so no test score exists before score_b_f1.py run; generation arguments are S1's.",
+  "The MBR selection reads no test reference; its document frequencies come from the train-minus-dev300 references.",
+  "No model-generated signal is used as gold; the scored references are KTVIC's human captions.",
+  "S1's dev decodes ran on an RTX 3090; the B-F1 decode runs on a new rental under decode.machine.rule (CC-042). All three members are decoded on one host, so the paired delta is within one host; a card difference touches only the absolute numbers."
+ ],
+ "deviations": "Any change after this freeze goes into a new dated file, committed through the gatekeeper before the affected output exists, and is reported next to every number it touches.",
+ "code_at_head_unchanged_since_S1": {
+  "rescap/chair.py": true,
+  "scripts/checkpoint_resume_hook.py": true,
+  "scripts/evaluate.py": true,
+  "scripts/object_prf.py": true,
+  "scripts/queue/check_g1_pass.py": true,
+  "scripts/rl_report.py": true,
+  "scripts/rl_reward.py": true
+ },
+ "sources": {
+  "primary.n_images": {
+   "path": "data/lb/sets/ktvic_test.tsv",
+   "how": "number of rows",
+   "cross_check": {
+    "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+    "lines": [
+     7,
+     14
+    ]
+   }
+  },
+  "test_set.clean.n": {
+   "path": "data/lb/splits/ktvic_test_openviic_train_clean.txt",
+   "how": "number of ids",
+   "cross_check": {
+    "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+    "lines": [
+     36,
+     39
+    ]
+   }
+  },
+  "primary.ci.B": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "lines": [
+    22,
+    29
+   ],
+   "match": "B = (\\d+) \\(R14-4\\)",
+   "cross_check": {
+    "path": "manuscript/research_r14/R14_4/REPORT.md",
+    "line": 118
+   }
+  },
+  "primary.ci.seed": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "lines": [
+    22,
+    29
+   ],
+   "match": "default_rng\\((\\d+)\\)"
+  },
+  "primary.f0.tolerance": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "lines": [
+    22,
+    29
+   ],
+   "match": "within (\\d+e-\\d+)"
+  },
+  "self_check.expect": {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "lines": [
+    15,
+    21
+   ],
+   "match": "D_MBR ([\\d.]+) \\[([\\d.]+), ([\\d.]+)\\], dCHAIR_i (-?[\\d.]+)"
+  },
+  "self_check.s1_gate": {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json",
+   "keys": [
+    "D_cider_x100_mean_lo_hi.mbr",
+    "dCHAIR_i_points.mbr"
+   ]
+  },
+  "self_check.s1_bootstrap": {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+   "keys": [
+    "analysis.ci.B",
+    "analysis.ci.rng"
+   ]
+  },
+  "variant.df_images": {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+   "key": "data.splits.data/splits/ktvic_train_minus_dev300.txt.n_images"
+  },
+  "secondaries.K2.threshold_pp": {
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "line": 127,
+   "match": "more than ([\\d.]+) pp"
+  },
+  "prediction_check.values": {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+   "key": "frozen_predictions",
+   "cross_check": {
+    "path": "manuscript/research_r14/R14_4/REPORT.md",
+    "lines": [
+     118,
+     123
+    ]
+   }
+  },
+  "members": "members.<run>.source",
+  "test_look_ledger.L4.value": "test_look_ledger.entries[L4].value.keys",
+  "decode.machine.min_gpu_memory_gb": {
+   "path": ".session_backup/2026-10-13/decisions/CC-042.txt",
+   "lines": [
+    12,
+    16
+   ],
+   "match": ">= (\\d+) GB"
+  },
+  "decode.machine.s1_dev_card": {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+   "key": "machines.card",
+   "match": "RTX \\d+"
+  },
+  "decode.venv": {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+   "key": "machines.venv"
+  },
+  "decode.base": {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+   "key": "models.base"
+  },
+  "decode.evaluate_defaults": {
+   "path": "scripts/evaluate.py",
+   "lines": [
+    276,
+    277
+   ]
+  },
+  "registered_before_output": "counted by the builder at checked_utc over the listed roots (file names only)",
+  "stage2_status.S4": {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_3_s3_cm_dpo_rft/s3_verdict.json",
+   "key": "outcome"
+  },
+  "self_check.void": {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/s1_void_check.json",
+   "key": "void"
+  },
+  "self_check.t3v": {
+   "path": "manuscript/verification/paperA/T3V_S1_S3_S5.json",
+   "key": "overall.S1"
+  }
+ },
+ "frozen_files": [
+  {
+   "path": ".session_backup/2026-10-13/decisions/CC-042.txt",
+   "sha256": "4401a68a90608ad885479d48875f280be7b2dde927e358319d8a92adc139524f",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "CC-042: the machine rule that replaces the fixed M1 pin",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+   "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "the ruling (bindings 1-8)",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/PD-9.txt",
+   "sha256": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "PD-9 Q4/Q5 (stacked system owned by Paper B; the seed-MBR proxy is a test look)",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/SHA256SUMS",
+   "sha256": "32195a8963da2a412b067f9313096a18941fd074971f698268679c2d0bf15527",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 output checksums (the S1 record)",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json",
+   "sha256": "8998aff2003101bf668c5bfc2c2ea09c86afcf27b040cf6d1596c36e2bf6796c",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 dev output read by the self-check",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/p1dev_mbr3-dev300-short.json",
+   "sha256": "0341fd5783174e06f4279c817982ca10ca6e935f0a89cc97f4a1ff8cee350c07",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 dev output read by the self-check",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/p1dev_mbr3-dev300-short.preds.json",
+   "sha256": "474085418eed0ec83feaca963d26937995b09dc20f40e459a4fb276c0c6124d5",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 dev output read by the self-check",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/p1dev_mbr3_selection.json",
+   "sha256": "fd02b1460b2b092bd2d6b39e45274857bdc6c016603ba5699e9d401055143168",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 dev output read by the self-check",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/p1dev_s42_redecode-dev300-short.json",
+   "sha256": "18ba9da8b50794997d46852c7002034da26540e66310ae2c5ed53d0ae64ece76",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 dev output read by the self-check",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/p1dev_s43-dev300-short.json",
+   "sha256": "9d9b2cb260ce8f8d1831ba4c9c27ce243a3f2c36246cfa71225422f3271e7fb3",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 dev output read by the self-check",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/p1dev_s44-dev300-short.json",
+   "sha256": "5734b0f73064059acd52049da70e9d76be6470ee4f2b883c56be081808389681",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 dev output read by the self-check",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/p1dev_soup3_s42s43s44-dev300-short.json",
+   "sha256": "a43ed5cb8fb89aeff834c68da786c5f0883d68267b8539525c950a5ada8c516a",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 dev output read by the self-check",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/s1_void_check.json",
+   "sha256": "ae06e7ee2ceb6c68e757748cffd7d2b29da62c64b8d5933386fb8d7ef8541b72",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S1 dev output read by the self-check",
+   "gate_pins": true
+  },
+  {
+   "path": ".session_backup/machines/O-2308423/root/outputs/t3_3_s3_cm_dpo_rft/s3_verdict.json",
+   "sha256": "0445997fccc76aed08e426bd2bf599feb6481fe6386a637d94214addb537b3e4",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "S3 outcome (S4 eligibility)",
+   "gate_pins": true
+  },
+  {
+   "path": "data/datasets/ktvic/test_data.json",
+   "sha256": "cc22ec6a8883773cb23c87ad5b64925f5a53c21982117274b53621f454e7ebbf",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "KTVIC references (git-excluded): test for scoring, train for the selection's document frequencies",
+   "gate_pins": true
+  },
+  {
+   "path": "data/datasets/ktvic/train_data.json",
+   "sha256": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "KTVIC references (git-excluded): test for scoring, train for the selection's document frequencies",
+   "gate_pins": true
+  },
+  {
+   "path": "data/lb/sets/ktvic_test.tsv",
+   "sha256": "456243c0cfc82b0c3cc4ad52c694e11b4d9702f3ca14cd8103c3a82cd74a90eb",
+   "git": "327191c",
+   "role": "KTVIC test image manifest: id, file name, image sha256 (558 rows)",
+   "gate_pins": true
+  },
+  {
+   "path": "data/lb/splits/ktvic_test_openviic_train_clean.txt",
+   "sha256": "4832c16b4499a70b5b6d5c3967a22f551283b45b3a885ba011301b6a4e90015e",
+   "git": "327191c",
+   "role": "KTVIC test ids without an OpenViIC train copy (descriptive sensitivity)",
+   "gate_pins": true
+  },
+  {
+   "path": "data/lb/splits/ktvic_test_openviic_train_leaked.txt",
+   "sha256": "56e57ea468e48b692ed704ab4655f53cb878309bc3953cfb8dfd57b56590380f",
+   "git": "327191c",
+   "role": "KTVIC test ids with an OpenViIC train copy (complement of the clean list)",
+   "gate_pins": true
+  },
+  {
+   "path": "data/results/b_n2/b_n2_run.json",
+   "sha256": "59463c4c73e66349f047c5661823a6c49e1d37ac30b7d2728f42579ce68174ab",
+   "git": "6f12bad",
+   "role": "ledger source",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1-gold-detailed.json",
+   "sha256": "1055c4e05d5791ad1cde9ae07d43e228abbc3956eb99f22f0025b78f9c189c46",
+   "git": "1f30d09",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1-gold-short.json",
+   "sha256": "d333cdb0a7ef4109aaceecae0653cc90785ff00509b069ca388d042c9a5fe968",
+   "git": "1f30d09",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1_s43-detailed.json",
+   "sha256": "0d0034f3a95c998b85a11233706e57d16f295d9764b7680bbd236c12b2aa52b6",
+   "git": "81c97c4",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1_s43-short.json",
+   "sha256": "451fa02d522979c3ccbb75b1c183b876a796797b55db9c21729abf966ed7af21",
+   "git": "81c97c4",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1_s43-two.json",
+   "sha256": "52b07e685e27bc7d8164bf628f8b63dfd0674d93b36159f0c7dd2d51f5e9bb21",
+   "git": "e564ed6",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1_s43mbr-short.json",
+   "sha256": "5eb84e2631510a76f2da268244d98f2a814c38399cc51564a59666eecd6215f2",
+   "git": "63761c0",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1_s43selffuse-two.json",
+   "sha256": "1e0453983fb3be027ad14dd45aada16b11c8d96bb2e21d5836353507f1d0274e",
+   "git": "63761c0",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1_s44-detailed.json",
+   "sha256": "0beaf55193e293bb50666542c149166017b36da478853e9a8e1dc76cacf75e80",
+   "git": "e564ed6",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1_s44-short.json",
+   "sha256": "71a8c25c9d7cb1a10b835c1c2be1ea9e4f3e1e84d6900e009065cae21604346e",
+   "git": "e564ed6",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1assist_s42-detailed.json",
+   "sha256": "87dd4fa70dda94ae8abe37280f1d638eb1c7a31fb8ed1e99c730f3982514763b",
+   "git": "423ea81",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1assist_s42-short.json",
+   "sha256": "ea38b60e7dc5c243356b98b8ac19b91165cb93ecb6f8a6f2badcbeb7053dbfa9",
+   "git": "423ea81",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1assist_s43-detailed.json",
+   "sha256": "06e314bfe0ebe23a5e115c866c38db532a047ef7eafb4aed60429c9687a77153",
+   "git": "eafe7ba",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1assist_s43-short.json",
+   "sha256": "ce8576a440d55888c2954070cef7c916f8030de94f5e171d9e6a02aef79137eb",
+   "git": "eafe7ba",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1assist_s44-detailed.json",
+   "sha256": "550d2613591286e5bf4608177de77e326ad92581fa10e8cbdbda5aa3bf1d82e6",
+   "git": "9d81fe5",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1assist_s44-short.json",
+   "sha256": "723d97653f895e98306a4dbbbf85a1dcd1d6df9012422711bfd85f98b2cca2ad",
+   "git": "9d81fe5",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1ep4_s42-detailed.json",
+   "sha256": "5f896014a3f7e344522550fb1f4a6005b07965e9d5256029e9bf7f5703acb470",
+   "git": "fece3c7",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1ep4_s42-short.json",
+   "sha256": "de233a37ed8fd841d1a1ab65a5a5a3ebbbce08bdee743f2932dd1fa8eee3b75a",
+   "git": "fece3c7",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1ep4_s42-two.json",
+   "sha256": "2ed5bad78fc8eae9a5c965004a74c4f35d0bea6b4ea9cac64d2d7093b3dc54c2",
+   "git": "fece3c7",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1mask_s42-detailed.json",
+   "sha256": "bd63b9af1bc34b13453998d9f0d41bed3c9e9ec8bbeb75ed61a68ab9b55e6b41",
+   "git": "d576a2a",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1mask_s42-short.json",
+   "sha256": "00c9655f4aaa5b09cb0cafb4fcd051c16c6223d5bba5655233bea104afc04851",
+   "git": "d576a2a",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/p1mask_s42-two.json",
+   "sha256": "2e9fd7991e29165366e01ffe1bd3beec2289a3b84251f4026eb3088224527ec9",
+   "git": "d576a2a",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/tags_p1_s43-detailed.json",
+   "sha256": "67ed5270722e148436b968b5933302caa9f52a4ce8b7744873fef1aa37db36f7",
+   "git": "e564ed6",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/tags_p1_s43-short.json",
+   "sha256": "081ac7544ef13ee39ec7c105e1cea557a79d51934714872c378c745c18c2adca",
+   "git": "e564ed6",
+   "role": "earlier P1-family KTVIC test score (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/upe/test/p1assist_s42-test-short-T0.5.jsonl",
+   "sha256": "87341261a3d541506ff3758373cf983475b26fe711f62b0c807261b4d82a2021",
+   "git": "ba351f8",
+   "role": "UPE-MBR KTVIC test pool and statistics (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/upe/test/p1assist_s43-test-short-T0.5.jsonl",
+   "sha256": "9c2b917b4d771d1d25a2ef5b436363cc36908f269248c80226dcefbe557f2708",
+   "git": "ba351f8",
+   "role": "UPE-MBR KTVIC test pool and statistics (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/upe/test/p1assist_s44-test-short-T0.5.jsonl",
+   "sha256": "14dee7feca45f8e2e38041a83e69f4128e5b1281ce82874f6f931c47079c0bdd",
+   "git": "ba351f8",
+   "role": "UPE-MBR KTVIC test pool and statistics (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/upe/test/upe_mbr_ktvic_test.json",
+   "sha256": "b75a1304a13406f1db6b7f5cd2bc5c80d6743f8ebbead4fda7b673e2b75fb99a",
+   "git": "ba351f8",
+   "role": "UPE-MBR KTVIC test pool and statistics (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/results/upe/test/upe_mbr_ktvic_test.log",
+   "sha256": "b8863b7c1df10fdf51caaf7c2d4d29d517a7e3da4d2bef02b8d3e34db6dffdeb",
+   "git": "ba351f8",
+   "role": "UPE-MBR KTVIC test pool and statistics (ledger)",
+   "gate_pins": false
+  },
+  {
+   "path": "data/splits/ktvic_dev300.txt",
+   "sha256": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+   "git": "b44db13",
+   "role": "S1 split list",
+   "gate_pins": true
+  },
+  {
+   "path": "data/splits/ktvic_train_minus_dev300.txt",
+   "sha256": "006080b455a553ca9cc5d3f514ad76bfbe67f444c9c145a5696de681a4be1a58",
+   "git": "b44db13",
+   "role": "S1 split list",
+   "gate_pins": true
+  },
+  {
+   "path": "manuscript/prereg/2026-10-13_plan_f1.md",
+   "sha256": "e5550673f17c9962d4f7f99d9f6c980ddf647f11c786c107a883a0103cc7a722",
+   "git": "ee583c7",
+   "role": "ledger source",
+   "gate_pins": false
+  },
+  {
+   "path": "manuscript/prereg/2026-10-13_upe_mbr.md",
+   "sha256": "f4d2a5424a25c478d7d3c13817efe5193c93a9be849cd78602effbf83b041688",
+   "git": "257bc8c",
+   "role": "ledger source",
+   "gate_pins": false
+  },
+  {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+   "sha256": "e485da949cce2ee97fbc569c0b977549e0f55c56a91ca43d8356b87f15686bd2",
+   "git": "a68fb66",
+   "role": "S1 registration (members, base, venv, MBR rule, analysis, predictions, ledger)",
+   "gate_pins": true
+  },
+  {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1.md",
+   "sha256": "4b1e7c6dd17f2d7e6b4f2bb389ddd7df9edd66609fc7243f4c8f0c376ec3c0a4",
+   "git": "a68fb66",
+   "role": "S1 registration (text)",
+   "gate_pins": true
+  },
+  {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1_instrument.json",
+   "sha256": "904f2eb14249de28e7fdc5edf911347db4fe1169f5e860f40f7ee900cd873b87",
+   "git": "7382600",
+   "role": "S1 instrument addendum (pins scripts/seed_consensus.py)",
+   "gate_pins": true
+  },
+  {
+   "path": "manuscript/prereg/2026-10-18_tier3_S1_operations.md",
+   "sha256": "c77e05a57c70c8442665b3b5214411c3dcaaa22d69be7468ba433c6bf6f79bcf",
+   "git": "f6b1656",
+   "role": "S1 operating notes (void rule)",
+   "gate_pins": true
+  },
+  {
+   "path": "manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json",
+   "sha256": "9ff02dc259258de1add426abd02131f2122e3476a81f9a076066ed6d74906134",
+   "git": "327191c",
+   "role": "B-N1 registration: verdict rule sign_gt_0 (section 6)",
+   "gate_pins": true
+  },
+  {
+   "path": "manuscript/prereg/2026-10-19_b_n2_leakage_did_prereg_v2.json",
+   "sha256": "675d37a9da2b26a0472ff0fd58a370dd55705602c78006bc1a52d96245d15972",
+   "git": "9f7e6bf",
+   "role": "B-N2 registration: systems of the subset statistics (ledger)",
+   "gate_pins": true
+  },
+  {
+   "path": "manuscript/research_r14/R14_4/REPORT.md",
+   "sha256": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "git": "5a6e8ac",
+   "role": "R14-4 report: K2/K3 and the test predictions (section 3 A)",
+   "gate_pins": true
+  },
+  {
+   "path": "manuscript/research_r14/R14_4/soup_proxy.out",
+   "sha256": "0a2aef243cf2d2d7ee532b30e4b7916811c47a0a947388813be3594249ab8345",
+   "git": "5a6e8ac",
+   "role": "ledger source",
+   "gate_pins": false
+  },
+  {
+   "path": "manuscript/verification/paperA/T3V_S1_S3_S5.json",
+   "sha256": "112fd94227b4714ba0a979a628ba7b8ee3bb0db39c38e2009f072a8dbeb49bd3",
+   "git": "not in git (git-excluded or untracked)",
+   "role": "T-3V verification of S1",
+   "gate_pins": true
+  },
+  {
+   "path": "rescap/chair.py",
+   "sha256": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+   "git": "a0accb5",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "rescap/metrics.py",
+   "sha256": "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960",
+   "git": "4e646da",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "rescap/svp/matching.py",
+   "sha256": "a9253060131aacfca8eaab9a4b2c473c487db96a7c1222f0b8e31f9f61b24003",
+   "git": "1f30d09",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "rescap/vi/lexicon.py",
+   "sha256": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+   "git": "996c32f",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "scripts/checkpoint_resume_hook.py",
+   "sha256": "05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895",
+   "git": "d89094e",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "scripts/evaluate.py",
+   "sha256": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+   "git": "d4de7b0",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "scripts/object_prf.py",
+   "sha256": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+   "git": "20ea9d4",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "scripts/queue/adapters_canonical.sha256",
+   "sha256": "031b7cc782c546f9746394370bb77a649de72aaaf9cc6b906bfc2ca6cd8c726d",
+   "git": "cb03bba",
+   "role": "canonical adapter checksums (p1dev_s42)",
+   "gate_pins": true
+  },
+  {
+   "path": "scripts/queue/check_g1_pass.py",
+   "sha256": "39fe181f38bd57a7de32111745bc91de6d684f89c1a931b805da80fe85e104bc",
+   "git": "d89094e",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "scripts/queue/jobs/t3_2_s1_seed_consensus.sh",
+   "sha256": "3acd86835c728bf432f622c7bafc03a177e54047b3206570b23514c7a2080ffb",
+   "git": "7382600",
+   "role": "S1 job file (model for the B-F1 job)",
+   "gate_pins": true
+  },
+  {
+   "path": "scripts/rl_report.py",
+   "sha256": "f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5",
+   "git": "3ec03bf",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "scripts/rl_reward.py",
+   "sha256": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+   "git": "3ec03bf",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  },
+  {
+   "path": "scripts/seed_consensus.py",
+   "sha256": "2b72dc417d60c5ec6a0be9cfd3b69692a783e2ba9bd1fc7dcb14c5195296c486",
+   "git": "7382600",
+   "role": "code read by the B-F1 scorer or job",
+   "gate_pins": true
+  }
+ ],
+ "informational_sources": [
+  {
+   "path": "manuscript/WORKFLOW_LOG.md",
+   "sha256_at_build": "e3b979e6240e79309b2ca0c5408741cdd399b5b45c2fc96df27ec3d4512e5675",
+   "note": "appended log; quoted by line"
+  },
+  {
+   "path": ".session_backup/2026-10-13/decisions/LOG.md",
+   "sha256_at_build": "55349bdf0fc7456cb94141369f5aa7bc06a206bf3cbabc409fa00e464bafbc25",
+   "note": "appended log; quoted by line"
+  }
+ ],
+ "builder": {
+  "path": ".session_backup/2026-10-20/B_F1/build_b_f1_prereg.py",
+  "sha256": "6eb962902eac02a567d38f19bf870df4c04bbfd4e54f3fa49158ac1a6e063150"
+ }
+}
