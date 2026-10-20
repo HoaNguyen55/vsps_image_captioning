@@ -17,7 +17,7 @@ The first three parts are properties of the protocol and the reference writer, n
 
 Object-level metrics avoid the template problem but meet two others.
 
-- **Count.** Every lever in Section 6 that raised raw object F1 did so by naming more objects. The ladder (Section 5.2) shows that target curation moves the fine-tuned model along one precision–count frontier: more objects at the precision the frontier predicts.
+- **Count.** Every lever in Section 6 that raised raw object F1 did so by naming more objects. In the ladder (Section 5.2), target curation mainly changed how many objects the fine-tuned model names. The pooled frontier residual is near zero, but the registered frontier-invariance H0 is not met, because two single runs fall beyond ±1.0.
 - **Incomplete, single-writer gold.** More than half of the objects KTVIC scores as unsupported for fuse2 are named by an independent caption panel of the same images (Section 5.4). The two panels disagree about what is in the image. KTVIC's five references are one person's account, and treating them as five independent accounts overstates their coverage.
 
 ## 7.3 Recommendations for Vietnamese captioning evaluation
@@ -30,6 +30,22 @@ Object-level metrics avoid the template problem but meet two others.
 6. **Check image overlap across datasets** before training on one and testing on another (Section 3.6). Do not use a model whose training images overlap KTVIC test (for example ViCLIP-OT, trained on UIT-OpenViIC) as an evaluator on KTVIC test.
 7. **Do not call within-writer agreement a human ceiling** on KTVIC.
 
-## 7.4 What the controlled system contributes
+## 7.4 The release kit puts the recommendations into practice
+
+Each recommendation above has a component in the release kit (Section 3.7, Table 3.1), so a reader can apply it to a new system without our predictions or our models.
+
+| Recommendation | Kit component |
+|---|---|
+| 1. Protocol card | the scorer and the protocol card (Section 4.2); every result file records its segmenter, tokenisation and scale |
+| 2. CIDEr with and without final punctuation | the punctuation variants of the scorer and the period audit (Section 3.3) |
+| 3. Publish the matcher | matchers v1–v3 and their lexicons, with v3 labelled unattested |
+| 4. Count-matched comparison | the frozen frontier, the frontier-residual code and the registered ladder check (Sections 4.3, 5.2) |
+| 5. A second gold | the two-gold protocol (COCO instance labels for UIT-ViIC; a second caption panel for KTVIC images, aggregates only) |
+| 6. Image-overlap check | the image-overlap matcher and the UIT-ViIC / COCO / POPE-500 ID lists (Section 3.6) |
+| 7. No within-writer "human ceiling" | the exchangeability test and the leave-one-out script (Section 3.2) |
+
+The kit carries no data that we may not redistribute. The scripts that need KTVIC captions, OpenViIC or COCO read them from the reader's own copy, and nothing derived per image from OpenViIC leaves the reader's machine.
+
+## 7.5 What the controlled system contributes
 
 P1-R is a simple, stable baseline: three seeds within 0.7 CIDEr-D of each other, reproduced byte for byte on a second machine. Its value here is less its score than its role as an instrument. Because backbone, recipe and decoding are fixed, the differences we attribute to references, punctuation, matchers and gold cannot be differences between architectures. The registered second backbone was aborted at its guard (Section 4.4); the pending 3B run tests scale within one family, not a different family.

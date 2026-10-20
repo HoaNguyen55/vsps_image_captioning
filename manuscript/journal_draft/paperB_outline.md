@@ -16,12 +16,12 @@ Same number rules as Paper A: only traced numbers; each with `<!-- src: path :: 
 1. **Introduction.** Vietnamese captioning benchmarks (KTVIC, UIT-ViIC, UIT-OpenViIC); why reported CIDEr differences are hard to compare; contributions. Points to Paper A for the general count/gold theory.
 2. **Related work.** Vietnamese captioning systems and datasets (GRIT 136.0, ViG, HDUCap — protocols to be extracted, PD-2 blockers 1–2); Qwen2.5-VL adaptation; reference-based metrics and protocol signatures (sacreBLEU, SacreEOS).
 3. **Controlled baseline.** Response-only P1 recipe on Qwen2.5-VL-7B; protocol card (segmenter, CIDEr variant, ×100, punctuation handling).
-4. **Ladder: frontier invariance across training recipes** (pre-registered `manuscript/prereg/2026-10-12_ladder_predictions.json`, commit 1b5d16b; interpretation addendum `2026-10-14_ladder_interpretation_addendum.md`, uncommitted).
+4. **Ladder: frontier invariance across training recipes** (pre-registered `manuscript/prereg/2026-10-12_ladder_predictions.json`, commit 1b5d16b; interpretation addendum `2026-10-14_ladder_interpretation_addendum.md`, committed in 4ccbee3 (2026-10-14 16:38Z), after the first output (2026-10-12 12:27Z); post hoc).
 5. **Second backbone (B1) and transfer to UIT-ViIC.**
 6. **KTVIC dataset audit.** (a) single-writer references; (b) no punctuation in references and the CIDEr cost of one period; (c) matcher versions v1/v2/v3; (d) KTVIC–OpenViIC image overlap.
 7. **Two caption panels disagree (C3).** KTVIC references vs an independent OpenViIC panel on the same test images (aggregates only); linear gate $L = \Delta\rho_I - 0.35\,\Delta\rho_A$.
 8. **Evidence-adding method.** Text-kNN prior (P1 test vs both controls + panel gate), then M3 count-matched DPO if the probe AUROC gate passes.
-9. **Pre-registered negatives** (11 families; one table + supplement).
+9. **Pre-registered and controlled negatives** (11 families; one table + supplement). Not all are registered under D-W13-6: kNN = LOCALLY_FROZEN, PLAN-F1 CPU critique = POST_HOC, the levers = EXPLORATORY.
 10. **Limitations, licences and ethics** (OpenViIC aggregates only; KTVIC no licence file; AI-agent provenance rules as in Paper A §11.3).
 
 ## Traced numbers already available
@@ -81,13 +81,13 @@ Required wording: "two caption panels disagree", not "typicality vs truth" (H3: 
 |---|---|---|
 | text-kNN prior, dev300: within-(v,g)-cell AUROC | 0.614 | `.session_backup/2026-10-14/r12/H5/out/h5_cpu.json` (TODO: key) |
 | ΔF1 vs (v,g) tie-avg / vs POOL-VOTE (dev300) | +1.16 [+0.02, +2.29] / +0.76 [−0.44, +1.95] | same (TODO: keys); dev only, 3 variants examined |
-Pending: kNN P1 on test pools (prereg `manuscript/prereg/2026-10-14_knn_prior.md` per log — TODO: confirm it exists and is committed); EV-RANK (~1.5 GPU-h); M3 (gated on probe within-cell AUROC ≥ 0.58).
+kNN P1 on test pools: frozen locally before analysis (2026-10-14 16:07Z) but committed after the first output (2026-10-14 16:07Z; 4ccbee3 2026-10-14 16:38Z); treated as exploratory; outcome by its rule SECONDARY_POSITIVE_OR_INCONCLUSIVE. EV-RANK: POST_HOC (descriptive). M3: registered separately (a68fb66), not run.
 
 ### §9 Negatives (one table)
 | Family | Traced outcome | Source |
 |---|---|---|
 | UPE-MBR (kill 2 on 3/3 seeds, panel gold) | panel UPE − COUNT +0.07 / +0.03 / +0.17 | `data/results/upe/test/upe_mbr_ktvic_test.json :: p1assist_s4x.vs_count.panel_obj.F1` (RV1 rc1 confirms) |
-| 35_e CIDEr-only RL (KILL, not clean); M4 C2 | +2.07 [−0.20, +4.27] vs registered [−1.5, +2.0] → not held | `.session_backup/2026-10-13/r10_cpu/n11_35e_posthoc_r10_battery_v2.json :: C2_count_matched_delta_in_-1.5_+2.0_ci_contains_0` (TODO: value keys) |
+| 35_e CIDEr-only RL (KILL, not clean); M4 C2 | +2.07 [−0.20, +4.27] vs LOCALLY_FROZEN [−1.5, +2.0] (file 2026-10-14 01:59Z; first output 06:14Z; commit 6c647a6 07:01Z) → not held | `.session_backup/2026-10-13/r10_cpu/n11_35e_posthoc_r10_battery_v2.json :: C2_count_matched_delta_in_-1.5_+2.0_ci_contains_0` (TODO: value keys) |
 | M6 P-M6b on test | pooled +0.65 [−0.02, +1.34] (rule fixed 44 s before the look, no prereg file) | RV3 recomputation (TODO: JSON path) |
 | PLAN-F1 (count shift) | residual −2.49 [−5.52, +0.09] | `check_claude_critique.json` per PD-2 (TODO: path) |
 | self-fuse, E5 RFT, MR5, KG, … | TODO: assemble from D8/D11/D12/D14 with JSON keys | — |

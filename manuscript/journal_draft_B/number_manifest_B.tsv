@@ -35,11 +35,11 @@ number	paper	file	key	sha256_prefix	status
 28.98	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law|ktvic_test_k1_to_k5_curves|zeroshot-short|first_k|k=5|cider_add_period	312c9b453197	keyed
 33.30	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law|ktvic_test_k1_to_k5_curves|zeroshot-short|first_k|k=5|cider_strip	312c9b453197	keyed
 28.98	B	data/results/zeroshot-short.json	results[0].scores_scaled_x100.CIDEr	b2c5a617ea82	keyed
-94.29	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law.uitviic_test_ref_end_period_stats.rate_pct_p0_seg_tokens	312c9b453197	keyed
-1,155	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law.uitviic_test_ref_end_period_stats.n_refs	312c9b453197	keyed
-+1.29	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law|uitviic_test_append_period_effect|ktvic_transfer_p1_s43-short|d_abs_add_minus_strip	312c9b453197	keyed
-0.85	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law|uitviic_test_append_period_effect|ktvic_transfer_p1_s43-short|d_abs_ci95|0	312c9b453197	keyed
-1.77	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law|uitviic_test_append_period_effect|ktvic_transfer_p1_s43-short|d_abs_ci95|1	312c9b453197	keyed
+94.29	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law.uitviic_test_ref_end_period_stats.rate_pct_p0_seg_tokens	312c9b453197	REMOVED 2026-10-19 (B2 finding 1: c8 UIT-ViIC tokenisation does not reproduce the committed score)
+1,155	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	reference_punctuation_audit.uitviic_test_231.n_refs	410097af11b2	keyed (recomputed by B-writer)
++1.29	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law|uitviic_test_append_period_effect|ktvic_transfer_p1_s43-short|d_abs_add_minus_strip	312c9b453197	REMOVED 2026-10-19 (B2 finding 1: c8 UIT-ViIC tokenisation does not reproduce the committed score)
+0.85	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law|uitviic_test_append_period_effect|ktvic_transfer_p1_s43-short|d_abs_ci95|0	312c9b453197	REMOVED 2026-10-19 (B2 finding 1: c8 UIT-ViIC tokenisation does not reproduce the committed score)
+1.77	B	.session_backup/2026-10-14/r11_verify/c8_l5_d1_d3a_cpu_audit.json	l5_d1_punct_idf_law|uitviic_test_append_period_effect|ktvic_transfer_p1_s43-short|d_abs_ci95|1	312c9b453197	REMOVED 2026-10-19 (B2 finding 1: c8 UIT-ViIC tokenisation does not reproduce the committed score)
 99.5	B	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_zeroshot-short|surface_stats|end_period_rate_pct	aef0137c390b	keyed
 0.0	B	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_p1_s43-short|surface_stats|end_period_rate_pct	aef0137c390b	keyed
 0.0	B	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_fuse2_s42-short|surface_stats|end_period_rate_pct	aef0137c390b	keyed
@@ -273,7 +273,7 @@ number	paper	file	key	sha256_prefix	status
 +0.65	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	pm6b_gate_verdicts[3].dF1	9915d894e35d	keyed
 -0.02	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	pm6b_gate_verdicts[3].dF1_ci[0]	9915d894e35d	keyed
 1.34	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	pm6b_gate_verdicts[3].dF1_ci[1]	9915d894e35d	keyed
-24	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	registered_pm6b_gate_summary.n_registered_pooled_rows	9915d894e35d	keyed
+24	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	registered_pm6b_gate_summary.n_registered_pooled_rows	9915d894e35d	REMOVED 2026-10-19 (PD-10 b: 12 registered + 12 post hoc rows, not 24 registered)
 0	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	registered_pm6b_gate_summary.n_registered_pooled_rows_passing	9915d894e35d	keyed
 44	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	governance_and_prereg_timing_disclosure.test_execution_timeline_utc.look1_delay_after_commit_sec	9915d894e35d	keyed
 1.763	B	data/results/planf1/dev_plan_critique.json	1_frontier_residual.greedy.m	f2c3a901496c	keyed
@@ -309,13 +309,164 @@ number	paper	file	key	sha256_prefix	status
 149.8	B	FAIR 2026 Table I (P1 seed 42, as published)	—	—	literature (FAIR; equals 149.79 keyed)
 113	B	FAIR 2026 §IV-C (113-entry Vietnamese object lexicon = matcher v1)	—	—	literature (FAIR)
 4,327 / 21,635	B	KTVIC paper (Pham et al., 2024, arXiv 2401.08100)	—	—	literature
-PENDING	B	ladder 56_multiref_s42 (rerun after machine failure)	—	—	PENDING
-PENDING	B	ladder 57_rnd2_s42 (rerun after machine failure)	—	—	PENDING
-PENDING	B	ladder 58_unf2_s42 (rerun after machine failure)	—	—	PENDING
-PENDING	B	Qwen2.5-VL-3B fallback runs (PD-8; B1 aborted at Step 1 guard)	—	—	PENDING
+PENDING	B	ladder 56_multiref_s42 (rerun on M1; outputs not yet verified; verdict by prereg_ladder_check only)	—	—	RESULT: .session_backup/2026-10-18/ladder_check/final/stdout.txt lines 2, 4-6 (VERIFIED manuscript/verification/paperA/LADDER_CHECK_final.json)
+PENDING	B	ladder 57_rnd2_s42 (rerun on M1; outputs not yet verified; verdict by prereg_ladder_check only)	—	—	RESULT: .session_backup/2026-10-18/ladder_check/final/stdout.txt lines 2, 4-6 (VERIFIED manuscript/verification/paperA/LADDER_CHECK_final.json)
+PENDING	B	ladder 58_unf2_s42 (rerun on M1; outputs not yet verified; verdict by prereg_ladder_check only)	—	—	RESULT: .session_backup/2026-10-18/ladder_check/final/stdout.txt lines 2, 4-6 (VERIFIED manuscript/verification/paperA/LADDER_CHECK_final.json)
+PENDING	B	Qwen2.5-VL-3B fallback runs 61_p1_3b_s42 / 62_fuse2_3b_s42 on M2 (PD-8; B1 aborted at Step 1 guard); outputs not yet verified	—	—	PENDING
 PENDING	B	optional Qwen3-VL post-guard run under its own new prereg (PD-8)	—	—	PENDING
 PENDING	B	POPE-500 for any UIT-ViIC-trained adapter (21 UIT-ViIC train images excluded, CC-005)	—	—	PENDING
-PENDING	B	M3 count-matched DPO (runs only if the EV-RANK AUROC >= 0.58 gate passes)	—	—	PENDING
-PENDING	B	WiSE-FT (59_wise_ft_s42) per D18 machine-2 queue	—	—	PENDING
+PENDING	B	M3 = Tier-3 S3 count-matched DPO (registered a68fb66; not run)	—	—	PENDING
+PENDING	B	WiSE-FT (59_wise_ft_s42) gate	—	—	RESULT: data/results/wise_ft_gate.json (sha 93eb8e67) VERIFIED; addendum items PENDING-WISE-ADDENDUM
 PENDING	B	protocol-matched comparison with GRIT / ViG / HDUCap (PD-2 blockers 1-2)	—	—	PENDING
-PENDING	B	matcher v3 human sign-off	—	—	PENDING
+PENDING	B	matcher v3 human sign-off	—	—	DROPPED (no new annotation; D5; matcher v3 ships labelled unattested)
+217	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	reference_punctuation_audit.xm3600_test_600.raw_end_period_count	410097af11b2	keyed (recomputed by B-writer)
+1,227	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	reference_punctuation_audit.xm3600_test_600.n_refs	410097af11b2	keyed (recomputed by B-writer)
+17.69	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	reference_punctuation_audit.xm3600_test_600.raw_end_period_rate_pct	410097af11b2	keyed (recomputed by B-writer)
++2.71	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	cross_system_drop_decompositions_token_level.p1_s43_short_vs_zeroshot_short.drop_decomposition.by_append_period_to_ft_pred.cider_shift_x100.est	410097af11b2	keyed (recomputed by B-writer)
+2.23	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	cross_system_drop_decompositions_token_level.p1_s43_short_vs_zeroshot_short.drop_decomposition.by_append_period_to_ft_pred.cider_shift_x100.ci95.0	410097af11b2	keyed (recomputed by B-writer)
+3.21	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	cross_system_drop_decompositions_token_level.p1_s43_short_vs_zeroshot_short.drop_decomposition.by_append_period_to_ft_pred.cider_shift_x100.ci95.1	410097af11b2	keyed (recomputed by B-writer)
++2.75	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	cross_system_drop_decompositions_token_level.fuse2_s42_short_vs_zeroshot_short.drop_decomposition.by_append_period_to_ft_pred.cider_shift_x100.est	410097af11b2	keyed (recomputed by B-writer)
+2.32	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	cross_system_drop_decompositions_token_level.fuse2_s42_short_vs_zeroshot_short.drop_decomposition.by_append_period_to_ft_pred.cider_shift_x100.ci95.0	410097af11b2	keyed (recomputed by B-writer)
+3.20	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	cross_system_drop_decompositions_token_level.fuse2_s42_short_vs_zeroshot_short.drop_decomposition.by_append_period_to_ft_pred.cider_shift_x100.ci95.1	410097af11b2	keyed (recomputed by B-writer)
+1,133	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	reference_punctuation_audit.uitviic_test_231.raw_end_period_count	410097af11b2	keyed (recomputed by B-writer)
+98.10	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	reference_punctuation_audit.uitviic_test_231.raw_end_period_rate_pct	410097af11b2	keyed (recomputed by B-writer)
+0.8	B	manuscript/prereg/2026-10-12_ladder_predictions.json	structural.joint_frontier_invariance (text: point in [-0.8, +0.8])	65dae1bc1598	keyed (text)
+0.8	B	manuscript/prereg/2026-10-14_ladder_interpretation_addendum.md	l.34 (pooled TOST bound)	23ef221062fe	keyed (text)
+1.0	B	.session_backup/2026-10-14/r12_verify/c9_55_ladder_cons_s42_evaluation.json	prereg_ladder_check.joint_frontier_invariance_6_landed_runs.tost_summary.tost_pm_1_0p.bound_pp	13163f99f661	keyed
+2.0	B	.session_backup/2026-10-14/r12_verify/c9_55_ladder_cons_s42_evaluation.json	prereg_ladder_check.joint_frontier_invariance_6_landed_runs.tost_summary.tost_pm_2_0p.bound_pp	13163f99f661	keyed
+1.0	B	.session_backup/2026-10-14/r12_verify/c9_55_ladder_cons_s42_evaluation.json	prereg_ladder_check.all_6_landed_ladder_runs.cons_s42-short.tost_v2.tost_pm_1_0p.bound_pp	13163f99f661	keyed
+2.0	B	.session_backup/2026-10-14/r12_verify/c9_55_ladder_cons_s42_evaluation.json	prereg_ladder_check.all_6_landed_ladder_runs.cons_s42-short.tost_v2.tost_pm_2_0p.bound_pp	13163f99f661	keyed
+3.054	B	.session_backup/2026-10-14/r12_verify/c9_55_ladder_cons_s42_evaluation.json	prereg_ladder_check.all_6_landed_ladder_runs.fuse2_s43-detailed.prereg_intervals.M.1	13163f99f661	keyed
+4 of 6	B	.session_backup/2026-10-14/r12_verify/c9_55_ladder_cons_s42_evaluation.json	derived: count of prereg_ladder_check.all_6_landed_ladder_runs.*.in_prereg_interval with M, P, R all true	13163f99f661	derived
+2026-10-12 12:27Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test LADDER :: t_out (= 2026-10-12T12:27:19Z)	546e7b406ca5	keyed (time)
+15:54Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test LADDER_TOST :: t_disk (= 2026-10-14T15:54:52Z)	546e7b406ca5	keyed (time)
+16:38Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test LADDER_TOST :: t_commit (= 2026-10-14T16:38:04Z)	546e7b406ca5	keyed (time)
+16:07:22Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test KNN :: t_disk (= 2026-10-14T16:07:22Z)	546e7b406ca5	keyed (time)
+16:07:44Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test KNN :: t_out (= 2026-10-14T16:07:44Z)	546e7b406ca5	keyed (time)
+16:38:04Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test KNN :: t_commit (= 2026-10-14T16:38:04Z)	546e7b406ca5	keyed (time)
+17:11:10Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test EVRANK :: t_disk (= 2026-10-14T17:11:10Z)	546e7b406ca5	keyed (time)
+17:16:22Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test EVRANK :: t_commit (= 2026-10-14T17:16:22Z)	546e7b406ca5	keyed (time)
+23:47:28Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test PLANF1_CPU :: t_commit (= 2026-10-13T23:47:28Z)	546e7b406ca5	keyed (time)
+01:59:17Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test M4_C2 :: t_disk (= 2026-10-14T01:59:17Z)	546e7b406ca5	keyed (time)
+06:14:50Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test M4_C2 :: t_out (= 2026-10-14T06:14:50Z)	546e7b406ca5	keyed (time)
+07:01:40Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test M4_C2 :: t_commit (= 2026-10-14T07:01:40Z)	546e7b406ca5	keyed (time)
+02:01:32Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test M6 :: t_disk (= 2026-10-14T02:01:32Z)	546e7b406ca5	keyed (time)
+07:01:59Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test M6 :: t_push (= 2026-10-14T07:01:59Z)	546e7b406ca5	keyed (time)
+07:01:40Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test M6 :: t_commit (= 2026-10-14T07:01:40Z)	546e7b406ca5	keyed (time)
+07:02:24Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test M6 :: t_out (= 2026-10-14T07:02:24Z)	546e7b406ca5	keyed (time)
+23:31:05	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test UPE :: t_commit (= 2026-10-12T23:31:05Z)	546e7b406ca5	keyed (time)
+00:02:27	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test UPE :: t_out (= 2026-10-13T00:02:27Z)	546e7b406ca5	keyed (time)
+22:47:10	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test RLGATE :: t_commit (= 2026-10-12T22:47:10Z)	546e7b406ca5	keyed (time)
+01:38:17	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test RLGATE :: t_out (= 2026-10-13T01:38:17Z)	546e7b406ca5	keyed (time)
+16:07:56Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test KNN :: outputs (first result file stat)	546e7b406ca5	keyed (time)
+23:37:53Z	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	test PLANF1_CPU :: outputs (dev_plan_critique.json stat)	546e7b406ca5	keyed (time)
+23:47:36Z	B	.session_backup/2026-10-18/paperA_tasks/A4.2/prereg_ledger_v2.tsv	row 25 first_commit_utc (vgr_wise_ft, 5a4e00c)	c147672e26b8	keyed (time)
+07:12:46Z	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	governance_and_prereg_timing_disclosure.test_execution_timeline_utc.look2_execution_utc	9915d894e35d	keyed (time)
+07:06Z	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	governance_and_prereg_timing_disclosure.test_execution_timeline_utc.look1_end_utc	9915d894e35d	keyed (time)
+0.55	B	manuscript/prereg/2026-10-14_knn_prior.md	l.79 (within-cell AUROC > 0.55 clause of SECONDARY_POSITIVE_OR_INCONCLUSIVE)	5e375c79b7a6	keyed (text)
++0.65	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	pm6b_gate_verdicts.0.dF1	9915d894e35d	keyed
++0.02	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	pm6b_gate_verdicts.0.dF1_ci.0	9915d894e35d	keyed
++1.27	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	pm6b_gate_verdicts.0.dF1_ci.1	9915d894e35d	keyed
+0.044	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	pm6b_gate_verdicts.0.p	9915d894e35d	keyed
+12	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	derived: count of pm6b_gate_verdicts with aggregation = pooled_3seed_concat (passes_gate false on all)	9915d894e35d	derived
+12	B	.session_backup/2026-10-14/r11_verify/m6_pm6b_arbitration_v4.json	derived: count of pm6b_gate_verdicts with aggregation = pooled_3seed_image_clustered (passes_gate false on all)	9915d894e35d	derived
+0.8	B	manuscript/research_r10/M6/REPORT.txt	l.200 (Kill: pooled dF1 < +0.8 or CI includes 0)	c8130f69ec52	keyed (text)
+five hours	B	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	derived: test M6 t_commit - t_disk (2026-10-14T07:01:40Z - 02:01:32Z)	546e7b406ca5	derived
++0.42	B	data/results/upe/test/upe_mbr_ktvic_test.json	p1assist_s42.vs_count.panel_obj.P.0	b75a1304a134	keyed
+−0.37	B	data/results/upe/test/upe_mbr_ktvic_test.json	p1assist_s42.vs_count.panel_obj.P.1	b75a1304a134	keyed
+1.23	B	data/results/upe/test/upe_mbr_ktvic_test.json	p1assist_s42.vs_count.panel_obj.P.2	b75a1304a134	keyed
++0.63	B	data/results/upe/test/upe_mbr_ktvic_test.json	p1assist_s43.vs_count.panel_obj.P.0	b75a1304a134	keyed
+−0.05	B	data/results/upe/test/upe_mbr_ktvic_test.json	p1assist_s43.vs_count.panel_obj.P.1	b75a1304a134	keyed
+1.32	B	data/results/upe/test/upe_mbr_ktvic_test.json	p1assist_s43.vs_count.panel_obj.P.2	b75a1304a134	keyed
++0.45	B	data/results/upe/test/upe_mbr_ktvic_test.json	p1assist_s44.vs_count.panel_obj.P.0	b75a1304a134	keyed
+−0.47	B	data/results/upe/test/upe_mbr_ktvic_test.json	p1assist_s44.vs_count.panel_obj.P.1	b75a1304a134	keyed
+1.36	B	data/results/upe/test/upe_mbr_ktvic_test.json	p1assist_s44.vs_count.panel_obj.P.2	b75a1304a134	keyed
+2 of 3	B	manuscript/prereg/2026-10-13_upe_mbr.md	l.165 (kill 2: count-matched control equals UPE on panel P on 2 of 3 seeds)	f4d2a5424a25	keyed (text)
+3 of 3	B	data/results/upe/test/upe_mbr_ktvic_test.json	derived: seeds with vs_count.panel_obj.P CI containing 0 (verdict.kill_count_control_equal_on_2_of_3_seeds = true)	b75a1304a134	derived
++1.0	B	manuscript/prereg/2026-10-13_rl_gate_v2.md	l.149 (grey band +1.0 <= delta < +3.0)	da9838ffe45f	keyed (text)
++3.0	B	manuscript/prereg/2026-10-13_rl_gate_v2.md	l.147-149 (pass threshold; grey band upper)	da9838ffe45f	keyed (text)
+2.8 × 10⁻¹⁴	B	.session_backup/2026-10-15/paperA_keys/cider_3seed_g1_rescore_check.json	per_seed.p1assist_s44-short.CIDEr_abs_diff	7d8e855c4f98	keyed
+Eight of the nine	B	.session_backup/2026-10-15/paperA_keys/cider_3seed_g1_rescore_check.json	derived: per_seed.*.{CIDEr,BLEU4,ROUGEL}_abs_diff equal to 0.0	7d8e855c4f98	derived
+140.7	B	data/results/wise_ft_gate.json	rule (text: KTVIC short CIDEr >= 140.7); manuscript/prereg/2026-10-13_vgr_wise_ft.md:68	93eb8e671db5	keyed (text)
+143.90	B	data/results/wise_ft_gate.json	baseline_fuse2_s42.ktvic_test_short_cider	93eb8e671db5	keyed
+59.20	B	data/results/wise_ft_gate.json	baseline_fuse2_s42.uitviic_val_instances_only.F1	93eb8e671db5	keyed
+59.13	B	data/results/wise_ft_gate.json	baseline_fuse2_s42.uitviic_val_instances_plus_refs.F1	93eb8e671db5	keyed
+140.14	B	data/results/wise_ft_gate.json	candidates.0.75.ktvic_test_short_cider	93eb8e671db5	keyed
+57.71	B	data/results/wise_ft_gate.json	candidates.0.75.uitviic_val_instances_only.F1	93eb8e671db5	keyed
+57.65	B	data/results/wise_ft_gate.json	candidates.0.75.uitviic_val_instances_plus_refs.F1	93eb8e671db5	keyed
+−1.49	B	data/results/wise_ft_gate.json	candidates.0.75.delta_vs_fuse2_instances_only.F1.point	93eb8e671db5	keyed
+−2.58	B	data/results/wise_ft_gate.json	candidates.0.75.delta_vs_fuse2_instances_only.F1.ci95.0	93eb8e671db5	keyed
+−0.47	B	data/results/wise_ft_gate.json	candidates.0.75.delta_vs_fuse2_instances_only.F1.ci95.1	93eb8e671db5	keyed
+−1.49	B	data/results/wise_ft_gate.json	candidates.0.75.delta_vs_fuse2_instances_plus_refs.F1.point	93eb8e671db5	keyed
+−2.58	B	data/results/wise_ft_gate.json	candidates.0.75.delta_vs_fuse2_instances_plus_refs.F1.ci95.0	93eb8e671db5	keyed
+−0.47	B	data/results/wise_ft_gate.json	candidates.0.75.delta_vs_fuse2_instances_plus_refs.F1.ci95.1	93eb8e671db5	keyed
+0.75	B	data/results/wise_ft_gate.json	candidates.0.75.alpha	93eb8e671db5	keyed
+116.48	B	data/results/wise_ft_gate.json	candidates.0.5.ktvic_test_short_cider	93eb8e671db5	keyed
+54.95	B	data/results/wise_ft_gate.json	candidates.0.5.uitviic_val_instances_only.F1	93eb8e671db5	keyed
+54.89	B	data/results/wise_ft_gate.json	candidates.0.5.uitviic_val_instances_plus_refs.F1	93eb8e671db5	keyed
+−4.25	B	data/results/wise_ft_gate.json	candidates.0.5.delta_vs_fuse2_instances_only.F1.point	93eb8e671db5	keyed
+−5.59	B	data/results/wise_ft_gate.json	candidates.0.5.delta_vs_fuse2_instances_only.F1.ci95.0	93eb8e671db5	keyed
+−2.98	B	data/results/wise_ft_gate.json	candidates.0.5.delta_vs_fuse2_instances_only.F1.ci95.1	93eb8e671db5	keyed
+−4.24	B	data/results/wise_ft_gate.json	candidates.0.5.delta_vs_fuse2_instances_plus_refs.F1.point	93eb8e671db5	keyed
+−5.57	B	data/results/wise_ft_gate.json	candidates.0.5.delta_vs_fuse2_instances_plus_refs.F1.ci95.0	93eb8e671db5	keyed
+−2.98	B	data/results/wise_ft_gate.json	candidates.0.5.delta_vs_fuse2_instances_plus_refs.F1.ci95.1	93eb8e671db5	keyed
+0.5	B	data/results/wise_ft_gate.json	candidates.0.5.alpha	93eb8e671db5	keyed
+0.75	B	data/results/wise_ft_gate.json	chosen_alpha	93eb8e671db5	keyed
+924	B	manuscript/prereg/2026-10-14_wise_ft_multiref_addendum.md	l.67 (UIT-ViIC val n = 924)	abd5a33e4073	keyed (text)
+0.25	B	manuscript/prereg/2026-10-14_wise_ft_multiref_addendum.md	l.57 (optional grid point, not evaluated)	abd5a33e4073	keyed (text)
+PENDING	B	B-N1 protocol-card leaderboard (prereg 327191c; decodes not run)	—	—	PENDING
+PENDING	B	B-N2 leakage DiD: not evaluable (no OpenViIC-trained run); placebo and descriptive leaked/clean gaps pending the judge	—	—	PENDING
+PENDING	B	UIT-ViIC append-period CIDEr-D effect with the committed scorer (c8 values withdrawn, B2 finding 1)	—	—	PENDING
+PENDING	B	WiSE-FT addendum: KTVIC dP_front(alpha) and d(dP_front)(alpha vs 1.0)	—	—	PENDING-WISE-ADDENDUM
+PENDING	B	WiSE-FT addendum: matched-count (v,g) tie-avg and POOL-VOTE controls (KTVIC gold, OpenViIC panel)	—	—	PENDING-WISE-ADDENDUM
+PENDING	B	WiSE-FT addendum: OpenViIC panel contrast L(0.35)	—	—	PENDING-WISE-ADDENDUM
+PENDING	B	WiSE-FT addendum: UIT-ViIC val 73-rare-class recall and count-matched (v,g) control	—	—	PENDING-WISE-ADDENDUM
+1.833	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 2 (multiref_s42-short) M	0477f26f44de	keyed (VERIFIED)
+78.006	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 2 (multiref_s42-short) P	0477f26f44de	keyed (VERIFIED)
+42.767	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 2 (multiref_s42-short) R	0477f26f44de	keyed (VERIFIED)
++0.04	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 2 (multiref_s42-short) frontier residual P	0477f26f44de	keyed (VERIFIED)
+−1.85	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 2 (multiref_s42-short) frontier residual P CI lo	0477f26f44de	keyed (VERIFIED)
++2.01	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 2 (multiref_s42-short) frontier residual P CI hi	0477f26f44de	keyed (VERIFIED)
+2.056	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 4 (unf2_s42-short) M	0477f26f44de	keyed (VERIFIED)
+76.199	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 4 (unf2_s42-short) P	0477f26f44de	keyed (VERIFIED)
+46.954	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 4 (unf2_s42-short) R	0477f26f44de	keyed (VERIFIED)
++0.46	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 4 (unf2_s42-short) frontier residual P	0477f26f44de	keyed (VERIFIED)
+−1.18	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 4 (unf2_s42-short) frontier residual P CI lo	0477f26f44de	keyed (VERIFIED)
++2.20	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 4 (unf2_s42-short) frontier residual P CI hi	0477f26f44de	keyed (VERIFIED)
+2.545	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 5 (rnd2_s42-detailed) M	0477f26f44de	keyed (VERIFIED)
+72.465	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 5 (rnd2_s42-detailed) P	0477f26f44de	keyed (VERIFIED)
+53.744	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 5 (rnd2_s42-detailed) R	0477f26f44de	keyed (VERIFIED)
++0.71	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 5 (rnd2_s42-detailed) frontier residual P	0477f26f44de	keyed (VERIFIED)
+−1.02	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 5 (rnd2_s42-detailed) frontier residual P CI lo	0477f26f44de	keyed (VERIFIED)
++2.30	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 5 (rnd2_s42-detailed) frontier residual P CI hi	0477f26f44de	keyed (VERIFIED)
+2.004	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 6 (rnd2_s42-short) M	0477f26f44de	keyed (VERIFIED)
+76.208	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 6 (rnd2_s42-short) P	0477f26f44de	keyed (VERIFIED)
+45.677	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 6 (rnd2_s42-short) R	0477f26f44de	keyed (VERIFIED)
+−0.02	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 6 (rnd2_s42-short) frontier residual P	0477f26f44de	keyed (VERIFIED)
+−1.95	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 6 (rnd2_s42-short) frontier residual P CI lo	0477f26f44de	keyed (VERIFIED)
++1.86	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 6 (rnd2_s42-short) frontier residual P CI hi	0477f26f44de	keyed (VERIFIED)
+2.096	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 4 (unf2_s42-short) registered M interval lo	0477f26f44de	keyed (VERIFIED)
+2.32	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 4 (unf2_s42-short) registered M interval hi	0477f26f44de	keyed (VERIFIED)
+2.031	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 6 (rnd2_s42-short) registered M interval lo	0477f26f44de	keyed (VERIFIED)
+2.151	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 6 (rnd2_s42-short) registered M interval hi	0477f26f44de	keyed (VERIFIED)
+−0.90	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 11 joint 95% CI lo (10 runs)	0477f26f44de	keyed (VERIFIED)
++0.92	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 11 joint 95% CI hi (10 runs)	0477f26f44de	keyed (VERIFIED)
+10	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 11 (runs in the joint check)	0477f26f44de	keyed (VERIFIED)
+6 of 10	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	derived: lines 1-10 without OUT	0477f26f44de	derived
+−0.007	B	manuscript/verification/paperA/LADDER_CHECK_final.json	rows[0].items.C2.evidence	be043f407eda	derived (computed from the printed per-run points; accepted as the pooled point, PD-20)
+not met	B	registered H0 over 10 runs (conjunction, V4.txt:233-235)	—	—	RESULT (PD-20): pooled part met, per-run part not
+8 of 10	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	derived: lines 1-10 with |frontier residual P point| <= 1.0	0477f26f44de	derived
+−1.59	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 1 (p1ep4_s42-short) frontier residual P	0477f26f44de	keyed (VERIFIED)
++1.44	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 3 (cons_s42-short) frontier residual P	0477f26f44de	keyed (VERIFIED)
+1.0	B	manuscript/prereg/2026-10-12_frontier_invariance_V4.txt	l.235 (H0 per-run bound: each run's point residual within +-1.0)	9047d2858431	keyed (text)
+0.8	B	manuscript/prereg/2026-10-12_frontier_invariance_V4.txt	l.236 (H0 pooled bound: point in [-0.8, +0.8])	9047d2858431	keyed (text)
+2	B	manuscript/prereg/2026-10-12_frontier_invariance_V4.txt	l.241 (per-run residual CI about +-2 P at 558 images)	9047d2858431	keyed (text)
+2	B	.session_backup/2026-10-19/HL_human_labels/b_n3_quality_gate.json	derived: inputs_sha256 keys evaluator_1/evaluator_2 (2 rater files)	341bd115c4bd	derived
+150	B	.session_backup/2026-10-19/HL_human_labels/b_n3_quality_gate.json	n_items	341bd115c4bd	keyed
+71	B	.session_backup/2026-10-19/HL_human_labels/b_n3_quality_gate.json	per_scale.faithfulness.identical_share (min over scales, x100)	341bd115c4bd	keyed
+87	B	.session_backup/2026-10-19/HL_human_labels/b_n3_quality_gate.json	per_scale.completeness.identical_share (max over scales, x100)	341bd115c4bd	keyed
+50	B	.session_backup/2026-10-19/HL_human_labels/b_n3_quality_gate.json	rule (STOP if identical-score share exceeds 0.5)	341bd115c4bd	keyed (text)
+NOT_RUN	B	B-N3 criterion analysis (agreement gate STOP; PD-21b)	—	—	NOT_RUN
++1.00 [+1.00, +1.00] (LBB-P1, FAIL)	B	data/results/b_n1/b_n1_run.json	predictions.LBB-P1.{point,ci95,verdict}	adad454d6c9f	keyed
++0.67 [+0.33, +0.67] (LBB-P2, INCONCLUSIVE)	B	data/results/b_n1/b_n1_run.json	predictions.LBB-P2.{point,ci95,verdict}	adad454d6c9f	keyed
++0.000 [-0.33, +0.000] (LBB-P3, FAIL)	B	data/results/b_n1/b_n1_run.json	predictions.LBB-P3.{point,ci95,verdict}	adad454d6c9f	keyed

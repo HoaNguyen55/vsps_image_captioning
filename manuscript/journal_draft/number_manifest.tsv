@@ -32,8 +32,8 @@ number	paper	file	key	sha256_prefix	status
 0.262	A	.session_backup/2026-10-14/r12/H4/out/h4_check.json	coco2500.T2_profile.n5.ratio_r	9d297fa4b549	keyed
 3.203	A	.session_backup/2026-10-14/r12/H4/out/h4_check.json	coco2500.T2_profile.n0_inst.ratio_r	9d297fa4b549	keyed
 1.0 (monotone share)	A	.session_backup/2026-10-14/r12/H4/out/h4_check.json	coco2500.T2_share_draws_r_monotone_n1to5	9d297fa4b549	keyed
-0.677 (b-channel share 1->5)	A	.session_backup/2026-10-14/r12/H4/out/h4_check.json	T4.coco_randk.b_channel_share	9d297fa4b549	keyed
-0.742 (b-channel share 1->inst)	A	.session_backup/2026-10-14/r12/H4/out/h4_check.json	T4.coco_refs1_to_inst.b_channel_share	9d297fa4b549	keyed
+0.613 (b-channel share 1->5, Gbar = U(k); D-W13-1)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v2.json	data_facts.b_channel_share_U_vs_v1.coco_randk.U	c08d8561d4ab	keyed
+0.709 (b-channel share 1->inst, Gbar = U(k); D-W13-1)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v2.json	data_facts.b_channel_share_U_vs_v1.coco_refs1_to_inst.U	c08d8561d4ab	keyed
 0.0019 (rmse)	A	.session_backup/2026-10-14/r12/H4/out/h4_check.json	T5_closed_form.coco_free_D.rmse	9d297fa4b549	keyed
 0.333 (D)	A	.session_backup/2026-10-14/r12/H4/out/h4_check.json	T5_closed_form.coco_free_D.D	9d297fa4b549	keyed
 0.0127 (rmse forced D)	A	.session_backup/2026-10-14/r12/H4/out/h4_check.json	T5_closed_form.coco_D_from_inst+refs.rmse	9d297fa4b549	keyed
@@ -153,10 +153,10 @@ TRIGGERED	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	over
 0.59	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.rlaifv.count_matched_share	5d572461d174	keyed
 0.514	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.rlaifv.chosen_fewer_among_unmatched	5d572461d174	keyed
 -0.017	A	.session_backup/2026-10-14/r11_verify/c6_n3_rlaifv_rlhfv_audit.json	summary_table_7_datasets.rlaifv.mean_dk	5d572461d174	keyed
-401 (disclosure; B owns)	A	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_32_leakage_disclosure.splits.ktvic_test_558.in_openviic_train	a416b13f1e0f	keyed
-71.86	A	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_32_leakage_disclosure.splits.ktvic_test_558.in_openviic_train_pct	a416b13f1e0f	keyed
-UIT-ViIC b(k) one dip -0.003 (vi_objects_in, first-k, 4->5 refs; 0.5385->0.5355)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar_v2.json	uitviic_test.lexicons.vi_objects_in.gold_variants.{refs4_firstk,refs5_firstk}.groups.transfer_6.b	03b99f565710	keyed
-133 UIT-ViIC train in Karpathy test (59 probe, 4 POPE; 21 POPE overall) [CORRECTED: was 8 POPE]	A	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_21_m3_checks.uitviic_overlap.{overlap_with_coco_karpathy_test_5000,overlap_with_coco_probe_manifest_2500,overlap_with_pope500_in_karpathy_test,overlap_with_pope500_all_val2014} (recomputed: .session_backup/2026-10-15/paperA_keys/uitviic_karpathy_overlap.json, 7e6e8a1d7239)	a416b13f1e0f	keyed
+401 (disclosure; B owns)	B	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_32_leakage_disclosure.splits.ktvic_test_558.in_openviic_train	a416b13f1e0f	keyed
+71.86	B	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_32_leakage_disclosure.splits.ktvic_test_558.in_openviic_train_pct	a416b13f1e0f	keyed
+UIT-ViIC b(k) one dip -0.003 (vi_objects_in, first-k, 4->5 refs; 0.5385->0.5355)	B	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar_v2.json	uitviic_test.lexicons.vi_objects_in.gold_variants.{refs4_firstk,refs5_firstk}.groups.transfer_6.b	03b99f565710	keyed
+133 UIT-ViIC train in Karpathy test (59 probe, 4 POPE; 21 POPE overall) [CORRECTED: was 8 POPE]	B	.session_backup/2026-10-13/r10_cpu/r10_a1_a3_spotchecks_v2.json	A_21_m3_checks.uitviic_overlap.{overlap_with_coco_karpathy_test_5000,overlap_with_coco_probe_manifest_2500,overlap_with_pope500_in_karpathy_test,overlap_with_pope500_all_val2014} (recomputed: .session_backup/2026-10-15/paperA_keys/uitviic_karpathy_overlap.json, 7e6e8a1d7239)	a416b13f1e0f	keyed
 495-499 (n_img range per E1 pair)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	pairs_15.*.n_img (min,max)	184f9ccac1b9	keyed
 0.6 (K1 fidelity max abs diff)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	fidelity_K1.{lim_r1,lim_r5,lim_r12,opera_llava15}.{ours,published} max|diff|	184f9ccac1b9	keyed
 TRUE (passes_K1)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	fidelity_K1.passes_K1	184f9ccac1b9	keyed
@@ -442,3 +442,193 @@ B1 3 seeds + B2	B	-	-	-	pending
 kNN P1 test	B	-	-	-	pending
 EV-RANK / M3 (gated)	B	-	-	-	pending
 59 WiSE-FT	B	-	-	-	pending
+200 (abstract word target)	A	-	-	-	unsourced
+4 (COCO-2500 frozen predictions held)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	count_true(P1..P4 of check_coco_PREDICTIONS.txt) over B1_L1_mstar_and_stopping.check_coco_gold.{refs1_randk,refs5_randk,inst}.{slope,slope_ci,Mstar_micro,M_range}; B1_L1_mstar_and_stopping.check_coco_sign_agree_mixed	3d79842d4f2c	keyed
+4 (COCO-2500 frozen predictions)	A	.session_backup/2026-10-14/r11_litmaps/L1/check_coco_PREDICTIONS.txt	lines [5, 6, 7, 9]	c7cad2b240d9	keyed_text
+1 (XM3600 failed out-of-sample sign predictions)	A	.session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json	prereg_comparisons[16..18].in_interval_or_pass count==FAIL	0b2b3aa5e1a3	keyed
+3 (XM3600 out-of-sample sign predictions)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	a_N1_sign_predictions.kill_rule.h6_p2_kill (number in string)	5d0134bfded0	keyed
+2 (XM3600 registered demotion threshold)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	a_N1_sign_predictions.kill_rule.h6_p2_kill (number in string)	5d0134bfded0	keyed
+10 (nocaps references per image)	A	.session_backup/2026-10-14/r12_verify/b3_licence_verification.json	datasets.nocaps.references_per_image	3e3e68f46895	keyed
+0.73 (Fazli et al. CHAIRs-recall Pearson r)	A	manuscript/research_r15/pdfs/arXiv_2609.01888.pdf	pdftotext page 3 line 51	ddda10af81ac	keyed_text
+64 (Sandhu et al. token budget, low)	A	manuscript/research_r15/VERIFY/meta.json	arXiv:2608.24966.abstract (number in string)	935debe281fc	keyed
+128 (Sandhu et al. token budget, high)	A	manuscript/research_r15/VERIFY/meta.json	arXiv:2608.24966.abstract (number in string)	935debe281fc	keyed
+0.78 (Sandhu et al. object recall before)	A	manuscript/research_r15/VERIFY/meta.json	arXiv:2608.24966.abstract (number in string)	935debe281fc	keyed
+0.70 (Sandhu et al. object recall after)	A	manuscript/research_r15/VERIFY/meta.json	arXiv:2608.24966.abstract (number in string)	935debe281fc	keyed
+550 (Polaris evaluators)	A	manuscript/research_r15/VERIFY/meta.json	arXiv:2402.18091.abstract (number in string)	935debe281fc	keyed
+6000 (CapArena battles)	A	manuscript/research_r15/VERIFY/meta.json	arXiv:2503.12329.abstract (number in string)	935debe281fc	keyed
+9 (COCO-2500 systems)	A	.session_backup/2026-10-14/r11_litmaps/L1/check_coco.json	len(systems)	cb21dd257f93	keyed
+1.0 (E1 SESOI)	A	manuscript/research_r10/E1/REPORT.txt	line 182	2f5c2ce61da7	keyed_text
+7 (N1 English LVLM backbones)	A	.session_backup/2026-10-14/r12/H3/REPORT.txt	line 5	626fef8cbddd	keyed_text
+0.40 (K=5 exchangeable null)	A	.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json	k5_exchangeability_audit.{flickr30k_captions_coco80,openviic_full_test_exact5_objects_in}.adjacent_share_null (min,max)	abc04948644a	keyed
+2441 (COCO EN images)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B2_L2_exchangeability.datasets.coco_en_test_coco80.images	3d79842d4f2c	keyed
+3842 (UIT-ViIC VI images)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B2_L2_exchangeability.datasets.uitviic_vi_all_objects_in.images	3d79842d4f2c	keyed
+3850 (UIT-ViIC images with COCO EN refs)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B2_L2_exchangeability.datasets.uitviic_images_coco_en_refs_coco80.images	3d79842d4f2c	keyed
+31783 (Flickr30k Entities images)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B2_L2_exchangeability.datasets.flickr30k_entities_chains_visual.images	3d79842d4f2c	keyed
+425 (OpenViIC panel first5 images)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B2_L2_exchangeability.datasets.openviic_panel_first5_objects_in.images	3d79842d4f2c	keyed
+31783 (Flickr30k captions images)	A	.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json	k5_exchangeability_audit.flickr30k_captions_coco80.images	abc04948644a	keyed
+251 (OpenViIC panel exact5 images)	A	.session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json	B2_L2_exchangeability.datasets.openviic_panel_exact5_objects_in.images	3d79842d4f2c	keyed
+1997 (OpenViIC full test exact5 images)	A	.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json	k5_exchangeability_audit.openviic_full_test_exact5_objects_in.images	abc04948644a	keyed
+0.436 (UIT-ViIC EN test adjacency CI low)	A	.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json	k5_exchangeability_audit.uitviic_en_test_coco80.adjacent_share_ci95[0]	abc04948644a	keyed
+0.648 (UIT-ViIC EN test adjacency CI high)	A	.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json	k5_exchangeability_audit.uitviic_en_test_coco80.adjacent_share_ci95[1]	abc04948644a	keyed
+231 (UIT-ViIC EN test images)	A	.session_backup/2026-10-14/r11_verify/c3_n2_exchangeability_all_datasets.json	k5_exchangeability_audit.uitviic_en_test_coco80.images	abc04948644a	keyed
+8 (E1 K3 baselines)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	controls_K2_K3.registered_k3_en_summary.n_baselines	184f9ccac1b9	keyed
+2000 (E1 K3 remedy image count)	A	manuscript/research_r10/E1/REPORT.txt	line 192	2f5c2ce61da7	keyed_text
+1.0 (X1 P-B required difference)	A	.session_backup/2026-10-14/research_r10/X1/REPORT.txt	line 203	c04c5ac569ea	keyed_text
+9 (N9 checkpoints incl. base)	A	.session_backup/2026-10-14/r11_litmaps/L6/REPORT.txt	line 142	9bc25f415599	keyed_text
+512 (N9 decoding budget)	A	.session_backup/2026-10-14/r11_litmaps/L6/REPORT.txt	line 141	9bc25f415599	keyed_text
+0.3 (N9 prediction (b) class-count margin)	A	.session_backup/2026-10-14/r11_litmaps/L6/REPORT.txt	line 137	9bc25f415599	keyed_text
+0.15 (N9 prediction (c) HALVA bound)	A	.session_backup/2026-10-14/r11_litmaps/L6/REPORT.txt	line 138	9bc25f415599	keyed_text
+1.0 (N9 fidelity bound)	A	.session_backup/2026-10-14/r11_litmaps/L6/REPORT.txt	line 206	9bc25f415599	keyed_text
+0.1 (N9 count-order bound)	A	.session_backup/2026-10-14/r11_litmaps/L6/REPORT.txt	line 207	9bc25f415599	keyed_text
+1.0 (N9 headline SESOI)	A	.session_backup/2026-10-14/r11_litmaps/L6/REPORT.txt	line 208	9bc25f415599	keyed_text
+9 (F-B systems)	A	.session_backup/2026-10-14/r12/H3/N1_PREDICTIONS.txt	line 6	ba1f6bc7e47a	keyed_text
+11 (F-C systems)	A	.session_backup/2026-10-14/r12/H3/N1_PREDICTIONS.txt	line 7	ba1f6bc7e47a	keyed_text
+10 (UIT-ViIC systems)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	len(uitviic_test.systems)	bed1dc259aef	keyed
+6 (XM3600 systems)	A	.session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json	prereg_comparisons.16.observed_value.n_systems_evaluated	0b2b3aa5e1a3	keyed
+2500 (COCO-2500 images)	A	.session_backup/2026-10-14/r11_litmaps/L1/check_coco.json	n_img	cb21dd257f93	keyed
+231 (UIT-ViIC test images)	A	.session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json	uitviic_test.n_img	bed1dc259aef	keyed
+2 (XM3600 VI refs per image, min)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	dataset.ref_count_distribution_vi_full_3600 (key names)	5d0134bfded0	keyed
+3 (XM3600 VI refs per image, max)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	dataset.ref_count_distribution_vi_full_3600 (key names)	5d0134bfded0	keyed
+600 (XM3600 eval images)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	dataset.n_images_eval_subset	5d0134bfded0	keyed
+0.479 (transferred b, one ref)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	a_N1_sign_predictions.transferred_b_from_coco2500.b_refs1_randk	5d0134bfded0	keyed
+0.549 (transferred b, two refs)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	a_N1_sign_predictions.transferred_b_from_coco2500.b_refs2_randk	5d0134bfded0	keyed
+0.846 (transferred b, instance)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	a_N1_sign_predictions.transferred_b_from_coco2500.b_inst	5d0134bfded0	keyed
+6 (XM3600 frozen systems)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	len(systems_queued_in_58_z)	5d0134bfded0	keyed
+1.471 (XM prereg M* one ref)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	a_N1_sign_predictions.out_of_sample_Mstar_micro_prior_b.refs1_randk.Mstar_all_600	5d0134bfded0	keyed
+2.859 (XM prereg M* all refs)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	a_N1_sign_predictions.out_of_sample_Mstar_micro_prior_b.refs_all.Mstar_all_600	5d0134bfded0	keyed
+11.216 (XM prereg M* OIV7)	A	manuscript/prereg/2026-10-14_xm3600_predictions.json	a_N1_sign_predictions.out_of_sample_Mstar_micro_prior_b.oiv7_verified.Mstar_all_600	5d0134bfded0	keyed
+0.05 (G2 P2 equivalence band)	A	.session_backup/2026-10-14/research_r10/G2/REPORT.txt	line 187	1751952ee71d	keyed_text
+2 (G2 P4 intercept gap)	A	.session_backup/2026-10-14/research_r10/G2/REPORT.txt	line 189	1751952ee71d	keyed_text
+0.05 (G2 P4 shared-b tolerance)	A	.session_backup/2026-10-14/research_r10/G2/REPORT.txt	line 190	1751952ee71d	keyed_text
+2 (G2 K1 datasets)	A	.session_backup/2026-10-14/research_r10/G2/REPORT.txt	line 192	1751952ee71d	keyed_text
+2 (G2 K2 failing backbones)	A	.session_backup/2026-10-14/research_r10/G2/REPORT.txt	line 194	1751952ee71d	keyed_text
+3 (G2 K2 backbones)	A	.session_backup/2026-10-14/research_r10/G2/REPORT.txt	line 194	1751952ee71d	keyed_text
+3 (G2 K3 RMSE bound)	A	.session_backup/2026-10-14/research_r10/G2/REPORT.txt	line 195	1751952ee71d	keyed_text
+0.10 (Polaris H-c registered band)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G2.H_c.description (number in string)	718fc3f01743	keyed
+0.10 (G3-(ii) registered threshold)	A	manuscript/prereg/2026-10-14_h1_polaris_docci.md	line 68	8f7e8a49e73b	keyed_text
+14 (DOCCI systems in the lattice audit)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.bootstrap_ci_coincidence_audit.P_human_sent_maj.discrete_kendall_tau_lattice_explanation.n_systems	718fc3f01743	keyed
+0.02197802 (Kendall tau lattice step)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.bootstrap_ci_coincidence_audit.P_human_sent_maj.discrete_kendall_tau_lattice_explanation.untied_tau_step_size_2_over_91	718fc3f01743	keyed
+91 (VLM pairs)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.bootstrap_ci_coincidence_audit.P_human_sent_maj.discrete_kendall_tau_lattice_explanation.n_pairs	718fc3f01743	keyed
+2000 (G3-(ii) bootstrap resamples)	A	.session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json	registered_G3.G3_ii.bootstrap_ci_coincidence_audit.P_human_sent_maj.delta_tau_vs_micro_distribution.n_boot	718fc3f01743	keyed
+0.5 (chosen-fewer share meaning no direction)	A	-	-	-	unsourced
+0.5 (chosen-fewer share meaning no direction)	A	-	-	-	unsourced
+0.5 (chosen-fewer share meaning no direction)	A	-	-	-	unsourced
+0.047 (Lambda_U refs1_randk point, Gbar=U(k))	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs1_randk.Lambda_U.point_v2	124731b57e45	keyed
+[-0.0273, 0.1224] (Lambda_U refs1_randk post-hoc 95% CI)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs1_randk.Lambda_U.ci	124731b57e45	keyed
+0.543 (Lambda_U refs2_randk point, Gbar=U(k))	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs2_randk.Lambda_U.point_v2	124731b57e45	keyed
+[0.4711, 0.6204] (Lambda_U refs2_randk post-hoc 95% CI)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs2_randk.Lambda_U.ci	124731b57e45	keyed
+0.818 (Lambda_U refs3_randk point, Gbar=U(k))	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs3_randk.Lambda_U.point_v2	124731b57e45	keyed
+[0.7394, 0.8942] (Lambda_U refs3_randk post-hoc 95% CI)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs3_randk.Lambda_U.ci	124731b57e45	keyed
+0.998 (Lambda_U refs4_randk point, Gbar=U(k))	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs4_randk.Lambda_U.point_v2	124731b57e45	keyed
+[0.9212, 1.0804] (Lambda_U refs4_randk post-hoc 95% CI)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs4_randk.Lambda_U.ci	124731b57e45	keyed
+1.145 (Lambda_U refs5_randk point, Gbar=U(k))	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs5_randk.Lambda_U.point_v2	124731b57e45	keyed
+[1.0611, 1.229] (Lambda_U refs5_randk post-hoc 95% CI)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.refs5_randk.Lambda_U.ci	124731b57e45	keyed
+2.567 (Lambda_U inst point, Gbar=U(k))	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.inst.Lambda_U.point_v2	124731b57e45	keyed
+[2.4481, 2.6919] (Lambda_U inst post-hoc 95% CI)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.inst.Lambda_U.ci	124731b57e45	keyed
+2.84 (Lambda_U inst+refs5 point, Gbar=U(k))	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.inst+refs5.Lambda_U.point_v2	124731b57e45	keyed
+[2.7211, 2.9613] (Lambda_U inst+refs5 post-hoc 95% CI)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	Lambda_U_with_micro_F1_slopes.inst+refs5.Lambda_U.ci	124731b57e45	keyed
+0.8815 (share of replicates with Lambda_U(1) > 0 and k=1 micro slope < 0)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json	data_facts.k1_share_of_replicates_with_opposite_signs	124731b57e45	keyed
+[0.5968, 0.6282] (b-channel share 1->5 post-hoc CI)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/check_coco_U_boot.json	bootstrap.shares.refs1_to_refs5.b_channel_share.ci	f048dcdced4e	keyed
+[0.6976, 0.7209] (b-channel share 1->inst post-hoc CI)	A	.session_backup/2026-10-18/paperA_tasks/A3.3/check_coco_U_boot.json	bootstrap.shares.refs1_to_inst.b_channel_share.ci	f048dcdced4e	keyed
+0.6805 (A8.4 opposite-sign share k=1, alternative matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	coco2500_lambda_U_bootstrap.values.refs1_randk_share_of_replicates_with_opposite_signs.swapped.nodes.value	969797ae99b7	keyed
+-4.92 (A8.4 COCO-2500 slope refs1, alternative matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	coco2500_frontier.values.refs1_randk.slope.swapped.nodes.value	969797ae99b7	keyed
+10.87 (A8.4 COCO-2500 slope refs5, alternative matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	coco2500_frontier.values.refs5_randk.slope.swapped.nodes.value	969797ae99b7	keyed
+-2.31 (A8.4 micro-F1 slope k=1, alternative matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	coco2500_theory_checks.values.coco2500.T2_microF1_randk.1.slope.swapped.nodes.value	969797ae99b7	keyed
+0.017 (A8.4 Lambda_U(1), alternative matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	coco2500_lambda_U_split.values.Lambda_U.refs1_randk.swapped.nodes.value	969797ae99b7	keyed
+[-0.0547, 0.0939] (A8.4 Lambda_U(1) CI, alternative matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	coco2500_lambda_U_bootstrap.values.gold.refs1_randk.Lambda_U.ci.swapped.nodes.value	969797ae99b7	keyed
+0.634 (A8.4 b-channel share 1->5, alternative matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	coco2500_lambda_U_split.values.b_channel_share_U.coco_randk.swapped.nodes.value	969797ae99b7	keyed
+0.717 (A8.4 b-channel share 1->inst, alternative matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	coco2500_lambda_U_split.values.b_channel_share_U.coco_refs1_to_inst.swapped.nodes.value	969797ae99b7	keyed
+-0.0149 (A8.4 largest adjacency shift)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	exchangeability_english_rows.values.uitviic_en_test_coco80.adjacent_share.delta_swapped_minus_original.nodes	969797ae99b7	keyed
+19.2516 (A8.4 XM3600 OIV7 slope, doubtful links dropped)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	xm3600_oiv7_map.values.oiv7_verified.slope_F1_per_logM.swapped.oiv7_drop_pos.value	969797ae99b7	keyed
+21.5968 (A8.4 XM3600 OIV7 slope, doubtful entries dropped)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	xm3600_oiv7_map.values.oiv7_verified.slope_F1_per_logM.swapped.oiv7_drop_entry.value	969797ae99b7	keyed
+55 (A8.4 headline checks evaluated)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	answer.headline_checks_evaluated	969797ae99b7	keyed
+34 (A8.4 reproduction checks with the original matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	reproduction_with_original_matcher_or_map.n_checks	969797ae99b7	keyed
+0.07 (A8.4 first-k/random-k gap, original)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	answer.other_changes.0.original	969797ae99b7	keyed
+0.15 (A8.4 first-k/random-k gap, alternative matcher)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	answer.other_changes.0.swapped	969797ae99b7	keyed
+14/15 (A8.4 XM3600 gold-size checks IN, original)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	answer.other_changes.2.original	969797ae99b7	keyed
+10/15 (A8.4 XM3600 gold-size checks IN, links dropped)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	answer.other_changes.2.swapped	969797ae99b7	keyed
+9/15 (A8.4 XM3600 gold-size checks IN, entries dropped)	A	.session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json	answer.other_changes.3.swapped	969797ae99b7	keyed
+1467 (E1 CHAIR images, union of 15 pairs)	A	.session_backup/2026-10-18/gemini_handoff/G-A8.6/coco_ref_counts.json	sets.e1_pairs15_union.n_images	ad76f8c1ae90	keyed
+3 (E1 images with 6 references)	A	.session_backup/2026-10-18/gemini_handoff/G-A8.6/coco_ref_counts.json	sets.e1_pairs15_union.n_above_mode	ad76f8c1ae90	keyed
+{"5": 1464, "6": 3} (E1 reference-count distribution)	A	.session_backup/2026-10-18/gemini_handoff/G-A8.6/coco_ref_counts.json	sets.e1_pairs15_union.dist	ad76f8c1ae90	keyed
+295 (G2-B COCO val2017 images)	A	.session_backup/2026-10-18/paperA_tasks/P2/MANIFEST.json	numbers.24.value	2ba055342c90	keyed
+{"train2017": 231} (UIT-ViIC test images by COCO split)	A	.session_backup/2026-10-18/paperA_tasks/P2/MANIFEST.json	numbers.29.value	2ba055342c90	keyed
+-22m09s (Polaris/DOCCI commit after first result; printed as 22 minutes)	A	.session_backup/2026-10-18/paperA_tasks/A4.2/prereg_ledger_v2.tsv	row 33 h1_polaris_docci.first_result_minus_registration	c147672e26b8	keyed_text
+02:50:28Z (mtime of q4_vapr_count_control.json, sec8 footnote)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	os.stat st_mtime (UTC)	4fcea1cc1bf2	keyed_text
+05:59:16Z (mtime of q2_longcap_arena.json, sec8 footnote)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	os.stat st_mtime (UTC)	50f3a8635fce	keyed_text
+06:02:42Z (mtime of q2_run1_crashed.log, sec8 footnote)	A	.session_backup/2026-10-15/r13_human/q2_run1_crashed.log	os.stat st_mtime (UTC)	b50b76727975	keyed_text
+0.525	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P2a_v_human.est (0.5246)	224928834752	keyed
+0.506	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P2a_v_human.ci[0] (0.5055)	224928834752	keyed
+0.544	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	Composite.P2a_v_human.ci[1] (0.5435)	224928834752	keyed
+0.481	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P2a_v_human.est	224928834752	keyed
+0.429	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P2a_v_human.ci[0]	224928834752	keyed
+0.530	A	.session_backup/2026-10-14/r12/H1/pilot_results.json	THumB.P2a_v_human.ci[1]	224928834752	keyed
+−0.036	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_ii_delta_tau.delta_tau_ci_95[0] (−0.03611)	50f3a8635fce	keyed
+−0.019	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	test_ii_delta_tau.delta_tau_ci_95[1] (−0.01864)	50f3a8635fce	keyed
+1 (of 3 LongCap-Arena tests passed)	A	.session_backup/2026-10-15/r13_human/q2_longcap_arena.json	n_primary_pass	50f3a8635fce	keyed
+2 (of 5 XM3600 registered predictions failed)	A	.session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json	prereg_comparisons[16..20].in_interval_or_pass count==FAIL	0b2b3aa5e1a3	keyed
+07:22Z (L1_COCO prediction file, never committed)	A	manuscript/prereg/2026-10-18_never_committed_frozen_files.json	files[2].mtime_utc	d1fe997638d7	keyed_text
+12:43Z (H3_N1 prediction file, never committed)	A	manuscript/prereg/2026-10-18_never_committed_frozen_files.json	files[1].mtime_utc	d1fe997638d7	keyed_text
+12:52Z (H1_TC prediction file, never committed)	A	manuscript/prereg/2026-10-18_never_committed_frozen_files.json	files[0].mtime_utc	d1fe997638d7	keyed_text
+15:37Z (Polaris/DOCCI prereg on disk)	A	.session_backup/2026-10-18/paperA_tasks/A4.2/prereg_ledger_v2.tsv	row 33 h1_polaris_docci prereg_disk_mtime_utc	c147672e26b8	keyed_text
+16:25Z (Polaris/DOCCI first output)	A	.session_backup/2026-10-18/paperA_tasks/A4.2/prereg_ledger_v2.tsv	row 33 h1_polaris_docci first_result_mtime_utc	c147672e26b8	keyed_text
+16:47Z (7f22d13 commit)	A	.session_backup/2026-10-18/paperA_tasks/A4.2/prereg_ledger_v2.tsv	row 33 h1_polaris_docci first_commit_utc	c147672e26b8	keyed_text
+04:12Z (X1 P-B file on disk)	A	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	X1_PB t_disk	546e7b406ca5	keyed_text
+05:57Z (X1 P-B first output)	A	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	X1_PB t_out	546e7b406ca5	keyed_text
+07:01Z (6c647a6 commit)	A	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	X1_PB t_commit	546e7b406ca5	keyed_text
+17:00Z (XM3600 first output, 17:00:36Z)	A	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	XM_N1 t_out	546e7b406ca5	keyed_text
+02:50:04Z (7254a39 commit)	A	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	Q2_LONGCAP t_commit	546e7b406ca5	keyed_text
+02:50:10Z (7254a39 push, GitHub server side)	A	.session_backup/2026-10-18/github_activity/q2_activity_20261018T1955Z.json	push id 46544934992 timestamp	e280bbf0fc24	keyed_text
+13.91 (N9 base CHAIR_i, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.base_agg.CHAIR_i	9b62eb049d10	keyed
+50.3 (N9 base CHAIR_s, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.base_agg.CHAIR_s	9b62eb049d10	keyed
+15.4 (LiM published CHAIR_i, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.published.CHAIR_i	9b62eb049d10	keyed
+50.0 (LiM published CHAIR_s, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.published.CHAIR_s	9b62eb049d10	keyed
+1.49 (|ΔCHAIR_i|, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.diff.CHAIR_i (−1.49)	9b62eb049d10	keyed
+1.0 (K_F tolerance, CHAIR_i, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.max_abs_diff.CHAIR_i	9b62eb049d10	keyed
+1.5 (K_F tolerance, CHAIR_s, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.max_abs_diff.CHAIR_s	9b62eb049d10	keyed
+495 (images scored by the registered scorer, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.n_img	9b62eb049d10	keyed
+500 (N9 base captions, exact-match denominator, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.descriptive_exact_caption_match_vs_lim_r1.n	9b62eb049d10	keyed
+3.6% (N9 base captions equal to LiM r1, §6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.descriptive_exact_caption_match_vs_lim_r1.share (0.036)	9b62eb049d10	keyed
+15.26 (scorer on LiM r1, CHAIR_i, §6.4)	A	.session_backup/2026-10-14/research_r10/E1/e1_results.json	systems["lim/r1-llava1.5-7b"].CHAIR_i	a62c7925053a	keyed
+50.5 (scorer on LiM r1, CHAIR_s, §6.4)	A	.session_backup/2026-10-14/research_r10/E1/e1_results.json	systems["lim/r1-llava1.5-7b"].CHAIR_s	a62c7925053a	keyed
+77.5 (scorer on LiM r1, Recall, §6.4)	A	.session_backup/2026-10-14/research_r10/E1/e1_results.json	systems["lim/r1-llava1.5-7b"].Recall	a62c7925053a	keyed
+14 of 15 (XM3600 gold sizes reproduced, Tab. 7)	A	.session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json	prereg_comparisons[1..15].in_interval_or_pass count == IN	0b2b3aa5e1a3	keyed
+2 of 8 (K3 underpowered baselines, Tab. 7)	A	.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json	controls_K2_K3.registered_k3_en_summary.verdict (number in string); n_baselines	184f9ccac1b9	keyed_text
+matched_prefix (K2 C*, abstract and §6.3)	A	.session_backup/2026-10-18/n9k2_scoring/k2/k2_scores.json	C_STAR (K2_PREDICTION = HELD)	0f0e952eeffb	keyed_text
+six (N9 checkpoints, abstract)	A	manuscript/prereg/2026-10-18_n9_count_matched_leaderboard.md	line 242	7e244a486e37	keyed_text
+16:38Z (4ccbee3 commit, XM3600 prereg)	A	.session_backup/2026-10-18/paperA_tasks/A4.4/tests_status.tsv	XM_N1 t_commit	546e7b406ca5	keyed_text
+−1.351 [−2.694, −0.052] (harness gap CHAIR_i, S3)	A	.session_backup/2026-10-19/HV_LK/a_n5/a_n5_result.json	paired_gap.CHAIR_i.{est,ci95}	f29dbda068f1	keyed
+−0.202 [−4.242, +4.040] (harness gap CHAIR_s, S3)	A	.session_backup/2026-10-19/HV_LK/a_n5/a_n5_result.json	paired_gap.CHAIR_s.{est,ci95}	f29dbda068f1	keyed
++1.430 [+0.026, +2.816] (harness gap object F1, S3)	A	.session_backup/2026-10-19/HV_LK/a_n5/a_n5_result.json	paired_gap.F1_cls.{est,ci95}	f29dbda068f1	keyed
+10 of 15 (E1 comparisons with |ΔCHAIR_i| below the harness point gap, S3)	A	.session_backup/2026-10-19/HV_LK/a_n5/a_n5_result.json	e1_counts_abs_published_diff_smaller_than.paired_gap_ours_minus_lim_r1.CHAIR_i.point.{n_smaller,of}	f29dbda068f1	keyed
+-11.46 [-17.27, -5.19] (G2B-E1 cv295)	A	data/results/g2b/g2b_score.json	datasets.cv295.predictions.G2B-E1.parts[0].{point,ci95}	68be2b7a0904	keyed
++13.14 [+7.81, +18.82] (G2B-E2 cv295)	A	data/results/g2b/g2b_score.json	datasets.cv295.predictions.G2B-E2.parts[0].{point,ci95}	68be2b7a0904	keyed
++12.00 [+7.85, +15.73] (G2B-O1 cv295)	A	data/results/g2b/g2b_score.json	datasets.cv295.predictions.G2B-O1.parts[0].{point,ci95}	68be2b7a0904	keyed
++12.60 [+6.91, +18.38] (G2B-O1 cv295)	A	data/results/g2b/g2b_score.json	datasets.cv295.predictions.G2B-O1.parts[1].{point,ci95}	68be2b7a0904	keyed
+263 of 295 (clean subset cv295)	A	data/results/g2b/g2b_score.json	datasets.cv295.predictions.G2B-E1.{n_images,n_images_full}	68be2b7a0904	keyed
+-20.96 [-24.31, -17.40] (G2B-E1 uv231)	A	data/results/g2b/g2b_score.json	datasets.uv231.predictions.G2B-E1.parts[0].{point,ci95}	68be2b7a0904	keyed
++37.36 [+35.15, +39.41] (G2B-E2 uv231)	A	data/results/g2b/g2b_score.json	datasets.uv231.predictions.G2B-E2.parts[0].{point,ci95}	68be2b7a0904	keyed
++22.75 [+19.70, +25.95] (G2B-O1 uv231)	A	data/results/g2b/g2b_score.json	datasets.uv231.predictions.G2B-O1.parts[0].{point,ci95}	68be2b7a0904	keyed
++35.56 [+30.86, +40.18] (G2B-O1 uv231)	A	data/results/g2b/g2b_score.json	datasets.uv231.predictions.G2B-O1.parts[1].{point,ci95}	68be2b7a0904	keyed
+209 of 231 (clean subset uv231)	A	data/results/g2b/g2b_score.json	datasets.uv231.predictions.G2B-E1.{n_images,n_images_full}	68be2b7a0904	keyed
+-12.27 [-14.55, -10.08] (G2B-E1 xm600)	A	data/results/g2b/g2b_score.json	datasets.xm600.predictions.G2B-E1.parts[0].{point,ci95}	68be2b7a0904	keyed
++13.71 [+11.44, +15.79] (G2B-E2 xm600)	A	data/results/g2b/g2b_score.json	datasets.xm600.predictions.G2B-E2.parts[0].{point,ci95}	68be2b7a0904	keyed
++5.89 [+4.76, +6.87] (G2B-O1 xm600)	A	data/results/g2b/g2b_score.json	datasets.xm600.predictions.G2B-O1.parts[0].{point,ci95}	68be2b7a0904	keyed
++20.10 [+17.39, +23.05] (G2B-O1 xm600)	A	data/results/g2b/g2b_score.json	datasets.xm600.predictions.G2B-O1.parts[1].{point,ci95}	68be2b7a0904	keyed
+537 of 600 (clean subset xm600)	A	data/results/g2b/g2b_score.json	datasets.xm600.predictions.G2B-E1.{n_images,n_images_full}	68be2b7a0904	keyed
++0.26 [-1.76, +2.11] (A-N1 Q cv295)	A	data/results/g2b/an1_score.json	sets.cv295.primary_analysis.primary.{point,ci95}	ec0938e088ab	keyed
++12.84 [+9.86, +14.36] (A-N1 Q xm600)	A	data/results/g2b/an1_score.json	sets.xm600.primary_analysis.primary.{point,ci95}	ec0938e088ab	keyed
++3.82 [+2.58, +5.07] (A-N1 Q uv231)	A	data/results/g2b/an1_score.json	sets.uv231.primary_analysis.primary.{point,ci95}	ec0938e088ab	keyed
+MIXED (A-N1 outcome)	A	data/results/g2b/an1_score.json	outcome	ec0938e088ab	keyed
+-0.29 [-0.57, +0.000] (LBA-P1 cv295)	A	data/results/a_n2/a_n2_run.json	datasets.cv295.verdicts_on_analysis_set.LBA-P1.{point,ci95}	1f6ce422e016	keyed
+-0.86 [-0.93, -0.50] (LBA-P1 uv231en)	A	data/results/a_n2/a_n2_run.json	datasets.uv231en.verdicts_on_analysis_set.LBA-P1.{point,ci95}	1f6ce422e016	keyed
+-1.12 [-11.52, +6.62] (LBA-P2 qwen3vl_8b cv295 slope[complete])	A	data/results/a_n2/a_n2_run.json	datasets.cv295.verdicts_on_analysis_set.LBA-P2.models.qwen3vl_8b.parts[2]	1f6ce422e016	keyed
+0.705 (exact-match share lbA_qwen3vl_8b_cv295-short_en)	A	data/results/a_n2/a_n2_run.json	qwen3vl_exact_match_vs_g2b.lbA_qwen3vl_8b_cv295-short_en.share	1f6ce422e016	keyed
+0.064 (exact-match share lbA_qwen3vl_8b_cv295-detailed_en)	A	data/results/a_n2/a_n2_run.json	qwen3vl_exact_match_vs_g2b.lbA_qwen3vl_8b_cv295-detailed_en.share	1f6ce422e016	keyed
+0.697 (exact-match share lbA_qwen3vl_8b_uv231en-short_en)	A	data/results/a_n2/a_n2_run.json	qwen3vl_exact_match_vs_g2b.lbA_qwen3vl_8b_uv231en-short_en.share	1f6ce422e016	keyed
+0.065 (exact-match share lbA_qwen3vl_8b_uv231en-detailed_en)	A	data/results/a_n2/a_n2_run.json	qwen3vl_exact_match_vs_g2b.lbA_qwen3vl_8b_uv231en-detailed_en.share	1f6ce422e016	keyed
++0.057 [+0.043, +0.071] (AN3-P1 part 1)	A	data/results/a_n3/a_n3_run.json	predictions.AN3-P1.parts[0].{point,ci95}	7a5a614d2068	keyed
+-0.021 [-0.043, +0.002] (AN3-P1 part 2)	A	data/results/a_n3/a_n3_run.json	predictions.AN3-P1.parts[1].{point,ci95}	7a5a614d2068	keyed
++0.049 [+0.033, +0.064] (AN3-P2 part 1)	A	data/results/a_n3/a_n3_run.json	predictions.AN3-P2.parts[0].{point,ci95}	7a5a614d2068	keyed
++0.010 [-0.002, +0.023] (AN3-P2 part 2)	A	data/results/a_n3/a_n3_run.json	predictions.AN3-P2.parts[1].{point,ci95}	7a5a614d2068	keyed
+NOT_SUPPORTED (A-N3 outcome)	A	data/results/a_n3/a_n3_run.json	outcome	7a5a614d2068	keyed

@@ -1,40 +1,51 @@
-# 10 Discussion and recommendations
+# 10 Discussion and implications
 
 ## 10.1 What the results say together
 
-The paper's claims are about the instrument. The concern that hallucination gains can come from saying less was raised before us (Fazli et al., 2026; Sandhu et al., 2026; Long et al., 2026; Nguyen et al., 2026; Section 2); what this paper adds is a pre-registered, per-image count-matched measurement of it, the gold-completeness ordering of the verbosity sign, an exchangeability check for references, and a count audit of preference data. An object-level score responds to three properties of the measurement that are separate from object choice: how many objects a caption names, how complete the gold is, and whether the references behind the gold are exchangeable. Each changes conclusions in practice.
+The paper's claims are about the instrument: an object-level score responds to gold completeness, object count and reference exchangeability, separately from object choice. The concern that gains come from saying less is not new (Section 2).
 
-- **Count.** Most published precision gains of decoding methods are not significant once both captions name the same number of objects per image under an order-preserving control; how many survive depends on the control, from 2 to 6 of 15 (Section 6). The registered placebo that decides between the controls is pending, so the paper states the curve, not one number.
-- **Gold completeness.** The slope of object F1 on the number of mentioned objects rises with gold completeness in every completed test, never crosses back, and is negative with one reference and positive with instance labels. The sign with several references is not predicted by the theory: frozen predictions of a positive all-references slope failed on two English LVLM families and on XM3600, it was positive on COCO-2500, and on UIT-ViIC it depends on the matcher (Section 7). Raw F1 can rank the same two systems in opposite orders under two common golds.
-- **Exchangeability.** Reference-count analyses assume exchangeable references; a cheap adjacency statistic separates corpora where the assumption holds from corpora where it does not (Section 5).
+- **Gold completeness.** On XM3600 (registered), F1's verbosity slope is ordered by gold completeness and positive under complete gold, but two of five registered predictions failed, on the all-references slope, without triggering demotion (Section 7.5).<!-- src: .session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json :: prereg_comparisons[16..20].in_interval_or_pass = PASS, FAIL, PASS, PASS, FAIL; .session_backup/2026-10-18/paperA_tasks/A4.1/MANIFEST.json :: verdicts[14] = NOT_FIRED; sentence per manuscript/paperA_plan/CONFIRMATION_MAP.md (cbed6db) §2 --> A second-backbone test is pending; the multi-reference sign is not predicted by the theory.
+- **Count.** The registered leaderboard failed its fidelity check and was not scored (Section 6.4), so no confirmatory count-control claim is made; the seed placebo admitted the matched prefix (Section 6.3).<!-- src: .session_backup/2026-10-13/decisions/PD-15.txt :: items 1-2; sentence per manuscript/paperA_plan/CONFIRMATION_MAP.md (cbed6db) §3 NOT-TESTABLE --> E1 is post hoc.
+- **Exchangeability.** An adjacency statistic tests reference exchangeability (Section 5).
 
-The human evidence (Section 8) supports the existence of the count confound: on long captions, human judgments penalize naming more objects (LongCap-Arena, registered). It also supports complete gold and matched count as conditions for a valid comparison on short COCO captions (registered on Polaris). It does not show that count-matched precision tracks human judgments better than raw precision: that registered prediction failed on THumB, Composite and LongCap-Arena and was inconclusive on DOCCI-Critique. This is a finding about what count control is for: attribution, not a better quality score. We therefore make no claim about what humans prefer, and the recommendations below concern reporting, not a new metric.
+Human evidence (Section 8) supports the confound: long-caption judgments penalize naming more objects (registered). Count-matched precision does not track humans better: it failed on THumB and Composite (frozen locally) and LongCap-Arena, and DOCCI-Critique's G3-(ii) held with an interval including 0.
 
-## 10.2 The two-column reporting standard
+We report a count-controlled column for construct validity, not agreement with humans: count moves the score mechanically, so a comparison that leaves it free cannot attribute a difference to object choice (Section 3.7).
+
+## 10.2 Implications for practice: the two-column reporting standard
 
 Every object-level claim of the form "method S hallucinates less than B" should report two columns (Section 3.7):
 
-1. **Raw score,** with the gold and the matcher named, and the mean number of mentioned objects per image $M$ for both systems next to it.
-2. **One count-controlled difference, declared before scoring:** the per-image matched-count difference with a paired, image-clustered interval for decoding and selection methods (matched prefix unless the seed placebo of Section 6.3 selects another control), or the frontier residual at the system's own count for training-time methods. Other controls go into an appendix specification curve.
+1. **Raw score,** with gold, matcher and $M$ named.
+2. **One pre-declared count-controlled difference:** the per-image matched-count difference with a paired interval (the matched prefix, admitted by the Section 6.3 placebo), or the frontier residual for training-time methods; other controls go into a specification curve.
 
-The second column answers a different question from the first. It says whether a difference survives when count is held fixed; it does not say which caption is better. A method that names fewer objects with an unchanged ranking of candidates will show a raw gain and a null second column, which is an accurate description of what it does.
+The second column says whether a difference remains when count is held fixed, not which caption is better: a method that names fewer objects with an unchanged ranking of candidates shows a raw gain and a null second column.
 
-## 10.3 Checklist
+## 10.3 Implications for practice: a checklist
 
 For papers that report object-level hallucination scores:
 
-1. **Name the gold and the matcher,** and report $M$ for every system. State whether the gold comes from references, instance labels or both, and how many references.
-2. **Pre-declare the count control** and report its interval. Report the specification curve over the other registered controls in an appendix. Run a seed placebo for the control before using it as the primary column.
-3. **Do not compare F1 across verbosity regimes under incomplete gold** without saying which side of the F1 optimum the systems sit on. Under one-reference gold, F1 rewards terseness; under instance gold, it rewards verbosity; with several references, the sign depends on the systems and the dataset, and no current theory, ours included, predicts it (Section 7).
-4. **Vary references with random subsets,** never in file order, and report the adjacency statistic of Section 5 before calling a dataset's references "annotators". Do not report leave-one-reference-out "human ceilings" or species-richness completeness estimates on corpora that fail it.
-5. **For human-validity claims,** report agreement separately on count-equal and count-differing pairs, and do not present a count-controlled score as a better quality measure without a registered test.
-6. **For preference data,** report the distribution of the object-count difference between chosen and rejected responses, not only the length difference (Section 9).
-7. **Register predictions in version control before the outputs exist,** and label every look that was not registered as exploratory. Where a registration was committed after a result, say so (as we do in Sections 7.5 and 8).
+1. **Name the gold and the matcher,** and report $M$ for every system.
+2. **Do not compare F1 across verbosity regimes under incomplete gold** without locating the systems relative to the F1 optimum: the sign with several references is not predicted by any current theory (Section 7).
+3. **Pre-declare the count control,** calibrate it with a seed placebo, and report its interval, with other controls in a specification curve.
+4. **Vary references with random subsets,** not file order, and report the adjacency statistic (Section 5).
+5. **For human-validity claims,** report count-equal and count-differing pairs separately; do not call a count-controlled score a better quality measure without a registered test.
+6. **For preference data,** report the object-count difference of chosen and rejected responses, not only length (Section 9).
+7. **Commit predictions before the outputs exist,** and label predictions frozen locally but never committed, or committed after a result, as exploratory.
 
-## 10.4 What this paper does not show
+## 10.4 Implications for research
 
-It does not show that any published method fails to reduce hallucination: count-controlled nulls at 500 images are nulls at that sample size (Section 6.3). It does not show that object count is a better control unit than word length on English LVLM outputs; that registered test failed. It does not locate the crossing point of the verbosity sign in advance; the frozen out-of-regime test on English LVLMs failed on location, and on XM3600 the registered prediction that 2–3 references already give a positive slope failed (1 of 3 out-of-sample sign predictions; below the registered demotion threshold of 2). It does not show that humans prefer count-controlled scores. The Vietnamese motivating case (the controlled baseline, the pre-registered negative results of the methods we tried, and the audit of the KTVIC references) is reported in the companion paper (Paper B, under review).
+Three lines of research follow.
+- **Metric theory.** The sign result applies to any object-, attribute- or relation-level score with reference-built gold; a predictor of where the sign changes is still missing (Section 4.3).
+- **Gold construction.** Benchmark builders can report gold completeness and reference exchangeability; denser labels move an evaluation toward the large-gold regime.
+- **Mitigation and training.** Methods that claim better object choice need a count-controlled evaluation, and preference data can be audited for the count channel (Section 9).
 
-## 10.5 Open items before submission
+A score that removes the count confound and also tracks human judgments better remains an open problem: matching on count alone does not provide it (Section 8).
 
-[PENDING items that change text in this section when they land: E1 K2 placebo (primary control in 10.2 item 2), N9 (Section 6.4; the conditional kill of Section 9), G2-B (Section 7.6), B3 (Section 7.7).]
+## 10.5 Conclusion
+
+Object-level hallucination scores measure the gold and the number of objects a caption names, not only object choice. In a registered out-of-sample test on XM3600, F1's verbosity reward is ordered by gold completeness and positive under complete gold, but two of its five registered predictions failed<!-- src: .session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json :: prereg_comparisons[16..20].in_interval_or_pass = PASS, FAIL, PASS, PASS, FAIL (N1-XM-2 and N1-XM-5 FAIL); qualifier per manuscript/paperA_plan/CONFIRMATION_MAP.md (cbed6db) §2 --> (N1-XM-2 and N1-XM-5, on the all-references slope). The multi-reference sign and the crossing point are not predicted; a second-backbone test is pending. The registered count-matched leaderboard failed its fidelity check and was not scored, so we make no confirmatory count-control claim; the registered seed placebo found the matched prefix admissible. Human judgments penalize object count on long captions, but count-matched precision does not track them better than raw precision, so count control is a control for a confound, justified by construct validity. Papers comparing object-level scores should report the raw score next to one pre-declared count-controlled score, name their gold and check reference exchangeability.
+
+## 10.6 Open items before submission
+
+[PENDING items that change text in this section when they land: B3 (Section 7.7). G2-B, A-N1 and A-N2 landed 2026-10-20 (Section 7.6); this section's wording still needs the writer pass.]<!-- Resolved in the cut pass: the E1 K2 placebo (HELD; matched prefix admissible) and N9 (fidelity check failed, not scored); .session_backup/2026-10-13/decisions/PD-15.txt -->

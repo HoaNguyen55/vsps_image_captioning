@@ -19,7 +19,8 @@ FAIR 2026 = "A Method for Reducing Hallucinations in Detailed Vietnamese Image C
 | Registered supervision ladder (frozen predictions, per-run verdicts, pooled invariance) | no | new |
 | B1 registered second backbone and its guard abort; 3B fallback (PENDING) | no | new |
 | KTVIC single-writer audit (adjacency 0.7102 vs 0.40) | no | new |
-| Punctuation audit (−35.17 CIDEr-D; UIT-ViIC sign flip; XM3600 end-period rates) | no | new |
+| Punctuation audit (−35.17 CIDEr-D; reference conventions of KTVIC, UIT-ViIC and XM3600; XM3600 period shift) | no | new |
+| Release kit (scorer and protocol card, matchers v1–v3 with lexicons, split and ID lists, two-gold protocol, audit scripts) | v1 lexicon only | new |
 | Segmentation sensitivity (149.79 vs 165.43) | no | new |
 | Matchers v2 / v3, *cây* audit, UIT-ViIC role/child flip | no | new |
 | Dataset overlap audit (KTVIC–OpenViIC 401/558; UIT-ViIC–COCO/POPE; CC-005 rule) | no | new |
