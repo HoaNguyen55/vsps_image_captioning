@@ -16,22 +16,24 @@ FAIR 2026 = "A Method for Reducing Hallucinations in Detailed Vietnamese Image C
 | Response-only P1-R, 3 seeds, 148.23 (SD 0.38), reproducibility gates | no | new |
 | Protocol card (segmenter, CIDEr-D, ×100, punctuation) | no | new |
 | Fusion, cons, multiref, unf2, rnd2 systems | no | new |
-| Registered supervision ladder (frozen predictions, per-run verdicts, pooled invariance) | no | new |
-| B1 registered second backbone and its guard abort; 3B fallback (PENDING) | no | new |
+| Registered supervision ladder (frozen predictions, per-run verdicts, pooled invariance) | no | new (supplement S2) |
+| Registered second backbone and its guard abort; 3B fallback (outputs unverified, not reported) | no | new (supplement S3) |
 | KTVIC single-writer audit (adjacency 0.7102 vs 0.40) | no | new |
 | Punctuation audit (−35.17 CIDEr-D; reference conventions of KTVIC, UIT-ViIC and XM3600; XM3600 period shift) | no | new |
-| Release kit (scorer and protocol card, matchers v1–v3 with lexicons, split and ID lists, two-gold protocol, audit scripts) | v1 lexicon only | new |
+| Evaluation kit (own code only: scorer and protocol card, matcher code, split and overlap scripts, audit scripts, number manifest; no lexicons, predictions or weights) | no (FAIR used the v1 lexicon, which the kit does not ship) | new |
 | Segmentation sensitivity (149.79 vs 165.43) | no | new |
 | Matchers v2 / v3, *cây* audit, UIT-ViIC role/child flip | no | new |
 | Dataset overlap audit (KTVIC–OpenViIC 401/558; UIT-ViIC–COCO/POPE; CC-005 rule) | no | new |
 | UIT-ViIC transfer, in-domain replication | no | new |
-| Two caption panels (OpenViIC aggregates), UPE two-estimator reconciliation, EV-RANK concordance | no | new |
-| Pre-registered and controlled negatives (kNN, UPE-MBR, 35_e, P-M6b, PLAN-F1, self-fuse, E5, MR5, tags) | no | new |
+| Two caption panels (OpenViIC aggregates), EV-RANK concordance; UPE two-estimator reconciliation (supplement S6.2) | no | new |
+| Pre-registered and controlled negatives (kNN, UPE-MBR, 35_e, P-M6b, PLAN-F1, WiSE-FT, self-fuse, E5, MR5, tags), leaderboard, leakage test, Tier-3 dev gates | no | new (supplement S4–S7) |
 | Recommendations for Vietnamese captioning evaluation | no | new |
 | AI-agent provenance rules and number manifest | no | new |
 
 ## Estimated share of new material
 
-Method: words of the draft text (src comments removed), 7,669 in total across sec1–sec8 (2026-10-15). Paragraphs that restate FAIR content were counted generously as overlap. These are §4.1's recipe and the zero-shot/P1 rows; §3.1's KTVIC description; the reused citations in §2; the P1 149.8 reference in §3.4 and §5.1; §8.3. That gives about 700–900 words, or 9–12%.
+Method: words of the draft text (src comments removed), 7,669 in total across sec1–sec8 (2026-10-15). After the PD-24 rebuild (2026-10-20) the main text is 8,115 words (sec1–sec8, abstract excluded) and the supplement 5,720; the share below was not recomputed. Paragraphs that restate FAIR content were counted generously as overlap. These are §4.1's recipe and the zero-shot/P1 rows; §3.1's KTVIC description; the reused citations in §2; the P1 149.8 reference in §3.4 and §5.1; §8.3. That gives about 700–900 words, or 9–12%.
 
 **Estimated new material: about 88% (range 85–91%).** This is well above the ≥ 30% target (LRE, IP&M) and TALLIP's ≥ 25%. No primary result of Paper B appears in FAIR. Re-estimate on the final manuscript with a text-overlap tool, and disclose FAIR in the cover letter.
+
+The two-way overlap with the companion paper (under review) is Table 7.1 of the main text (`sec7_limitations_ethics.md` §7.3).

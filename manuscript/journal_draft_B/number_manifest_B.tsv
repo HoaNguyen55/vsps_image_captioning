@@ -43,9 +43,9 @@ number	paper	file	key	sha256_prefix	status
 99.5	B	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_zeroshot-short|surface_stats|end_period_rate_pct	aef0137c390b	keyed
 0.0	B	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_p1_s43-short|surface_stats|end_period_rate_pct	aef0137c390b	keyed
 0.0	B	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_fuse2_s42-short|surface_stats|end_period_rate_pct	aef0137c390b	keyed
-48.39	B (A-primary: claim A-XM3600)	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_zeroshot-short|ngram_scores_scaled_x100|CIDEr	aef0137c390b	keyed
-41.17	B (A-primary: claim A-XM3600)	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_p1_s43-short|ngram_scores_scaled_x100|CIDEr	aef0137c390b	keyed
-38.61	B (A-primary: claim A-XM3600)	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_fuse2_s42-short|ngram_scores_scaled_x100|CIDEr	aef0137c390b	keyed
+48.39	B (A-primary: claim A-XM3600)	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_zeroshot-short|ngram_scores_scaled_x100|CIDEr	aef0137c390b	REMOVED 2026-10-20 (PD-24 c / PD-6: XM3600 system scores are primary in Paper A; sec3.3 now cites the companion paper)
+41.17	B (A-primary: claim A-XM3600)	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_p1_s43-short|ngram_scores_scaled_x100|CIDEr	aef0137c390b	REMOVED 2026-10-20 (PD-24 c / PD-6: XM3600 system scores are primary in Paper A; sec3.3 now cites the companion paper)
+38.61	B (A-primary: claim A-XM3600)	.session_backup/2026-10-14/r12_verify/xm3600_short_interim_verdict.json	matcher_v2_tone_normalised|systems|xm3600_fuse2_s42-short|ngram_scores_scaled_x100|CIDEr	aef0137c390b	REMOVED 2026-10-20 (PD-24 c / PD-6: XM3600 system scores are primary in Paper A; sec3.3 now cites the companion paper)
 149.79	B	.session_backup/2026-10-14/research_r10/E4/pilot_results.json	protocols|P0_official_rdr|CIDEr|p1-gold	17c6717158a6	keyed
 165.43	B	.session_backup/2026-10-14/research_r10/E4/pilot_results.json	protocols|P1_syllable_raw(evaluate.py --also-syllable)|CIDEr|p1-gold	17c6717158a6	keyed
 0.969	B	.session_backup/2026-10-14/research_r10/E4/pilot_results.json	ranking|P1_syllable_raw(evaluate.py --also-syllable)|tau_all	17c6717158a6	keyed
@@ -312,12 +312,12 @@ number	paper	file	key	sha256_prefix	status
 PENDING	B	ladder 56_multiref_s42 (rerun on M1; outputs not yet verified; verdict by prereg_ladder_check only)	—	—	RESULT: .session_backup/2026-10-18/ladder_check/final/stdout.txt lines 2, 4-6 (VERIFIED manuscript/verification/paperA/LADDER_CHECK_final.json)
 PENDING	B	ladder 57_rnd2_s42 (rerun on M1; outputs not yet verified; verdict by prereg_ladder_check only)	—	—	RESULT: .session_backup/2026-10-18/ladder_check/final/stdout.txt lines 2, 4-6 (VERIFIED manuscript/verification/paperA/LADDER_CHECK_final.json)
 PENDING	B	ladder 58_unf2_s42 (rerun on M1; outputs not yet verified; verdict by prereg_ladder_check only)	—	—	RESULT: .session_backup/2026-10-18/ladder_check/final/stdout.txt lines 2, 4-6 (VERIFIED manuscript/verification/paperA/LADDER_CHECK_final.json)
-PENDING	B	Qwen2.5-VL-3B fallback runs 61_p1_3b_s42 / 62_fuse2_3b_s42 on M2 (PD-8; B1 aborted at Step 1 guard); outputs not yet verified	—	—	PENDING
-PENDING	B	optional Qwen3-VL post-guard run under its own new prereg (PD-8)	—	—	PENDING
-PENDING	B	POPE-500 for any UIT-ViIC-trained adapter (21 UIT-ViIC train images excluded, CC-005)	—	—	PENDING
-PENDING	B	M3 = Tier-3 S3 count-matched DPO (registered a68fb66; not run)	—	—	PENDING
-PENDING	B	WiSE-FT (59_wise_ft_s42) gate	—	—	RESULT: data/results/wise_ft_gate.json (sha 93eb8e67) VERIFIED; addendum items PENDING-WISE-ADDENDUM
-PENDING	B	protocol-matched comparison with GRIT / ViG / HDUCap (PD-2 blockers 1-2)	—	—	PENDING
+PENDING	B	Qwen2.5-VL-3B fallback runs 61_p1_3b_s42 / 62_fuse2_3b_s42 on M2 (PD-8; B1 aborted at Step 1 guard); outputs not yet verified	—	—	NOT REPORTED 2026-10-20: prediction files exist (M2 queue logs 01_61/02_62), not verified; supplementary_B.md S3
+PENDING	B	optional Qwen3-VL post-guard run under its own new prereg (PD-8)	—	—	NOT RUN (no new prereg made); supplementary_B.md S3
+PENDING	B	POPE-500 for any UIT-ViIC-trained adapter (21 UIT-ViIC train images excluded, CC-005)	—	—	NOT RUN; sec3.6 / sec5.2 state "no such evaluation has been run"
+PENDING	B	M3 = Tier-3 S3 count-matched DPO (registered a68fb66; not run)	—	—	RESULT: Tier-3 S3 FAIL at dev gate (VERIFIED T3V_S1_S3_S5.json 112fd942; PD-22); supplementary_B.md S7, S8
+PENDING	B	WiSE-FT (59_wise_ft_s42) gate	—	—	RESULT: data/results/wise_ft_gate.json (sha 93eb8e67) VERIFIED; addendum items NOT COMPUTED (supplementary_B.md S6.6)
+PENDING	B	protocol-matched comparison with GRIT / ViG / HDUCap (PD-2 blockers 1-2)	—	—	NOT RUN; sec5.1 / sec7.1 state no protocol-matched rescoring
 PENDING	B	matcher v3 human sign-off	—	—	DROPPED (no new annotation; D5; matcher v3 ships labelled unattested)
 217	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	reference_punctuation_audit.xm3600_test_600.raw_end_period_count	410097af11b2	keyed (recomputed by B-writer)
 1,227	B	.session_backup/2026-10-18/cpu_audit_r15/xm3600_period_cider_decomposition_v1.json	reference_punctuation_audit.xm3600_test_600.n_refs	410097af11b2	keyed (recomputed by B-writer)
@@ -414,13 +414,13 @@ Eight of the nine	B	.session_backup/2026-10-15/paperA_keys/cider_3seed_g1_rescor
 0.75	B	data/results/wise_ft_gate.json	chosen_alpha	93eb8e671db5	keyed
 924	B	manuscript/prereg/2026-10-14_wise_ft_multiref_addendum.md	l.67 (UIT-ViIC val n = 924)	abd5a33e4073	keyed (text)
 0.25	B	manuscript/prereg/2026-10-14_wise_ft_multiref_addendum.md	l.57 (optional grid point, not evaluated)	abd5a33e4073	keyed (text)
-PENDING	B	B-N1 protocol-card leaderboard (prereg 327191c; decodes not run)	—	—	PENDING
-PENDING	B	B-N2 leakage DiD: not evaluable (no OpenViIC-trained run); placebo and descriptive leaked/clean gaps pending the judge	—	—	PENDING
-PENDING	B	UIT-ViIC append-period CIDEr-D effect with the committed scorer (c8 values withdrawn, B2 finding 1)	—	—	PENDING
-PENDING	B	WiSE-FT addendum: KTVIC dP_front(alpha) and d(dP_front)(alpha vs 1.0)	—	—	PENDING-WISE-ADDENDUM
-PENDING	B	WiSE-FT addendum: matched-count (v,g) tie-avg and POOL-VOTE controls (KTVIC gold, OpenViIC panel)	—	—	PENDING-WISE-ADDENDUM
-PENDING	B	WiSE-FT addendum: OpenViIC panel contrast L(0.35)	—	—	PENDING-WISE-ADDENDUM
-PENDING	B	WiSE-FT addendum: UIT-ViIC val 73-rare-class recall and count-matched (v,g) control	—	—	PENDING-WISE-ADDENDUM
+PENDING	B	B-N1 protocol-card leaderboard (prereg 327191c; decodes not run)	—	—	RESULT: data/results/b_n1/b_n1_run.json adad454d (LBB-P1 FAIL, LBB-P2 INCONCLUSIVE, LBB-P3 FAIL; KB1); rows 470-472; supplementary_B.md S4
+PENDING	B	B-N2 leakage DiD: not evaluable (no OpenViIC-trained run); placebo and descriptive leaked/clean gaps pending the judge	—	—	RESULT: data/results/b_n2/b_n2_run.json 59463c4c (placebo INCONCLUSIVE; headline NOT_EVALUABLE); supplementary_B.md S5
+PENDING	B	UIT-ViIC append-period CIDEr-D effect with the committed scorer (c8 values withdrawn, B2 finding 1)	—	—	NOT RUN; sec3.3 / sec5.2 state "not measured with the committed scorer"
+PENDING	B	WiSE-FT addendum: KTVIC dP_front(alpha) and d(dP_front)(alpha vs 1.0)	—	—	NOT COMPUTED 2026-10-20 (no verified output); supplementary_B.md S6.6
+PENDING	B	WiSE-FT addendum: matched-count (v,g) tie-avg and POOL-VOTE controls (KTVIC gold, OpenViIC panel)	—	—	NOT COMPUTED 2026-10-20 (no verified output); supplementary_B.md S6.6
+PENDING	B	WiSE-FT addendum: OpenViIC panel contrast L(0.35)	—	—	NOT COMPUTED 2026-10-20 (no verified output); supplementary_B.md S6.6
+PENDING	B	WiSE-FT addendum: UIT-ViIC val 73-rare-class recall and count-matched (v,g) control	—	—	NOT COMPUTED 2026-10-20 (no verified output); supplementary_B.md S6.6
 1.833	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 2 (multiref_s42-short) M	0477f26f44de	keyed (VERIFIED)
 78.006	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 2 (multiref_s42-short) P	0477f26f44de	keyed (VERIFIED)
 42.767	B	.session_backup/2026-10-18/ladder_check/final/stdout.txt	line 2 (multiref_s42-short) R	0477f26f44de	keyed (VERIFIED)
@@ -470,3 +470,16 @@ NOT_RUN	B	B-N3 criterion analysis (agreement gate STOP; PD-21b)	—	—	NOT_RUN
 +1.00 [+1.00, +1.00] (LBB-P1, FAIL)	B	data/results/b_n1/b_n1_run.json	predictions.LBB-P1.{point,ci95,verdict}	adad454d6c9f	keyed
 +0.67 [+0.33, +0.67] (LBB-P2, INCONCLUSIVE)	B	data/results/b_n1/b_n1_run.json	predictions.LBB-P2.{point,ci95,verdict}	adad454d6c9f	keyed
 +0.000 [-0.33, +0.000] (LBB-P3, FAIL)	B	data/results/b_n1/b_n1_run.json	predictions.LBB-P3.{point,ci95,verdict}	adad454d6c9f	keyed
+B-F1	B	final single test evaluation of MBR-3 (prereg d6cb2c7; instrument 877f7db)	—	—	NOT RUN as of 2026-10-20; PD-24 (d) end state; supplementary_B.md S7
++2.55 [+0.004, +5.24] (S1 MBR-3 D CIDEr-D x100, dev300)	B	.session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json	D_cider_x100_mean_lo_hi.mbr	8998aff20031	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
+−0.19 (S1 MBR-3 ΔCHAIR_i, dev300)	B	.session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json	dCHAIR_i_points.mbr	8998aff20031	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
++1.30 (S1 soup ΔCHAIR_i; soup not eligible)	B	.session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json	dCHAIR_i_points.soup	8998aff20031	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
+0.634 (S2 G0 A_within)	B	.session_backup/machines/O-2308428/root/outputs/t3_1_s2_xvef1_g0/g0.json	G0.A_within	1e22e5b7a15d	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
+0.485 (S2 G0 A_noimg)	B	.session_backup/machines/O-2308428/root/outputs/t3_1_s2_xvef1_g0/g0.json	G0.A_noimg	1e22e5b7a15d	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
++1.51 (S2 XV-EF1 dF1 vs COUNT)	B	.session_backup/machines/O-2308428/root/outputs/t3_1_s2_xvef1_g0/readout.json	readout.arms.XV-EF1.endpoints.dF1_vs_COUNT	79ce14bfd5bb	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
+−1.89 (S2 XV-EF1 dCHAIR_i x100 vs COUNT)	B	.session_backup/machines/O-2308428/root/outputs/t3_1_s2_xvef1_g0/readout.json	readout.arms.XV-EF1.endpoints.dCHAIRi_vs_COUNT_x100	79ce14bfd5bb	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
+−2.62 (S2 XV-EF1 dCIDEr x100 vs greedy; carry floor −2.0)	B	.session_backup/machines/O-2308428/root/outputs/t3_1_s2_xvef1_g0/readout.json	readout.arms.XV-EF1.endpoints.dCIDEr_vs_greedy_x100	79ce14bfd5bb	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
+NOT CARRIED (S2 readout verdict)	B	.session_backup/machines/O-2308428/root/outputs/t3_1_s2_xvef1_g0/readout.json	readout.verdict	79ce14bfd5bb	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
+9.40 (S5 b, CIDEr-D per doubling)	B	.session_backup/machines/O-2308423/root/outputs/t3_4_s5_data_scaling/scaling.json	decision.b	82d71a039b80	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
+4.87 (S5 CI lower bound of b)	B	.session_backup/machines/O-2308423/root/outputs/t3_4_s5_data_scaling/scaling.json	decision.ci_lo_b	82d71a039b80	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
+FUND_EXTERNAL_IMAGE_DATA (S5 rule result)	B	.session_backup/machines/O-2308423/root/outputs/t3_4_s5_data_scaling/scaling.json	decision.verdict	82d71a039b80	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)

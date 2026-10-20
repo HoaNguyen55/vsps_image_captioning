@@ -1,5 +1,13 @@
-% Paper B bibliography: entries reused from paperA.bib and r13_new_refs.bib (verified there), matched by first-author surname + year; see citation_map_B.tsv.
+% Paper B bibliography (rebuilt 2026-10-20, B-writer, PD-24 e).
+% Every entry was matched by DOI or arXiv ID, not by surname + year, and checked on 2026-10-20 against the Crossref API
+% (DOI) or the arXiv API (arXiv ID) by this pass, or (lam2020uit, pham2024ktvic, tran2026viclipot = R13_2602_22678,
+% post2018call, li2023evaluating) by citation audit 2 (manuscript/review/citation_audit/B_bib_audit.tsv); RDRSegmenter
+% also against the ACL Anthology (L18-1410). Entries marked "reused"
+% are copied from manuscript/journal_draft/paperA.bib or manuscript/research_r13/r13_new_refs.bib after the same check.
+% Two entries cannot be checked externally: the authors' own FAIR 2026 paper (Crossref title search found no record)
+% and the companion paper under review. See citation_map_B.tsv for the text-to-key map.
 
+% --- datasets ---
 @inproceedings{lam2020uit,
   author = {Lam, Quan Hoang and Le, Quang Duy and Nguyen, Van Kiet and Nguyen, Ngan Luu-Thuy},
   title = {{UIT-ViIC:} A Dataset for the First Evaluation on Vietnamese Image Captioning},
@@ -8,7 +16,8 @@
   year = {2020},
   pages = {730--742},
   publisher = {Springer International Publishing},
-  doi = {10.1007/978-3-030-63007-2_57}
+  doi = {10.1007/978-3-030-63007-2_57},
+  note = {arXiv:2002.00175}
 }
 
 @misc{pham2024ktvic,
@@ -23,13 +32,206 @@
   url = {https://arxiv.org/abs/2401.08100}
 }
 
-@misc{R13_2602_22678,
-  title = {ViCLIP-OT: The First Foundation Vision-Language Model for Vietnamese Image-Text Retrieval with Optimal Transport},
+% reused (paperA.bib); Crossref: vol. 140, issue dated 2026-01
+@article{bui2026uit,
+  author = {Bui, Doanh C. and Nguyen, Nghia Hieu and Nguyen, Khang},
+  title = {{UIT-OpenViIC:} An open-domain benchmark for evaluating image captioning in Vietnamese},
+  journal = {Signal Processing: Image Communication},
+  year = {2026},
+  volume = {140},
+  pages = {117430},
+  publisher = {Elsevier BV},
+  doi = {10.1016/j.image.2025.117430}
+}
+
+@misc{bui2023openviic,
+  author = {Bui, Doanh C. and Nguyen, Nghia Hieu and Nguyen, Khang},
+  title = {{UIT-OpenViIC:} A Novel Benchmark for Evaluating Image Captioning in {Vietnamese}},
+  year = {2023},
+  eprint = {2305.04166},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2305.04166}
+}
+
+% reused (paperA.bib)
+@inproceedings{thapliyal2022crossmodal,
+  author = {Thapliyal, Ashish V. and Pont Tuset, Jordi and Chen, Xi and Soricut, Radu},
+  title = {{Crossmodal-3600:} A Massively Multilingual Multimodal Evaluation Dataset},
+  booktitle = {Proceedings of the 2022 Conference on Empirical Methods in Natural Language Processing},
+  year = {2022},
+  pages = {715--729},
+  publisher = {Association for Computational Linguistics},
+  doi = {10.18653/v1/2022.emnlp-main.45}
+}
+
+% reused (paperA.bib)
+@inproceedings{lin2014microsoft,
+  author = {Lin, Tsung-Yi and Maire, Michael and Belongie, Serge and Hays, James and Perona, Pietro and Ramanan, Deva and Doll{\'a}r, Piotr and Zitnick, C. Lawrence},
+  title = {Microsoft {COCO:} Common Objects in Context},
+  booktitle = {Computer Vision -- ECCV 2014},
+  series = {Lecture Notes in Computer Science},
+  year = {2014},
+  pages = {740--755},
+  publisher = {Springer International Publishing},
+  doi = {10.1007/978-3-319-10602-1_48}
+}
+
+@article{le2022viecap4h,
+  author = {Le, Thao Minh and Dang, Long Hoang and Nguyen, Thanh-Son and Nguyen, Huyen and Vu, Xuan-Son},
+  title = {{VLSP} 2021 -- {VieCap4H} Challenge: Automatic Image Caption Generation for Healthcare Domain in {Vietnamese}},
+  journal = {VNU Journal of Science: Computer Science and Communication Engineering},
+  year = {2022},
+  volume = {38},
+  doi = {10.25073/2588-1086/vnucsce.341}
+}
+
+% reused (r13_new_refs.bib R13_HDUCap_JVCIR)
+@article{hoang2026hducap,
+  author = {Hoang, Anh Cong and Nguyen, Hoang Long and Pham, The-Anh and Nguyen, Dinh Cong},
+  title = {Benchmarking {Vietnamese} image captioning: A spatially-aware transformer and the {HDUCap} dataset},
+  journal = {Journal of Visual Communication and Image Representation},
+  year = {2026},
+  volume = {121},
+  pages = {104963},
+  doi = {10.1016/j.jvcir.2026.104963}
+}
+
+@misc{nguyen2026scenetext,
+  author = {Nguyen, Nhi Ngoc-Yen and Nguyen, Anh-Duc and Nguyen, Nghia Hieu and Nguyen, Kiet Van and Nguyen, Ngan Luu-Thuy},
+  title = {Linguistically Informed Multimodal Fusion for {Vietnamese} Scene-Text Image Captioning: Dataset, Graph Framework, and Phonological Attention},
+  year = {2026},
+  eprint = {2604.27712},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2604.27712}
+}
+
+@misc{vanmiltenburg2024image,
+  author = {van Miltenburg, Emiel},
+  title = {Image captioning in different languages},
+  year = {2024},
+  eprint = {2407.09495},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2407.09495}
+}
+
+% --- systems and models ---
+@inproceedings{nguyen2022grit,
+  author = {Nguyen, Van-Quang and Suganuma, Masanori and Okatani, Takayuki},
+  title = {{GRIT:} Faster and Better Image Captioning Transformer Using Dual Visual Features},
+  booktitle = {Computer Vision -- ECCV 2022},
+  series = {Lecture Notes in Computer Science},
+  year = {2022},
+  pages = {167--184},
+  publisher = {Springer Nature Switzerland},
+  doi = {10.1007/978-3-031-20059-5_10},
+  note = {arXiv:2207.09666}
+}
+
+% reused (paperA.bib)
+@inproceedings{vu2026vig,
+  author = {Vu, Hieu Thien and Ngoc, Nhan Huynh and Dinh, Thang Cap Pham and Do, Phung},
+  title = {{ViG:} Grounded Adaptation of {Transformer-Based} Models for {Low-Resource} Vietnamese Image Captioning},
+  booktitle = {2026 International Conference on Multimedia Analysis and Pattern Recognition (MAPR)},
+  year = {2026},
+  pages = {652--657},
+  publisher = {IEEE},
+  doi = {10.1109/mapr72750.2026.11685699}
+}
+
+% reused (r13_new_refs.bib R13_2602_22678)
+@misc{tran2026viclipot,
   author = {Tran, Quoc-Khang and others},
+  title = {{ViCLIP-OT:} The First Foundation Vision-Language Model for {Vietnamese} Image-Text Retrieval with Optimal Transport},
   year = {2026},
   eprint = {2602.22678},
   archivePrefix = {arXiv},
   doi = {10.48550/arXiv.2602.22678}
+}
+
+@misc{doan2024vintern,
+  author = {Doan, Khang T. and Huynh, Bao G. and Hoang, Dung T. and Pham, Thuc D. and Pham, Nhat H. and Nguyen, Quan T. M. and Vo, Bang Q. and Hoang, Suong N.},
+  title = {{Vintern-1B:} An Efficient Multimodal Large Language Model for {Vietnamese}},
+  year = {2024},
+  eprint = {2408.12480},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2408.12480}
+}
+
+@misc{bai2025qwen25vl,
+  author = {Bai, Shuai and Chen, Keqin and Liu, Xuejing and Wang, Jialin and Ge, Wenbin and Song, Sibo and Dang, Kai and Wang, Peng and Wang, Shijie and Tang, Jun and others},
+  title = {{Qwen2.5-VL} Technical Report},
+  year = {2025},
+  eprint = {2502.13923},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2502.13923}
+}
+
+@misc{bai2025qwen3vl,
+  author = {Bai, Shuai and Cai, Yuxuan and Chen, Ruizhe and Chen, Keqin and Chen, Xionghui and Cheng, Zesen and others},
+  title = {{Qwen3-VL} Technical Report},
+  year = {2025},
+  eprint = {2511.21631},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2511.21631}
+}
+
+@misc{zhu2025internvl3,
+  author = {Zhu, Jinguo and Wang, Weiyun and Chen, Zhe and Liu, Zhaoyang and Ye, Shenglong and Gu, Lixin and others},
+  title = {{InternVL3:} Exploring Advanced Training and Test-Time Recipes for Open-Source Multimodal Models},
+  year = {2025},
+  eprint = {2504.10479},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2504.10479}
+}
+
+@misc{dettmers2023qlora,
+  author = {Dettmers, Tim and Pagnoni, Artidoro and Holtzman, Ari and Zettlemoyer, Luke},
+  title = {{QLoRA:} Efficient Finetuning of Quantized {LLMs}},
+  year = {2023},
+  eprint = {2305.14314},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2305.14314},
+  note = {NeurIPS 2023}
+}
+
+@misc{hu2021lora,
+  author = {Hu, Edward J. and Shen, Yelong and Wallis, Phillip and Allen-Zhu, Zeyuan and Li, Yuanzhi and Wang, Shean and Wang, Lu and Chen, Weizhu},
+  title = {{LoRA:} Low-Rank Adaptation of Large Language Models},
+  year = {2021},
+  eprint = {2106.09685},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2106.09685}
+}
+
+% --- metrics, segmentation, reporting ---
+@inproceedings{vedantam2015cider,
+  author = {Vedantam, Ramakrishna and Zitnick, C. Lawrence and Parikh, Devi},
+  title = {{CIDEr:} Consensus-based Image Description Evaluation},
+  booktitle = {2015 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year = {2015},
+  pages = {4566--4575},
+  publisher = {IEEE},
+  doi = {10.1109/CVPR.2015.7299087}
+}
+
+@inproceedings{hessel2021clipscore,
+  author = {Hessel, Jack and Holtzman, Ari and Forbes, Maxwell and Le Bras, Ronan and Choi, Yejin},
+  title = {{CLIPScore:} A Reference-free Evaluation Metric for Image Captioning},
+  booktitle = {Proceedings of the 2021 Conference on Empirical Methods in Natural Language Processing},
+  year = {2021},
+  pages = {7514--7528},
+  publisher = {Association for Computational Linguistics},
+  doi = {10.18653/v1/2021.emnlp-main.595}
+}
+
+@inproceedings{caglayan2020curious,
+  author = {Caglayan, Ozan and Madhyastha, Pranava and Specia, Lucia},
+  title = {Curious Case of Language Generation Evaluation Metrics: A Cautionary Tale},
+  booktitle = {Proceedings of the 28th International Conference on Computational Linguistics},
+  year = {2020},
+  pages = {2322--2328},
+  publisher = {International Committee on Computational Linguistics},
+  doi = {10.18653/v1/2020.coling-main.210}
 }
 
 @inproceedings{post2018call,
@@ -42,6 +244,50 @@
   doi = {10.18653/v1/w18-6319}
 }
 
+% reused (paperA.bib); arXiv:2305.12254
+@inproceedings{hu2023request,
+  author = {Hu, Jia Cheng and Cavicchioli, Roberto and Capotondi, Alessandro},
+  title = {A Request for Clarity over the End of Sequence Token in the {Self-Critical} Sequence Training},
+  booktitle = {Image Analysis and Processing -- ICIAP 2023},
+  series = {Lecture Notes in Computer Science},
+  year = {2023},
+  pages = {39--50},
+  publisher = {Springer Nature Switzerland},
+  doi = {10.1007/978-3-031-43148-7_4}
+}
+
+@inproceedings{nguyen2018fast,
+  author = {Nguyen, Dat Quoc and Nguyen, Dai Quoc and Vu, Thanh and Dras, Mark and Johnson, Mark},
+  title = {A Fast and Accurate {Vietnamese} Word Segmenter},
+  booktitle = {Proceedings of the Eleventh International Conference on Language Resources and Evaluation (LREC 2018)},
+  year = {2018},
+  publisher = {European Language Resources Association},
+  url = {https://aclanthology.org/L18-1410/},
+  note = {arXiv:1709.06307}
+}
+
+@inproceedings{vu2018vncorenlp,
+  author = {Vu, Thanh and Nguyen, Dat Quoc and Nguyen, Dai Quoc and Dras, Mark and Johnson, Mark},
+  title = {{VnCoreNLP:} A {Vietnamese} Natural Language Processing Toolkit},
+  booktitle = {Proceedings of the 2018 Conference of the North American Chapter of the Association for Computational Linguistics: Demonstrations},
+  year = {2018},
+  pages = {56--60},
+  publisher = {Association for Computational Linguistics},
+  doi = {10.18653/v1/N18-5012}
+}
+
+% --- hallucination metrics ---
+% reused (paperA.bib)
+@inproceedings{rohrbach2018object,
+  author = {Rohrbach, Anna and Hendricks, Lisa Anne and Burns, Kaylee and Darrell, Trevor and Saenko, Kate},
+  title = {Object Hallucination in Image Captioning},
+  booktitle = {Proceedings of the 2018 Conference on Empirical Methods in Natural Language Processing},
+  year = {2018},
+  pages = {4035--4045},
+  publisher = {Association for Computational Linguistics},
+  doi = {10.18653/v1/d18-1437}
+}
+
 @inproceedings{li2023evaluating,
   author = {Li, Yifan and Du, Yifan and Zhou, Kun and Wang, Jinpeng and Zhao, Xin and Wen, Ji-Rong},
   title = {Evaluating Object Hallucination in Large {Vision-Language} Models},
@@ -50,4 +296,114 @@
   pages = {292--305},
   publisher = {Association for Computational Linguistics},
   doi = {10.18653/v1/2023.emnlp-main.20}
+}
+
+% --- references, annotators, reference quality ---
+% reused (paperA.bib)
+@misc{chen2015microsoft,
+  author = {Chen, Xinlei and Fang, Hao and Lin, Tsung-Yi and Vedantam, Ramakrishna and Gupta, Saurabh and Dollar, Piotr and Zitnick, C. Lawrence},
+  title = {Microsoft {COCO} Captions: Data Collection and Evaluation Server},
+  year = {2015},
+  eprint = {1504.00325},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.1504.00325}
+}
+
+% reused (paperA.bib)
+@misc{resnick2026principled,
+  author = {Resnick, Paul and Kong, Yuqing and Schoenebeck, Grant and Weninger, Tim},
+  title = {Principled Evaluation with Human Labels: One Rater at a Time and Rater Equivalence},
+  year = {2021},
+  note = {arXiv v1 2021-06-02; v3 2026-04-22},
+  howpublished = {arXiv preprint arXiv:2106.01254v3},
+  eprint = {2106.01254},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2106.01254}
+}
+
+@inproceedings{geva2019modeling,
+  author = {Geva, Mor and Goldberg, Yoav and Berant, Jonathan},
+  title = {Are We Modeling the Task or the Annotator? An Investigation of Annotator Bias in Natural Language Understanding Datasets},
+  booktitle = {Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing (EMNLP-IJCNLP)},
+  year = {2019},
+  pages = {1161--1166},
+  publisher = {Association for Computational Linguistics},
+  doi = {10.18653/v1/D19-1107}
+}
+
+% NOT paperA.bib's berger2025surveying (a different TACL paper); this is the NAACL 2025 paper, arXiv:2409.16646
+@inproceedings{berger2025crosslingual,
+  author = {Berger, Uri and Ponti, Edoardo},
+  title = {Cross-Lingual and Cross-Cultural Variation in Image Descriptions},
+  booktitle = {Proceedings of the 2025 Conference of the Nations of the Americas Chapter of the Association for Computational Linguistics: Human Language Technologies (Volume 1: Long Papers)},
+  year = {2025},
+  pages = {9453--9465},
+  publisher = {Association for Computational Linguistics},
+  doi = {10.18653/v1/2025.naacl-long.478}
+}
+
+% reused (paperA.bib)
+@inproceedings{kasai2022transparent,
+  author = {Kasai, Jungo and Sakaguchi, Keisuke and Dunagan, Lavinia and Morrison, Jacob and Le Bras, Ronan and Choi, Yejin and Smith, Noah},
+  title = {Transparent Human Evaluation for Image Captioning},
+  booktitle = {Proceedings of the 2022 Conference of the North American Chapter of the Association for Computational Linguistics: Human Language Technologies},
+  year = {2022},
+  pages = {3464--3478},
+  publisher = {Association for Computational Linguistics},
+  doi = {10.18653/v1/2022.naacl-main.254}
+}
+
+% --- training ---
+@inproceedings{rennie2017self,
+  author = {Rennie, Steven J. and Marcheret, Etienne and Mroueh, Youssef and Ross, Jerret and Goel, Vaibhava},
+  title = {Self-Critical Sequence Training for Image Captioning},
+  booktitle = {2017 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year = {2017},
+  pages = {1179--1195},
+  publisher = {IEEE},
+  doi = {10.1109/CVPR.2017.131}
+}
+
+@misc{tang2026cccaption,
+  author = {Tang, Zhijiang and Wang, Linhua and Qi, Jiaxin and Jiang, Weihao and Hou, Peng and Zeng, Anxiang and Huang, Jianqiang},
+  title = {{CCCaption:} Dual-Reward Reinforcement Learning for Complete and Correct Image Captioning},
+  year = {2026},
+  eprint = {2602.21655},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2602.21655}
+}
+
+@misc{rafailov2023direct,
+  author = {Rafailov, Rafael and Sharma, Archit and Mitchell, Eric and Ermon, Stefano and Manning, Christopher D. and Finn, Chelsea},
+  title = {Direct Preference Optimization: Your Language Model is Secretly a Reward Model},
+  year = {2023},
+  eprint = {2305.18290},
+  archivePrefix = {arXiv},
+  doi = {10.48550/arXiv.2305.18290}
+}
+
+@inproceedings{wortsman2022robust,
+  author = {Wortsman, Mitchell and Ilharco, Gabriel and Kim, Jong Wook and Li, Mike and Kornblith, Simon and Roelofs, Rebecca and Lopes, Raphael Gontijo and Hajishirzi, Hannaneh and Farhadi, Ali and Namkoong, Hongseok and Schmidt, Ludwig},
+  title = {Robust Fine-Tuning of Zero-Shot Models},
+  booktitle = {2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year = {2022},
+  pages = {7949--7961},
+  publisher = {IEEE},
+  doi = {10.1109/CVPR52688.2022.00780}
+}
+
+% --- own work (not externally verifiable) ---
+% Authors and title from manuscript FAIR_28.08.26_v10_EN_IEEE.pdf; Crossref title search 2026-10-20: no record.
+@inproceedings{nguyen2026vsps,
+  author = {Nguyen, Le Minh Hoa and Tran, Van Lang},
+  title = {A Method for Reducing Hallucinations in Detailed {Vietnamese} Image Captioning Using Supervision from Verified Propositions},
+  booktitle = {Proceedings of FAIR 2026 [AUTHOR TO PROVIDE: full proceedings title, pages and DOI]},
+  year = {2026}
+}
+
+@unpublished{companion2026underreview,
+  author = {Anonymous},
+  title = {Companion paper on object-level hallucination metrics},
+  note = {Under review},
+  year = {2026}
 }

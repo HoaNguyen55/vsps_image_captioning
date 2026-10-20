@@ -1,6 +1,6 @@
-# Paper B draft status (2026-10-19, B-writer; supersedes the 2026-10-15 version)
+# Paper B draft status (2026-10-20, B-writer; supersedes the 2026-10-19 version)
 
-Framing: resource + validity audit with a released evaluation kit; no method claim (DEBATE D2). Complete draft due 2026-12-10. Change log: `WRITER_B_LOG.md`.
+Framing (PD-24, 2026-10-20): audit-and-kit resource paper for LRE. Main text = dataset-validity audit + protocol card + evaluation kit (sec1–sec8, 8,115 words without comments; abstract 249 words at the top of outline_B.md). The ladder, second backbone/3B, B-N1, B-N2 detail and all former Section 6 moved to `supplementary_B.md` with verdicts unchanged; sec1 lists them in one line. Files renamed: sec7_discussion → sec6_discussion, sec8_limitations_ethics → sec7_limitations_ethics; new sec8_conclusion; sec6_negatives removed (content in the supplement). No method claim (DEBATE D2). Complete draft due 2026-12-10. Change log: `WRITER_B_LOG.md`.
 
 ## Sections
 
@@ -22,14 +22,11 @@ Framing: resource + validity audit with a released evaluation kit; no method cla
 
 1–4 are not present in sec1–sec8. Their residual forms were fixed: sec1 ±1.0 equivalence, sec5 and sec7 "frontier shown", sec8 ±1.0 TOST. 5 was resolved earlier. 6: the draft uses the committed 28.98 and the JSON's 99.5.
 
-## Open TODOs
+## Open items (2026-10-20)
 
-- PENDING runs: 3B 61/62 (M2); optional Qwen3-VL post-guard run; POPE-500 for UIT-ViIC adapters (exclude all 21, CC-005); M3 = Tier-3 S3 (a68fb66, not run); B-N1 decodes; B-N2 placebo and descriptive gaps (judge); WiSE-FT addendum items (separate task agent); UIT-ViIC append-period effect with the committed scorer; protocol-matched comparators.
-- Ladder: reruns scored (6/10 runs all-in; joint 10-run CI [−0.90, +0.92]); registered H0 NOT met (PD-20: pooled part met, per-run part not).
-- B-N3: NOT_RUN (PD-21b sentence verbatim in sec8.1). The FAIR-2026 human ratings support no claim in Paper B, and a search of sec1–8, the outline, STATUS and the manifest found no number or claim drawn from them.
-- B2 tables and figures (MANIFEST 44430973): use only after the A-verifier marks them VERIFIED. Fig. 2 = `fig2_adjacency_Bonly` (placeholder comment in §3.2).
-- Release-kit checklist: these kit components exist only in git-excluded session folders: v3 rules (cay audit, role/child), the c8 punctuation audit, the XM3600 period audit, the UIT-ViIC/COCO overlap lists, and the 8-gram scanner. Move them into a release directory and re-run before submission. Checkpoints stay "on request" until the backbone licence and KTVIC's terms are confirmed.
-- Read HDUCap and ViG in full before 2026-11-01; verify the [VERIFY] citations (XM3600, Qwen3-VL report).
-- Paired CI for the UIT-ViIC role/child CHAIR_i flip: `.session_backup/2026-10-18/cpu_audit_r15/uitviic_role_child_chair_flip_ci_v1.json` exists but is unverified.
-- Run an automated src-comment completeness check over all sections before red-teaming.
-- Resolved: run-ID clash (3B = 61/62; GPU_JOB_PLAN_v1); XM3600 period decomposition (absolute shift); matcher v3 sign-off dropped (no new annotation).
+- Author placeholders: [AUTHOR TO CHOOSE LICENCE] (kit); [AUTHOR TO PROVIDE] Zenodo DOI; [AUTHOR TO PROVIDE] terms under which KTVIC, UIT-ViIC and UIT-OpenViIC were obtained (PD-24 b user question); [AUTHOR TO CONFIRM] AI tools/versions and AI-drafted text (sec7.4); [AUTHOR TO PROVIDE] FAIR 2026 proceedings title, pages, DOI (paperB.bib).
+- Not run: B-F1 (registered d6cb2c7; PD-24 d end state); POPE-500 for UIT-ViIC adapters; UIT-ViIC append-period effect; slot-rate-preserving permutation null (R1-M2); 8-gram scan of the kit archive; WiSE-FT addendum items; protocol-matched comparators.
+- Unverified, not reported: 3B 61/62 outputs (M2 logs); UIT-ViIC role/child flip CI.
+- Kit components still live only in git-excluded session folders (v3 rules, c8 punctuation audit, XM3600 period audit, overlap lists, 8-gram scanner): move into a release directory and re-run before deposit.
+- Tier-3 S1/S2/S3/S5 numbers in supplementary_B.md S7 have no manifest rows yet (pre-existing gap).
+- Bib: all 39 citations resolved in paperB.bib (DOI/arXiv-checked 2026-10-20); VES-RFT dropped (no DOI/arXiv).
