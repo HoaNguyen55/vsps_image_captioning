@@ -607,7 +607,8 @@
 @misc{resnick2026principled,
   author = {Resnick, Paul and Kong, Yuqing and Schoenebeck, Grant and Weninger, Tim},
   title = {Principled Evaluation with Human Labels: One Rater at a Time and Rater Equivalence},
-  year = {2026},
+  year = {2021},
+  note = {arXiv v1 2021-06-02; v3 2026-04-22},
   howpublished = {arXiv preprint arXiv:2106.01254v3},
   eprint = {2106.01254},
   archivePrefix = {arXiv},
@@ -630,12 +631,14 @@
 
 % sandhu2026targeting: published: OpenReview SsWwzbMc5X (AIW 2026); identity from papers_A.json[22] + r13_new_refs.bib:R13_2608_24966
 %   records: arXiv 2608.24966 via export.arxiv.org; OpenReview SsWwzbMc5X; cited in outline.md, sec10_discussion.md, sec1_introduction.md, sec2_related_work.md, sec6_rescoring_published_methods.md (paper_A_plan, paper_A_text)
-@inproceedings{sandhu2026targeting,
+@misc{sandhu2026targeting,
   author = {Sandhu, Armaan and Senapati, Abhilasha and Kammachi, Hima Jagadeesha},
   title = {Targeting the Attention Heads Behind Object Hallucination in {LLaVA}},
-  booktitle = {Actionable Interpretability Workshop at COLM 2026 (AIW 2026)},
   year = {2026},
-  url = {https://openreview.net/forum?id=SsWwzbMc5X}
+  howpublished = {arXiv preprint arXiv:2608.24966},
+  eprint = {2608.24966},
+  archivePrefix = {arXiv},
+  note = {Workshop venue (AIW 2026, OpenReview SsWwzbMc5X) not confirmed}
 }
 
 % sarkar2025mitigating: published: OpenReview yG1fW8igzP (ICLR 2025 Poster); identity from primary: arXiv API
@@ -651,17 +654,17 @@
 % saunders2022evaluating: preprint: arXiv 2206.02423; identity from primary: arXiv API
 %   records: arXiv 2206.02423 via export.arxiv.org; cited in sec2_related_work.md (paper_A_text)
 %   author list repaired: 'Alex' and 'A. Freitas' merged into 'Alex A. Freitas'
-@misc{saunders2022evaluating,
+@article{saunders2022evaluating,
   author = {Saunders, Jack D. and Freitas, Alex A.},
   title = {Evaluating the Predictive Performance of {Positive-Unlabelled} Classifiers: a brief critical review and practical recommendations for improvement},
+  journal = {ACM SIGKDD Explorations Newsletter},
+  volume = {24},
+  number = {2},
+  pages = {5--11},
   year = {2022},
-  howpublished = {arXiv preprint arXiv:2206.02423},
-  eprint = {2206.02423},
-  archivePrefix = {arXiv},
-  primaryClass = {cs.LG},
-  doi = {10.48550/arXiv.2206.02423},
-  url = {https://arxiv.org/abs/2206.02423}
+  doi = {10.1145/3575637.3575642}
 }
+
 
 % singh2024benchmarking: published: book-chapter DOI 10.1007/978-3-031-72784-9_16; identity from papers_A.json[36]
 %   records: arXiv 2403.18819 via export.arxiv.org; Crossref 10.1007/978-3-031-72784-9_16; cited in sec2_related_work.md (paper_A_text)
@@ -932,6 +935,34 @@
 @unpublished{paperB2026underreview,
   author = {Anonymous},
   title  = {Companion paper on Vietnamese image captioning evaluation},
-  note   = {Under review},
+  note   = {[AUTHOR TO CONFIRM: status of the companion manuscript]},
   year   = {2026}
+}
+
+% gunjal2024detecting: published: DOI 10.1609/aaai.v38i16.29771; identity from primary: Crossref (DOI), checked 2026-10-20
+%   records: Crossref title, authors (Gunjal, Yin, Bas), AAAI 38(16):18135-18143, issued 2024-03-24; cited in sec8_human_validity.md (M-HalDetect human span labels)
+%   dataset licence: M-HalDetect annotations are CC BY-NC 4.0 (research use); used for aggregates only, not redistributed
+@inproceedings{gunjal2024detecting,
+  author = {Gunjal, Anisha and Yin, Jihan and Bas, Erhan},
+  title = {Detecting and Preventing Hallucinations in Large Vision Language Models},
+  booktitle = {Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume = {38},
+  number = {16},
+  pages = {18135--18143},
+  year = {2024},
+  publisher = {Association for the Advancement of Artificial Intelligence},
+  doi = {10.1609/aaai.v38i16.29771},
+  note = {M-HalDetect dataset, CC BY-NC 4.0}
+}
+
+% chen2024right: published: DOI 10.52202/079017-0850 (NeurIPS 37); identity from primary: arXiv API (2403.20330) + Crossref (DOI), checked 2026-10-20
+%   records: arXiv 2403.20330 via export.arxiv.org; Crossref title, 11 authors, pages 27056-27087; cited in sec2_related_work.md (MMStar, via Fazli et al.)
+@inproceedings{chen2024right,
+  author = {Chen, Lin and Li, Jinsong and Dong, Xiaoyi and Zhang, Pan and Zang, Yuhang and Chen, Zehui and Duan, Haodong and Wang, Jiaqi and Qiao, Yu and Lin, Dahua and Zhao, Feng},
+  title = {Are We on the Right Way for Evaluating Large Vision-Language Models?},
+  booktitle = {Advances in Neural Information Processing Systems 37},
+  pages = {27056--27087},
+  year = {2024},
+  publisher = {Neural Information Processing Systems Foundation, Inc.},
+  doi = {10.52202/079017-0850}
 }
