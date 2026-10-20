@@ -1,0 +1,324 @@
+{
+ "id": "2026-10-20_b_f1_final_stack",
+ "mode": "dryrun",
+ "prereg": {
+  "path": "manuscript/prereg/2026-10-20_b_f1_final_stack.json",
+  "sha256": "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9"
+ },
+ "script_sha256": "9c57cc9771d6da84f56534004ebd60c72acd1103ca7c63a741c2f482881304aa",
+ "config": {
+  "B": 5000,
+  "seed": 0,
+  "level": 95.0,
+  "tol": 1e-06,
+  "n": 558,
+  "k2": 1.0,
+  "B_s1": 2000,
+  "seed_s1": 0,
+  "n_clean": 157,
+  "members": {
+   "s42": "p1dev_s42",
+   "s43": "p1dev_s43",
+   "s44": "p1dev_s44"
+  },
+  "names": {
+   "p1dev_s42": "p1dev_s42-test-short",
+   "p1dev_s43": "p1dev_s43-test-short",
+   "p1dev_s44": "p1dev_s44-test-short",
+   "mbr": "p1dev_mbr3-test-short"
+  },
+  "object_claims_allowed": false
+ },
+ "env": {
+  "python": "3.12.3",
+  "numpy": "2.5.4",
+  "pycocoevalcap": "1.2",
+  "py_vncorenlp": "0.1.4",
+  "pyjnius": "1.9.0",
+  "VnCoreNLP-1.2.jar": "9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793",
+  "models/wordsegmenter/wordsegmenter.rdr": "9e62f96bd93e37a24f364238e8d8ae986fa5dad6dbc9f4eae622ab3651b7fa06"
+ },
+ "SYNTHETIC": "made-up ids, references, captions and provenance; no KTVIC caption, reference or decode is read",
+ "admission": {
+  "admitted": [
+   "p1dev_s42-test-short",
+   "p1dev_s43-test-short",
+   "p1dev_s44-test-short"
+  ],
+  "refusals": {
+   "wrong adapter sha256": "REFUSED (K-PROV / K-COV): {\"p1dev_s43-test-short\": [\"adapter_sha256\"]}",
+   "machine_id differs from the other decodes": "REFUSED (K-PROV / K-COV): {\"machine rule\": [\"the three decodes do not share one machine_id and card\"], \"p1dev_s43-test-short\": [\"machine_id\"]}",
+   "wrong job sha256": "REFUSED (K-PROV / K-COV): {\"p1dev_s43-test-short\": [\"job_sha256\"]}",
+   "dirty tree": "REFUSED (K-PROV / K-COV): {\"p1dev_s43-test-short\": [\"git_dirty\"]}",
+   "commit lacks the registration": "REFUSED (K-PROV / K-COV): {\"p1dev_s42-test-short\": [\"commit synthet lacks manuscript/prereg/2026-10-20_b_f1_final_stack.json\", \"commit synthet lacks manuscript/prereg/2026-10-20_b_f1_instrument.json\", \"commit synthet lacks scripts/queue/jobs/b_f1_ktvic_test_decode.sh\", \"commit synthet lacks scripts/b_f1/score_b_f1.py\", \"decoded before the registration commit\"], \"p1dev_s43-test-short\": [\"commit ff17599 lacks manuscript/prereg/2026-10-20_b_f1_final_stack.json\", \"commit ff17599 lacks manuscript/prereg/2026-10-20_b_f1_instrument.json\", \"commit ff17599 lacks scripts/queue/jobs/b_f1_ktvic_test_decode.sh\", \"commit ff17599 lacks scripts/b_f1/score_b_f1.py\", \"decoded before the registration commit\"], \"p1dev_s44-test-short\": [\"commit ff17599 lacks manuscript/prereg/2026-10-20_b_f1_final_stack.json\", \"commit ff17599 lacks manuscript/prereg/2026-10-20_b_f1_instrument.json\", \"commit ff17599 lacks scripts/queue/jobs/b_f1_ktvic_test_decode.sh\", \"commit ff17599 lacks scripts/b_f1/score_b_f1.py\", \"decoded before the registration commit\"]}",
+   "missing test id": "REFUSED (K-PROV / K-COV): {\"p1dev_s44-test-short\": [\"K-COV: 1 test ids without a prediction\"]}"
+  }
+ },
+ "end_to_end": {
+  "selection": {
+   "picked_member": [
+    "s42",
+    "s42",
+    "s42",
+    "s43",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s43",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s43",
+    "s42",
+    "s43",
+    "s42",
+    "s43",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s43",
+    "s42",
+    "s42",
+    "s42",
+    "s43",
+    "s42",
+    "s42",
+    "s42",
+    "s43",
+    "s42",
+    "s43",
+    "s42",
+    "s42",
+    "s42",
+    "s43",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s42",
+    "s43"
+   ],
+   "picked_counts": {
+    "s42": 49,
+    "s43": 11,
+    "s44": 0
+   },
+   "mbr_preds_sha256": "0160e741f03d225f2661b75a9e71d19a479f3a5aaca013e27d8fcf4cde7f3544",
+   "df_images": 40
+  },
+  "F0": {
+   "s42": {
+    "corpus_CIDEr_x100": 375.83520248415965,
+    "segmenter": "rdrsegmenter",
+    "result_sha256": "f74f0c136790169286f5f6b43b425adcf22639c6c54f54ba44dd6acb515562df",
+    "mean_per_image_x100": 375.8352024841596,
+    "abs_diff": 5.684341886080802e-14,
+    "pass": true
+   },
+   "s43": {
+    "corpus_CIDEr_x100": 374.00782954345914,
+    "segmenter": "rdrsegmenter",
+    "result_sha256": "7e7ea2609975a4fb0c2743a7f55f015414bd08e504d00373698f4a12cb741a52",
+    "mean_per_image_x100": 374.007829543459,
+    "abs_diff": 1.1368683772161603e-13,
+    "pass": true
+   },
+   "s44": {
+    "corpus_CIDEr_x100": 49.1326130987025,
+    "segmenter": "rdrsegmenter",
+    "result_sha256": "bcbb242c9051257d8aada54b78b27e5d0f985ae2213f27c55bdd7e4dfb109524",
+    "mean_per_image_x100": 49.1326130987025,
+    "abs_diff": 0.0,
+    "pass": true
+   },
+   "mbr": {
+    "corpus_CIDEr_x100": 375.12210414884015,
+    "segmenter": "rdrsegmenter",
+    "result_sha256": "9726a51432fe074a8f0b0df8c1e6864112527888898a39124f4767399f9f5fb4",
+    "mean_per_image_x100": 375.12210414884015,
+    "abs_diff": 0.0,
+    "pass": true
+   }
+  },
+  "K_F0_fired": false,
+  "primary": {
+   "D_MBR_x100_mean_lo_hi": [
+    108.79688910673308,
+    100.93031871992233,
+    116.37320804025089
+   ],
+   "verdict": "PASS",
+   "rule": "PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE",
+   "n_images": 60,
+   "B": 5000,
+   "rng": "numpy default_rng(0)"
+  },
+  "K2": {
+   "text": "K2: CHAIR_i is more than 1.0 pp above the member mean.",
+   "dCHAIR_i_points": -15.181518151815183,
+   "fires": false,
+   "reported_as": "no harm"
+  },
+  "K3": {
+   "text": "K3: a test F1 drop whose CI excludes 0 is reported as a negative.",
+   "dF1_ktvic5_mean_lo_hi": [
+    17.040807662455762,
+    14.694189150321408,
+    19.352260555495672
+   ],
+   "fires": false,
+   "reported_as": "not a negative"
+  },
+  "objects": {
+   "claims_allowed": false,
+   "status": "descriptive only"
+  }
+ },
+ "K_F0_branch": {
+  "pass": false,
+  "why": "rl_report.dev_scores: per-image mean differs from the corpus value"
+ },
+ "K_SC_branch": {
+  "rows": [
+   {
+    "check": "per-image CIDEr-D mbr equals gate.json",
+    "ok": true
+   },
+   {
+    "check": "D_MBR equals gate.json",
+    "ok": false,
+    "value": [
+     2.0,
+     1.0,
+     3.000000001
+    ]
+   },
+   {
+    "check": "dCHAIR_i (MBR) equals gate.json",
+    "ok": true,
+    "value": -0.5
+   },
+   {
+    "check": "D_MBR at the quoted decimals",
+    "ok": true
+   },
+   {
+    "check": "dCHAIR_i at the quoted decimals",
+    "ok": true
+   },
+   {
+    "check": "MBR picks equal S1's picked_member",
+    "ok": true
+   },
+   {
+    "check": "MBR prediction bytes equal S1's file",
+    "ok": true
+   }
+  ],
+  "all_ok": false
+ },
+ "verdict_branches": {
+  "PASS, K2 quiet, K3 quiet, predictions inside": {
+   "verdict": "PASS",
+   "K2": "no harm",
+   "K3": "not a negative",
+   "D": [
+    2.000000000000001,
+    1.9018721596259656,
+    2.096138771991907
+   ],
+   "dF1": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "dCHAIR_i": 0.1999999999999993,
+   "predictions_inside": {
+    "dCIDEr": true,
+    "dBLEU4": true,
+    "dF1": true,
+    "dCHAIRi_points": true,
+    "dmentions": true
+   },
+   "objects": "descriptive only"
+  },
+  "INCONCLUSIVE, K2 fires": {
+   "verdict": "INCONCLUSIVE",
+   "K2": "harm",
+   "K3": "not a negative",
+   "D": [
+    0.30000000000000215,
+    -2.2759650326811833,
+    2.81534180005602
+   ],
+   "dF1": [
+    0.0,
+    0.0,
+    0.0
+   ],
+   "dCHAIR_i": 1.5,
+   "predictions_inside": {
+    "dCIDEr": false,
+    "dBLEU4": false,
+    "dF1": true,
+    "dCHAIRi_points": false,
+    "dmentions": true
+   },
+   "objects": "descriptive only"
+  },
+  "FAIL, K3 fires": {
+   "verdict": "FAIL",
+   "K2": "no harm",
+   "K3": "negative",
+   "D": [
+    -1.4999999999999987,
+    -1.616380730428842,
+    -1.3816933007173573
+   ],
+   "dF1": [
+    -66.66666666666667,
+    -74.16666666666666,
+    -59.166666666666664
+   ],
+   "dCHAIR_i": 0.0,
+   "predictions_inside": {
+    "dCIDEr": false,
+    "dBLEU4": false,
+    "dF1": false,
+    "dCHAIRi_points": true,
+    "dmentions": true
+   },
+   "objects": "descriptive only"
+  },
+  "object rule with both PD-2 parts registered (counterfactual)": {
+   "claims_allowed": true,
+   "status": "may enter a claim"
+  }
+ },
+ "inputs_sha256": {
+  "manuscript/prereg/2026-10-20_b_f1_final_stack.json": "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9",
+  "outputs/p1dev_s42-test-short.preds.json": "d92c3c074152729483c7a72526f277475d27d556f70347d7f0eb4e7ac86471f6",
+  "outputs/p1dev_s43-test-short.preds.json": "2a10d44d78a43e608b278208588ae42ecabb16eda122a8e64f8491be6ffc52d3",
+  "outputs/p1dev_s44-test-short.preds.json": "57b030dba927661ad1db4fcc604c62bd3f10da5d943e3677eda9e08a60ecd72c"
+ }
+}

@@ -1,0 +1,711 @@
+# CC-042 machine rule: unified diff of every changed B-F1 file against its previous version (MANIFEST 622c4458).
+# Besides the rule, the rebuild refreshes only freeze stamps (frozen_utc, repo_head_at_freeze, checked_utc,
+# sha256_at_build of the two appended logs) and the sha256 values that pin the changed files.
+--- prev/build_b_f1_prereg.py
++++ new/build_b_f1_prereg.py
+@@ -20,6 +20,7 @@
+ OUT = HERE.parent
+ ID = "2026-10-20_b_f1_final_stack"
+ PD22, PD9 = ".session_backup/2026-10-13/decisions/PD-22.txt", ".session_backup/2026-10-13/decisions/PD-9.txt"
++CC42 = ".session_backup/2026-10-13/decisions/CC-042.txt"
+ LOG = ".session_backup/2026-10-13/decisions/LOG.md"
+ S1 = "manuscript/prereg/2026-10-18_tier3_S1"
+ S1_OUT = ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus"
+@@ -89,11 +90,15 @@
+     t0 = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+     pin(PD22, "the ruling (bindings 1-8)")
+     pin(PD9, "PD-9 Q4/Q5 (stacked system owned by Paper B; the seed-MBR proxy is a test look)")
++    pin(CC42, "CC-042: the machine rule that replaces the fixed M1 pin")
++    rule = quote(CC42, find(CC42, r"one host decodes all three members"), find(CC42, r"settings\.$"))
++    gpu_gb = int(num(rule["quote"], r">= (\d+) GB"))
+     starts = [r"^1\. Members\.", r"^2\. Variant and code\.", r"^3\. Primary endpoint", r"^4\. Secondary endpoints",
+               r"^5\. Test set\.", r"^6\. Test-look ledger", r"^7\. Procedure", r"^8\. Closure\."]
+     pd22 = {f"b{n}": q for n, q in enumerate(blocks(PD22, starts, r"^\(C\) CONDITIONS").values(), 1)}
+     pd9 = blocks(PD9, [r"^Q4 ", r"^Q5 "], r"^Q6 ")
+     reg = jload(f"{S1}.json", "S1 registration (members, base, venv, MBR rule, analysis, predictions, ledger)")
++    s1_card = re.search(r"RTX \d+", reg["machines"]["card"])[0]
+     pin(f"{S1}.md", "S1 registration (text)")
+     add = jload(f"{S1}_instrument.json", "S1 instrument addendum (pins scripts/seed_consensus.py)")
+     pin(f"{S1}_operations.md", "S1 operating notes (void rule)", gate=True)
+@@ -294,8 +299,11 @@
+         "adapter_mirror_copies_match": mirror,
+         "not_members": quote(PD22, find(PD22, r"NOT the p1assist seeds"), find(PD22, r"MBR over them would only")),
+         "decode": {
+-            "machine": {"label": "M1", "machine_id": reg["machines"]["M1"], "key": f"{S1}.json:machines.M1",
+-                        "card": re.search(r"RTX \d+", reg["machines"]["card"])[0]},
++            "machine": {"rule": "one host decodes all three members in one job; the host has exactly one GPU with "
++                                f">= {gpu_gb} GB; check records its machine_id and card, and all three provenances "
++                                "must carry that same machine_id and card; every other pin stays exact",
++                        "min_gpu_memory_gb": gpu_gb, "n_gpus": 1, "source": rule,
++                        "s1_dev_card": s1_card},
+             "venv": {k: reg["machines"]["venv"][k] for k in ("torch", "transformers", "peft")},
+             "base": {k: reg["models"]["base"][k] for k in ("id", "revision", "shards_sha256")},
+             "settings": "S1's greedy short-prompt decode (S1 procedure.decode): scripts/evaluate.py --model qwen2.5-vl-7b "
+@@ -404,7 +412,7 @@
+             "1. Commit this prereg pair through the gatekeeper.",
+             "2. Commit the instrument addendum (scorer and job sha256), the scorer, the job file and the gate and "
+             "dry-run records; all before any test decode.",
+-            "3. Queue the job on M1 once; it decodes the three members and writes sidecars and provenance; nobody reads "
++            "3. Queue the job once on one host under decode.machine.rule; it decodes the three members and writes sidecars and provenance; nobody reads "
+             "a prediction before scoring.",
+             "4. Score once from the committed copy: score_b_f1.py run --gate <committed gate record> --outputs <mirror "
+             "of the decode folder>.",
+@@ -433,7 +441,10 @@
+             "exists before score_b_f1.py run; generation arguments are S1's.",
+             "The MBR selection reads no test reference; its document frequencies come from the train-minus-dev300 "
+             "references.",
+-            "No model-generated signal is used as gold; the scored references are KTVIC's human captions."],
++            "No model-generated signal is used as gold; the scored references are KTVIC's human captions.",
++            f"S1's dev decodes ran on an {s1_card}; the B-F1 decode runs on a "
++            "new rental under decode.machine.rule (CC-042). All three members are decoded on one host, so the paired "
++            "delta is within one host; a card difference touches only the absolute numbers."],
+         "deviations": "Any change after this freeze goes into a new dated file, committed through the gatekeeper before "
+                       "the affected output exists, and is reported next to every number it touches.",
+         "code_at_head_unchanged_since_S1": unchanged,
+@@ -454,8 +465,8 @@
+         "prediction_check.values": {"path": s1j, "key": "frozen_predictions", "cross_check": {
+             k: pred_lines[k] for k in ("path", "lines")}},
+         "members": "members.<run>.source", "test_look_ledger.L4.value": "test_look_ledger.entries[L4].value.keys",
+-        "decode.machine.machine_id": {"path": s1j, "key": "machines.M1"},
+-        "decode.machine.card": {"path": s1j, "key": "machines.card", "match": "RTX \\d+"},
++        "decode.machine.min_gpu_memory_gb": {"path": CC42, "lines": rule["lines"], "match": ">= (\\d+) GB"},
++        "decode.machine.s1_dev_card": {"path": s1j, "key": "machines.card", "match": "RTX \\d+"},
+         "decode.venv": {"path": s1j, "key": "machines.venv"},
+         "decode.base": {"path": s1j, "key": "models.base"},
+         "decode.evaluate_defaults": {"path": ev_rel, "lines": [find(ev_rel, r'"--max-new-tokens", type=int'),
+@@ -504,10 +515,10 @@
+ 
+ - Sources: p1dev_s42 from the S1 registration (`models.member_s42`), p1dev_s43 and p1dev_s44 from S1's `SHA256SUMS` (the S1 record). The mirrored copies match: {all(P['adapter_mirror_copies_match'].values())}.
+ - Not members: the p1assist seeds, whose test captions were already seen (the L4 proxy, UPE, B-N2).
+-- Decoded fresh on KTVIC test ({ts['primary']['n']} images) on {d['machine']['label']} (machine_id `{d['machine']['machine_id']}`, {d['machine']['card']}), venv torch {d['venv']['torch']}, transformers {d['venv']['transformers']}, peft {d['venv']['peft']}; base `{d['base']['id']}` at `{d['base']['revision']}` (HF_HUB_OFFLINE=1; refs/main and the {len(d['base']['shards_sha256'])} shard sha256 checked).
++- Decoded fresh on KTVIC test ({ts['primary']['n']} images) under the machine rule ({d['machine']['rule']}; CC-042), venv torch {d['venv']['torch']}, transformers {d['venv']['transformers']}, peft {d['venv']['peft']}; base `{d['base']['id']}` at `{d['base']['revision']}` (HF_HUB_OFFLINE=1; refs/main and the {len(d['base']['shards_sha256'])} shard sha256 checked).
+ - Settings: {d['settings']}; evaluate.py defaults max-new-tokens {d['evaluate_defaults']['max-new-tokens']}, max-vision-tokens {d['evaluate_defaults']['max-vision-tokens']}.
+ - Split: {d['split']}. Every image is checked against `{P['test_set']['primary']['ids']}` (id, file name, sha256) before any decode.
+-- Outputs on M1: `{d['outputs']['dir']}`; names {', '.join(f'`{n}`' for n in d['outputs']['names'].values())}; per decode {', '.join(f'`{x}`' for x in d['outputs']['per_decode'])}. Once only: {d['decode_once']}.
++- Outputs on the decode host: `{d['outputs']['dir']}`; names {', '.join(f'`{n}`' for n in d['outputs']['names'].values())}; per decode {', '.join(f'`{x}`' for x in d['outputs']['per_decode'])}. Once only: {d['decode_once']}.
+ 
+ ## 3. Variant and code (binding 2)
+ 
+--- prev/2026-10-20_b_f1_final_stack.md
++++ new/2026-10-20_b_f1_final_stack.md
+@@ -1,13 +1,13 @@
+ # Pre-registration: B-F1, Paper B's single final KTVIC test look (P1 + S1 seed-consensus MBR-3)
+ 
+-**Frozen:** 2026-10-19T22:11:53Z, before any B-F1 output exists (section 1). Repo HEAD at freeze: `bdbe3cf2146eaeaed714a9c55a6f6c33adefe4e6` (branch `paper-v10`).
++**Frozen:** 2026-10-20T15:43:08Z, before any B-F1 output exists (section 1). Repo HEAD at freeze: `ff17599d14fd83620188e9628e8abbb2c014eebd` (branch `paper-v10`).
+ **Machine-readable:** `manuscript/prereg/2026-10-20_b_f1_final_stack.json`; every number here is copied from it, and its `sources` block (with `frozen_files` and the quoted lines) gives each number's file and key or line.
+ **Authority:** PD-22 option (A), bindings 1-8 (`.session_backup/2026-10-13/decisions/PD-22.txt`, sha256 `d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64`); PD-9 Q4 (Paper B owns the stacked system) and Q5 (the seed-MBR proxy, L4, is a test look).
+ **Status:** frozen before any B-F1 output exists; REGISTERED only if this file is committed before any B-F1 decode output (D-W13-6; CHECKLIST C3: commit time < output mtime).
+ 
+ ## 1. Registered before any output exists
+ 
+-- At 2026-10-19T22:11:53Z no B-F1 output exists: file names containing `b_f1`, `p1dev_s42-test`, `p1dev_s43-test`, `p1dev_s44-test`, `p1dev_mbr3-test` under `data/results`, `.session_backup/machines/O-2308423/root/outputs`, `.session_backup/machines/O-2308423/root/queue`, `.session_backup/machines/O-2308428/root/outputs`, `.session_backup/machines/O-2308428/root/queue`: 0 hits.
++- At 2026-10-20T15:43:08Z no B-F1 output exists: file names containing `b_f1`, `p1dev_s42-test`, `p1dev_s43-test`, `p1dev_s44-test`, `p1dev_mbr3-test` under `data/results`, `.session_backup/machines/O-2308423/root/outputs`, `.session_backup/machines/O-2308423/root/queue`, `.session_backup/machines/O-2308428/root/outputs`, `.session_backup/machines/O-2308428/root/queue`: 0 hits.
+ - No p1dev test decode exists: 296 paths contain `p1dev` (under `data`, `.session_backup/machines`, `manuscript`, `scripts`); 0 contain `test`; the evaluate.py results among them have split `dev_data.json` (15), `rl1000_data.json` (1), none `test_data.json`. Judge check (PD-22 line 12): "- Judge check: no p1dev test decode exists anywhere (106 p1dev files, all dev300)."
+ 
+ ## 2. Members and decode (binding 1)
+@@ -20,10 +20,10 @@
+ 
+ - Sources: p1dev_s42 from the S1 registration (`models.member_s42`), p1dev_s43 and p1dev_s44 from S1's `SHA256SUMS` (the S1 record). The mirrored copies match: True.
+ - Not members: the p1assist seeds, whose test captions were already seen (the L4 proxy, UPE, B-N2).
+-- Decoded fresh on KTVIC test (558 images) on M1 (machine_id `O-2308423`, RTX 3090), venv torch 2.5.1+cu121, transformers 4.51.3, peft 0.21.2; base `Qwen/Qwen2.5-VL-7B-Instruct` at `cc594898137f460bfe9f0759e9844b3ce807cfb5` (HF_HUB_OFFLINE=1; refs/main and the 5 shard sha256 checked).
++- Decoded fresh on KTVIC test (558 images) under the machine rule (one host decodes all three members in one job; the host has exactly one GPU with >= 24 GB; check records its machine_id and card, and all three provenances must carry that same machine_id and card; every other pin stays exact; CC-042), venv torch 2.5.1+cu121, transformers 4.51.3, peft 0.21.2; base `Qwen/Qwen2.5-VL-7B-Instruct` at `cc594898137f460bfe9f0759e9844b3ce807cfb5` (HF_HUB_OFFLINE=1; refs/main and the 5 shard sha256 checked).
+ - Settings: S1's greedy short-prompt decode (S1 procedure.decode): scripts/evaluate.py --model qwen2.5-vl-7b --adapter <member> --prompt short, bf16 (no --four-bit), greedy (do_sample=False), its defaults; evaluate.py defaults max-new-tokens 160, max-vision-tokens 512.
+ - Split: the 558 KTVIC test images (data/datasets/ktvic/test_data.json): evaluate.py gets --split <a copy of test_data.json holding its images list only>, so it writes predictions and scores nothing (its caption-free split path); NCS_DATASET unset, so images load from the KTVIC images folder. Every image is checked against `data/lb/sets/ktvic_test.tsv` (id, file name, sha256) before any decode.
+-- Outputs on M1: `/root/outputs/b_f1_ktvic_test`; names `p1dev_s42-test-short`, `p1dev_s43-test-short`, `p1dev_s44-test-short`; per decode `<name>.preds.json`, `<name>.preds.json.sha256`, `<name>.provenance.json`, `<name>.log (stdout and stderr of evaluate.py)`. Once only: a decode whose predictions exist is skipped; nothing is overwritten; nobody reads a prediction before score_b_f1.py run.
++- Outputs on the decode host: `/root/outputs/b_f1_ktvic_test`; names `p1dev_s42-test-short`, `p1dev_s43-test-short`, `p1dev_s44-test-short`; per decode `<name>.preds.json`, `<name>.preds.json.sha256`, `<name>.provenance.json`, `<name>.log (stdout and stderr of evaluate.py)`. Once only: a decode whose predictions exist is skipped; nothing is overwritten; nobody reads a prediction before score_b_f1.py run.
+ 
+ ## 3. Variant and code (binding 2)
+ 
+@@ -79,7 +79,7 @@
+ 
+ - 1. Commit this prereg pair through the gatekeeper.
+ - 2. Commit the instrument addendum (scorer and job sha256), the scorer, the job file and the gate and dry-run records; all before any test decode.
+-- 3. Queue the job on M1 once; it decodes the three members and writes sidecars and provenance; nobody reads a prediction before scoring.
++- 3. Queue the job once on one host under decode.machine.rule; it decodes the three members and writes sidecars and provenance; nobody reads a prediction before scoring.
+ - 4. Score once from the committed copy: score_b_f1.py run --gate <committed gate record> --outputs <mirror of the decode folder>.
+ - 5. An independent verifier re-runs it (CC-038b canonical form); commit through the gatekeeper.
+ - 6. No re-decode or re-score after any output has been read; a failure stops the work and comes back to the judge.
+@@ -93,6 +93,7 @@
+ - Decode-only: evaluate.py receives the images list of test_data.json without captions, so no test score exists before score_b_f1.py run; generation arguments are S1's.
+ - The MBR selection reads no test reference; its document frequencies come from the train-minus-dev300 references.
+ - No model-generated signal is used as gold; the scored references are KTVIC's human captions.
++- S1's dev decodes ran on an RTX 3090; the B-F1 decode runs on a new rental under decode.machine.rule (CC-042). All three members are decoded on one host, so the paired delta is within one host; a card difference touches only the absolute numbers.
+ 
+ ## 11. Deviations
+ 
+@@ -102,6 +103,7 @@
+ 
+ | path | sha256 | git | role |
+ |---|---|---|---|
++| `.session_backup/2026-10-13/decisions/CC-042.txt` | `4401a68a90608ad885479d48875f280be7b2dde927e358319d8a92adc139524f` | not in git (git-excluded or untracked) | CC-042: the machine rule that replaces the fixed M1 pin |
+ | `.session_backup/2026-10-13/decisions/PD-22.txt` | `d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64` | not in git (git-excluded or untracked) | the ruling (bindings 1-8) |
+ | `.session_backup/2026-10-13/decisions/PD-9.txt` | `9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0` | not in git (git-excluded or untracked) | PD-9 Q4/Q5 (stacked system owned by Paper B; the seed-MBR proxy is a test look) |
+ | `.session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/SHA256SUMS` | `32195a8963da2a412b067f9313096a18941fd074971f698268679c2d0bf15527` | not in git (git-excluded or untracked) | S1 output checksums (the S1 record) |
+--- prev/2026-10-20_b_f1_final_stack.json
++++ new/2026-10-20_b_f1_final_stack.json
+@@ -2,8 +2,8 @@
+  "prereg_id": "2026-10-20_b_f1_final_stack",
+  "title": "B-F1: Paper B's single final KTVIC test look of the stacked system, P1 + the S1 seed-consensus MBR-3",
+  "status": "frozen before any B-F1 output exists; REGISTERED only if this file is committed before any B-F1 decode output (D-W13-6; CHECKLIST C3: commit time < output mtime)",
+- "frozen_utc": "2026-10-19T22:11:53Z",
+- "repo_head_at_freeze": "bdbe3cf2146eaeaed714a9c55a6f6c33adefe4e6",
++ "frozen_utc": "2026-10-20T15:43:08Z",
++ "repo_head_at_freeze": "ff17599d14fd83620188e9628e8abbb2c014eebd",
+  "branch": "paper-v10",
+  "authority": {
+   "ruling": {
+@@ -122,7 +122,7 @@
+   "job": "scripts/queue/jobs/b_f1_ktvic_test_decode.sh"
+  },
+  "registered_before_output": {
+-  "checked_utc": "2026-10-19T22:11:53Z",
++  "checked_utc": "2026-10-20T15:43:08Z",
+   "roots": [
+    "data/results",
+    ".session_backup/machines/O-2308423/root/outputs",
+@@ -230,10 +230,19 @@
+  },
+  "decode": {
+   "machine": {
+-   "label": "M1",
+-   "machine_id": "O-2308423",
+-   "key": "manuscript/prereg/2026-10-18_tier3_S1.json:machines.M1",
+-   "card": "RTX 3090"
++   "rule": "one host decodes all three members in one job; the host has exactly one GPU with >= 24 GB; check records its machine_id and card, and all three provenances must carry that same machine_id and card; every other pin stays exact",
++   "min_gpu_memory_gb": 24,
++   "n_gpus": 1,
++   "source": {
++    "path": ".session_backup/2026-10-13/decisions/CC-042.txt",
++    "sha256": "4401a68a90608ad885479d48875f280be7b2dde927e358319d8a92adc139524f",
++    "lines": [
++     12,
++     16
++    ],
++    "quote": "- one host decodes all three members in one job; - the host has one GPU with >= 24 GB; - the machine_id and card are recorded at `check` and must be identical in all three provenances; - every other pin stays exact: venv versions, base snapshot revision, adapters, evaluate.py, test images and settings."
++   },
++   "s1_dev_card": "RTX 3090"
+   },
+   "venv": {
+    "torch": "2.5.1+cu121",
+@@ -746,7 +755,7 @@
+      },
+      {
+       "path": ".session_backup/2026-10-13/decisions/LOG.md",
+-      "sha256_at_build": "0835462bc3c702ac384fff0a68fb964e8fe3e51b250c6f031e34eee7edb5b94d",
++      "sha256_at_build": "55349bdf0fc7456cb94141369f5aa7bc06a206bf3cbabc409fa00e464bafbc25",
+       "line": 41,
+       "quote": "(i) YES (Kill 2 fired on 3/3 seeds, F1a/F1b false, F3 true; negative on KTVIC, run 52_c on UIT-ViIC); (ii) YES (keep frozen fd1d0123/f8cc96bc on GPU during 51/52_c, Phase 2 to data/results/tone_norm/); (iii) YES (tiers 1-7 with lexical-queue & restore guards)"
+      }
+@@ -777,13 +786,13 @@
+      },
+      {
+       "path": ".session_backup/2026-10-13/decisions/LOG.md",
+-      "sha256_at_build": "0835462bc3c702ac384fff0a68fb964e8fe3e51b250c6f031e34eee7edb5b94d",
++      "sha256_at_build": "55349bdf0fc7456cb94141369f5aa7bc06a206bf3cbabc409fa00e464bafbc25",
+       "line": 47,
+       "quote": "(i) YES: PARK/KILL 51_planf1_dev.sh on CPU (save ~3.45 GPU-h), report CPU plan-level audit, advance 36_s0 & 52_a..c; (ii) YES: commit updated C-024 (b06a25dc/e5550673/33c84d38)"
+      },
+      {
+       "path": "manuscript/WORKFLOW_LOG.md",
+-      "sha256_at_build": "cc249aa3bf945eaaf705751cd90b55217d82ae788e024b3398005a1de6b249da",
++      "sha256_at_build": "e3b979e6240e79309b2ca0c5408741cdd399b5b45c2fc96df27ec3d4512e5675",
+       "line": 481,
+       "quote": "- PLAN-F1 was never run."
+      }
+@@ -891,7 +900,7 @@
+   "steps": [
+    "1. Commit this prereg pair through the gatekeeper.",
+    "2. Commit the instrument addendum (scorer and job sha256), the scorer, the job file and the gate and dry-run records; all before any test decode.",
+-   "3. Queue the job on M1 once; it decodes the three members and writes sidecars and provenance; nobody reads a prediction before scoring.",
++   "3. Queue the job once on one host under decode.machine.rule; it decodes the three members and writes sidecars and provenance; nobody reads a prediction before scoring.",
+    "4. Score once from the committed copy: score_b_f1.py run --gate <committed gate record> --outputs <mirror of the decode folder>.",
+    "5. An independent verifier re-runs it (CC-038b canonical form); commit through the gatekeeper.",
+    "6. No re-decode or re-score after any output has been read; a failure stops the work and comes back to the judge."
+@@ -935,7 +944,8 @@
+   "PD-22 risks, quoted: - The one look is spent on a single-component stack. A stronger later lever cannot be confirmed on KTVIC. - The p1dev members are trained on 300 fewer images, so the absolute test CIDEr will sit a little below full-train P1. The claim is the paired delta; report the absolute number descriptively and with that note. - The dev lower bound is 0.0035, so the test verdict may be INCONCLUSIVE. Report it as it comes. ",
+   "Decode-only: evaluate.py receives the images list of test_data.json without captions, so no test score exists before score_b_f1.py run; generation arguments are S1's.",
+   "The MBR selection reads no test reference; its document frequencies come from the train-minus-dev300 references.",
+-  "No model-generated signal is used as gold; the scored references are KTVIC's human captions."
++  "No model-generated signal is used as gold; the scored references are KTVIC's human captions.",
++  "S1's dev decodes ran on an RTX 3090; the B-F1 decode runs on a new rental under decode.machine.rule (CC-042). All three members are decoded on one host, so the paired delta is within one host; a card difference touches only the absolute numbers."
+  ],
+  "deviations": "Any change after this freeze goes into a new dated file, committed through the gatekeeper before the affected output exists, and is reported next to every number it touches.",
+  "code_at_head_unchanged_since_S1": {
+@@ -1042,11 +1052,15 @@
+   },
+   "members": "members.<run>.source",
+   "test_look_ledger.L4.value": "test_look_ledger.entries[L4].value.keys",
+-  "decode.machine.machine_id": {
+-   "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+-   "key": "machines.M1"
++  "decode.machine.min_gpu_memory_gb": {
++   "path": ".session_backup/2026-10-13/decisions/CC-042.txt",
++   "lines": [
++    12,
++    16
++   ],
++   "match": ">= (\\d+) GB"
+   },
+-  "decode.machine.card": {
++  "decode.machine.s1_dev_card": {
+    "path": "manuscript/prereg/2026-10-18_tier3_S1.json",
+    "key": "machines.card",
+    "match": "RTX \\d+"
+@@ -1082,6 +1096,13 @@
+  },
+  "frozen_files": [
+   {
++   "path": ".session_backup/2026-10-13/decisions/CC-042.txt",
++   "sha256": "4401a68a90608ad885479d48875f280be7b2dde927e358319d8a92adc139524f",
++   "git": "not in git (git-excluded or untracked)",
++   "role": "CC-042: the machine rule that replaces the fixed M1 pin",
++   "gate_pins": true
++  },
++  {
+    "path": ".session_backup/2026-10-13/decisions/PD-22.txt",
+    "sha256": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+    "git": "not in git (git-excluded or untracked)",
+@@ -1596,17 +1617,17 @@
+  "informational_sources": [
+   {
+    "path": "manuscript/WORKFLOW_LOG.md",
+-   "sha256_at_build": "cc249aa3bf945eaaf705751cd90b55217d82ae788e024b3398005a1de6b249da",
++   "sha256_at_build": "e3b979e6240e79309b2ca0c5408741cdd399b5b45c2fc96df27ec3d4512e5675",
+    "note": "appended log; quoted by line"
+   },
+   {
+    "path": ".session_backup/2026-10-13/decisions/LOG.md",
+-   "sha256_at_build": "0835462bc3c702ac384fff0a68fb964e8fe3e51b250c6f031e34eee7edb5b94d",
++   "sha256_at_build": "55349bdf0fc7456cb94141369f5aa7bc06a206bf3cbabc409fa00e464bafbc25",
+    "note": "appended log; quoted by line"
+   }
+  ],
+  "builder": {
+   "path": ".session_backup/2026-10-20/B_F1/build_b_f1_prereg.py",
+-  "sha256": "dd9d5729a8250f6ee84b0ad331537472adef4b3a4f7f5e37136b4f1f569235d9"
++  "sha256": "6eb962902eac02a567d38f19bf870df4c04bbfd4e54f3fa49158ac1a6e063150"
+  }
+ }
+--- prev/score_b_f1.py
++++ new/score_b_f1.py
+@@ -8,9 +8,11 @@
+                                     evaluate.py, F0 and every verdict branch
+     score_b_f1.py run    OUT.json --gate G.json --outputs DIR
+                                     the one scoring; only with this file and G.json (its all-PASS gate) at HEAD
+-    score_b_f1.py check  OUT.json --view V.json             (the job, on M1, before decoding) machine, venv, card,
++    score_b_f1.py check  OUT.json --view V.json             (the job, on the decode host, before decoding) records
++                                    machine_id and card; one GPU >= the registered GB, venv,
+                                     base, adapters, test images; writes the caption-free view V of test_data.json
+-    score_b_f1.py stamp  DIR NAME MEMBER --view V.json      (the job, after each decode) sidecar and provenance
++    score_b_f1.py stamp  DIR NAME MEMBER --view V.json --check C.json   (the job, after each decode) sidecar and
++                                    provenance, carrying the check's machine_id and card
+ gate, dryrun and run need NCS_DATA (KTVIC under datasets/ktvic), VNCORENLP_DIR, JAVA_HOME (a JDK, for jnius) and java
+ on PATH. B_F1_STAGE=<dir> lets gate and dryrun read the four uncommitted B-F1 files of STAGED from that folder (records
+ name their committed paths); run refuses it. Writes numbers, ids, hashes and verdicts, never a caption. Outputs are
+@@ -39,7 +41,7 @@
+                            text=True, check=True).stdout.strip())
+ sys.path[:0] = [str(ROOT), str(ROOT / "scripts")]
+ PREREG = ("manuscript/prereg/2026-10-20_b_f1_final_stack.json",
+-          "062791b91a7653b14e4adce0b307bd13309717bc890b6fc10f95867cd1e80d66")
++          "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9")
+ MD, ADDENDUM = "manuscript/prereg/2026-10-20_b_f1_final_stack.md", "manuscript/prereg/2026-10-20_b_f1_instrument.json"
+ SCORER, JOB = "scripts/b_f1/score_b_f1.py", "scripts/queue/jobs/b_f1_ktvic_test_decode.sh"
+ STAGED = (PREREG[0], MD, ADDENDUM, JOB)
+@@ -218,7 +220,8 @@
+ 
+ # ------------------------------------------------------------------------------------------- the machine side
+ def check(P: dict, out: Path, view: Path) -> int:
+-    """On M1 before any decode: B-F1 files at HEAD, adapters, base snapshot, venv, card, machine, test images; then
++    """On the decode host before any decode: B-F1 files at HEAD, adapters, base snapshot, venv, one GPU with the
++    registered memory (machine_id and card recorded), test images; then
+     the caption-free view of test_data.json (written once, verified when it exists)."""
+     import socket
+ 
+@@ -247,11 +250,13 @@
+     for name, want in sorted(d["base"]["shards_sha256"].items()):
+         shard = repo / "snapshots" / d["base"]["revision"] / name
+         rows.append({"check": f"base {name}", "ok": shard.is_file() and sha_file(shard) == want})
+-    gpu = torch.cuda.get_device_name(0) if torch.cuda.is_available() else ""
++    n_gpu = torch.cuda.device_count()
++    gpu = torch.cuda.get_device_name(0) if n_gpu else ""
++    mem = torch.cuda.get_device_properties(0).total_memory if n_gpu else 0
+     have = {"torch": torch.__version__, "transformers": transformers.__version__, "peft": peft.__version__}
+-    rows += [{"check": "machine", "ok": socket.gethostname() == d["machine"]["machine_id"]},
++    rows += [{"check": "one GPU with the registered memory", "ok": n_gpu == d["machine"]["n_gpus"] and
++              mem >= d["machine"]["min_gpu_memory_gb"] * 10 ** 9, "n_gpus": n_gpu, "gpu_memory_bytes": mem},
+              {"check": "venv versions", "ok": have == d["venv"], **have},
+-             {"check": "card", "ok": d["machine"]["card"] in gpu, "gpu": gpu},
+              {"check": "env", "ok": "NCS_DATASET" not in os.environ and os.environ.get("HF_HUB_OFFLINE") == "1"}]
+     tsv = [x.split("\t") for x in (ROOT / P["test_set"]["primary"]["ids"]).read_text(encoding="utf-8").splitlines()]
+     images = ncs / "datasets" / "ktvic" / "images"
+@@ -269,14 +274,15 @@
+     rows.append({"check": "view is the images list of test_data.json", "ok": view.is_file() and view.read_bytes() == want})
+     bad = [r["check"] for r in rows if not r["ok"]]
+     with open(out, "x", encoding="utf-8") as fh:
+-        json.dump({"pass": not bad, "failed": bad, "checks": rows, "view_sha256": sha(want)}, fh, indent=1)
++        json.dump({"pass": not bad, "failed": bad, "machine_id": socket.gethostname(), "card": gpu, "checks": rows,
++                   "view_sha256": sha(want)}, fh, indent=1)
+     print("check PASS" if not bad else f"check FAIL: {bad}")
+     return 1 if bad else 0
+ 
+ 
+-def stamp(odir: Path, name: str, member: str, view: Path, base_id: str, meta=None) -> dict:
+-    """The .sha256 sidecar and the provenance JSON of one decode (written once); `meta` is the hook's
+-    provenance_metadata (machine_id, git_head_sha, hook and train_stage2 sha256, resumed_from_step)."""
++def stamp(odir: Path, name: str, member: str, view: Path, check_file: Path, base_id: str, meta=None) -> dict:
++    """The .sha256 sidecar and the provenance JSON of one decode (written once), with the card recorded by `check`;
++    `meta` is the hook's provenance_metadata (machine_id, git_head_sha, hook and train_stage2 sha256, ...)."""
+     if meta is None:
+         from checkpoint_resume_hook import provenance_metadata as meta
+     f, ncs = odir / f"{name}.preds.json", Path(os.environ["NCS_DATA"])
+@@ -296,7 +302,8 @@
+             "evaluate_sha256": sha((ROOT / "scripts/evaluate.py").read_bytes()),
+             "base_revision": rev.read_text(encoding="utf-8").strip() if rev.is_file() else None,
+             "test_data_sha256": sha(ncs_file(TEST).read_bytes()), "view_file": view.name,
+-            "view_sha256": sha(view.read_bytes())}
++            "view_sha256": sha(view.read_bytes()), "check_file": check_file.name,
++            "check_sha256": sha(check_file.read_bytes()), "card": json.loads(check_file.read_text(encoding="utf-8"))["card"]}
+     with open(odir / f"{name}.provenance.json", "x", encoding="utf-8") as fh:
+         json.dump(prov, fh, indent=1)
+     with open(odir / f"{name}.preds.json.sha256", "x", encoding="utf-8") as fh:
+@@ -307,12 +314,13 @@
+ # ------------------------------------------------------------------------------------------- the one look
+ def admit(P: dict, cfg: dict, odir: Path, ids: list[str], add: dict, git: bool = True) -> tuple[dict, dict]:
+     """Captions of the three members, refused (K-PROV, K-COV) unless every sidecar, checksum and provenance field is
+-    the registered one; with `git`, the decode's commit carries this registration and followed its commit."""
++    the registered one, and all three carry the machine_id and card of one passing check (the machine rule, CC-042);
++    with `git`, the decode's commit carries this registration and followed its commit."""
+     F = {f["path"]: f["sha256"] for f in P["frozen_files"]}
+     sums = {Path(p).name: h for h, p in (x.split("  ", 1) for x in (odir / "SHA256SUMS").read_text(
+         encoding="utf-8").splitlines())}
+     view = (odir / VIEW).read_bytes()
+-    caps, facts, bad = {}, {}, {}
++    caps, facts, bad, hosts = {}, {}, {}, set()
+     added = subprocess.run(["git", "-C", str(ROOT), "log", "--diff-filter=A", "--format=%cI", "--", PREREG[0]],
+                            capture_output=True, text=True).stdout.split()
+     for s, m in cfg["members"].items():
+@@ -320,13 +328,18 @@
+         raw = (odir / f"{name}.preds.json").read_bytes()
+         SEEN[f"outputs/{name}.preds.json"] = sha(raw)
+         prov = json.loads((odir / f"{name}.provenance.json").read_text(encoding="utf-8"))
+-        want = {"machine_id": P["decode"]["machine"]["machine_id"], "member": m, "preds_sha256": sha(raw),
++        chk = odir / str(prov.get("check_file"))
++        ck = json.loads(chk.read_text(encoding="utf-8")) if chk.is_file() else {}
++        want = {"machine_id": ck.get("machine_id"), "card": ck.get("card"), "check_sha256": sums.get(chk.name),
++                "member": m, "preds_sha256": sha(raw),
+                 "adapter_sha256": P["members"][m]["adapter_sha256"],
+                 "adapter_config_sha256": P["members"][m]["adapter_config_sha256"],
+                 "job_sha256": add["new_files"][JOB], "scorer_sha256": add["new_files"][SCORER],
+                 "evaluate_sha256": F["scripts/evaluate.py"], "base_revision": P["decode"]["base"]["revision"],
+                 "test_data_sha256": F[TEST], "view_file": VIEW, "view_sha256": sha(view), "git_dirty": False}
+-        why = [k for k, v in want.items() if prov.get(k) != v]
++        why = [k for k, v in want.items() if prov.get(k) != v or v is None]
++        why += [] if ck.get("pass") is True else ["check did not pass"]
++        hosts.add((prov.get("machine_id"), prov.get("card")))
+         side = (odir / f"{name}.preds.json.sha256").read_text(encoding="utf-8").split()
+         why += [] if side == [sha(raw), f"{name}.preds.json"] else ["sha256 sidecar"]
+         why += [] if sums.get(f"{name}.preds.json") == sha(raw) else ["SHA256SUMS"]
+@@ -342,8 +355,10 @@
+         caps[s] = {str(k): v for k, v in json.loads(raw).items()}
+         if sorted(caps[s]) != ids:
+             bad[name] = [f"K-COV: {len(set(ids) - set(caps[s]))} test ids without a prediction"]
+-        facts[name] = {k: prov[k] for k in ("machine_id", "git_head_sha", "preds_sha256", "preds_mtime_utc",
++        facts[name] = {k: prov[k] for k in ("machine_id", "card", "git_head_sha", "preds_sha256", "preds_mtime_utc",
+                                            "adapter_sha256", "job_sha256", "n_predictions")}
++    if len(hosts) > 1:
++        bad["machine rule"] = ["the three decodes do not share one machine_id and card"]
+     if bad:
+         raise SystemExit(f"REFUSED (K-PROV / K-COV): {json.dumps(bad, sort_keys=True)}")
+     return caps, facts
+@@ -532,8 +547,11 @@
+         os.environ |= {"NCS_DATA": str(ncs), "HF_HUB_CACHE": str(tmp / "hf")}
+         add = {"new_files": {JOB: "1" * 64, SCORER: sha(HERE.read_bytes())}}
+ 
+-        def synthetic_meta(_adir):  # the hook's fields, with the registered machine instead of this one
+-            return {"machine_id": P["decode"]["machine"]["machine_id"], "resumed_from_step": []}
++        def synthetic_meta(_adir):  # the hook's fields, with a synthetic host instead of this one
++            return {"machine_id": "synthetic-host", "resumed_from_step": []}
++
++        chk = odir / "check.json"
++        chk.write_text(json.dumps({"pass": True, "machine_id": "synthetic-host", "card": "synthetic GPU"}), encoding="utf-8")
+         F = {f["path"]: f["sha256"] for f in P["frozen_files"]}
+         try:
+             for s, m in cfg["members"].items():
+@@ -544,7 +562,7 @@
+                 (odir / f"{cfg['names'][m]}.preds.json").write_text(json.dumps(caps[s], ensure_ascii=False, indent=1),
+                                                                     encoding="utf-8")
+                 os.environ["B_F1_JOB_SHA256"] = add["new_files"][JOB]
+-                stamp(odir, cfg["names"][m], m, view, P["decode"]["base"]["id"], meta=synthetic_meta)
++                stamp(odir, cfg["names"][m], m, view, chk, P["decode"]["base"]["id"], meta=synthetic_meta)
+             F[TEST] = sha((ncs / "datasets" / "ktvic" / "test_data.json").read_bytes())
+             Q["frozen_files"] = [{"path": k, "sha256": v} for k, v in F.items()]
+             (odir / "SHA256SUMS").write_text("".join(f"{sha(p.read_bytes())}  {p.name}\n" for p in sorted(odir.iterdir())),
+@@ -552,7 +570,7 @@
+             caps_ok, facts = admit(Q, cfg, odir, test_ids, add, git=False)
+             refusals = {}
+             for label, edit in (("wrong adapter sha256", lambda p: p | {"adapter_sha256": "0" * 64}),
+-                                ("another machine", lambda p: p | {"machine_id": "elsewhere"}),
++                                ("machine_id differs from the other decodes", lambda p: p | {"machine_id": "elsewhere"}),
+                                 ("wrong job sha256", lambda p: p | {"job_sha256": "2" * 64}),
+                                 ("dirty tree", lambda p: p | {"git_dirty": True})):
+                 f = odir / f"{cfg['names']['p1dev_s43']}.provenance.json"
+@@ -580,7 +598,7 @@
+             try:  # a missing id with consistent hashes: K-COV
+                 for x in (f"{cfg['names']['p1dev_s44']}.provenance.json", f"{cfg['names']['p1dev_s44']}.preds.json.sha256"):
+                     (odir / x).rename(odir / f"{x}.orig")
+-                stamp(odir, cfg["names"]["p1dev_s44"], "p1dev_s44", view, P["decode"]["base"]["id"], meta=synthetic_meta)
++                stamp(odir, cfg["names"]["p1dev_s44"], "p1dev_s44", view, chk, P["decode"]["base"]["id"], meta=synthetic_meta)
+                 (odir / "SHA256SUMS").write_text("".join(f"{sha(p.read_bytes())}  {p.name}\n" for p in sorted(
+                     odir.iterdir()) if not p.name.endswith(".orig")), encoding="utf-8")
+                 admit(Q, cfg, odir, test_ids, add, git=False)
+@@ -673,10 +691,11 @@
+     ap.add_argument("--gate", help="run: the committed output of gate")
+     ap.add_argument("--outputs", help="run: the mirrored decode folder of the job")
+     ap.add_argument("--view", type=Path, help="check, stamp: the caption-free view of test_data.json")
++    ap.add_argument("--check", type=Path, help="stamp: the check.json this job wrote before decoding")
+     a = ap.parse_args()
+     if a.mode == "stamp":
+         P = json.loads(pinned(*PREREG))
+-        return 0 if stamp(Path(a.out), a.name, a.member, a.view, P["decode"]["base"]["id"]) else 1
++        return 0 if stamp(Path(a.out), a.name, a.member, a.view, a.check, P["decode"]["base"]["id"]) else 1
+     if Path(a.out).exists() or (a.mode == "run" and not (a.gate and a.outputs)):
+         raise SystemExit("REFUSED: OUT exists (never overwritten), or run lacks --gate/--outputs")
+     P, cfg = load()
+--- prev/build_b_f1_instrument.py
++++ new/build_b_f1_instrument.py
+@@ -23,8 +23,8 @@
+ # B-F1 (Paper B, PD-22 option (A)): the single final KTVIC test look of P1 + the S1 seed-consensus MBR-3, registered in
+ # manuscript/prereg/{id}.{{md,json}}; the instrument addendum
+ # manuscript/prereg/2026-10-20_b_f1_instrument.json pins this file and {scorer}.
+-# Decode only, on M1: the S1 members {members} on the {n} KTVIC test images with S1's greedy short-prompt
+-# settings (scripts/evaluate.py, bf16, its defaults). evaluate.py gets a copy of test_data.json holding only its images
++# Decode only, all three on this one host (one GPU, >= {gb} GB; CC-042): the S1 members {members}
++# on the {n} KTVIC test images with S1's greedy short-prompt settings (scripts/evaluate.py, bf16, its defaults). evaluate.py gets a copy of test_data.json holding only its images
+ # list, so it writes predictions and scores nothing. `score_b_f1.py check` first verifies the commit, the adapters, the
+ # base snapshot, the venv, the card, the machine and every test image, and writes that copy; `stamp` writes each
+ # decode's .sha256 sidecar and provenance. Nobody reads a prediction before `score_b_f1.py run` scores them once from
+@@ -52,7 +52,7 @@
+   N=$M-test-short
+   [ -e $O/$N.preds.json ] || timeout 3600 python scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/$M \\
+     --split $V --prompt short --name $N --out $O/$N.json >> $O/$N.log 2>&1
+-  [ -e $O/$N.provenance.json ] || python $SC stamp $O $N $M --view $V
++  [ -e $O/$N.provenance.json ] || python $SC stamp $O $N $M --view $V --check $C
+ done
+ S=$O/SHA256SUMS; n=2; while [ -e $S ]; do S=$O/SHA256SUMS_v$n; n=$((n + 1)); done
+ (cd $O && find . -maxdepth 1 -type f ! -name 'SHA256SUMS*' -printf '%f\\n' | sort | xargs sha256sum) > $S
+@@ -77,7 +77,7 @@
+     pins = "\n".join([f"{sha(HERE / f'{ID}.json')}  $PRE.json", f"{sha(HERE / f'{ID}.md')}  $PRE.md",
+                       f"{sha(HERE / 'score_b_f1.py')}  $SC", *(f"{F[f]}  {f}" for f in FIX)])
+     job = TEMPLATE.format(id=ID, scorer=SCORER, members=" ".join(P["members_order"]), n=n, gpu_h=gpu_h,
+-                          odir=d["outputs"]["dir"], fix=" ".join(FIX), pins=pins, view=next(x for x in d["outputs"]["also"] if x.endswith("_images_only.json")))
++                          odir=d["outputs"]["dir"], gb=d["machine"]["min_gpu_memory_gb"], fix=" ".join(FIX), pins=pins, view=next(x for x in d["outputs"]["also"] if x.endswith("_images_only.json")))
+     with open(HERE / "b_f1_ktvic_test_decode.sh", "x", encoding="utf-8") as fh:
+         fh.write(job)
+     add = {
+@@ -96,12 +96,12 @@
+             "run": "refuses unless this scorer and its all-PASS gate record are committed at HEAD and B_F1_STAGE is "
+                    "unset; re-runs the gate body and requires it equal to the record; admits the decodes; selects; "
+                    "scores each system once with evaluate.py; F0; then the statistics",
+-            "check": "the job's pre-decode machine check on M1; writes the caption-free view of test_data.json",
++            "check": "the job's pre-decode check on the decode host (records its machine_id and card); writes the caption-free view of test_data.json",
+             "stamp": "the job's per-decode .sha256 sidecar and provenance JSON"},
+         "cost": {"gpu_h_estimate": gpu_h, "basis": "S1 cost.dev_decode_gpu_h_each per dev300 decode, scaled to the "
+-                 "test size, three decodes", "machine": d["machine"]["label"]},
++                 "test size, three decodes", "machine": d["machine"]["rule"]},
+         "queue_preconditions": [
+-            "M1's HEAD is the commit that adds this addendum, the scorer, the job and the gate and dry-run records",
++            "the decode host's HEAD is the commit that adds this addendum, the scorer, the job and the gate and dry-run records",
+             "G-1 has passed for that HEAD (the job runs check_g1_pass.py)",
+             "the adapters p1dev_s42, p1dev_s43 and p1dev_s44 are under $NCS_DATA/runs with their registered sha256",
+             "the queue file is a byte-identical copy of the committed job (it greps its own sha256 here)"],
+--- prev/b_f1_ktvic_test_decode.sh
++++ new/b_f1_ktvic_test_decode.sh
+@@ -3,8 +3,8 @@
+ # B-F1 (Paper B, PD-22 option (A)): the single final KTVIC test look of P1 + the S1 seed-consensus MBR-3, registered in
+ # manuscript/prereg/2026-10-20_b_f1_final_stack.{md,json}; the instrument addendum
+ # manuscript/prereg/2026-10-20_b_f1_instrument.json pins this file and scripts/b_f1/score_b_f1.py.
+-# Decode only, on M1: the S1 members p1dev_s42 p1dev_s43 p1dev_s44 on the 558 KTVIC test images with S1's greedy short-prompt
+-# settings (scripts/evaluate.py, bf16, its defaults). evaluate.py gets a copy of test_data.json holding only its images
++# Decode only, all three on this one host (one GPU, >= 24 GB; CC-042): the S1 members p1dev_s42 p1dev_s43 p1dev_s44
++# on the 558 KTVIC test images with S1's greedy short-prompt settings (scripts/evaluate.py, bf16, its defaults). evaluate.py gets a copy of test_data.json holding only its images
+ # list, so it writes predictions and scores nothing. `score_b_f1.py check` first verifies the commit, the adapters, the
+ # base snapshot, the venv, the card, the machine and every test image, and writes that copy; `stamp` writes each
+ # decode's .sha256 sidecar and provenance. Nobody reads a prediction before `score_b_f1.py run` scores them once from
+@@ -20,9 +20,9 @@
+ git ls-files --error-unmatch $PRE.md $PRE.json $ADD $SC $FIX > /dev/null
+ git diff --quiet HEAD -- $PRE.md $PRE.json $ADD $SC $FIX
+ sha256sum -c - <<EOF
+-062791b91a7653b14e4adce0b307bd13309717bc890b6fc10f95867cd1e80d66  $PRE.json
+-1293847d378cdc2e00e591e19e878164db56ff90d14b485d6bcdef41fe558b7e  $PRE.md
+-dee24bd5700f898296d9828e8d9bf5646adc5c8d5d3ccf223b91e72dff305a34  $SC
++60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9  $PRE.json
++30256ebd2f6353adb157f53d6aa40ea76e06288ae73afa0123d066ffde0c731d  $PRE.md
++9c57cc9771d6da84f56534004ebd60c72acd1103ca7c63a741c2f482881304aa  $SC
+ a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236  scripts/evaluate.py
+ 05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895  scripts/checkpoint_resume_hook.py
+ 39fe181f38bd57a7de32111745bc91de6d684f89c1a931b805da80fe85e104bc  scripts/queue/check_g1_pass.py
+@@ -38,7 +38,7 @@
+   N=$M-test-short
+   [ -e $O/$N.preds.json ] || timeout 3600 python scripts/evaluate.py --model qwen2.5-vl-7b --adapter $NCS_DATA/runs/$M \
+     --split $V --prompt short --name $N --out $O/$N.json >> $O/$N.log 2>&1
+-  [ -e $O/$N.provenance.json ] || python $SC stamp $O $N $M --view $V
++  [ -e $O/$N.provenance.json ] || python $SC stamp $O $N $M --view $V --check $C
+ done
+ S=$O/SHA256SUMS; n=2; while [ -e $S ]; do S=$O/SHA256SUMS_v$n; n=$((n + 1)); done
+ (cd $O && find . -maxdepth 1 -type f ! -name 'SHA256SUMS*' -printf '%f\n' | sort | xargs sha256sum) > $S
+--- prev/2026-10-20_b_f1_instrument.json
++++ new/2026-10-20_b_f1_instrument.json
+@@ -2,13 +2,13 @@
+  "addendum_id": "2026-10-20_b_f1_instrument",
+  "status": "instrument freeze (PD-22 binding 7): pins the scorer and the job; changes nothing registered",
+  "prereg": "manuscript/prereg/2026-10-20_b_f1_final_stack.json",
+- "prereg_sha256": "062791b91a7653b14e4adce0b307bd13309717bc890b6fc10f95867cd1e80d66",
++ "prereg_sha256": "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9",
+  "prereg_md": "manuscript/prereg/2026-10-20_b_f1_final_stack.md",
+- "prereg_md_sha256": "1293847d378cdc2e00e591e19e878164db56ff90d14b485d6bcdef41fe558b7e",
++ "prereg_md_sha256": "30256ebd2f6353adb157f53d6aa40ea76e06288ae73afa0123d066ffde0c731d",
+  "job_name": "b_f1_ktvic_test_decode",
+  "new_files": {
+-  "scripts/b_f1/score_b_f1.py": "dee24bd5700f898296d9828e8d9bf5646adc5c8d5d3ccf223b91e72dff305a34",
+-  "scripts/queue/jobs/b_f1_ktvic_test_decode.sh": "11fbfb3ca104d29dd99ebab3da3427d9b7d4fbc2a75ac9f18e7fa51b9c7e608a"
++  "scripts/b_f1/score_b_f1.py": "9c57cc9771d6da84f56534004ebd60c72acd1103ca7c63a741c2f482881304aa",
++  "scripts/queue/jobs/b_f1_ktvic_test_decode.sh": "e85fdc660496a0f818468528ff3e40fdbff6125994d228a6ec0e769d3110f58c"
+  },
+  "changes_anything_registered": false,
+  "deviations": [],
+@@ -16,19 +16,19 @@
+   "gate": "pins every gate_pins file of frozen_files, checks this addendum, then reproduces the S1 gate from S1's dev outputs (per-image CIDEr-D, D_MBR, dCHAIR_i, MBR picks and bytes); reads no test output",
+   "dryrun": "synthetic references, decodes and provenance: stamp, admission with refusals, selection, evaluate.py and F0 end to end, K-F0, a failing self-check row, every verdict branch",
+   "run": "refuses unless this scorer and its all-PASS gate record are committed at HEAD and B_F1_STAGE is unset; re-runs the gate body and requires it equal to the record; admits the decodes; selects; scores each system once with evaluate.py; F0; then the statistics",
+-  "check": "the job's pre-decode machine check on M1; writes the caption-free view of test_data.json",
++  "check": "the job's pre-decode check on the decode host (records its machine_id and card); writes the caption-free view of test_data.json",
+   "stamp": "the job's per-decode .sha256 sidecar and provenance JSON"
+  },
+  "cost": {
+   "gpu_h_estimate": 0.67,
+   "basis": "S1 cost.dev_decode_gpu_h_each per dev300 decode, scaled to the test size, three decodes",
+-  "machine": "M1"
++  "machine": "one host decodes all three members in one job; the host has exactly one GPU with >= 24 GB; check records its machine_id and card, and all three provenances must carry that same machine_id and card; every other pin stays exact"
+  },
+  "queue_preconditions": [
+-  "M1's HEAD is the commit that adds this addendum, the scorer, the job and the gate and dry-run records",
++  "the decode host's HEAD is the commit that adds this addendum, the scorer, the job and the gate and dry-run records",
+   "G-1 has passed for that HEAD (the job runs check_g1_pass.py)",
+   "the adapters p1dev_s42, p1dev_s43 and p1dev_s44 are under $NCS_DATA/runs with their registered sha256",
+   "the queue file is a byte-identical copy of the committed job (it greps its own sha256 here)"
+  ],
+- "written_utc": "2026-10-19T23:52:17Z"
++ "written_utc": "2026-10-20T15:45:48Z"
+ }
+--- prev/b_f1_gate.json
++++ new/b_f1_gate.json
+@@ -3,9 +3,9 @@
+  "mode": "gate",
+  "prereg": {
+   "path": "manuscript/prereg/2026-10-20_b_f1_final_stack.json",
+-  "sha256": "062791b91a7653b14e4adce0b307bd13309717bc890b6fc10f95867cd1e80d66"
++  "sha256": "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9"
+  },
+- "script_sha256": "dee24bd5700f898296d9828e8d9bf5646adc5c8d5d3ccf223b91e72dff305a34",
++ "script_sha256": "9c57cc9771d6da84f56534004ebd60c72acd1103ca7c63a741c2f482881304aa",
+  "config": {
+   "B": 5000,
+   "seed": 0,
+@@ -39,6 +39,7 @@
+   "models/wordsegmenter/wordsegmenter.rdr": "9e62f96bd93e37a24f364238e8d8ae986fa5dad6dbc9f4eae622ab3651b7fa06"
+  },
+  "pins": {
++  ".session_backup/2026-10-13/decisions/CC-042.txt": "4401a68a90608ad885479d48875f280be7b2dde927e358319d8a92adc139524f",
+   ".session_backup/2026-10-13/decisions/PD-22.txt": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   ".session_backup/2026-10-13/decisions/PD-9.txt": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/SHA256SUMS": "32195a8963da2a412b067f9313096a18941fd074971f698268679c2d0bf15527",
+@@ -154,6 +155,7 @@
+  "all_pass": true,
+  "test_outputs_read": false,
+  "inputs_sha256": {
++  ".session_backup/2026-10-13/decisions/CC-042.txt": "4401a68a90608ad885479d48875f280be7b2dde927e358319d8a92adc139524f",
+   ".session_backup/2026-10-13/decisions/PD-22.txt": "d0b68ded647eb6a941b14ebfa327be2571b03f7c19729722565e6a5602030d64",
+   ".session_backup/2026-10-13/decisions/PD-9.txt": "9d14a9573849a36bd98445c18e93e05f16e5c5ff43c27c4fd1470a5eaaf844f0",
+   ".session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/SHA256SUMS": "32195a8963da2a412b067f9313096a18941fd074971f698268679c2d0bf15527",
+@@ -180,9 +182,9 @@
+   "manuscript/prereg/2026-10-18_tier3_S1_operations.md": "c77e05a57c70c8442665b3b5214411c3dcaaa22d69be7468ba433c6bf6f79bcf",
+   "manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json": "9ff02dc259258de1add426abd02131f2122e3476a81f9a076066ed6d74906134",
+   "manuscript/prereg/2026-10-19_b_n2_leakage_did_prereg_v2.json": "675d37a9da2b26a0472ff0fd58a370dd55705602c78006bc1a52d96245d15972",
+-  "manuscript/prereg/2026-10-20_b_f1_final_stack.json": "062791b91a7653b14e4adce0b307bd13309717bc890b6fc10f95867cd1e80d66",
+-  "manuscript/prereg/2026-10-20_b_f1_final_stack.md": "1293847d378cdc2e00e591e19e878164db56ff90d14b485d6bcdef41fe558b7e",
+-  "manuscript/prereg/2026-10-20_b_f1_instrument.json": "c380439eb918961024e15c534afc45400d425df45c588ff2f10841840b629f54",
++  "manuscript/prereg/2026-10-20_b_f1_final_stack.json": "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9",
++  "manuscript/prereg/2026-10-20_b_f1_final_stack.md": "30256ebd2f6353adb157f53d6aa40ea76e06288ae73afa0123d066ffde0c731d",
++  "manuscript/prereg/2026-10-20_b_f1_instrument.json": "18e7f0e5f12e5f0d5c3fc0fc9ffc0f62f2682a4bd10edb1a84a1ffb70aeaf88f",
+   "manuscript/research_r14/R14_4/REPORT.md": "acfe227a74e530788142e3da98043a99579067d257f1c2045e9a17bc22659504",
+   "manuscript/verification/paperA/T3V_S1_S3_S5.json": "112fd94227b4714ba0a979a628ba7b8ee3bb0db39c38e2009f072a8dbeb49bd3",
+   "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+@@ -194,7 +196,7 @@
+   "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+   "scripts/queue/adapters_canonical.sha256": "031b7cc782c546f9746394370bb77a649de72aaaf9cc6b906bfc2ca6cd8c726d",
+   "scripts/queue/check_g1_pass.py": "39fe181f38bd57a7de32111745bc91de6d684f89c1a931b805da80fe85e104bc",
+-  "scripts/queue/jobs/b_f1_ktvic_test_decode.sh": "11fbfb3ca104d29dd99ebab3da3427d9b7d4fbc2a75ac9f18e7fa51b9c7e608a",
++  "scripts/queue/jobs/b_f1_ktvic_test_decode.sh": "e85fdc660496a0f818468528ff3e40fdbff6125994d228a6ec0e769d3110f58c",
+   "scripts/queue/jobs/t3_2_s1_seed_consensus.sh": "3acd86835c728bf432f622c7bafc03a177e54047b3206570b23514c7a2080ffb",
+   "scripts/rl_report.py": "f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5",
+   "scripts/rl_reward.py": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+--- prev/b_f1_gate.log
++++ new/b_f1_gate.log
+@@ -1,3 +1,3 @@
+ Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=1
+-2026-10-20 06:52:32 INFO  WordSegmenter:24 - Loading Word Segmentation model
++2026-10-20 22:45:50 INFO  WordSegmenter:24 - Loading Word Segmentation model
+ {"mode": "gate", "all_pass": true, "verdict": null}
+--- prev/b_f1_dryrun_synthetic.json
++++ new/b_f1_dryrun_synthetic.json
+@@ -3,9 +3,9 @@
+  "mode": "dryrun",
+  "prereg": {
+   "path": "manuscript/prereg/2026-10-20_b_f1_final_stack.json",
+-  "sha256": "062791b91a7653b14e4adce0b307bd13309717bc890b6fc10f95867cd1e80d66"
++  "sha256": "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9"
+  },
+- "script_sha256": "dee24bd5700f898296d9828e8d9bf5646adc5c8d5d3ccf223b91e72dff305a34",
++ "script_sha256": "9c57cc9771d6da84f56534004ebd60c72acd1103ca7c63a741c2f482881304aa",
+  "config": {
+   "B": 5000,
+   "seed": 0,
+@@ -47,10 +47,10 @@
+   ],
+   "refusals": {
+    "wrong adapter sha256": "REFUSED (K-PROV / K-COV): {\"p1dev_s43-test-short\": [\"adapter_sha256\"]}",
+-   "another machine": "REFUSED (K-PROV / K-COV): {\"p1dev_s43-test-short\": [\"machine_id\"]}",
++   "machine_id differs from the other decodes": "REFUSED (K-PROV / K-COV): {\"machine rule\": [\"the three decodes do not share one machine_id and card\"], \"p1dev_s43-test-short\": [\"machine_id\"]}",
+    "wrong job sha256": "REFUSED (K-PROV / K-COV): {\"p1dev_s43-test-short\": [\"job_sha256\"]}",
+    "dirty tree": "REFUSED (K-PROV / K-COV): {\"p1dev_s43-test-short\": [\"git_dirty\"]}",
+-   "commit lacks the registration": "REFUSED (K-PROV / K-COV): {\"p1dev_s42-test-short\": [\"commit synthet lacks manuscript/prereg/2026-10-20_b_f1_final_stack.json\", \"commit synthet lacks manuscript/prereg/2026-10-20_b_f1_instrument.json\", \"commit synthet lacks scripts/queue/jobs/b_f1_ktvic_test_decode.sh\", \"commit synthet lacks scripts/b_f1/score_b_f1.py\", \"decoded before the registration commit\"], \"p1dev_s43-test-short\": [\"commit bdbe3cf lacks manuscript/prereg/2026-10-20_b_f1_final_stack.json\", \"commit bdbe3cf lacks manuscript/prereg/2026-10-20_b_f1_instrument.json\", \"commit bdbe3cf lacks scripts/queue/jobs/b_f1_ktvic_test_decode.sh\", \"commit bdbe3cf lacks scripts/b_f1/score_b_f1.py\", \"decoded before the registration commit\"], \"p1dev_s44-test-short\": [\"commit bdbe3cf lacks manuscript/prereg/2026-10-20_b_f1_final_stack.json\", \"commit bdbe3cf lacks manuscript/prereg/2026-10-20_b_f1_instrument.json\", \"commit bdbe3cf lacks scripts/queue/jobs/b_f1_ktvic_test_decode.sh\", \"commit bdbe3cf lacks scripts/b_f1/score_b_f1.py\", \"decoded before the registration commit\"]}",
++   "commit lacks the registration": "REFUSED (K-PROV / K-COV): {\"p1dev_s42-test-short\": [\"commit synthet lacks manuscript/prereg/2026-10-20_b_f1_final_stack.json\", \"commit synthet lacks manuscript/prereg/2026-10-20_b_f1_instrument.json\", \"commit synthet lacks scripts/queue/jobs/b_f1_ktvic_test_decode.sh\", \"commit synthet lacks scripts/b_f1/score_b_f1.py\", \"decoded before the registration commit\"], \"p1dev_s43-test-short\": [\"commit ff17599 lacks manuscript/prereg/2026-10-20_b_f1_final_stack.json\", \"commit ff17599 lacks manuscript/prereg/2026-10-20_b_f1_instrument.json\", \"commit ff17599 lacks scripts/queue/jobs/b_f1_ktvic_test_decode.sh\", \"commit ff17599 lacks scripts/b_f1/score_b_f1.py\", \"decoded before the registration commit\"], \"p1dev_s44-test-short\": [\"commit ff17599 lacks manuscript/prereg/2026-10-20_b_f1_final_stack.json\", \"commit ff17599 lacks manuscript/prereg/2026-10-20_b_f1_instrument.json\", \"commit ff17599 lacks scripts/queue/jobs/b_f1_ktvic_test_decode.sh\", \"commit ff17599 lacks scripts/b_f1/score_b_f1.py\", \"decoded before the registration commit\"]}",
+    "missing test id": "REFUSED (K-PROV / K-COV): {\"p1dev_s44-test-short\": [\"K-COV: 1 test ids without a prediction\"]}"
+   }
+  },
+@@ -316,7 +316,7 @@
+   }
+  },
+  "inputs_sha256": {
+-  "manuscript/prereg/2026-10-20_b_f1_final_stack.json": "062791b91a7653b14e4adce0b307bd13309717bc890b6fc10f95867cd1e80d66",
++  "manuscript/prereg/2026-10-20_b_f1_final_stack.json": "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9",
+   "outputs/p1dev_s42-test-short.preds.json": "d92c3c074152729483c7a72526f277475d27d556f70347d7f0eb4e7ac86471f6",
+   "outputs/p1dev_s43-test-short.preds.json": "2a10d44d78a43e608b278208588ae42ecabb16eda122a8e64f8491be6ffc52d3",
+   "outputs/p1dev_s44-test-short.preds.json": "57b030dba927661ad1db4fcc604c62bd3f10da5d943e3677eda9e08a60ecd72c"
+--- prev/b_f1_dryrun_synthetic.log
++++ new/b_f1_dryrun_synthetic.log
+@@ -1,3 +1,3 @@
+ Picked up JAVA_TOOL_OPTIONS: -XX:ActiveProcessorCount=1
+-2026-10-20 06:53:05 INFO  WordSegmenter:24 - Loading Word Segmentation model
++2026-10-20 22:46:24 INFO  WordSegmenter:24 - Loading Word Segmentation model
+ {"mode": "dryrun", "all_pass": null, "verdict": null}
+--- prev/b_f1_run_refusal.log
++++ new/b_f1_run_refusal.log
+@@ -7,5 +7,5 @@
+ $ B_F1_STAGE=<staging> score_b_f1.py gate <staging>/b_f1_gate.json   (its output exists)
+ REFUSED: OUT exists (never overwritten), or run lacks --gate/--outputs
+ rc 1
+-gate sha256 after the refused re-run: 6afd8b29c5c2cd3882e7c16d9fa34d1c4ad9fca62a27514b9a2e35eb0e0517a1
++gate sha256 after the refused re-run: cf64ee1c4caa2f483141e9d8b202d25af23e93c523e490a74a63d082a79b8dc2
+ run output written: no

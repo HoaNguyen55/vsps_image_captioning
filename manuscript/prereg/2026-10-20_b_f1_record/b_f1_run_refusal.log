@@ -1,0 +1,11 @@
+$ B_F1_STAGE=<staging> score_b_f1.py run <scratch>/x.json --gate <staging>/b_f1_gate.json --outputs <none>
+REFUSED: run reads only the committed copies (no B_F1_STAGE; this file at scripts/b_f1/score_b_f1.py)
+rc 1
+$ score_b_f1.py run <scratch>/x.json --gate <staging>/b_f1_gate.json --outputs <none>   (B_F1_STAGE unset)
+PROVENANCE FAIL: manuscript/prereg/2026-10-20_b_f1_final_stack.json is absent
+rc 1
+$ B_F1_STAGE=<staging> score_b_f1.py gate <staging>/b_f1_gate.json   (its output exists)
+REFUSED: OUT exists (never overwritten), or run lacks --gate/--outputs
+rc 1
+gate sha256 after the refused re-run: cf64ee1c4caa2f483141e9d8b202d25af23e93c523e490a74a63d082a79b8dc2
+run output written: no

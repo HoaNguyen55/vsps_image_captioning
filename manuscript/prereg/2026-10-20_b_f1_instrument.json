@@ -1,0 +1,34 @@
+{
+ "addendum_id": "2026-10-20_b_f1_instrument",
+ "status": "instrument freeze (PD-22 binding 7): pins the scorer and the job; changes nothing registered",
+ "prereg": "manuscript/prereg/2026-10-20_b_f1_final_stack.json",
+ "prereg_sha256": "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9",
+ "prereg_md": "manuscript/prereg/2026-10-20_b_f1_final_stack.md",
+ "prereg_md_sha256": "30256ebd2f6353adb157f53d6aa40ea76e06288ae73afa0123d066ffde0c731d",
+ "job_name": "b_f1_ktvic_test_decode",
+ "new_files": {
+  "scripts/b_f1/score_b_f1.py": "9c57cc9771d6da84f56534004ebd60c72acd1103ca7c63a741c2f482881304aa",
+  "scripts/queue/jobs/b_f1_ktvic_test_decode.sh": "e85fdc660496a0f818468528ff3e40fdbff6125994d228a6ec0e769d3110f58c"
+ },
+ "changes_anything_registered": false,
+ "deviations": [],
+ "scorer_modes": {
+  "gate": "pins every gate_pins file of frozen_files, checks this addendum, then reproduces the S1 gate from S1's dev outputs (per-image CIDEr-D, D_MBR, dCHAIR_i, MBR picks and bytes); reads no test output",
+  "dryrun": "synthetic references, decodes and provenance: stamp, admission with refusals, selection, evaluate.py and F0 end to end, K-F0, a failing self-check row, every verdict branch",
+  "run": "refuses unless this scorer and its all-PASS gate record are committed at HEAD and B_F1_STAGE is unset; re-runs the gate body and requires it equal to the record; admits the decodes; selects; scores each system once with evaluate.py; F0; then the statistics",
+  "check": "the job's pre-decode check on the decode host (records its machine_id and card); writes the caption-free view of test_data.json",
+  "stamp": "the job's per-decode .sha256 sidecar and provenance JSON"
+ },
+ "cost": {
+  "gpu_h_estimate": 0.67,
+  "basis": "S1 cost.dev_decode_gpu_h_each per dev300 decode, scaled to the test size, three decodes",
+  "machine": "one host decodes all three members in one job; the host has exactly one GPU with >= 24 GB; check records its machine_id and card, and all three provenances must carry that same machine_id and card; every other pin stays exact"
+ },
+ "queue_preconditions": [
+  "the decode host's HEAD is the commit that adds this addendum, the scorer, the job and the gate and dry-run records",
+  "G-1 has passed for that HEAD (the job runs check_g1_pass.py)",
+  "the adapters p1dev_s42, p1dev_s43 and p1dev_s44 are under $NCS_DATA/runs with their registered sha256",
+  "the queue file is a byte-identical copy of the committed job (it greps its own sha256 here)"
+ ],
+ "written_utc": "2026-10-20T15:45:48Z"
+}
