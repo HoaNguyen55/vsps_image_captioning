@@ -1,0 +1,142 @@
+paper	file	line	citation	bib_key	map_status	claim	claim_status	evidence
+A	sec1_introduction.md	3	Rohrbach et al., 2018	rohrbach2018object	OK		NOT_SAMPLED	
+A	sec1_introduction.md	3	Buckley and Voorhees, 2004	buckley2004retrieval	OK	incomplete relevance judgments bias IR evaluation measures	SUPPORTED	current evaluation measures are not robust to substantially incomplete relevance judgments (abstract)
+A	sec1_introduction.md	7	Lipton et al., 2014	lipton2014optimal	OK		NOT_SAMPLED	
+A	sec1_introduction.md	7	Chen et al., 2015	chen2015microsoft	OK		NOT_SAMPLED	
+A	sec1_introduction.md	9	Wei et al., 2024	wei2024stable	OK		NOT_SAMPLED	
+A	sec1_introduction.md	9	Fazli et al., 2026	fazli2026playing	OK		NOT_SAMPLED	
+A	sec1_introduction.md	29	Chen et al., 2015	chen2015microsoft	OK		NOT_SAMPLED	
+A	sec1_introduction.md	29	Young et al., 2014	young2014image	OK		NOT_SAMPLED	
+A	sec2_related_work.md	5	Rohrbach et al., 2018	rohrbach2018object	OK	CHAIR gold built from instance labels and reference captions	SUPPORTED	using only segmentation labels or only reference captions leads to higher hallucination rates (so both are used)
+A	sec2_related_work.md	5	Li et al., 2023	li2023evaluating	OK	POPE notes CHAIR depends on the instruction and the caption length	PARTLY	abstract: visual instructions may influence the hallucination; caption-length dependence not in abstract
+A	sec2_related_work.md	5	Zhai et al., 2023	zhai2023halle	OK	CCEval balances mean caption length and object count across models	SUPPORTED	We additionally record and balance the average number of objects as well as the average length of captions (full text)
+A	sec2_related_work.md	5	Wang et al., 2023	wang2023amber	OK	AMBER reports a coverage score next to its hallucination rate	SUPPORTED	AMBER ... represented by CHAIR, Cover, Hal, and Cog; Cover measures the object coverage of responses (full text)
+A	sec2_related_work.md	5	Kaul et al., 2024	kaul2024throne	OK	THRONE uses class-wise precision, recall and F0.5	SUPPORTED	we choose beta = 0.5 or the F0.5-score, thus weighing precision twice as important as recall (full text)
+A	sec2_related_work.md	5	Petryk et al., 2024	petryk2024aloha	OK		NOT_SAMPLED	
+A	sec2_related_work.md	5	Ben-Kish et al., 2024	benkish2024mitigating	OK		NOT_SAMPLED	
+A	sec2_related_work.md	5	Liu et al., 2024	liu2024survey	OK		NOT_SAMPLED	
+A	sec2_related_work.md	5	Bai et al., 2024	bai2024hallucination	OK		NOT_SAMPLED	
+A	sec2_related_work.md	7	Wei et al., 2024	wei2024stable	OK	LeHaCE fits model-specific hallucination-vs-length curve, evaluates all models at uniform length	CANNOT_CHECK	No abstract retrievable (arXiv, Crossref, OpenAlex empty; Semantic Scholar rate-limited)
+A	sec2_related_work.md	7	Min et al., 2025	min2025mitigating	OK	SumGD reports recall next to CHAIR because shorter captions lower it	PARTLY	abstract: SumGD achieves Pareto optimality in the precision-recall trade-off; stated motive not in abstract
+A	sec2_related_work.md	7	Yue et al., 2024	yue2024less	OK	Less is More shortens outputs and accepts the recall loss	PARTLY	abstract: overly detailed training data hinders timely termination (EOS); recall loss not in abstract
+A	sec2_related_work.md	7	Huang et al., 2024	huang2024opera	OK	OPERA fixes token budgets, not object counts	CANNOT_CHECK	abstract describes over-trust penalty and rollback in beam search; token budgets not mentioned
+A	sec2_related_work.md	7	Zhou et al., 2024	zhou2024analyzing (by title) | zhou2024aligning	AMBIGUOUS	hallucinated objects concentrate late in a caption (LURE)	SUPPORTED	object position (hallucination often appears in the later part of the generated text)
+A	sec2_related_work.md	7	Favero et al., 2024	favero2024multi	OK	image reliance fades during generation (M3ID)	SUPPORTED	as more tokens are generated, the reliance on the visual prompt decreases
+A	sec2_related_work.md	7	Sun et al. (2019	sun2019compare	OK	normalizes ROUGE F1 by a random system of the same average length	SUPPORTED	normalizes the ROUGE F1 scores of a system by that of a random system with same average output length
+A	sec2_related_work.md	7	Napoles et al. (2011	napoles2011evaluating	OK	compares compressors at similar compression rates	PARTLY	abstract: compression rate is a strong predictor of quality; improvement often a side effect of longer output
+A	sec2_related_work.md	7	Fazli et al. (2026	fazli2026playing	OK	re-evaluates six methods on three 7B LVLMs; quote; Pearson r=0.73	SUPPORTED	six mitigation methods across three LVLMs ... may overestimate progress by rewarding conservative generation; r = 0.73 in full text
+A	sec2_related_work.md	7	Chen et al., 2024		ORPHAN	MMStar benchmark	CANNOT_CHECK	No bib entry; claim not checkable. Fazli abstract names MMStar without authors
+A	sec2_related_work.md	7	Sandhu et al. (2026	sandhu2026targeting	OK	CHAIR reduction persists under fixed 64/128-token budgets while recall falls 0.78 to 0.70	PARTLY	budgets are 64/80/128 tokens; recall 0.78 to 0.70 is the default-decoding comparison (61.1 to 29.6 words), not the fixed-budget one
+A	sec2_related_work.md	7	Long et al. (2026	long2026beyond	OK	RL for hallucination learns to say less; denser presence/absence gold	SUPPORTED	reducing hallucinations merely by saying less; Dense Object Presence and Absence (DOPA) dataset (DOPA is the authors own fix)
+A	sec2_related_work.md	7	Nguyen et al. (2026	nguyen2026metric	OK	adds an object-coverage term to the reward	SUPPORTED	Object Consistency Score (OCS) capturing both correctness and coverage of objects
+A	sec2_related_work.md	9	Lipton et al. (2014	lipton2014optimal	OK	F1-optimal rule thresholds at half the attainable F1	SUPPORTED	if the classifier outputs are well-calibrated conditional probabilities, then the optimal threshold is half the optimal F1 score
+A	sec2_related_work.md	9	Chen et al. (2015	chen2015microsoft	OK		NOT_SAMPLED	
+A	sec2_related_work.md	9	Jain et al., 2016	jain2016extreme	OK	positive-unlabeled evaluation shows missing labels bias metrics toward head labels	PARTLY	extreme multi-label with missing labels; propensity-scored losses promote tail labels; not framed as PU evaluation
+A	sec2_related_work.md	9	Saunders and Freitas, 2022	saunders2022evaluating	OK	F-measures estimable from PU data only under SCAR	PARTLY	review of PU evaluation; performance estimated under the SCAR assumption; the word only is stronger than the review
+A	sec2_related_work.md	9	Buckley and Voorhees, 2004	buckley2004retrieval	OK		NOT_SAMPLED	
+A	sec2_related_work.md	9	Lu et al., 2016	lu2016effect	OK	recall-oriented measures vary with pool depth	CANNOT_CHECK	no abstract available (Crossref/OpenAlex empty); title consistent with claim
+A	sec2_related_work.md	9	Colwell et al., 2012	colwell2012models	OK		NOT_SAMPLED	
+A	sec2_related_work.md	9	Chao et al., 2014	chao2014rarefaction	OK		NOT_SAMPLED	
+A	sec2_related_work.md	11	Beyer et al., 2020	beyer2020done	OK	more complete gold changes model rankings in ImageNet ReaL	PARTLY	gains substantially smaller on new labels; ranking change not stated in abstract
+A	sec2_related_work.md	11	Neuhaus and Hein, 2025	neuhaus2025repope	OK	RePOPE revisits POPE labels	SUPPORTED	we observe notable shifts in model rankings, highlighting the impact of label quality
+A	sec2_related_work.md	11	Gupta et al., 2019	gupta2019lvis	OK	LVIS builds non-exhaustive labels into the protocol	SUPPORTED	we do not require the entire federated dataset to be exhaustively annotated with all categories
+A	sec2_related_work.md	11	Singh et al., 2024	singh2024benchmarking	OK	COCO-ReM refines masks and finds frequent rank flips between detectors	PARTLY	COCO-ReM refined masks confirmed; frequent rank flips not in abstract (sharper-mask models score higher)
+A	sec2_related_work.md	11	Penquitt et al. (2026	penquitt2026object	OK	many missing objects but largely stable rankings	SUPPORTED	missing annotations are the main source of label errors ... model rankings remain largely stable
+A	sec2_related_work.md	11	Resnick et al., 2026	resnick2026principled	OK	rater equivalence presupposes independent raters	SUPPORTED	Each rater generates an independent label for each item (full text)
+A	sec2_related_work.md	13	Kasai et al., 2022	kasai2022transparent	OK	THumB 1.0 expert ratings	PARTLY	ratings by the first four authors using a rubric; word expert not used
+A	sec2_related_work.md	13	Aditya et al., 2015	aditya2015images	OK	Composite set with crowd ratings	PARTLY	abstract: AMT-based evaluations on Flickr8k/30k/COCO; the Composite set is not named
+A	sec2_related_work.md	13	Wada et al., 2024	wada2024polos	OK	Polaris has 550 evaluators	SUPPORTED	Polaris dataset, which comprises 131K human judgments from 550 evaluators
+A	sec2_related_work.md	13	Gordon et al., 2025	gordon2025unblocking	OK	DOCCI-Critique: sentence-level factuality of long paragraphs	SUPPORTED	1,400 VLM-generated paragraph captions ... over 10,216 sentence-level human annotations of factual correctness
+A	sec2_related_work.md	13	Berger et al. (2025	berger2025surveying	OK		NOT_SAMPLED	
+A	sec2_related_work.md	13	Cheng et al., 2025	cheng2025caparena	OK	CapArena over 6,000 pairwise battles	SUPPORTED	a platform with over 6000 pairwise caption battles and high-quality human preference votes
+A	sec2_related_work.md	13	Matsuda et al., 2025	matsuda2025vela	OK	LongCap-Arena collects human judgments	SUPPORTED	LongCap-Arena ... 32,246 human judgments from three distinct perspectives
+A	sec2_related_work.md	13	Liu et al., 2025	liu2025capability	OK	CAPability scores precision and coverage separately	SUPPORTED	assesses both the correctness and thoroughness of captions with precision and hit metrics
+A	sec2_related_work.md	13	Lee et al., 2025	lee2025robust	OK	CapMAS scores factuality and coverage separately	SUPPORTED	dual evaluation metrics for factuality and coverage (title and abstract)
+A	sec2_related_work.md	13	Singhal et al., 2024	singhal2024long	OK	length is an established channel in text RLHF	SUPPORTED	improvements in reward to largely be driven by increasing response length
+A	sec2_related_work.md	13	Dubois et al., 2024	dubois2024length	OK		NOT_SAMPLED	
+A	sec2_related_work.md	13	Park et al., 2024	park2024disentangling	OK		NOT_SAMPLED	
+A	sec2_related_work.md	13	Wadhawan et al., 2025	wadhawan2025vapr	OK	VaPR builds length- and style-matched hard negatives	SUPPORTED	rejected responses with targeted errors, maintaining stylistic and length similarity to the accepted ones
+A	sec2_related_work.md	15	Lam et al., 2020	lam2020uit	OK	UIT-ViIC: independent annotators, COCO sports images	PARTLY	manually written captions for COCO sports-with-balls images (19,250 captions, 3,850 images); caption-writer independence not stated
+A	sec2_related_work.md	15	Pham et al., 2024	pham2024ktvic	OK	KTVIC has one annotator enter all five captions of an image	SUPPORTED	three participants ... annotator provides five captions in the corresponding blank boxes (full text, section 3.2)
+A	sec2_related_work.md	15	Bui et al., 2026	bui2026uit	OK		NOT_SAMPLED	
+A	sec2_related_work.md	17	Post, 2018	post2018call	OK		NOT_SAMPLED	
+A	sec2_related_work.md	17	Hu et al., 2023	hu2023request	OK		NOT_SAMPLED	
+A	sec3_measurement_setup.md	8	Lin et al., 2014	lin2014microsoft	OK		NOT_SAMPLED	
+A	sec3_measurement_setup.md	11	Rohrbach et al.'s (2018)	rohrbach2018object	OK	instance-level CHAIR definition	NOT_SAMPLED	
+A	sec4_theory.md	7	Chen et al. (2015	chen2015microsoft	OK	Chen et al. 2015 s4.2 models caption precision vs number of references	SUPPORTED	Section 4.2 Human Agreement for Word Prediction with a probability model of word use
+A	sec4_theory.md	13	Colwell et al., 2012	colwell2012models	OK		NOT_SAMPLED	
+A	sec4_theory.md	13	Chao et al., 2014	chao2014rarefaction	OK		NOT_SAMPLED	
+A	sec4_theory.md	34	Lipton et al., 2014	lipton2014optimal	OK		NOT_SAMPLED	
+A	sec5_exchangeability.md	29	Plummer et al., 2015	plummer2015flickr30k	OK		NOT_SAMPLED	
+A	sec5_exchangeability.md	54	Resnick et al. (no year)	resnick2026principled	OK	rater-equivalence units defined only for distinct raters	NOT_SAMPLED	citation has no year; bib year is 2026
+A	sec6_rescoring_published_methods.md	7	Huang et al., 2024	huang2024opera	OK		NOT_SAMPLED	
+A	sec6_rescoring_published_methods.md	7	Yue et al., 2024	yue2024less	OK		NOT_SAMPLED	
+A	sec7_verbosity_sign.md	43	Thapliyal et al., 2022	thapliyal2022crossmodal	OK	XM3600 gives 2-3 Vietnamese references per image	SUPPORTED	Table 1 vi: 3450 images with 2 captions, 150 with 3 (7350 captions)
+A	sec8_human_validity.md	13	Matsuda et al., 2025	matsuda2025vela	OK		NOT_SAMPLED	
+A	sec8_human_validity.md	56	Wada et al., 2024	wada2024polos	OK		NOT_SAMPLED	
+A	sec8_human_validity.md	66	Gordon et al., 2025	gordon2025unblocking	OK		NOT_SAMPLED	
+A	sec8_human_validity.md	76	Gunjal et al., 2024	gunjal2024detecting	OK	M-HalDetect licence CC BY-NC	CANNOT_CHECK	licence not stated in the abstract; no accessible licence record checked
+A	sec9_preference_audit.md	29	Wadhawan et al., 2025	wadhawan2025vapr	OK		NOT_SAMPLED	
+A	sec9_preference_audit.md	29	Fu et al., 2025	fu2025mitigating	OK	HDPO already addresses length channel in preference data	SUPPORTED	To mitigate length bias, we used GPT4o-mini to rewrite them to match the length (appendix D)
+A	supplementary.md	33	Karlin, 1968	karlin1968total	OK		NOT_SAMPLED	
+A	supplementary.md	56	Proschan and Walkup, 1967	esary1967association	OK		NOT_SAMPLED	
+A	supplementary.md	70	Rohrbach et al. (2018	rohrbach2018object	OK		NOT_SAMPLED	
+A	supplementary.md	74	Rohrbach et al., 2018	rohrbach2018object	OK		NOT_SAMPLED	
+A	supplementary.md	220	Plummer et al., 2015	plummer2015flickr30k	OK		NOT_SAMPLED	
+A	supplementary.md	254	Wadhawan et al., 2025	wadhawan2025vapr	OK		NOT_SAMPLED	
+A	supplementary.md	254	Fu et al., 2025	fu2025mitigating	OK		NOT_SAMPLED	
+B	sec1_intro.md	5	Lam et al., 2020	lam2020uit	OK		NOT_SAMPLED	
+B	sec1_intro.md	5	Pham et al., 2024	pham2024ktvic	OK		NOT_SAMPLED	
+B	sec1_intro.md	5	Bui et al., 2026	R13_OpenViIC_SPIC	OK		NOT_SAMPLED	
+B	sec1_intro.md	9	Pham et al., 2024	pham2024ktvic	OK	one annotator types all five captions; three annotators total (s3.2, Fig 5)	SUPPORTED	three participants ... annotate captions ... provide five captions in the corresponding blank boxes; two researchers review
+B	sec1_intro.md	22	Nguyen and Tran, 2026	[snapshot: 4 wrong Nguyen-2026 candidates, none is the intended paper] [live bib] nguyen2026vsps	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	5	Lam et al., 2020	lam2020uit	OK	UIT-ViIC sports images from COCO by independent annotators; test images are COCO train2017	PARTLY	COCO sports-with-balls images confirmed; independence and train2017 exposure not in Lam (train2017 is own audit)
+B	sec2_related.md	5	Lin et al., 2014	[live bib] lin2014microsoft	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	5	Pham et al., 2024	pham2024ktvic	OK		NOT_SAMPLED	
+B	sec2_related.md	5	Bui et al., 2026	R13_OpenViIC_SPIC	OK	UIT-OpenViIC is a larger open-domain dataset	CANNOT_CHECK	no abstract retrievable (Crossref/OpenAlex empty)
+B	sec2_related.md	5	Bui et al., 2023	[live bib] bui2023openviic	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	5	Thapliyal et al., 2022	[live bib] thapliyal2022crossmodal	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	5	Le et al., 2022	[live bib] le2022viecap4h	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	5	Hoang et al., 2026	R13_HDUCap_JVCIR	OK		NOT_SAMPLED	
+B	sec2_related.md	5	Nguyen et al., 2026	[snapshot: 4 wrong Nguyen-2026 candidates, none is the intended paper] [live bib] nguyen2026scenetext	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	5	Miltenburg (2024	[live bib] vanmiltenburg2024image	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	7	Nguyen et al., 2022	[live bib] nguyen2022grit	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	7	Hoang et al., 2026	R13_HDUCap_JVCIR	OK		NOT_SAMPLED	
+B	sec2_related.md	7	Vu et al., 2026	R13_ViG_MAPR	OK		NOT_SAMPLED	
+B	sec2_related.md	9	Hessel et al., 2021	[live bib] hessel2021clipscore	ORPHAN	CLIPScore scores a caption against its image without references	SUPPORTED	CLIP ... can be used for robust automatic evaluation of image captioning without the need for references
+B	sec2_related.md	9	Tran et al., 2026	R13_2602_22678	OK	ViCLIP-OT trained on UIT-OpenViIC	SUPPORTED	ViCLIP-OT is trained and evaluated on three Vietnamese image-text datasets; primary evaluation UIT-OpenViIC
+B	sec2_related.md	11	Doan et al., 2024	[live bib] doan2024vintern	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	11	Bai et al., 2025a	[live bib] AMBIGUOUS by surname+year; a->bai2025qwen25vl, b->bai2025qwen3vl	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	11	Dettmers et al., 2023	[live bib] dettmers2023qlora	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	11	Hu et al., 2021	[live bib] hu2021lora	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	11	Bai et al., 2025b	[live bib] AMBIGUOUS by surname+year; a->bai2025qwen25vl, b->bai2025qwen3vl	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	11	Zhu et al., 2025	[live bib] zhu2025internvl3	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	13	Vedantam et al., 2015	[live bib] vedantam2015cider	ORPHAN	CIDEr weights n-grams by IDF over reference set and normalises by vector norm	SUPPORTED	TF-IDF weighting for each n-gram; cosine form with magnitude terms (full text)
+B	sec2_related.md	13	Caglayan et al. (2020	[live bib] caglayan2020curious	ORPHAN	standard metrics give high scores for degenerate outputs	SUPPORTED	metrics ... can yield surprisingly high scores when given a single sentence as system output for the entire test set
+B	sec2_related.md	13	Post, 2018	post2018call	OK		NOT_SAMPLED	
+B	sec2_related.md	13	Hu et al., 2023	[live bib] hu2023request	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	13	Nguyen et al., 2018	[live bib] nguyen2018fast	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	13	Vu et al., 2018	[live bib] vu2018vncorenlp	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	15	Rohrbach et al., 2018	[live bib] rohrbach2018object	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	15	Li et al., 2023	li2023evaluating	OK		NOT_SAMPLED	
+B	sec2_related.md	17	Chen et al. (2015	[live bib] chen2015microsoft	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	17	Resnick et al., 2021	[live bib] resnick2026principled (YEAR_MISMATCH: text 2021, bib 2026)	ORPHAN	rater-equivalence analyses assume independent raters	SUPPORTED	Each rater generates an independent label for each item (full text). Year differs from live bib (2026)
+B	sec2_related.md	17	Geva et al., 2019	[live bib] geva2019modeling	ORPHAN	models learn to recognise prolific annotators; drop on unseen annotators	SUPPORTED	models are able to recognize the most productive annotators ... do not generalize well to examples from annotators that did not contribute
+B	sec2_related.md	17	Berger and Ponti, 2025	R13_2409_16646	OK	31 languages; closer languages mention the same entities	SUPPORTED	31 languages ... geographically or genetically closer tend to mention the same entities more frequently
+B	sec2_related.md	17	Kasai et al., 2022	[live bib] kasai2022transparent	ORPHAN	reference quality matters for caption evaluation	PARTLY	abstract: rubric-based human evaluation; human captions score higher in recall; not specifically about reference quality
+B	sec2_related.md	19	Rennie et al., 2017	[live bib] rennie2017self	ORPHAN	SCST optimises CIDEr directly	SUPPORTED	optimizing ... using the test metrics of the MSCOCO task ... self-critical sequence training
+B	sec2_related.md	19	Tang et al., 2026	R13_2607_23235	OK	reward-based methods for complete/faithful captioning add object or evidence rewards	NOT_SUPPORTED	Tang 2607.23235 is an evaluation framework (reconstruction-based), no rewards. Live bib now cites CCCaption dual-reward RL: SUPPORTED
+B	sec2_related.md	19	Nguyen and Tran, 2026	[snapshot: 4 wrong Nguyen-2026 candidates, none is the intended paper] [live bib] nguyen2026vsps	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	19	Rafailov et al., 2023	[live bib] rafailov2023direct	ORPHAN		NOT_SAMPLED	
+B	sec2_related.md	19	Wortsman et al., 2022	[live bib] wortsman2022robust	ORPHAN	weight-space interpolation	SUPPORTED	ensembling the weights of the zero-shot and fine-tuned models (WiSE-FT)
+B	sec3_data_and_audit.md	15	Thapliyal et al., 2022	[live bib] thapliyal2022crossmodal	ORPHAN		NOT_SAMPLED	
+B	sec3_data_and_audit.md	19	Pham et al., 2024	pham2024ktvic	OK		NOT_SAMPLED	
+B	sec3_data_and_audit.md	80	Pham et al., 2024	pham2024ktvic	OK		NOT_SAMPLED	
+B	sec3_data_and_audit.md	80	Lam et al., 2020	lam2020uit	OK		NOT_SAMPLED	
+B	sec3_data_and_audit.md	80	Bui et al., 2026	R13_OpenViIC_SPIC	OK		NOT_SAMPLED	
+B	sec3_data_and_audit.md	80	Thapliyal et al., 2022	[live bib] thapliyal2022crossmodal	ORPHAN		NOT_SAMPLED	
+B	sec3_data_and_audit.md	80	Lin et al., 2014	[live bib] lin2014microsoft	ORPHAN		NOT_SAMPLED	
+B	sec4_system.md	7	Bai et al., 2025a	[live bib] AMBIGUOUS by surname+year; a->bai2025qwen25vl, b->bai2025qwen3vl	ORPHAN		NOT_SAMPLED	
+B	sec4_system.md	16	Dettmers et al., 2023	[live bib] dettmers2023qlora	ORPHAN		NOT_SAMPLED	
+B	sec4_system.md	16	Hu et al., 2021	[live bib] hu2021lora	ORPHAN		NOT_SAMPLED	
+B	sec7_limitations_ethics.md	35	Nguyen and Tran, 2026	[snapshot: 4 wrong Nguyen-2026 candidates, none is the intended paper] [live bib] nguyen2026vsps	ORPHAN		NOT_SAMPLED	
