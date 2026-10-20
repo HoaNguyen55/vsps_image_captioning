@@ -1,0 +1,423 @@
+{
+ "schema": "vsps.scar_null.gate.v1",
+ "status": "POST_HOC exploratory (PD-23 (d), PD-23b)",
+ "script_sha256": "b0e3825eaa48ba496ec2723010e6125a0c4d8abbf1d5aa3fcf0b3a6dfd94bb3b",
+ "design_sha256": "319b738cd788459a7787e2569944b5a281a6d2ec0fd3d49450c267a7cc225376",
+ "statistics_computed": "registered gold cells only; no intersection or null slope",
+ "pins": {
+  "data/results/g2b/g2b_score.json": {
+   "sha256": "68be2b7a0904027ccb6723129fe86cc10c4976a9e59fbc7862251fe715090824",
+   "expected_from": "data/results/g2b/g2b_score.json.sha256",
+   "head_blob_sha256": "68be2b7a0904027ccb6723129fe86cc10c4976a9e59fbc7862251fe715090824"
+  },
+  "data/results/g2b/g2b_score_record/precheck.json": {
+   "sha256": "02bdca27949e781ab90376ce97e25555df35d140369f967ae6b7feef63b9f78e",
+   "expected_from": "HEAD blob",
+   "head_blob_sha256": "02bdca27949e781ab90376ce97e25555df35d140369f967ae6b7feef63b9f78e"
+  },
+  "data/results/g2b/selfcheck.json": {
+   "sha256": "e29f0a4f8078e72d334f2b421b9e703bd788606ba02c96f7232fe8bc96bc5acc",
+   "expected_from": "HEAD blob",
+   "head_blob_sha256": "e29f0a4f8078e72d334f2b421b9e703bd788606ba02c96f7232fe8bc96bc5acc"
+  },
+  "scripts/g2b/score_g2b.py": {
+   "sha256": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5",
+   "expected_from": "data/results/g2b/g2b_score.json:scorer_sha256",
+   "head_blob_sha256": "66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5"
+  },
+  "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json": {
+   "sha256": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+   "expected_from": "data/results/g2b/g2b_score.json:prereg_sha256",
+   "head_blob_sha256": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055"
+  },
+  "scripts/evaluate.py": {
+   "sha256": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "scripts/coco_probe.py": {
+   "sha256": "930a3899e229e22a1b9326951210e49da3be2904cecd1a4214f02ac8b261ebb8",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "scripts/e5_sample.py": {
+   "sha256": "35ec0d26622ac87138773d00454cd858e6e7fe7cda51217d0b0a2bbcc460baef",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "scripts/score_coco_probe.py": {
+   "sha256": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/coco_probe/coco80_vi.json": {
+   "sha256": "926e08571ef6e80a7f8aae8f2b73753d6c5c54c431a750ba2b67bfaae71b540b",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/coco_probe/chair_synonyms.txt": {
+   "sha256": "b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "rescap/chair.py": {
+   "sha256": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "scripts/xm3600_oiv7.py": {
+   "sha256": "9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "rescap/vlm/mock.py": {
+   "sha256": "33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "rescap/vlm/base.py": {
+   "sha256": "e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "scripts/clean_supervision.py": {
+   "sha256": "01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "scripts/abs_halluc.py": {
+   "sha256": "76819c8e1c439cce2c5651e50e2a86d28078c2cbb67db22bc6327401bbcfc481",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/coco_probe/probe_val2017_ids.txt": {
+   "sha256": "73f8698901f08e7b1bd53dd2842e77683af41e4e9e19276c3e8e6efba5273453",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/coco_probe/manifest.json": {
+   "sha256": "931e572ec8ea5eadf4c49aafcc062a837429b4e6bcc1f96fc0ec0ee1ecaa7e35",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/coco_probe/instance_gold.json": {
+   "sha256": "963af2c6cc71e7a5e32c2f8f1ca6a0f1ef0a1f02dadf40926ddb05eebd04f81e",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/datasets/karpathy/dataset_coco.json": {
+   "sha256": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  ".session_backup/2026-10-13/research_r9/C8_backbone/s0/val2017_names.txt": {
+   "sha256": "612097d209d870b260f9b4cb9c5ccdc32586da617ccf0f25c0627e60f8877285",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/datasets/uitviic/test_data.json": {
+   "sha256": "54abc0fb068ad1108d7d57b21328d4d68bcf8f41aa168f80ec7c275fb4ac8214",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/uitviic/instance_gold.json": {
+   "sha256": "278d15b97e3eeb9496a0282bb91deb365117becf24d174fbb1e0507203b12ea4",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/datasets/xm3600/test_data.json": {
+   "sha256": "0a613214f95605ff137879f70cb84f8160172c28a650317766ac4a1d9c3b72e8",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/xm3600_subset.txt": {
+   "sha256": "f5ab86c7f3126ab6683e97b769e462aa149ca22b081a889d0a0027904d503952",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/xm3600/oiv7_labels.json": {
+   "sha256": "bac3953a511a9793c22e928a29b68ae05dbf9654502abcbe7b64fd9f6d74c8b2",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/xm3600/vi_oiv7_map.json": {
+   "sha256": "27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  "data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv": {
+   "sha256": "84a4373a0efb7fd6d93fe19b0e7ceb6c1b855c233d13b9b78a9a33655c9fdce3",
+   "expected_from": "prereg frozen_files (score_g2b.check_pins)"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-detailed-T0.preds.json": {
+   "sha256": "9ec537886f0d91d23c8c03196bf0aeb2f737b100f06aa36dbf09bea7553b5f02",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_cv295-detailed-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-detailed-T05.preds.json": {
+   "sha256": "1d9934b9b108feaaa2fff5b8eb7071db97005be47901df0f3bcf69d70a67fc58",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_cv295-detailed-T05.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-detailed-T08.preds.json": {
+   "sha256": "59f2e5534c3e6a6cfd8a7a9c1ba3f951be0a4b41e82f70390f19f6970ebfa8f8",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_cv295-detailed-T08.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-detailed_en-T0.preds.json": {
+   "sha256": "736a3d3287735e48c650dc0e912c7fedab18503a35bb7bf33ee2279f8589cd31",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_cv295-detailed_en-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-short-T0.preds.json": {
+   "sha256": "8bd4b6d4f911638603c61372b8b4466f8ef580940d09c730f9e226d0a9a67694",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_cv295-short-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-short-T05.preds.json": {
+   "sha256": "b84ba6701e086935e844efa5d36ef0227201659b0ff11ffd2f94af6a0ec67d04",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_cv295-short-T05.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-short-T08.preds.json": {
+   "sha256": "c5a58d99067fe6824371a3bfd35f1905651b8bb1bea6c90215f44e0dd91b5f46",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_cv295-short-T08.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-short_en-T0.preds.json": {
+   "sha256": "93e930e0ca7b84802e5043b9e655d2abe2d79909ce9b77bdae2d7f9f5225926b",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_cv295-short_en-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-detailed-T0.preds.json": {
+   "sha256": "2a92344baddc53c2e3974a701a973b8e1be0f44bcf780376851d812f27dcdeec",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_uv231-detailed-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-detailed-T05.preds.json": {
+   "sha256": "3bef57a29456f81cbce0b9c839c45100112132a7ee6a8eafd57d7ed724b57420",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_uv231-detailed-T05.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-detailed-T08.preds.json": {
+   "sha256": "d994c6961bf1b6343df239fbbc1ada63a4665a2a2790065d9fa5d0fe398f3fcd",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_uv231-detailed-T08.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-detailed_en-T0.preds.json": {
+   "sha256": "85066857b493eb303f8effe84a8d5c02f36e7d186449d87ff0a2e8ef76b2604d",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_uv231-detailed_en-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-short-T0.preds.json": {
+   "sha256": "7553ab1b58e481201ac99fdcc773c2f58ce59485b06aac709c7b31a4711828ee",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_uv231-short-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-short-T05.preds.json": {
+   "sha256": "fcde78a819df6f31cd782080bf55b09c624aa4dbe32735c431b02cfbb952d14f",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_uv231-short-T05.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-short-T05x6.samples.jsonl": {
+   "sha256": "0d4b20b946301f2bb5d5f8bd8fef7a0c15b54895df5adcaff5e7d1a60991bd6b",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_uv231-short-T05x6.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-short-T08.preds.json": {
+   "sha256": "4839f485665cdb45fd4ddac53ce172b8e108192243fff06b4c488f681a559a23",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_uv231-short-T08.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-short_en-T0.preds.json": {
+   "sha256": "605e4efa81288653bf08360c26b1d24f09aeaf212cbb44015567c2c4c8b3a6a1",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_uv231-short_en-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_xm600-detailed-T0.preds.json": {
+   "sha256": "a66647d12140858e8c013fdce6133949c4b97179d91acc92c413608bf0a560df",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_xm600-detailed-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_xm600-detailed-T05.preds.json": {
+   "sha256": "3e6189d627affaec4e327b1eb3ac1a55a3b76cbc8ae5001dc3c63de9c6baa9ee",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_xm600-detailed-T05.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_xm600-detailed-T08.preds.json": {
+   "sha256": "944668eb32fb4a76209837f394bf6cd62a3245d8ac467e715105b3953dd2e751",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_xm600-detailed-T08.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_xm600-short-T0.preds.json": {
+   "sha256": "82b6ef5fdb9bc98a34e07b9a68e99b1403277d275285fe6df54864d319f57e5e",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_xm600-short-T0.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_xm600-short-T05.preds.json": {
+   "sha256": "522819dfe54dc8a9e191b9ddf88c0df6edb3a1bda6e9a1c4932533c273e1ae76",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_xm600-short-T05.sha256"
+  },
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_xm600-short-T08.preds.json": {
+   "sha256": "71b168e7909913fe2f95c63727be1f9a664dea5b8271a82357aae15d61f698fc",
+   "expected_from": "data/results/g2b/g2b_score_record/precheck.json:runs.g2b_q3_xm600-short-T08.sha256"
+  },
+  ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json": {
+   "sha256": "0b2b3aa5e1a3f532e62e836c2b8011a46c811f7c01aaed4711aa9eae9a133dbf",
+   "expected_from": "data/results/g2b/selfcheck.json:references_sha256"
+  },
+  "data/results/xm3600/xm3600_fuse2_s42-detailed.preds.json": {
+   "sha256": "b941181c7b118c73fdac8f3f66797beee9d07891096a98927b1aa30f36b31203",
+   "expected_from": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json:landed_result_files.xm3600_fuse2_s42-detailed.preds.json.sha256"
+  },
+  "data/results/xm3600/xm3600_fuse2_s42-short.preds.json": {
+   "sha256": "426c2d8140a912d17d296dddfcaa807aa93b5e673d3ee8fd5dea6c44885a2943",
+   "expected_from": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json:landed_result_files.xm3600_fuse2_s42-short.preds.json.sha256"
+  },
+  "data/results/xm3600/xm3600_p1_s43-detailed.preds.json": {
+   "sha256": "296a26bfe17635afe61ab28ba16fae40714577b4981b96786cc021700410c7e2",
+   "expected_from": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json:landed_result_files.xm3600_p1_s43-detailed.preds.json.sha256"
+  },
+  "data/results/xm3600/xm3600_p1_s43-short.preds.json": {
+   "sha256": "1150a046e63470c09268f0045b7b4976b6cad2a571453873277a9fc82fd2aad9",
+   "expected_from": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json:landed_result_files.xm3600_p1_s43-short.preds.json.sha256"
+  },
+  "data/results/xm3600/xm3600_zeroshot-detailed.preds.json": {
+   "sha256": "47db3b9d279508e89f0332482c3e268a119186af9e0cbf6426cc85ce1a52a32f",
+   "expected_from": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json:landed_result_files.xm3600_zeroshot-detailed.preds.json.sha256"
+  },
+  "data/results/xm3600/xm3600_zeroshot-short.preds.json": {
+   "sha256": "1f3573324772c67de3eebcdef326f84a39ecbe7fd705ceb5dd4e6863a0d73d4c",
+   "expected_from": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json:landed_result_files.xm3600_zeroshot-short.preds.json.sha256"
+  },
+  ".session_backup/2026-10-14/r12_verify/evaluate_xm3600_predictions.py": {
+   "sha256": "dc00c4567de688448594f73570e4e9da2c2905cb135361b1bbf5d5fae10000ca",
+   "expected_from": "no committed pin; recorded here (source of the §7.5 randk constants)"
+  },
+  ".session_backup/2026-10-13/decisions/PD-23.txt": {
+   "sha256": "3c719a6b64edef4f34d05595c99fb6b8dfdb8cf1b92bdc9081e8502779e17369",
+   "expected_from": "no committed pin; recorded here (source of R and the seed)"
+  }
+ },
+ "sets": {
+  "cv295": {
+   "lexicon": "coco80",
+   "systems": [
+    "g2b_q3_cv295-short-T0",
+    "g2b_q3_cv295-detailed-T0",
+    "g2b_q3_cv295-short-T05",
+    "g2b_q3_cv295-detailed-T05",
+    "g2b_q3_cv295-short-T08",
+    "g2b_q3_cv295-detailed-T08"
+   ],
+   "n_ids": 295,
+   "n_images_scored": 263
+  },
+  "uv231": {
+   "lexicon": "coco80",
+   "systems": [
+    "g2b_q3_uv231-short-T0",
+    "g2b_q3_uv231-detailed-T0",
+    "g2b_q3_uv231-short-T05",
+    "g2b_q3_uv231-detailed-T05",
+    "g2b_q3_uv231-short-T08",
+    "g2b_q3_uv231-detailed-T08"
+   ],
+   "n_ids": 231,
+   "n_images_scored": 209
+  },
+  "xm600": {
+   "lexicon": "objects_in",
+   "systems": [
+    "g2b_q3_xm600-short-T0",
+    "g2b_q3_xm600-detailed-T0",
+    "g2b_q3_xm600-short-T05",
+    "g2b_q3_xm600-detailed-T05",
+    "g2b_q3_xm600-short-T08",
+    "g2b_q3_xm600-detailed-T08"
+   ],
+   "n_ids": 600,
+   "n_images_scored": 537
+  },
+  "s75": {
+   "lexicon": "objects_in",
+   "systems": [
+    "data/results/xm3600/xm3600_fuse2_s42-detailed.preds.json",
+    "data/results/xm3600/xm3600_fuse2_s42-short.preds.json",
+    "data/results/xm3600/xm3600_p1_s43-detailed.preds.json",
+    "data/results/xm3600/xm3600_p1_s43-short.preds.json",
+    "data/results/xm3600/xm3600_zeroshot-detailed.preds.json",
+    "data/results/xm3600/xm3600_zeroshot-short.preds.json"
+   ],
+   "n_ids": 600,
+   "n_images_scored": 600
+  }
+ },
+ "reproduced_cells": [
+  {
+   "set": "cv295",
+   "gold": "refs1_randk",
+   "reference": -11.457187488127976,
+   "reference_source": "data/results/g2b/g2b_score.json:datasets.cv295.descriptive.golds.refs1_randk.slope_F1_per_lnM.0",
+   "reproduced": -11.457187488127976,
+   "match": "exact",
+   "ok": true
+  },
+  {
+   "set": "cv295",
+   "gold": "refs_all",
+   "reference": 0.5402503882876735,
+   "reference_source": "data/results/g2b/g2b_score.json:datasets.cv295.descriptive.golds.refs_all.slope_F1_per_lnM.0",
+   "reproduced": 0.5402503882876735,
+   "match": "exact",
+   "ok": true
+  },
+  {
+   "set": "cv295",
+   "gold": "inst",
+   "reference": 13.13672983909126,
+   "reference_source": "data/results/g2b/g2b_score.json:datasets.cv295.descriptive.golds.inst.slope_F1_per_lnM.0",
+   "reproduced": 13.13672983909126,
+   "match": "exact",
+   "ok": true
+  },
+  {
+   "set": "uv231",
+   "gold": "refs1_randk",
+   "reference": -20.957440962139973,
+   "reference_source": "data/results/g2b/g2b_score.json:datasets.uv231.descriptive.golds.refs1_randk.slope_F1_per_lnM.0",
+   "reproduced": -20.957440962139973,
+   "match": "exact",
+   "ok": true
+  },
+  {
+   "set": "uv231",
+   "gold": "refs_all",
+   "reference": 1.795937699676367,
+   "reference_source": "data/results/g2b/g2b_score.json:datasets.uv231.descriptive.golds.refs_all.slope_F1_per_lnM.0",
+   "reproduced": 1.795937699676367,
+   "match": "exact",
+   "ok": true
+  },
+  {
+   "set": "uv231",
+   "gold": "inst",
+   "reference": 37.356118218882095,
+   "reference_source": "data/results/g2b/g2b_score.json:datasets.uv231.descriptive.golds.inst.slope_F1_per_lnM.0",
+   "reproduced": 37.356118218882095,
+   "match": "exact",
+   "ok": true
+  },
+  {
+   "set": "xm600",
+   "gold": "refs1_randk",
+   "reference": -12.272658969217972,
+   "reference_source": "data/results/g2b/g2b_score.json:datasets.xm600.descriptive.golds.refs1_randk.slope_F1_per_lnM.0",
+   "reproduced": -12.272658969217972,
+   "match": "exact",
+   "ok": true
+  },
+  {
+   "set": "xm600",
+   "gold": "refs_all",
+   "reference": -6.386967035892877,
+   "reference_source": "data/results/g2b/g2b_score.json:datasets.xm600.descriptive.golds.refs_all.slope_F1_per_lnM.0",
+   "reproduced": -6.386967035892877,
+   "match": "exact",
+   "ok": true
+  },
+  {
+   "set": "xm600",
+   "gold": "oiv7_verified",
+   "reference": 13.708466543235904,
+   "reference_source": "data/results/g2b/g2b_score.json:datasets.xm600.descriptive.golds.oiv7_verified.slope_F1_per_lnM.0",
+   "reproduced": 13.708466543235904,
+   "match": "exact",
+   "ok": true
+  },
+  {
+   "set": "s75",
+   "gold": "refs1_randk",
+   "reference": -8.9867,
+   "reference_source": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json:matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_randk.slope_F1_per_logM",
+   "reproduced": -8.986727853138003,
+   "match": "4 dp",
+   "ok": true
+  },
+  {
+   "set": "s75",
+   "gold": "refs_all",
+   "reference": -2.4278,
+   "reference_source": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json:matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs_all.slope_F1_per_logM",
+   "reproduced": -2.4278487605925334,
+   "match": "4 dp",
+   "ok": true
+  },
+  {
+   "set": "s75",
+   "gold": "oiv7_verified",
+   "reference": 19.3247,
+   "reference_source": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json:matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.oiv7_verified.slope_F1_per_logM",
+   "reproduced": 19.324662824869616,
+   "match": "4 dp",
+   "ok": true
+  }
+ ],
+ "all_cells_ok": true
+}

@@ -1,0 +1,57 @@
+{
+ "task": "SCAR random-deletion null for Paper A (POST_HOC exploratory; PD-23 (d), PD-23b item 1)",
+ "repo_head_at_build": "489e6e0",
+ "files": {
+  "scripts/scar/scar_null.py": "b0e3825eaa48ba496ec2723010e6125a0c4d8abbf1d5aa3fcf0b3a6dfd94bb3b",
+  "manuscript/prereg/2026-10-21_scar_null/SCAR_DESIGN.md": "319b738cd788459a7787e2569944b5a281a6d2ec0fd3d49450c267a7cc225376",
+  "manuscript/prereg/2026-10-21_scar_null/selftest.json": "80f970c3fb41d9ffa8081da2135a549c9eb80eb6521628d441bb1676426df72e",
+  "manuscript/prereg/2026-10-21_scar_null/gate.json": "da1eb2c95ef3292cf5e8cef175464b7d34bf05c989d215fc50834e12f924a05e"
+ },
+ "selftest": {
+  "command": "python3 -B scripts/scar/scar_null.py selftest",
+  "pass": true,
+  "byte_identical_under_PYTHONHASHSEED": [
+   1,
+   987
+  ]
+ },
+ "gate": {
+  "command": "python3 -B scripts/scar/scar_null.py gate",
+  "all_cells_ok": true,
+  "cells": {
+   "cv295/refs1_randk": "exact",
+   "cv295/refs_all": "exact",
+   "cv295/inst": "exact",
+   "uv231/refs1_randk": "exact",
+   "uv231/refs_all": "exact",
+   "uv231/inst": "exact",
+   "xm600/refs1_randk": "exact",
+   "xm600/refs_all": "exact",
+   "xm600/oiv7_verified": "exact",
+   "s75/refs1_randk": "4 dp",
+   "s75/refs_all": "4 dp",
+   "s75/oiv7_verified": "4 dp"
+  },
+  "byte_identical_under_PYTHONHASHSEED": [
+   3,
+   4242
+  ],
+  "number_sources": "each gate cell carries reference_source (file:key); each pin carries expected_from"
+ },
+ "byte_identity_scope": "shown for gate and for the synthetic null (selftest); the real run path is not yet exercised",
+ "run": {
+  "command": "OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n 15 python3 -B scripts/scar/scar_null.py run",
+  "precondition": "scripts/scar/scar_null.py and manuscript/prereg/2026-10-21_scar_null/SCAR_DESIGN.md committed at HEAD; refuses if the output exists",
+  "output": "data/results/scar/scar_null_result.json",
+  "not_run": "no null or intersection-gold statistic has been computed on real data"
+ },
+ "section_7_5_systems": "included pending R5: scored via the score_g2b selfcheck path (rows/scores/stat_slope, oiv7_rows); added gold-construction code rebuilding the §7.5 randk draw of evaluate_xm3600_predictions.py (no committed pin; evidence = reproduction of the committed -8.9867 cell to 4 dp). §7.5 cells match to 4 dp (committed values rounded); G2-B cells match exactly",
+ "readings_for_judge": "ruled in CC-048; see manuscript/prereg/2026-10-21_scar_null/SCAR_DESIGN.md",
+ "rulings": "CC-048 (.session_backup/2026-10-13/decisions/CC-048.txt): R1-R8 accepted as implemented",
+ "moved_from": {
+  "scar_null.py": "f3446796c9e74354cae168c852574920bf46894bf4581f205ca706b9db37c1e3",
+  "SCAR_DESIGN.md": "8e38cd25e44270129ce9750169c91d72ff12180068bb8f90100f3819d3c329e8",
+  "gate.json (same 12 cell values)": "e7b10258535faf6ec5aecb090adf56592d52f9b189d3da4c37149288344aece3",
+  "diff": ".session_backup/2026-10-21/SCAR/path_move.diff"
+ }
+}

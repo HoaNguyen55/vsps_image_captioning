@@ -1,0 +1,25 @@
+{
+ "schema": "vsps.scar_null.selftest.v1",
+ "script_sha256": "b0e3825eaa48ba496ec2723010e6125a0c4d8abbf1d5aa3fcf0b3a6dfd94bb3b",
+ "design_sha256": "319b738cd788459a7787e2569944b5a281a6d2ec0fd3d49450c267a7cc225376",
+ "checks": {
+  "stat_slope_known_10": true,
+  "k_eq_complete_null_equals_observed": true,
+  "k_eq_complete_percentiles_and_share": true,
+  "k_from_registered_subsets": true,
+  "k0_image_empty_gold": true,
+  "nested_prefixes": true,
+  "replicate0_matches_hand_rebuild": true,
+  "deterministic": true,
+  "order_changes_draws": true,
+  "uniform_inclusion_0.5": true
+ },
+ "pass": true,
+ "null_part_first5": [
+  8.933653224559388,
+  3.257273964058919,
+  0.8780284368702194,
+  0.8780284368702194,
+  8.933653224559388
+ ]
+}
