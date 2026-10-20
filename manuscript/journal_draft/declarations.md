@@ -9,7 +9,7 @@ During the preparation of this work the authors used AI coding and writing agent
 - to draft and edit the manuscript text;
 - to search the literature and check cited identifiers against primary records.
 
-Because agent-written prose and logs contained numbers that existed in no output file, every number in the paper is taken by script from an output file and listed with the file's SHA-256 in a numbers manifest (Section 3.6; [AUTHOR TO CONFIRM: manifest completed for Sections 7.6 and 8.5]). [AUTHOR TO CONFIRM: the level of human review of code, analyses and text.] The authors take full responsibility for the content of the publication.
+Because agent-written prose and logs contained numbers that existed in no output file, every number in the paper is taken by script from an output file and listed with the file's SHA-256 in a numbers manifest (Section 3.6). [AUTHOR TO CONFIRM: the level of human review of code, analyses and text.] The authors take full responsibility for the content of the publication.
 
 ## Ethics
 
