@@ -13,7 +13,7 @@ Because agent-written prose and logs contained numbers that existed in no output
 
 ## Ethics
 
-No new human annotation was collected and no human subjects were involved; all human judgments are public datasets used under their licences (Section 11.2). [AUTHOR TO CONFIRM: that no ethics approval was required by the authors' institution.]
+No new human annotation was collected and no human subjects were involved; all human judgments are public datasets used under their licences (Section 11.2). No ethics approval was required: no new data from human participants were collected.
 
 ## Data and code availability
 
@@ -25,7 +25,7 @@ No new human annotation was collected and no human subjects were involved; all h
 
 ## Competing interests
 
-[AUTHOR TO CONFIRM: competing interests.]
+The authors declare no competing interests.
 
 ## Funding
 

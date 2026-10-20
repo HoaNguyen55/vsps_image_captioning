@@ -24,7 +24,7 @@ Framing (PD-24, 2026-10-20): audit-and-kit resource paper for LRE. Main text = d
 
 ## Open items (2026-10-20)
 
-- Author placeholders: [AUTHOR TO CHOOSE LICENCE] (kit); [AUTHOR TO PROVIDE] Zenodo DOI; [AUTHOR TO PROVIDE] terms under which KTVIC, UIT-ViIC and UIT-OpenViIC were obtained (PD-24 b user question); [AUTHOR TO CONFIRM] AI tools/versions and AI-drafted text (sec7.4); [AUTHOR TO PROVIDE] FAIR 2026 proceedings title, pages, DOI (paperB.bib).
+- Author placeholders: the MIT licence (kit); [AUTHOR TO PROVIDE] Zenodo DOI; [AUTHOR TO PROVIDE] terms under which KTVIC, UIT-ViIC and UIT-OpenViIC were obtained (PD-24 b user question); [AUTHOR TO CONFIRM] AI tools/versions and AI-drafted text (sec7.4); [AUTHOR TO PROVIDE] FAIR 2026 proceedings title, pages, DOI (paperB.bib).
 - Not run: B-F1 (registered d6cb2c7; PD-24 d end state); POPE-500 for UIT-ViIC adapters; UIT-ViIC append-period effect; slot-rate-preserving permutation null (R1-M2); 8-gram scan of the kit archive; WiSE-FT addendum items; protocol-matched comparators.
 - Unverified, not reported: 3B 61/62 outputs (M2 logs); UIT-ViIC role/child flip CI.
 - Kit components still live only in git-excluded session folders (v3 rules, c8 punctuation audit, XM3600 period audit, overlap lists, 8-gram scanner): move into a release directory and re-run before deposit.

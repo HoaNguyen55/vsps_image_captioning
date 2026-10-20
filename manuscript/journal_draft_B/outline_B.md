@@ -56,7 +56,7 @@ Paper A owns the XM3600 system scores and the UIT-ViIC slope differences (PD-6; 
 
 ## Open items (not run, or for the authors)
 
-- [AUTHOR TO CHOOSE LICENCE] for the kit; [AUTHOR TO PROVIDE] Zenodo DOI; [AUTHOR TO PROVIDE] the terms under which KTVIC, UIT-ViIC and UIT-OpenViIC were obtained (PD-24 b question to the user); [AUTHOR TO CONFIRM] AI tools and AI-drafted text (sec7.4); [AUTHOR TO PROVIDE] FAIR 2026 proceedings details (paperB.bib).
+- the MIT licence for the kit; [AUTHOR TO PROVIDE] Zenodo DOI; [AUTHOR TO PROVIDE] the terms under which KTVIC, UIT-ViIC and UIT-OpenViIC were obtained (PD-24 b question to the user); [AUTHOR TO CONFIRM] AI tools and AI-drafted text (sec7.4); [AUTHOR TO PROVIDE] FAIR 2026 proceedings details (paperB.bib).
 - Not run: B-F1 (end state per PD-24 d); POPE-500 for UIT-ViIC-trained adapters; UIT-ViIC append-period effect with the committed scorer; slot-rate-preserving permutation null for the single-writer test; 8-gram scan of the kit archive; WiSE-FT addendum items; protocol-matched comparators.
 - Exists but unverified, not reported: 3B fallback outputs (61/62); UIT-ViIC role/child flip paired CI.
 
