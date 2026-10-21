@@ -21,7 +21,7 @@ Source convention: every number carries an HTML comment `<!-- src: path :: key -
 3. What Object Hallucination Metrics Measure: Count Control, Gold Completeness and Exchangeable References
 4. Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores
 
-Working choice: option 1 (short, names the three threats). Avoid "first", "novel" and "law". D1 puts gold completeness first. Option 4 matches that order, and so would option 1 reordered ("… Gold Completeness, Count and Reference Exchangeability …"). Claude main decides.
+**Chosen title (the authors, 2026-10-21; CP-054 item 2):** option 4, *Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores*. It leads with the one confirmed claim; option 1 led with the count part, which is no longer confirmatory. Avoid "first", "novel" and "law".
 
 ## Highlights (≤ 85 characters each) and keywords
 

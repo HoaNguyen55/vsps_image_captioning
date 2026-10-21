@@ -4,7 +4,7 @@
 
 Dear Editor-in-Chief,
 
-We submit the manuscript "[TITLE: see the title decision]" for consideration as a full-length research article in *Information Processing & Management*.
+We submit the manuscript "Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores" for consideration as a full-length research article in *Information Processing & Management*.
 
 Object-hallucination metrics such as CHAIR and object F1 are widely used to rank captioning and vision–language systems. The manuscript asks when their scores measure what they claim, and tests this with pre-registered analyses.
 - **Main result.** In confirmation tests, F1's slope on log object count is ordered by gold completeness and is positive under complete gold. This holds on XM3600 and, with a second backbone (Qwen3-VL-8B), on the same 600 XM3600 images, with a replication on 295 discovery images. On XM3600, two of five registered predictions failed with all references.
