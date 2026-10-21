@@ -27,4 +27,4 @@ The manuscript has not been published, is not under consideration elsewhere, and
 Yours sincerely,
 
 Trần Văn Lăng (corresponding author), on behalf of Nguyễn Lê Minh Hòa, Nguyễn Văn Thịnh and Trần Văn Lăng
-[AUTHOR TO PROVIDE: affiliation and email]
+Journal Editorial Department, Ho Chi Minh City University of Foreign Languages – Information Technology (HUFLIT), Ho Chi Minh City, Vietnam; langtv@huflit.edu.vn<!-- from the IEEE-stamped FAIR 2026 camera-ready, as the first author instructed on 2026-10-21 -->
