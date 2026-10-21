@@ -1,0 +1,755 @@
+{
+ "task": "G2B_AN1_run",
+ "verifier": "Claude A-verifier (Paper A), independent run requested by main",
+ "written_utc": "2026-10-19T19:26Z",
+ "deliverable": {
+  "data/results/g2b/g2b_score.json": "68be2b7a0904027ccb6723129fe86cc10c4976a9e59fbc7862251fe715090824",
+  "data/results/g2b/an1_score.json": "ec0938e088abe3dc0df7f92c0e3d0f23901e304169eaf437f0583f8d32bd3756",
+  "verifier re-run g2b_score.json (scratch)": "a839385f8c079041177e4a3229c4a2bcc393f5ccbeb532ab0022551bec2d2057",
+  "verifier re-run an1_score.json (scratch)": "b7186650871dd83fc5fe9260cdf9e2619e5613da054b7806a5bd4eda87810ca3"
+ },
+ "overall": "VERIFIED",
+ "overall_reason": "G2-B: VERIFIED; A-N1: VERIFIED. Both outputs are reproduced by one fresh run at HEAD 269046e up to created_utc, from byte-identical inputs, with every verdict recomputed from the stored statistics.",
+ "rows": [
+  {
+   "claim_id": "G2B-score",
+   "source_msg": "main: brief to the G2-B / A-N1 verifier (run_score_once.sh record in .session_backup/2026-10-20/g2b_score/)",
+   "claim": "scripts/g2b/score_g2b.py score was run once by main (2026-10-19T19:03:55.409Z to 2026-10-19T19:04:13.018Z, HEAD 269046e) on the 23 frozen G2-B decodes; output data/results/g2b/g2b_score.json sha256 68be2b7a0904027ccb6723129fe86cc10c4976a9e59fbc7862251fe715090824; verdicts as in D2; no kill rule fires.",
+   "items": {
+    "A1": {
+     "status": "PASS",
+     "evidence": "outputs/ holds 46 files = 23 data files + 23 sidecars; none extra, none missing. Each of the 46 is byte-identical to its source in .session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/ (that directory holds 72 files: the 46 plus 23 .partial.jsonl and 3 image sha lists, none of which were copied or scored). For all 23, the sidecar's sha256 equals the sha256 of the copy and of the source. The frozen copies re-hashed now equal the sha256 values in main's precheck.json (checked 23/23)."
+    },
+    "A2": {
+     "status": "PASS",
+     "evidence": "The 23 run ids in outputs/ equal prereg runs[] (22 preds.json + g2b_q3_uv231-short-T05x6.samples.jsonl, 231 lines of 6 samples each). In all 23 provenance records run_id, dataset, prompt_mode, temperature, sequences_per_image and n_images (295 / 231 / 600) equal the registration, and prereg_sha256 = c506bc777b483f50.. = sha256 of the prereg JSON at HEAD."
+    },
+    "A3": {
+     "status": "PASS",
+     "evidence": "CC-027 (b), redone by me for each of the 23 runs: decoder_sha256 == sha256(git show HEAD:scripts/g2b/decode_qwen3vl.py) = 8a855ef483c93362..; job_sha256 == sha256(git show HEAD:scripts/queue/jobs/m2_07_g2b_qwen3vl_ladder.sh) = c3ded1997e00ae0d..; git_dirty is false in 23/23; git merge-base --is-ancestor f942714 <git_head> holds for 23/23 (single git_head 3b3da39, itself an ancestor of HEAD); main's precheck.json: checked_ok 23/23, problems []. The scorer's own KD check does not test these four fields (CC-027 binding (b)), so this redo is their only check besides main's precheck. CC-027 (a) frozen five: the HEAD blobs of decode_qwen3vl.py, score_g2b.py, selfcheck.json, cv295_val2014.sha256 and the m2_07 job begin 8a855ef4 / 66c665c7 / e29f0a4f / 5aee7a6b / c3ded199, the prefixes the judge recorded in CC-027: all five match."
+    },
+    "A4": {
+     "status": "PASS",
+     "evidence": "CONFIRMATION_MAP.json and .md: tracked, byte-equal to HEAD (git diff --quiet HEAD clean); 3 commits, first ca7812c 2026-10-19T03:27:21+07:00, last 80852f4 2026-10-19T10:51:28+07:00 (md: 80852f4 2026-10-19T10:51:28+07:00). Chronology (UTC, from git and the run logs): prereg 0932ba1 10-18T18:31 < instrument f942714 10-18T20:11 < first decode start 10-19T01:00 < last decode end 10-19T14:21 < scoring start 10-19T19:03:55; map first commit 10-18T20:27 and last commit 10-19T03:51 are both before the scoring start (CC-027 (c): map committed before score; all 23 decodes landed)."
+    },
+    "B1": {
+     "status": "PASS",
+     "evidence": "32 repo files (score_g2b.py, an1/score_an1.py, an1/measures.py, prereg json+md, addendum json+md, CONFIRMATION_MAP json+md, decode_qwen3vl.py, the m2_07 job, selfcheck.json and the 21 files of imports.txt) are each tracked, present in HEAD, byte-equal to their HEAD blob (my own sha256 of git show vs disk) and clean under git diff HEAD. g2b_score.json records scorer_sha256 = HEAD blob of score_g2b.py (66c665c7a71d3b97..) and prereg_sha256 = HEAD blob of the prereg. The import closure of score_an1.py (23 repo files, re-listed by me in a separate process) is inside the checked set."
+    },
+    "B2": {
+     "status": "PASS",
+     "evidence": "data/results/g2b/selfcheck.json (HEAD blob e29f0a4f): pass True, 52/52 cells, no verdict-rule unit failures, no pinned file differing from the prereg, scorer_sha256 = HEAD score_g2b.py."
+    },
+    "C1": {
+     "status": "PASS",
+     "evidence": "One run of 'python3 scripts/g2b/score_g2b.py score --outputs-dir .session_backup/2026-10-20/g2b_score/outputs --out <verifier scratch>/g2bv/g2b_score.json' under env -i HOME PATH=/usr/bin:/bin LANG=C.UTF-8 PYTHONDONTWRITEBYTECODE=1, OMP/OPENBLAS/MKL/NUMEXPR threads 2, nice -n 15; start 2026-10-19T19:11:14.104Z end 2026-10-19T19:11:31.932Z (WSL clock), rc 0, stderr empty, HEAD 269046e (= main's 269046e), python 3.12.3 numpy 2.5.2 (= main's). My stdout is byte-identical to main's run.stdout."
+    },
+    "C2": {
+     "status": "PASS",
+     "evidence": "Byte for byte: NOT identical. Same size (165963 bytes), exactly 1 line differs, the created_utc line (2026-10-19T19:04:03Z main, 2026-10-19T19:11:22Z mine); main sha256 68be2b7a0904027ccb6723129fe86cc10c4976a9e59fbc7862251fe715090824 (= the sha in the brief and in its sidecar), mine a839385f8c079041177e4a3229c4a2bcc393f5ccbeb532ab0022551bec2d2057. Main's file with my created_utc line substituted has my sha256. Canonical JSON (json.dumps sort_keys) after removing the time field: equal, canonical sha256 b76a3aa8db741fd1..; remaining differences: none. No non-ASCII character in either file (no caption text in the output)."
+    },
+    "D1": {
+     "status": "PASS",
+     "evidence": "Rule lines applied (prereg verdict_rules, quoted in rules_applied). For all 23 prediction cells (44 parts), the (stat, rule, delta) of each part equals the prereg predictions[] entry, delta is design_constants.equiv_delta_b (0.05) for equiv_abs_le and intercept_delta_P (2) for diff_abs_gt, and my own implementation of the four part rules and of compound() reproduces each printed part verdict and each prediction verdict from point and ci95 (table below)."
+    },
+    "D2": {
+     "status": "PASS",
+     "evidence": "Recomputed verdicts == main's printed run.stdout == verdicts in data/results/g2b/g2b_score.json == verdicts in my re-run == the claim in the brief: cv295: E1 PASS, E2 PASS, O1 PASS, O2 PASS, P1 PASS, P2 INCONCLUSIVE, P3b INCONCLUSIVE, P4 INCONCLUSIVE; uv231: E1 PASS, E2 PASS, O1 PASS, O2 PASS, P1 PASS, P2 INCONCLUSIVE, P3a INCONCLUSIVE, P3b FAIL, P4 INCONCLUSIVE; xm600: E1 PASS, E2 PASS, O1 PASS, P1 PASS, P3b FAIL, P4 INCONCLUSIVE."
+    },
+    "D3": {
+     "status": "PASS",
+     "evidence": "Kill rules recomputed from my verdicts, rmse_P and excluded_runs: K1 False (P1 FAIL on 0 of 3 datasets, threshold 2), K2 False (needs P2 FAIL on both; P2: cv295 INCONCLUSIVE, uv231 INCONCLUSIVE), K3 False (largest rmse_P over every Section 5 variant of the primary lexicon: cv295 0.502, uv231 0.318, xm600 0.642; limit 3), KN1 False (E1: cv295 PASS, uv231 PASS, xm600 PASS), KD False (excluded_runs {}); KL applied. Printed kill_rules equal my values (run.stdout prints KL as null because the KL record has no 'fires' key; it carries applied: true). Clean-subset sizes re-derived by me with the pinned guards (looks_vietnamese, CJK_RE) equal the output: LADDER 263/295 cv295, 209/231 uv231, 537/600 xm600."
+    },
+    "D4": {
+     "status": "PASS",
+     "evidence": "Prediction points for E1, E2, O1, P1, O2 equal the per-gold slope/b table of the same output (max abs diff 0.0); the sensitivity_full_set blocks carry no verdict; the secondary-lexicon (uv231) verdicts also recompute."
+    }
+   },
+   "rules_applied": {
+    "verdict_rules": {
+     "sign_gt_0": "PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE",
+     "sign_lt_0": "PASS if ci95_hi < 0; FAIL if point >= 0; else INCONCLUSIVE",
+     "equiv_abs_le": "PASS if -delta <= ci95_lo and ci95_hi <= delta; FAIL if ci95_hi < -delta or ci95_lo > delta; else INCONCLUSIVE",
+     "diff_abs_gt": "PASS if ci95_lo > delta or ci95_hi < -delta; FAIL if -delta <= ci95_lo and ci95_hi <= delta; else INCONCLUSIVE",
+     "compound": "FAIL if any part is FAIL; else NOT_EVALUABLE if any part is NOT_EVALUABLE; else PASS if every part is PASS; else INCONCLUSIVE",
+     "not_evaluable": "NOT_EVALUABLE if the analysis set is empty or a statistic is undefined (a system with M_x = 0, or fewer than 2 distinct M_x in a family)",
+     "counting": "Kill rules count FAIL only. INCONCLUSIVE is reported as inconclusive and never as support. Earlier preregistrations scored sign and ordering claims on point estimates; 'not FAIL' here is that criterion, so the outcomes can be compared."
+    },
+    "kill_rules": {
+     "K1": "G2B-P1 is FAIL on 2 or more of the 3 datasets (uv231 counts; primary lexicon)",
+     "K2": "G2B-P2 is FAIL on both cv295 and uv231. G2's K2 counts backbones (2 or more of 3); here one backbone has English outputs, so K2 cannot be evaluated as written",
+     "K3": "rmse[g](LADDER) > 3 precision points (point estimate) for a gold variant g of a dataset (Section 5 variants, primary lexicon)",
+     "KN1": "G2B-E1 is FAIL (one-reference slope >= 0) on any dataset (uv231 counts)",
+     "KL": "always applied: verdicts are computed on clean subsets only",
+     "KD": "a run whose provenance shows a model file, prompt, decoding setting (Section 3), pinned package version or pinned instrument different from this registration"
+    }
+   },
+   "recomputation_columns": [
+    "dataset",
+    "prediction",
+    "n_clean/n_full",
+    "part",
+    "rule",
+    "delta",
+    "point",
+    "ci95_lo",
+    "ci95_hi",
+    "verdict_recomputed",
+    "verdict_printed"
+   ],
+   "recomputation": [
+    [
+     "cv295",
+     "G2B-E1",
+     "263/295",
+     1,
+     "sign_lt_0",
+     null,
+     -11.4572,
+     -17.2663,
+     -5.1905,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-E2",
+     "263/295",
+     1,
+     "sign_gt_0",
+     null,
+     13.1367,
+     7.8124,
+     18.8203,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-O1",
+     "263/295",
+     1,
+     "sign_gt_0",
+     null,
+     11.9974,
+     7.8458,
+     15.7265,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-O1",
+     "263/295",
+     2,
+     "sign_gt_0",
+     null,
+     12.5965,
+     6.9095,
+     18.3832,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-O2",
+     "263/295",
+     1,
+     "sign_gt_0",
+     null,
+     3.9906,
+     1.7024,
+     6.0223,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-O2",
+     "263/295",
+     2,
+     "sign_gt_0",
+     null,
+     3.8976,
+     2.689,
+     5.1762,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-O2",
+     "263/295",
+     3,
+     "sign_gt_0",
+     null,
+     2.5093,
+     1.4256,
+     3.6006,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-O2",
+     "263/295",
+     4,
+     "sign_gt_0",
+     null,
+     1.6,
+     0.6889,
+     2.4741,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-P1",
+     "263/295",
+     1,
+     "sign_gt_0",
+     null,
+     0.0973,
+     0.0384,
+     0.1511,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-P1",
+     "263/295",
+     2,
+     "sign_gt_0",
+     null,
+     0.2073,
+     0.125,
+     0.2886,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "cv295",
+     "G2B-P2",
+     "281/295",
+     1,
+     "equiv_abs_le",
+     0.05,
+     -0.1629,
+     -0.3067,
+     -0.0285,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "cv295",
+     "G2B-P3b",
+     "263/295",
+     1,
+     "equiv_abs_le",
+     0.05,
+     0.0516,
+     -0.0348,
+     0.1422,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "cv295",
+     "G2B-P3b",
+     "263/295",
+     2,
+     "equiv_abs_le",
+     0.05,
+     0.0114,
+     -0.0889,
+     0.1189,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "cv295",
+     "G2B-P3b",
+     "263/295",
+     3,
+     "sign_lt_0",
+     null,
+     -0.5955,
+     -2.4497,
+     1.3051,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "cv295",
+     "G2B-P4",
+     "267/295",
+     1,
+     "equiv_abs_le",
+     0.05,
+     -0.1039,
+     -0.2202,
+     0.0104,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "cv295",
+     "G2B-P4",
+     "267/295",
+     2,
+     "diff_abs_gt",
+     2,
+     0.5931,
+     -1.6196,
+     2.9482,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "uv231",
+     "G2B-E1",
+     "209/231",
+     1,
+     "sign_lt_0",
+     null,
+     -20.9574,
+     -24.3125,
+     -17.3973,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-E2",
+     "209/231",
+     1,
+     "sign_gt_0",
+     null,
+     37.3561,
+     35.1489,
+     39.4104,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-O1",
+     "209/231",
+     1,
+     "sign_gt_0",
+     null,
+     22.7534,
+     19.6982,
+     25.945,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-O1",
+     "209/231",
+     2,
+     "sign_gt_0",
+     null,
+     35.5602,
+     30.8554,
+     40.1766,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-O2",
+     "209/231",
+     1,
+     "sign_gt_0",
+     null,
+     10.0732,
+     8.3128,
+     11.7471,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-O2",
+     "209/231",
+     2,
+     "sign_gt_0",
+     null,
+     6.5773,
+     5.3338,
+     7.86,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-O2",
+     "209/231",
+     3,
+     "sign_gt_0",
+     null,
+     3.7449,
+     2.7544,
+     4.6916,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-O2",
+     "209/231",
+     4,
+     "sign_gt_0",
+     null,
+     2.3579,
+     1.6029,
+     3.197,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-P1",
+     "209/231",
+     1,
+     "sign_gt_0",
+     null,
+     0.2229,
+     0.1866,
+     0.2598,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-P1",
+     "209/231",
+     2,
+     "sign_gt_0",
+     null,
+     0.3913,
+     0.3401,
+     0.4399,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-P2",
+     "215/231",
+     1,
+     "equiv_abs_le",
+     0.05,
+     0.0045,
+     -0.0462,
+     0.0589,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "uv231",
+     "G2B-P3a",
+     "199/231",
+     1,
+     "equiv_abs_le",
+     0.05,
+     0.049,
+     0.0014,
+     0.0966,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "uv231",
+     "G2B-P3b",
+     "209/231",
+     1,
+     "equiv_abs_le",
+     0.05,
+     0.0136,
+     -0.015,
+     0.0433,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "uv231",
+     "G2B-P3b",
+     "209/231",
+     2,
+     "equiv_abs_le",
+     0.05,
+     0.0196,
+     -0.0127,
+     0.0534,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "uv231",
+     "G2B-P3b",
+     "209/231",
+     3,
+     "sign_lt_0",
+     null,
+     0.3085,
+     -0.6355,
+     1.3012,
+     "FAIL",
+     "FAIL"
+    ],
+    [
+     "uv231",
+     "G2B-P4",
+     "213/231",
+     1,
+     "equiv_abs_le",
+     0.05,
+     0.0339,
+     0.0011,
+     0.0682,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "uv231",
+     "G2B-P4",
+     "213/231",
+     2,
+     "diff_abs_gt",
+     2,
+     2.3018,
+     0.9222,
+     3.7532,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "xm600",
+     "G2B-E1",
+     "537/600",
+     1,
+     "sign_lt_0",
+     null,
+     -12.2727,
+     -14.5494,
+     -10.0837,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "xm600",
+     "G2B-E2",
+     "537/600",
+     1,
+     "sign_gt_0",
+     null,
+     13.7085,
+     11.4428,
+     15.7939,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "xm600",
+     "G2B-O1",
+     "537/600",
+     1,
+     "sign_gt_0",
+     null,
+     5.8857,
+     4.7582,
+     6.8682,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "xm600",
+     "G2B-O1",
+     "537/600",
+     2,
+     "sign_gt_0",
+     null,
+     20.0954,
+     17.3853,
+     23.045,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "xm600",
+     "G2B-P1",
+     "537/600",
+     1,
+     "sign_gt_0",
+     null,
+     0.0699,
+     0.051,
+     0.0868,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "xm600",
+     "G2B-P1",
+     "537/600",
+     2,
+     "sign_gt_0",
+     null,
+     0.5111,
+     0.4614,
+     0.5624,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "xm600",
+     "G2B-P3b",
+     "537/600",
+     1,
+     "equiv_abs_le",
+     0.05,
+     0.0068,
+     -0.019,
+     0.0347,
+     "PASS",
+     "PASS"
+    ],
+    [
+     "xm600",
+     "G2B-P3b",
+     "537/600",
+     2,
+     "equiv_abs_le",
+     0.05,
+     -0.0254,
+     -0.059,
+     0.008,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "xm600",
+     "G2B-P3b",
+     "537/600",
+     3,
+     "sign_lt_0",
+     null,
+     0.4217,
+     -1.0321,
+     1.7716,
+     "FAIL",
+     "FAIL"
+    ],
+    [
+     "xm600",
+     "G2B-P4",
+     "530/600",
+     1,
+     "equiv_abs_le",
+     0.05,
+     -0.0473,
+     -0.078,
+     -0.0143,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ],
+    [
+     "xm600",
+     "G2B-P4",
+     "530/600",
+     2,
+     "diff_abs_gt",
+     2,
+     -0.3974,
+     -2.1398,
+     1.3173,
+     "INCONCLUSIVE",
+     "INCONCLUSIVE"
+    ]
+   ],
+   "overall": "VERIFIED",
+   "overall_reason": "Inputs are the 23 registered decodes, byte-equal to their sources and sidecars, with CC-027 provenance correct in all 23; code, prereg and map are tracked and equal HEAD; my single re-run differs from main's output only in created_utc (canonical JSON equal, no remaining difference); every part, prediction and kill-rule verdict recomputes from the statistics and equals the printed ones.",
+   "required_fix": "None."
+  },
+  {
+   "claim_id": "AN1-score",
+   "source_msg": "main: brief to the G2-B / A-N1 verifier (an1_score/run.log)",
+   "claim": "scripts/g2b/an1/score_an1.py score was run once by main (2026-10-19T19:05:02.093Z to 2026-10-19T19:05:16.256Z) with the committed addendum (80852f4) on the same 23 frozen decodes; output data/results/g2b/an1_score.json sha256 ec0938e088abe3dc0df7f92c0e3d0f23901e304169eaf437f0583f8d32bd3756; verdicts cv295 INCONCLUSIVE, xm600 PASS, uv231 PASS, outcome MIXED.",
+   "items": {
+    "A1": {
+     "status": "PASS",
+     "evidence": "Same frozen folder as the G2-B run (.session_backup/2026-10-20/g2b_score/outputs, command in an1_score/run.log). an1_score.json lists 23 outputs_sha256 values; they equal g2b_score.json's list and my own sha256 of each file; excluded_runs_KD is {} (score_g2b.load_runs: sidecar sha plus the registered prereg / model / prompt / decoding / package provenance fields). That scorer check does NOT test decoder_sha256, job_sha256, git_head or git_dirty (CC-027 binding (b)); those rest on main's precheck and on my own redo in A3 of the G2-B row, which covers the same 23 files. Input checks A1-A4 of the G2-B row apply unchanged."
+    },
+    "A2": {
+     "status": "PASS",
+     "evidence": "Registration order (UTC): addendum + score_an1.py + measures.py committed in 80852f4 at 10-19T03:51, before the first G2-B scoring (10-19T19:03:55); A-N1 started 19:05:02 after G2-B ended 19:04:13 (PD-16 final: run only after main's go for G2-B scoring). The HEAD blobs begin c41fe6d9 (measures.py), 6543ff58 (score_an1.py), 73c879b6 (addendum json), 516cf49e (addendum md), the shas the judge approved in CC-032b condition 1; the same commit amended the CONFIRMATION_MAP (amendment 2, additive, as CC-032b condition 3 and PD-18 allow)."
+    },
+    "B1": {
+     "status": "PASS",
+     "evidence": "Addendum code pins (score_g2b 66c665c7, prereg c506bc77, measures c41fe6d9, score_an1 6543ff58) equal the HEAD blobs; an1_score.json records the same code_sha256 and addendum_sha256 = HEAD blob of the addendum JSON. All 32 files of B1 in the G2-B row are tracked and equal HEAD."
+    },
+    "C1": {
+     "status": "PASS",
+     "evidence": "One run of 'python3 scripts/g2b/an1/score_an1.py score --addendum manuscript/prereg/2026-10-19_an1_g2b_addendum.json --outputs-dir .session_backup/2026-10-20/g2b_score/outputs --out <verifier scratch>/g2bv/an1_score.json' in the same environment as C1 above; start 2026-10-19T19:11:36.867Z end 2026-10-19T19:11:51.697Z, rc 0, stderr empty, stdout byte-identical to main's. Main's command in run.log, apart from --out, is identical to mine: True."
+    },
+    "C2": {
+     "status": "PASS",
+     "evidence": "Byte for byte: NOT identical. Same size (24993 bytes), exactly 1 line differs, the created_utc line (2026-10-19T19:05:13Z main, 2026-10-19T19:11:48Z mine); main sha256 ec0938e088abe3dc0df7f92c0e3d0f23901e304169eaf437f0583f8d32bd3756 (= the brief and its .sha256 sidecar), mine b7186650871dd83fc5fe9260cdf9e2619e5613da054b7806a5bd4eda87810ca3. Canonical JSON without the time field: equal (sha256 c3c71d277ee16ec2..); remaining differences: none."
+    },
+    "D1": {
+     "status": "PASS",
+     "evidence": "Rule applied: addendum primary.rule 'sign_gt_0' = prereg 'PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE'; statistic Q = theta*Range_F1 - Range_cF1, theta 0.6, direction Q > 0. cv295: Q 0.2588 ci95 [-1.7629, 2.1098] -> INCONCLUSIVE (printed INCONCLUSIVE); uv231: Q 3.8162 ci95 [2.5753, 5.0671] -> PASS (printed PASS); xm600: Q 12.8354 ci95 [9.8641, 14.3612] -> PASS (printed PASS). Q recomputed from the per-level slopes of the same output (0.6*Range_F1 - Range_cF1) equals the stored point (max abs diff 0.0). measure, theta and rule in the output equal the addendum."
+    },
+    "D2": {
+     "status": "PASS",
+     "evidence": "Outcome rule applied (addendum outcome_rule.text): 'NOT_TESTABLE if no set is PASS, FAIL or INCONCLUSIVE; NOT_SUPPORTED if 2 or more sets are FAIL (uv231 counts); SUPPORTED if cv295 and xm600 are PASS and no set is FAIL; MIXED otherwise'. Per-set verdicts recomputed in D1: {'cv295': 'INCONCLUSIVE', 'uv231': 'PASS', 'xm600': 'PASS'}. Clause 1 NOT_TESTABLE needs no set in (PASS, FAIL, INCONCLUSIVE): False. Clause 2 NOT_SUPPORTED needs >= 2 FAIL sets: 0 FAIL. Clause 3 SUPPORTED needs ['cv295', 'xm600'] all PASS and no FAIL: support-set verdicts ['INCONCLUSIVE', 'PASS'], FAIL present False. Result by clause order: MIXED (printed MIXED, output MIXED, my re-run MIXED). The rule counts only ['cv295', 'xm600'] as support; uv231 verdict PASS is not support (a FAIL there would count)."
+    },
+    "D3": {
+     "status": "PASS",
+     "evidence": "Per set the output's levels equal prereg golds one_ref / all_refs / complete, systems equal the 6-run LADDER family, lexicon equals the G2-B primary lexicon cv295 coco80, uv231 coco80, xm600 objects_in, and the clean LADDER size equals G2-B's: cv295 263/295, uv231 209/231, xm600 537/600. cF1 slope equals F1 slope at the complete level on all three sets (addendum D3). The sensitivity (full-set) blocks carry no verdict. bpref_set's Q is reported descriptively without a verdict (PD-16 final (a)) and the conflict / images-without-negatives diagnostics are present (PD-16 final (b))."
+    }
+   },
+   "rules_applied": {
+    "primary": {
+     "measure": "cF1",
+     "statistic": "Q = theta * Range_F1 - Range_cF1; Range = max - min over the three gold levels of the OLS slope of 100 * measure on ln M over LADDER (score_g2b.stat_slope)",
+     "direction": "Q > 0",
+     "rule": "sign_gt_0",
+     "theta": 0.6
+    },
+    "sign_gt_0": "PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE",
+    "outcome_rule": "NOT_TESTABLE if no set is PASS, FAIL or INCONCLUSIVE; NOT_SUPPORTED if 2 or more sets are FAIL (uv231 counts); SUPPORTED if cv295 and xm600 are PASS and no set is FAIL; MIXED otherwise",
+    "counting": "Kill rules count FAIL only. INCONCLUSIVE is reported as inconclusive and never as support. Earlier preregistrations scored sign and ordering claims on point estimates; 'not FAIL' here is that criterion, so the outcomes can be compared."
+   },
+   "overall": "VERIFIED",
+   "overall_reason": "Same verified inputs; the addendum and both scripts were committed (80852f4, judge CC-032b) before any G2-B scoring and equal the approved shas; my single re-run differs only in created_utc; the three per-set verdicts and the outcome MIXED recompute from Q, its CI and the addendum rule text.",
+   "required_fix": "None."
+  }
+ ],
+ "notes": [
+  "The brief names manuscript/AGENT_RULES.md; that path does not exist. I read manuscript/paperA_plan/AGENT_RULES.md (untracked in git).",
+  "Only created_utc differs between main's outputs and my re-runs; it is written from the WSL clock, which is behind the host clock (main's g2b_score.json has a D: drive mtime at least 8.8 s after the end of the run on the WSL clock). No statistic reads a clock.",
+  "Wording in the committed addendum: its does_not_change field says the confirmation map stays byte-identical, but the same commit 80852f4 adds amendment_2 to the map (additive A-N1 outcome sentences, as CC-032b condition 3 and PD-18 allow; no G2-B rule or sentence changed). The addendum json status still reads DRAFT; the registration rests on the commit and CC-032b.",
+  "By registration xm600 has no O2, P2 or P3a verdicts, and G2B-NS has none (not predicted); run.stdout therefore lists fewer cells for xm600. KL appears as null in run.stdout because its record has no 'fires' key (it carries applied: true).",
+  "Scope: my re-runs use the same code, inputs and environment as main's, so they show determinism (output reproduced up to created_utc) plus an independent recomputation of the verdict, kill-rule and outcome layer and of the clean-subset sizes. The statistic code itself (slopes, b, residuals, bootstrap) is not re-derived here; it rests on the registered self-check (52/52 cells). Also not re-done: the decode runs and any claim in Paper A text."
+ ],
+ "method": {
+  "scripts": {
+   "build_record.py": "697877b888dade97",
+   "check_A.py": "984edd17d31de384",
+   "check_B.py": "84425b2e69ea7b7a",
+   "check_C.py": "038b391acef68c17",
+   "check_D.py": "f1f658f0dc347b56",
+   "check_E.py": "ad68b43237dc1949"
+  },
+  "script_dir": "<verifier scratch>/g2bv/",
+  "scorer_runs": "each scorer once, in the repo, output to <verifier scratch>/g2bv/",
+  "network": "none",
+  "task_agent_scripts_run": "none (only main's registered scorers, re-run once each)",
+  "forbidden_content": "no caption text read into the record; ktvic_openviic_refs.json not opened; no commit, push, stash or checkout; no tracked file or data/results file modified"
+ }
+}

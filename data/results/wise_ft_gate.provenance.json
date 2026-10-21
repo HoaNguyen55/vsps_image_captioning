@@ -1,0 +1,41 @@
+{
+  "file": "wise_ft_gate.json",
+  "sha256": "93eb8e671db519e1fbb8e1f258d98f34d6cd21ae3aaad008410429188845e0c6",
+  "ruling": "PD-11 (judge, YES 90%): registered gate computed once, off-machine, block unchanged",
+  "prereg": "manuscript/prereg/2026-10-13_vgr_wise_ft.md section 3, commit 5a4e00c (2026-10-13T23:47:36Z)",
+  "job_file": "manuscript/prereg/2026-10-13_vgr_wise_ft_jobs/59_wise_ft_s42.sh sha256 bb4b1d6d064384c23a2ad25819e50352608de4fceb8573327de7777af6c0a32e",
+  "block": {
+    "lines": "63-137",
+    "sha256": "33e9ed5239d40ea2bfe9ae2b682a2d5fa88ac8ea3ae54343b20ba4747294f0ce",
+    "run_as": "python3 - (stdin), cwd = repo root"
+  },
+  "env": {
+    "NCS_DATA": "<run folder>/ncs",
+    "NCS_DATASET": "uitviic",
+    "threads": 2,
+    "nice": 15
+  },
+  "started_utc": "2026-10-18T21:13:52.161Z",
+  "ended_utc": "2026-10-18T21:14:27.796Z",
+  "rc": 0,
+  "host": "<local host> (local WSL2 workstation, not M2)",
+  "python": "3.12.3",
+  "numpy": "2.5.2",
+  "git_head": "ca7812cea2dba1160fc8a079a727598a4605e49b",
+  "inputs": {
+    ".session_backup/machines/O-2308428/root/outputs/sha256/03_59_wise_ft_s42.operator.sha256": "59a8c0bd9849014f63cd0eef1625c47e2f11c700213e127180ee73f2e799cb74",
+    "$NCS_DATA/results/uitviic_val/uitviic_val_fuse2_s42-short.preds.json": "ba247ef2670e3c16b1e09b129a682ce32fa04e84ecc3ec045c2676320142a0f7",
+    "$NCS_DATA/results/uitviic_val/uitviic_val_fuse2_s42_wise075-short.preds.json": "9802cc5fa1c1a30a0f2c514495d33d1d39ef8bfe17dc4c9184cc462f5080fe1d",
+    "$NCS_DATA/results/uitviic_val/uitviic_val_fuse2_s42_wise05-short.preds.json": "d986433cd99f521aaf63a94f977bf5d33a7d1987f66a4323f5c7c33ad171bf77",
+    "$NCS_DATA/results/fuse2_s42_wise075-short.json": "590d55f493fc9a15322a1ca9b8d8e261d18961bcfdb498d7805632f2fe327e82",
+    "$NCS_DATA/results/fuse2_s42_wise05-short.json": "2b159d14d46b89cfe4d13e7a48c4dbaf94d96bb7d5432f89f13f8cacd0944dbf",
+    "$NCS_DATA/results/fuse2_s42-short.json": "70b007f9992a337d33fe10c3710f2ad2c773f564743d69a6ca8874a2e30739cb",
+    "$NCS_DATA/datasets/uitviic/val_data.json": "fee7d116683670ef5ce14f405594aa73bb08dd1bdbf1f2cdc3f9e01bbfa9b044",
+    "data/uitviic/instance_gold.json": "278d15b97e3eeb9496a0282bb91deb365117becf24d174fbb1e0507203b12ea4",
+    "data/coco_probe/coco80_vi.json": "926e08571ef6e80a7f8aae8f2b73753d6c5c54c431a750ba2b67bfaae71b540b",
+    "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",
+    "scripts/object_prf.py": "6b711280d70b780d596414896d832738da58f1b079015dee888605d1ba350adc",
+    "scripts/score_coco_probe.py": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070"
+  },
+  "deviation": "The registered gate (5a4e00c) ran after the job, off-machine, because of an import-time environment bug (NCS_DATASET was set after evaluate.py bound the dataset path); the code was unchanged and the inputs were sha-verified."
+}

@@ -1,0 +1,33 @@
+{
+ "task": "scrub of held-back records (judge CP-040 rule)",
+ "rule": [
+  "the verifier's per-user temporary scratch directory prefix is replaced by '<verifier scratch>/'",
+  "the local username token is replaced by '<local host>'",
+  "no other byte changes"
+ ],
+ "rule_check": "re-applying the rule (.session_backup/2026-10-21/scrub/scrub_records.py, git-excluded because it contains the patterns) to each original reproduces the scrubbed bytes exactly; both outputs parse as JSON",
+ "originals_kept": ".session_backup/2026-10-21/scrub/orig/ (git-excluded)",
+ "files": [
+  {
+   "path": "manuscript/verification/paperA/G2B_AN1_run.json",
+   "original_sha256": "bc2d795980ee5952549faa691d4b31f84852d15053432e30e8395f05b77215e1",
+   "scrubbed_sha256": "3c83f68004da5254ce03e7a1703b8129057086af218743d8ec170fb190167f44"
+  },
+  {
+   "path": "manuscript/verification/paperA/T3V_S1_S3_S5.public.json",
+   "original_sha256": "112fd94227b4714ba0a979a628ba7b8ee3bb0db39c38e2009f072a8dbeb49bd3",
+   "scrubbed_sha256": "af2037ff7162542fce9150ba98798d945c1e1c5a2b6cbe97155fad9836a7f01d",
+   "original_path_kept": "manuscript/verification/paperA/T3V_S1_S3_S5.json",
+   "why_separate_copy": "the original is a gate pin of the B-F1 registration (frozen_files, sha 112fd942, read from the working tree); it stays at its path untouched and untracked so the registered gate still passes; the scrubbed copy is the tracked public file"
+  },
+  {
+   "path": "data/results/wise_ft_gate.provenance.json",
+   "original_sha256": "8ab353e09fbf1f49e2bd5382f3d4f930f129441ecf72c67863605f27e542df53",
+   "scrubbed_sha256": "f2dddef1574c75c376157383e069b4bbb9d0af2efb6d2b4ecdf59b8a56838725"
+  }
+ ],
+ "citations_note": "drafts and the B-F1 registration cite the originals' shas (bc2d7959 for G2B_AN1_run.json, 112fd942 for T3V_S1_S3_S5.json, 8ab353e0 for wise_ft_gate.provenance.json); this record maps each to its tracked scrubbed file",
+ "unchanged": {
+  "data/results/wise_ft_gate.json": "93eb8e671db519e1fbb8e1f258d98f34d6cd21ae3aaad008410429188845e0c6"
+ }
+}

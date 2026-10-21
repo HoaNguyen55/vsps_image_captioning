@@ -1,0 +1,863 @@
+{
+ "task": "T3V_S1_S3_S5",
+ "verifier": "Claude T3-V (independent verifier of the Tier-3 GPU arms S1, S2, S3, S5)",
+ "written_utc": "2026-10-19T19:31Z",
+ "deliverable": {
+  "scripts/make_record.py": "a5a727c67d34f575",
+  "scripts/run_amend.py": "63fd36916fd00bc6",
+  "scripts/run_cider_equiv.py": "2ee1903148a2cf74",
+  "scripts/run_data.py": "e9e7b9f4ab5e4b14",
+  "scripts/run_extra.py": "8d472075188a99c1",
+  "scripts/run_integrity.py": "6fb0004e0be4f92f",
+  "scripts/run_s1.py": "ee92250036516258",
+  "scripts/run_s2.py": "d213bb762401f599",
+  "scripts/run_s2_records.py": "380e25f0eddb3691",
+  "scripts/run_s2_selftest.py": "af3b8e261904ba8a",
+  "scripts/run_s3.py": "8a987ef7e0ead7a9",
+  "scripts/run_s5.py": "c17954369e66b6f1",
+  "scripts/run_selftests.py": "aa9f71c1de5f18ba",
+  "scripts/run_timing.py": "5d116a01155c62f8",
+  "scripts/run_void.py": "45642d10f0d440ee",
+  "scripts/segtable.py": "4b5cc6396bae3f62",
+  "scripts/setup_tree.sh": "b5d60b71c2118695",
+  "scripts/setup_tree_s2.sh": "01c8af7da4f1e76d",
+  "scripts/t3v_common.py": "a85c67ca9f0b1d69",
+  "scripts/test_make_record.py": "10ae270eb6d14316",
+  "shims/py_vncorenlp.py": "371b7eb8ee3ec510",
+  "shims/pycocoevalcap/cider/cider.py": "9b8d3bda13cf2dd0",
+  "results/amend.json": "79fc0131170d78cd",
+  "results/cider_equiv.json": "862f7ddfa5e3511e",
+  "results/data.json": "615333159e6003c0",
+  "results/extra.json": "12cd32c508222e3e",
+  "results/integrity.json": "f9f8d7da2c7bfa9b",
+  "results/s1_recompute_native.json": "43ec387cf8dff17a",
+  "results/s1_recompute_plainsum.json": "67009525b865b205",
+  "results/s2_recompute_native.json": "6cc8f2f64fef6628",
+  "results/s2_recompute_plainsum.json": "94427b13e12677f0",
+  "results/s2_records.json": "4c99619e24eb28d0",
+  "results/s2_selftest.json": "c3f8886141f7d136",
+  "results/s3_recompute_native.json": "8c3be7d0d716fee8",
+  "results/s3_recompute_plainsum.json": "7f01fc25451c58e2",
+  "results/s5_recompute.json": "a089686bc071fe5d",
+  "results/selftests.json": "30b79b0558e1d7ee",
+  "results/timing.json": "ea028ce74d1165a8",
+  "results/void.json": "af8808a89e66bece",
+  "segtable.json": "80c42658299b0c84",
+  "vncorenlp_stub.sha256": "b5c9cc2f545dce27",
+  "results_mutation_tests.json": "b45bb3ddc0f5670e",
+  "_note": "sha256 prefixes (16 hex) of the scratch files under <verifier scratch>/t3v/ that produced this record; the scratch dir is not part of the repo"
+ },
+ "overall": {
+  "S1": "VERIFIED",
+  "S2": "NOT VERIFIED",
+  "S3": "VERIFIED",
+  "S5": "VERIFIED"
+ },
+ "overall_reason": "S1: VERIFIED. Items ['A', 'B', 'C', 'CLAIMS', 'D', 'H', 'OWNERSHIP', 'V'] all PASS: timing, integrity, recompute equal to the machine's output after the stated exclusions, the registered rule applied to the recomputed numbers, no void, and the stated figures reproduced. Not verified, none of it feeding the verdict: panel P/R/F1 columns of gate.json (P_panel, R_panel, F1_panel per system, member mean, deltas) and n_panel_images; operator-list lines for checkpoint-800/866 files of p1dev_s43/s44 (and optimizer state). Not run: the decodes themselves, the soup identity on the adapter files, seed_consensus --selftest. || S2: NOT VERIFIED. Items ['A', 'B', 'C', 'CLAIMS', 'D', 'H', 'OWNERSHIP', 'V'] PASS (timing, integrity, recompute equal to the machine's output after the stated exclusions, the registered rule applied to the recomputed numbers, no void, and the stated figures reproduced). Open: item(s) ['R'], not PASS: R NOT VERIFIED: CC-030 binding note (c): git blob sha1 of the cached remote-code *.py files vs the addendum pins and the registered HF record; a mismatch excludes the run; missing /root/.cache/huggingface/hub/models--OpenGVLab--InternVL3-8B/snapshots/853e3a797a661694b1b8ece0cb72dc2b23e3dac9/*.py on M2 (not in the mirror). Every other item reproduces, but a binding condition is unchecked, so the arm cannot be called VERIFIED; main can close or waive it (see notes_for_main). Not verified, none of it feeding the verdict: panel dF1, panel CIDEr and F1_panel in readout.json. Not run: CC-030 (b): 8-gram scan of score.json and the analyse outputs against the OpenViIC panel; the 2,612 InternVL3-8B forward passes (p_v.jsonl) and the whole xv_ef1 --selftest / _refusals. || S3: VERIFIED. Items ['A', 'AMENDMENT', 'B', 'C', 'CLAIMS', 'D', 'H', 'OWNERSHIP', 'V'] all PASS: timing, integrity, recompute equal to the machine's output after the stated exclusions, the registered rule applied to the recomputed numbers, no void, and the stated figures reproduced. Not verified, none of it feeding the verdict: panel_cm, plain_dF1 and dm on the 296-image OpenViIC panel (arms.<arm>.panel in s3_verdict.json); operator-list lines for checkpoint files of S3 runs. Not run: pair and RFT-target rebuilds, DPO/SFT training, decodes, train_stage2_anchor --selftest. || S5: VERIFIED. Items ['A', 'B', 'C', 'CLAIMS', 'D', 'H', 'OWNERSHIP', 'V'] all PASS: timing, integrity, recompute equal to the machine's output after the stated exclusions, the registered rule applied to the recomputed numbers, no void, and the stated figures reproduced. Not run: the decodes and trainings themselves.",
+ "rows": [
+  {
+   "claim_id": "T3V-S1",
+   "source_msg": "main: T3-V brief (node T3-V; arms S1, S3, S5)",
+   "claim": "S1 (seed consensus): gate.json says PASS. The MBR-3 variant is carried, D_cider is +2.55 [0.0035, 5.24], and dCHAIR_i is −0.19.",
+   "items": {
+    "A": {
+     "status": "PASS",
+     "evidence": "Chronology (UTC, git committer dates converted from +07:00; queue.log and mirror mtimes are UTC): 2026-10-18T08:57:53Z prereg a68fb66 committed < 2026-10-18T18:06:09Z instrument 7382600 committed < 2026-10-18T18:30:47Z operating_notes f6b1656 committed < 2026-10-18T21:24:37Z G-1 v3 PASS at ca7812c stamped < 2026-10-18T22:54:54Z queue.log START < 2026-10-18T22:55:09Z first output mtime (check.json). G-1 v3 gate file sha256 50004f388f498a3d == the sha256 recorded on the queue.log G1_GATE_ENFORCED_OK line (verdict PASS, head ca7812c, 23 adapters verified, mismatches 0); that line, printed just before START, carries head=ca7812c and ts=2026-10-18T21:24:37Z. Last file written in the arm directory 2026-10-19T02:36:09Z (s1_void_check.json, written by the operators' void-check watcher after the job's OK); queue.log OK 2026-10-19T02:36:08Z. Files in the arm directory older than START: 0 of 23. Ancestors of ca7812c (git merge-base --is-ancestor): a68fb66, 7382600, f6b1656. Registered files changed between the instrument commit and ca7812c: none; 2026-10-18_tier3_S1_operations.md introduced in f6b1656 at 2026-10-18T18:30:47Z (git status vs the instrument commit: ['A'], 'A' = added). Every addendum pin equals the blob at the instrument commit and at ca7812c; the queued job file (queue/ and queue/done/) equals the committed blob 3acd86835c728bf4. Mirror mtimes are whole seconds (the floor of the machine's).",
+     "checks": {
+      "prereg_before_instrument": true,
+      "instrument_before_g1_ts": true,
+      "g1_before_start": true,
+      "start_not_after_first_output": true,
+      "instrument_before_first_output": true,
+      "prereg_before_first_output": true,
+      "ancestors_ok": true,
+      "g1_pass_at_head": true,
+      "g1_sha_equals_queue_log": true,
+      "g1_machine_is_M1": true,
+      "no_output_before_start": true,
+      "extra_commits_before_first_output": true,
+      "registered_files_unchanged_instrument_to_head_ran": true,
+      "notes_files_added_once_and_unchanged": true,
+      "pins_equal_blobs": true,
+      "queued_job_equals_committed": true,
+      "extra_commits_before_any_tier3_output": true,
+      "all_true": true
+     }
+    },
+    "B": {
+     "status": "PASS",
+     "evidence": "SHA256SUMS: 27 of 27 lines equal the sha256 of the mirror file (0 mismatches, 0 absent; unique paths), adapters included. Operator list outputs/sha256/02_t3_2_s1_seed_consensus.sha256: 105 lines, 55 in-mirror lines of this arm's runs/ copies match (mismatches 0; disagreements with SHA256SUMS 0); categories {'ladder_sidecar_re_stamped_by_qrun (jobs 56-58, not an output of this arm)': 8, 'run_dir_file_in_mirror': 13, 'checkpoint_dir_file_in_mirror': 42, 'checkpoint_dir_file_not_in_mirror': 42}. Lines not checkable because the mirror lacks the file: {'checkpoint_dir_file_not_in_mirror': 42} (intermediate checkpoint files and optimizer state; no verdict reads them). Provenance audit over this arm's JSON: {'machine_id': 10, 'git_head_sha': 9, 'checkpoint_resume_hook_sha256': 9, 'train_stage2_sha256': 9, 'script_sha256': 4, 'prereg_sha256': 4, 'instrument_sha256': 4}, differing from the committed blobs at ca7812c: 0; 5 decode sidecars' result_sha256 == sha256 of the named result file (mismatches 0). G-1 v3 file hashes of the hook, train_stage2.py, evaluate.py, chair.py and adapters_canonical.sha256 == git blobs at ca7812c; the HEAD-switch log's six script hashes (qrun.sh 2eaca17c.., check_g1_pass.py 39fe181f..) == blobs. Decode JSONs record adapter null, so the job log was read: the 'adapter:' line before each of the 5 decodes names the expected run (all_ok=True); 0 tracebacks in the job log. The p1dev_s42 re-decode is byte-identical in the S1, S3 and S5 jobs and its preds equal the registered n2 decode (1e183383..). Files in the arm directory covered by no sha list: SHA256SUMS (sha256 32195a8963da2a41), s1_void_check.json (sha256 ae06e7ee2ceb6c68). prov_snapshots/ hold only the 8 ladder sidecars of jobs 56-58 (head cf0c8bb -> ca7812c when qrun re-stamps them; hook and train_stage2 hashes constant and == blobs); they say nothing about this arm, whose provenance is in its own sidecars and JSON blocks (above)."
+    },
+    "C": {
+     "status": "PASS",
+     "evidence": "Committed scripts/seed_consensus.py (blob 2b72dc41.. at 7382600 == the ca7812c tree; load_prereg refused nothing: prereg e485da94..) rerun in a scratch tree of the ca7812c blobs on CPU (1 thread): `mbr` then `gate`. MBR: the recomputed p1dev_mbr3-dev300-short.preds.json is byte-identical to the machine's (sha256 474085418eed0ec83feaca963d26937995b09dc20f40e459a4fb276c0c6124d5); picks {'s42': 213, 's43': 64, 's44': 23} == machine {'s42': 213, 's43': 64, 's44': 23}; selection JSON canonical-equal excluding provenance; the machine's evaluate.py --predictions result carries exactly those captions. gate.json: 1911 leaves compared, 1911 equal, 0 differences, max |diff| 0.0 (json.dumps(sort_keys=True) equality after the exclusions below), with the Python-3.10 sum() behaviour of the jobs' interpreter emulated. Natively on this machine's Python 3.12.3: 8 differences, all in sums of three floats (member_mean and the deltas of R_ktvic5 and F1_ktvic5, and dF1), max |diff| 1.4e-14: Python 3.12's builtin sum() is compensated, the jobs ran 3.10; the emulation removes every one (cause shown by experiment). Exclusions (not recomputable or not comparable): provenance; the 3 panel P/R/F1 numbers per system, member mean and delta (28 subtrees; data/ktvic_openviic_refs.json is forbidden and was never opened: gate() was pointed at a KTVIC-reference stand-in panel, and a second, different stand-in left every decision key unchanged: True); the sha of my regenerated selection file (it embeds host and time). Independent numpy code (bootstrap B=2000 default_rng(0), eligibility, K1/K2, from the recomputed per-image CIDEr-D and from CHAIR_i recomputed with the committed CHAIR code for all five systems, each == its evaluate.py value): D_mbr +2.5498 [+0.0035, +5.2374], D_soup +1.4148 [-1.4380, +4.3053], dCHAIR_i mbr -0.1931, soup +1.2995; max |diff| to gate.json: D 0.0, CI 0.0, dCHAIR_i 0.0. Tool substitutions, disclosed: (1) py_vncorenlp/jnius are not installable here, so RDRSegmenter output comes from a table built with the real VnCoreNLP-1.2.jar batch CLI (jar and model copied from the n2 machine backup, NOT from the M1 mirror, which holds no ncs-data; jar sha256 9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793); the table reproduces KTVIC's own segment_caption.lower() for 18845 of 18845 annotations, and the committed dev_scores asserts (mean per-image == evaluate.py corpus CIDEr-D, 1e-6) held for every decode scored; (2) pycocoevalcap is not installed, so Cider is my own transcription of its CIDEr-D (shims/pycocoevalcap), validated by the same asserts. Not run: seed_consensus --selftest (needs torch/peft), the soup identity on the adapter files, any decode (no GPU). Stand-in check: over all 13 dev300 decodes (the three arms' plus the registered n2 decode), |mean of my per-image CIDEr-D x100 - the result file's own evaluate.py corpus CIDEr-D x100| is at most 2.8e-14 (the committed dev_scores assert needs < 1e-6), so the segmenter table and my CIDEr-D reproduce the machine's scoring to floating-point precision on every decode this record uses."
+    },
+    "D": {
+     "status": "PASS",
+     "evidence": "Prereg S1 gate.rule: \"PASS iff at least one variant is eligible; the carried variant is the eligible one with the larger D_v (tie: the soup, a single model); KILL otherwise\". gate.eligible: \"variant v is eligible iff D_v >= +1.0 and dCHAIR_i(v) <= +1.0 points (point estimates)\". Kill rules K1: \"D_soup < +1.0 and D_MBR < +1.0\"; K2: \"every variant with D_v >= +1.0 has dCHAIR_i > +1.0 points\". gate.status: \"a go/no-go gate, not a claim (PD-9 Q1)\" (thresholds read from the prereg JSON: dev_cider_min 1.0, chair_margin_points 1.0). Applied to the recomputed point estimates: soup D +1.4148 >= 1.0 but dCHAIR_i +1.2995 > 1.0 -> eligible False; MBR D +2.5498 >= 1.0 and dCHAIR_i -0.1931 <= 1.0 -> eligible True; so PASS, carried mbr, K1 False, K2 False == gate.json (PASS, mbr, False, False). The verdict is computed in code (seed_consensus.decide: eligible = d[v] >= lo and dchair[v] <= margin; any(); max by (D, is soup)); my independent function gives the same. Descriptive only: the MBR CI lower bound is +0.0035 (barely above 0) and the gate does not use it; the soup is not eligible, so the carried variant does not depend on the soup. The gate is a go/no-go decision, not a claim; the dev choice between two variants on the same 300 images is optimistic (prereg section 11); a confirmatory S1 number can come only from the final registration's one test look (prereg section 8)."
+    },
+    "V": {
+     "status": "PASS",
+     "evidence": "CC-019b (committed: manuscript/prereg/2026-10-18_tier3_S1_operations.md at f6b1656). Recomputed from the mirror, independently of the operators' scripts, for each member/arm: p1dev_s43: E=866 (2 x floor(3469/8)), V1=False V2=False V3=False V4=False, resumed_from_step=[], evidence-copy and hook-mirror copies byte-equal=True, trainer progress bar [866, 866], latest training-record mtime is 6172 s before the soup self-check; p1dev_s44: E=866 (2 x floor(3469/8)), V1=False V2=False V3=False V4=False, resumed_from_step=[], evidence-copy and hook-mirror copies byte-equal=True, trainer progress bar [866, 866], latest training-record mtime is 7 s before the soup self-check. void=False. Operator record s1_void_check.json: for every member its V1-V4 flags, last step and resumed_from_step equal mine, and its recorded float mtimes floor to the mirror's (per member: {'p1dev_s43': True, 'p1dev_s44': True}); operator void=False. A byte-for-byte comparison of that JSON is impossible because the mirror keeps whole-second mtimes while the file holds float mtimes, so it was compared field by field. Its script is byte-identical to the snippet committed in f6b1656, which I also ran unchanged on the mirror (void False). Decision-record sha256: {'CC-019b.txt_sha256': '7129e3b3ca90139f4220c06d3fe2e75202e02536704e84bbd682ecec623f5ab7'}.",
+     "flags": {
+      "p1dev_s43": [
+       false,
+       false,
+       false,
+       false
+      ],
+      "p1dev_s44": [
+       false,
+       false,
+       false,
+       false
+      ]
+     }
+    },
+    "H": {
+     "status": "PASS",
+     "evidence": "dev300 (300 images) and train-minus-dev300 (3469) are disjoint. The SFT rows the two new members were trained on (the registered n2 build of gold_p1dev; sha256 equals the registered 97187974..): 3469 rows (registered 3469), image ids equal train-minus-dev300 exactly, none in dev300. The machine's copy was sha-checked at job start by seed_consensus.py check (50 checks, pass=True). The committed job file (7382600) loops `for s in [43, 44]` with --seed $s, --epochs 2 and --loss-mask assistant, seeds equal the registered ones: True; the loss trajectories of p1dev_s42 (n2), s43 and s44 ({'p1dev_s42(n2)': 86, 'p1dev_s43': 86, 'p1dev_s44': 86} logged steps each) are pairwise different: True."
+    },
+    "CLAIMS": {
+     "status": "PASS",
+     "evidence": "The brief's S1 statement, parsed in code and compared with gate.json after the rounding it uses: {\"statement\": \"S1 (seed consensus): gate.json says PASS. The MBR-3 variant is carried, D_cider is +2.55 [0.0035, 5.24], and dCHAIR_i is −0.19.\", \"parsed_matches_gate_json\": {\"verdict\": true, \"carried\": true, \"D_point\": true, \"D_lo\": true, \"D_hi\": true, \"dCHAIR_i\": true}, \"machine\": {\"verdict\": \"PASS\", \"carried\": \"mbr\", \"D_mbr_x100\": [2.549769997943729, 0.0035420358476320433, 5.23740337283106], \"dCHAIR_i_mbr_points\": -0.1930673085061798}}"
+    },
+    "OWNERSHIP": {
+     "status": "PASS",
+     "evidence": "Tier-3 S1 belongs to Paper B's stacked-system line. This record is a T3-V verification (A-verifier role (b) only, as LADDER_CHECK_final.json), so the numbers in it are Paper-B-owned: they are not for use in Paper A text (PD-6 ledger)."
+    }
+   },
+   "numbers": {
+    "gate_verdict": "PASS",
+    "carried": "mbr",
+    "D_x100_mbr": [
+     2.549769997943729,
+     0.0035420358476320433,
+     5.23740337283106
+    ],
+    "D_x100_soup": [
+     1.4148165532354753,
+     -1.4380058410813428,
+     4.305343771657343
+    ],
+    "dCHAIR_i_points": {
+     "soup": 1.299470004926654,
+     "mbr": -0.1930673085061798
+    },
+    "source": "M1 mirror outputs/t3_2_s1_seed_consensus/gate.json"
+   },
+   "not_verified_scope": [
+    {
+     "what": "panel P/R/F1 columns of gate.json (P_panel, R_panel, F1_panel per system, member mean, deltas) and n_panel_images",
+     "status": "NOT VERIFIED",
+     "missing": "data/ktvic_openviic_refs.json (forbidden to read; OpenViIC caption text)",
+     "affects_verdict": false,
+     "why_not": "the registered gate uses per-image CIDEr-D and CHAIR_i only; the decision keys are identical under two different stand-in panels"
+    },
+    {
+     "what": "operator-list lines for checkpoint-800/866 files of p1dev_s43/s44 (and optimizer state)",
+     "status": "NOT VERIFIED",
+     "missing": "42 files under outputs/runs/<run>/checkpoint-*",
+     "affects_verdict": false,
+     "why_not": "only the final adapter is decoded; those lines are a second record of intermediate checkpoints"
+    },
+    {
+     "what": "the decodes themselves, the soup identity on the adapter files, seed_consensus --selftest",
+     "status": "NOT RUN",
+     "missing": "GPU / torch / peft",
+     "affects_verdict": false,
+     "why_not": "brief: no GPU, no decoding; the gate recompute starts from the mirrored decodes (sha-verified)"
+    }
+   ],
+   "overall": "VERIFIED",
+   "required_fix": "None for the verdict. Disclose in the S1/B text that the gate JSON's panel columns were not independently recomputed here.",
+   "overall_reason": "Items ['A', 'B', 'C', 'CLAIMS', 'D', 'H', 'OWNERSHIP', 'V'] all PASS: timing, integrity, recompute equal to the machine's output after the stated exclusions, the registered rule applied to the recomputed numbers, no void, and the stated figures reproduced. Not verified, none of it feeding the verdict: panel P/R/F1 columns of gate.json (P_panel, R_panel, F1_panel per system, member mean, deltas) and n_panel_images; operator-list lines for checkpoint-800/866 files of p1dev_s43/s44 (and optimizer state). Not run: the decodes themselves, the soup identity on the adapter files, seed_consensus --selftest."
+  },
+  {
+   "claim_id": "T3V-S2",
+   "source_msg": "coordinator: add arm S2 (T3.1, XV-EF1 verifier gate G0) to the T3-V record",
+   "claim": "S2 = T3.1, the XV-EF1 verifier gate G0. Job 08_t3_1_s2_xvef1_g0 ran on M2: START 14:21:35Z, OK 14:49:21Z. On-machine verdict: G0 PASS. Rule: \"PASS if A_within >= 0.58 and A_noimg <= 0.60 (point estimates)\"; A_within 0.6342, A_noimg 0.4855.",
+   "items": {
+    "A": {
+     "status": "PASS",
+     "evidence": "Chronology (UTC; git committer dates converted from +07:00; queue.log and mirror mtimes are UTC): 2026-10-18T08:57:53Z prereg a68fb66 committed < 2026-10-18T21:22:32Z instrument 3b3da39 committed (it is also the HEAD machine M2 ran at) < 2026-10-18T22:44:40Z G-1 v3 PASS at 3b3da39 stamped < 2026-10-19T14:21:35Z queue.log START 08_t3_1_s2_xvef1_g0 < 2026-10-19T14:47:16Z first file mtime in the arm directory (p_v.jsonl). G-1 v3 gate file sha256 9de8eeabcdcbd8c8 == the sha256 on the queue.log G1_GATE_ENFORCED_OK line printed just before START (verdict PASS, head 3b3da39, 23 adapters verified, mismatches 0; that line carries head=3b3da39, ts=2026-10-18T22:44:40Z). Last file written 2026-10-19T14:49:16Z (t3_1_s2_xvef1_g0.sha256); queue.log OK 2026-10-19T14:49:21Z. Files in the arm directory older than START: 0 of 5 (the cache p_v.jsonl is appended to during scoring, so its mtime is its last row). a68fb66 is an ancestor of 3b3da39, and 3b3da39 is the instrument commit and M2's HEAD (CC-030 (e) required exactly this); the addendum pins (xv_ef1.py c3c34667.., the job file d68e7e5e..) equal the blobs at 3b3da39; the prereg md/json equal the addendum's pins; the queued job file (queue/ and queue/done/) equals the committed blob d68e7e5eda6f06ea. Binding note D-W13-6 (S2 is REGISTERED only if the instrument commit precedes the first S2 output) holds. Mirror mtimes are whole seconds (the floor of the machine's). M2 ran jobs 05, 06, 07 between G-1 and START at the same HEAD.",
+     "checks": {
+      "prereg_before_instrument": true,
+      "instrument_before_g1_ts": true,
+      "g1_before_start": true,
+      "start_not_after_first_output": true,
+      "instrument_before_first_output": true,
+      "prereg_before_first_output": true,
+      "prereg_ancestor_of_head_ran": true,
+      "instrument_commit_is_head_ran": true,
+      "g1_pass_at_head": true,
+      "g1_sha_equals_queue_log": true,
+      "g1_machine_matches_queue_line": true,
+      "no_output_before_start": true,
+      "pins_equal_blobs": true,
+      "queued_job_equals_committed": true,
+      "prereg_files_equal_addendum_pins": true,
+      "all_true": true
+     }
+    },
+    "B": {
+     "status": "PASS",
+     "evidence": "Scores file p_v.jsonl: sha256 b3a0bdc0a00377670c19627ea35db5e06ce0255ca7d8dab2586d0d62f0c5805b == the first line of the job's sha file (4 lines, 0 mismatches against the mirror's bytes, no unlisted file) == the operator list outputs/sha256/t3_1_s2_xvef1_g0.sha256 (byte-identical to the job sha file: True) == cache_sha256 in g0.json, readout.json and score.json. The committed recorded() accepted it (the sha must already be in the sha file before any AUROC); the job script appends it to both lists right after `score` and before `analyse`. qrun's own list 08_t3_1_s2_xvef1_g0.sha256 holds only 2 unrelated sidecars of job 06 (['n9_base.provenance.json', 'n9_povid.provenance.json']). Provenance in g0.json, readout.json and score.json: git_head_sha, hook, train_stage2, script_sha256 (c3c34667..), prereg_sha256 (ac6404b6..), addendum_sha256 (c1802ed1.. == the blob at 3b3da39), job, resumed_from_step [] all equal the expected values from git: True. G-1 v3 file code hashes (hook, train_stage2, evaluate.py, chair.py, adapters_canonical) == git blobs at 3b3da39. Job log: 0 tracebacks; it prints 'g0.json PASS' and 'readout.json NOT CARRIED', equal to the JSON verdicts. Scorer record in score.json: revision == the registered True, the 4 safetensors shard sha256 == the registered ones True (also in M2's prefetch log), README sha256 == the addendum's, torch/transformers {'torch': '2.5.1+cu121', 'transformers': '4.51.3'} == the registered venv, device NVIDIA GeForce RTX 3090, template internvl2_5, yes/no first-token ids [9454, 9693]/[2753, 2152]. The machine verified 23 registered inputs and 6 are provenance-only; together they are exactly the 29 registered inputs; none is a test file. CC-030 (e) venv record: scikit-learn was installed into M2's venv after G-1 and before START; the freeze diff adds ['cloudpickle==3.1.2', 'joblib==1.6.0', 'scikit-learn==1.7.2', 'scipy==1.15.3', 'threadpoolctl==3.7.0'] and removes nothing (numpy 2.2.6, torch 2.5.1+cu121, transformers 4.51.3, timm 1.0.30, einops 0.8.2, torchvision 0.20.1+cu121 unchanged). The 2,612 verifier forward passes (p_with and p_without for each of 1306 items) ran on a GPU and are not reproduced here: p_v.jsonl is taken as the recorded input."
+    },
+    "C": {
+     "status": "PASS",
+     "evidence": "Committed scripts/xv_ef1.py (blob c3c34667.. at 3b3da39 == the addendum pin) run on CPU (1 thread) in a scratch tree of the 3b3da39 blobs. check() is replicated line for line minus its panel line, because check() hashes data/ktvic_openviic_refs.json, which is forbidden and absent here. It passes: 25 registered inputs verified by sha256, 3 absent and provenance-only under the committed rule, and the panel file not read (together exactly the 29 registered inputs: True). The machine verified 23 (the panel among them: True) and had 6 absent; mine are among them (True), I verified everything it verified except the panel (True), and the 3 further files verified here (internvl3_8b.json, internvl3_8b_README_853e3a7.md, qwen25vl7b.json, from the local backup) are not on M2. Every registered constant is checked via constants(reg). Then the committed recorded(), dev(), cached() and g0() unchanged, on the mirrored p_v.jsonl (no verifier score is recomputed): N13 [1306, 683] (items, positives) on 299 images and N7_T0.5 [947, 587], equal to the registered counts; image bootstrap B=2000 default_rng(0). G0 block of g0.json: 260 leaves compared, 260 equal, 0 differences, max |diff| 0.0 (json.dumps(sort_keys=True) equality; identical natively on Python 3.12.3 and with the Python-3.10 sum() emulated). Recomputed A_within 0.6342, A_noimg 0.48546446726156206, verdict PASS. Independent code of mine (rank-sum AUROC with ties averaged for A_noimg; positive-negative pairs pooled within cells, ties one half, for A_within, on the same items/labels/cells): A_within 0.6342099028666193 (cell_auc reports it rounded to 4 decimals: 0.6342, |diff| 0.0), A_noimg 0.48546446726156206 (|diff| 0.0); scores in [0,1]: True. Secondary dev readout (run only because G0 passed): rerun with a KTVIC-reference stand-in panel (the real panel is forbidden): 1301 non-panel leaves compared, 1301 equal, 0 differences (max |diff| 0.0) with the Python-3.10 sum() emulated; the 300 per-image picks of both arms are identical; natively on Python 3.12.3 11 CIDEr-delta leaves differ by <= 3.6e-15 (sums of floats; the same artifact as S1). Excluded: every leaf whose path contains 'panel' (11 subtrees). The greedy P1_dev numbers reproduce the registered ones (the committed reproduces() check, without F1_panel). Committed self-test parts that need no panel passed ({'dev_items_and_item_count_refusal': True, '_cache': True, '_readme': True, '_gate_G0_prior_leak_carry_rule_each_way': True, '_readout_synthetic': True}); the whole self-test and _refusals call check() and cannot run here. G0 itself uses neither a segmenter nor a CIDEr. The readout uses the segmenter table of the S1 note (RDRSegmenter output from the real jar, which reproduces 18845 of 18845 KTVIC segment_caption lines) with the committed rl_reward.CiderD; my pycocoevalcap stand-in is not involved. The committed reproduces() check shows that table and CiderD give the registered P1_dev greedy numbers, and across the other arms' 13 decodes the stand-in pipeline matches evaluate.py's corpus CIDEr-D to 2.8e-14."
+    },
+    "D": {
+     "status": "PASS",
+     "evidence": "Prereg S2 section 8 (committed md): \"- **G0:** PASS if A_within >= 0.58 and A_noimg <= 0.60 (point estimates); otherwise KILL.\" | \"- Kill rule: G0 fails: A_within < 0.58 or A_noimg > 0.60.\". Thresholds read from the prereg JSON: A_within >= 0.58, A_noimg <= 0.6. Applied to the recomputed point estimates: A_within 0.6342 >= 0.58 (margin +0.0542) and A_noimg 0.4855 <= 0.6 (margin +0.1145) -> PASS == g0.json (PASS); the 4-decimal rounding of A_within does not matter (unrounded verdict PASS). The gate uses point estimates; the 95% CIs (image bootstrap) are descriptive: A_within [0.586795, 0.68241] (lower bound above 0.58), A_noimg [0.45621438559902233, 0.5152245379035267] (upper bound below 0.6). The verdict is computed in code (xv_ef1.gate: PASS iff A_within >= min and A_noimg <= max; its boundary cases are in the committed self-test part _gate_G0_prior_leak_carry_rule_each_way, which I ran: passed True). Frozen predictions (reported, decide nothing): A_within [0.65, 0.75] -> observed 0.6342 (below); readout dF1 vs COUNT [0.5, 1.0] -> +1.5132 (above); dCHAIR_i x100 [-3, -1.5] -> -1.8929 (inside); dCIDEr vs greedy [-1, 2] -> -2.6242 (below). Secondary readout, same rule texts: \"- Kill rule: prior leak (dev readout): dF1(XV-EF1 - COUNT) > 0 and dF1(XV-EF1-noimg - COUNT_noimg) >= 70% of it.\" -> prior-leak kill False (dF1 XV-EF1 vs COUNT +1.5132; the no-image arm's dF1 is -0.2628, not >= 70% of it). \"- Carry rule: XV-EF1 enters the single final stacked-system prereg (PD-9 Q4) only if G0 PASS, no prior-leak kill, and on dev300 (point estimates) dF1 vs COUNT >= +0.5, dCHAIR_i x100 vs COUNT <= −1.0, dCIDEr vs greedy >= −2.0 and panel dF1 vs COUNT >= −0.5; otherwise it is not carried and the result is reported. Source: manuscript/research_r14/R14_3/REPORT.md prereg sketch (its test endpoints and guards) used as a dev carry rule; this is never a claim.\" Non-panel criteria on the recomputed point estimates (thresholds read from the prereg JSON {'dF1_vs_COUNT_min': 0.5, 'dCHAIRi_vs_COUNT_x100_max': -1.0, 'dCIDEr_vs_greedy_min': -2.0, 'panel_dF1_vs_COUNT_min': -0.5}): dF1 vs COUNT +1.5132 True, dCHAIR_i x100 vs COUNT -1.8929 True, dCIDEr vs greedy -2.6242 False, no prior leak True: one failed non-panel criterion makes the result NOT CARRIED whatever the panel dF1 is (== readout.json NOT CARRIED). Consequences from the same section: \"- Downstream: S6 may be proposed, with its own prereg, only if G0 PASS (PD-9 Q3); S4 needs G0 PASS and an S3 DPO-arm PASS (R14 synthesis Stage 2). Every Stage-2 item must start by 2026-11-05 (PD-9 Q3).\" G0 PASS therefore permits proposing S6 with its own prereg; S4 also needs an S3 DPO-arm PASS, and S3's recomputed outcome is FAIL, so S4 is not enabled; XV-EF1 is not carried into the final stacked-system prereg. G0 is a gate for the verifier as a scorer, not a claim."
+    },
+    "V": {
+     "status": "PASS",
+     "evidence": "S2 trains nothing, so the training void rules (CC-019b, CC-022, CC-026) do not apply; their analogue is a complete, single-run cache. score.json: items 1306, scored_this_run 1306 (so the run was not resumed from a partial cache), p_v.jsonl rows 1306 with unique (image, class) keys, all scores in [0, 1], 299 images; the job log shows progress up to 1300/1306 (every 100 items) and 0 tracebacks; no g0_v2/readout_v2 file exists. The queued job script runs `xv_ef1.py score` (line 21), then appends the cache sha to both sha lists (line 22), then runs `xv_ef1.py analyse` (line 23); recorded() enforces the sha-before-AUROC rule inside analyse, which ran once. CC-030 note (d) (no AUROC, G0 value or readout is computed anywhere except the job's own analyse step, and never on a partial cache) is about the run; this recompute is a post-hoc verification on the complete, sha-recorded cache, at the coordinator's instruction."
+    },
+    "H": {
+     "status": "PASS",
+     "evidence": "dev300 only: all 1306 items belong to 299 dev300 images; the prereg registers test_split_read=false and none of the machine's 23 verified inputs is a test file. CC-030 note (b) asks for an 8-gram scan of score.json and the analyse outputs against the OpenViIC panel: NOT RUN: it needs the OpenViIC panel file, which is forbidden to read here; a proxy was run instead: score.json, g0.json, readout.json contain no non-ASCII letter at all (Vietnamese text would), the longest non-rule string has 4 words, and p_v.jsonl holds only image ids, class names (1 word) and English noun phrases (at most 4 words)."
+    },
+    "CLAIMS": {
+     "status": "PASS",
+     "evidence": "The coordinator's S2 statement, parsed in code and compared with g0.json and queue.log: {\"statement\": \"S2 = T3.1, the XV-EF1 verifier gate G0. Job 08_t3_1_s2_xvef1_g0 ran on M2: START 14:21:35Z, OK 14:49:21Z. On-machine verdict: G0 PASS. Rule: \\\"PASS if A_within >= 0.58 and A_noimg <= 0.60 (point estimates)\\\"; A_within 0.6342, A_noimg 0.4855.\", \"parsed_matches\": {\"job_name_in_queue_log\": true, \"START_time_of_day\": true, \"OK_time_of_day\": true, \"verdict\": true, \"rule_text_equals_prereg_gate_rule_first_clause\": true, \"A_within_to_the_digits_given\": true, \"A_noimg_to_the_digits_given\": true}, \"machine\": {\"verdict\": \"PASS\", \"A_within\": 0.6342, \"A_noimg\": 0.48546446726156206, \"start\": \"2026-10-19T14:21:35Z\", \"ok\": \"2026-10-19T14:49:21Z\"}}"
+    },
+    "R": {
+     "status": "NOT VERIFIED",
+     "what": "CC-030 binding note (c): git blob sha1 of the cached remote-code *.py files vs the addendum pins and the registered HF record; a mismatch excludes the run",
+     "missing": "/root/.cache/huggingface/hub/models--OpenGVLab--InternVL3-8B/snapshots/853e3a797a661694b1b8ece0cb72dc2b23e3dac9/*.py on M2 (not in the mirror)",
+     "evidence": "CC-030 binding note (c): the A-verifier recomputes the git blob sha1 of the cached remote-code *.py files and compares it with the addendum's remote_code_git_blob_sha1; a mismatch excludes the run. Search of the M2 mirror for a snapshot directory of the pinned revision: 0 found; files missing ['configuration_intern_vit.py', 'configuration_internvl_chat.py', 'conversation.py', 'modeling_intern_vit.py', 'modeling_internvl_chat.py']; files differing []. score.json records the sha256 of 5 *.py files of the snapshot it loaded (configuration_intern_vit.py 22dd687a5f142985, configuration_internvl_chat.py 6524e6deae6c3185, conversation.py b1b9f280e9cb9211, modeling_intern_vit.py d3e0f68f29e86be1, modeling_internvl_chat.py 76fe595f04acd077), and a git blob sha1 cannot be derived from a sha256, so the bytes are needed; M2's claude_prefetch holds only logs and scripts (its log re-confirms the four shard sha256 but hashes no .py). Missing: /root/.cache/huggingface/hub/models--OpenGVLab--InternVL3-8B/snapshots/853e3a797a661694b1b8ece0cb72dc2b23e3dac9/*.py on M2 (not in the mirror). Findings that are possible from the mirror: the addendum pins 4 of the 5 .py files of the registered HF API record (configuration_intern_vit.py has no pin there), the record (prereg hf_api_record, sha256 f79e21e4.., re-hashed) does give its blob id (7e630c456eb9cf350e55bf850c3ff72f445a7e17), and the 4 pinned ones equal that record. Nothing in the mirror suggests a mismatch; it simply cannot be checked here. CC-030 makes a mismatch exclude the run, so this item keeps the arm at NOT VERIFIED until it is closed or waived by main. It can be closed without M2: fetch the same files at the pinned revision, check their sha256 against the values listed here, then compare their git blob ids (git hash-object) with the pins and the HF record."
+    },
+    "OWNERSHIP": {
+     "status": "PASS",
+     "evidence": "Tier-3 S2 belongs to Paper B's stacked-system line. This record is a T3-V verification (A-verifier role (b) only, as LADDER_CHECK_final.json), so the numbers in it are Paper-B-owned: they are not for use in Paper A text (PD-6 ledger)."
+    }
+   },
+   "numbers": {
+    "G0": "PASS",
+    "A_within": 0.6342,
+    "A_within_ci95": [
+     0.586795,
+     0.68241
+    ],
+    "A_noimg": 0.48546446726156206,
+    "A_noimg_ci95": [
+     0.45621438559902233,
+     0.5152245379035267
+    ],
+    "readout_verdict": "NOT CARRIED",
+    "dCIDEr_vs_greedy_x100": -2.6242270441342646,
+    "source": "M2 mirror outputs/t3_1_s2_xvef1_g0/{g0,readout}.json"
+   },
+   "not_verified_scope": [
+    {
+     "what": "CC-030 (c): git blob sha1 of the cached remote-code *.py files vs the addendum/HF-record pins",
+     "status": "NOT VERIFIED",
+     "missing": "/root/.cache/huggingface/hub/models--OpenGVLab--InternVL3-8B/snapshots/853e3a797a661694b1b8ece0cb72dc2b23e3dac9/*.py on M2 (not in the mirror)",
+     "affects_verdict": "yes, if the files differ (CC-030: a mismatch excludes the run); no mismatch is visible",
+     "why_not": "the bytes are needed; sha256 in score.json cannot be turned into a sha1"
+    },
+    {
+     "what": "CC-030 (b): 8-gram scan of score.json and the analyse outputs against the OpenViIC panel",
+     "status": "NOT RUN",
+     "missing": "data/ktvic_openviic_refs.json (forbidden to read)",
+     "affects_verdict": false,
+     "why_not": "proxy done: no non-ASCII letters and no caption-length strings in the outputs"
+    },
+    {
+     "what": "panel dF1, panel CIDEr and F1_panel in readout.json",
+     "status": "NOT VERIFIED",
+     "missing": "data/ktvic_openviic_refs.json (forbidden to read)",
+     "affects_verdict": false,
+     "why_not": "NOT CARRIED follows from the non-panel criterion dCIDEr vs greedy; G0 does not use the panel"
+    },
+    {
+     "what": "the 2,612 InternVL3-8B forward passes (p_v.jsonl) and the whole xv_ef1 --selftest / _refusals",
+     "status": "NOT RUN",
+     "missing": "GPU; check() needs the panel file",
+     "affects_verdict": false,
+     "why_not": "brief: no GPU; p_v.jsonl is sha-verified and its G0 statistics are recomputed"
+    }
+   ],
+   "overall": "NOT VERIFIED",
+   "required_fix": "Close CC-030 (c): fetch the 5 remote-code files at the pinned revision and compare their sha256 with score.json and their git blob ids with the addendum pins and the registered HF record (or hash them on M2, or mirror them), or waive the item. The addendum's pin list omits configuration_intern_vit.py (its blob id is in the registered HF record). The G0 recompute itself needs no fix. Report the readout as NOT CARRIED (dCIDEr vs greedy -2.62 < -2.0).",
+   "overall_reason": "Items ['A', 'B', 'C', 'CLAIMS', 'D', 'H', 'OWNERSHIP', 'V'] PASS (timing, integrity, recompute equal to the machine's output after the stated exclusions, the registered rule applied to the recomputed numbers, no void, and the stated figures reproduced). Open: item(s) ['R'], not PASS: R NOT VERIFIED: CC-030 binding note (c): git blob sha1 of the cached remote-code *.py files vs the addendum pins and the registered HF record; a mismatch excludes the run; missing /root/.cache/huggingface/hub/models--OpenGVLab--InternVL3-8B/snapshots/853e3a797a661694b1b8ece0cb72dc2b23e3dac9/*.py on M2 (not in the mirror). Every other item reproduces, but a binding condition is unchecked, so the arm cannot be called VERIFIED; main can close or waive it (see notes_for_main). Not verified, none of it feeding the verdict: panel dF1, panel CIDEr and F1_panel in readout.json. Not run: CC-030 (b): 8-gram scan of score.json and the analyse outputs against the OpenViIC panel; the 2,612 InternVL3-8B forward passes (p_v.jsonl) and the whole xv_ef1 --selftest / _refusals."
+  },
+  {
+   "claim_id": "T3V-S3",
+   "source_msg": "main: T3-V brief (node T3-V; arms S1, S3, S5)",
+   "claim": "S3 (CM-DPO/RFT): FAIL, with every arm KILL. The S3 H5 kill rule was amended in 59901cc before any output existed.",
+   "items": {
+    "A": {
+     "status": "PASS",
+     "evidence": "Chronology (UTC, git committer dates converted from +07:00; queue.log and mirror mtimes are UTC): 2026-10-18T08:57:53Z prereg a68fb66 committed < 2026-10-18T09:23:30Z amendment1 59901cc committed < 2026-10-18T19:49:26Z instrument 6b88e28 committed < 2026-10-18T21:24:37Z G-1 v3 PASS at ca7812c stamped < 2026-10-19T02:36:08Z queue.log START < 2026-10-19T02:36:17Z first output mtime (check_20261019T023608Z.json). G-1 v3 gate file sha256 50004f388f498a3d == the sha256 recorded on the queue.log G1_GATE_ENFORCED_OK line (verdict PASS, head ca7812c, 23 adapters verified, mismatches 0); that line, printed just before START, carries head=ca7812c and ts=2026-10-18T21:24:37Z. Last file written in the arm directory 2026-10-19T09:41:23Z (SHA256SUMS); queue.log OK 2026-10-19T09:41:48Z. Files in the arm directory older than START: 0 of 68. Ancestors of ca7812c (git merge-base --is-ancestor): a68fb66, 6b88e28, 59901cc. Registered files changed between the instrument commit and ca7812c: none. Every addendum pin equals the blob at the instrument commit and at ca7812c; the queued job file (queue/ and queue/done/) equals the committed blob eb51cecf232c1e41. Mirror mtimes are whole seconds (the floor of the machine's).",
+     "checks": {
+      "prereg_before_instrument": true,
+      "instrument_before_g1_ts": true,
+      "g1_before_start": true,
+      "start_not_after_first_output": true,
+      "instrument_before_first_output": true,
+      "prereg_before_first_output": true,
+      "ancestors_ok": true,
+      "g1_pass_at_head": true,
+      "g1_sha_equals_queue_log": true,
+      "g1_machine_is_M1": true,
+      "no_output_before_start": true,
+      "extra_commits_before_first_output": true,
+      "registered_files_unchanged_instrument_to_head_ran": true,
+      "notes_files_added_once_and_unchanged": true,
+      "pins_equal_blobs": true,
+      "queued_job_equals_committed": true,
+      "extra_commits_before_any_tier3_output": true,
+      "all_true": true
+     }
+    },
+    "B": {
+     "status": "PASS",
+     "evidence": "SHA256SUMS: 73 of 73 lines equal the sha256 of the mirror file (0 mismatches, 0 absent; unique paths), adapters included. Operator list outputs/sha256/03_t3_3_s3_cm_dpo_rft.sha256: 37 lines, 23 in-mirror lines of this arm's runs/ copies match (mismatches 0; disagreements with SHA256SUMS 0); categories {'run_dir_file_in_mirror': 15, 'checkpoint_dir_file_in_mirror': 8, 'checkpoint_dir_file_not_in_mirror': 14}. Lines not checkable because the mirror lacks the file: {'checkpoint_dir_file_not_in_mirror': 14} (intermediate checkpoint files and optimizer state; no verdict reads them). Provenance audit over this arm's JSON: {'machine_id': 34, 'git_head_sha': 34, 'checkpoint_resume_hook_sha256': 34, 'train_stage2_sha256': 34, 'job_files_sha256': 6, 'train_stage2_anchor_sha256': 6}, differing from the committed blobs at ca7812c: 0; 20 decode sidecars' result_sha256 == sha256 of the named result file (mismatches 0). G-1 v3 file hashes of the hook, train_stage2.py, evaluate.py, chair.py and adapters_canonical.sha256 == git blobs at ca7812c; the HEAD-switch log's six script hashes (qrun.sh 2eaca17c.., check_g1_pass.py 39fe181f..) == blobs. Decode JSONs record adapter null, so the job log was read: the 'adapter:' line before each of the 8 decodes names the expected run (all_ok=True); 0 tracebacks in the job log. The p1dev_s42 re-decode is byte-identical in the S1, S3 and S5 jobs and its preds equal the registered n2 decode (1e183383..). Files in the arm directory covered by no sha list: SHA256SUMS (sha256 d2c5ae20bc001bd2). prov_snapshots/ hold only the 8 ladder sidecars of jobs 56-58 (head cf0c8bb -> ca7812c when qrun re-stamps them; hook and train_stage2 hashes constant and == blobs); they say nothing about this arm, whose provenance is in its own sidecars and JSON blocks (above)."
+    },
+    "C": {
+     "status": "PASS",
+     "evidence": "Committed scripts/s3_gate.py (blob 4d8e17c3.. at 6b88e28 == ca7812c tree) rerun unchanged in a scratch tree of the ca7812c blobs on CPU (1 thread): --check (registered shas, 72 constants, 14 code_at_head files, 25 inputs present, 1000 RL images; also the M3 draft diff and the anchor-equals-SFT-target check, both from the repo's session backup), --akl-trigger (yes), --score A, R, AKL (JVM half: caption stats, copy rates, paired CIDEr CI) and --verdict. score_A/R/AKL.json: {'A': (19, 19, 0), 'R': (19, 19, 0), 'AKL': (19, 19, 0)} (equal leaves, leaves, differences) canonical-equal excluding provenance. s3_verdict.json: 344 leaves compared, 344 equal, 0 differences, max |diff| 0.0, canonical-equal after excluding provenance, panel_file and arms.<arm>.panel (identical natively on Python 3.12.3 and with the Python-3.10 sum() emulated). The panel file is not in the scratch tree, so the instrument took its own panel-absent path (load_panel -> None; verdict() tries both sides of panel_cm_lo): recomputed outcome FAIL, verdicts {'A': 'KILL', 'R': 'KILL', 'AKL': 'KILL'} == machine. Independent reading of prereg section 8 (own code, thresholds read from the prereg JSON) on the recomputed d_res / d_res_lo / guards, over a panel_cm_lo on each side of -0.5: {'A': (['KILL'], ['G2'], -0.1785), 'R': (['KILL'], [], -0.5813), 'AKL': (['KILL'], [], 0.1118)} (possible verdicts, failed guards, d_res). Independent guard readings from the machine's dev decodes: dev CIDEr-D x100 {'A': 140.194, 'R': 143.653, 'AKL': 144.086} against 141.33 (G2), CJK captions [0, 0, 0], mean syllables [11.89, 12.05, 11.77]; the committed instrument's own self-test passed (s3_gate --selftest: s3_gate selftest ok: pairs, verdict table, H5 (amendment 1), estimators, report). Same tool substitutions as S1 (segmenter table from the real jar, copied from the n2 backup and checked against KTVIC's segment_caption for 18845 of 18845; own CIDEr-D transcription, validated by dev_scores' 1e-6 asserts). Not run: train_stage2_anchor --selftest (needs torch), pair/target rebuilds, any training or decode. Stand-in check: over all 13 dev300 decodes (the three arms' plus the registered n2 decode), |mean of my per-image CIDEr-D x100 - the result file's own evaluate.py corpus CIDEr-D x100| is at most 2.8e-14 (the committed dev_scores assert needs < 1e-6), so the segmenter table and my CIDEr-D reproduce the machine's scoring to floating-point precision on every decode this record uses."
+    },
+    "D": {
+     "status": "PASS",
+     "evidence": "Prereg S3 section 8 (quoted from the committed md): \"- **Arm A (and A-KL):** PASS iff all guards hold, d_res >= +1.5, d_res_lo > 0 and panel_cm_lo > −0.5; GREY iff all guards hold, panel_cm_lo > −0.5, not PASS, and either +0.5 <= d_res < +1.5 or (d_res >= +1.5 and d_res_lo <= 0); KILL otherwise.\" | \"- **Arm R:** PASS iff all guards hold, d_res >= +1.0, d_res_lo > 0 and panel_cm_lo > −0.5; GREY iff all guards hold, panel_cm_lo > −0.5, not PASS and d_res >= +0.3; KILL otherwise.\" | \"- S3 passes when an arm PASSES; GREY carries no claim and enables nothing without a new judge decision.\" | \"- PD-9 Q2 conditions: d_res 95% CI lower bound > 0 (dev refs) and panel_cm 95% CI lower bound > −0.5 (panel side). Both are inside every PASS below.\" | \"- A-KL: runs only if arm A's verdict is KILL and guard G2 or G3 failed (R14-2: 'runs ONLY after a guard kill on G2/G3'): the anchor is replaced by a token-wise forward KL to pi_SFT on the chosen response (alpha 0.4), lr 2.5e-6, same pairs and settings otherwise; its verdict replaces arm A's.\" Applied to the recomputed numbers: arm A fails G2 (dev CIDEr-D x100 140.194 < 141.33; guards {'G1': True, 'G2': False, 'G3': True, 'G4': True, 'G5': True, 'G6': True}), and PASS and GREY both require all guards -> KILL whatever panel_cm_lo is; A-KL runs because arm A is KILL and G2 failed (trigger True), its verdict replaces A's: all guards hold, d_res +0.1118 < 0.5 (GREY floor) -> neither PASS nor GREY -> KILL whatever panel_cm_lo is; arm R: all guards hold, d_res -0.5813 < 0.3 -> KILL whatever panel_cm_lo is. 'S3 passes when an arm PASSES': none does -> FAIL (== machine). The KILLs therefore do not depend on the one input I cannot read (panel_cm). Verdicts are derived in code (s3_gate.verdict, s3_outcome), with data-dependent branches (checked in the instrument's selftest, which passed)."
+    },
+    "V": {
+     "status": "PASS",
+     "evidence": "CC-026 binding (b) as clarified by CC-026r (local gatekeeper records, sha256 below). Recomputed from the mirror, independently of the operators' scripts, for each member/arm: cmdpo_A_s42: E=245 (floor(1966/8)), V1=False V2=False V3=False V4=False, resumed_from_step=[], evidence-copy and hook-mirror copies byte-equal={'train_summary.json': True, 'metrics.jsonl': True, 'pairs_log.jsonl': True, 'train_log': True}, latest training-record mtime is 212 s before the dev300 decode; cmdpo_AKL_s42: E=245 (floor(1966/8)), V1=False V2=False V3=False V4=False, resumed_from_step=[], evidence-copy and hook-mirror copies byte-equal={'train_summary.json': True, 'metrics.jsonl': True, 'pairs_log.jsonl': True, 'train_log': True}, latest training-record mtime is 210 s before the dev300 decode; cmrft_s42: E=41 (floor(334/8)), V1=False V2=False V3=False V4=False, resumed_from_step=[], evidence-copy and hook-mirror copies byte-equal={'metrics.jsonl': True, 'train_log': True}, trainer progress bar [41, 41], latest training-record mtime is 213 s before the dev300 decode. void=False. No void-check record exists in the mirror for S3 (only the operators' step-evidence copies); these V1-V4 values are therefore first computed here. Dry runs: {'cmdpo_A_s42_dry20': (True, 20, 22), 'cmdpo_AKL_s42_dry20': (True, 20, 22)} (pass, pairs, peak GB cap); events.log: ['2026-10-19T07:02:35Z A-KL trigger (arm A failed G2 or G3): yes', '2026-10-19T09:41:22Z DONE FAIL']. Decision-record sha256: {'CC-026.txt_sha256': '9d894de81e2ec280b2cc806f57df5531d0d63ace08d0ec56071d86f03ece3ba9', 'CC-026r.txt_sha256': 'ceea3015b87c92d70d1f7457d10b6283a1ff4a0dec924f90ab4e17842f94bda0'}.",
+     "flags": {
+      "cmdpo_A_s42": [
+       false,
+       false,
+       false,
+       false
+      ],
+      "cmdpo_AKL_s42": [
+       false,
+       false,
+       false,
+       false
+      ],
+      "cmrft_s42": [
+       false,
+       false,
+       false,
+       false
+      ]
+     }
+    },
+    "H": {
+     "status": "PASS",
+     "evidence": "dev300 (300 images) and train-minus-dev300 (3469) are disjoint. RL images: 1000 ids, newline-joined sha256 equals the registered 3651875c.., equal to the registered list, subset of train-minus-dev300, none in dev300; rl250 = first 250. Pairs: 1966 rows on 575 images (max 4 per image; both counts equal the build report), all ids in the RL set, none in dev300. RFT: 334 rows on 167 images, two rows each (equal to the rft report), all in the RL set, none in dev300. Pool files: {'p1dev_s42-rl1000-short-T0.5.jsonl': (1000, True, True), 'p1dev_s42-rl1000-short-T0.8.jsonl': (1000, True, True), 'p1dev_s42-rl1000-short-pool12.jsonl': (1000, True, True)} (images, subset of RL ids, disjoint from dev300); the rl1000 and rl250 decodes cover exactly the RL ids and their first 250."
+    },
+    "AMENDMENT": {
+     "status": "PASS",
+     "evidence": "Amendment commit 59901cc committed 2026-10-18T09:23:30Z, before the earliest Tier-3 output of any arm (2026-10-18T21:26:29Z) and before the S3 instrument commit and START; it touches only manuscript/prereg/2026-10-18_tier3_S3_amendment1.json (sha256 2aea5b27301792b0 == the pin in s3_gate.REGISTERED) and amends exactly the two prereg files whose blobs are unchanged since a68fb66 and at ca7812c. s3_gate.h5() equals the amended rule \"(dR_UB < 0) OR (dP_LB > 0 AND dR < 0)\" (my own implementation of the quoted text) on 21225 cases (mismatches 0); the old and new readings differ on 964 of them but not on the recomputed arms: H5 state {'A': 'NOT_SHOWN', 'R': 'NOT_SHOWN', 'AKL': 'NOT_SHOWN'}, clause 1 and clause 2 false for A, R and A-KL under either reading; H5 changes no verdict (changes_verdict false). Note the prereg md/json themselves were not edited: the amendment is a separate pinned file, as the instrument addendum records."
+    },
+    "CLAIMS": {
+     "status": "PASS",
+     "evidence": "The brief's S3 statement, parsed in code and compared with s3_verdict.json: {\"statement\": \"S3 (CM-DPO/RFT): FAIL, with every arm KILL. The S3 H5 kill rule was amended in 59901cc before any output existed.\", \"parsed_matches_s3_verdict_json\": {\"outcome\": true, \"every_arm_verdict\": true, \"amendment_commit_is_59901cc_full_sha_prefix\": true}, \"machine\": {\"outcome\": \"FAIL\", \"verdicts\": {\"A\": \"KILL\", \"R\": \"KILL\", \"AKL\": \"KILL\"}, \"arm_A_counts_as\": \"AKL\"}}"
+    },
+    "OWNERSHIP": {
+     "status": "PASS",
+     "evidence": "Tier-3 S3 belongs to Paper B's stacked-system line. This record is a T3-V verification (A-verifier role (b) only, as LADDER_CHECK_final.json), so the numbers in it are Paper-B-owned: they are not for use in Paper A text (PD-6 ledger)."
+    }
+   },
+   "numbers": {
+    "outcome": "FAIL",
+    "verdicts": {
+     "A": "KILL",
+     "R": "KILL",
+     "AKL": "KILL"
+    },
+    "d_res": {
+     "A": [
+      -0.17854119164798732,
+      -1.627443697448472,
+      1.258354952187562
+     ],
+     "R": [
+      -0.5813330259515226,
+      -1.8457743848698862,
+      0.5883746568179865
+     ],
+     "AKL": [
+      0.11181433092077953,
+      -0.9253602683353367,
+      1.075466664471653
+     ]
+    },
+    "guards": {
+     "A": {
+      "G1": true,
+      "G2": false,
+      "G3": true,
+      "G4": true,
+      "G5": true,
+      "G6": true
+     },
+     "R": {
+      "G1": true,
+      "G2": true,
+      "G3": true,
+      "G4": true,
+      "G5": true,
+      "G6": true
+     },
+     "AKL": {
+      "G1": true,
+      "G2": true,
+      "G3": true,
+      "G4": true,
+      "G5": true,
+      "G6": true
+     }
+    },
+    "source": "M1 mirror outputs/t3_3_s3_cm_dpo_rft/s3_verdict.json"
+   },
+   "not_verified_scope": [
+    {
+     "what": "panel_cm, plain_dF1 and dm on the 296-image OpenViIC panel (arms.<arm>.panel in s3_verdict.json)",
+     "status": "NOT VERIFIED",
+     "missing": "data/ktvic_openviic_refs.json (forbidden to read; OpenViIC caption text)",
+     "affects_verdict": false,
+     "why_not": "every arm's KILL follows from non-panel conditions (G2 for A; d_res below the GREY floor for A-KL and R), shown for panel_cm_lo on both sides of -0.5"
+    },
+    {
+     "what": "operator-list lines for checkpoint files of S3 runs",
+     "status": "NOT VERIFIED",
+     "missing": "14 files under outputs/runs/<run>/checkpoint-*",
+     "affects_verdict": false,
+     "why_not": "only the last checkpoint is evaluated; intermediate checkpoints feed no verdict"
+    },
+    {
+     "what": "pair and RFT-target rebuilds, DPO/SFT training, decodes, train_stage2_anchor --selftest",
+     "status": "NOT RUN",
+     "missing": "GPU / torch",
+     "affects_verdict": false,
+     "why_not": "brief: no GPU, no decoding; the verdict recompute starts from the mirrored decodes (sha-verified) and the training records"
+    }
+   ],
+   "overall": "VERIFIED",
+   "required_fix": "None for the verdict. The S3 report should state that panel_cm/plain_dF1/dm are not independently recomputed here, and that no S3 void-check record exists on the machine (my V1-V4 are the first).",
+   "overall_reason": "Items ['A', 'AMENDMENT', 'B', 'C', 'CLAIMS', 'D', 'H', 'OWNERSHIP', 'V'] all PASS: timing, integrity, recompute equal to the machine's output after the stated exclusions, the registered rule applied to the recomputed numbers, no void, and the stated figures reproduced. Not verified, none of it feeding the verdict: panel_cm, plain_dF1 and dm on the 296-image OpenViIC panel (arms.<arm>.panel in s3_verdict.json); operator-list lines for checkpoint files of S3 runs. Not run: pair and RFT-target rebuilds, DPO/SFT training, decodes, train_stage2_anchor --selftest."
+  },
+  {
+   "claim_id": "T3V-S5",
+   "source_msg": "main: T3-V brief (node T3-V; arms S1, S3, S5)",
+   "claim": "S5 (data scaling): s5_void_check.json is clean. The curve is descriptive only.",
+   "items": {
+    "A": {
+     "status": "PASS",
+     "evidence": "Chronology (UTC, git committer dates converted from +07:00; queue.log and mirror mtimes are UTC): 2026-10-18T08:57:53Z prereg a68fb66 committed < 2026-10-18T18:30:14Z instrument e3bd6ff committed < 2026-10-18T21:24:37Z G-1 v3 PASS at ca7812c stamped < 2026-10-18T21:26:14Z queue.log START < 2026-10-18T21:26:29Z first output mtime (data/gold_p1dev_f25/_build_report.json). G-1 v3 gate file sha256 50004f388f498a3d == the sha256 recorded on the queue.log G1_GATE_ENFORCED_OK line (verdict PASS, head ca7812c, 23 adapters verified, mismatches 0); that line, printed just before START, carries head=ca7812c and ts=2026-10-18T21:24:37Z. Last file written in the arm directory 2026-10-18T22:54:56Z (s5_void_check.json, written by the operators' void-check watcher after the job's OK); queue.log OK 2026-10-18T22:54:54Z. Files in the arm directory older than START: 0 of 21. Ancestors of ca7812c (git merge-base --is-ancestor): a68fb66, e3bd6ff. Registered files changed between the instrument commit and ca7812c: none. Every addendum pin equals the blob at the instrument commit and at ca7812c; the queued job file (queue/ and queue/done/) equals the committed blob e5998596ad654621. Mirror mtimes are whole seconds (the floor of the machine's).",
+     "checks": {
+      "prereg_before_instrument": true,
+      "instrument_before_g1_ts": true,
+      "g1_before_start": true,
+      "start_not_after_first_output": true,
+      "instrument_before_first_output": true,
+      "prereg_before_first_output": true,
+      "ancestors_ok": true,
+      "g1_pass_at_head": true,
+      "g1_sha_equals_queue_log": true,
+      "g1_machine_is_M1": true,
+      "no_output_before_start": true,
+      "extra_commits_before_first_output": true,
+      "registered_files_unchanged_instrument_to_head_ran": true,
+      "notes_files_added_once_and_unchanged": true,
+      "pins_equal_blobs": true,
+      "queued_job_equals_committed": true,
+      "extra_commits_before_any_tier3_output": true,
+      "all_true": true
+     }
+    },
+    "B": {
+     "status": "PASS",
+     "evidence": "SHA256SUMS: 27 of 27 lines equal the sha256 of the mirror file (0 mismatches, 0 absent; unique paths), adapters included. Operator list outputs/sha256/01_t3_4_s5_data_scaling.sha256: 109 lines, 95 in-mirror lines of this arm's runs/ copies match (mismatches 0; disagreements with SHA256SUMS 0); categories {'ladder_sidecar_re_stamped_by_qrun (jobs 56-58, not an output of this arm)': 14, 'run_dir_file_in_mirror': 11, 'checkpoint_dir_file_in_mirror': 84}. Lines not checkable because the mirror lacks the file: none. Provenance audit over this arm's JSON: {'machine_id': 4, 'git_head_sha': 4, 'checkpoint_resume_hook_sha256': 4, 'train_stage2_sha256': 4, 'prereg_sha256': 1, 'instrument_sha256': 1, 'scaling_probe_sha256': 1, 'job_file_sha256': 1}, differing from the committed blobs at ca7812c: 0; 3 decode sidecars' result_sha256 == sha256 of the named result file (mismatches 0). G-1 v3 file hashes of the hook, train_stage2.py, evaluate.py, chair.py and adapters_canonical.sha256 == git blobs at ca7812c; the HEAD-switch log's six script hashes (qrun.sh 2eaca17c.., check_g1_pass.py 39fe181f..) == blobs. Decode JSONs record adapter null, so the job log was read: the 'adapter:' line before each of the 3 decodes names the expected run (all_ok=True); 0 tracebacks in the job log. The p1dev_s42 re-decode is byte-identical in the S1, S3 and S5 jobs and its preds equal the registered n2 decode (1e183383..). Files in the arm directory covered by no sha list: SHA256SUMS (sha256 73ee2eea6b55db4a), s5_void_check.json (sha256 7e1316147113f217). prov_snapshots/ hold only the 8 ladder sidecars of jobs 56-58 (head cf0c8bb -> ca7812c when qrun re-stamps them; hook and train_stage2 hashes constant and == blobs); they say nothing about this arm, whose provenance is in its own sidecars and JSON blocks (above)."
+    },
+    "C": {
+     "status": "PASS",
+     "evidence": "Committed scripts/scaling_probe.py (blob 0342f6e5.. at e3bd6ff == ca7812c tree): check(instrument=True) (prereg shas, constants, 12 code_at_head files, registered inputs, addendum pins), dev_refs, per_image on the registered n2 decode and the three dev300 decodes (the machine's dev300 results), n2_reproduced, fit(), run on CPU (1 thread) from the mirrored decodes; the parts that need the machine's adapter files and base weights were replaced by the mirror's sha256 of the same files (equal to scaling.json's adapter_sha256, result_sha256, preds_sha256: part of the comparison). scaling.json: 90 leaves compared, 90 equal, 0 differences, max |diff| 0.0 (json.dumps(sort_keys=True) equality, excluding provenance and the machine paths in points.*.result/adapter). Recomputed: b = 9.40437609092112, ci_lo(b) = 4.865027732900444, fits b: {'CIDEr_D_x100': 9.4044, 'F1': 1.1778, 'CHAIR_i': -0.0127}. Independent numpy code (own OLS and own bootstrap with B=2000 default_rng(0) on the recomputed per-image CIDEr-D): b 9.404376090921117, CI [4.865027732900444, 13.893715293659431], |diff| to scaling.json b 3.6e-15, CI lo 0.0e+00, CI hi 1.8e-15; the committed self-test passed (scaling_probe self-test ok). The dev_scores 1e-6 asserts held for all four decodes. Same tool substitutions as S1 (segmenter table from the real jar; own CIDEr-D transcription). Python 3.12.3; no sum() of floats is involved (0 differences natively). Stand-in check: over all 13 dev300 decodes (the three arms' plus the registered n2 decode), |mean of my per-image CIDEr-D x100 - the result file's own evaluate.py corpus CIDEr-D x100| is at most 2.8e-14 (the committed dev_scores assert needs < 1e-6), so the segmenter table and my CIDEr-D reproduce the machine's scoring to floating-point precision on every decode this record uses."
+    },
+    "D": {
+     "status": "PASS",
+     "evidence": "Prereg S5 section 8: \"- **Rule:** FUND_EXTERNAL_IMAGE_DATA if CI_lo(b) > +1; CLOSE_DATA_VOLUME_LEVERS if b < +1; INCONCLUSIVE otherwise (no external-data spend).\" and \"- Status: diagnostic only (PD-9 Q1): no selection, no claim, no gate on any other job.\". Applied to the recomputed b = +9.4044 and CI_lo(b) = +4.8650: CI_lo(b) > +1 -> FUND_EXTERNAL_IMAGE_DATA (== scaling.json FUND_EXTERNAL_IMAGE_DATA); the consequence line is \"S8 (UIT-ViIC translate-train + joint model) may be proposed with its own prereg (R14 synthesis: 'slope b LB > 1')\". Note the registered outcome is FUND_EXTERNAL_IMAGE_DATA, not INCONCLUSIVE: 'descriptive only' holds in the sense of the prereg status (diagnostic, no selection, no claim, no gate on any other job), but the pre-registered rule does return FUND, which permits proposing S8 with its own prereg. Frozen predictions (reported, decide nothing): CIDEr-D slope in [+1, +4] -> miss (b = 9.40); F1 slope in [0, +2] -> hit (b = 1.18). Caveats the prereg already states: one training seed per size (the CI covers dev-image sampling only) and the 100% point is the earlier n2-trained adapter re-decoded on M1; the CIDEr-D points are 125.52, 128.71, 144.33 (the 50 to 100% step carries most of the slope). The verdict is computed in code (scaling_probe.decide, clauses in written order; its table is in the committed self-test)."
+    },
+    "V": {
+     "status": "PASS",
+     "evidence": "CC-022 binding note (local gatekeeper record, sha256 below); greps read from the committed job file (e3bd6ff). Recomputed from the mirror, independently of the operators' scripts, for each member/arm: p1dev_s42_f25: E=216 (2 x floor(867/8)), V1=False V2=False V3=False V4=False, resumed_from_step=[], evidence-copy and hook-mirror copies byte-equal=True, trainer progress bar [216, 216], latest training-record mtime is 212 s before the dev300 decode; p1dev_s42_f50: E=432 (2 x floor(1734/8)), V1=False V2=False V3=False V4=False, resumed_from_step=[], evidence-copy and hook-mirror copies byte-equal=True, trainer progress bar [432, 432], latest training-record mtime is 212 s before the dev300 decode. void=False. Operator record s5_void_check.json: for every member its V1-V4 flags, last step and resumed_from_step equal mine, and its recorded float mtimes floor to the mirror's (per member: {'p1dev_s42_f25': True, 'p1dev_s42_f50': True}); operator void=False. A byte-for-byte comparison of that JSON is impossible because the mirror keeps whole-second mtimes while the file holds float mtimes, so it was compared field by field. Its script is not committed (CC-022 text only); its field logged_total_steps_ok=false and logged_total_steps=[] because it greps 'Total optimization steps =', a line the training logs never print (0 hits); the trainer's own totals are in the tqdm bars (216/216 and 432/432) and in the last metrics.jsonl record, both equal E. Decision-record sha256: {'CC-022.txt_sha256': '22aae8b5d5687a1f3791feb8a91c391fd301ac43572488e1ea69f03239740a56'}.",
+     "flags": {
+      "p1dev_s42_f25": [
+       false,
+       false,
+       false,
+       false
+      ],
+      "p1dev_s42_f50": [
+       false,
+       false,
+       false,
+       false
+      ]
+     }
+    },
+    "H": {
+     "status": "PASS",
+     "evidence": "dev300 (300 images) and train-minus-dev300 (3469) are disjoint. f25: 867 images (registered 867), 867 SFT rows covering exactly those ids, ids-file sha256 and sft.jsonl sha256 equal the registered values, ids equal the registered list, subset of train-minus-dev300, none in dev300; f50: 1734 images (registered 1734), 1734 SFT rows covering exactly those ids, ids-file sha256 and sft.jsonl sha256 equal the registered values, ids equal the registered list, subset of train-minus-dev300, none in dev300; f25 is a proper subset of f50 (nested): True."
+    },
+    "CLAIMS": {
+     "status": "PASS",
+     "evidence": "The brief's S5 statement, parsed and compared: {\"statement\": \"S5 (data scaling): s5_void_check.json is clean. The curve is descriptive only.\", \"parsed_checks\": {\"s5_void_check_json_void_false\": true, \"own_recomputed_void_false\": true, \"claim_text_says_clean\": true}, \"machine_void_check_json\": \"void false\", \"registered_decision\": \"FUND_EXTERNAL_IMAGE_DATA\"}"
+    },
+    "OWNERSHIP": {
+     "status": "PASS",
+     "evidence": "Tier-3 S5 belongs to Paper B's line. This record is a T3-V verification (A-verifier role (b) only, as LADDER_CHECK_final.json), so the numbers in it are Paper-B-owned: they are not for use in Paper A text (PD-6 ledger)."
+    }
+   },
+   "numbers": {
+    "decision": "FUND_EXTERNAL_IMAGE_DATA",
+    "b": 9.40437609092112,
+    "ci_lo_b": 4.865027732900444,
+    "ci95_b": [
+     4.865027732900444,
+     13.893715293659433
+    ],
+    "source": "M1 mirror outputs/t3_4_s5_data_scaling/scaling.json"
+   },
+   "not_verified_scope": [
+    {
+     "what": "the decodes and trainings themselves",
+     "status": "NOT RUN",
+     "missing": "GPU",
+     "affects_verdict": false,
+     "why_not": "brief: no GPU, no decoding"
+    }
+   ],
+   "overall": "VERIFIED",
+   "required_fix": "None for the verdict. Report the outcome as the registered FUND_EXTERNAL_IMAGE_DATA (diagnostic status, S8 only by its own prereg), not as 'inconclusive'.",
+   "overall_reason": "Items ['A', 'B', 'C', 'CLAIMS', 'D', 'H', 'OWNERSHIP', 'V'] all PASS: timing, integrity, recompute equal to the machine's output after the stated exclusions, the registered rule applied to the recomputed numbers, no void, and the stated figures reproduced. Not run: the decodes and trainings themselves."
+  }
+ ],
+ "notes_for_main": [
+  {
+   "id": "N1",
+   "topic": "S5 outcome wording",
+   "note": "The registered rule returns FUND_EXTERNAL_IMAGE_DATA (b = 9.404, CI_lo = 4.865), not INCONCLUSIVE; 'descriptive only' is right for the prereg status line but not for the rule's outcome."
+  },
+  {
+   "id": "N2",
+   "topic": "S1 float differences",
+   "note": "Natively (Python 3.12.3) 8 float leaves of gate.json differ by <= 1.4e-14 (sums of three floats); with the jobs' Python-3.10 sum() emulated the difference is zero."
+  },
+  {
+   "id": "N3",
+   "topic": "tool substitution",
+   "note": "py_vncorenlp (jnius) and pycocoevalcap are not installable offline. The real VnCoreNLP-1.2.jar and RDR model were taken from the n2 machine backup (the M1 mirror has no ncs-data), a table of its output stands in for py_vncorenlp, and CIDEr-D is my transcription of pycocoevalcap's. Validity rests on exact reproduction: 18845 of 18845 KTVIC segment_caption lines, the committed 1e-6 corpus-CIDEr asserts on every decode, byte-identical MBR captions, identical scaling/score/verdict JSON."
+  },
+  {
+   "id": "N4",
+   "topic": "brief path differences",
+   "note": "manuscript/AGENT_RULES.md does not exist: the pinned file is manuscript/paperA_plan/AGENT_RULES.md (untracked, sha256 9109261d247270c4); the G-1 gate files are outputs/g1_gate_<machine>_v*.json, not outputs/results/; START/OK and G1_GATE_ENFORCED_OK lines are in queue/queue.log (queue/done/ holds .sh and .sha256 only). No file was substituted."
+  },
+  {
+   "id": "N5",
+   "topic": "records outside the sha lists",
+   "note": "s1_void_check.json and s5_void_check.json (written after the jobs' SHA256SUMS) and each SHA256SUMS are in no sha list; the void-check contents were reproduced independently. S3 has no void-check record on the machine; my V1-V4 for S3 are the first."
+  },
+  {
+   "id": "N6",
+   "topic": "S5 logged_total_steps_ok",
+   "note": "s5_void_check.json reports logged_total_steps_ok=false because its regex looks for a 'Total optimization steps =' line the logs never print; the trainer's totals are in the tqdm bars (216/216, 432/432) and the last metrics record, and equal the expected counts. It is not part of the void formula."
+  },
+  {
+   "id": "N7",
+   "topic": "mirror limits",
+   "note": "The mirror holds whole-second mtimes (floor of the machine's) and a stale vsps/.git (reflog ends 2026-10-18T06:56Z at cf0c8bb), so the HEAD during the jobs rests on queue.log, the G-1 v3 file (head ca7812c, sha equal to queue.log's) and the provenance blocks. Operator-list lines for checkpoint-* files absent from the mirror are unverifiable and feed no verdict."
+  },
+  {
+   "id": "N8",
+   "topic": "S1 borderline",
+   "note": "The MBR D lower bound is +0.0035: the gate uses point estimates and passes with margin (+2.55 vs +1.0), but any text that quotes the CI should say it barely excludes 0 and is a dev-set, two-variant-selection number."
+  },
+  {
+   "id": "N9",
+   "topic": "S2 open item CC-030 (c), the reason S2 is NOT VERIFIED",
+   "note": "Every other S2 item reproduces. The git blob sha1 of the cached remote-code *.py files cannot be checked from the M2 mirror: the 5 files are not mirrored (path in item R). The addendum pins 4 of the 5 and omits configuration_intern_vit.py (blob id in the registered HF record). CC-030 says a mismatch excludes the run. M2 is not needed to close it: fetch the 5 files at revision 853e3a79 from the model repo, check that their sha256 equal score.json's remote_code_sha256 (prefixes in item R; the full values are in outputs/t3_1_s2_xvef1_g0/score.json of the M2 mirror), then compare `git hash-object` of each with the addendum pins and the HF record's blob ids. If all equal, S2 becomes VERIFIED with no other change; main may also waive the item."
+  },
+  {
+   "id": "N10",
+   "topic": "S2 scope of the G0 recompute",
+   "note": "By instruction the 2,612 verifier forward passes (GPU; 1306 items, with and without the image) were not rerun: G0 and the dev readout were recomputed from the sha-verified p_v.jsonl with the committed instrument, check() replicated minus its panel line (the panel file is forbidden here), panel-derived leaves excluded. Not run: the whole xv_ef1 --selftest/_refusals (they call check()) and the CC-030 (b) 8-gram scan against the panel (proxy: no non-ASCII letters in the outputs)."
+  },
+  {
+   "id": "N11",
+   "topic": "S2 reading of the numbers",
+   "note": "G0 PASS is on point estimates: A_within 0.6342 (+0.0542 over 0.58; 95% CI [0.586795, 0.68241]) and A_noimg 0.4855 (<= 0.6). It is below the frozen A_within prediction [0.65, 0.75] (reported, decides nothing). The dev readout is NOT CARRIED: dCIDEr vs greedy -2.62 < -2.0 (the registered minimum), so XV-EF1 is not carried into the final stacked-system prereg, S4 is not enabled (S3 outcome FAIL), and S6 may be proposed with its own prereg."
+  }
+ ],
+ "method": {
+  "scripts": [
+   "scripts/setup_tree.sh",
+   "scripts/segtable.py",
+   "scripts/t3v_common.py",
+   "scripts/run_s1.py",
+   "scripts/run_s3.py",
+   "scripts/run_s5.py",
+   "scripts/run_void.py",
+   "scripts/run_timing.py",
+   "scripts/run_integrity.py",
+   "scripts/run_amend.py",
+   "scripts/run_extra.py",
+   "scripts/run_selftests.py",
+   "scripts/make_record.py",
+   "shims/py_vncorenlp.py",
+   "shims/pycocoevalcap/cider/cider.py",
+   "scripts/run_data.py",
+   "scripts/run_cider_equiv.py",
+   "scripts/setup_tree_s2.sh",
+   "scripts/run_s2.py",
+   "scripts/run_s2_records.py",
+   "scripts/run_s2_selftest.py",
+   "scripts/test_make_record.py"
+  ],
+  "scratch_dir": "<verifier scratch>/t3v/",
+  "code_tree": "git archive of ca7812cea2dba1160fc8a079a727598a4605e49b (scripts, rescap, manuscript/prereg, manuscript/research_r14/R14_3, data/splits, data/results/rl); instrument blobs equal their commits' blobs and the addendum pins; S2: git archive of 3b3da393718bc812a94153cca49e0d543b7317d2 (scripts, rescap, manuscript/prereg, manuscript/research_r14, data/splits, data/results/rl, data/results/upe) plus the registered HF metadata files from the local backup",
+  "inputs": [
+   "M1 mirror: outputs/{t3_2_s1_seed_consensus,t3_3_s3_cm_dpo_rft,t3_4_s5_data_scaling}, outputs/runs, outputs/sha256, outputs/prov_snapshots, outputs/claude_ops, queue/queue.log and queue/*.log, g1 gate files",
+   "M2 mirror (S2): outputs/t3_1_s2_xvef1_g0 (g0.json, readout.json, score.json, p_v.jsonl, sha list), outputs/sha256, outputs/prov_snapshots, queue/queue.log, queue/08_t3_1_s2_xvef1_g0.sh and its log, the g1 gate file",
+   "git objects (read-only): a68fb66, 59901cc, 7382600, f6b1656, 6b88e28, e3bd6ff, ca7812c, 3b3da39",
+   "git-ignored KTVIC train_data.json (sha256 72ee9b57.., the prereg pin) for the references",
+   "segmenter jar and RDR model from the n2 machine backup (jar sha256 9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793)",
+   "gatekeeper decision records CC-019b, CC-022, CC-026, CC-026r (S1, S3, S5) and CC-030 (S2) (local, not in git; sha256 in the V items)"
+  ],
+  "forbidden_input_not_read": "data/ktvic_openviic_refs.json was never opened, hashed or copied; no OpenViIC caption text is in this record or in the scratch results",
+  "resources": "CPU only; nice -n 19 (the brief's 15 or nicer), 1 thread (OMP/OPENBLAS/MKL = 1; JVM ActiveProcessorCount=1); peak well under 1.5 GB; no GPU, no network, no decoding",
+  "python": "3.12.3",
+  "mutation_tests_of_the_record_builder": {
+   "baseline_overall": {
+    "S1": "VERIFIED",
+    "S2": "NOT VERIFIED",
+    "S3": "VERIFIED",
+    "S5": "VERIFIED"
+   },
+   "baseline_items_not_PASS": {
+    "S2": [
+     "R"
+    ]
+   },
+   "n_mutants": 23,
+   "every_mutant_changes_at_least_one_item": true,
+   "mutants": [
+    {
+     "mutant": "S1: START later than the first output",
+     "items_changed": {
+      "S1": {
+       "A": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S3: one SHA256SUMS line mismatches",
+     "items_changed": {
+      "S3": {
+       "B": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S1: gate.json recompute not canonical-equal",
+     "items_changed": {
+      "S1": {
+       "C": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S5: a void flag V2 set",
+     "items_changed": {
+      "S5": {
+       "V": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S1: the brief's D is +2.56",
+     "items_changed": {
+      "S1": {
+       "CLAIMS": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S1: the brief says soup is carried",
+     "items_changed": {
+      "S1": {
+       "CLAIMS": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S3: an arm could PASS for some panel_cm_lo",
+     "items_changed": {
+      "S3": {
+       "D": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S5: independent rule gives INCONCLUSIVE",
+     "items_changed": {
+      "S5": {
+       "C": "PASS -> FAIL",
+       "D": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S3: H5 implementation mismatches the amended rule",
+     "items_changed": {
+      "S3": {
+       "AMENDMENT": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S1: committed void snippet reports void",
+     "items_changed": {
+      "S1": {
+       "V": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S5: an ids file sha differs from the registered one",
+     "items_changed": {
+      "S5": {
+       "H": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S3: a DPO pair image is in dev300",
+     "items_changed": {
+      "S3": {
+       "H": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S3: a G-1 code hash differs from the blob",
+     "items_changed": {
+      "S1": {
+       "B": "PASS -> FAIL"
+      },
+      "S3": {
+       "B": "PASS -> FAIL"
+      },
+      "S5": {
+       "B": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: START later than the first output",
+     "items_changed": {
+      "S2": {
+       "A": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: operator list differs from the job sha file",
+     "items_changed": {
+      "S2": {
+       "B": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: G0 block of g0.json not canonical-equal to the recompute",
+     "items_changed": {
+      "S2": {
+       "C": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: independent G0 verdict is KILL",
+     "items_changed": {
+      "S2": {
+       "C": "PASS -> FAIL",
+       "D": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: recomputed readout verdict is CARRIED",
+     "items_changed": {
+      "S2": {
+       "D": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: the cache has duplicate (image, class) keys",
+     "items_changed": {
+      "S2": {
+       "V": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: the test split was read",
+     "items_changed": {
+      "S2": {
+       "H": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: the coordinator's A_within is 0.6343",
+     "items_changed": {
+      "S2": {
+       "CLAIMS": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: the coordinator's verdict is KILL",
+     "items_changed": {
+      "S2": {
+       "CLAIMS": "PASS -> FAIL"
+      }
+     }
+    },
+    {
+     "mutant": "S2: cached remote-code files found with the wrong bytes",
+     "items_changed": {
+      "S2": {
+       "R": "NOT VERIFIED -> FAIL"
+      }
+     }
+    }
+   ],
+   "unit_checks": {
+    "git_blob_sha1_equals_git_hash_object": true,
+    "r_check_no_snapshot_is_NOT_VERIFIED": true,
+    "r_check_all_equal_is_PASS": true,
+    "r_check_one_differs_is_FAIL": true,
+    "r_check_one_missing_is_NOT_VERIFIED": true,
+    "all_true": true
+   },
+   "note": "each mutant perturbs one result file (temp copy), the quoted brief line, or the mirror search root; run by scripts/test_make_record.py after the last edit of make_record.py and before this record was written"
+  },
+  "statuses": "every status is a predicate in make_record.py over results/*.json (S2 item R: over a search of the mirror and git blob ids); brief claims are parsed from the quoted text and compared; the one exception is OWNERSHIP, a declaration (as WBS5_ownership in LADDER_CHECK_final.json)",
+  "network": "none",
+  "git": "read-only (archive, show, diff, log, merge-base, rev-parse); no commit, push, stash or checkout",
+  "task_agent_scripts_run": "none (the committed instruments were run; the operators' void scripts were only read and compared)"
+ }
+}
