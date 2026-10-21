@@ -470,7 +470,7 @@ NOT_RUN	B	B-N3 criterion analysis (agreement gate STOP; PD-21b)	—	—	NOT_RUN
 +1.00 [+1.00, +1.00] (LBB-P1, FAIL)	B	data/results/b_n1/b_n1_run.json	predictions.LBB-P1.{point,ci95,verdict}	adad454d6c9f	keyed
 +0.67 [+0.33, +0.67] (LBB-P2, INCONCLUSIVE)	B	data/results/b_n1/b_n1_run.json	predictions.LBB-P2.{point,ci95,verdict}	adad454d6c9f	keyed
 +0.000 [-0.33, +0.000] (LBB-P3, FAIL)	B	data/results/b_n1/b_n1_run.json	predictions.LBB-P3.{point,ci95,verdict}	adad454d6c9f	keyed
-B-F1	B	final single test evaluation of MBR-3 (prereg d6cb2c7; instrument 877f7db)	—	—	NOT RUN as of 2026-10-20; PD-24 (d) end state; supplementary_B.md S7
+B-F1	B	final single test evaluation of MBR-3 (prereg d6cb2c7; instrument 877f7db)	—	—	RUN once 2026-10-21, verdict FAIL: see the CP-071 rows citing data/results/b_f1/b_f1_run.json
 +2.55 [+0.004, +5.24] (S1 MBR-3 D CIDEr-D x100, dev300)	B	.session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json	D_cider_x100_mean_lo_hi.mbr	8998aff20031	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
 −0.19 (S1 MBR-3 ΔCHAIR_i, dev300)	B	.session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json	dCHAIR_i_points.mbr	8998aff20031	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
 +1.30 (S1 soup ΔCHAIR_i; soup not eligible)	B	.session_backup/machines/O-2308423/root/outputs/t3_2_s1_seed_consensus/gate.json	dCHAIR_i_points.soup	8998aff20031	keyed (VERIFIED T3V_S1_S3_S5.json 112fd942; on-machine record mirrored, not committed)
@@ -503,3 +503,27 @@ about 2 GPU-hours per run; 24 GB RTX 4090 class	B	README.md (repository; not arc
 +13.02	B	data/results/b_n2/b_n2_run.json	primary_cider_d_df558.gap.p1assist_s43.ci95.1 (maximum upper bound over gap.*)	59463c4c73e6	keyed (R2 N-m13, added 2026-10-21; S5)
 5 files / 11 lines / 8–9 tokens / 0 matches ≥ 12 tokens / 0 unpinned 8-gram hits	B	.session_backup/2026-10-21/zenodo_build/BUILD_RECORD.json ; .session_backup/2026-10-21/RELEASE_SCAN_v2.json	code_hits_documented (5 keys, 11 lines, longest_match_tokens) ; unpinned_8gram_hit_files ; longest_run_tokens_upper_bound ; ceiling	—	release record (R2 N-M2, added 2026-10-21; sec3:90, sec7:25; values confirmed on the v2 tarball by the kit builder)
 41 of 504	B	manifests/number_manifest_B.tsv (archived copy)	rows whose archive_path contains "withheld:" ; data rows	—	derived count (v2 archive, 2026-10-21; sec7:61)
+145.15	B	data/results/b_f1/b_f1_run.json	systems.mbr.CIDEr	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+145.55	B	data/results/b_f1/b_f1_run.json	member_mean.CIDEr	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+144.18	B	data/results/b_f1/b_f1_run.json	systems.s42.CIDEr	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+144.86	B	data/results/b_f1/b_f1_run.json	systems.s43.CIDEr	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+147.60	B	data/results/b_f1/b_f1_run.json	systems.s44.CIDEr	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+−0.391 (−0.39)	B	data/results/b_f1/b_f1_run.json	primary.D_MBR_x100_mean_lo_hi.0	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+−2.437 (−2.44)	B	data/results/b_f1/b_f1_run.json	primary.D_MBR_x100_mean_lo_hi.1	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
++1.666 (+1.67)	B	data/results/b_f1/b_f1_run.json	primary.D_MBR_x100_mean_lo_hi.2	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+FAIL	B	data/results/b_f1/b_f1_run.json	primary.verdict	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+558	B	data/results/b_f1/b_f1_run.json	primary.n_images	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+5,000	B	data/results/b_f1/b_f1_run.json	primary.B	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
++0.103 (0.10)	B	data/results/b_f1/b_f1_run.json	K2.dCHAIR_i_points	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+1.0	B	data/results/b_f1/b_f1_run.json	config.k2	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+does not fire	B	data/results/b_f1/b_f1_run.json	K2.fires	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+−0.18	B	data/results/b_f1/b_f1_run.json	K3.dF1_ktvic5_mean_lo_hi.0	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+−0.74	B	data/results/b_f1/b_f1_run.json	K3.dF1_ktvic5_mean_lo_hi.1	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
++0.39	B	data/results/b_f1/b_f1_run.json	K3.dF1_ktvic5_mean_lo_hi.2	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+does not fire	B	data/results/b_f1/b_f1_run.json	K3.fires	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+−0.39 (outside)	B	data/results/b_f1/b_f1_run.json	prediction_check.values.dCIDEr	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
++0.234 (outside)	B	data/results/b_f1/b_f1_run.json	prediction_check.values.dBLEU4	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+outside / outside / inside / inside	B	data/results/b_f1/b_f1_run.json	prediction_check.inside.dCIDEr ; prediction_check.inside.dBLEU4 ; prediction_check.inside.dF1 ; prediction_check.inside.dCHAIRi_points	998e4f33a76f	keyed (CP-071 B-F1 final test, added 2026-10-21; sec1:20, sec5, sec7:9, sec8:9, S7)
+[1.0, 3.0]	B	manuscript/prereg/2026-10-20_b_f1_final_stack.json	prediction_check.values.dCIDEr	60a5cf68e9d5	keyed (CP-071 predicted interval; S7)
+[0.5, 1.0]	B	manuscript/prereg/2026-10-20_b_f1_final_stack.json	prediction_check.values.dBLEU4	60a5cf68e9d5	keyed (CP-071 predicted interval; S7)
+(decode from a clean git bundle of the registered commit)	B	manuscript/prereg/2026-10-20_b_f1_record/run_record_M3.md	lines 10, 14	—	stated in the run record (CP-071; sec5, S7)
