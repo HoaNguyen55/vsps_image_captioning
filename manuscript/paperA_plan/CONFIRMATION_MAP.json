@@ -628,5 +628,413 @@
         "strength": "same"
       }
     ]
+  },
+  "amendment_4": {
+    "note": "Amendment 4 (2026-10-21, PD-28 (1) and (3) items 2 and 5; for the judge): wording, plus weakening qualifiers (XM3600 third rung renamed; only the reference rungs are nested; Qwen family named; symmetric cap fact) and the two fixed N-F1 bracket outcome sentences. Written before the post hoc bracket runs. Rows 25-32 added (row 30 = fallback, judge CP-064 E2; rows 31-32 = both branches of the sec1:7 and Section 7.5 closing sentences, E3).",
+    "table": "manuscript/paperA_plan/CONFIRMATION_MAP_AMENDMENT4.md",
+    "status": "approved by the judge (CP-064, YES 90%; edits E1-E3, Q2, Q3 applied); bracket NOT RUN; never write sentence (i) or (ii) without a verified run",
+    "fill_rules": {
+      "XM600 set label": "the same 600 XM3600 images",
+      "E2 claim label": "label-gold sign",
+      "C1 NOT-TESTABLE brace": "{failed its fidelity check and was not scored | passed its fidelity check but had a run invalid under the protocol check, with no valid re-run | passed its fidelity check but was not scored by the analysis cut-off | was not run}",
+      "N-F1 bracket brace": "{N-F1 bracket sentence} takes row 26 or row 27 verbatim"
+    },
+    "bracket": {
+      "marker": "[N-F1 BRACKET: sentence (i) or (ii)]",
+      "rule": "Sentence (i) or (ii) is never written into any file without a verified bracket run; until then the marker stays.",
+      "fallback": {
+        "row25": "On XM3600 the label gold is human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded).",
+        "sec7_5": "Those labels are scored with verified precision (Section 3.1); a post hoc bound was designed (commit <sha>) but not run.",
+        "S7": "Result: a post hoc bound was designed (commit <sha>) but not run.",
+        "c2": "In a registered out-of-sample test on XM3600, F1's verbosity reward is ordered by gold completeness and positive under human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded); two of its five registered predictions failed (the all-references sign and the sign agreement, both on the all-references gold).",
+        "cover_letter": "row 25 fallback",
+        "highlight_1": "On discovery images, F1's verbosity slope is positive under COCO instance labels"
+      },
+      "sentence_i": "it stays positive when unverifiable mentions count as errors (post hoc)",
+      "sentence_ii": "it is positive only when unverifiable mentions are excluded; counting them as errors removes the positive slope (post hoc)",
+      "selection": "Sentence (i) is realized if and only if, on both bracket sets (the six Section 7.5 systems and the second backbone's xm600 ladder), the 95% interval of the lower-bound slope (unverifiable mentions counted as errors) has its lower bound above 0, as the verified run computes it under the PD-28 design. Otherwise sentence (ii) is realized. The realized sentence replaces the marker verbatim in every slot; nothing else in a slot changes.",
+      "slots": [
+        "abstract (outline.md): row 25, right after row 2 (C2 s1)",
+        "§7.5 Reading (sec7_verbosity_sign.md): \"Those labels are scored with verified precision (Section 3.1), so we bound that slope post hoc (no verdict; design fixed before the run; Supplementary S7): {N-F1 bracket sentence}.\"",
+        "§10.5 conclusion c2 (sec10_discussion.md): \"… positive under human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded), and {N-F1 bracket sentence}; two of its five registered predictions failed …\"",
+        "cover letter (cover_letter_A.md), Main result: row 25 wording",
+        "Supplementary S7, \"Post hoc bound on the XM3600 label-gold slope\": \"Result for the label-gold slope: {N-F1 bracket sentence}.\"",
+        "highlight 1 (outline.md): row 28 under (i), row 29 under (ii)"
+      ],
+      "highlight_1": {
+        "i": "F1's verbosity slope is positive under label gold and ordered by gold completeness",
+        "ii": "On discovery images, F1's verbosity slope is positive under COCO instance labels"
+      }
+    },
+    "length": {
+      "abstract_realized": {
+        "marker": 230,
+        "i": 235,
+        "ii": 243
+      },
+      "abstract_worst_case": {
+        "marker": 237,
+        "i": 242,
+        "ii": 250
+      },
+      "cap": 250,
+      "highlight_1_chars": {
+        "28": 82,
+        "29": 80
+      }
+    },
+    "rows": [
+      {
+        "row": "1",
+        "block": "Frame (all) — realized",
+        "old": "Object-hallucination metrics such as CHAIR and object F1 score captions against gold; registered tests examine whether gold completeness and object count change them.",
+        "new": "Object-hallucination metrics such as CHAIR and object F1 score captions against gold; registered tests examine whether gold completeness and object count change them.",
+        "verdict": "none (frame)",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "2",
+        "block": "C2 PASS, s1 — realized",
+        "old": "In confirmation tests, F1's slope on log object count is ordered by gold completeness and positive under complete gold on XM3600 and, with a second backbone (Qwen3-VL-8B), on the same 600 images as Section 7.5 and on 295 discovery images; a UIT-ViIC pass, on COCO train2017 images the backbone may have seen, is not counted as support.",
+        "new": "In confirmation tests, F1's slope on log object count is ordered by gold completeness (expected for nested reference golds) and positive under label gold on XM3600 and, with a second Qwen backbone (Qwen3-VL-8B), on the same 600 XM3600 images and 295 discovery images (a UIT-ViIC pass is not counted: the backbone may have seen its images).",
+        "verdict": "C2 PASS",
+        "qualifiers": "**added:** nested-gold caveat scoped to the reference golds (N-M2, PD-28 (3) item 5); \"complete gold\" → \"label gold\", defined per set in §3.1 and, for XM3600, by row 25 (N-F1); second backbone named as Qwen (N-M9); \"the same 600 images as Section 7.5\" → \"the same 600 XM3600 images\" (N-M6d; the xm600 qualifier is kept); UIT-ViIC exclusion kept, reason shortened",
+        "strength": "weaker"
+      },
+      {
+        "row": "3",
+        "block": "C2 PASS, s2 — realized",
+        "old": "On XM3600, two of five predictions failed on a negative slope with all 2–3 references; demotion was not triggered.",
+        "new": "There, two of five predictions failed on a negative slope with all 2–3 references; demotion was not triggered.",
+        "verdict": "N1-XM-2, N1-XM-5 FAIL; demotion not triggered",
+        "qualifiers": "both failures kept; \"On XM3600\" → \"There\" because row 25 now precedes it and names XM3600",
+        "strength": "same"
+      },
+      {
+        "row": "4",
+        "block": "C2 MIXED, s1",
+        "old": "In confirmation tests, F1's slope on log object count is ordered by gold completeness and positive under complete gold on XM3600; with a second backbone (Qwen3-VL-8B) it is mixed ({G2B-O1 and G2B-E2 verdict per set}; a UIT-ViIC pass, on COCO train2017 images the backbone may have seen, is not counted as support).",
+        "new": "In confirmation tests, F1's slope on log object count is ordered by gold completeness (expected for nested reference golds) and positive under label gold on XM3600; with a second Qwen backbone (Qwen3-VL-8B) it is mixed ({G2B-O1 and G2B-E2 verdict per set}; a UIT-ViIC pass is not counted).",
+        "verdict": "C2 MIXED",
+        "qualifiers": "as row 2; fill labels per §1",
+        "strength": "weaker"
+      },
+      {
+        "row": "5",
+        "block": "C2 MIXED, s2",
+        "old": "= row 3 new",
+        "new": "= row 3 new",
+        "verdict": "as row 3",
+        "qualifiers": "as row 3",
+        "strength": "same"
+      },
+      {
+        "row": "6",
+        "block": "C2 FAIL, s1",
+        "old": "In confirmation tests, F1's slope on log object count is ordered by gold completeness and positive under complete gold on XM3600, but not with a second backbone (Qwen3-VL-8B: {failing verdicts}{; if K1 fired: its exponent is dataset-specific}).",
+        "new": "In confirmation tests, F1's slope on log object count is ordered by gold completeness (expected for nested reference golds) and positive under label gold on XM3600, but not with a second Qwen backbone (Qwen3-VL-8B: {failing verdicts}{; if K1 fired: its exponent is dataset-specific}).",
+        "verdict": "C2 FAIL",
+        "qualifiers": "as row 2; fill labels per §1",
+        "strength": "weaker"
+      },
+      {
+        "row": "7",
+        "block": "C2 FAIL, s2",
+        "old": "= row 3 new",
+        "new": "= row 3 new",
+        "verdict": "as row 3",
+        "qualifiers": "as row 3",
+        "strength": "same"
+      },
+      {
+        "row": "8",
+        "block": "C2 NOT-TESTABLE",
+        "old": "In a confirmation test on XM3600, F1's slope on log object count is ordered by gold completeness and positive under complete gold, but two of its five predictions failed on a negative slope with all 2–3 references (the demotion rule was not triggered); the registered second-backbone test was not evaluable.",
+        "new": "In a confirmation test on XM3600, F1's slope on log object count is ordered by gold completeness (expected for nested reference golds) and positive under label gold, but two of its five predictions failed on a negative slope with all 2–3 references (the demotion rule was not triggered); the registered second-backbone test was not evaluable.",
+        "verdict": "C2 NOT-TESTABLE",
+        "qualifiers": "nested-gold caveat; label gold (row 25 follows it)",
+        "strength": "weaker"
+      },
+      {
+        "row": "9",
+        "block": "One-ref, E1 PASS on all sets — realized",
+        "old": "The one-reference slope is negative in every confirmation test, an empirical observation the theory does not predict.",
+        "new": "The one-reference slope is negative in every confirmation test (registered; the theory does not derive it).",
+        "verdict": "G2B-E1 PASS ×3, N1-XM-1 PASS",
+        "qualifiers": "N-M7: one label everywhere, registered and not derived from the theory (\"does not predict\" → \"does not derive it\")",
+        "strength": "same"
+      },
+      {
+        "row": "10",
+        "block": "One-ref, KN1",
+        "old": "The one-reference sign is not confirmed (its withdrawal rule was triggered); only the ordering is claimed.",
+        "new": "The one-reference sign is not confirmed (its withdrawal rule was triggered); only the ordering is claimed.",
+        "verdict": "KN1 fired",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "11",
+        "block": "One-ref, otherwise",
+        "old": "The one-reference slope is negative on XM3600; second backbone: {G2B-E1 verdict per set}.",
+        "new": "The one-reference slope is negative on XM3600; second backbone: {G2B-E1 verdict per set}.",
+        "verdict": "per set",
+        "qualifiers": "text unchanged; fill set label per §1",
+        "strength": "same"
+      },
+      {
+        "row": "12",
+        "block": "A-N1 SUPPORTED",
+        "old": "In a registered secondary test (second backbone, development images), condensed F1 given verified negatives shrinks the slope's gold-completeness dependence; the same 600 images as Section 7.5 are the informative set.",
+        "new": "In a registered secondary test, condensed F1 given verified negatives shrinks the slope's gold-completeness dependence.",
+        "verdict": "A-N1 SUPPORTED",
+        "qualifiers": "\"(second backbone, development images)\" dropped: A-N1 was scored on all three second-backbone sets, so the phrase was wrong (N-M6a); \"the same 600 images as Section 7.5 are the informative set\" dropped (post hoc emphasis, N-M6b)",
+        "strength": "weaker"
+      },
+      {
+        "row": "13",
+        "block": "A-N1 MIXED — realized",
+        "old": "In a registered secondary test (second backbone, development images) of condensed F1 given verified negatives, the result is mixed; the same 600 images as Section 7.5 are the informative set.",
+        "new": "A registered secondary test of condensed F1 given verified negatives is mixed.",
+        "verdict": "A-N1 MIXED",
+        "qualifiers": "as row 12",
+        "strength": "weaker"
+      },
+      {
+        "row": "14",
+        "block": "A-N1 NOT_SUPPORTED",
+        "old": "In a registered secondary test (second backbone, development images), condensed F1 given verified negatives does not shrink the slope's gold-completeness dependence.",
+        "new": "In a registered secondary test, condensed F1 given verified negatives does not shrink the slope's gold-completeness dependence.",
+        "verdict": "A-N1 NOT_SUPPORTED",
+        "qualifiers": "as row 12 (set phrase only)",
+        "strength": "same"
+      },
+      {
+        "row": "15",
+        "block": "A-N1 NOT_TESTABLE",
+        "old": "The registered secondary test (second backbone, development images) of condensed F1 given verified negatives was not evaluable.",
+        "new": "The registered secondary test of condensed F1 given verified negatives was not evaluable.",
+        "verdict": "A-N1 NOT_TESTABLE",
+        "qualifiers": "as row 12 (set phrase only)",
+        "strength": "same"
+      },
+      {
+        "row": "16",
+        "block": "C1 PASS",
+        "old": "In a count-matched leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints, scored after a fidelity check and under the per-image control a seed placebo selected, count control significantly reverses {R} pairwise rankings of raw precision gains, and {S} of 6 gains survive it.",
+        "new": "In a count-matched leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints, scored after a fidelity check and under the per-image control a seed placebo selected, count control significantly reverses {R} pairwise rankings of raw precision gains, and {S} of 6 gains survive it.",
+        "verdict": "C1 PASS",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "17",
+        "block": "C1 FAIL",
+        "old": "In a count-matched leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints, scored after a fidelity check and under the per-image control a seed placebo selected, the ranking is consistent with the raw ranking (no significantly reversed pair), so no claim rests on it; {S} of 6 gains survive the control.",
+        "new": "In a count-matched leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints, scored after a fidelity check and under the per-image control a seed placebo selected, the ranking is consistent with the raw ranking (no significantly reversed pair), so no claim rests on it; {S} of 6 gains survive the control.",
+        "verdict": "C1 FAIL",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "18",
+        "block": "C1 MIXED (a)",
+        "old": "After a fidelity check, the leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints is reported as a specification curve over three per-image controls (none passed the seed placebo), so no gain is claimed to survive count control; count control changes the ranking ({R'} significantly reversed pairs under {k} of 3 controls).",
+        "new": "After a fidelity check, the leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints is reported as a specification curve over three per-image controls (none passed the seed placebo), so no gain is claimed to survive count control; count control changes the ranking ({R'} significantly reversed pairs under {k} of 3 controls).",
+        "verdict": "C1 MIXED (a)",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "19",
+        "block": "C1 MIXED (b)",
+        "old": "After a fidelity check, the leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints is reported as a specification curve over three per-image controls (none passed the seed placebo), so no gain is claimed to survive count control; the ranking is consistent with the raw ranking under all three controls, and no claim rests on it.",
+        "new": "After a fidelity check, the leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints is reported as a specification curve over three per-image controls (none passed the seed placebo), so no gain is claimed to survive count control; the ranking is consistent with the raw ranking under all three controls, and no claim rests on it.",
+        "verdict": "C1 MIXED (b)",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "20",
+        "block": "C1 NOT-TESTABLE — realized",
+        "old": "A registered count-matched leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints could not be scored (fidelity check: {passed | failed | not run}; seed placebo: {selected {C*} | no control passed | not run}{; a run was invalid under the protocol check, with no valid re-run | ; its runs were not scored by the analysis cut-off}), so no count-control claim is confirmatory; the post-hoc re-scoring of 15 published comparisons is exploratory.",
+        "new": "A registered count-matched leaderboard of six public LLaVA-1.5-7B anti-hallucination checkpoints {failed its fidelity check and was not scored | passed its fidelity check but had a run invalid under the protocol check, with no valid re-run | passed its fidelity check but was not scored by the analysis cut-off | was not run}, so no count-control claim is confirmatory; the post-hoc re-scoring of 15 published comparisons is exploratory.",
+        "verdict": "C1 NOT-TESTABLE (realized fill: failed its fidelity check and was not scored)",
+        "qualifiers": "N-M6c: the unclear parenthetical (\"its runs were not scored by the analysis cut-off\") is replaced by the causal clause PD-15 states; the seed-placebo clause is dropped, via the single brace, as in c5 of Amendment 3 (PD-23 (c): the placebo ran in the harness that failed fidelity and is never cited as support); judge CP-064 Q2 YES: weaker, and the body keeps the disclosure (Sections 6.3 and 10.1)",
+        "strength": "weaker"
+      },
+      {
+        "row": "21",
+        "block": "C1 modifier, K-headline",
+        "old": "(appended) \"; training changes object choice\"",
+        "new": "(appended) \"; training changes object choice\"",
+        "verdict": "S ≥ 3",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "22",
+        "block": "C1 modifier, K2 kill",
+        "old": "The matched prefix failed the seed placebo, so neither analysis draws a matched-prefix conclusion.",
+        "new": "The matched prefix failed the seed placebo, so neither analysis draws a matched-prefix conclusion.",
+        "verdict": "K2 kill fired",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "23",
+        "block": "Human, s1 — realized",
+        "old": "Public human judgments give mixed evidence: LongCap-Arena Relevance falls with object count, but count-matched precision tracks it worse than raw precision (Δτ_b = −0.028 [−0.036, −0.019]; MIXED: 1 of 3 tests passed).",
+        "new": "Public human judgments give mixed evidence: LongCap-Arena Relevance falls with object count, but count-matched precision tracks it worse than raw precision (Δτ_b = −0.028 [−0.036, −0.019]; MIXED: 1 of 3 tests passed).",
+        "verdict": "LongCap-Arena MIXED",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "24",
+        "block": "Human, s2 — realized",
+        "old": "The length- and style-matched preference set VaPR is mostly but not fully count-matched (positive control, PASS).",
+        "new": "The length- and style-matched preference set VaPR is mostly but not fully count-matched (positive control, PASS).",
+        "verdict": "VaPR PASS",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "25",
+        "block": "C2 XM3600 qualifier q1, every C2 outcome, right after the C2 s1 sentence (after row 8 in NOT-TESTABLE) — realized",
+        "old": "— (none)",
+        "new": "On XM3600, whose label gold is human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded), {N-F1 bracket sentence}.",
+        "verdict": "N-F1 (PD-28 (1)): rung renamed; bracket slot",
+        "qualifiers": "required rename of the XM3600 third rung, verbatim from PD-28; {N-F1 bracket sentence} takes row 26 or row 27 verbatim (selection in §3); until then the visible marker [N-F1 BRACKET: sentence (i) or (ii)]",
+        "strength": "added, required (weakening)"
+      },
+      {
+        "row": "26",
+        "block": "N-F1 bracket outcome (i)",
+        "old": "— (none)",
+        "new": "it stays positive when unverifiable mentions count as errors (post hoc)",
+        "verdict": "post hoc, no verdict",
+        "qualifiers": "fixed by PD-28 before the run; \"(post hoc)\" part of the sentence",
+        "strength": "added, fixed"
+      },
+      {
+        "row": "27",
+        "block": "N-F1 bracket outcome (ii)",
+        "old": "— (none)",
+        "new": "it is positive only when unverifiable mentions are excluded; counting them as errors removes the positive slope (post hoc)",
+        "verdict": "post hoc, no verdict",
+        "qualifiers": "fixed by PD-28 before the run; triggers row 29",
+        "strength": "added, fixed (weakening)"
+      },
+      {
+        "row": "28",
+        "block": "Highlight 1, outcome (i) — realized until the run",
+        "old": "F1's verbosity slope is ordered by gold completeness, positive under complete gold",
+        "new": "F1's verbosity slope is positive under label gold and ordered by gold completeness",
+        "verdict": "C2 PASS",
+        "qualifiers": "leads with the endpoint (N-M2); \"complete gold\" → \"label gold\"",
+        "strength": "same"
+      },
+      {
+        "row": "29",
+        "block": "Highlight 1, outcome (ii)",
+        "old": "F1's verbosity slope is ordered by gold completeness, positive under complete gold",
+        "new": "On discovery images, F1's verbosity slope is positive under COCO instance labels",
+        "verdict": "C2 PASS; bracket (ii) or fallback (row 30)",
+        "qualifiers": "drops the out-of-sample (XM3600) implication, as PD-28 requires under (ii); wording per judge CP-064 E1",
+        "strength": "weaker"
+      },
+      {
+        "row": "30",
+        "block": "FALLBACK (judge CP-064 E2): the bracket does not run, or fails its gate, before Paper A is submitted",
+        "old": "— (none)",
+        "new": "Every slot drops the bracket sentence: row 25 → \"On XM3600 the label gold is human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded).\"; §7.5 → \"Those labels are scored with verified precision (Section 3.1); a post hoc bound was designed (commit <sha>) but not run.\"; S7 → \"Result: a post hoc bound was designed (commit <sha>) but not run.\"; c2 → \"In a registered out-of-sample test on XM3600, F1's verbosity reward is ordered by gold completeness and positive under human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded); two of its five registered predictions failed (the all-references sign and the sign agreement, both on the all-references gold).\"; cover letter → row 25 fallback wording; highlight 1 takes row 29; rows 31–32 take their fallback wording.",
+        "verdict": "no bracket result",
+        "qualifiers": "fixed now; <sha> is the design commit. Sentence (i) or (ii) is never written without a verified run.",
+        "strength": "added, fixed (weakening)",
+        "fallback": {
+          "row25": "On XM3600 the label gold is human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded).",
+          "sec7_5": "Those labels are scored with verified precision (Section 3.1); a post hoc bound was designed (commit <sha>) but not run.",
+          "S7": "Result: a post hoc bound was designed (commit <sha>) but not run.",
+          "c2": "In a registered out-of-sample test on XM3600, F1's verbosity reward is ordered by gold completeness and positive under human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded); two of its five registered predictions failed (the all-references sign and the sign agreement, both on the all-references gold).",
+          "highlight_1": "row 29"
+        }
+      },
+      {
+        "row": "31",
+        "block": "sec1:7 out-of-sample sentence (judge CP-064 E3; not applied, the marker stays elsewhere)",
+        "old": "Its out-of-sample support is a registered test on 600 XM3600 images, with verified OIV7 labels as label gold (Section 3.1), and a registered second-backbone test of the same model family (Qwen3-VL-8B; detailed captions capped at 160 new tokens) on those images (Section 7.6).",
+        "new": "(i): unchanged. (ii): \"Its out-of-sample support is a registered test on 600 XM3600 images, with verified OIV7 labels as label gold (Section 3.1), and a registered second-backbone test of the same model family (Qwen3-VL-8B; detailed captions capped at 160 new tokens) on those images (Section 7.6); on those images the positive label-gold slope depends on excluding mentions OIV7 cannot verify (post hoc; Section 7.5).\"",
+        "verdict": "bracket outcome",
+        "qualifiers": "(ii) adds the dependence on excluding unverifiable mentions; fallback (judge CP-064b): appends the verified-precision clause",
+        "strength": "same (i) / weaker (ii)",
+        "branch_i": "Its out-of-sample support is a registered test on 600 XM3600 images, with verified OIV7 labels as label gold (Section 3.1), and a registered second-backbone test of the same model family (Qwen3-VL-8B; detailed captions capped at 160 new tokens) on those images (Section 7.6).",
+        "branch_ii": "Its out-of-sample support is a registered test on 600 XM3600 images, with verified OIV7 labels as label gold (Section 3.1), and a registered second-backbone test of the same model family (Qwen3-VL-8B; detailed captions capped at 160 new tokens) on those images (Section 7.6); on those images the positive label-gold slope depends on excluding mentions OIV7 cannot verify (post hoc; Section 7.5).",
+        "fallback_text": "Its out-of-sample support is a registered test on 600 XM3600 images, with verified OIV7 labels as label gold (Section 3.1), and a registered second-backbone test of the same model family (Qwen3-VL-8B; detailed captions capped at 160 new tokens) on those images (Section 7.6); there the label gold is scored with verified precision (mentions OIV7 cannot verify are excluded)."
+      },
+      {
+        "row": "32",
+        "block": "§7.5 closing sentence (judge CP-064 E3; not applied)",
+        "old": "XM3600 supports the direction and ordering of the sign change, not its location.",
+        "new": "(i): unchanged. (ii): \"XM3600 supports the ordering of the slopes, and their positive endpoint only under verified precision, not the location of the sign change.\"",
+        "verdict": "bracket outcome",
+        "qualifiers": "(ii) limits the positive endpoint to verified precision; fallback (judge CP-064b): the endpoint stated under verified precision",
+        "strength": "same (i) / weaker (ii)",
+        "branch_i": "XM3600 supports the direction and ordering of the sign change, not its location.",
+        "branch_ii": "XM3600 supports the ordering of the slopes, and their positive endpoint only under verified precision, not the location of the sign change.",
+        "fallback_text": "XM3600 supports the ordering of the slopes and, under verified precision, their positive endpoint, not the location of the sign change."
+      }
+    ],
+    "conclusion_rows": [
+      {
+        "row": "c1",
+        "old": "Object-level hallucination scores respond to the gold and to the number of objects a caption names, not only to object choice.",
+        "new": "Object-level hallucination scores respond to the gold and to the number of objects a caption names, not only to object choice.",
+        "verdict": "none",
+        "qualifiers": "—",
+        "strength": "same"
+      },
+      {
+        "row": "c2",
+        "old": "In a registered out-of-sample test on XM3600, F1's verbosity reward is ordered by gold completeness and positive under complete gold, but two of its five registered predictions failed (the all-references sign and the sign agreement, both on the all-references gold).",
+        "new": "In a registered out-of-sample test on XM3600, F1's verbosity reward is ordered by gold completeness and positive under human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded), and [N-F1 BRACKET: sentence (i) or (ii)]; two of its five registered predictions failed (the all-references sign and the sign agreement, both on the all-references gold).",
+        "verdict": "C2 XM3600 mixed",
+        "qualifiers": "**added:** verified-precision rename of the third rung and the bracket slot (row 25 wording; {N-F1 bracket sentence} as in row 25); both failures kept",
+        "strength": "weaker"
+      },
+      {
+        "row": "c3",
+        "old": "With a second backbone (Qwen3-VL-8B, detailed captions capped at 160 new tokens) the registered primary claims hold on the same 600 images as Section 7.5 and replicate on 295 COCO discovery images; the ordering would also arise under random missingness, and the multi-reference sign and the crossing point are not predicted.",
+        "new": "With a second Qwen backbone (Qwen3-VL-8B, detailed captions capped at 160 new tokens; how many reached the cap is unknown) the registered primary claims hold on the same 600 XM3600 images and replicate on 295 COCO discovery images; only the reference rungs are nested, so their ordering would also arise under random missingness, and the multi-reference sign and the crossing point are not predicted.",
+        "verdict": "G2-B primary PASS",
+        "qualifiers": "**added:** Qwen family (N-M9); the cap share of these runs is unknown (N-M3, symmetric cap fact); nested caveat scoped to the reference rungs; \"the same 600 images as Section 7.5\" → \"the same 600 XM3600 images\"",
+        "strength": "weaker"
+      },
+      {
+        "row": "c4",
+        "old": "In a registered secondary test on eight public LVLMs, one-reference F1 does not rank the models as complete gold does (ranking prediction passed), but the per-model pattern failed for qwen3vl_8b on discovery images (every detailed caption of that model reached the 160-token cap), so it is not claimed for every public LVLM.",
+        "new": "In a registered secondary test on eight public LVLMs, one-reference F1 does not rank the models as complete gold does (ranking prediction passed), but the per-model pattern failed for Qwen3-VL-8B on discovery images (in that test every detailed caption of the model reached the 160-token cap), so it is not claimed for every public LVLM.",
+        "verdict": "A-N2: LBA-P1 PASS, LBA-P2 FAIL, KA2 fired, hit_max 1.0",
+        "qualifiers": "model ID → product name (minor 6); the 160-token cap fact scoped to that test (\"in that test\"), symmetric with c3 (N-M3)",
+        "strength": "same"
+      },
+      {
+        "row": "c5",
+        "old": "The registered count-matched leaderboard failed its fidelity check and was not scored, so no count-control claim is confirmatory.",
+        "new": "The registered count-matched leaderboard failed its fidelity check and was not scored, so no count-control claim is confirmatory.",
+        "verdict": "C1 NOT-TESTABLE",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      },
+      {
+        "row": "c6",
+        "old": "Human judgments penalize object count on long captions, but count-matched precision does not track them better (Section 8).",
+        "new": "Human judgments penalize object count on long captions, but count-matched precision does not track them better (Section 8).",
+        "verdict": "LongCap MIXED",
+        "qualifiers": "unchanged",
+        "strength": "same"
+      }
+    ]
   }
 }
