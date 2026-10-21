@@ -7,14 +7,14 @@ Dear Editor-in-Chief,
 We submit the manuscript "Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores" for consideration as a full-length research article in *Information Processing & Management*.
 
 Object-hallucination metrics such as CHAIR and object F1 are widely used to rank captioning and vision–language systems. The manuscript asks when their scores measure what they claim, and tests this with pre-registered analyses.
-- **Main result.** In confirmation tests, F1's slope on log object count is ordered by gold completeness and is positive under complete gold. This holds on XM3600 and, with a second backbone (Qwen3-VL-8B), on the same 600 XM3600 images, with a replication on 295 discovery images. On XM3600, two of five registered predictions failed with all references.
-- **Other findings.** Public human judgments give mixed evidence: relevance falls with object count, but count-matched precision tracks it worse than raw precision. A registered count-matched leaderboard could not be scored, so no count-control claim is confirmatory; the re-scoring of 15 published comparisons is exploratory.
+- **Main result.** In confirmation tests, F1's slope on log object count is ordered by gold completeness (expected for nested reference golds) and positive under label gold, on XM3600 and, with a second Qwen backbone (Qwen3-VL-8B), on the same 600 XM3600 images, with a replication on 295 discovery images. On XM3600, whose label gold is human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded), [N-F1 BRACKET: sentence (i) or (ii)]. There, two of five registered predictions failed with all references.<!-- CONFIRMATION_MAP Amendment 4 (draft): wording of abstract rows 2-new, q1 and 3-new; bracket NOT RUN (PD-28 (1)) -->
+- **Other findings.** Public human judgments give mixed evidence: relevance falls with object count, but count-matched precision tracks it worse than raw precision. A registered count-matched leaderboard failed its fidelity check and was not scored, so no count-control claim is confirmatory; the re-scoring of 15 published comparisons is exploratory.
 
 We believe the paper fits the journal's tradition of evaluation and measurement methodology in information processing.
 
 **Transparency**
 - Every registered prediction was committed to version control before the outputs it predicts. Analyses written later are labelled post hoc.
-- Every number in the paper is read by script from an output file and listed with the file's SHA-256 in a numbers manifest.
+- Every reported result in the main text and the supplement is read by script from an output file and listed with the file's SHA-256 in a numbers manifest.<!-- N-M8: softened per the review; manifest rows edited in place (Amendment 4 pass), row count unchanged -->
 - The code (MIT licence), the pre-registration files, score-only copies of the result files behind the numbers and the manifest are archived on Zenodo (DOI: [AUTHOR TO PROVIDE]). Of the manifest's 655 rows, 38 cite sources that could not be released, and they are marked.
 - The use of generative AI is declared before the references, as the journal's policy requires.
 

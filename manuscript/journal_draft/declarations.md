@@ -16,7 +16,7 @@ The code (MIT licence), matchers, pre-registration files with their commit times
 
 ## Related manuscript
 
-A companion manuscript by the same authors on the validity of the Vietnamese captioning benchmark KTVIC is in preparation. It uses the same fine-tuned instrument. Its XM3600 results and its object-F1 slope results on UIT-ViIC appear only in this paper; the companion manuscript reports other analyses of some of the same UIT-ViIC system outputs and cites this paper for the slopes. A copy is available to the editor on request.<!-- PD-25 Q5 (a): A is submitted first; replace with the citation once B is submitted. -->
+A companion manuscript by the same authors on the validity of the Vietnamese captioning benchmark KTVIC is in preparation. It uses the same fine-tuned instrument. This paper's XM3600 results and its object-F1 slope results on UIT-ViIC appear only in this paper; the companion manuscript reports other analyses of some of the same UIT-ViIC system outputs and cites this paper for the slopes. A copy is available to the editor on request.<!-- PD-25 Q5 (a): A is submitted first; replace with the citation once B is submitted. -->
 
 ## Competing interests
 

@@ -377,10 +377,10 @@ False (q4_vapr_count_control.json vapr_count_matched_exactly)	A	.session_backup/
 0.473 (q4_vapr_count_control.json comparator_count_matched_share_from_sec9_json.HA-DPO)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	comparator_count_matched_share_from_sec9_json.HA-DPO	4fcea1cc1bf2	keyed
 0.692 (q4_vapr_count_control.json comparator_count_matched_share_from_sec9_json.HSA-DPO)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	comparator_count_matched_share_from_sec9_json.HSA-DPO	4fcea1cc1bf2	keyed
 0.349 (q4_vapr_count_control.json comparator_count_matched_share_from_sec9_json.SENTINEL)	A	.session_backup/2026-10-15/r13_human/q4_vapr_count_control.json	comparator_count_matched_share_from_sec9_json.SENTINEL	4fcea1cc1bf2	keyed
-N9 count-matched leaderboard (9 ckpts); prereg to be committed (L6 D1 predictions, sec6.4)	A	-	-	-	pending
-E1 K2 seed placebo; prereg E1 REPORT §4 K2 (sec6.3)	A	-	-	-	pending
-G2-B extended, Qwen3-VL-8B zero-shot ladder; prereg G2 REPORT §4, to be committed (sec7.6)	A	-	-	-	pending
-B3 large-k (nocaps, PASCAL-50S); prereg manuscript/prereg/2026-10-14_b3_licence_verification.md (sec7.7)	A	-	-	-	pending
+N9 count-matched leaderboard, registered (manuscript/prereg/2026-10-18_n9_count_matched_leaderboard.md, b8b2500); not scored: fidelity check FAIL (sec6.4)	A	.session_backup/2026-10-19/n9_kf_disclosure/kf_local.json	K_F.verdict	9b62eb049d10	keyed
+E1 K2 seed placebo, registered (E1 REPORT §4 K2, 6c647a6; addendum manuscript/prereg/2026-10-18_e1_k2_placebo_addendum.md, b8b2500); HELD, C* = matched_prefix (sec6.3)	A	.session_backup/2026-10-18/n9k2_scoring/k2/k2_scores.json	K2_PREDICTION; C_STAR	0f0e952eeffb	keyed
+G2-B extended, Qwen3-VL-8B zero-shot ladder, registered (manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.md, 0932ba1); primary claims PASS on each set (sec7.6)	A	data/results/g2b/g2b_score.json	verdicts	68be2b7a0904	keyed
+B3 large-k (nocaps, PASCAL-50S), registered (manuscript/prereg/2026-10-14_b3_licence_verification.md, ca644df); registered, not run (sec7.7)	A	manuscript/prereg/2026-10-14_b3_licence_verification.md	-	0c99fcee1f04	keyed_text
 148.66	B	data/results/p1assist_s42-short.json	results.0.scores_scaled_x100.CIDEr	ea38b60e7dc5	keyed
 148.06	B	data/results/p1assist_s43-short.json	results.0.scores_scaled_x100.CIDEr	ce8576a440d5	keyed
 147.96	B	data/results/p1assist_s44-short.json	results.0.scores_scaled_x100.CIDEr	723d97653f89	keyed
@@ -620,9 +620,9 @@ six (N9 checkpoints, abstract)	A	manuscript/prereg/2026-10-18_n9_count_matched_l
 +12.84 [+9.86, +14.36] (A-N1 Q xm600)	A	data/results/g2b/an1_score.json	sets.xm600.primary_analysis.primary.{point,ci95}	ec0938e088ab	keyed
 +3.82 [+2.58, +5.07] (A-N1 Q uv231)	A	data/results/g2b/an1_score.json	sets.uv231.primary_analysis.primary.{point,ci95}	ec0938e088ab	keyed
 MIXED (A-N1 outcome)	A	data/results/g2b/an1_score.json	outcome	ec0938e088ab	keyed
--0.29 [-0.57, +0.000] (LBA-P1 cv295)	A	data/results/a_n2/a_n2_run.json	datasets.cv295.verdicts_on_analysis_set.LBA-P1.{point,ci95}	1f6ce422e016	keyed
--0.86 [-0.93, -0.50] (LBA-P1 uv231en)	A	data/results/a_n2/a_n2_run.json	datasets.uv231en.verdicts_on_analysis_set.LBA-P1.{point,ci95}	1f6ce422e016	keyed
--1.12 [-11.52, +6.62] (LBA-P2 qwen3vl_8b cv295 slope[complete])	A	data/results/a_n2/a_n2_run.json	datasets.cv295.verdicts_on_analysis_set.LBA-P2.models.qwen3vl_8b.parts[2]	1f6ce422e016	keyed
+-0.286 [-0.571, 0.000] (LBA-P1 cv295)	A	data/results/a_n2/a_n2_run.json	datasets.cv295.verdicts_on_analysis_set.LBA-P1.{point,ci95}	1f6ce422e016	keyed
+-0.857 [-0.929, -0.500] (LBA-P1 uv231en)	A	data/results/a_n2/a_n2_run.json	datasets.uv231en.verdicts_on_analysis_set.LBA-P1.{point,ci95}	1f6ce422e016	keyed
+-1.124 [-11.52, +6.62] (LBA-P2 qwen3vl_8b cv295 slope[complete])	A	data/results/a_n2/a_n2_run.json	datasets.cv295.verdicts_on_analysis_set.LBA-P2.models.qwen3vl_8b.parts[2]	1f6ce422e016	keyed
 0.705 (exact-match share lbA_qwen3vl_8b_cv295-short_en)	A	data/results/a_n2/a_n2_run.json	qwen3vl_exact_match_vs_g2b.lbA_qwen3vl_8b_cv295-short_en.share	1f6ce422e016	keyed
 0.064 (exact-match share lbA_qwen3vl_8b_cv295-detailed_en)	A	data/results/a_n2/a_n2_run.json	qwen3vl_exact_match_vs_g2b.lbA_qwen3vl_8b_cv295-detailed_en.share	1f6ce422e016	keyed
 0.697 (exact-match share lbA_qwen3vl_8b_uv231en-short_en)	A	data/results/a_n2/a_n2_run.json	qwen3vl_exact_match_vs_g2b.lbA_qwen3vl_8b_uv231en-short_en.share	1f6ce422e016	keyed
