@@ -6,7 +6,7 @@
 
 Nguyễn Lê Minh Hòa^a^, Nguyễn Văn Thịnh^b^, Trần Văn Lăng^c,\*^
 
-^a^ Software Engineering Department, BOS Semiconductors Vietnam, Ho Chi Minh City, Vietnam [AUTHOR TO CONFIRM: affiliation to use for this paper]
+^a^ Software Engineering Department, BOS Semiconductors Vietnam, Ho Chi Minh City, Vietnam<!-- confirmed by the first author 2026-10-21: as in FAIR 2026 -->
 ^b^ Faculty of Information Technology, Ho Chi Minh City University of Education, Ho Chi Minh City, Vietnam
 ^c^ Journal Editorial Department, Ho Chi Minh City University of Foreign Languages – Information Technology (HUFLIT), Ho Chi Minh City, Vietnam
 
