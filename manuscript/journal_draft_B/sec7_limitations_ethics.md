@@ -32,7 +32,7 @@ We redistribute no images, reference captions or other dataset text. The evaluat
 
 ## 7.3 Relation to the conference version and the companion paper
 
-A conference version of part of this work appeared at FAIR 2026 (Nguyen and Tran, 2026). That paper's contribution, VSPS supervision from verified propositions, is not a contribution of this paper. What we reuse from it is the KTVIC/COCO setup, the QLoRA recipe and the P1 control. P1's seed-42 score (149.8 there, 149.79 here under the same scorer) serves only as a reference point.
+A conference version of part of this work appeared at FAIR 2026 (Nguyen et al., 2026b). That paper's contribution, VSPS supervision from verified propositions, is not a contribution of this paper. What we reuse from it is the KTVIC/COCO setup, the QLoRA recipe and the P1 control. P1's seed-42 score (149.8 there, 149.79 here under the same scorer) serves only as a reference point.
 
 A companion paper is under review. Table 7.1 states what each paper claims and which data it uses. No number is a primary result in both papers.
 
