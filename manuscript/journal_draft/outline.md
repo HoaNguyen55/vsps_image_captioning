@@ -8,7 +8,7 @@ Target venue (DEBATE D3; the user confirmed on 2026-10-18 that IP&M counts as th
 - **Front matter.** 3–5 highlights of ≤ 85 characters each, in a separate file at submission; at most 6 keywords.
 - **Declarations.** A titled generative-AI declaration immediately before the references (`declarations.md`). AI use in the research, including AI-written analysis code, is described in the Methods (§3.6).
 - **Format.** Single column at first submission. The template for A7.1 is Elsevier CAS single-column (`cas-sc`) with author-year natbib.
-- **Citations and posting.** Do not cite preprints where a peer-reviewed version exists (A5.2). Do not post Paper A on arXiv before submission: IP&M "in general, will not accept" a manuscript already posted there.
+- **Citations and posting.** Do not cite preprints where a peer-reviewed version exists (A5.2). Do not post Paper A on arXiv before submission (PD-25 Q5, the authors' choice); IP&M's preprint policy is unverified (guide for authors not fetched).
 
 Length (decision by Claude main, 2026-10-18): §1–§11 have a target of ≤ 13,000 words and a hard cap of 14,000. The research-question subsection, the implications subsections and the AI declaration count inside the cap; the rest moves to Supplementary Material. The cut/move plan is T-A7.3 (`paperA_tasks/A7.3/LENGTH_PLAN.md`); no cuts are made before that plan is verified. The human evidence is bounded. The only commit-verified registered human test is LongCap-Arena, MIXED<!-- src: .session_backup/2026-10-15/r13_human/q2_longcap_arena.json :: verdict -->. Polaris (PASS<!-- src: .session_backup/2026-10-14/r12_verify/h1_g3_registered_supplement_v2.json :: registered_G2.verdict -->) and DOCCI-Critique (MIXED<!-- src: same :: registered_G3.verdict -->) were committed 22 minutes after their first result and are treated as exploratory (D-W13-6)<!-- src: .session_backup/2026-10-18/paperA_tasks/A4.2/prereg_ledger_v2.tsv :: row 33 h1_polaris_docci {prereg_disk_mtime_utc 2026-10-14T15:37:51Z, first_result_mtime_utc 2026-10-14T16:25:48Z, first_commit_utc 2026-10-14T16:47:58Z (7f22d13), first_result_minus_registration -22m09s}; VERIFIED in manuscript/verification/paperA/A4.2_v2.json; ruling D-W13-6 -->. The other commit-verified test is the VaPR count control of §9 (PASS), which concerns preference data, not human judgments. The framing therefore rests on the metric-property results, and the human evidence is stated narrowly (D1).
 
@@ -26,12 +26,12 @@ Working choice: option 1 (short, names the three threats). Avoid "first", "novel
 ## Highlights (≤ 85 characters each) and keywords
 
 - F1's verbosity slope is ordered by gold completeness, positive under complete gold
-- On XM3600 (registered) the F1 slope rises with gold completeness to a positive value
-- Per-image count-matched controls separate object choice from naming fewer objects
-- An adjacency statistic tests whether caption references are exchangeable
-- Humans penalize object count; count matching is a control, not a better score
+- With a single reference, the F1 slope is negative in every confirmation test
+- Count matching is a confound control here; no count-control claim is confirmatory
+- Human relevance falls with object count, yet count-matched precision tracks it worse
+- An adjacency statistic checks whether caption references come from separate writers
 
-<!-- Character counts (with spaces, scratchpad check): 85, 84, 81, 72, 77. Highlights 2 and 3 replaced on 2026-10-19 (PD-10 binding 5): the COCO endpoints (frozen locally) and the E1 counts (post hoc) are not stage-2 results. Highlight 2: xm3600_full_verdict.json :: prereg_comparisons[16,18,19].in_interval_or_pass = PASS (N1-XM-1, -3, -4). -->
+<!-- CP-054 (2026-10-21): H2–H5 replaced; character counts 82, 76, 81, 84, 83. Earlier note follows. Character counts (with spaces, scratchpad check): 85, 84, 81, 72, 77. Highlights 2 and 3 replaced on 2026-10-19 (PD-10 binding 5): the COCO endpoints (frozen locally) and the E1 counts (post hoc) are not stage-2 results. Highlight 2: xm3600_full_verdict.json :: prereg_comparisons[16,18,19].in_interval_or_pass = PASS (N1-XM-1, -3, -4). -->
 
 Keywords (≤ 6): object hallucination; image captioning evaluation; measurement validity; gold completeness; count control; vision-language models.
 
