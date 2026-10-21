@@ -4,12 +4,7 @@
 
 ## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
 
-During the preparation of this work the authors used AI coding and writing agents [AUTHOR TO CONFIRM: product names and versions, e.g. Claude (Anthropic) and Gemini (Google)]. The agents were used:
-- to write, run and review analysis code and to draft pre-registration texts, under the authors' direction (Section 3.6);
-- to draft and edit the manuscript text;
-- to search the literature and check cited identifiers against primary records.
-
-Because agent-written prose and logs contained numbers that existed in no output file, every number in the paper is taken by script from an output file and listed with the file's SHA-256 in a numbers manifest (Section 3.6). [AUTHOR TO CONFIRM: the level of human review of code, analyses and text.] The authors take full responsibility for the content of the publication.
+During this work the authors used Claude (Anthropic) and Gemini (Google) to write and run analysis code, to draft and edit the manuscript text and to check references. The authors designed the study, directed and checked all analyses, reviewed and edited all text, and take full responsibility for the content.<!-- PD-25 fixed text (a), chosen by the author 2026-10-21. -->
 
 ## Ethics
 
@@ -17,11 +12,11 @@ No new human annotation was collected and no human subjects were involved; all h
 
 ## Data and code availability
 
-[AUTHOR TO CONFIRM: repository and DOI-stamped archive for the code, matchers, pre-registration files with commit times, JSON outputs and numbers manifest.] The public datasets are available from their original sources; UIT-OpenViIC, KTVIC references and human-judgment ratings are not redistributed (Section 11.2).
+The code, matchers, pre-registration files with their commit times, JSON outputs and the numbers manifest are released under the MIT licence and archived on Zenodo (DOI: [AUTHOR TO PROVIDE: DOI reserved on Zenodo before submission]). The public datasets are available from their original sources; UIT-OpenViIC, KTVIC references and human-judgment ratings are not redistributed (Section 11.2).
 
 ## Related manuscript
 
-[AUTHOR TO CONFIRM: status and citation of the companion manuscript on Vietnamese captioning (KTVIC), and its overlap with this paper.]
+A companion manuscript by the same authors on the validity of the Vietnamese captioning benchmark KTVIC is in preparation. It uses the same fine-tuned instrument. Its XM3600 results and its object-F1 slope results on UIT-ViIC appear only in this paper; the companion manuscript reports other analyses of some of the same UIT-ViIC system outputs and cites this paper for the slopes. A copy is available to the editor on request.<!-- PD-25 Q5 (a): A is submitted first; replace with the citation once B is submitted. -->
 
 ## Competing interests
 
@@ -33,4 +28,4 @@ This research received no external funding; all costs, including rented GPU time
 
 ## CRediT authorship contribution statement
 
-[AUTHOR TO CONFIRM: CRediT roles of each author.]
+**Nguyễn Lê Minh Hòa:** Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing – original draft, Writing – review & editing, Visualization, Project administration. **Nguyễn Văn Thịnh:** Conceptualization, Methodology, Supervision, Writing – review & editing. **Trần Văn Lăng:** Conceptualization, Methodology, Supervision, Writing – review & editing.<!-- author order and roles: the author's answers 2026-10-21 (PD-25, PD-25b); corresponding author Trần Văn Lăng (title page). -->

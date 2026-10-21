@@ -12,7 +12,7 @@
 
 **Earlier human ratings.** The prior FAIR-2026 ratings (2 raters, 150 captions) exceeded our pre-set agreement gate (identical scores on 71–87% of captions per scale, against a threshold of 50%), so, as fixed in advance, no criterion analysis was run. These ratings are evidence for no claim in this paper.<!-- heading was 'B-N3: NOT_RUN' ; verbatim, judge PD-21b ; src: .session_backup/2026-10-19/HL_human_labels/b_n3_quality_gate.json :: per_scale (identical_share min and max) ; n_items ; rule ; STOP ; inputs_sha256 (2 rater files) -->
 
-**Matcher v3 is unattested.** Its rules were drafted by an AI model and have no human sign-off. No conclusion in this paper depends on it.
+**Matcher v3 is unattested.** Its rules were drafted with AI assistance and not reviewed by a person. No conclusion in this paper depends on it.
 
 **Exploratory and post hoc analyses.** In the main text, the ranking concordance of Section 5.3 is post hoc and descriptive, and the v3 matcher results are sensitivity analyses. The supplement labels each of its tests by registration status (S1).
 
@@ -51,9 +51,9 @@ A companion paper is under review. Table 7.1 states what each paper claims and w
 | Systems | published systems and zero-shot LVLMs; also outputs of this paper's fine-tuned systems on XM3600 and UIT-ViIC (above) | Qwen2.5-VL-7B fine-tunes (P1, P1-R, fuse2) and the zero-shot backbone; the systems are trained and owned here |
 <!-- PD-24 (c). Built from manuscript/journal_draft/sec1_introduction.md (contributions 1-5; RQ1-5), sec5_exchangeability.md Table 5.1, sec7_verbosity_sign.md §7.3 and §7.5, sec11 §11.2, and the PD-6 Q1(a) ledger. Removed from B under PD-6: XM3600 system CIDEr-D (old sec3:38) and the UIT-ViIC slopes (old sec5:72-80). -->
 
-## 7.4 Analysis provenance and the use of AI agents
+## 7.4 Analysis provenance
 
-Much of the analysis code and many intermediate reports were produced by AI coding agents (two different assistants: [AUTHOR TO CONFIRM: names and versions of the AI tools]) under human direction, with one agent reviewing the other's results. AI assistants also drafted the v3 matcher rules (Section 3.5) and parts of the manuscript text; [AUTHOR TO CONFIRM: which parts of the text were AI-drafted and how the authors revised them]. Reviews found that the agents' JSON outputs reproduced from raw data, but that their prose and logs sometimes contained numbers that existed in no output file, or that disagreed with the JSON. This paper follows these rules:
+Analysis code was written with AI assistance under the authors' direction; the v3 matcher rules (Section 3.5) were drafted with AI assistance and not reviewed by a person. Every reported number is read by script from an output file and listed with its SHA-256 in a numbers manifest. This paper follows these rules:<!-- PD-25 Q3 (a), chosen by the author 2026-10-21. -->
 
 1. Every number is read from a JSON key and listed with its file hash in the number manifest, which is supplementary material for reviewers.
 2. A number with no computing source is not used. For example, a zero-shot CIDEr of 34.33 that came from a re-implemented scorer is replaced by the committed scorer's 28.98.
@@ -63,4 +63,16 @@ Much of the analysis code and many intermediate reports were produced by AI codi
 
 The authors take responsibility for all analyses and text.
 
+## 7.5 Declarations
+
+**Use of generative AI.** During this work the authors used Claude (Anthropic) and Gemini (Google) to write and run analysis code, to draft and edit the manuscript text and to check references. The authors designed the study, directed and checked all analyses, reviewed and edited all text, and take full responsibility for the content.
+
 **Funding.** This research received no external funding; all costs, including rented GPU time and AI-tool subscriptions, were borne by the authors' team.
+
+**Competing interests.** The authors declare no competing interests.
+
+**Ethics approval.** Not applicable: no new data from human participants were collected.
+
+**Data and code availability.** See Section 3.7. The kit is released under the MIT licence; the datasets are available from their original sources.
+
+**Authors' contributions (CRediT).** **Nguyễn Lê Minh Hòa:** Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing – original draft, Writing – review & editing, Visualization, Project administration. **Nguyễn Văn Thịnh:** Conceptualization, Methodology, Supervision, Writing – review & editing. **Trần Văn Lăng:** Conceptualization, Methodology, Supervision, Writing – review & editing.<!-- PD-25, PD-25b; corresponding author Trần Văn Lăng (title page). -->
