@@ -1,0 +1,27 @@
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 397, in from_name
+    return next(cls.discover(name=name))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+StopIteration
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/mnt/d/vsps_image_captioning/scripts/b_f1/score_b_f1.py", line 721, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/mnt/d/vsps_image_captioning/scripts/b_f1/score_b_f1.py", line 705, in main
+    "script_sha256": sha(HERE.read_bytes()), "config": cfg, "env": env()}
+                                                                   ^^^^^
+  File "/mnt/d/vsps_image_captioning/scripts/b_f1/score_b_f1.py", line 137, in env
+    return {"python": sys.version.split()[0], **{p: version(p) for p in ("numpy", "pycocoevalcap", "py_vncorenlp",
+                                                    ^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 889, in version
+    return distribution(distribution_name).version
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 862, in distribution
+    return Distribution.from_name(distribution_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/metadata/__init__.py", line 399, in from_name
+    raise PackageNotFoundError(name)
+importlib.metadata.PackageNotFoundError: No package metadata was found for pycocoevalcap

@@ -1,0 +1,169 @@
+{
+ "id": "B_F1_run_verify",
+ "what": "Independent verification of the registered B-F1 final KTVIC test look (Paper B): decode inputs, one scorer re-run, the registered verdict rule, decode provenance, and a privacy scan of the record to be committed. No caption or prediction text was opened or printed; only scores, counts and hashes.",
+ "verified_utc": "2026-10-21T13:41:52Z",
+ "authority": [
+  ".session_backup/2026-10-13/decisions/CC-070.txt",
+  ".session_backup/2026-10-13/decisions/CC-070b.txt"
+ ],
+ "git_head": "0c7fa0bf9bf4271ee00eec3ffd780fcba551b332",
+ "record": {
+  "path": "data/results/b_f1/b_f1_run.json",
+  "sha256": "998e4f33a76f59e49687b0940955c8f021eadf8f158fd860fabd6375ddec13e8"
+ },
+ "checks": {
+  "1_inputs": {
+   "pass": true,
+   "scorer": {
+    "path": "scripts/b_f1/score_b_f1.py",
+    "worktree_sha256": "9c57cc9771d6da84f56534004ebd60c72acd1103ca7c63a741c2f482881304aa",
+    "head_sha256": "9c57cc9771d6da84f56534004ebd60c72acd1103ca7c63a741c2f482881304aa",
+    "equal": true,
+    "recorded_script_sha256_equal": true
+   },
+   "decode_outputs": {
+    "dir": ".session_backup/machines/M3/root/outputs/b_f1_ktvic_test",
+    "SHA256SUMS_sha256": "742e1570d8da56f83b6fc20172d4fccb91a752138c87af9c6ade578fd16073f5",
+    "entries_ok": 14,
+    "entries_total": 14,
+    "preds_sidecars_ok": 3
+   },
+   "gate": {
+    "path": "manuscript/prereg/2026-10-20_b_f1_record/b_f1_gate.json",
+    "sha256": "cf64ee1c4caa2f483141e9d8b202d25af23e93c523e490a74a63d082a79b8dc2",
+    "tracked": true,
+    "clean_vs_head": true,
+    "last_commit": "877f7db",
+    "equals_record_gate_field": true
+   },
+   "prereg": {
+    "path": "manuscript/prereg/2026-10-20_b_f1_final_stack.json",
+    "sha256": "60a5cf68e9d52a3ca1589b54ed5ac73b44ba803bb1807a5862d0ae41201364c9",
+    "clean_vs_head": true,
+    "equals_record_prereg_field": true
+   }
+  },
+  "2_rerun": {
+   "pass": true,
+   "runs": 1,
+   "command": "score_b_f1.py run <scratch, outside repo>/b_f1_run_verify.json --gate manuscript/prereg/2026-10-20_b_f1_record/b_f1_gate.json --outputs .session_backup/machines/M3/root/outputs/b_f1_ktvic_test",
+   "env": "same pinned scoring venv (python 3.12.3, numpy 2.5.4, pycocoevalcap 1.2, py_vncorenlp 0.1.4, pyjnius 1.9.0); NCS_DATA=<repo>/data, VnCoreNLP jar 9e2811cd / rdr 9e62f96b, JDK 21, JAVA_TOOL_OPTIONS=-XX:ActiveProcessorCount=1, B_F1_STAGE unset",
+   "exit_code": 0,
+   "stdout": {
+    "mode": "run",
+    "all_pass": null,
+    "verdict": "FAIL"
+   },
+   "rerun_sha256": "998e4f33a76f59e49687b0940955c8f021eadf8f158fd860fabd6375ddec13e8",
+   "byte_identical": true,
+   "differences": [],
+   "record_env_equals_gate_env": true,
+   "note": "The record carries no timestamp field, so byte identity is the full comparison.",
+   "side_effects": "none: after the re-run SHA256SUMS re-checked OK (14/14), no tracked file changed, and no file in the repo was written during the re-run window (13:40:50-13:42:00Z)"
+  },
+  "3_verdict": {
+   "pass": true,
+   "rule": "sign_gt_0: PASS if ci95_lo > 0; FAIL if point <= 0; else INCONCLUSIVE (prereg primary.verdict_rule)",
+   "recomputed_from": "record per_image_cider_x100 (558 ids, sorted-string order, unique): D_i = mbr_i - mean(s42_i, s43_i, s44_i); rl_reward.boot draws default_rng(0).integers(0, 558, (5000, 558)), 2.5/97.5 percentiles",
+   "D_MBR_x100_mean_lo_hi": [
+    -0.3911463652683253,
+    -2.436623246509485,
+    1.665752151492787
+   ],
+   "recomputed_equals_record_exactly": true,
+   "verdict": "FAIL",
+   "verdict_basis": "point -0.391 <= 0",
+   "prediction_check": {
+    "use": "inside/outside check, not the verdict",
+    "dCIDEr": {
+     "value": -0.3911463652683253,
+     "interval": [
+      1.0,
+      3.0
+     ],
+     "inside": false
+    },
+    "dBLEU4": {
+     "value": 0.23414410865413515,
+     "interval": [
+      0.5,
+      1.0
+     ],
+     "inside": false
+    },
+    "dF1": {
+     "value": -0.18468019604238606,
+     "interval": [
+      -1.0,
+      1.5
+     ],
+     "inside": true
+    },
+    "dCHAIRi_points": {
+     "value": 0.10270406908158236,
+     "interval": [
+      -1.0,
+      0.5
+     ],
+     "inside": true
+    },
+    "dmentions": {
+     "value": -2.220446049250313e-16,
+     "abs_max": 0.1,
+     "inside": true
+    }
+   },
+   "F0_all_pass": true,
+   "K_F0_fired": false,
+   "K2": {
+    "dCHAIR_i_points": 0.10270406908158236,
+    "fires": false
+   },
+   "K3": {
+    "dF1_ktvic5_mean_lo_hi": [
+     -0.18468019604238606,
+     -0.7448914289569538,
+     0.3862436215940176
+    ],
+    "fires": false
+   },
+   "self_check_rows_ok": "14/14"
+  },
+  "4_decode_once": {
+   "pass": true,
+   "run_record": ".session_backup/2026-10-21/gpu_m3/B_F1_RUN_RECORD.md",
+   "queue_log": ".session_backup/machines/M3/root/queue/queue.log: one G1_GATE_ENFORCED_OK, one START (12:33:59Z), one OK (13:01:36Z) for 01_b_f1_ktvic_test_decode; queue/failed empty",
+   "provenances": {
+    "machine_id": "O-2326839 (all 3, and check.json)",
+    "card": "NVIDIA GeForce RTX 3090 (all 3)",
+    "git_head_sha": "0c7fa0bf9bf4271ee00eec3ffd780fcba551b332 (all 3)",
+    "git_dirty": false,
+    "n_predictions": 558,
+    "job_sha256": "e85fdc66... (all 3; equals committed scripts/queue/jobs/b_f1_ktvic_test_decode.sh and queue/done copy)",
+    "scorer_sha256": "9c57cc97... (all 3)",
+    "preds_mtime_utc": [
+     "2026-10-21T12:43:18Z",
+     "2026-10-21T12:52:27Z",
+     "2026-10-21T13:01:35Z"
+    ]
+   },
+   "scoring_attempts": "attempt 1 (.session_backup/2026-10-21/gpu_m3/b_f1_score.log) ended in env() with PackageNotFoundError(pycocoevalcap) before any read or output; attempt 2 (b_f1_score_attempt2.log) produced the record; this verifier re-run is the CC-070/070b independent re-run"
+  },
+  "5_privacy": {
+   "pass": true,
+   "scanned": "data/results/b_f1/b_f1_run.json",
+   "hits": {
+    "local username": 0,
+    "email or @": 0,
+    "/home": 0,
+    "/tmp": 0,
+    "/mnt": 0,
+    "/usr": 0,
+    "scratch/venv path": 0
+   },
+   "note": "11 strings contain '/root', all repo-relative mirror keys under .session_backup/machines/O-2308423/root/outputs/ in inputs_sha256; not local paths."
+  }
+ },
+ "overall": "PASS",
+ "verdict": "FAIL"
+}
