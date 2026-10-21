@@ -1036,5 +1036,41 @@
         "strength": "same"
       }
     ]
+  },
+  "amendment_5": {
+    "note": "Amendment 5 (2026-10-21, PD-30 revised by CC-073): documentation only. Rows 33-34, one clause each (Section 7.6 and Section 10.5 c3), filling the N-M3 cap-hit share from the decoder-recorded n_tokens; plus the correction of the false Section 7.6 clause 'how many of them reached it was not recorded' (judge error, CC-043). No abstract row; no verdict, verdict rule, selection logic or precondition changed. POST_HOC, descriptive, no causal claim about the A-N2 failure. Written before any share was computed from n_tokens.",
+    "table": "manuscript/paperA_plan/CONFIRMATION_MAP_AMENDMENT5.md",
+    "design": "manuscript/prereg/2026-10-21_n_m3_caphit/DESIGN.md",
+    "status": "approved for the design commit (CC-073, YES 91%, revisions applied); measurement NOT RUN; never write {p} without a verified run",
+    "fill_rules": {
+      "p": "pooled share of the 9 G2-B LADDER detailed runs (g2b_q3_{cv295,uv231,xm600}-detailed-T{0,05,08}, every image) with decoder-recorded n_tokens >= 160 (the registered max_new_tokens), in percent, rounded half up from the counts; printed by the verified caphit.py run as p",
+      "S7": "per-run and per-set shares; the two detailed_en runs; the re-tokenization agreement check per run; the validation facts (A-N2 526/526; B-N1 787/789 recorded hits, agreement 788/789); the upper-bound caveat (EOS exactly at token 160)"
+    },
+    "rows": [
+      {
+        "row": "33",
+        "block": "Section 7.6 design paragraph (sec7_verbosity_sign.md)",
+        "old": "detailed captions capped at 160 new tokens, the same cap as in the eight-LVLM test below; how many of them reached it was not recorded",
+        "new": "detailed captions capped at 160 new tokens, {p}% of which reached the cap by the recorded token counts, Supplementary S7; the same cap as in the eight-LVLM test below",
+        "fallback": "detailed captions capped at 160 new tokens; cap share: Supplementary S7; the same cap as in the eight-LVLM test below",
+        "verdict": "none (descriptive, POST_HOC)",
+        "strength": "same; corrects a false clause"
+      },
+      {
+        "row": "34",
+        "block": "Section 10.5 conclusion c3 (sec10_discussion.md)",
+        "old": "(Qwen3-VL-8B, detailed captions capped at 160 new tokens; how many reached the cap is unknown)",
+        "new": "(Qwen3-VL-8B; detailed captions capped at 160 new tokens, {p}% of which reached the cap, Supplementary S7)",
+        "fallback": "(Qwen3-VL-8B; detailed captions capped at 160 new tokens; cap share: Supplementary S7)",
+        "verdict": "none (descriptive, POST_HOC)",
+        "strength": "same"
+      }
+    ],
+    "correction": {
+      "clause": "Section 7.6 (sec7_verbosity_sign.md:63): how many of them reached it was not recorded",
+      "why_false": "every G2-B decode file records a per-image n_tokens field (scripts/g2b/decode_qwen3vl.py, sha 8a855ef4)",
+      "reason": "judge error, CC-043 ('its truncation share was not recorded, because G2-B outputs carry no hit_max'), recorded in CC-073",
+      "fix": "replaced in every outcome by row 33 (new or fallback); 'not recorded' is never used"
+    }
   }
 }

@@ -1,0 +1,53 @@
+{
+ "task": "N-M3 cap-hit share for Paper A (POST_HOC descriptive; PD-30 revised by CC-073)",
+ "repo_head_at_build": "3342ec1",
+ "files": {
+  "scripts/n_m3/caphit.py": "d01e6a6755604bde6670770c508e838791bd78c4c70a0e874dcf5191d0b510eb",
+  "manuscript/prereg/2026-10-21_n_m3_caphit/DESIGN.md": "05210c631f24c7a241329007c532a010c8d66792252181818fa036fc7d9afdd8",
+  "manuscript/prereg/2026-10-21_n_m3_caphit/selftest.json": "94a4293a1c985c3f4979e30439feee791ad20384cafb92c6e2c37eed49ef76a5",
+  "manuscript/prereg/2026-10-21_n_m3_caphit/gate.json": "98cf0327486bd62c85a6eb9800159142aa990e67510a45ea0387e4359da1a183",
+  "manuscript/paperA_plan/CONFIRMATION_MAP_AMENDMENT5.md": "f6c511a7b34e3354aa0eb749dbef07c47e49588fac51d38c554ad5a3a8a05826",
+  "manuscript/paperA_plan/CONFIRMATION_MAP.json": "d0ff7f070333f2d839bcd188107991f617c8845e5ceb1494067c7af8d421462d",
+  "manuscript/paperA_plan/CONFIRMATION_MAP.md": "f28b2160e10254f5dcabf4e1fbc44e491a442c6250f06536aeca3cd7a4e15d74"
+ },
+ "edits_to_tracked_files": {
+  "manuscript/paperA_plan/CONFIRMATION_MAP.json": "additions only (+36/-0): the amendment_5 block",
+  "manuscript/paperA_plan/CONFIRMATION_MAP.md": "additions only (+1/-0): the amendment 5 header bullet"
+ },
+ "source_of_p": "decoder-recorded n_tokens; hit := n_tokens >= 160; re-tokenization >= 158 is a reported agreement check",
+ "state": "no share has been computed from G2-B n_tokens; the structural gate reads values only for presence, type and range",
+ "interpreter": "any Python with transformers==4.57.6 and tokenizers==0.22.2 (registered freeze FREEZE.txt bf152944) for selftest and run; the gate needs no tokenizer",
+ "tokenizer_mirror": ".session_backup/2026-10-21/n_m3_tokenizer/ (git-excluded; 5 files from the M3 snapshot of revision 0c351dd, each equal to SHA256SUMS dc7bd4a4)",
+ "selftest": {
+  "command": "python3 -B scripts/n_m3/caphit.py --selftest",
+  "pass": true,
+  "n_checks": 12,
+  "byte_identical_under_PYTHONHASHSEED": [
+   3,
+   4242
+  ]
+ },
+ "gate": {
+  "command": "python3 -B scripts/n_m3/caphit.py gate",
+  "kind": "structural (CC-073 ruling 2)",
+  "pass": true,
+  "n_runs": 9,
+  "holds_share_values": false,
+  "byte_identical_under_PYTHONHASHSEED": [
+   3,
+   4242
+  ]
+ },
+ "validation_facts_prior_design": {
+  "A_N2_detailed_en": "526/526 agree at >= 158 (all recorded hits)",
+  "B_N1_vi_detailed": "787/789 recorded hits; 788/789 agree at >= 158; the miss has n_tokens = 159"
+ },
+ "run": {
+  "command": "python3 -B scripts/n_m3/caphit.py run",
+  "precondition": "DESIGN.md, caphit.py and amendment 5 committed first; caphit.py and DESIGN.md equal HEAD; all inputs equal PINS; structural gate holds; refuses if the output exists",
+  "output": "data/results/n_m3/caphit_result.json",
+  "not_run": true
+ },
+ "aislop": "scripts/n_m3: 100/100, no issues",
+ "readings_for_judge": "DESIGN.md R1 (upper bound), R2 (no nesting, CC-073b); amendment 5 rows 33-34 use semicolons, no nested parentheses"
+}

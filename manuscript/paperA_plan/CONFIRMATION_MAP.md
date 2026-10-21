@@ -11,6 +11,7 @@
 - Amendment 2 (PD-18): ADDS the A-N1 registered-secondary outcome sentences; no existing verdict rule, selection logic, precondition, qualifier or placeholder changed.
 - Amendment 3 (2026-10-20, PD-23 (b), PD-23b, CC-043): wording, plus one required weakening qualifier (xm600 = the same 600 images as Section 7.5; "discovery-disjoint" dropped) and a revised brace-fill rule with fixed plain phrases. Written after every mapped outcome is known; B3 registered, not run. No verdict rule, selection logic, precondition or placeholder changed; no row added or dropped. Table: CONFIRMATION_MAP_AMENDMENT3.md.
 - Amendment 4 (2026-10-21, PD-28 (1), CP-064): wording; required weakening qualifiers (verified precision on XM3600, nested golds limited to the reference rungs, 'label gold' defined per set); revised fills; the fixed post hoc bracket sentences; written after every mapped outcome is known, before the bracket run. Table: CONFIRMATION_MAP_AMENDMENT4.md.
+- Amendment 5 (2026-10-21, PD-30, CC-073): documentation only; rows 33-34 fill the N-M3 cap-hit share from the recorded token counts in §7.6 and §10.5 c3, and correct the false §7.6 clause "not recorded" (judge error, CC-043); POST_HOC, descriptive; no abstract row and no verdict changed; written before any share was computed. Table: CONFIRMATION_MAP_AMENDMENT5.md.
 
 **Sources.**
 - PD-10 (`.session_backup/2026-10-13/decisions/PD-10.txt`): bindings 1–5 and the GitHub push times.

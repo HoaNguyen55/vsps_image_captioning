@@ -1,0 +1,106 @@
+{
+ "schema": "vsps.n_m3_caphit.gate.v2",
+ "status": "POST_HOC descriptive (PD-30, CC-073); no verdict",
+ "script_sha256": "d01e6a6755604bde6670770c508e838791bd78c4c70a0e874dcf5191d0b510eb",
+ "design_sha256": "05210c631f24c7a241329007c532a010c8d66792252181818fa036fc7d9afdd8",
+ "packages": {
+  "transformers": "4.57.6",
+  "tokenizers": "0.22.2"
+ },
+ "pins": {
+  ".session_backup/2026-10-13/decisions/PD-30.txt": "4e535c31860868b9a14a68990a0474d8b8bf1ffd1993aeabf3fb5085b0be8083",
+  "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json": "c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055",
+  ".session_backup/2026-10-13/research_r9/C8_backbone/SHA256SUMS": "dc7bd4a45eb3c56e00c56f68cd937871258b679b741949bd38a383950ffc52d8",
+  ".session_backup/2026-10-13/research_r9/C8_backbone/FREEZE.txt": "bf152944ea4389f609207c5f9589c214b2ff6a4ae3b2e2a9c877e64a57fbe605",
+  ".session_backup/2026-10-21/n_m3_tokenizer/tokenizer.json": "a5d85b6dcc535e6b93115a9ef287e6132fdbf30270da6218194ba742261173c7",
+  ".session_backup/2026-10-21/n_m3_tokenizer/tokenizer_config.json": "c2da771801886ad9ae98181793ffd3dfb7f1af30f6f7c6a4e15d7dbba52e2399",
+  ".session_backup/2026-10-21/n_m3_tokenizer/vocab.json": "ca10d7e9fb3ed18575dd1e277a2579c16d108e32f27439684afa0e10b1440910",
+  ".session_backup/2026-10-21/n_m3_tokenizer/merges.txt": "599bab54075088774b1733fde865d5bd747cbcc7a547c5bc12610e874e26f5e3",
+  ".session_backup/2026-10-21/n_m3_tokenizer/config.json": "5cd452860dc1e9c29dd71cc3cef7f39b338b7a40793f7a260655c2d3568f3661",
+  "data/results/a_n2/a_n2_run.json": "1f6ce422e0163d81661bf5711787086b2f11ae177f3dbc6b06ae6cd4ebc3dfdc",
+  ".session_backup/2026-10-20/a_n2_run/outputs/lbA_qwen3vl_8b_cv295-detailed_en.preds.json": "7935912a50eae9aca9afd45c4f18ab8eb821be5c69c0c21453b028b71b95aaa4",
+  ".session_backup/2026-10-20/a_n2_run/outputs/lbA_qwen3vl_8b_uv231en-detailed_en.preds.json": "91f9a7265d86b6874cc860fab66c0454890bbf3eb1e00f81ae50d8100d5dfcb9",
+  "data/results/b_n1/b_n1_run.json": "adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7",
+  ".session_backup/2026-10-20/b_n1_run/outputs/lbB_qwen3vl_8b_ktvic_test-detailed.preds.json": "51df6c6f4cded1dbbd54b3330146d311b899640ae3503065a3f9367706c5e38e",
+  ".session_backup/2026-10-20/b_n1_run/outputs/lbB_qwen3vl_8b_uitviic_test-detailed.preds.json": "e89477e3591bb257d63e28202e2c6c9257f3e40354684f83925bf204bc6d7d7b",
+  "data/results/g2b/g2b_score_record/precheck.json": "02bdca27949e781ab90376ce97e25555df35d140369f967ae6b7feef63b9f78e",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-detailed-T0.preds.json": "9ec537886f0d91d23c8c03196bf0aeb2f737b100f06aa36dbf09bea7553b5f02",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-detailed-T05.preds.json": "1d9934b9b108feaaa2fff5b8eb7071db97005be47901df0f3bcf69d70a67fc58",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-detailed-T08.preds.json": "59f2e5534c3e6a6cfd8a7a9c1ba3f951be0a4b41e82f70390f19f6970ebfa8f8",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-detailed-T0.preds.json": "2a92344baddc53c2e3974a701a973b8e1be0f44bcf780376851d812f27dcdeec",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-detailed-T05.preds.json": "3bef57a29456f81cbce0b9c839c45100112132a7ee6a8eafd57d7ed724b57420",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-detailed-T08.preds.json": "d994c6961bf1b6343df239fbbc1ada63a4665a2a2790065d9fa5d0fe398f3fcd",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_xm600-detailed-T0.preds.json": "a66647d12140858e8c013fdce6133949c4b97179d91acc92c413608bf0a560df",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_xm600-detailed-T05.preds.json": "3e6189d627affaec4e327b1eb3ac1a55a3b76cbc8ae5001dc3c63de9c6baa9ee",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_xm600-detailed-T08.preds.json": "944668eb32fb4a76209837f394bf6cd62a3245d8ac467e715105b3953dd2e751",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_cv295-detailed_en-T0.preds.json": "736a3d3287735e48c650dc0e912c7fedab18503a35bb7bf33ee2279f8589cd31",
+  ".session_backup/2026-10-20/g2b_score/outputs/g2b_q3_uv231-detailed_en-T0.preds.json": "85066857b493eb303f8effe84a8d5c02f36e7d186449d87ff0a2e8ef76b2604d"
+ },
+ "statistics_computed": "structural checks only (presence, integer type, range); no share",
+ "runs": {
+  "g2b_q3_cv295-detailed-T0": {
+   "n_images": 295,
+   "n_tokens_present_for_every_image": true,
+   "all_integers": true,
+   "all_in_0_to_cap": true,
+   "max_new_tokens_is_cap": true
+  },
+  "g2b_q3_cv295-detailed-T05": {
+   "n_images": 295,
+   "n_tokens_present_for_every_image": true,
+   "all_integers": true,
+   "all_in_0_to_cap": true,
+   "max_new_tokens_is_cap": true
+  },
+  "g2b_q3_cv295-detailed-T08": {
+   "n_images": 295,
+   "n_tokens_present_for_every_image": true,
+   "all_integers": true,
+   "all_in_0_to_cap": true,
+   "max_new_tokens_is_cap": true
+  },
+  "g2b_q3_uv231-detailed-T0": {
+   "n_images": 231,
+   "n_tokens_present_for_every_image": true,
+   "all_integers": true,
+   "all_in_0_to_cap": true,
+   "max_new_tokens_is_cap": true
+  },
+  "g2b_q3_uv231-detailed-T05": {
+   "n_images": 231,
+   "n_tokens_present_for_every_image": true,
+   "all_integers": true,
+   "all_in_0_to_cap": true,
+   "max_new_tokens_is_cap": true
+  },
+  "g2b_q3_uv231-detailed-T08": {
+   "n_images": 231,
+   "n_tokens_present_for_every_image": true,
+   "all_integers": true,
+   "all_in_0_to_cap": true,
+   "max_new_tokens_is_cap": true
+  },
+  "g2b_q3_xm600-detailed-T0": {
+   "n_images": 600,
+   "n_tokens_present_for_every_image": true,
+   "all_integers": true,
+   "all_in_0_to_cap": true,
+   "max_new_tokens_is_cap": true
+  },
+  "g2b_q3_xm600-detailed-T05": {
+   "n_images": 600,
+   "n_tokens_present_for_every_image": true,
+   "all_integers": true,
+   "all_in_0_to_cap": true,
+   "max_new_tokens_is_cap": true
+  },
+  "g2b_q3_xm600-detailed-T08": {
+   "n_images": 600,
+   "n_tokens_present_for_every_image": true,
+   "all_integers": true,
+   "all_in_0_to_cap": true,
+   "max_new_tokens_is_cap": true
+  }
+ },
+ "pass": true
+}
