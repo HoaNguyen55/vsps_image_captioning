@@ -19,9 +19,14 @@ We propose a protocol card that states these choices with every score. The pre-r
 
 **Transparency.**
 - Every number is traced to an output file, a stated derivation or a cited source in a numbers manifest.
-- The kit, the pre-registration files, the score-only result files and the manifest are archived on Zenodo (DOI: [AUTHOR TO PROVIDE]), in one deposit shared with the companion manuscript; 41 of the manifest's 504 rows cite sources that could not be released and are marked.
+- The kit, the pre-registration files, the score-only result files and the manifest are archived on Zenodo (reserved DOI: [AUTHOR TO PROVIDE]), in one deposit shared with the companion manuscript; until the record is public, the editor and reviewers receive an access link;<!-- CC-074 (b): the Zenodo record stays unpublished until the IP&M decision on Paper A --> 41 of the manifest's 504 rows cite sources that could not be released and are marked.
 - The kit contains our matcher word lists (author-built, v1 and v2) but no counts derived from KTVIC and no dataset captions; the model-drafted v3 rules are not included.
 - The use of generative AI is declared in Section 7.5.
+
+**Authors.**<!-- CC-074 (LRE cover-letter rule, per the guide as read by Ken 2026-10-21): an ORCID iD or a university homepage/online CV for each author; never invent or look up IDs without the authors' confirmation. -->
+- Nguyễn Lê Minh Hòa: [AUTHOR TO PROVIDE: ORCID iD or university homepage/online CV]
+- Nguyễn Văn Thịnh: [AUTHOR TO PROVIDE: ORCID iD or university homepage/online CV]
+- Trần Văn Lăng: [AUTHOR TO PROVIDE: ORCID iD or university homepage/online CV]
 
 The manuscript has not been published and is not under consideration elsewhere. All authors have approved the submission and declare no competing interests.
 

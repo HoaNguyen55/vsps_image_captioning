@@ -13,3 +13,8 @@ Nguyễn Lê Minh Hòa^a^, Nguyễn Văn Thịnh^b^, Trần Văn Lăng^c,\*^
 \* Corresponding author: Trần Văn Lăng, langtv@huflit.edu.vn
 
 Other author emails: Nguyễn Văn Thịnh, thinhnv@hcmue.edu.vn.
+
+**CRediT authorship contribution statement.**<!-- CC-074 (a): moved here from the anonymized declarations; same text as ../journal_draft/declarations.md -->
+**Nguyễn Lê Minh Hòa:** Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing – original draft, Writing – review & editing, Visualization, Project administration. **Nguyễn Văn Thịnh:** Conceptualization, Methodology, Supervision, Writing – review & editing. **Trần Văn Lăng:** Conceptualization, Methodology, Supervision, Writing – review & editing.
+
+**Data availability (for the editor).** The archive is reserved on Zenodo (DOI: [AUTHOR TO PROVIDE]) and stays unpublished until the decision; reviewers receive the anonymized copy as supplementary material.
