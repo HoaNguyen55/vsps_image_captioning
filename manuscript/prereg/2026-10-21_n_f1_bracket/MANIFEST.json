@@ -1,0 +1,42 @@
+{
+ "task": "N-F1 bracket for Paper A (POST_HOC exploratory; PD-28 item 1)",
+ "repo_head_at_build": "286fdcc",
+ "files": {
+  "scripts/n_f1/bracket.py": "9d2d3059b0b4cd39a6c6849b33fa657171327f5178bd60ccb994f469a88624d8",
+  "manuscript/prereg/2026-10-21_n_f1_bracket/DESIGN.md": "4bac88c3114c17876a3d308d351cb62d809f776859af3fd36ef51521aca9ce34",
+  "manuscript/prereg/2026-10-21_n_f1_bracket/selftest.json": "d7491a63d8e77e079bbae58ab60e2b1662425f8a110c8ddc14fec64c40953662",
+  "manuscript/prereg/2026-10-21_n_f1_bracket/gate.json": "2b9f648054e4720f3610ad7f6f89cfada0ddb1e7a9e1e324a1b0bc2b477388be"
+ },
+ "selftest": {
+  "command": "python3 -B scripts/n_f1/bracket.py --selftest",
+  "pass": true,
+  "n_checks": 11,
+  "byte_identical_under_PYTHONHASHSEED": [
+   3,
+   4242
+  ]
+ },
+ "gate": {
+  "command": "python3 -B scripts/n_f1/bracket.py gate",
+  "all_cells_ok": true,
+  "n_cells": 22,
+  "max_abs_diff_by_set": {
+   "s75": 0.0,
+   "xm600": 0.0
+  },
+  "s75_note": "committed values are rounded (slope 4 dp, CI 2 dp, F1_pos and gold size 4 dp); the diff is 0 at the committed dp; the full-precision slope diff 3.7e-05 is the rounding of the committed value, not float error. No full-precision registered value exists",
+  "xm600_note": "exact float equality with g2b_score.json (G2B-E2 and descriptive), point, CI and per-system F",
+  "byte_identical_under_PYTHONHASHSEED": [
+   3,
+   4242
+  ]
+ },
+ "run": {
+  "command": "OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n 15 python3 -B scripts/n_f1/bracket.py run",
+  "precondition": "PD-28 order: map amendment 4 committed first; bracket.py and DESIGN.md committed at HEAD; all inputs equal PINS; gate cells reproduce; refuses if the output exists",
+  "output": "data/results/n_f1/bracket_result.json",
+  "not_run": "no P_lower or P_upper statistic has been computed on real data"
+ },
+ "readings_for_judge": "R1-R8 in DESIGN.md; design approved CC-063 (R1 counts, R3 ruling and R4 disclosure added). R1 note: the pinned map has 69 mapped classes (67 with a status on the 600 images), not 82",
+ "aislop": "scripts/n_f1: 94/100, one non-fixable warning complexity/file-too-large (443 lines > 400); left as one file like scripts/scar/scar_null.py"
+}
