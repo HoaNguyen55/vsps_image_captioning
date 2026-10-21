@@ -1,0 +1,1612 @@
+{
+ "check": "PD-29 figures and references, independent verification",
+ "date": "2026-10-21",
+ "ruling": ".session_backup/2026-10-13/decisions/PD-29.txt",
+ "overall": "FAIL (minor): one caption pointer; figures, values, references and word count PASS",
+ "inputs_sha256_prefix": {
+  "scripts/figures/paperA_figs.py": "debc2c08fac4",
+  "manuscript/journal_draft/figs/fig2_slope_by_gold.svg": "62887f1c1523",
+  "manuscript/journal_draft/figs/fig4_lambda_channels.svg": "d0cc8d4edc41",
+  "manuscript/journal_draft/figs/VALUES.json": "e71173dbdcae",
+  "manuscript/journal_draft/figs/CAPTIONS.md": "aa7eacc8aae5",
+  "manuscript/journal_draft/number_manifest.tsv": "5e73e4cad628",
+  "manuscript/journal_draft/paperA.bib": "49885c8c0f56",
+  "manuscript/journal_draft/sec2_related_work.md": "cdade2a65001",
+  "manuscript/journal_draft/sec4_theory.md": "cd80f6585f85",
+  "manuscript/journal_draft/sec7_verbosity_sign.md": "721dc0169b12"
+ },
+ "1_figures": {
+  "status": "PASS",
+  "rerun": {
+   "status": "PASS",
+   "details": "Ran a copy of scripts/figures/paperA_figs.py (only ROOT and OUT changed, to send output to a scratch folder) with python3 -I. It printed \"wrote 2 figures, 62 manifest lookups\". fig2_slope_by_gold.svg, fig4_lambda_channels.svg and VALUES.json are byte-identical to the files in the repo (cmp)."
+  },
+  "values_vs_manifest_and_source": {
+   "status": "PASS",
+   "n_entries": 62,
+   "n_fail": 0,
+   "details": "For every entry: the manifest line at manifest_row has the same text, file and key; the numbers parsed from it equal VALUES.json; the source file exists locally, its sha256 starts with the manifest prefix, and the value at the key (dotted path, [i] index, {a,b} field list) rounds to the manifest value at the manifest number of decimals. The g2b, N-F1 bracket and XM3600 values are full-precision in the source and rounded in the manifest.",
+   "entries": [
+    {
+     "row": 2,
+     "what": "COCO-2500 1 ref (point)",
+     "values": [
+      -4.28
+     ],
+     "source_values": [
+      -4.28
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 10,
+     "what": "COCO-2500 1 ref (95% CI)",
+     "values": [
+      -5.91,
+      -2.45
+     ],
+     "source_values": [
+      -5.91,
+      -2.45
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 6,
+     "what": "COCO-2500 5 refs (point)",
+     "values": [
+      11.08
+     ],
+     "source_values": [
+      11.08
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 11,
+     "what": "COCO-2500 5 refs (95% CI)",
+     "values": [
+      9.76,
+      12.43
+     ],
+     "source_values": [
+      9.76,
+      12.43
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 7,
+     "what": "COCO-2500 label gold (point)",
+     "values": [
+      22.41
+     ],
+     "source_values": [
+      22.41
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 12,
+     "what": "COCO-2500 label gold (95% CI)",
+     "values": [
+      21.27,
+      23.48
+     ],
+     "source_values": [
+      21.27,
+      23.48
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 44,
+     "what": "LVLMs, OPERA release 1 ref (point)",
+     "values": [
+      -35.18
+     ],
+     "source_values": [
+      -35.18
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 190,
+     "what": "LVLMs, OPERA release 1 ref (95% CI)",
+     "values": [
+      -40.38,
+      -30.87
+     ],
+     "source_values": [
+      -40.38,
+      -30.87
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 45,
+     "what": "LVLMs, OPERA release 5 refs (point)",
+     "values": [
+      -29.57
+     ],
+     "source_values": [
+      -29.57
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 191,
+     "what": "LVLMs, OPERA release 5 refs (95% CI)",
+     "values": [
+      -32.69,
+      -26.37
+     ],
+     "source_values": [
+      -32.69,
+      -26.37
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 46,
+     "what": "LVLMs, OPERA release label gold (point)",
+     "values": [
+      4.24
+     ],
+     "source_values": [
+      4.24
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 192,
+     "what": "LVLMs, OPERA release label gold (95% CI)",
+     "values": [
+      -0.09,
+      8.51
+     ],
+     "source_values": [
+      -0.09,
+      8.51
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 47,
+     "what": "LVLMs, Less-is-More release 1 ref (point)",
+     "values": [
+      -31.89
+     ],
+     "source_values": [
+      -31.89
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 200,
+     "what": "LVLMs, Less-is-More release 1 ref (95% CI)",
+     "values": [
+      -36.6,
+      -27.21
+     ],
+     "source_values": [
+      -36.6,
+      -27.21
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 48,
+     "what": "LVLMs, Less-is-More release 5 refs (point)",
+     "values": [
+      -22.86
+     ],
+     "source_values": [
+      -22.86
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 201,
+     "what": "LVLMs, Less-is-More release 5 refs (95% CI)",
+     "values": [
+      -26.71,
+      -18.53
+     ],
+     "source_values": [
+      -26.71,
+      -18.53
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 49,
+     "what": "LVLMs, Less-is-More release label gold (point)",
+     "values": [
+      6.91
+     ],
+     "source_values": [
+      6.91
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 202,
+     "what": "LVLMs, Less-is-More release label gold (95% CI)",
+     "values": [
+      2.16,
+      11.17
+     ],
+     "source_values": [
+      2.16,
+      11.17
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 210,
+     "what": "UIT-ViIC, COCO-80 lexicon 1 ref (point)",
+     "values": [
+      -13.97
+     ],
+     "source_values": [
+      -13.97
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 211,
+     "what": "UIT-ViIC, COCO-80 lexicon 1 ref (95% CI)",
+     "values": [
+      -19.24,
+      -8.01
+     ],
+     "source_values": [
+      -19.24,
+      -8.01
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 123,
+     "what": "UIT-ViIC, COCO-80 lexicon 5 refs (point)",
+     "values": [
+      4.8
+     ],
+     "source_values": [
+      4.8
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 212,
+     "what": "UIT-ViIC, COCO-80 lexicon 5 refs (95% CI)",
+     "values": [
+      -0.57,
+      9.67
+     ],
+     "source_values": [
+      -0.57,
+      9.67
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 124,
+     "what": "UIT-ViIC, COCO-80 lexicon label gold (point)",
+     "values": [
+      37.52
+     ],
+     "source_values": [
+      37.52
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 213,
+     "what": "UIT-ViIC, COCO-80 lexicon label gold (95% CI)",
+     "values": [
+      34.56,
+      40.08
+     ],
+     "source_values": [
+      34.56,
+      40.08
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 216,
+     "what": "UIT-ViIC, Vietnamese lexicon 1 ref (point)",
+     "values": [
+      -17.25
+     ],
+     "source_values": [
+      -17.25
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 217,
+     "what": "UIT-ViIC, Vietnamese lexicon 1 ref (95% CI)",
+     "values": [
+      -20.04,
+      -14.53
+     ],
+     "source_values": [
+      -20.04,
+      -14.53
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 126,
+     "what": "UIT-ViIC, Vietnamese lexicon 5 refs (point)",
+     "values": [
+      -6.28
+     ],
+     "source_values": [
+      -6.28
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 218,
+     "what": "UIT-ViIC, Vietnamese lexicon 5 refs (95% CI)",
+     "values": [
+      -8.31,
+      -4.29
+     ],
+     "source_values": [
+      -8.31,
+      -4.29
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 219,
+     "what": "UIT-ViIC, Vietnamese lexicon label gold (point)",
+     "values": [
+      7.66
+     ],
+     "source_values": [
+      7.66
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 220,
+     "what": "UIT-ViIC, Vietnamese lexicon label gold (95% CI)",
+     "values": [
+      5.78,
+      9.58
+     ],
+     "source_values": [
+      5.78,
+      9.58
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 231,
+     "what": "XM3600 1 ref (point)",
+     "values": [
+      -8.99
+     ],
+     "source_values": [
+      -8.9867
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 232,
+     "what": "XM3600 1 ref (95% CI)",
+     "values": [
+      -10.89,
+      -6.99
+     ],
+     "source_values": [
+      -10.89,
+      -6.99
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 233,
+     "what": "XM3600 all 2-3 refs (point)",
+     "values": [
+      -2.43
+     ],
+     "source_values": [
+      -2.4278
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 234,
+     "what": "XM3600 all 2-3 refs (95% CI)",
+     "values": [
+      -4.63,
+      -0.3
+     ],
+     "source_values": [
+      -4.63,
+      -0.3
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 235,
+     "what": "XM3600 label gold (point)",
+     "values": [
+      19.32
+     ],
+     "source_values": [
+      19.3247
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 236,
+     "what": "XM3600 label gold (95% CI)",
+     "values": [
+      17.43,
+      21.13
+     ],
+     "source_values": [
+      17.43,
+      21.13
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 657,
+     "what": "XM3600 post hoc lower bound (N-F1)",
+     "values": [
+      5.83,
+      3.82,
+      7.82
+     ],
+     "source_values": [
+      5.8258,
+      3.82,
+      7.82
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 604,
+     "what": "2nd backbone, cv295 1 ref",
+     "values": [
+      -11.46,
+      -17.27,
+      -5.19
+     ],
+     "source_values": [
+      -11.457187488127976,
+      -17.266292372184807,
+      -5.190498568214647
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 605,
+     "what": "2nd backbone, cv295 label gold",
+     "values": [
+      13.14,
+      7.81,
+      18.82
+     ],
+     "source_values": [
+      13.13672983909126,
+      7.8123557497837055,
+      18.820314040888704
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 609,
+     "what": "2nd backbone, uv231 1 ref",
+     "values": [
+      -20.96,
+      -24.31,
+      -17.4
+     ],
+     "source_values": [
+      -20.957440962139973,
+      -24.312524231224472,
+      -17.397328589381573
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 610,
+     "what": "2nd backbone, uv231 label gold",
+     "values": [
+      37.36,
+      35.15,
+      39.41
+     ],
+     "source_values": [
+      37.356118218882095,
+      35.148890739495144,
+      39.41036110631639
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 658,
+     "what": "xm600 post hoc lower bound (N-F1)",
+     "values": [
+      1.97,
+      -0.44,
+      4.01
+     ],
+     "source_values": [
+      1.9675896249142923,
+      -0.4388184107172999,
+      4.010350428922027
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 614,
+     "what": "2nd backbone, xm600 1 ref",
+     "values": [
+      -12.27,
+      -14.55,
+      -10.08
+     ],
+     "source_values": [
+      -12.272658969217972,
+      -14.549399289561602,
+      -10.083724909820447
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 615,
+     "what": "2nd backbone, xm600 label gold",
+     "values": [
+      13.71,
+      11.44,
+      15.79
+     ],
+     "source_values": [
+      13.708466543235904,
+      11.442792230002365,
+      15.793893228598826
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 516,
+     "what": "Lambda_U refs1_randk (point)",
+     "values": [
+      0.047
+     ],
+     "source_values": [
+      0.047
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 517,
+     "what": "Lambda_U refs1_randk (95% CI)",
+     "values": [
+      -0.0273,
+      0.1224
+     ],
+     "source_values": [
+      -0.0273,
+      0.1224
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 518,
+     "what": "Lambda_U refs2_randk (point)",
+     "values": [
+      0.543
+     ],
+     "source_values": [
+      0.543
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 519,
+     "what": "Lambda_U refs2_randk (95% CI)",
+     "values": [
+      0.4711,
+      0.6204
+     ],
+     "source_values": [
+      0.4711,
+      0.6204
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 520,
+     "what": "Lambda_U refs3_randk (point)",
+     "values": [
+      0.818
+     ],
+     "source_values": [
+      0.818
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 521,
+     "what": "Lambda_U refs3_randk (95% CI)",
+     "values": [
+      0.7394,
+      0.8942
+     ],
+     "source_values": [
+      0.7394,
+      0.8942
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 522,
+     "what": "Lambda_U refs4_randk (point)",
+     "values": [
+      0.998
+     ],
+     "source_values": [
+      0.998
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 523,
+     "what": "Lambda_U refs4_randk (95% CI)",
+     "values": [
+      0.9212,
+      1.0804
+     ],
+     "source_values": [
+      0.9212,
+      1.0804
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 524,
+     "what": "Lambda_U refs5_randk (point)",
+     "values": [
+      1.145
+     ],
+     "source_values": [
+      1.145
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 525,
+     "what": "Lambda_U refs5_randk (95% CI)",
+     "values": [
+      1.0611,
+      1.229
+     ],
+     "source_values": [
+      1.0611,
+      1.229
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 526,
+     "what": "Lambda_U inst (point)",
+     "values": [
+      2.567
+     ],
+     "source_values": [
+      2.567
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 527,
+     "what": "Lambda_U inst (95% CI)",
+     "values": [
+      2.4481,
+      2.6919
+     ],
+     "source_values": [
+      2.4481,
+      2.6919
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 528,
+     "what": "Lambda_U inst+refs5 (point)",
+     "values": [
+      2.84
+     ],
+     "source_values": [
+      2.84
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 529,
+     "what": "Lambda_U inst+refs5 (95% CI)",
+     "values": [
+      2.7211,
+      2.9613
+     ],
+     "source_values": [
+      2.7211,
+      2.9613
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 35,
+     "what": "b-channel share 1->5 (point)",
+     "values": [
+      0.613
+     ],
+     "source_values": [
+      0.613
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 531,
+     "what": "b-channel share 1->5 (95% CI)",
+     "values": [
+      0.5968,
+      0.6282
+     ],
+     "source_values": [
+      0.5968,
+      0.6282
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 36,
+     "what": "b-channel share 1->label gold (point)",
+     "values": [
+      0.709
+     ],
+     "source_values": [
+      0.709
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    },
+    {
+     "row": 532,
+     "what": "b-channel share 1->label gold (95% CI)",
+     "values": [
+      0.6976,
+      0.7209
+     ],
+     "source_values": [
+      0.6976,
+      0.7209
+     ],
+     "sha_prefix_ok": true,
+     "status": "PASS",
+     "problems": []
+    }
+   ]
+  },
+  "svg_coordinates": {
+   "status": "PASS",
+   "details": "Every plotted point was decoded back to data units from the SVG, using the scale implied by the tick labels and no script code: 26 points with intervals in Fig. 2 (marker centre and whisker ends) and 9 in Fig. 4 (7 Lambda circles with whiskers; 2 share bars with CI lines). Each was compared with VALUES.json in plotting order. Max abs error: Fig. 2 0.021 slope points (pixel rounding, 1 px = 0.29 points); Fig. 4 0.0009. Open triangles appear only at XM3600 and xm600 label gold; the grey diamonds (lower bound) appear only at XM3600 and xm600.",
+   "fig2": {
+    "scale": "from tick labels -40.0->312.3, 40.0->34.7",
+    "n_points": 26,
+    "max_abs_err_points": 0.021,
+    "rows": [
+     {
+      "label": "COCO-2500 1 ref",
+      "expected": [
+       -4.28,
+       -5.91,
+       -2.45
+      ],
+      "decoded_from_svg": [
+       -4.265,
+       -5.908,
+       -2.45
+      ],
+      "marker": "circle",
+      "max_abs_err": 0.015
+     },
+     {
+      "label": "COCO-2500 5 refs",
+      "expected": [
+       11.08,
+       9.76,
+       12.43
+      ],
+      "decoded_from_svg": [
+       11.095,
+       9.769,
+       12.45
+      ],
+      "marker": "rect",
+      "max_abs_err": 0.02
+     },
+     {
+      "label": "COCO-2500 label gold",
+      "expected": [
+       22.41,
+       21.27,
+       23.48
+      ],
+      "decoded_from_svg": [
+       22.421,
+       21.268,
+       23.487
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.011
+     },
+     {
+      "label": "LVLMs, OPERA release 1 ref",
+      "expected": [
+       -35.18,
+       -40.38,
+       -30.87
+      ],
+      "decoded_from_svg": [
+       -35.159,
+       -40.375,
+       -30.865
+      ],
+      "marker": "circle",
+      "max_abs_err": 0.021
+     },
+     {
+      "label": "LVLMs, OPERA release 5 refs",
+      "expected": [
+       -29.57,
+       -32.69,
+       -26.37
+      ],
+      "decoded_from_svg": [
+       -29.568,
+       -32.68,
+       -26.369
+      ],
+      "marker": "rect",
+      "max_abs_err": 0.01
+     },
+     {
+      "label": "LVLMs, OPERA release label gold",
+      "expected": [
+       4.24,
+       -0.09,
+       8.51
+      ],
+      "decoded_from_svg": [
+       4.236,
+       -0.086,
+       8.501
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.009
+     },
+     {
+      "label": "LVLMs, Less-is-More release 1 ref",
+      "expected": [
+       -31.89,
+       -36.6,
+       -27.21
+      ],
+      "decoded_from_svg": [
+       -31.873,
+       -36.599,
+       -27.205
+      ],
+      "marker": "circle",
+      "max_abs_err": 0.017
+     },
+     {
+      "label": "LVLMs, Less-is-More release 5 refs",
+      "expected": [
+       -22.86,
+       -26.71,
+       -18.53
+      ],
+      "decoded_from_svg": [
+       -22.853,
+       -26.715,
+       -18.53
+      ],
+      "marker": "rect",
+      "max_abs_err": 0.007
+     },
+     {
+      "label": "LVLMs, Less-is-More release label gold",
+      "expected": [
+       6.91,
+       2.16,
+       11.17
+      ],
+      "decoded_from_svg": [
+       6.916,
+       2.161,
+       11.182
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.012
+     },
+     {
+      "label": "UIT-ViIC, COCO-80 lexicon 1 ref",
+      "expected": [
+       -13.97,
+       -19.24,
+       -8.01
+      ],
+      "decoded_from_svg": [
+       -13.977,
+       -19.222,
+       -8.012
+      ],
+      "marker": "circle",
+      "max_abs_err": 0.018
+     },
+     {
+      "label": "UIT-ViIC, COCO-80 lexicon 5 refs",
+      "expected": [
+       4.8,
+       -0.57,
+       9.67
+      ],
+      "decoded_from_svg": [
+       4.813,
+       -0.576,
+       9.683
+      ],
+      "marker": "rect",
+      "max_abs_err": 0.013
+     },
+     {
+      "label": "UIT-ViIC, COCO-80 lexicon label gold",
+      "expected": [
+       37.52,
+       34.56,
+       40.08
+      ],
+      "decoded_from_svg": [
+       37.522,
+       34.553,
+       40.086
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.007
+     },
+     {
+      "label": "UIT-ViIC, Vietnamese lexicon 1 ref",
+      "expected": [
+       -17.25,
+       -20.04,
+       -14.53
+      ],
+      "decoded_from_svg": [
+       -17.233,
+       -20.029,
+       -14.524
+      ],
+      "marker": "circle",
+      "max_abs_err": 0.017
+     },
+     {
+      "label": "UIT-ViIC, Vietnamese lexicon 5 refs",
+      "expected": [
+       -6.28,
+       -8.31,
+       -4.29
+      ],
+      "decoded_from_svg": [
+       -6.282,
+       -8.3,
+       -4.294
+      ],
+      "marker": "rect",
+      "max_abs_err": 0.01
+     },
+     {
+      "label": "UIT-ViIC, Vietnamese lexicon label gold",
+      "expected": [
+       7.66,
+       5.78,
+       9.58
+      ],
+      "decoded_from_svg": [
+       7.666,
+       5.793,
+       9.597
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.017
+     },
+     {
+      "label": "XM3600 1 ref",
+      "expected": [
+       -8.99,
+       -10.89,
+       -6.99
+      ],
+      "decoded_from_svg": [
+       -8.991,
+       -10.893,
+       -6.974
+      ],
+      "marker": "circle",
+      "max_abs_err": 0.016
+     },
+     {
+      "label": "XM3600 all 2-3 refs",
+      "expected": [
+       -2.43,
+       -4.63,
+       -0.3
+      ],
+      "decoded_from_svg": [
+       -2.421,
+       -4.611,
+       -0.288
+      ],
+      "marker": "rect",
+      "max_abs_err": 0.019
+     },
+     {
+      "label": "XM3600 label gold",
+      "expected": [
+       19.32,
+       17.43,
+       21.13
+      ],
+      "decoded_from_svg": [
+       19.337,
+       17.435,
+       21.124
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.017
+     },
+     {
+      "label": "XM3600 post hoc lower bound (N-F1)",
+      "expected": [
+       5.83,
+       3.82,
+       7.82
+      ],
+      "decoded_from_svg": [
+       5.821,
+       3.833,
+       7.839
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.019
+     },
+     {
+      "label": "2nd backbone, cv295 1 ref",
+      "expected": [
+       -11.46,
+       -17.27,
+       -5.19
+      ],
+      "decoded_from_svg": [
+       -11.441,
+       -17.262,
+       -5.187
+      ],
+      "marker": "circle",
+      "max_abs_err": 0.019
+     },
+     {
+      "label": "2nd backbone, cv295 label gold",
+      "expected": [
+       13.14,
+       7.81,
+       18.82
+      ],
+      "decoded_from_svg": [
+       13.141,
+       7.81,
+       18.818
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.002
+     },
+     {
+      "label": "2nd backbone, uv231 1 ref",
+      "expected": [
+       -20.96,
+       -24.31,
+       -17.4
+      ],
+      "decoded_from_svg": [
+       -20.951,
+       -24.294,
+       -17.406
+      ],
+      "marker": "circle",
+      "max_abs_err": 0.016
+     },
+     {
+      "label": "2nd backbone, uv231 label gold",
+      "expected": [
+       37.36,
+       35.15,
+       39.41
+      ],
+      "decoded_from_svg": [
+       37.378,
+       35.159,
+       39.424
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.018
+     },
+     {
+      "label": "2nd backbone, xm600 1 ref",
+      "expected": [
+       -12.27,
+       -14.55,
+       -10.08
+      ],
+      "decoded_from_svg": [
+       -12.277,
+       -14.553,
+       -10.086
+      ],
+      "marker": "circle",
+      "max_abs_err": 0.007
+     },
+     {
+      "label": "2nd backbone, xm600 label gold",
+      "expected": [
+       13.71,
+       11.44,
+       15.79
+      ],
+      "decoded_from_svg": [
+       13.718,
+       11.441,
+       15.793
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.008
+     },
+     {
+      "label": "xm600 post hoc lower bound (N-F1)",
+      "expected": [
+       1.97,
+       -0.44,
+       4.01
+      ],
+      "decoded_from_svg": [
+       1.988,
+       -0.432,
+       4.006
+      ],
+      "marker": "polygon",
+      "max_abs_err": 0.018
+     }
+    ]
+   },
+   "fig4": {
+    "n_points": 9,
+    "max_abs_err": 0.0009,
+    "rows": [
+     {
+      "label": "Lambda_U refs1_randk",
+      "expected": [
+       0.047,
+       -0.0273,
+       0.1224
+      ],
+      "decoded_from_svg": [
+       0.0461,
+       -0.0271,
+       0.122
+      ],
+      "max_abs_err": 0.0009
+     },
+     {
+      "label": "Lambda_U refs2_randk",
+      "expected": [
+       0.543,
+       0.4711,
+       0.6204
+      ],
+      "decoded_from_svg": [
+       0.5423,
+       0.4704,
+       0.6195
+      ],
+      "max_abs_err": 0.0009
+     },
+     {
+      "label": "Lambda_U refs3_randk",
+      "expected": [
+       0.818,
+       0.7394,
+       0.8942
+      ],
+      "decoded_from_svg": [
+       0.8174,
+       0.7388,
+       0.8934
+      ],
+      "max_abs_err": 0.0008
+     },
+     {
+      "label": "Lambda_U refs4_randk",
+      "expected": [
+       0.998,
+       0.9212,
+       1.0804
+      ],
+      "decoded_from_svg": [
+       0.9977,
+       0.9205,
+       1.0804
+      ],
+      "max_abs_err": 0.0007
+     },
+     {
+      "label": "Lambda_U refs5_randk",
+      "expected": [
+       1.145,
+       1.0611,
+       1.229
+      ],
+      "decoded_from_svg": [
+       1.1441,
+       1.0615,
+       1.2282
+      ],
+      "max_abs_err": 0.0009
+     },
+     {
+      "label": "Lambda_U inst",
+      "expected": [
+       2.567,
+       2.4481,
+       2.6919
+      ],
+      "decoded_from_svg": [
+       2.5676,
+       2.4483,
+       2.6923
+      ],
+      "max_abs_err": 0.0006
+     },
+     {
+      "label": "Lambda_U inst+refs5",
+      "expected": [
+       2.84,
+       2.7211,
+       2.9613
+      ],
+      "decoded_from_svg": [
+       2.84,
+       2.7207,
+       2.9607
+      ],
+      "max_abs_err": 0.0006
+     },
+     {
+      "label": "b-channel share 1->5",
+      "expected": [
+       0.613,
+       0.5968,
+       0.6282
+      ],
+      "decoded_from_svg": [
+       0.613,
+       0.5967,
+       0.6283
+      ],
+      "max_abs_err": 0.0001
+     },
+     {
+      "label": "b-channel share 1->label gold",
+      "expected": [
+       0.709,
+       0.6976,
+       0.7209
+      ],
+      "decoded_from_svg": [
+       0.709,
+       0.6977,
+       0.721
+      ],
+      "max_abs_err": 0.0001
+     }
+    ]
+   }
+  }
+ },
+ "2_labels_captions": {
+  "status": "FAIL (minor: Fig. 4 caption pointer)",
+  "label_gold_per_set": {
+   "status": "PASS",
+   "details": "Fig. 2 legend: \"label gold: COCO instance labels\" (filled triangles) and \"label gold: human-verified labels, verified precision\" (open triangles, XM3600 and xm600). The caption points to Section 3.1, which defines label gold per set. Fig. 4 axis: \"then label gold (COCO instance labels)\". Matches sec3 \"Gold per set\"."
+  },
+  "xm3600_rung": {
+   "status": "PASS",
+   "details": "The XM3600 and xm600 rung reads \"human-verified labels, verified precision\" in the legend and in the caption. \"complete gold\" appears nowhere in the SVGs or CAPTIONS.md (grep)."
+  },
+  "nf1_post_hoc": {
+   "status": "PASS",
+   "details": "Fig. 2 legend: \"post hoc lower bound (unverifiable mentions = errors)\". Caption: \"Grey diamonds: the post hoc lower bound ... it carries no verdict\". Plotted values +5.83 [+3.82,+7.82] and +1.97 [-0.44,+4.01] match sec7 §7.5."
+  },
+  "captions_within_text": {
+   "status": "FAIL",
+   "severity": "minor (pointer only; every plotted value is correct and reported in the paper)",
+   "details": "The Fig. 2 caption stays within Table 7.1 and §7.5–7.6: grades as in the table, uv231 not counted as support, no all-references value for the second backbone, and a lower bound that carries no verdict. In the Fig. 4 caption, clause (a) puts Lambda under \"the label gold (COCO instance labels)\" and under \"the label gold with the five references\" and cites (Section 4.3). The visible §4.3 text, comments stripped, gives Lambda only at one reference (0.047) and says \"From two references on, Lambda > 0 ... rising at every step (...; Supplementary S7)\". That covers the reference rungs only. Lambda for instance labels (2.567) and for instance labels + references (2.840) appears only in Supplementary S7 (supplementary.md, the \"From two references on\" item). So the caption attributes to §4.3 values that §4.3 does not state.",
+   "fix": "Change the pointer at the end of Fig. 4 clause (a) in figs/CAPTIONS.md from \"(Section 4.3)\" to \"(Section 4.3; Supplementary S7)\". Do not add words to §4.3: the margin is 9 words."
+  },
+  "figure_citations": {
+   "status": "PASS",
+   "details": "sec7_verbosity_sign.md cites Fig. 2 (Table 7.1 title, plus the image embed right after the table). sec4_theory.md §4.3 cites Fig. 4 (\"Channel split\", plus the embed after it). Non-blocking: an older HTML comment at the end of the one-reference-sign paragraph of §4.3 (sec4_theory.md line 54) still says \"'Fig. 4' reference removed (no figure exists)\" (CC-007). It is invisible and outside the word count, but now out of date."
+  }
+ },
+ "3_references": {
+  "status": "PASS",
+  "details": "Title, first author and year checked independently on api.crossref.org (DOI) or export.arxiv.org (https, pauses between calls). Every one matches the paperA.bib entry, full author lists included. Abstracts were compared with the §2 wording; no §2 sentence claims results or superiority over these works. The §2 sentence \"none fixes the number of mentioned objects\" comes before the new works and does not cover them. Abstracts are summarised here, not quoted.",
+  "entries": [
+   {
+    "key": "lu2025benchmarking",
+    "source": "Crossref DOI 10.1109/cvpr52734.2025.01827",
+    "title_match": true,
+    "title": "Benchmarking Large Vision-Language Models via Directed Scene Graph for Comprehensive Image Captioning",
+    "first_author": "Lu, Fan (10 authors, all match)",
+    "year": 2025,
+    "year_match": true,
+    "sec2_says": "CompreCap evaluates captions against directed scene graphs",
+    "abstract_comparison": "Crossref has no abstract; abstract read from arXiv 2412.08614 (same title and authors): a detailed-caption benchmark built on manually annotated directed scene graphs, scoring object coverage, attribute accuracy and relations. Text matches.",
+    "status": "PASS"
+   },
+   {
+    "key": "jing2024faithscore",
+    "source": "Crossref DOI 10.18653/v1/2024.findings-emnlp.290",
+    "title_match": true,
+    "title": "FaithScore: Fine-grained Evaluations of Hallucinations in Large Vision-Language Models",
+    "first_author": "Jing, Liqiang (4 authors, all match)",
+    "year": 2024,
+    "year_match": true,
+    "sec2_says": "FaithScore evaluates hallucinations at a fine-grained level",
+    "abstract_comparison": "Crossref has no abstract; abstract read from arXiv 2311.01477: a reference-free, fine-grained metric that checks atomic facts in free-form LVLM answers against the image, with one captioning set (MSCOCO-Cap) among its benchmarks. The §2 clause \"evaluates hallucinations at a fine-grained level\" is accurate. It sits in the \"For detailed captions\" sentence, but the metric covers free-form answers in general, not captions only. Grouping acceptable, non-blocking.",
+    "status": "PASS"
+   },
+   {
+    "key": "yilmaz2006estimating",
+    "source": "Crossref DOI 10.1145/1183614.1183633",
+    "title_match": true,
+    "title": "Estimating average precision with incomplete and imperfect judgments",
+    "first_author": "Yilmaz, Emine (2 authors, match)",
+    "year": 2006,
+    "year_match": true,
+    "sec2_says": "average precision can be estimated from incomplete and imperfect judgments",
+    "abstract_comparison": "Abstract read from OpenAlex (Crossref and Semantic Scholar elide it): proposes three estimators of average precision that stay robust under incomplete or imperfect relevance judgments. Text matches.",
+    "status": "PASS"
+   },
+   {
+    "key": "zobel1998reliable",
+    "source": "Crossref DOI 10.1145/290941.291014",
+    "title_match": true,
+    "title": "How reliable are the results of large-scale information retrieval experiments?",
+    "first_author": "Zobel, Justin (sole author)",
+    "year": 1998,
+    "year_match": true,
+    "sec2_says": "pooled judgments raise the question of how reliable large-scale results are",
+    "abstract_comparison": "Abstract read from OpenAlex: examines whether TREC pooling and assessment give trustworthy measurements; proposes a new pooling strategy. The text claims no result. Text matches.",
+    "status": "PASS"
+   },
+   {
+    "key": "yan2024measuring",
+    "source": "arXiv 2406.17115",
+    "title_match": true,
+    "title": "Measuring the Measurers: Quality Evaluation of Hallucination Benchmarks for Large Vision-Language Models",
+    "first_author": "Yan, Bei (5 authors, all match)",
+    "year": 2024,
+    "year_match": true,
+    "sec2_says": "HQM assesses the reliability and validity of LVLM hallucination benchmarks themselves",
+    "abstract_comparison": "arXiv abstract: proposes the HQM framework to measure the reliability and validity of hallucination benchmarks, plus the HQH benchmark. Text matches.",
+    "status": "PASS"
+   },
+   {
+    "key": "ye2025painting",
+    "source": "arXiv 2503.07906",
+    "title_match": true,
+    "title": "Painting with Words: Elevating Detailed Image Captioning with Benchmark and Alignment Learning",
+    "first_author": "Ye, Qinghao (5 authors, all match)",
+    "year": 2025,
+    "year_match": true,
+    "sec2_says": "DeCapBench scores hallucination and comprehensiveness over primitive information units with DCScore",
+    "abstract_comparison": "arXiv abstract: introduces DeCapBench and the DCScore metric, which splits a caption into primitive information units to score hallucination and comprehensiveness. Text matches.",
+    "status": "PASS"
+   },
+   {
+    "key": "saito2025haldec",
+    "source": "arXiv 2511.20515",
+    "title_match": true,
+    "title": "HalDec-Bench: Benchmarking Hallucination Detector in Image Captioning",
+    "first_author": "Saito, Kuniaki (6 authors, all match)",
+    "year": 2025,
+    "year_match": true,
+    "sec2_says": "benchmarks the detection and localization of hallucinated segments in captions (joint clause with DetailVerifyBench)",
+    "abstract_comparison": "arXiv abstract: a benchmark for hallucination detectors, with human labels at the segment level. Text matches.",
+    "status": "PASS"
+   },
+   {
+    "key": "wang2026detailverifybench",
+    "source": "arXiv 2604.05623",
+    "title_match": true,
+    "title": "DetailVerifyBench: A Benchmark for Dense Hallucination Localization in Long Image Captions",
+    "first_author": "Wang, Xinran (10 authors, all match)",
+    "year": 2026,
+    "year_match": true,
+    "sec2_says": "benchmarks the detection and localization of hallucinated segments in captions (joint clause with HalDec-Bench)",
+    "abstract_comparison": "arXiv abstract: a benchmark for token-level hallucination localization in long captions (1,000 images, 5 domains). Text matches.",
+    "status": "PASS"
+   }
+  ]
+ },
+ "4_word_count": {
+  "status": "PASS",
+  "method": "sec1..sec11 plus declarations.md; HTML comments removed (non-greedy, multiline); whitespace split",
+  "per_file": {
+   "sec1_introduction.md": 1057,
+   "sec2_related_work.md": 996,
+   "sec3_measurement_setup.md": 1345,
+   "sec4_theory.md": 1032,
+   "sec5_exchangeability.md": 725,
+   "sec6_rescoring_published_methods.md": 957,
+   "sec7_verbosity_sign.md": 2091,
+   "sec8_human_validity.md": 1399,
+   "sec9_preference_audit.md": 662,
+   "sec10_discussion.md": 582,
+   "sec11_limitations_ethics.md": 794,
+   "declarations.md": 351
+  },
+  "total": 11991,
+  "limit": 12000,
+  "margin": 9
+ },
+ "non_blocking_notes": [
+  "The word-count margin is 9 words; any further text addition breaks the 12,000 cap.",
+  "Stale CC-007 HTML comment in sec4 §4.3 (\"no figure exists\"); comment only.",
+  "FaithScore is grouped under detailed captions, but its abstract describes free-form LVLM answers in general.",
+  "scripts/figures/ and manuscript/journal_draft/figs/ were untracked (git status ??) at verification time. PD-29 (b) requires the script to be committed with the figures; inputs_sha256_prefix pins the verified files."
+ ]
+}

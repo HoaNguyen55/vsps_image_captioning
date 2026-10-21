@@ -1,0 +1,674 @@
+{
+ "script": "scripts/figures/paperA_figs.py",
+ "manifest": "manuscript/journal_draft/number_manifest.tsv",
+ "rule": "every plotted value is read from the unique manifest row (file, key) listed here (PD-29 (b))",
+ "figures": [
+  "figs/fig2_slope_by_gold.svg",
+  "figs/fig4_lambda_channels.svg"
+ ],
+ "values": [
+  {
+   "what": "COCO-2500 1 ref (point)",
+   "manifest_row": 2,
+   "manifest_text": "-4.28",
+   "file": ".session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json",
+   "key": "B1_L1_mstar_and_stopping.check_coco_gold.refs1_randk.slope",
+   "values": [
+    -4.28
+   ]
+  },
+  {
+   "what": "COCO-2500 1 ref (95% CI)",
+   "manifest_row": 10,
+   "manifest_text": "[-5.91,-2.45]",
+   "file": ".session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json",
+   "key": "B1_L1_mstar_and_stopping.check_coco_gold.refs1_randk.slope_ci",
+   "values": [
+    -5.91,
+    -2.45
+   ]
+  },
+  {
+   "what": "COCO-2500 5 refs (point)",
+   "manifest_row": 6,
+   "manifest_text": "11.08",
+   "file": ".session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json",
+   "key": "B1_L1_mstar_and_stopping.check_coco_gold.refs5_randk.slope",
+   "values": [
+    11.08
+   ]
+  },
+  {
+   "what": "COCO-2500 5 refs (95% CI)",
+   "manifest_row": 11,
+   "manifest_text": "[9.76,12.43]",
+   "file": ".session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json",
+   "key": "B1_L1_mstar_and_stopping.check_coco_gold.refs5_randk.slope_ci",
+   "values": [
+    9.76,
+    12.43
+   ]
+  },
+  {
+   "what": "COCO-2500 label gold (point)",
+   "manifest_row": 7,
+   "manifest_text": "22.41",
+   "file": ".session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json",
+   "key": "B1_L1_mstar_and_stopping.check_coco_gold.inst.slope",
+   "values": [
+    22.41
+   ]
+  },
+  {
+   "what": "COCO-2500 label gold (95% CI)",
+   "manifest_row": 12,
+   "manifest_text": "[21.27,23.48]",
+   "file": ".session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json",
+   "key": "B1_L1_mstar_and_stopping.check_coco_gold.inst.slope_ci",
+   "values": [
+    21.27,
+    23.48
+   ]
+  },
+  {
+   "what": "LVLMs, OPERA release 1 ref (point)",
+   "manifest_row": 44,
+   "manifest_text": "-35.18",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-B.gold.refs1_randk.slope",
+   "values": [
+    -35.18
+   ]
+  },
+  {
+   "what": "LVLMs, OPERA release 1 ref (95% CI)",
+   "manifest_row": 190,
+   "manifest_text": "[-40.38, -30.87] (F-B refs1 CI)",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-B.gold.refs1_randk.slope_ci",
+   "values": [
+    -40.38,
+    -30.87
+   ]
+  },
+  {
+   "what": "LVLMs, OPERA release 5 refs (point)",
+   "manifest_row": 45,
+   "manifest_text": "-29.57",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-B.gold.refs5_randk.slope",
+   "values": [
+    -29.57
+   ]
+  },
+  {
+   "what": "LVLMs, OPERA release 5 refs (95% CI)",
+   "manifest_row": 191,
+   "manifest_text": "[-32.69, -26.37] (F-B refs5 CI)",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-B.gold.refs5_randk.slope_ci",
+   "values": [
+    -32.69,
+    -26.37
+   ]
+  },
+  {
+   "what": "LVLMs, OPERA release label gold (point)",
+   "manifest_row": 46,
+   "manifest_text": "4.24",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-B.gold.inst.slope",
+   "values": [
+    4.24
+   ]
+  },
+  {
+   "what": "LVLMs, OPERA release label gold (95% CI)",
+   "manifest_row": 192,
+   "manifest_text": "[-0.09, 8.51] (F-B inst CI)",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-B.gold.inst.slope_ci",
+   "values": [
+    -0.09,
+    8.51
+   ]
+  },
+  {
+   "what": "LVLMs, Less-is-More release 1 ref (point)",
+   "manifest_row": 47,
+   "manifest_text": "-31.89",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-C.gold.refs1_randk.slope",
+   "values": [
+    -31.89
+   ]
+  },
+  {
+   "what": "LVLMs, Less-is-More release 1 ref (95% CI)",
+   "manifest_row": 200,
+   "manifest_text": "[-36.6, -27.21] (F-C refs1 CI)",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-C.gold.refs1_randk.slope_ci",
+   "values": [
+    -36.6,
+    -27.21
+   ]
+  },
+  {
+   "what": "LVLMs, Less-is-More release 5 refs (point)",
+   "manifest_row": 48,
+   "manifest_text": "-22.86",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-C.gold.refs5_randk.slope",
+   "values": [
+    -22.86
+   ]
+  },
+  {
+   "what": "LVLMs, Less-is-More release 5 refs (95% CI)",
+   "manifest_row": 201,
+   "manifest_text": "[-26.71, -18.53] (F-C refs5 CI)",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-C.gold.refs5_randk.slope_ci",
+   "values": [
+    -26.71,
+    -18.53
+   ]
+  },
+  {
+   "what": "LVLMs, Less-is-More release label gold (point)",
+   "manifest_row": 49,
+   "manifest_text": "6.91",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-C.gold.inst.slope",
+   "values": [
+    6.91
+   ]
+  },
+  {
+   "what": "LVLMs, Less-is-More release label gold (95% CI)",
+   "manifest_row": 202,
+   "manifest_text": "[2.16, 11.17] (F-C inst CI)",
+   "file": ".session_backup/2026-10-14/r12/H3/out/n1_results.json",
+   "key": "families.F-C.gold.inst.slope_ci",
+   "values": [
+    2.16,
+    11.17
+   ]
+  },
+  {
+   "what": "UIT-ViIC, COCO-80 lexicon 1 ref (point)",
+   "manifest_row": 210,
+   "manifest_text": "-13.97 (UIT-ViIC coco80 refs1_randk slope_F1_mixed_per_logM)",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.coco80.gold_variants.refs1_randk.groups.all_10.slope_F1_mixed_per_logM",
+   "values": [
+    -13.97
+   ]
+  },
+  {
+   "what": "UIT-ViIC, COCO-80 lexicon 1 ref (95% CI)",
+   "manifest_row": 211,
+   "manifest_text": "[-19.24, -8.01] (UIT-ViIC coco80 refs1_randk slope_F1_mixed_ci95)",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.coco80.gold_variants.refs1_randk.groups.all_10.slope_F1_mixed_ci95",
+   "values": [
+    -19.24,
+    -8.01
+   ]
+  },
+  {
+   "what": "UIT-ViIC, COCO-80 lexicon 5 refs (point)",
+   "manifest_row": 123,
+   "manifest_text": "4.8",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.coco80.gold_variants.refs5_randk.groups.all_10.slope_F1_mixed_per_logM",
+   "values": [
+    4.8
+   ]
+  },
+  {
+   "what": "UIT-ViIC, COCO-80 lexicon 5 refs (95% CI)",
+   "manifest_row": 212,
+   "manifest_text": "[-0.57, 9.67] (UIT-ViIC coco80 refs5_randk slope_F1_mixed_ci95)",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.coco80.gold_variants.refs5_randk.groups.all_10.slope_F1_mixed_ci95",
+   "values": [
+    -0.57,
+    9.67
+   ]
+  },
+  {
+   "what": "UIT-ViIC, COCO-80 lexicon label gold (point)",
+   "manifest_row": 124,
+   "manifest_text": "37.52",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.coco80.gold_variants.inst_only.groups.all_10.slope_F1_mixed_per_logM",
+   "values": [
+    37.52
+   ]
+  },
+  {
+   "what": "UIT-ViIC, COCO-80 lexicon label gold (95% CI)",
+   "manifest_row": 213,
+   "manifest_text": "[34.56, 40.08] (UIT-ViIC coco80 inst_only slope_F1_mixed_ci95)",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.coco80.gold_variants.inst_only.groups.all_10.slope_F1_mixed_ci95",
+   "values": [
+    34.56,
+    40.08
+   ]
+  },
+  {
+   "what": "UIT-ViIC, Vietnamese lexicon 1 ref (point)",
+   "manifest_row": 216,
+   "manifest_text": "-17.25 (UIT-ViIC vi_objects_in refs1_randk slope_F1_mixed_per_logM)",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs1_randk.groups.all_10.slope_F1_mixed_per_logM",
+   "values": [
+    -17.25
+   ]
+  },
+  {
+   "what": "UIT-ViIC, Vietnamese lexicon 1 ref (95% CI)",
+   "manifest_row": 217,
+   "manifest_text": "[-20.04, -14.53] (UIT-ViIC vi_objects_in refs1_randk slope_F1_mixed_ci95)",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs1_randk.groups.all_10.slope_F1_mixed_ci95",
+   "values": [
+    -20.04,
+    -14.53
+   ]
+  },
+  {
+   "what": "UIT-ViIC, Vietnamese lexicon 5 refs (point)",
+   "manifest_row": 126,
+   "manifest_text": "-6.28",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs5_randk.groups.all_10.slope_F1_mixed_per_logM",
+   "values": [
+    -6.28
+   ]
+  },
+  {
+   "what": "UIT-ViIC, Vietnamese lexicon 5 refs (95% CI)",
+   "manifest_row": 218,
+   "manifest_text": "[-8.31, -4.29] (UIT-ViIC vi_objects_in refs5_randk slope_F1_mixed_ci95)",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.vi_objects_in.gold_variants.refs5_randk.groups.all_10.slope_F1_mixed_ci95",
+   "values": [
+    -8.31,
+    -4.29
+   ]
+  },
+  {
+   "what": "UIT-ViIC, Vietnamese lexicon label gold (point)",
+   "manifest_row": 219,
+   "manifest_text": "7.66 (UIT-ViIC vi_objects_in inst_only slope_F1_mixed_per_logM)",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.vi_objects_in.gold_variants.inst_only.groups.all_10.slope_F1_mixed_per_logM",
+   "values": [
+    7.66
+   ]
+  },
+  {
+   "what": "UIT-ViIC, Vietnamese lexicon label gold (95% CI)",
+   "manifest_row": 220,
+   "manifest_text": "[5.78, 9.58] (UIT-ViIC vi_objects_in inst_only slope_F1_mixed_ci95)",
+   "file": ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json",
+   "key": "uitviic_test.lexicons.vi_objects_in.gold_variants.inst_only.groups.all_10.slope_F1_mixed_ci95",
+   "values": [
+    5.78,
+    9.58
+   ]
+  },
+  {
+   "what": "XM3600 1 ref (point)",
+   "manifest_row": 231,
+   "manifest_text": "-8.99 (XM3600 refs1_randk slope, 6 systems)",
+   "file": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json",
+   "key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_randk.slope_F1_per_logM",
+   "values": [
+    -8.99
+   ]
+  },
+  {
+   "what": "XM3600 1 ref (95% CI)",
+   "manifest_row": 232,
+   "manifest_text": "[-10.89, -6.99] (XM3600 refs1_randk CI)",
+   "file": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json",
+   "key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs1_randk.slope_ci95_b500",
+   "values": [
+    -10.89,
+    -6.99
+   ]
+  },
+  {
+   "what": "XM3600 all 2-3 refs (point)",
+   "manifest_row": 233,
+   "manifest_text": "-2.43 (XM3600 refs_all slope, 6 systems)",
+   "file": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json",
+   "key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs_all.slope_F1_per_logM",
+   "values": [
+    -2.43
+   ]
+  },
+  {
+   "what": "XM3600 all 2-3 refs (95% CI)",
+   "manifest_row": 234,
+   "manifest_text": "[-4.63, -0.3] (XM3600 refs_all CI)",
+   "file": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json",
+   "key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.refs_all.slope_ci95_b500",
+   "values": [
+    -4.63,
+    -0.3
+   ]
+  },
+  {
+   "what": "XM3600 label gold (point)",
+   "manifest_row": 235,
+   "manifest_text": "19.32 (XM3600 oiv7_verified slope, 6 systems)",
+   "file": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json",
+   "key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.oiv7_verified.slope_F1_per_logM",
+   "values": [
+    19.32
+   ]
+  },
+  {
+   "what": "XM3600 label gold (95% CI)",
+   "manifest_row": 236,
+   "manifest_text": "[17.43, 21.13] (XM3600 oiv7_verified CI)",
+   "file": ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json",
+   "key": "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.oiv7_verified.slope_ci95_b500",
+   "values": [
+    17.43,
+    21.13
+   ]
+  },
+  {
+   "what": "XM3600 post hoc lower bound (N-F1)",
+   "manifest_row": 657,
+   "manifest_text": "+5.83 [+3.82, +7.82] (N-F1 bracket lower-bound slope, Section 7.5 systems)",
+   "file": "data/results/n_f1/bracket_result.json",
+   "key": "sets.s75.slopes.lower.{point_4dp,ci95_2dp}",
+   "values": [
+    5.83,
+    3.82,
+    7.82
+   ]
+  },
+  {
+   "what": "2nd backbone, cv295 1 ref",
+   "manifest_row": 604,
+   "manifest_text": "-11.46 [-17.27, -5.19] (G2B-E1 cv295)",
+   "file": "data/results/g2b/g2b_score.json",
+   "key": "datasets.cv295.predictions.G2B-E1.parts[0].{point,ci95}",
+   "values": [
+    -11.46,
+    -17.27,
+    -5.19
+   ]
+  },
+  {
+   "what": "2nd backbone, cv295 label gold",
+   "manifest_row": 605,
+   "manifest_text": "+13.14 [+7.81, +18.82] (G2B-E2 cv295)",
+   "file": "data/results/g2b/g2b_score.json",
+   "key": "datasets.cv295.predictions.G2B-E2.parts[0].{point,ci95}",
+   "values": [
+    13.14,
+    7.81,
+    18.82
+   ]
+  },
+  {
+   "what": "2nd backbone, uv231 1 ref",
+   "manifest_row": 609,
+   "manifest_text": "-20.96 [-24.31, -17.40] (G2B-E1 uv231)",
+   "file": "data/results/g2b/g2b_score.json",
+   "key": "datasets.uv231.predictions.G2B-E1.parts[0].{point,ci95}",
+   "values": [
+    -20.96,
+    -24.31,
+    -17.4
+   ]
+  },
+  {
+   "what": "2nd backbone, uv231 label gold",
+   "manifest_row": 610,
+   "manifest_text": "+37.36 [+35.15, +39.41] (G2B-E2 uv231)",
+   "file": "data/results/g2b/g2b_score.json",
+   "key": "datasets.uv231.predictions.G2B-E2.parts[0].{point,ci95}",
+   "values": [
+    37.36,
+    35.15,
+    39.41
+   ]
+  },
+  {
+   "what": "xm600 post hoc lower bound (N-F1)",
+   "manifest_row": 658,
+   "manifest_text": "+1.97 [-0.44, +4.01] (N-F1 bracket lower-bound slope, xm600)",
+   "file": "data/results/n_f1/bracket_result.json",
+   "key": "sets.xm600.slopes.lower.{point,ci95}",
+   "values": [
+    1.97,
+    -0.44,
+    4.01
+   ]
+  },
+  {
+   "what": "2nd backbone, xm600 1 ref",
+   "manifest_row": 614,
+   "manifest_text": "-12.27 [-14.55, -10.08] (G2B-E1 xm600)",
+   "file": "data/results/g2b/g2b_score.json",
+   "key": "datasets.xm600.predictions.G2B-E1.parts[0].{point,ci95}",
+   "values": [
+    -12.27,
+    -14.55,
+    -10.08
+   ]
+  },
+  {
+   "what": "2nd backbone, xm600 label gold",
+   "manifest_row": 615,
+   "manifest_text": "+13.71 [+11.44, +15.79] (G2B-E2 xm600)",
+   "file": "data/results/g2b/g2b_score.json",
+   "key": "datasets.xm600.predictions.G2B-E2.parts[0].{point,ci95}",
+   "values": [
+    13.71,
+    11.44,
+    15.79
+   ]
+  },
+  {
+   "what": "Lambda_U refs1_randk (point)",
+   "manifest_row": 516,
+   "manifest_text": "0.047 (Lambda_U refs1_randk point, Gbar=U(k))",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs1_randk.Lambda_U.point_v2",
+   "values": [
+    0.047
+   ]
+  },
+  {
+   "what": "Lambda_U refs1_randk (95% CI)",
+   "manifest_row": 517,
+   "manifest_text": "[-0.0273, 0.1224] (Lambda_U refs1_randk post-hoc 95% CI)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs1_randk.Lambda_U.ci",
+   "values": [
+    -0.0273,
+    0.1224
+   ]
+  },
+  {
+   "what": "Lambda_U refs2_randk (point)",
+   "manifest_row": 518,
+   "manifest_text": "0.543 (Lambda_U refs2_randk point, Gbar=U(k))",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs2_randk.Lambda_U.point_v2",
+   "values": [
+    0.543
+   ]
+  },
+  {
+   "what": "Lambda_U refs2_randk (95% CI)",
+   "manifest_row": 519,
+   "manifest_text": "[0.4711, 0.6204] (Lambda_U refs2_randk post-hoc 95% CI)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs2_randk.Lambda_U.ci",
+   "values": [
+    0.4711,
+    0.6204
+   ]
+  },
+  {
+   "what": "Lambda_U refs3_randk (point)",
+   "manifest_row": 520,
+   "manifest_text": "0.818 (Lambda_U refs3_randk point, Gbar=U(k))",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs3_randk.Lambda_U.point_v2",
+   "values": [
+    0.818
+   ]
+  },
+  {
+   "what": "Lambda_U refs3_randk (95% CI)",
+   "manifest_row": 521,
+   "manifest_text": "[0.7394, 0.8942] (Lambda_U refs3_randk post-hoc 95% CI)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs3_randk.Lambda_U.ci",
+   "values": [
+    0.7394,
+    0.8942
+   ]
+  },
+  {
+   "what": "Lambda_U refs4_randk (point)",
+   "manifest_row": 522,
+   "manifest_text": "0.998 (Lambda_U refs4_randk point, Gbar=U(k))",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs4_randk.Lambda_U.point_v2",
+   "values": [
+    0.998
+   ]
+  },
+  {
+   "what": "Lambda_U refs4_randk (95% CI)",
+   "manifest_row": 523,
+   "manifest_text": "[0.9212, 1.0804] (Lambda_U refs4_randk post-hoc 95% CI)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs4_randk.Lambda_U.ci",
+   "values": [
+    0.9212,
+    1.0804
+   ]
+  },
+  {
+   "what": "Lambda_U refs5_randk (point)",
+   "manifest_row": 524,
+   "manifest_text": "1.145 (Lambda_U refs5_randk point, Gbar=U(k))",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs5_randk.Lambda_U.point_v2",
+   "values": [
+    1.145
+   ]
+  },
+  {
+   "what": "Lambda_U refs5_randk (95% CI)",
+   "manifest_row": 525,
+   "manifest_text": "[1.0611, 1.229] (Lambda_U refs5_randk post-hoc 95% CI)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.refs5_randk.Lambda_U.ci",
+   "values": [
+    1.0611,
+    1.229
+   ]
+  },
+  {
+   "what": "Lambda_U inst (point)",
+   "manifest_row": 526,
+   "manifest_text": "2.567 (Lambda_U inst point, Gbar=U(k))",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.inst.Lambda_U.point_v2",
+   "values": [
+    2.567
+   ]
+  },
+  {
+   "what": "Lambda_U inst (95% CI)",
+   "manifest_row": 527,
+   "manifest_text": "[2.4481, 2.6919] (Lambda_U inst post-hoc 95% CI)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.inst.Lambda_U.ci",
+   "values": [
+    2.4481,
+    2.6919
+   ]
+  },
+  {
+   "what": "Lambda_U inst+refs5 (point)",
+   "manifest_row": 528,
+   "manifest_text": "2.84 (Lambda_U inst+refs5 point, Gbar=U(k))",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.inst+refs5.Lambda_U.point_v2",
+   "values": [
+    2.84
+   ]
+  },
+  {
+   "what": "Lambda_U inst+refs5 (95% CI)",
+   "manifest_row": 529,
+   "manifest_text": "[2.7211, 2.9613] (Lambda_U inst+refs5 post-hoc 95% CI)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v3.json",
+   "key": "Lambda_U_with_micro_F1_slopes.inst+refs5.Lambda_U.ci",
+   "values": [
+    2.7211,
+    2.9613
+   ]
+  },
+  {
+   "what": "b-channel share 1->5 (point)",
+   "manifest_row": 35,
+   "manifest_text": "0.613 (b-channel share 1->5, Gbar = U(k); D-W13-1)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v2.json",
+   "key": "data_facts.b_channel_share_U_vs_v1.coco_randk.U",
+   "values": [
+    0.613
+   ]
+  },
+  {
+   "what": "b-channel share 1->5 (95% CI)",
+   "manifest_row": 531,
+   "manifest_text": "[0.5968, 0.6282] (b-channel share 1->5 post-hoc CI)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/check_coco_U_boot.json",
+   "key": "bootstrap.shares.refs1_to_refs5.b_channel_share.ci",
+   "values": [
+    0.5968,
+    0.6282
+   ]
+  },
+  {
+   "what": "b-channel share 1->label gold (point)",
+   "manifest_row": 36,
+   "manifest_text": "0.709 (b-channel share 1->inst, Gbar = U(k); D-W13-1)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/MANIFEST_v2.json",
+   "key": "data_facts.b_channel_share_U_vs_v1.coco_refs1_to_inst.U",
+   "values": [
+    0.709
+   ]
+  },
+  {
+   "what": "b-channel share 1->label gold (95% CI)",
+   "manifest_row": 532,
+   "manifest_text": "[0.6976, 0.7209] (b-channel share 1->inst post-hoc CI)",
+   "file": ".session_backup/2026-10-18/paperA_tasks/A3.3/check_coco_U_boot.json",
+   "key": "bootstrap.shares.refs1_to_inst.b_channel_share.ci",
+   "values": [
+    0.6976,
+    0.7209
+   ]
+  }
+ ]
+}
