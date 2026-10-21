@@ -388,6 +388,29 @@ We therefore do not claim that the sign flip between one and five references rep
 
 Each set's outcome is the one its own lower-bound interval gives; the paper-level outcome is (i) only if both sets give (i), because they are the same images under two backbones, so it is (ii). The OIV7 gold is smaller than the union of the references on both sets, so the label gold is not a superset of the reference gold. The lower-bound point slope was approximately derivable from committed numbers before this design, and neither the design author nor the verifier computed it; the outcome-deciding CI was not derivable.<!-- src: data/results/n_f1/bracket_result.json (4796ed12) :: outcome_paper; DESIGN.md R3 (CC-063) and R4 (CC-063 disclosure, verbatim from 'the lower-bound point slope'); manuscript/prereg/2026-10-21_n_f1_bracket/DESIGN.md committed in c8bd21c before the run; run record 062ab6a5; VERIFIED manuscript/verification/paperA/N_F1_bracket_run.json (60e58bfe) -->
 
+**Cap share of the second backbone's detailed captions (post hoc; Sections 7.6 and 10.5).** Every second-backbone decode file records, per image, the number of new tokens the decoder generated. A detailed caption counts as reaching the registered 160-token cap when that recorded count is at least 160. Over the nine Vietnamese detailed runs (three sets × three temperatures, every image), 3,367 of 3,378 captions (99.7%) reached the cap. As a check, the saved captions were re-tokenized with the registered tokenizer; a re-tokenized length of at least 158 agrees with the recorded reach on 3,375 of 3,378. A recorded count of 160 also arises when the end-of-sequence token is exactly the 160th token, so the share is an upper bound. The same check on other decodes of this model, which also record a cap flag: in the eight-LVLM test (English detailed prompt), 526 of 526 captions reached the cap and the re-tokenized length agrees on 526 of 526; in the companion manuscript's Vietnamese detailed decodes, 787 of 789 reached it and the re-tokenized length agrees on 788 of 789, the one disagreement being a caption with 159 recorded tokens. The design was committed before the count was computed; the count carries no verdict and no causal claim about the model's result in the eight-LVLM test.<!-- src: data/results/n_m3/caphit_result.json (sha256 72404c62) :: hit_rule, check_rule; pooled_9_ladder_detailed.counts.{hits_recorded,n,retok_ge_158_agrees_with_recorded} = 3367, 3378, 3375; pooled_9_ladder_detailed.shares.share_hits_recorded = 0.99674; validation_facts[0..1].{recorded_hits,n,retok_agrees_with_hit_max.158} (A-N2, 295 + 231 = 526); validation_facts[2..3].{recorded_hits,n,retok_agrees_with_hit_max.158} (B-N1, 558 + 229 = 787 of 558 + 231 = 789; agreement 558 + 230 = 788); B-N1 source data/results/b_n1/b_n1_run.json (sha256 adad454d) :: LBB-D2.lbB_qwen3vl_8b_{ktvic_test,uitviic_test}-detailed.hit_max_share = 1.0, 0.99134 (558 of 558, 229 of 231), inputs_sha256.outputs/lbB_qwen3vl_8b_{ktvic_test,uitviic_test}-detailed.preds.json = 51df6c6f, e89477e3, the files of validation_facts[2..3]; accepted as validation facts (CC-077); the 159-token miss per manuscript/prereg/2026-10-21_n_m3_caphit/DESIGN.md (05210c63) line 73, re-checked in VERIFY.md; design c36540e; VERIFIED manuscript/prereg/2026-10-21_n_m3_caphit/VERIFY.md (705d6567, 326/326 fields); CONFIRMATION_MAP Amendment 5 §2 and Amendment 5b (CC-076) -->
+
+**Table S7.4.** Second-backbone detailed captions that reached the 160-token cap, by the recorded token counts, and re-tokenization agreement (re-tokenized length ≥ 158 against the recorded reach).
+
+| Set | Run | Captions | Reached the cap | Agreement |
+|---|---|---|---|---|
+| cv295 (discovery images) | greedy | 295 | 295 | 295 |
+| cv295 (discovery images) | lower sampling temperature | 295 | 295 | 295 |
+| cv295 (discovery images) | higher sampling temperature | 295 | 295 | 295 |
+| cv295 (discovery images) | three runs pooled | 885 | 885 | 885 |
+| uv231 (UIT-ViIC test) | greedy | 231 | 228 | 231 |
+| uv231 (UIT-ViIC test) | lower sampling temperature | 231 | 228 | 229 |
+| uv231 (UIT-ViIC test) | higher sampling temperature | 231 | 227 | 230 |
+| uv231 (UIT-ViIC test) | three runs pooled | 693 | 683 | 690 |
+| xm600 (the same 600 XM3600 images) | greedy | 600 | 599 | 600 |
+| xm600 (the same 600 XM3600 images) | lower sampling temperature | 600 | 600 | 600 |
+| xm600 (the same 600 XM3600 images) | higher sampling temperature | 600 | 600 | 600 |
+| xm600 (the same 600 XM3600 images) | three runs pooled | 1,800 | 1,799 | 1,800 |
+| All three sets | nine runs pooled | 3,378 | 3,367 | 3,375 |
+| cv295, English detailed prompt (not pooled) | greedy | 295 | 295 | 295 |
+| uv231, English detailed prompt (not pooled) | greedy | 231 | 231 | 231 |
+<!-- src: data/results/n_m3/caphit_result.json (sha256 72404c62) :: per_run.g2b_q3_{cv295,uv231,xm600}-detailed-T{0,05,08}.counts.{n,hits_recorded,retok_ge_158_agrees_with_recorded} (greedy = T0, lower = T05, higher = T08); per_set_pooled.{cv295,uv231,xm600}.counts.{n,hits_recorded,retok_ge_158_agrees_with_recorded}; pooled_9_ladder_detailed.counts.{n,hits_recorded,retok_ge_158_agrees_with_recorded}; per_run_detailed_en_S7_only.g2b_q3_{cv295,uv231}-detailed_en-T0.counts.{n,hits_recorded,retok_ge_158_agrees_with_recorded}; manifest rows "N-M3" (keyed, POST_HOC, 72404c62) -->
+
 <!-- end S7 -->
 
 ## S8 Human-validity analysis details

@@ -1072,5 +1072,66 @@
       "reason": "judge error, CC-043 ('its truncation share was not recorded, because G2-B outputs carry no hit_max'), recorded in CC-073",
       "fix": "replaced in every outcome by row 33 (new or fallback); 'not recorded' is never used"
     }
+  },
+  "amendment_5b": {
+    "note": "Amendment 5b (2026-10-21, CC-076, YES 93%; CC-077, 93%): wording correction after the run. Rows 33-34 give the count and one decimal (99.7%) instead of the registered integer {p} = 100, which rounds 3367/3378 = 0.99674 up to a literally false '100%' (11 captions did not reach the cap). Row 35 added (CC-077): the Section 7.6 eight-LVLM clause 'the share is unknown', false after the fill, is replaced. No number, fill rule, rounding rule, verdict, verdict rule, selection logic or precondition changed; weaker than the pre-fixed text. POST_HOC, descriptive, no causal claim about the A-N2 failure. Supersedes amendment_5.status.",
+    "table": "manuscript/paperA_plan/CONFIRMATION_MAP_AMENDMENT5B.md",
+    "result": {
+      "file": "data/results/n_m3/caphit_result.json",
+      "sha256": "72404c620e83a46d932c13e42a8ac6d8240e756c6ab702e5b59d6e3aca56459f",
+      "run_utc": "2026-10-21T15:50:31Z",
+      "committed": "unchanged, filled_clauses as computed"
+    },
+    "status": "measurement run once; verifier PASS 326/326; filled with the 5b clauses",
+    "registered_p": {
+      "p": 100,
+      "rule": "half up to an integer from the counts (amendment 5 fill rule)",
+      "counts": "pooled_9_ladder_detailed.counts.hits_recorded = 3367 of counts.n = 3378",
+      "share": 0.9967436352871522,
+      "why_not_used": "'100% of which reached the cap' is false for 11 captions; amendment 5 section 3 removes a false clause and must not add one"
+    },
+    "rows": [
+      {
+        "row": "33",
+        "block": "Section 7.6 design paragraph (sec7_verbosity_sign.md)",
+        "amendment_5_filled": "detailed captions capped at 160 new tokens, 100% of which reached the cap by the recorded token counts, Supplementary S7; the same cap as in the eight-LVLM test below",
+        "new": "detailed captions capped at 160 new tokens, 3,367 of 3,378 [99.7%] of which reached the cap by the recorded token counts, Supplementary S7; the same cap as in the eight-LVLM test below",
+        "notes": "tail kept per DESIGN.md (filled_clauses.sec7_6 lacks it); square brackets [99.7%] inside the Section 7.6 parenthesis keep CC-073b's no-nesting rule (CC-077); typographic only, no word or number changed from CC-076's text",
+        "verdict": "none (descriptive, POST_HOC)",
+        "strength": "weaker than the pre-fixed fill"
+      },
+      {
+        "row": "34",
+        "block": "Section 10.5 conclusion c3 (sec10_discussion.md)",
+        "amendment_5_filled": "(Qwen3-VL-8B; detailed captions capped at 160 new tokens, 100% of which reached the cap, Supplementary S7)",
+        "new": "(Qwen3-VL-8B; detailed captions capped at 160 new tokens, 99.7% of which reached the cap, Supplementary S7)",
+        "verdict": "none (descriptive, POST_HOC)",
+        "strength": "weaker than the pre-fixed fill"
+      },
+      {
+        "row": "35",
+        "block": "Section 7.6 eight-LVLM paragraph (sec7_verbosity_sign.md)",
+        "old": "; in the second-backbone runs the share is unknown",
+        "old_source": "amendment 4 (CP-064)",
+        "new": "; in the second-backbone runs, 3,367 of 3,378 Vietnamese detailed captions (99.7%) reached it (Supplementary S7)",
+        "rationale": "the old clause becomes false after the fill; replaced, not deleted, because deleting it would break the symmetric cap fact PD-28 requires (CC-077)",
+        "verdict": "none (descriptive, POST_HOC)",
+        "strength": "same quantity as row 33"
+      }
+    ],
+    "S7": "supplementary.md paragraph and Table S7.4: per-run, per-set and pooled counts (n, recorded hits, re-tokenization agreement), the two detailed_en runs, the validation facts, the upper-bound caveat; manifest rows keyed (POST_HOC, 72404c62)",
+    "verification": {
+      "record": "manuscript/prereg/2026-10-21_n_m3_caphit/VERIFY.md",
+      "record_sha256": "705d656729564a3b09e86fcd58f6e2b2f93d464628803e7a45a23b180070dc8c",
+      "session_paths_found": 0,
+      "script": "manuscript/prereg/2026-10-21_n_m3_caphit/verify_caphit.py",
+      "script_sha256": "9de08f06740324627ef23d5dfb4792c059e53caf968d219d35f95f416fda80e2",
+      "output": "manuscript/prereg/2026-10-21_n_m3_caphit/verify_out.json",
+      "output_sha256": "a74c528d7bebc8d907e652b591177b624666745fb2cf7eeda9638ec7227c9151",
+      "copied_from": ".session_backup/2026-10-21/n_m3_verify/ (byte-identical, CC-077)",
+      "scan": "no session paths, no usernames; the only absolute path is the repo root in the verify_caphit.py usage line"
+    },
+    "S7_B_N1_source": "data/results/b_n1/b_n1_run.json (sha256 adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7) :: LBB-D2.lbB_qwen3vl_8b_{ktvic_test,uitviic_test}-detailed.hit_max_share; inputs_sha256.outputs/lbB_qwen3vl_8b_{ktvic_test,uitviic_test}-detailed.preds.json; accepted as validation facts (CC-077)",
+    "coverage": "every clause stating the second backbone's cap share is covered: rows 33 and 35 (Section 7.6), row 34 (Section 10.5 c3); no 'not recorded' or 'unknown' clause remains"
   }
 }

@@ -1,0 +1,53 @@
+{
+ "tokenizer_class": "Qwen2TokenizerFast",
+ "tokenizer_files_match_SHA256SUMS": {
+  "tokenizer.json": true,
+  "tokenizer_config.json": true,
+  "vocab.json": true,
+  "merges.txt": true,
+  "config.json": true
+ },
+ "pooled_9": {
+  "n": 3378,
+  "hits_recorded": 3367,
+  "retok_ge_155": 3371,
+  "retok_ge_158": 3370,
+  "retok_ge_160": 3338,
+  "retok_ge_158_agrees_with_recorded": 3375,
+  "no_final_punct": 3275
+ },
+ "per_set": {
+  "cv295": {
+   "n": 885,
+   "hits_recorded": 885,
+   "retok_ge_155": 885,
+   "retok_ge_158": 885,
+   "retok_ge_160": 877,
+   "retok_ge_158_agrees_with_recorded": 885,
+   "no_final_punct": 856
+  },
+  "uv231": {
+   "n": 693,
+   "hits_recorded": 683,
+   "retok_ge_155": 687,
+   "retok_ge_158": 686,
+   "retok_ge_160": 677,
+   "retok_ge_158_agrees_with_recorded": 690,
+   "no_final_punct": 659
+  },
+  "xm600": {
+   "n": 1800,
+   "hits_recorded": 1799,
+   "retok_ge_155": 1799,
+   "retok_ge_158": 1799,
+   "retok_ge_160": 1784,
+   "retok_ge_158_agrees_with_recorded": 1800,
+   "no_final_punct": 1760
+  }
+ },
+ "p": 100,
+ "n_compared": 326,
+ "n_mismatch": 0,
+ "mismatches": [],
+ "verdict": "PASS"
+}
