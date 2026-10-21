@@ -352,7 +352,41 @@ We therefore do not claim that the sign flip between one and five references rep
 | Section 7.5 outputs (first backbone) | all references | −12.65 | [−8.64, −5.65] |
 <!-- src: data/results/scar/scar_null_result.json (sha256 242fc04e) :: results.{cv295,uv231,xm600,s75}/{refs1_randk,refs_all}.{observed_intersection_slope,null_lo,null_hi}; manifest rows "SCAR observed intersection slope" and "SCAR null 95% range" (keyed, POST_HOC exploratory); 1,000 null draws per the design manuscript/prereg/2026-10-21_scar_null/SCAR_DESIGN.md (59a4887), as stated in Section 7.6; VERIFIED manuscript/verification/paperA/SCAR_null_run.json (5212f745) -->
 
-**Post hoc bound on the XM3600 label-gold slope (Section 7.5).** The label gold of XM3600 is human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded). The bound re-scores the six Section 7.5 systems and the second backbone's xm600 ladder twice, with the registered slope, recall and image bootstrap of each test: once counting every mapped mention that OIV7 cannot verify as an error (lower bound) and once as correct (upper bound). It also reports, per system, the share of mapped mentions OIV7 can verify and the gold size of each rung. The design was fixed before the run; the bound is post hoc, carries no verdict and changes no registered verdict. Result for the label-gold slope: [N-F1 BRACKET: sentence (i) or (ii)].<!-- PD-28 (1) post hoc bracket design (P_lower = verified-present / all mapped; P_upper = (verified-present + unverified) / all mapped; R unchanged; registered slope functions by import; §7.5 B and seed; G2-B stat_slope draws; gate: reproduce registered F1_pos slopes first). NOT RUN when this text was written. Numbers (bounds, verifiable shares, gold sizes) to be added from the verified run output with src comments and manifest rows. Selection per CONFIRMATION_MAP Amendment 4: (i) iff the lower-bound slope's 95% CI lower bound > 0 on both sets, else (ii). -->
+**Post hoc bound on the XM3600 label-gold slope (Section 7.5).** The label gold of XM3600 is human-verified labels, scored with verified precision (mentions OIV7 cannot verify are excluded). The bound re-scores the six Section 7.5 systems and the second backbone's xm600 ladder twice, with the registered slope, recall and image bootstrap of each test: once counting every mapped mention that OIV7 cannot verify as an error (lower bound) and once as correct (upper bound). It also reports, per system, the share of mapped mentions OIV7 can verify and the gold size of each rung. The design was fixed before the run; the bound is post hoc, carries no verdict and changes no registered verdict. Result for the label-gold slope: it is positive only when unverifiable mentions are excluded; counting them as errors removes the positive slope (post hoc)<!-- src: data/results/n_f1/bracket_result.json (sha256 4796ed12) :: outcome_paper = ii, sentence_paper; per set: sets.s75.outcome_from_lower = i, sets.xm600.outcome_from_lower = ii (paper-level AND, DESIGN.md R3, CC-063); design c8bd21c; run record manuscript/prereg/2026-10-21_n_f1_bracket/run_record.json (062ab6a5); VERIFIED manuscript/verification/paperA/N_F1_bracket_run.json (60e58bfe; byte-identical re-run); CONFIRMATION_MAP Amendment 4 row 27 -->.<!-- PD-28 (1) post hoc bracket design (P_lower = verified-present / all mapped; P_upper = (verified-present + unverified) / all mapped; R unchanged; registered slope functions by import); run once, verified by an independent byte-identical re-run -->
+
+**Table S7.2.** Post hoc bound on the label-gold slope of F1 on $\ln M$ (95% intervals; registered = verified precision, as registered).
+
+| Set | Registered | Lower bound (unverifiable = error) | Upper bound (unverifiable = correct) | Set outcome |
+|---|---|---|---|---|
+| Section 7.5 systems (first backbone, 600 images) | +19.32 [+17.43, +21.13] | +5.83 [+3.82, +7.82] | +20.13 [+18.35, +21.89] | (i) |
+| xm600 ladder (second backbone, clean subset of 537 images) | +13.71 [+11.44, +15.79] | +1.97 [−0.44, +4.01] | +14.78 [+12.58, +16.79] | (ii) |
+<!-- src: data/results/n_f1/bracket_result.json (4796ed12) :: sets.{s75,xm600}.slopes.{registered,lower,upper}.{point_4dp|point, ci95_2dp|ci95}; sets.{s75,xm600}.outcome_from_lower; s75 values rounded from point_4dp and the registered 2-dp ci95_2dp, xm600 from point and ci95 (raw) -->
+
+**Table S7.3.** Share of mapped mentions that OIV7 can verify (%, 95% interval), per system, and mean gold size per rung.
+
+| Set | System | Verifiable share |
+|---|---|---|
+| Section 7.5 | zero-shot, short prompt | 64.02 [60.16, 67.79] |
+| Section 7.5 | zero-shot, detailed prompt | 43.37 [40.68, 45.92] |
+| Section 7.5 | gold-SFT adapter, short prompt | 68.61 [64.27, 72.55] |
+| Section 7.5 | gold-SFT adapter, detailed prompt | 69.71 [65.47, 73.77] |
+| Section 7.5 | second adapter, short prompt | 64.66 [60.82, 68.55] |
+| Section 7.5 | second adapter, detailed prompt | 59.55 [55.86, 63.15] |
+| xm600 | greedy, short prompt | 60.65 [56.26, 64.75] |
+| xm600 | greedy, detailed prompt | 43.77 [40.93, 46.73] |
+| xm600 | lower sampling temperature, short prompt | 61.66 [57.44, 65.55] |
+| xm600 | lower sampling temperature, detailed prompt | 43.94 [41.00, 46.62] |
+| xm600 | higher sampling temperature, short prompt | 60.85 [56.42, 65.04] |
+| xm600 | higher sampling temperature, detailed prompt | 44.61 [41.69, 47.49] |
+<!-- src: data/results/n_f1/bracket_result.json (4796ed12) :: sets.s75.verifiable_share.*.{point, ci95_2dp_Bpaired}; sets.xm600.verifiable_share.*.{point, ci95} -->
+
+| Set | One reference | All references | OIV7 verified labels |
+|---|---|---|---|
+| Section 7.5 | 1.61 | 2.35 | 2.04 |
+| xm600 | 1.59 | 2.36 | 2.03 |
+<!-- src: data/results/n_f1/bracket_result.json (4796ed12) :: sets.{s75,xm600}.mean_gold_size.{refs1_randk,refs_all,oiv7_verified}; the Section 7.5 one-reference value is the mean over the 20 drawn subsets (DESIGN.md), so it differs from the registered all-image size -->
+
+Each set's outcome is the one its own lower-bound interval gives; the paper-level outcome is (i) only if both sets give (i), because they are the same images under two backbones, so it is (ii). The OIV7 gold is smaller than the union of the references on both sets, so the label gold is not a superset of the reference gold. The lower-bound point slope was approximately derivable from committed numbers before this design, and neither the design author nor the verifier computed it; the outcome-deciding CI was not derivable.<!-- src: data/results/n_f1/bracket_result.json (4796ed12) :: outcome_paper; DESIGN.md R3 (CC-063) and R4 (CC-063 disclosure, verbatim from 'the lower-bound point slope'); manuscript/prereg/2026-10-21_n_f1_bracket/DESIGN.md committed in c8bd21c before the run; run record 062ab6a5; VERIFIED manuscript/verification/paperA/N_F1_bracket_run.json (60e58bfe) -->
 
 <!-- end S7 -->
 

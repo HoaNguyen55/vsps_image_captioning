@@ -1,0 +1,52 @@
+{
+ "task": "Independent verifier re-run of the N-F1 post hoc bracket (PD-28 item 1)",
+ "verifier": "independent verifier agent; did not author the design or the run",
+ "written_utc": "2026-10-21",
+ "status": "POST_HOC exploratory; no verdict",
+ "checks": {
+  "1a_files_equal_HEAD_blobs": {
+   "result": "PASS",
+   "detail": "sha256 of working tree equals sha256 of `git show HEAD:<path>`",
+   "scripts/n_f1/bracket.py": "9d2d3059b0b4cd39a6c6849b33fa657171327f5178bd60ccb994f469a88624d8",
+   "manuscript/prereg/2026-10-21_n_f1_bracket/DESIGN.md": "4bac88c3114c17876a3d308d351cb62d809f776859af3fd36ef51521aca9ce34",
+   "also_equal_HEAD": ["manuscript/prereg/2026-10-21_n_f1_bracket/gate.json", "manuscript/prereg/2026-10-21_n_f1_bracket/selftest.json", "manuscript/prereg/2026-10-21_n_f1_bracket/MANIFEST.json", "manuscript/paperA_plan/CONFIRMATION_MAP_AMENDMENT4.md"]
+  },
+  "1b_design_predates_run": {
+   "result": "PASS",
+   "detail": "c8bd21c is an ancestor of fc14c8e, and fc14c8e of HEAD 3342ec1 (its successor; git merge-base --is-ancestor). bracket.py and DESIGN.md were last changed in c8bd21c (git log -- <paths>)."
+  },
+  "1c_amendment4_before_run": {
+   "result": "PASS",
+   "detail": "fc14c8e committed 2026-10-21T14:58:05+07:00 = 07:58:05Z; run started_utc 07:58:54Z (49 s later). Run head_sha 3342ec1 (07:58:10Z) contains fc14c8e."
+  },
+  "2_independent_rerun": {
+   "result": "PASS",
+   "detail": "Fresh git clone of the repo at 3342ec1 in a scratch folder outside the repo; untracked pinned inputs (.session_backup files, data/results/xm3600 preds, dataset JSON/CSV, G2-B frozen data) copied in, all passing bracket.py's PINS and score_g2b.check_pins; data/ktvic_openviic_refs.json not touched. Exact run_record.json command: exit 0, empty stderr.",
+   "command": "OMP_NUM_THREADS=2 OPENBLAS_NUM_THREADS=2 MKL_NUM_THREADS=2 nice -n 15 python3 -B scripts/n_f1/bracket.py run",
+   "output_sha256": "4796ed124dc81df988545cee3ed35d997bb004c4e601375c12d9a0788f7aee47",
+   "note": "The imported v3 evaluator hardcodes its ROOT to the repo path and prepends it to sys.path, so modules not yet loaded may import from the repo copy instead of the clone. All are pinned, read-only and byte-identical; v3 writes only inside main(), which is never called. Repo tracked files unchanged after the re-run (git status)."
+  },
+  "3_compare_with_committed_run": {
+   "result": "PASS",
+   "match": "yes",
+   "detail": "Byte-identical (cmp) to data/results/n_f1/bracket_result.json, sha256 4796ed12... as recorded in run_record.json. All 22 gate cells ok."
+  },
+  "4_decision_rule": {
+   "result": "PASS",
+   "rule": "DESIGN.md: per set (i) iff the lower-bound slope's unrounded 95% CI lower limit > 0, else (ii); paper (i) only if both sets give (i)",
+   "s75": {"n_images": 600, "lower_slope_point": 5.825781873320431, "lower_ci95_raw": [3.818512538673981, 7.8185005626189685], "outcome": "i"},
+   "xm600": {"n_images": 537, "lower_slope_point": 1.9675896249142923, "lower_ci95_raw": [-0.4388184107172999, 4.010350428922027], "outcome": "ii"},
+   "paper": "ii",
+   "selected_sentence": "it is positive only when unverifiable mentions are excluded; counting them as errors removes the positive slope (post hoc)",
+   "verbatim_in_amendment4": "yes (row 27 and Section 3 item (ii) of manuscript/paperA_plan/CONFIRMATION_MAP_AMENDMENT4.md)",
+   "consequence_per_amendment4": "outcome (ii): highlight 1 takes row 29; rows 31-32 take their (ii) wording",
+   "run_record_outcome_agrees": true
+  },
+  "5_run_record_privacy": {
+   "result": "PASS",
+   "detail": "manuscript/prereg/2026-10-21_n_f1_bracket/run_record.json has no local username, home path, /tmp or session path, or email; all paths are repo-relative. data/results/n_f1/bracket_result.json also has none."
+  }
+ },
+ "overall": "PASS",
+ "issues": []
+}

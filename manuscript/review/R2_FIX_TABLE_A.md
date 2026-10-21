@@ -2,9 +2,9 @@
 
 The table follows PD-28 (3): errors, contradictions and record mismatches are fixed; anything that needs GPU work or new data is disclosed. Edits are in the working tree only; nothing is committed.
 - **Line numbers** refer to the edited files.
-- **Bracket slot.** The visible marker `[N-F1 BRACKET: sentence (i) or (ii)]` stands wherever CONFIRMATION_MAP Amendment 4 places the post hoc bracket sentence. The bracket has not been run.
+- **Bracket filled.** The N-F1 bracket ran once and was verified (byte-identical re-run). Outcome (ii) by the both-sets rule: the Section 7.5 systems give (i), xm600 gives (ii). Every slot now holds sentence (ii) verbatim; highlight 1 is row 29; sec1:7 and the §7.5 close take the (ii) branches of rows 31–32. §7.5 reports both sets; S7 gives Tables S7.2–S7.3. number_manifest.tsv gains 22 POST_HOC rows (now 677 rows).
 - **Judge CP-064 (YES 90%).** Edits E1–E3, Q2 and Q3 are applied in Amendment 4: row 29 reworded, row 30 (fallback) and rows 31–32 (both branches of the sec1:7 and §7.5 closing sentences, not applied) added, and the header bullet added to CONFIRMATION_MAP.md. Sentence (i) or (ii) is never written without a verified run.
-- **Word count.** §1–§11 plus declarations come to 11,957 words on the binding base. If sentence (ii) fills both body slots, the count is 11,981.
+- **Word count.** §1–§11 plus declarations come to 11,986 words on the binding base after the fill.
 
 | id | fix or disclose | file:line | what changed |
 |---|---|---|---|
