@@ -2,7 +2,7 @@
 
 This section reports the slope of object F1 on $\ln M$ (Section 3.6) under random-$k$ and instance golds. The confirmatory claim is that the slope is ordered by gold completeness and positive under label gold; the one-reference sign is registered but not derived from the theory, and the multi-reference sign is not predicted. Each row of Table 7.1 is **registered** (predictions committed before the first output) or **exploratory** (pre-specified or unregistered; Section 3.6). Rows report mixed F1; Section 4.3 gives micro-F1 for COCO-2500.
 
-**Table 7.1.** Slope of F1 on $\ln M$ by gold (label gold: Section 3.1). 95% image-bootstrap intervals.
+**Table 7.1.** Slope of F1 on $\ln M$ by gold (label gold: Section 3.1; plotted in Fig. 2). 95% image-bootstrap intervals.
 
 | Family (systems; mention range) | Grade | 1 ref | 5 refs | Label gold |
 |---|---|---|---|---|
@@ -19,6 +19,8 @@ F-B / F-C: .session_backup/2026-10-14/r12/H3/out/n1_results.json :: families.{F-
 UIT-ViIC: .session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json :: uitviic_test.lexicons.{coco80,vi_objects_in}.gold_variants.{refs1_randk,refs5_randk,inst_only}.groups.all_10.{slope_F1_mixed_per_logM,slope_F1_mixed_ci95,M_range}.
 XM3600 (XMJ): .session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json (sha256 0b2b3aa5e1a3) :: matcher_v2_tone_normalised.n1_f1_vs_logM_slopes.{refs1_randk,refs_all,oiv7_verified}.{slope_F1_per_logM,slope_ci95_b500,M_range}. The vi_objects_in 5-ref interval is the refs5_randk key ([-8.31,-4.29]); the [-8.34,-3.96] quoted in earlier drafts is the refs5_firstk key of the same file (same gold at K=5, different bootstrap draws).
 The former visible "Source" column (C1J, H3J, C2J, XMJ keys; "Section 7.6") moved into the per-row comments above (PD-23 readability). -->
+
+![Fig. 2](figs/fig2_slope_by_gold.svg)<!-- caption: figs/CAPTIONS.md (outside the word count, PD-29 (b)); values figs/VALUES.json -->
 
 ## 7.1 COCO-2500: pre-specified predictions (exploratory)
 

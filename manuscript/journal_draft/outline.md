@@ -95,9 +95,9 @@ Companion-paper pointers (one line each in Paper A, citing Paper B as under revi
 | ID | Content | Data status (details in `results_plan.md`) |
 |---|---|---|
 | Fig. 1 | Motivating schematic: one image, 1 vs 5 references vs instance labels, a terse and a verbose caption; F1 ranks them in opposite orders | illustrative; no numbers |
-| Fig. 2 | Slope of F1 on $\log M$ versus gold completeness ($k=1..5$, instance, instance+refs) for COCO-2500 and the two English LVLM families and XM3600 (refs1, 2–3 refs, OIV7) | available |
+| Fig. 2 | Slope of F1 on $\log M$ by gold (one reference, all references, label gold) for every Table 7.1 family and the second-backbone sets; XM3600 label gold marked "human-verified labels, verified precision"; post hoc N-F1 lower bounds as grey diamonds | built (PD-29 (b)): `figs/fig2_slope_by_gold.svg`, script `scripts/figures/paperA_figs.py`, values `figs/VALUES.json`; referenced in §7 |
 | Fig. 3 | Specification curve: 15 decoding pairs × controls (raw, prefix MCP, sentence tie-avg, random subset; unadjusted and Holm+SESOI) | available; K2 placebo HELD (matched prefix admissible; Table 6.1) |
-| Fig. 4 | $\Lambda_k(M_0)$ with $\bar G(k) = U(k)$ by gold, as points with post-hoc intervals (no zero-crossing claim), and its b-channel / $\bar G$-channel split | A3.3 v3, VERIFIED: `paperA_tasks/A3.3/fig4_v3.{pdf,png}` |
+| Fig. 4 | $\Lambda_k(M_0)$ with $\bar G(k) = U(k)$ by gold (label gold = COCO instance labels), as points with post-hoc intervals, and the b-channel share | regenerated after Amendment 4 (PD-29 (b)): `figs/fig4_lambda_channels.svg`; replaces A3.3 fig4_v3; referenced in §4.3 |
 | Fig. 5 | Adjacency statistic by dataset with CIs and the 0.40 null (COCO, UIT-ViIC, Flickr30k, OpenViIC aggregates; no KTVIC row); XM3600 3-ref row with its own 2/3 null | available (XM3600 row keyed, §7.5) |
 | Tab. 1 | Notation and the three controls | text |
 | Tab. 2 | E1 spec-curve counts | available |
