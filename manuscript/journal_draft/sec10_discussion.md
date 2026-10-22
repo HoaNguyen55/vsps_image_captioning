@@ -2,6 +2,8 @@
 
 ## 10.1 What the results say together
 
+Taken as a registered measurement audit, the results say four things:<!-- CC-088 A-3: paper type -->
+
 - **Gold completeness (confirmatory).** F1's verbosity slope is ordered by gold completeness and positive under label gold on XM3600 and with a second backbone on xm600 (Sections 7.5–7.6).<!-- src: .session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json :: prereg_comparisons[16..20].in_interval_or_pass = PASS, FAIL, PASS, PASS, FAIL; .session_backup/2026-10-18/paperA_tasks/A4.1/MANIFEST.json :: verdicts[14] = NOT_FIRED; sentence per manuscript/paperA_plan/CONFIRMATION_MAP.md (cbed6db) §2 --> Section 10.5 qualifies it.
 - **Secondary registered results.** Condensed F1 is MIXED (Section 7.6) and the human span-label test is not supported (Section 8.5).
 - **Count (no confirmatory claim).** The registered leaderboard was not scored (Section 6.4), and the seed placebo ran in its failed harness; neither supports a count-control claim.<!-- src: .session_backup/2026-10-13/decisions/PD-15.txt :: items 1-2; sentence per manuscript/paperA_plan/CONFIRMATION_MAP.md (cbed6db) §3 NOT-TESTABLE -->

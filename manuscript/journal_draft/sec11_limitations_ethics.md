@@ -38,7 +38,7 @@
 
 **UIT-OpenViIC.** Its licence terms record non-commercial research use but no explicit permission for per-image panels, so this paper and its release contain only aggregate statistics of it (Table 5.1 and Supplementary S5).<!-- PD-2 Q4: written confirmation from the OpenViIC authors not obtained -->
 
-**KTVIC–OpenViIC overlap.** The corpora share an image pool (overlap: companion manuscript in preparation); no model here is trained on OpenViIC, and the OpenViIC panel rows (Supplementary S5) are on KTVIC test images.<!-- PD-6 (A6.2 F027–F029, REMOVE_NUMBERS): the overlap counts are Paper B rows (number_manifest.tsv, A_32_leakage_disclosure.*, paper = B) and are not printed in Paper A. -->
+**KTVIC–OpenViIC overlap.** The corpora share an image pool (overlap: details withheld for anonymized review)<!-- CP-089 F1/F2 -->; no model here is trained on OpenViIC, and the OpenViIC panel rows (Supplementary S5) are on KTVIC test images.<!-- PD-6 (A6.2 F027–F029, REMOVE_NUMBERS): the overlap counts are Paper B rows (number_manifest.tsv, A_32_leakage_disclosure.*, paper = B) and are not printed in Paper A. -->
 
 **Other overlaps.** Some UIT-ViIC training images are in COCO-2500 and POPE-500; no UIT-ViIC-trained adapter is scored on those sets.<!-- PD-6 (A6.2 F030–F034, REMOVE_NUMBERS): the overlap counts are Paper B rows (number_manifest.tsv, A_21_m3_checks.uitviic_overlap.*, paper = B). The qualitative pointer is kept because Paper A still scores UIT-ViIC-trained systems (Section 7.3, all_10 group). -->
 
