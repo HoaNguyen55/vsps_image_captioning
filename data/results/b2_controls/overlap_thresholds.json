@@ -1,0 +1,128 @@
+{
+ "label": "POST_HOC (CC-088 B-2 b); registered verdicts unchanged; aggregates only",
+ "cache_keys": {
+  "kt_test": "25a3ed8d80cb4586",
+  "ov_train": "e23c810efa3ebe11",
+  "ov_dev": "0e80bc377ac82ad5",
+  "ov_test": "d8384ca9ca93d096"
+ },
+ "sscd_weights_sha256": "9f26bd4c848cc19b73d2ae92eea6e04886f61a7b764ceb7a13aeee62e6a6db56",
+ "rule": "match = min(pHash, dHash Hamming; KTVIC direct or mirrored) <= h and SSCD cosine >= s (scripts/match_openviic.py is_match); registered rule h = 10, s = 0.5",
+ "scope": "captioned OpenViIC images only (train/dev/test annotation keys); the release's uncaptioned files are not in the cache",
+ "unreadable_openviic": {
+  "train": 1,
+  "dev": 0,
+  "test": 0
+ },
+ "n_ktvic_test": 558,
+ "n_openviic_captioned": 13100,
+ "grid": {
+  "hamming_le_6_sscd_ge_050": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 95,
+   "test_copy": 72
+  },
+  "hamming_le_6_sscd_ge_060": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 95,
+   "test_copy": 72
+  },
+  "hamming_le_6_sscd_ge_070": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 95,
+   "test_copy": 72
+  },
+  "hamming_le_6_sscd_ge_080": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 95,
+   "test_copy": 72
+  },
+  "hamming_le_8_sscd_ge_050": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 95,
+   "test_copy": 72
+  },
+  "hamming_le_8_sscd_ge_060": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 95,
+   "test_copy": 72
+  },
+  "hamming_le_8_sscd_ge_070": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 95,
+   "test_copy": 72
+  },
+  "hamming_le_8_sscd_ge_080": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 95,
+   "test_copy": 72
+  },
+  "hamming_le_10_sscd_ge_050": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 96,
+   "test_copy": 72
+  },
+  "hamming_le_10_sscd_ge_060": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 96,
+   "test_copy": 72
+  },
+  "hamming_le_10_sscd_ge_070": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 96,
+   "test_copy": 72
+  },
+  "hamming_le_10_sscd_ge_080": {
+   "any_split": 555,
+   "train": 401,
+   "dev_copy": 96,
+   "test_copy": 72
+  }
+ },
+ "sscd_only": {
+  "sscd_ge_050": {
+   "any_split": 555,
+   "train": 404
+  },
+  "sscd_ge_060": {
+   "any_split": 555,
+   "train": 402
+  },
+  "sscd_ge_070": {
+   "any_split": 555,
+   "train": 402
+  },
+  "sscd_ge_080": {
+   "any_split": 555,
+   "train": 401
+  }
+ },
+ "hash_only": {
+  "hamming_le_6": {
+   "any_split": 555,
+   "train": 402
+  },
+  "hamming_le_8": {
+   "any_split": 555,
+   "train": 403
+  },
+  "hamming_le_10": {
+   "any_split": 555,
+   "train": 409
+  }
+ },
+ "gate_registered_rule_reproduces_555_401": true,
+ "gate_viclip_ot_rule_reproduces_401": true,
+ "script_sha256": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3"
+}

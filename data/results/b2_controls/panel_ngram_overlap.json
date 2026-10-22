@@ -1,0 +1,241 @@
+{
+ "label": "POST_HOC (CC-088 B-2 c); registered verdicts unchanged; aggregates only",
+ "inputs_sha256": {
+  "ktvic_test_data": "cc22ec6a8883773cb23c87ad5b64925f5a53c21982117274b53621f454e7ebbf",
+  "openviic_refs": "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d"
+ },
+ "tokens": "syllables: NFC, rescap.chair.norm_tone, lower-cased, non-word characters removed",
+ "measure": "Jaccard index of the two captions' n-gram sets; mean over pairs per image, then over images",
+ "images": 555,
+ "ktvic_captions": 2775,
+ "openviic_captions": 2992,
+ "mean_syllables_per_caption": {
+  "ktvic": 12.121,
+  "openviic": 17.533
+ },
+ "mean_pairwise_jaccard": {
+  "n=1": {
+   "within_ktvic": {
+    "est": 0.3468,
+    "ci95": [
+     0.3371,
+     0.356
+    ]
+   },
+   "within_openviic": {
+    "est": 0.2185,
+    "ci95": [
+     0.2123,
+     0.2246
+    ]
+   },
+   "cross_same_image": {
+    "est": 0.1922,
+    "ci95": [
+     0.1872,
+     0.197
+    ]
+   },
+   "cross_mismatched_image": {
+    "est": 0.083,
+    "ci95": [
+     0.0799,
+     0.086
+    ]
+   }
+  },
+  "n=2": {
+   "within_ktvic": {
+    "est": 0.1807,
+    "ci95": [
+     0.1731,
+     0.1877
+    ]
+   },
+   "within_openviic": {
+    "est": 0.0755,
+    "ci95": [
+     0.0716,
+     0.0794
+    ]
+   },
+   "cross_same_image": {
+    "est": 0.0641,
+    "ci95": [
+     0.0607,
+     0.0672
+    ]
+   },
+   "cross_mismatched_image": {
+    "est": 0.0118,
+    "ci95": [
+     0.0105,
+     0.0131
+    ]
+   }
+  },
+  "n=3": {
+   "within_ktvic": {
+    "est": 0.1031,
+    "ci95": [
+     0.0974,
+     0.1085
+    ]
+   },
+   "within_openviic": {
+    "est": 0.0324,
+    "ci95": [
+     0.0299,
+     0.0349
+    ]
+   },
+   "cross_same_image": {
+    "est": 0.0267,
+    "ci95": [
+     0.0247,
+     0.0288
+    ]
+   },
+   "cross_mismatched_image": {
+    "est": 0.0032,
+    "ci95": [
+     0.0025,
+     0.0039
+    ]
+   }
+  },
+  "n=4": {
+   "within_ktvic": {
+    "est": 0.0605,
+    "ci95": [
+     0.0564,
+     0.0645
+    ]
+   },
+   "within_openviic": {
+    "est": 0.0141,
+    "ci95": [
+     0.0125,
+     0.0157
+    ]
+   },
+   "cross_same_image": {
+    "est": 0.0112,
+    "ci95": [
+     0.01,
+     0.0126
+    ]
+   },
+   "cross_mismatched_image": {
+    "est": 0.001,
+    "ci95": [
+     0.0007,
+     0.0013
+    ]
+   }
+  }
+ },
+ "differences": {
+  "n=1": {
+   "within_ktvic_minus_cross": {
+    "est": 0.1546,
+    "ci95": [
+     0.1463,
+     0.1633
+    ]
+   },
+   "within_openviic_minus_cross": {
+    "est": 0.0263,
+    "ci95": [
+     0.0215,
+     0.0316
+    ]
+   },
+   "cross_minus_mismatched": {
+    "est": 0.1092,
+    "ci95": [
+     0.1039,
+     0.1145
+    ]
+   }
+  },
+  "n=2": {
+   "within_ktvic_minus_cross": {
+    "est": 0.1166,
+    "ci95": [
+     0.1098,
+     0.1229
+    ]
+   },
+   "within_openviic_minus_cross": {
+    "est": 0.0114,
+    "ci95": [
+     0.0083,
+     0.0145
+    ]
+   },
+   "cross_minus_mismatched": {
+    "est": 0.0523,
+    "ci95": [
+     0.049,
+     0.0555
+    ]
+   }
+  },
+  "n=3": {
+   "within_ktvic_minus_cross": {
+    "est": 0.0764,
+    "ci95": [
+     0.0713,
+     0.0812
+    ]
+   },
+   "within_openviic_minus_cross": {
+    "est": 0.0057,
+    "ci95": [
+     0.0036,
+     0.0079
+    ]
+   },
+   "cross_minus_mismatched": {
+    "est": 0.0235,
+    "ci95": [
+     0.0215,
+     0.0257
+    ]
+   }
+  },
+  "n=4": {
+   "within_ktvic_minus_cross": {
+    "est": 0.0493,
+    "ci95": [
+     0.0454,
+     0.0528
+    ]
+   },
+   "within_openviic_minus_cross": {
+    "est": 0.0029,
+    "ci95": [
+     0.0015,
+     0.0043
+    ]
+   },
+   "cross_minus_mismatched": {
+    "est": 0.0103,
+    "ci95": [
+     0.0091,
+     0.0116
+    ]
+   }
+  }
+ },
+ "ktvic_refs_identical_to_an_openviic_caption": 0,
+ "ktvic_refs_sharing_an_8gram_with_the_openviic_panel": 50,
+ "derangement_seed": 0,
+ "bootstrap": {
+  "B": 1000,
+  "seed": 0,
+  "unit": "image"
+ },
+ "script_sha256": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3"
+}

@@ -1,0 +1,92 @@
+{
+ "label": "POST_HOC (CC-088 B-2 a); registered verdicts unchanged; aggregates only",
+ "draws": 1000,
+ "seed": 0,
+ "burn_in_trades_per_row": 50,
+ "trades_per_row_between_draws": 5,
+ "null": "per image, uniform over object x slot matrices with the observed row sums (references naming each object) and column sums (objects named by each slot); curveball trades",
+ "splits": {
+  "ktvic_test_objects_in": {
+   "images": 558,
+   "doubletons": 566,
+   "adjacent_share": {
+    "observed": 0.7102,
+    "null_mean": 0.4504,
+    "null_ci95": [
+     0.4134,
+     0.4876
+    ],
+    "null_max": 0.5265,
+    "draws_ge_observed": 0,
+    "p_one_sided": 0.001
+   },
+   "jac_lag1_minus_mean_lag2to4": {
+    "observed": 0.135,
+    "null_mean": 0.0355,
+    "null_ci95": [
+     0.023,
+     0.0487
+    ],
+    "null_max": 0.0568,
+    "draws_ge_observed": 0,
+    "p_one_sided": 0.001
+   },
+   "reproduces_audit_k5": true
+  },
+  "ktvic_train_objects_in": {
+   "images": 3769,
+   "doubletons": 3297,
+   "adjacent_share": {
+    "observed": 0.6673,
+    "null_mean": 0.4552,
+    "null_ci95": [
+     0.4404,
+     0.4704
+    ],
+    "null_max": 0.4832,
+    "draws_ge_observed": 0,
+    "p_one_sided": 0.001
+   },
+   "jac_lag1_minus_mean_lag2to4": {
+    "observed": 0.1129,
+    "null_mean": 0.0308,
+    "null_ci95": [
+     0.0258,
+     0.0355
+    ],
+    "null_max": 0.0384,
+    "draws_ge_observed": 0,
+    "p_one_sided": 0.001
+   },
+   "reproduces_audit_k5": true
+  },
+  "ktvic_dev300_objects_in": {
+   "images": 300,
+   "doubletons": 252,
+   "adjacent_share": {
+    "observed": 0.631,
+    "null_mean": 0.4498,
+    "null_ci95": [
+     0.3968,
+     0.504
+    ],
+    "null_max": 0.5437,
+    "draws_ge_observed": 0,
+    "p_one_sided": 0.001
+   },
+   "jac_lag1_minus_mean_lag2to4": {
+    "observed": 0.0909,
+    "null_mean": 0.0251,
+    "null_ci95": [
+     0.008,
+     0.042
+    ],
+    "null_max": 0.0524,
+    "draws_ge_observed": 0,
+    "p_one_sided": 0.001
+   },
+   "reproduces_audit_k5": true
+  }
+ },
+ "script_sha256": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3"
+}

@@ -1,0 +1,99 @@
+{
+ "label": "POST_HOC (CC-088 B-2 d); registered verdicts unchanged; aggregates only",
+ "provenance": {
+  "repository": "https://github.com/pacman-ctm/thesis-code",
+  "commit": "1a8d1052d25ac92fbf886546e056ddd94141d2f0",
+  "terms": "no licence file (GitHub API license null); used with the permission of the repository's author (personal communication, 2026-10-21); aggregate statistics only; outputs not redistributed",
+  "accessed_utc": "2026-10-22T10:31:09Z",
+  "files": {
+   "ktvic_resnetlstm": {
+    "path": "simple_evaluate/result_resnetlstm.json",
+    "git_blob_sha1": "ad64a1156e9b203bba9c90eb3c27198e90aeee7c",
+    "expected_blob": "ad64a1156e9b203bba9c90eb3c27198e90aeee7c",
+    "sha256": "85a7dcdb195450bea1d67137ad11ab41a65b76dab5f796d59dae2776f38ae5f2"
+   },
+   "ktvic_vittrans": {
+    "path": "simple_evaluate/result_vittrans.json",
+    "git_blob_sha1": "75f90f089e2fb18777f22c7b1609ba9efa2e0df2",
+    "expected_blob": "75f90f089e2fb18777f22c7b1609ba9efa2e0df2",
+    "sha256": "b12747b55e61019c060469190f560f8a7a5f8f4d190aa83a63cf9ba551fb8de3"
+   }
+  }
+ },
+ "references": "KTVIC test references from our own copy (sha256 below), not the thesis repo's test_data.json",
+ "inputs_sha256": {
+  "ktvic_test_data": "cc22ec6a8883773cb23c87ad5b64925f5a53c21982117274b53621f454e7ebbf"
+ },
+ "segmentation_rule": "as published (underscore-joined), then '_' -> ' ' and RDRSegmenter (E4's rule); RDR is never applied to the underscored text (CC-092 R5)",
+ "ptb_punctuations": [
+  "''",
+  "'",
+  "``",
+  "`",
+  "-LRB-",
+  "-RRB-",
+  "-LCB-",
+  "-RCB-",
+  ".",
+  "?",
+  "!",
+  ",",
+  ":",
+  "-",
+  "--",
+  "...",
+  ";"
+ ],
+ "p4_ktvic_t3_row": "not recomputed; see E4 pilot_results.json protocols.P4_T3bug_rdr_hyp_vs_raw_refs",
+ "systems": {
+  "ktvic_resnetlstm": {
+   "as_published": {
+    "captions": 558,
+    "whitespace_tokens": 5563,
+    "underscore_joined_tokens": 705,
+    "captions_with_underscore": 510,
+    "punctuation_characters_by_symbol": {},
+    "punctuation_only_tokens": 0,
+    "end_period_captions": 0,
+    "end_any_punctuation_captions": 0
+   },
+   "after_underscore_to_space_then_rdr": {
+    "tokens": 5563,
+    "ptb_removed_tokens": 0,
+    "residual_punct_token_types": 0,
+    "residual_punct_tokens": 0,
+    "end_period_captions": 0,
+    "captions_resegmented_as_published": 558
+   },
+   "cider_d_x100_k5": {
+    "P0": 48.8463,
+    "PTB": 48.8463
+   }
+  },
+  "ktvic_vittrans": {
+   "as_published": {
+    "captions": 558,
+    "whitespace_tokens": 5798,
+    "underscore_joined_tokens": 817,
+    "captions_with_underscore": 510,
+    "punctuation_characters_by_symbol": {},
+    "punctuation_only_tokens": 0,
+    "end_period_captions": 0,
+    "end_any_punctuation_captions": 0
+   },
+   "after_underscore_to_space_then_rdr": {
+    "tokens": 5797,
+    "ptb_removed_tokens": 0,
+    "residual_punct_token_types": 0,
+    "residual_punct_tokens": 0,
+    "end_period_captions": 0,
+    "captions_resegmented_as_published": 557
+   },
+   "cider_d_x100_k5": {
+    "P0": 72.8681,
+    "PTB": 72.8681
+   }
+  }
+ },
+ "script_sha256": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3"
+}

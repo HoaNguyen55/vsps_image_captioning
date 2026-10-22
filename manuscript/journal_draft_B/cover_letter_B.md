@@ -10,7 +10,7 @@ Vietnamese captioning systems are compared mainly by CIDEr on KTVIC. This manusc
 - the five references of each image come from one writer;
 - no reference ends with a period, and the scoring pipeline decides what that costs: Vietnamese pipelines that replace pycocoevalcap's PTB tokenizer with a word segmenter drop its punctuation removal, and under them one appended period lowers a fine-tuned system's CIDEr-D by 35.17 points, while with PTB-style removal it costs nothing;
 - scores depend on word segmentation (15.64 CIDEr-D points against syllable tokenisation) and on matcher rules that are rarely published;
-- 555 of the 558 test images also appear in UIT-OpenViIC, 401 of them in its training split.
+- 555 of the 558 test images have captioned copies in UIT-OpenViIC, 401 of them in its training split.
 We propose a protocol card that states these choices with every score. The pre-registered training and decoding tests are reported in a supplement with their verdicts unchanged.
 
 **Prior and related work.**
