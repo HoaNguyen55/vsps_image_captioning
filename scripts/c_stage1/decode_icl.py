@@ -40,7 +40,7 @@ PINS = {
     EXCL: "c52a96d18925b974878ae1a970c3f9133fb3482216676fd41871eeabb68cc77f",
     DEV299: "a4ac7fdbd904f2205845705f5235b9748225a83a07854b58e59a755b85e4186e",
 }
-LISTS_SHA256 = None  # set by the lists addendum commit (DESIGN §2.6); decoding refuses while it is None
+LISTS_SHA256 = "5c479f03e8be544f4cd12b5d997b5dc92b6c622df061760cd02f6ba82f6b4371"  # lists addendum (DESIGN §2.6, LISTS_ADDENDUM.md)
 MODELS = ("qwen25vl_7b", "internvl3_8b")
 DATASETS = {"ktvic_dev299": {"src": "ktvic", "image_dir": "ktvic/images"},
             "ov_dev_a": {"src": "openviic", "image_dir": "openviic/images"}}

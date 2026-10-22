@@ -121,37 +121,80 @@ def clusters(f: dict, chunk: int = 512) -> list[int]:
     return [find(i) for i in range(n)]
 
 
+ROW_KEYS = ("sha", "phash", "dhash", "phash_m", "dhash_m", "sscd")  # per-image rows; other keys are records
+
+
 def subset(f: dict, idx) -> dict:
     """Rows idx (integer positions) of a feature dict."""
     idx = np.asarray(idx, int)
-    return {k: (np.asarray(v)[idx] if k != "sha" else [v[i] for i in idx]) for k, v in f.items()}
+    return {k: (np.asarray(f[k])[idx] if k != "sha" else [f[k][i] for i in idx]) for k in ROW_KEYS}
 
 
 def concat(*fs: dict) -> dict:
-    return {k: ([x for f in fs for x in f[k]] if k == "sha" else np.concatenate([f[k] for f in fs])) for k in fs[0]}
+    return {k: ([x for f in fs for x in f[k]] if k == "sha" else np.concatenate([f[k] for f in fs])) for k in ROW_KEYS}
 
 
 # ------------------------------------------------------------------------------------------------ lists (CPU)
-def features(paths: list[Path], sscd: str, workers: int = 4) -> dict:
-    """pHash, dHash, their mirrored versions, SSCD descriptor and file sha256 of each image (match_openviic code)."""
+def _retry_truncated(path: str):
+    """CC-082: decode a truncated file with PIL's truncated loading, set only around this call."""
+    from PIL import ImageFile
+
+    old = ImageFile.LOAD_TRUNCATED_IMAGES
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    try:
+        return MO._features(path), MO._mirror_hashes(path)
+    finally:
+        ImageFile.LOAD_TRUNCATED_IMAGES = old
+
+
+def features(paths: list[Path], sscd: str, workers: int = 4, cache: Path | None = None,
+             retry_truncated: bool = False) -> dict:
+    """pHash, dHash, their mirrored versions, SSCD descriptor and file sha256 of each image (match_openviic code).
+
+    An unreadable image keeps NaN SSCD, so it never matches (as in match_openviic); its index goes to
+    out["unreadable"] and the caller decides. The optional cache is keyed by the image and SSCD shas."""
     from multiprocessing import Pool
 
     import torch
 
+    sha = [C.lb.sha256_file(p) for p in paths]
+    key = hashlib.sha256(("|".join(sha) + C.lb.sha256_file(Path(sscd))).encode()).hexdigest()[:16]
+    hit = cache / f"feat_{key}.npz" if cache else None
+    if hit and hit.exists():
+        z = np.load(hit)
+        return {"sha": sha, **{k: z[k] for k in ("phash", "dhash", "phash_m", "dhash_m", "sscd")},
+                "unreadable": [int(u) for u in z["unreadable"]],
+                "truncated": [(int(i), int(b)) for i, b in z["truncated"]] if "truncated" in z else []}
     model = torch.jit.load(sscd).eval()
-    out = {"sha": [C.lb.sha256_file(p) for p in paths]}
+    out = {"sha": sha, "unreadable": [], "truncated": []}
     n = len(paths)
     for k in ("phash", "dhash", "phash_m", "dhash_m"):
         out[k] = np.zeros(n, np.uint64)
     out["sscd"] = np.full((n, 512), np.nan, np.float32)
     # ponytail: one pass without a feature cache (about 1-2 CPU-h); add a cache if the build is ever repeated
+    # Bounded batches: imap ran ahead of the single-thread SSCD pass and filled the 8 GB machine.
     with Pool(workers) as pool, torch.inference_mode():
-        for i, (f, m) in enumerate(zip(pool.imap(MO._features, map(str, paths), 16),
-                                       pool.imap(MO._mirror_hashes, map(str, paths), 16))):
-            if isinstance(f[1], str):
-                raise SystemExit(f"unreadable image {paths[i]}: {f[1]}")
-            out["phash"][i], out["dhash"][i], (out["phash_m"][i], out["dhash_m"][i]) = f[0], f[1], m
-            out["sscd"][i] = model(torch.from_numpy(f[3])[None])[0].numpy()
+        for s in range(0, n, 256):
+            batch = list(map(str, paths[s:s + 256]))
+            for j, (f, m) in enumerate(zip(pool.map(MO._features, batch, 16),
+                                           pool.map(MO._mirror_hashes, batch, 16))):
+                i = s + j
+                if isinstance(f[1], str):
+                    print(f"unreadable image {paths[i]}: {f[1]}", file=sys.stderr)
+                    lost = re.search(r"truncated \((\d+) bytes not processed\)", f[1])
+                    if retry_truncated and lost:
+                        f, m = _retry_truncated(str(paths[i]))
+                    if isinstance(f[1], str):
+                        out["unreadable"].append(i)
+                        continue
+                    out["truncated"].append((i, int(lost.group(1))))
+                out["phash"][i], out["dhash"][i], (out["phash_m"][i], out["dhash_m"][i]) = f[0], f[1], m
+                out["sscd"][i] = model(torch.from_numpy(f[3])[None])[0].numpy()
+    if hit:
+        cache.mkdir(parents=True, exist_ok=True)
+        np.savez(hit, **{k: out[k] for k in ("phash", "dhash", "phash_m", "dhash_m", "sscd")},
+                 unreadable=np.asarray(out["unreadable"], np.int64),
+                 truncated=np.asarray(out["truncated"], np.int64).reshape(-1, 2))
     return out
 
 
@@ -180,7 +223,27 @@ def cmd_lists(a) -> None:
     for spec in a.protected:  # e.g. COCO test images present on this machine
         name, folder = spec.split("=", 1)
         groups[f"extra_{name}"] = [(p.name, p.name, p) for p in sorted(Path(folder).iterdir()) if p.is_file()]
-    feats = {g: features([p for *_x, p in rows], a.sscd) for g, rows in groups.items()}
+    memory_groups = ("kt_mem", "ov_train")  # never retried: an unreadable memory image is dropped
+    feats = {g: features([p for *_x, p in rows], a.sscd, cache=a.cache, retry_truncated=g not in memory_groups)
+             for g, rows in groups.items()}
+    unreadable = {g: [groups[g][n][1] for n in feats[g]["unreadable"]] for g in groups if feats[g]["unreadable"]}
+    truncated = {g: [{"file": groups[g][i][1], "missing_bytes": b} for i, b in feats[g]["truncated"]]
+                 for g in groups if feats[g]["truncated"]}
+    for g in truncated:  # decoded protected images must carry real features
+        idx = [i for i, _b in feats[g]["truncated"]]
+        if np.isnan(feats[g]["sscd"][idx]).any() or not (feats[g]["phash"][idx] | feats[g]["dhash"][idx]).all():
+            raise SystemExit(f"CC-082: truncated {g} images decoded without finite features")
+    excluded = unreadable.get("ov_test", [])  # CC-082 T5: still unreadable after the retry
+    bad = {g: f for g, f in unreadable.items() if g not in memory_groups + ("ov_test",)}
+    if bad or len(excluded) > 3:  # a test or dev image that cannot be hashed cannot be de-duplicated safely
+        raise SystemExit(f"unreadable protected or dev images, lists not written: {bad or unreadable}")
+    dev299_near = 0
+    if "ov_test" in truncated:  # CC-082 T4: dev299 was cleared before these test images had features
+        idx = [i for i, _b in feats["ov_test"]["truncated"]]
+        dev299_near = int(near(feats["kt_dev300"], subset(feats["ov_test"], idx)).sum())
+        if dev299_near:
+            raise SystemExit(f"CC-082 T4: {dev299_near} kt_dev300 image(s) are near-duplicates of the decoded "
+                             "truncated test images; back to the judge")
     rows = {g: [(i, f, feats[g]["sha"][n]) for n, (i, f, _p) in enumerate(groups[g])] for g in groups}
 
     a_raw, b_raw = split(rows["ov_dev"], "ovdev", len(rows["ov_dev"]) // 2)
@@ -199,6 +262,9 @@ def cmd_lists(a) -> None:
     mem_rows = [("ktvic", *r) for r in rows["kt_mem"]] + [("openviic", *r) for r in rows["ov_train"]]
     protected = concat(tests, feats["kt_dev300"], feats["ov_dev"])
     drop = near(mem_f, protected) | np.isin(mem_f["sha"], list(hashes))
+    n_kt = len(rows["kt_mem"])  # unreadable memory images are dropped: they have no features to retrieve by
+    drop[feats["kt_mem"]["unreadable"]] = True
+    drop[[n_kt + u for u in feats["ov_train"]["unreadable"]]] = True
     keep = np.flatnonzero(~drop)
     roots = clusters(subset(mem_f, keep))
     by_root: dict[int, list] = {}
@@ -220,6 +286,10 @@ def cmd_lists(a) -> None:
         "refuse": {"openviic_files": sorted({r[0] for r in ov_test + ov_b}),
                    "image_sha256": sorted({r[2] for r in ov_test + ov_b + rows["xm_all"]})},
         "memory": memory,
+        "unreadable_memory_dropped": {g: f for g, f in unreadable.items() if g in memory_groups},
+        "truncated_protected_decoded": truncated,
+        "unreadable_test_excluded": excluded,
+        "dev299_near_truncated_test": dev299_near,
         "counts": {"ov_dev_a_raw": len(a_raw), "ov_dev_a": len(dev_a), "ov_dev_b_raw": len(b_raw),
                    "ov_dev_b": len(dev_b), "memory_candidates": len(mem_rows), "memory_dropped": int(drop.sum()),
                    "memory_images": len(keep), "memory_clusters": len(memory),
@@ -370,6 +440,7 @@ def main() -> None:
     p.add_argument("--sscd-url", required=True, help="where the weights were downloaded from (C2)")
     p.add_argument("--sscd-licence", required=True, help="the weights' licence, e.g. mit (C2)")
     p.add_argument("--protected", action="append", default=[], help="NAME=DIR of further test images")
+    p.add_argument("--cache", type=Path, default=None, help="git-excluded folder for per-group feature caches")
     p.add_argument("--out", required=True)
     p = sub.add_parser("embed")
     p.add_argument("--lists", type=Path, required=True)
