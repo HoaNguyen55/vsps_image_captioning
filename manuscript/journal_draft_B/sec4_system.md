@@ -30,7 +30,7 @@ Every KTVIC score in this paper uses the following protocol unless a section say
 | Test set | KTVIC official test, 558 images, 5 references each |
 | Segmenter | RDRSegmenter, VnCoreNLP 1.2 (jar SHA-256 9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793)<!-- src: data/results/b_n2/b_n2_run.json :: env.VnCoreNLP-1.2.jar --> ; the same segmenter on candidates and references |
 | n-gram metrics | pycocoevalcap: BLEU-4, ROUGE-L, CIDEr-D, all ×100 |
-| Punctuation | none removed or added; candidates and references scored as written (Section 3.3 reports the stripped variant) |
+| Punctuation | none removed or added (protocol P0): RDRSegmenter replaces the PTB tokenizer, so punctuation is scored as written on candidates and references. Section 3.3 also reports the stripped and appended variants and, post hoc, PTB-style removal |
 | Decoding | greedy, one caption per image per prompt |
 | Object matcher | v2 (tone-normalised); v1 and v3 as sensitivity |
 | Object P / R / F1 | precision micro-averaged over mentions; recall macro-averaged over images with non-empty gold; F1 their harmonic mean; gold = union of the image's references |
