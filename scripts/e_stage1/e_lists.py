@@ -29,7 +29,8 @@ LABEL = "EXPLORATORY / DEV"
 SCHEMA = "vsps.e_stage1_split.v1"
 DESIGN = "manuscript/prereg/2026-10-22_e_stage1/DESIGN.md"
 DESIGN_SHA256 = "c793cbe6f9b57aca71a70e5cdcc954d914624e89b93661015a430802a9ae98bd"
-SPLIT_SHA256 = None  # set by the split addendum commit (DESIGN §2.4); every GPU step refuses while it is None
+#: e_split.json, set by the split addendum (DESIGN §2.4); every GPU step refuses while it is None
+SPLIT_SHA256 = "795652f1af45597b3a89f8a937056a1810504d54e1e41319198b3fb27fea2ef9"
 N_A = 250  # E-dev-A: the first 250 of XM-dev500 in sha256("paperE|xmdev|" + image sha256) order
 
 
@@ -48,7 +49,8 @@ LOCAL_PINS = {"scripts/xm3600_oiv7.py": "9a79403f4fc38609282d40082ab7f878133edca
 #: E's test gold and the XM3600 annotation files: absent on M3 before any E GPU step (DESIGN §2.6, CC-081 E1)
 M3_ABSENT = ("data/xm3600/oiv7_labels.json",)
 M3_ABSENT_DATA = ("datasets/xm3600/full_data.json", "datasets/xm3600/test_data.json", "datasets/xm3600/oiv7",
-                  "datasets/xm3600/raw", "datasets/xm3600_en/full_data.json", "datasets/xm3600_en/test_data.json")
+                  "datasets/xm3600/raw", "datasets/xm3600/images",  # E's pair images live elsewhere (SPLIT_ADDENDUM)
+                  "datasets/xm3600_en/full_data.json", "datasets/xm3600_en/test_data.json")
 #: e_split.json counts the split addendum must reproduce (CC-081 E4)
 EXPECT = {"xm600": 600, "e_dev_a": 250, "e_dev_b": 250, "xm_test2500": 2500}
 EXPECT_THREE = {"xm600": 27, "e_dev_a": 7, "e_dev_b": 8, "xm_test2500": 108}
@@ -236,7 +238,8 @@ def selftest() -> None:
     caps = ["chuỗi thử nghiệm số một gồm các âm tiết giả và con chó"]
     assert scan_text("x chuỗi thử nghiệm số một gồm các âm tiết y", caps) == {6: 4, 8: 2}
     assert scan_text("chuỗi thử nghiệm số hai", caps) == {6: 0, 8: 0}
-    print("selftest ok: GPU/local pin split, M3 absence check, dev-A/B split, E-dev-A carve-out, refusal of XM600 / dev-B / other test images, pins, scan")
+    print("selftest ok: GPU/local pin split, M3 absence check, dev-A/B split, E-dev-A carve-out, refusal of XM600 / "
+          "dev-B / other test images, pins, scan")
 
 
 def main() -> None:

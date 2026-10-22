@@ -282,9 +282,12 @@ def selftest() -> None:
     fake = {"refuse_image_sha256": [], "sets": {"e_dev_a": [["d1", "d1.jpg", xm[0]]]}}
     assert image_paths(["d1"], fake, Path("/i")) == {(DS, "d1"): (Path("/i/d1.jpg"), xm[0])}
     assert C.refuses(lambda: image_paths(["d1", "t9"], fake, Path("/i"))), "an image outside E-dev-A is refused"
-    assert C.refuses(lambda: L.load_split(Path("e_split.json"))), "no GPU step while the split is unpinned"
     with tempfile.TemporaryDirectory() as tmp:
         img = Path(tmp)
+        (img / "s.json").write_text("{}")
+        assert C.refuses(lambda: L.load_split(img / "s.json")), "a split other than the pinned e_split.json is refused"
+        assert C.refuses(lambda: L.load_split(img / "s.json", None)), "no GPU step while the split is unpinned"
+        (img / "s.json").unlink()
         (img / "d1.jpg").write_bytes(b"synthetic")
         ok = {"sets": {DS: [["d1", "d1.jpg", lb.sha256_file(img / "d1.jpg")]]}}
         folder_only_dev_a(img, ok)
