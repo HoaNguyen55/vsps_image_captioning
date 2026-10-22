@@ -1,0 +1,29 @@
+{
+ "schema": "vsps.c_stage2_frozen_config.v1",
+ "label": "STAGE 2 / DEV-B, ONE LOOK",
+ "source": {
+  "decide_advance.json": "9940f83f7b6b5a561ca204d11601a8b792e3c1cfe38cc309ac7fed9566503eb8",
+  "ledger.jsonl": "febe593ec46d7f1bdda1cf648a6248bb7c17de54e8f1d8299f8ac2f6b60f7cde",
+  "emb.npz": "59e65f6f6432af97504c59c72fa07b644acbff26938e1365473fad659421f7c0",
+  "stage1_verdict": "ADVANCE"
+ },
+ "tau_G_rule": "tau if finite, else 0.00 (CC-087 C-a, CC-093)",
+ "models": {
+  "qwen25vl_7b": {
+   "stage1_run_id": "c1_qwen25vl_7b_ktvic_dev299-ret-k8-first-T1",
+   "k": 8,
+   "order": "first",
+   "tpl": "T1",
+   "tau": "-inf",
+   "tau_G": "0.00"
+  },
+  "internvl3_8b": {
+   "stage1_run_id": "c1_internvl3_8b_ktvic_dev299-ret-k4-last-T2",
+   "k": 4,
+   "order": "last",
+   "tpl": "T2",
+   "tau": "0.10",
+   "tau_G": "0.10"
+  }
+ }
+}
