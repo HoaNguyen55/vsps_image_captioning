@@ -11,7 +11,7 @@ No new human annotation was collected and no human subjects were involved; all h
 
 ## Data and code availability
 
-Code, pre-registration files, the numbers manifest and score-only result files are provided to reviewers as an anonymized supplementary archive; a public Zenodo DOI will be added on acceptance. Caption fields are removed from the result files for licensing, and 33 of the 677 manifest rows cite sources that could not be released; they are marked. Data files keep their sources' terms. The public datasets are available from their original sources; UIT-OpenViIC, KTVIC references and human-judgment ratings are not redistributed (Section 11.2).
+Code, pre-registration files, the numbers manifest and score-only result files are provided to reviewers as an anonymized supplementary archive; a public Zenodo DOI will be added on acceptance. Caption fields are removed from the result files for licensing, and 29 of the 804 manifest rows cite sources that could not be released; they are marked. Data files keep their sources' terms. The public datasets are available from their original sources; UIT-OpenViIC, KTVIC references and human-judgment ratings are not redistributed (Section 11.2).
 
 ## Competing interests
 

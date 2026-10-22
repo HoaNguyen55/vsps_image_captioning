@@ -15,7 +15,7 @@ We believe the paper fits the journal's tradition of evaluation and measurement 
 **Transparency**
 - Every registered prediction was committed to version control before the outputs it predicts. Analyses written later are labelled post hoc.
 - Every reported result in the main text and the supplement is read by script from an output file and listed with the file's SHA-256 in a numbers manifest.<!-- N-M8: softened per the review; manifest rows edited in place (Amendment 4 pass), row count unchanged -->
-- The code (MIT licence), the pre-registration files, score-only copies of the result files behind the numbers and the manifest are archived on Zenodo (DOI: [AUTHOR TO PROVIDE]). Of the manifest's 677 rows, 33 cite sources that could not be released, and they are marked.
+- The code (MIT licence), the pre-registration files, score-only copies of the result files behind the numbers and the manifest are archived on Zenodo (DOI: [AUTHOR TO PROVIDE]). Of the manifest's 804 rows, 29 cite sources that could not be released, and they are marked.
 - The use of generative AI is declared before the references, as the journal's policy requires.
 
 **Our prior work.** One of the evaluated systems is a fine-tuned adapter trained with the recipe introduced in our conference paper (Nguyen et al., FAIR 2026, cited); no result of that paper is repeated here.

@@ -12,7 +12,7 @@ No new human annotation was collected and no human subjects were involved; all h
 
 ## Data and code availability
 
-The code (MIT licence), matchers, pre-registration files with their commit times, the numbers manifest and score-only copies of the result files it cites (caption fields removed for licensing; original SHA-256 given; 33 of 677 rows marked as not releasable) are archived on Zenodo (DOI: [AUTHOR TO PROVIDE: DOI reserved on Zenodo before submission]); data files keep their sources' terms.<!-- PD-27b/27d: availability wording matches the staged archive (.session_backup/2026-10-21/zenodo_build; withheld A 38/655, B 44/484). --> The public datasets are available from their original sources; UIT-OpenViIC, KTVIC references and human-judgment ratings are not redistributed (Section 11.2).
+The code (MIT licence), matchers, pre-registration files with their commit times, the numbers manifest and score-only copies of the result files it cites (caption fields removed for licensing; original SHA-256 given; 29 of 804 rows marked as not releasable) are archived on Zenodo (DOI: [AUTHOR TO PROVIDE: DOI reserved on Zenodo before submission]); data files keep their sources' terms.<!-- PD-27b/27d: availability wording matches the staged archive (.session_backup/2026-10-21/zenodo_build; withheld A 38/655, B 44/484). --> The public datasets are available from their original sources; UIT-OpenViIC, KTVIC references and human-judgment ratings are not redistributed (Section 11.2).
 
 ## Related manuscript
 
