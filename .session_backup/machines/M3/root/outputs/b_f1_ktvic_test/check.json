@@ -1,0 +1,130 @@
+{
+ "pass": true,
+ "failed": [],
+ "machine_id": "O-2326839",
+ "card": "NVIDIA GeForce RTX 3090",
+ "checks": [
+  {
+   "check": "manuscript/prereg/2026-10-20_b_f1_final_stack.json committed, unmodified at HEAD",
+   "ok": true
+  },
+  {
+   "check": "manuscript/prereg/2026-10-20_b_f1_final_stack.md committed, unmodified at HEAD",
+   "ok": true
+  },
+  {
+   "check": "manuscript/prereg/2026-10-20_b_f1_instrument.json committed, unmodified at HEAD",
+   "ok": true
+  },
+  {
+   "check": "scripts/queue/jobs/b_f1_ktvic_test_decode.sh committed, unmodified at HEAD",
+   "ok": true
+  },
+  {
+   "check": "scripts/b_f1/score_b_f1.py committed, unmodified at HEAD",
+   "ok": true
+  },
+  {
+   "check": "scripts/evaluate.py committed, unmodified at HEAD",
+   "ok": true
+  },
+  {
+   "check": "scripts/checkpoint_resume_hook.py committed, unmodified at HEAD",
+   "ok": true
+  },
+  {
+   "check": "data/lb/sets/ktvic_test.tsv committed, unmodified at HEAD",
+   "ok": true
+  },
+  {
+   "check": "addendum pins this scorer, the job and the prereg",
+   "ok": true
+  },
+  {
+   "check": "evaluate.py and the hook at their pins",
+   "ok": true
+  },
+  {
+   "check": "test_data.json at its pin",
+   "ok": true
+  },
+  {
+   "check": "p1dev_s42/adapter_model.safetensors",
+   "ok": true
+  },
+  {
+   "check": "p1dev_s42/adapter_config.json",
+   "ok": true
+  },
+  {
+   "check": "p1dev_s43/adapter_model.safetensors",
+   "ok": true
+  },
+  {
+   "check": "p1dev_s43/adapter_config.json",
+   "ok": true
+  },
+  {
+   "check": "p1dev_s44/adapter_model.safetensors",
+   "ok": true
+  },
+  {
+   "check": "p1dev_s44/adapter_config.json",
+   "ok": true
+  },
+  {
+   "check": "base refs/main",
+   "ok": true
+  },
+  {
+   "check": "base model-00001-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "base model-00002-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "base model-00003-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "base model-00004-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "base model-00005-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "one GPU with the registered memory",
+   "ok": true,
+   "n_gpus": 1,
+   "gpu_memory_bytes": 25296044032
+  },
+  {
+   "check": "venv versions",
+   "ok": true,
+   "torch": "2.5.1+cu121",
+   "transformers": "4.51.3",
+   "peft": "0.21.2"
+  },
+  {
+   "check": "env",
+   "ok": true
+  },
+  {
+   "check": "every test image at its manifest sha256",
+   "ok": true
+  },
+  {
+   "check": "view ids = manifest ids = referenced ids",
+   "ok": true
+  },
+  {
+   "check": "view is the images list of test_data.json",
+   "ok": true
+  }
+ ],
+ "view_sha256": "79dbae58424a350cd05665bbf533ac6add523e22ecae549ce9de3eff5caa2d1e"
+}

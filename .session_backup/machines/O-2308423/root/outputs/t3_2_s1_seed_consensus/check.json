@@ -1,0 +1,260 @@
+{
+ "pass": true,
+ "failed": [],
+ "checks": [
+  {
+   "check": "code_at_head scripts/train_stage2.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/build_gold_sft.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/evaluate.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/ktvic_dev_split.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/rl_reward.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/rl_report.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/object_prf.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head rescap/chair.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/checkpoint_resume_hook.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/queue/check_g1_pass.py",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/queue/qrun.sh",
+   "ok": true
+  },
+  {
+   "check": "code_at_head scripts/upe_mbr.py",
+   "ok": true
+  },
+  {
+   "check": "instrument addendum",
+   "ok": true
+  },
+  {
+   "check": "committed and unmodified at HEAD",
+   "ok": true,
+   "dirty": ""
+  },
+  {
+   "check": "input .session_backup/2026-10-18/paperA_tasks/P3/hf_meta/qwen25vl7b.json",
+   "ok": true,
+   "path": "/root/vsps/.session_backup/2026-10-18/paperA_tasks/P3/hf_meta/qwen25vl7b.json",
+   "status": "absent"
+  },
+  {
+   "check": "input .session_backup/machines/n2/ncs-data/gold_p1dev/sft.jsonl",
+   "ok": true,
+   "path": "/root/ncs-data/gold_p1dev/sft.jsonl"
+  },
+  {
+   "check": "input .session_backup/machines/n2/ncs-data/runs/p1dev_s42/adapter_config.json",
+   "ok": true,
+   "path": "/root/ncs-data/runs/p1dev_s42/adapter_config.json"
+  },
+  {
+   "check": "input .session_backup/machines/n2/ncs-data/runs/p1dev_s42/adapter_model.safetensors",
+   "ok": true,
+   "path": "/root/ncs-data/runs/p1dev_s42/adapter_model.safetensors"
+  },
+  {
+   "check": "input .session_backup/machines/n2/ncs-data/runs/p1dev_s42/metrics.jsonl",
+   "ok": true,
+   "path": "/root/ncs-data/runs/p1dev_s42/metrics.jsonl",
+   "status": "absent"
+  },
+  {
+   "check": "input data/datasets/ktvic/train_data.json",
+   "ok": true,
+   "path": "/root/ncs-data/datasets/ktvic/train_data.json"
+  },
+  {
+   "check": "input data/ktvic_openviic_refs.json",
+   "ok": true,
+   "path": "/root/vsps/data/ktvic_openviic_refs.json"
+  },
+  {
+   "check": "input data/results/rl/g1_cn_v3_s42/gate.json",
+   "ok": true,
+   "path": "/root/vsps/data/results/rl/g1_cn_v3_s42/gate.json"
+  },
+  {
+   "check": "input data/results/rl/p1dev_s42-dev300-short.json",
+   "ok": true,
+   "path": "/root/vsps/data/results/rl/p1dev_s42-dev300-short.json"
+  },
+  {
+   "check": "input data/results/rl/p1dev_s42-dev300-short.preds.json",
+   "ok": true,
+   "path": "/root/vsps/data/results/rl/p1dev_s42-dev300-short.preds.json"
+  },
+  {
+   "check": "input data/splits/ktvic_dev300.txt",
+   "ok": true,
+   "path": "/root/vsps/data/splits/ktvic_dev300.txt"
+  },
+  {
+   "check": "input data/splits/ktvic_train_minus_dev300.txt",
+   "ok": true,
+   "path": "/root/vsps/data/splits/ktvic_train_minus_dev300.txt"
+  },
+  {
+   "check": "input manuscript/research_r14/R14_3/oracle_headroom.json",
+   "ok": true,
+   "path": "/root/vsps/manuscript/research_r14/R14_3/oracle_headroom.json"
+  },
+  {
+   "check": "input rescap/chair.py",
+   "ok": true,
+   "path": "/root/vsps/rescap/chair.py"
+  },
+  {
+   "check": "input scripts/build_gold_sft.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/build_gold_sft.py"
+  },
+  {
+   "check": "input scripts/checkpoint_resume_hook.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/checkpoint_resume_hook.py"
+  },
+  {
+   "check": "input scripts/evaluate.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/evaluate.py"
+  },
+  {
+   "check": "input scripts/ktvic_dev_split.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/ktvic_dev_split.py"
+  },
+  {
+   "check": "input scripts/object_prf.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/object_prf.py"
+  },
+  {
+   "check": "input scripts/queue/adapters_canonical.sha256",
+   "ok": true,
+   "path": "/root/vsps/scripts/queue/adapters_canonical.sha256"
+  },
+  {
+   "check": "input scripts/queue/check_g1_pass.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/queue/check_g1_pass.py"
+  },
+  {
+   "check": "input scripts/queue/qrun.sh",
+   "ok": true,
+   "path": "/root/vsps/scripts/queue/qrun.sh"
+  },
+  {
+   "check": "input scripts/rl_report.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/rl_report.py"
+  },
+  {
+   "check": "input scripts/rl_reward.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/rl_reward.py"
+  },
+  {
+   "check": "input scripts/train_stage2.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/train_stage2.py"
+  },
+  {
+   "check": "input scripts/upe_mbr.py",
+   "ok": true,
+   "path": "/root/vsps/scripts/upe_mbr.py"
+  },
+  {
+   "check": "base refs/main",
+   "ok": true,
+   "refs_main": "cc594898137f460bfe9f0759e9844b3ce807cfb5"
+  },
+  {
+   "check": "base model-00001-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "base model-00002-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "base model-00003-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "base model-00004-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "base model-00005-of-00005.safetensors",
+   "ok": true
+  },
+  {
+   "check": "machine",
+   "ok": true,
+   "machine_id": "O-2308423"
+  },
+  {
+   "check": "venv versions",
+   "ok": true,
+   "torch": "2.5.1+cu121",
+   "transformers": "4.51.3",
+   "peft": "0.21.2"
+  },
+  {
+   "check": "card rule gives P1_dev's 512 vision tokens, 4-bit",
+   "gpu": "NVIDIA GeForce RTX 3090",
+   "ok": true
+  },
+  {
+   "check": "env",
+   "ok": true
+  }
+ ],
+ "provenance": {
+  "machine_id": "O-2308423",
+  "git_head_sha": "ca7812cea2dba1160fc8a079a727598a4605e49b",
+  "checkpoint_resume_hook_sha256": "05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895",
+  "train_stage2_sha256": "29312ef765e3e49e5e1efefc5ad8b88fcf33c991b1a5f3a266a910ada3d1cab4",
+  "resumed_from_step": [],
+  "script": "scripts/seed_consensus.py",
+  "script_sha256": "2b72dc417d60c5ec6a0be9cfd3b69692a783e2ba9bd1fc7dcb14c5195296c486",
+  "prereg_sha256": "e485da949cce2ee97fbc569c0b977549e0f55c56a91ca43d8356b87f15686bd2",
+  "instrument_sha256": "904f2eb14249de28e7fdc5edf911347db4fe1169f5e860f40f7ee900cd873b87",
+  "utc": "2026-10-18T22:55:09Z",
+  "env": {
+   "NCS_DATA": "/root/ncs-data",
+   "NCS_DATASET": null,
+   "RESCAP_RAW_TONE": null,
+   "HF_HUB_OFFLINE": "1",
+   "CUDA_VISIBLE_DEVICES": null
+  }
+ }
+}

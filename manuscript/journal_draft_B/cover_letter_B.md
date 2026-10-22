@@ -19,7 +19,7 @@ We propose a protocol card that states these choices with every score. The pre-r
 
 **Transparency.**
 - Every number is traced to an output file, a stated derivation or a cited source in a numbers manifest.
-- The kit, the pre-registration files, the score-only result files and the manifest are archived on Zenodo (reserved DOI: [AUTHOR TO PROVIDE]), in a deposit that holds this paper's components only; until the record is public, the editor and reviewers receive an access link;<!-- CC-074 (b): the Zenodo record stays unpublished until the IP&M decision on Paper A --> 41 of the manifest's 504 rows cite sources that could not be released and are marked.
+- The kit, the pre-registration files, the score-only result files and the manifest are archived on Zenodo (reserved DOI: [AUTHOR TO PROVIDE]), in a deposit that holds this paper's components only; until the record is public, the editor and reviewers receive an access link;<!-- CC-074 (b): the Zenodo record stays unpublished until the IP&M decision on Paper A --> 42 of the manifest's 604 rows cite sources that could not be released and are marked.
 - The kit contains our matcher word lists (author-built, v1 and v2) but no counts derived from KTVIC and no dataset captions; the model-drafted v3 rules are not included.
 - The use of generative AI is declared in Section 7.5.
 
