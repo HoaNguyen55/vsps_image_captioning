@@ -40,7 +40,10 @@ def sha256_file(path: Path) -> str:
 
 #: committed files the GPU modes import (retarget relies on guard's internals); judge.py checks only these
 GPU_PINS = {"scripts/c_stage1/guard.py": "5f930e96bd1e1db85e6f8e8445b9172d734c8900800551e6a119e7ec93351cb4",
-            "scripts/clip_score.py": "c70b0be214504afbea4d6d5458bb1126c677bcc24122ecda4c1dec0472cdf38f"}
+            "scripts/clip_score.py": "c70b0be214504afbea4d6d5458bb1126c677bcc24122ecda4c1dec0472cdf38f",
+            # CC-087 controls and comparisons
+            "manuscript/prereg/2026-10-22_e_stage1/STAGE1_ADDENDUM2.md":
+                "2a1b5f9f499b1ad1c520e72458c314d68625303ade29971e8426cedea2372a57"}
 #: added for the local modes (split, pairs build / items, score), which read labels and references; never on M3
 LOCAL_PINS = {"scripts/xm3600_oiv7.py": "9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0",
               "data/xm3600/oiv7_labels.json": "bac3953a511a9793c22e928a29b68ae05dbf9654502abcbe7b64fd9f6d74c8b2",

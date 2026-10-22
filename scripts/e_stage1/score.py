@@ -13,6 +13,7 @@ import argparse
 import json
 import math
 import sys
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -30,16 +31,62 @@ GATE = {"bc_gain": 0.10, "tau_gain": 0.05, "floor": 0.70, "lam_gain": 0.05, "lam
 
 
 # ------------------------------------------------------------------------------------------------ scorers
+def distinct(cap: dict) -> list[str]:
+    """The caption's classes, once per canonical key, in mention order."""
+    out: dict[str, str] = {}
+    for c in cap["classes"]:
+        out.setdefault(PR.key(c), c)
+    return list(out.values())
+
+
 def e_one(cap: dict, cache: dict, sub: bool, lam: float, n_hat: float) -> float | None:
     """Uniform mean over distinct mentioned classes of P(yes|image) - P(yes|no image) (or P(yes|image) alone),
     minus lam * max(0, n - n_hat). None when the caption names no class."""
-    distinct = {}
-    for c in cap["classes"]:
-        distinct.setdefault(PR.key(c), c)
-    if not distinct:
+    cs = distinct(cap)
+    if not cs:
         return None
-    d = [cache[(cap["image_id"], c)][0 if sub else 1] for c in distinct.values()]
+    d = [cache[(cap["image_id"], c)][0 if sub else 1] for c in cs]
     return float(np.mean(d)) - lam * max(0, len(d) - n_hat)
+
+
+def class_mean(cap: dict, f) -> float | None:
+    xs = [x for c in distinct(cap) if (x := f(cap["image_id"], c)) is not None]
+    return float(np.mean(xs)) if xs else None
+
+
+def controls(caps: list[dict], obj: dict, oemb: dict | None) -> dict:
+    """STAGE1_ADDENDUM2 (CC-087 E-a, E-b): named comparisons only, never in GLOBAL and never picked.
+    Eemp:<q> subtracts the class's empirical prior (mean P(yes|image) over the E-dev-A items of that class) instead of
+    P(yes|no image); prior_only:<q> = -mean P(yes|no image); count_only = -|M(c)|; objemb_<model>_<phrase lang>_<raw|
+    sub> = mean image-phrase cosine over M(c), raw or minus the class's mean cosine over the E-dev-A images."""
+    out = {"count_only": {c["cid"]: (-len(d) if (d := distinct(c)) else None) for c in caps}}
+    for q in sorted({ql for _j, ql in obj}):
+        emp, prior = {}, {}
+        for (j, ql), cache in obj.items():
+            if ql != q:
+                continue
+            by: dict[str, list[float]] = {}
+            for (_i, c), (_d, pw) in cache.items():
+                by.setdefault(c, []).append(pw)
+            mean = {c: float(np.mean(v)) for c, v in by.items()}
+            emp[j] = {k: (pw - mean[k[1]], pw) for k, (_d, pw) in cache.items()}
+            prior[j] = {k[1]: pw - d for k, (d, pw) in cache.items()}  # P(yes | no image), one value per class
+        out[f"Eemp:{q}"] = {c["cid"]: pooled(c, {j: (lambda c, e=e: e_one(c, e, True, 0.0, 0)) for j, e in emp.items()})
+                            for c in caps}
+        out[f"prior_only:{q}"] = {c["cid"]: pooled(c, {j: (lambda c, b=b: (None if (x := class_mean(
+            c, lambda _i, o: b.get(o))) is None else -x)) for j, b in prior.items()}) for c in caps}
+    for key, mat in (oemb or {}).items():
+        if not key.startswith(("siglip2_", "mclip_")):
+            continue
+        arr = np.array(mat)
+        row = {i: n for n, i in enumerate(oemb["images"])}
+        col = {c: n for n, c in enumerate(oemb["classes"])}
+        base = arr.mean(0)
+        for kind, off in (("raw", 0.0), ("sub", 1.0)):
+            f = lambda i, o, off=off: (float(arr[row[i], col[o]] - off * base[col[o]])  # noqa: E731
+                                       if i in row and o in col else None)
+            out[f"objemb_{key}_{kind}"] = {c["cid"]: class_mean(c, f) for c in caps}
+    return out
 
 
 def own(judge: str, cap: dict) -> bool:
@@ -53,9 +100,10 @@ def pooled(cap: dict, per_judge: dict) -> float | None:
     return float(np.mean(xs)) if xs else None
 
 
-def scorers(caps: list[dict], obj: dict, whole: dict, emb: dict, n_hat: dict, chair: dict | None = None) -> dict:
+def scorers(caps: list[dict], obj: dict, whole: dict, emb: dict, n_hat: dict, chair: dict | None = None,
+            oemb: dict | None = None) -> dict:
     """{scorer name: {cid: score or None}}."""
-    out = {}
+    out = controls(caps, obj, oemb)
     for lang in ("en", "vi"):
         judges = sorted(j for j, ql in obj if ql == lang)
         for sub in (True, False):
@@ -148,8 +196,10 @@ def tau(rows, s: dict, images: list[str], idx) -> dict:
 
 def tau_ci(a: dict, b: dict | None = None) -> dict:
     v = a["boot"] - (b["boot"] if b else 0)
-    return {"point": a["point"] - (b["point"] if b else 0), "ci": [float(np.nanpercentile(v, 2.5)),
-                                                                     float(np.nanpercentile(v, 97.5))]}
+    with warnings.catch_warnings():  # a constant scorer has no tau: its interval is nan, by design
+        warnings.simplefilter("ignore", RuntimeWarning)
+        ci = [float(np.nanpercentile(v, 2.5)), float(np.nanpercentile(v, 97.5))]
+    return {"point": a["point"] - (b["point"] if b else 0), "ci": ci}
 
 
 def metrics(sc: dict, pairs: list[dict], caps: list[dict], st: dict, lang: str) -> dict:
@@ -181,6 +231,42 @@ def gain(m: dict, a: str, b: str, typ: str) -> dict:
     rows, images, idx = m["_rows"][typ], m["_images"], m["_idx"]
     return ratio(*per_image(rows, lambda hi, lo: correct(m["_s"][a], hi, lo) - correct(m["_s"][b], hi, lo), images),
                  idx)
+
+
+def named(m: dict, pairs: list[dict], obj: dict, pick: str, lang: str) -> dict:
+    """STAGE1_ADDENDUM2 named comparisons (reported with CIs, never gating): subtracted vs raw and empirical prior vs
+    raw per question language, the pick vs every object-level, prior-only and count-only control, and bc accuracy of
+    subtracted and raw by tercile of the added absent class's P(yes | no image)."""
+    def comp(a: str, b: str) -> dict:
+        out = {"a": a, "b": b}
+        if a in m and b in m and m["_rows"].get("bc"):
+            out["bc"] = gain(m, a, b, "bc")
+        if "tau_b" in m.get(a, {}) and "tau_b" in m.get(b, {}):
+            out["tau_b"] = tau_ci(m[a]["tau_b"], m[b]["tau_b"])
+        return out
+    qs = sorted({q for _j, q in obj})
+    res = {f"sub_vs_raw:{q}": comp(f"E:{q}:sub:0.0", f"E:{q}:raw:0.0") for q in qs}
+    res |= {f"emp_vs_raw:{q}": comp(f"Eemp:{q}", f"E:{q}:raw:0.0") for q in qs}
+    res |= {f"pick_vs_{k}": comp(pick, k) for k in m if k.startswith(("objemb_", "prior_only", "count_only"))}
+    added = {p["pert"]: p["added"][0] for p in pairs if p["lang"] == lang and p["type"] == "add_absent"}
+    images, idx = m["_images"], m["_idx"]
+    for q in qs:
+        b = {}
+        for (_j, ql), cache in obj.items():
+            if ql == q:
+                for (_i, c), (d, pw) in cache.items():
+                    b.setdefault(c, set()).add(pw - d)
+        prior = {c: float(np.mean(sorted(v))) for c, v in b.items()}
+        rows = [r for r in m["_rows"].get("bc", []) if added.get(r[2]) in prior]
+        if len(rows) < 3:
+            continue
+        cut = np.quantile([prior[added[r[2]]] for r in rows], [1 / 3, 2 / 3])
+        for t in range(3):
+            sel = [r for r in rows if int(np.searchsorted(cut, prior[added[r[2]]], side="right")) == t]
+            res[f"prior_tercile:{q}:{t}"] = {
+                k: ratio(*per_image(sel, lambda hi, lo, k=k: correct(m["_s"][k], hi, lo), images), idx)
+                for k in (f"E:{q}:sub:0.0", f"E:{q}:raw:0.0") if k in m["_s"] and sel}
+    return res
 
 
 # ------------------------------------------------------------------------------------------------ decision
@@ -220,7 +306,7 @@ def decide(m: dict) -> dict:
 
 
 # ------------------------------------------------------------------------------------------------ IO (CPU, local)
-def load_dir(d: Path) -> tuple[dict, dict, dict]:
+def load_dir(d: Path) -> tuple[dict, dict, dict, dict | None]:
     obj, whole, emb = {}, {}, {}
     for f in sorted(d.glob("obj_*.jsonl")):
         judge, lang = f.stem[4:].rsplit("_", 1)
@@ -230,7 +316,8 @@ def load_dir(d: Path) -> tuple[dict, dict, dict]:
         whole[f.stem[6:]] = {r["class"]: (r["p_with"], r["p_without"]) for r in PR.read_jsonl(f)}
     if (d / "embed.jsonl").exists():
         emb = {r["cid"]: (r["siglip2_cos"], r["mclip_cos"]) for r in PR.read_jsonl(d / "embed.jsonl")}
-    return obj, whole, emb
+    oemb = json.loads((d / "obj_embed.json").read_text(encoding="utf-8")) if (d / "obj_embed.json").exists() else None
+    return obj, whole, emb, oemb
 
 
 def chair_loo(caps: list[dict], refs: dict) -> dict:
@@ -259,24 +346,25 @@ def cmd_score(a) -> None:
     st = PR.X.statuses(PR.X.resolve_map(data / "datasets/xm3600/oiv7/oidv7-class-descriptions.csv"), labels)
     n_hat = {lang: float(np.median([len({PR.key(x) for x in c["classes"]}) for c in caps
                                     if c["source"] == "ref" and c["lang"] == lang])) for lang in ("vi", "en")}
-    obj, whole, emb = load_dir(d)
+    obj, whole, emb, oemb = load_dir(d)
     need = {(c["image_id"], x) for c in caps for x in c["classes"]}
     dropped = sorted(f"{j}_{q}" for (j, q), v in obj.items() if not need <= v.keys())  # stopped by the cap
     obj = {k: v for k, v in obj.items() if need <= v.keys()}
-    sc = scorers(caps, obj, whole, emb, n_hat, chair_loo(caps, PR.references(data, ids)))
+    sc = scorers(caps, obj, whole, emb, n_hat, chair_loo(caps, PR.references(data, ids)), oemb)
     res = {}
     for lang in ("vi", "en"):
         m = metrics(sc, pairs, [c for c in caps if c["lang"] == lang], st, lang)
         m["_s"] = sc
         res[lang] = m
     dec = decide(res["vi"])
-    inputs = {f.name: L.sha256_file(f) for f in sorted(d.glob("*.jsonl"))}
+    comparisons = {lang: named(res[lang], pairs, obj, dec["pick"], lang) for lang in res}
+    inputs = {f.name: L.sha256_file(f) for f in sorted([*d.glob("*.jsonl"), *d.glob("obj_embed.json")])}
     rows = [{"lang": lang, "scorer": k, "metric": t, **{x: y for x, y in v.items() if x != "boot"}}
             for lang, m in res.items() for k, mm in m.items() if not k.startswith("_") for t, v in mm.items()]
     out = {"label": L.LABEL, "design_sha256": L.DESIGN_SHA256, "split_sha256": L.SPLIT_SHA256, "n_hat": n_hat,
            "object_caches": sorted(f"{j}_{q}" for j, q in obj), "whole_judges": sorted(whole),
            "incomplete_caches_dropped": dropped,
-           "inputs_sha256": inputs, "decision": dec, "rows": rows}
+           "inputs_sha256": inputs, "decision": dec, "named": comparisons, "rows": rows}
     with open(a.ledger or d / "ledger.jsonl", "a", encoding="utf-8") as f:
         f.write(json.dumps(out, default=float) + "\n")
     print(json.dumps(dec, default=float, indent=1))
@@ -337,8 +425,30 @@ def selftest() -> None:
     for g in GLOBAL:
         few[g]["tau_b"] = {"point": 0.0, "boot": np.zeros(B)}
     assert decide(few)["verdict"] == "JUDGE", "fewer than 40 images with bc pairs goes back to the judge"
+    # STAGE1_ADDENDUM2 controls: never picked, never a best-global baseline
+    obj = {("qwen25vl_7b", "en"): {("i1", "chó"): (0.6, 0.9), ("i2", "chó"): (0.2, 0.5), ("i1", "mèo"): (-0.2, 0.5)}}
+    oemb = {"images": ["i1", "i2"], "classes": ["chó", "mèo"], "siglip2_en": [[0.3, 0.1], [0.1, 0.2]]}
+    cs = [cap("a", ["chó", "mèo"]), cap("z", [], img="i2")]
+    ctl = controls(cs, obj, oemb)
+    assert abs(ctl["Eemp:en"]["a"] - ((0.9 - 0.7) + (0.5 - 0.5)) / 2) < 1e-9, "empirical per-class prior"
+    assert abs(ctl["prior_only:en"]["a"] + (0.3 + 0.7) / 2) < 1e-9 and ctl["count_only"] == {"a": -2, "z": None}
+    assert abs(ctl["objemb_siglip2_en_raw"]["a"] - 0.2) < 1e-9 and abs(ctl["objemb_siglip2_en_sub"]["a"] - 0.025) < 1e-9
+    strong = sc | {"objemb_siglip2_en_raw": good, "Eemp:en": good, "count_only": good}
+    m4 = metrics(strong, pairs, caps, st, "vi")
+    m4["_s"] = strong
+    for g in GLOBAL:
+        m4[g]["tau_b"] = {"point": 0.0, "boot": np.zeros(B)}
+    d4 = decide(m4)
+    assert d4["pick"] == "E:en:sub:0.0" and d4["best_global_bc"] in GLOBAL, "controls never enter the pick or A1/A2"
+    obj4 = {("qwen25vl_7b", "en"): {(f"i{n}", c): (0.5, 0.6) for n in range(50) for c in ("chó", "mèo")}}
+    for p in pairs:
+        p.setdefault("added", ["mèo"])
+    nm = named(m4, pairs, obj4, d4["pick"], "vi")
+    assert nm["sub_vs_raw:en"]["bc"]["point"] == 0.5 and "tau_b" in nm["sub_vs_raw:en"]
+    assert {"pick_vs_objemb_siglip2_en_raw", "pick_vs_count_only"} <= set(nm) and "prior_tercile:en:0" in nm
     print("selftest ok: E score, count term, judge != generator pooling, tie rule, pair rows, accuracy, tau-b, "
-          "pick, ADVANCE / FAIL / JUDGE")
+          "pick, ADVANCE / FAIL / JUDGE, "
+          "addendum-2 controls and named comparisons")
 
 
 def main() -> None:

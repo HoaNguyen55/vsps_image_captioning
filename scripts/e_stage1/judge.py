@@ -35,6 +35,14 @@ WHOLE_JUDGES = ("qwen25vl_7b", "qwen3vl_8b", "internvl3_s2")  # the last runs on
 VI_QUESTION = "Trong ảnh có {np} không? Trả lời có hoặc không."  # pope_vi.PROMPTS["vi"], placeholder renamed
 VI_WORDS = (("có", "Có"), ("không", "Không"))  # probe_existence.ask's answer words
 WHOLE = 'Does the following caption describe the image correctly? Caption: "{np}" Answer yes or no.'  # this design
+OBJ_PHRASE = {"en": "a photo of {np}", "vi": "một bức ảnh có {np}"}  # object-level embedding texts, STAGE1_ADDENDUM2
+
+
+def obj_texts(lang: str) -> tuple[list[str], list[str]]:
+    """(classes, texts) for every lexicon class: S2's English noun phrase in en, the class word in vi."""
+    names = english_map()
+    classes = sorted(names)
+    return classes, [OBJ_PHRASE[lang].format(np=names[c] if lang == "en" else c) for c in classes]
 
 
 def question(lang: str) -> str:
@@ -153,7 +161,8 @@ def cmd_whole(a) -> None:
 # ------------------------------------------------------------------------------------------------ embeddings
 def cmd_embed(a) -> None:
     """Global image-text cosine: SigLIP2 (Paper C's snapshot, revision passed and recorded) and the multilingual CLIP
-    of scripts/clip_score.py (open_clip MODEL / PRETRAINED, fp32)."""
+    of scripts/clip_score.py (open_clip MODEL / PRETRAINED, fp32). Also the object-level control (STAGE1_ADDENDUM2):
+    the cosine of every image with every lexicon class phrase of obj_texts, in en and vi (obj_embed.json)."""
     import open_clip
     import torch
     from PIL import Image
@@ -170,7 +179,7 @@ def cmd_embed(a) -> None:
     cm, _t, cpre = open_clip.create_model_and_transforms(clip_score.MODEL, pretrained=clip_score.PRETRAINED)
     cm, ctok = cm.float().eval().cuda(), open_clip.get_tokenizer(clip_score.MODEL)
     norm = lambda x: torch.nn.functional.normalize(x.float(), dim=-1)  # noqa: E731
-    rows = []
+    rows, img = [], {"siglip2": {}, "mclip": {}}
     with torch.no_grad():
         for (_ds, i), ps in sorted(paths.items()):
             im = load(ps)
@@ -183,6 +192,17 @@ def cmd_embed(a) -> None:
             ct = norm(cm.encode_text(ctok(texts).cuda()))
             rows += [{"cid": r["cid"], "image_id": i, "siglip2_cos": float(s), "mclip_cos": float(c)}
                      for r, s, c in zip(mine, (st @ si.T)[:, 0].tolist(), (ct @ ci.T)[:, 0].tolist())]
+            img["siglip2"][i], img["mclip"][i] = si[0], ci[0]
+        ids = sorted(img["siglip2"])
+        objs = {"images": ids, "phrases": OBJ_PHRASE}
+        for lang in ("en", "vi"):
+            objs["classes"], texts = obj_texts(lang)
+            ts = norm(sm.get_text_features(**sp(text=texts, padding="max_length", max_length=64, truncation=True,
+                                                return_tensors="pt").to("cuda")))
+            tc = norm(cm.encode_text(ctok(texts).cuda()))
+            for name, t in (("siglip2", ts), ("mclip", tc)):
+                objs[f"{name}_{lang}"] = (torch.stack([img[name][i] for i in ids]) @ t.T).tolist()
+    (Path(a.out_dir) / "obj_embed.json").write_text(json.dumps(objs) + "\n", encoding="utf-8")
     out = Path(a.out_dir) / "embed.jsonl"
     out.write_text("".join(json.dumps(r) + "\n" for r in rows), encoding="utf-8")
     write_about(Path(str(out) + ".about.json"), {}, siglip_revision=a.siglip_revision, mclip=[
@@ -239,6 +259,9 @@ def selftest() -> None:
 
     assert VI_QUESTION == pope_vi.PROMPTS["vi"].replace("{name}", "{np}")
     assert question("en") == "Is there {np} in the image? Answer yes or no."
+    cls, texts = obj_texts("en")
+    assert len(cls) == len(english_map()) and texts[cls.index("chó")] == "a photo of a dog"
+    assert obj_texts("vi")[1][cls.index("chó")] == "một bức ảnh có chó"
     assert set(MODELS) <= set(C.registration()["models"]) and {"qwen25vl_7b", "qwen3vl_8b"} <= set(
         C.registration()["models"])
 
@@ -294,7 +317,7 @@ def selftest() -> None:
         (img / "x.jpg").write_bytes(b"other")
         assert C.refuses(lambda: folder_only_dev_a(img, ok)), "a folder with a non-E-dev-A file is refused"
     print("selftest ok: questions, answer-word retarget and its refusals, whole-caption cache, E-dev-A refusal, "
-          "image-folder check")
+          "image-folder check, object phrases")
 
 
 def main() -> None:
