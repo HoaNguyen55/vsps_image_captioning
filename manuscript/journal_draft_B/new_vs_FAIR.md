@@ -22,7 +22,7 @@ FAIR 2026 = "A Method for Reducing Hallucinations in Detailed Vietnamese Image C
 | Registered second backbone and its guard abort; 3B fallback (outputs unverified, not reported) | no | new (supplement S3) |
 | KTVIC single-writer audit (adjacency 0.7102 vs 0.40) | no | new |
 | Punctuation audit (−35.17 CIDEr-D; reference conventions of KTVIC, UIT-ViIC and XM3600; XM3600 period shift) | no | new |
-| Evaluation kit (scorer and protocol-card template, matcher code with the author-built v1 and v2 word lists, split and overlap scripts, audit scripts, pre-registration files, score-only result files, numbers manifest; no counts derived from KTVIC, no dataset captions, no v3 rules, predictions or weights; one Zenodo deposit shared with the companion paper) | no (FAIR used the v1 lexicon; the kit ships it as matcher v1) | new |
+| Evaluation kit (scorer and protocol-card template, matcher code with the author-built v1 and v2 word lists, split and overlap scripts, audit scripts, pre-registration files, score-only result files, numbers manifest; no counts derived from KTVIC, no dataset captions, no v3 rules, predictions or weights; a Zenodo deposit of this paper's components only) | no (FAIR used the v1 lexicon; the kit ships it as matcher v1) | new |
 | Segmentation sensitivity (149.79 vs 165.43) | no | new |
 | Matchers v2 / v3, *cây* audit, UIT-ViIC role/child flip | no | new |
 | Dataset overlap audit (KTVIC–OpenViIC 401/558; UIT-ViIC–COCO/POPE; CC-005 rule) | no | new |

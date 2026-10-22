@@ -15,11 +15,11 @@ We propose a protocol card that states these choices with every score. The pre-r
 
 **Prior and related work.**
 - A conference version appeared at FAIR 2026 (IEEE; cited). Its contribution, VSPS supervision, is not used here. The overlap is the KTVIC/COCO setup, the P1 training recipe and one baseline score, used as a reference point. Section 1 states this.
-- A companion manuscript by the same authors, "Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores", is [STATUS AT SUBMISSION: under review at Information Processing & Management]. Its XM3600 and UIT-ViIC slope results appear only there, and this manuscript cites them. The exchangeability statistic of Section 3.2 is defined there, and the two papers share one Zenodo archive (Section 3.7, Table 7.1). We will gladly provide a copy.
+- A companion manuscript by the same authors, "Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores", is [STATUS AT SUBMISSION: under review at Information Processing & Management]. Its XM3600 and UIT-ViIC slope results appear only there, and this manuscript cites them. The exchangeability statistic of Section 3.2 is defined there (Table 7.1). In the manuscript the companion is cited with its title withheld, to protect its double-anonymized review; we will restore the title after that journal's decision. We will gladly provide a copy.<!-- CC-088 (A-2) -->
 
 **Transparency.**
 - Every number is traced to an output file, a stated derivation or a cited source in a numbers manifest.
-- The kit, the pre-registration files, the score-only result files and the manifest are archived on Zenodo (reserved DOI: [AUTHOR TO PROVIDE]), in one deposit shared with the companion manuscript; until the record is public, the editor and reviewers receive an access link;<!-- CC-074 (b): the Zenodo record stays unpublished until the IP&M decision on Paper A --> 41 of the manifest's 504 rows cite sources that could not be released and are marked.
+- The kit, the pre-registration files, the score-only result files and the manifest are archived on Zenodo (reserved DOI: [AUTHOR TO PROVIDE]), in a deposit that holds this paper's components only; until the record is public, the editor and reviewers receive an access link;<!-- CC-074 (b): the Zenodo record stays unpublished until the IP&M decision on Paper A --> 41 of the manifest's 504 rows cite sources that could not be released and are marked.
 - The kit contains our matcher word lists (author-built, v1 and v2) but no counts derived from KTVIC and no dataset captions; the model-drafted v3 rules are not included.
 - The use of generative AI is declared in Section 7.5.
 
