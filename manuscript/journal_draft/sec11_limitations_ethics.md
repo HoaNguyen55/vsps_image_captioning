@@ -28,7 +28,7 @@
 
 **Systems and backbones.** The COCO-2500 family uses one backbone (Qwen2.5-VL-7B), and the second backbone is from the same Qwen-VL family; (A3) holds only within a family; the English LVLM outputs add seven backbones but only decoding variants; the training-based checkpoint leaderboard was not scored (Section 6.4). The second-backbone test caps detailed captions at 160 new tokens (Section 7.6).
 
-**Untested sensitivities.** Leave-one-system-out and within-prompt slopes were not computed, so the influence of single systems or prompts on a family's slope is untested. The Vietnamese lexicon was not perturbed (Supplementary S2 changes the English matcher and the XM3600 label map only), so its effect on the Vietnamese-output results is untested.<!-- PD-29 (c): R1-M1 and R1-M4 kept disclosed as untested sensitivities -->
+**System-level sensitivity.** Leave-one-system-out, system-jackknife and within-prompt slopes were computed after review (post hoc; Section 7.8): the label-gold sign survives every drop, and the XM3600 reference-gold sign rests on one verbose system.<!-- CC-088 A-1: was "Leave-one-system-out and within-prompt slopes were not computed" --> **Untested sensitivity.** The Vietnamese lexicon was not perturbed (Supplementary S2 changes the English matcher and the XM3600 label map only), so its effect on the Vietnamese-output results is untested.<!-- PD-29 (c): R1-M1 and R1-M4 kept disclosed as untested sensitivities -->
 
 **Vocabulary.** Instance gold is limited to COCO-80, so "complete" gold is complete only for that vocabulary, and human agreement under it is an upper bound for it.
 

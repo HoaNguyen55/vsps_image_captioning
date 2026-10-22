@@ -1133,5 +1133,23 @@
     },
     "S7_B_N1_source": "data/results/b_n1/b_n1_run.json (sha256 adad454d6c9f4810142da5a7a43d27fb122aa61d5a482dc3bc925edd152557d7) :: LBB-D2.lbB_qwen3vl_8b_{ktvic_test,uitviic_test}-detailed.hit_max_share; inputs_sha256.outputs/lbB_qwen3vl_8b_{ktvic_test,uitviic_test}-detailed.preds.json; accepted as validation facts (CC-077)",
     "coverage": "every clause stating the second backbone's cap share is covered: rows 33 and 35 (Section 7.6), row 34 (Section 10.5 c3); no 'not recorded' or 'unknown' clause remains"
+  },
+  "amendment_6": {
+    "note": "Amendment 6 (2026-10-22, CC-088 A-1, YES 92%): the realized 'negative in every confirmation test' sentence is removed (binding) and replaced by row 36 after the post hoc leave-one-system-out and system-jackknife analysis; rows 37-39 shorten three abstract sentences for length; row 40 replaces highlight 2; rows 41-42 add post hoc sentences to sec1 and sec10.5. No registered verdict, verdict rule, fill rule, selection logic or precondition changed.",
+    "table": "manuscript/paperA_plan/CONFIRMATION_MAP_AMENDMENT6.md",
+    "result": {
+      "file": "data/results/a1_robustness/a1_system_robustness.json",
+      "label": "POST_HOC"
+    },
+    "status": "drafted for the judge (CC-088 A-1)",
+    "rows": [
+      36,
+      37,
+      38,
+      39,
+      40,
+      41,
+      42
+    ]
   }
 }
