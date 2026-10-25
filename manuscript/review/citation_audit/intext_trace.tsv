@@ -14,8 +14,10 @@ A	sec2_related_work.md	5	Wang et al., 2023	wang2023amber	OK	AMBER reports a cove
 A	sec2_related_work.md	5	Kaul et al., 2024	kaul2024throne	OK	THRONE uses class-wise precision, recall and F0.5	SUPPORTED	we choose beta = 0.5 or the F0.5-score, thus weighing precision twice as important as recall (full text)
 A	sec2_related_work.md	5	Petryk et al., 2024	petryk2024aloha	OK		NOT_SAMPLED	
 A	sec2_related_work.md	5	Ben-Kish et al., 2024	benkish2024mitigating	OK		NOT_SAMPLED	
+A	sec2_related_work.md	5	Datta and Sundararaman, 2025	datta2025evaluating	OK	CAOS adds out-of-domain objects whose presence an ensemble of LVLMs verifies	SUPPORTED	abstract: language model-based object recognition to detect potentially out-of-domain hallucinated objects and use an ensemble of LVLMs for verifying the presence of such objects
 A	sec2_related_work.md	5	Liu et al., 2024	liu2024survey	OK		NOT_SAMPLED	
 A	sec2_related_work.md	5	Bai et al., 2024	bai2024hallucination	OK		NOT_SAMPLED	
+A	sec2_related_work.md	5	Huang et al., 2026	huang2026capprobe	OK	CapProbe turns detailed-caption evaluation into dense multiple-choice questions that a language judge answers from the caption alone	SUPPORTED	abstract: turns detailed caption evaluation into region-aligned factual checking; multiple-choice questions; A language judge answers from the caption alone
 A	sec2_related_work.md	7	Wei et al., 2024	wei2024stable	OK	LeHaCE fits model-specific hallucination-vs-length curve, evaluates all models at uniform length	CANNOT_CHECK	No abstract retrievable (arXiv, Crossref, OpenAlex empty; Semantic Scholar rate-limited)
 A	sec2_related_work.md	7	Min et al., 2025	min2025mitigating	OK	SumGD reports recall next to CHAIR because shorter captions lower it	PARTLY	abstract: SumGD achieves Pareto optimality in the precision-recall trade-off; stated motive not in abstract
 A	sec2_related_work.md	7	Yue et al., 2024	yue2024less	OK	Less is More shortens outputs and accepts the recall loss	PARTLY	abstract: overly detailed training data hinders timely termination (EOS); recall loss not in abstract
@@ -89,6 +91,7 @@ B	sec1_intro.md	5	Lam et al., 2020	lam2020uit	OK		NOT_SAMPLED
 B	sec1_intro.md	5	Pham et al., 2024	pham2024ktvic	OK		NOT_SAMPLED	
 B	sec1_intro.md	5	Bui et al., 2026	R13_OpenViIC_SPIC	OK		NOT_SAMPLED	
 B	sec1_intro.md	9	Pham et al., 2024	pham2024ktvic	OK	one annotator types all five captions; three annotators total (s3.2, Fig 5)	SUPPORTED	three participants ... annotate captions ... provide five captions in the corresponding blank boxes; two researchers review
+B	sec1_intro.md	10	Jwalapuram, 2023	jwalapuram2023pulling	OK	MT metrics have been shown to be sensitive to a single sentence-final punctuation mark	SUPPORTED	abstract: both string-based and model-based evaluation metrics also suffer from this vulnerability, producing significantly different scores when translations only differ in a single punctuation
 B	sec1_intro.md	22	Nguyen and Tran, 2026	[snapshot: 4 wrong Nguyen-2026 candidates, none is the intended paper] [live bib] nguyen2026vsps	ORPHAN		NOT_SAMPLED	
 B	sec2_related.md	5	Lam et al., 2020	lam2020uit	OK	UIT-ViIC sports images from COCO by independent annotators; test images are COCO train2017	PARTLY	COCO sports-with-balls images confirmed; independence and train2017 exposure not in Lam (train2017 is own audit)
 B	sec2_related.md	5	Lin et al., 2014	[live bib] lin2014microsoft	ORPHAN		NOT_SAMPLED	
@@ -113,6 +116,7 @@ B	sec2_related.md	11	Bai et al., 2025b	[live bib] AMBIGUOUS by surname+year; a->
 B	sec2_related.md	11	Zhu et al., 2025	[live bib] zhu2025internvl3	ORPHAN		NOT_SAMPLED	
 B	sec2_related.md	13	Vedantam et al., 2015	[live bib] vedantam2015cider	ORPHAN	CIDEr weights n-grams by IDF over reference set and normalises by vector norm	SUPPORTED	TF-IDF weighting for each n-gram; cosine form with magnitude terms (full text)
 B	sec2_related.md	13	Caglayan et al. (2020	[live bib] caglayan2020curious	ORPHAN	standard metrics give high scores for degenerate outputs	SUPPORTED	metrics ... can yield surprisingly high scores when given a single sentence as system output for the entire test set
+B	sec2_related.md	13	Jwalapuram (2023)	jwalapuram2023pulling	OK	one sentence-final punctuation insertion or deletion makes string- and model-based MT metrics give significantly different scores	SUPPORTED	abstract: sentence-final insertion and deletion perturbation tests with full stops ...; both string-based and model-based evaluation metrics ... producing significantly different scores when translations only differ in a single punctuation
 B	sec2_related.md	13	Post, 2018	post2018call	OK		NOT_SAMPLED	
 B	sec2_related.md	13	Hu et al., 2023	[live bib] hu2023request	ORPHAN		NOT_SAMPLED	
 B	sec2_related.md	13	Nguyen et al., 2018	[live bib] nguyen2018fast	ORPHAN		NOT_SAMPLED	

@@ -17,6 +17,8 @@ Every object-level claim of the form "method S hallucinates less than B" should 
 
 ## 10.3 Implications for practice: a checklist
 
+The checklist is addressed to benchmark builders, who choose the gold and the matcher and can report $M$, and to authors of model-selection reports, who should not select models by one-reference F1 or by CHAIR alone when the systems differ in verbosity (items 2 and 3).
+
 For papers that report object-level hallucination scores:
 
 1. **Name the gold and the matcher,** and report $M$ for every system.
