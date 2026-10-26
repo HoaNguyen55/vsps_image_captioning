@@ -1,0 +1,11 @@
+# Frozen verbatim extract of manuscript/WORKFLOW_LOG.md lines 1612-1619 (CP-116 W3).
+# Extracted 2026-10-26T15:08:07Z from WORKFLOW_LOG.md sha256 bc57f713039e9bd911b2471a6900fbe03308e75fbf60b571a3f877f8deeafae9.
+# WORKFLOW_LOG.md is not under version control; this extract is the sha-pinned source for the manifest.
+## 2026-10-26T03:11:52Z CC-107 W1 commitment (written BEFORE any c_test decide_ov.json / decide_xm.json exists or is opened)
+- C-EN will be pre-registered and run **regardless of the OV/XM outcome**. It is a separate prereg, and PREREG acecd652 stays untouched.
+  - Primary: the full COCO Karpathy test (5,000). The secondary is the PI's choice (Q2).
+  - Frozen C configs carry over, with no English tuning.
+  - Prereg after 11-10; the test runs on M3 after C's cleanup and after 11-30.
+- A PI veto counts only on cost or time. If a veto comes after a verdict has been read, C discloses it.
+- **Check at writing:** decide files on M3 = 0, in the local mirror = 0.
+- **PI (10:05 VN), on CC-107:** C-EN is approved and **C's submission waits for C-EN**. Primary is the full Karpathy test 5,000, secondary the full NoCaps val 4,500 (with the vg-mamf 1,000 disclosed). About 35 GPU-h, on M3 after C cleanup and after 11-30. LOG line PI-1026b.
