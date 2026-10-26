@@ -17,14 +17,15 @@ NUM = re.compile(r"[-+−]?\d+(?:\.\d+)?")
 
 XM = ".session_backup/2026-10-14/r12_verify/xm3600_full_verdict.json"
 XMK = "matcher_v2_tone_normalised.n1_f1_vs_logM_slopes."
-COCO = ".session_backup/2026-10-14/r11_verify/c1_b1_b6_reproduction.json"
-COK = "B1_L1_mstar_and_stopping.check_coco_gold."
+COCO = ".session_backup/2026-10-26/a_full5000/out/r4_full5000_all9.json"  # r4, 9 systems x 5,000 (FILL_RULE)
+COK = "gold."
 H3 = ".session_backup/2026-10-14/r12/H3/out/n1_results.json"
 UV = ".session_backup/2026-10-14/r11_verify/c2_n1_uitviic_mstar.json"
 UVK = "uitviic_test.lexicons.{lex}.gold_variants.{g}.groups.all_10."
 G2B = "data/results/g2b/g2b_score.json"
 NF1 = "data/results/n_f1/bracket_result.json"
-A33 = ".session_backup/2026-10-18/paperA_tasks/A3.3/"
+A33 = ".session_backup/2026-10-26/a_full5000/out/a33_r4_full5000_all9.json"  # A3.3 bootstrap re-run on r4
+W4S = ".session_backup/2026-10-26/a_full5000/out/w4_summary.json"
 
 
 def load_manifest():
@@ -97,7 +98,7 @@ def whisker(x, y0, y1, color="#222"):
 
 
 # ---------- Fig. 2: slope of F1 on ln M by gold rung ----------
-SHORT = {"COCO-2500": ("COCO-2500", "Vietnamese outputs"), "LVLMs, OPERA release": ("English LVLMs", "OPERA release"),
+SHORT = {"COCO-5000": ("COCO-5000", "Vietnamese outputs"), "LVLMs, OPERA release": ("English LVLMs", "OPERA release"),
          "LVLMs, Less-is-More release": ("English LVLMs", "Less-is-More"), "UIT-ViIC, COCO-80 lexicon": ("UIT-ViIC", "COCO-80 lexicon"),
          "UIT-ViIC, Vietnamese lexicon": ("UIT-ViIC", "Vietnamese lexicon"), "XM3600 (Section 7.5)": ("XM3600", "Section 7.5"),
          "2nd backbone, cv295": ("cv295", "discovery images"), "2nd backbone, uv231": ("uv231", "UIT-ViIC test"),
@@ -109,10 +110,10 @@ def fig2_data():
         return pt_ci(UV, k + "slope_F1_mixed_per_logM", UV, k + "slope_F1_mixed_ci95", what)
 
     fams = [
-        ("COCO-2500", "exploratory", "instance labels", [
-            pt_ci(COCO, COK + "refs1_randk.slope", COCO, COK + "refs1_randk.slope_ci", "COCO-2500 1 ref"),
-            pt_ci(COCO, COK + "refs5_randk.slope", COCO, COK + "refs5_randk.slope_ci", "COCO-2500 5 refs"),
-            pt_ci(COCO, COK + "inst.slope", COCO, COK + "inst.slope_ci", "COCO-2500 label gold")], None),
+        ("COCO-5000", "exploratory", "instance labels", [
+            pt_ci(COCO, COK + "refs1_randk.slope", COCO, COK + "refs1_randk.slope_ci", "COCO-5000 1 ref"),
+            pt_ci(COCO, COK + "refs5_randk.slope", COCO, COK + "refs5_randk.slope_ci", "COCO-5000 5 refs"),
+            pt_ci(COCO, COK + "inst.slope", COCO, COK + "inst.slope_ci", "COCO-5000 label gold")], None),
     ]
     for fam, name in (("F-B", "LVLMs, OPERA release"), ("F-C", "LVLMs, Less-is-More release")):
         k = f"families.{fam}.gold."
@@ -184,18 +185,18 @@ def fig2(fams):
     return svg(W, H, body)
 
 
-# ---------- Fig. 4: Lambda_k(M0) and the b-channel share, COCO-2500 ----------
+# ---------- Fig. 4: Lambda_k(M0) and the b-channel share, COCO-5000 ----------
 def fig4_data():
-    k = "Lambda_U_with_micro_F1_slopes."
-    f = A33 + "MANIFEST_v3.json"
+    k = "bootstrap.gold."
+    f = A33
     golds = [("refs1_randk", "1"), ("refs2_randk", "2"), ("refs3_randk", "3"), ("refs4_randk", "4"),
              ("refs5_randk", "5"), ("inst", "label|gold"), ("inst+refs5", "label gold|+ 5 refs")]
-    lam = [(lab, pt_ci(f, k + g + ".Lambda_U.point_v2", f, k + g + ".Lambda_U.ci", f"Lambda_U {g}")) for g, lab in golds]
-    sh = [("1 → 5 references", pt_ci(A33 + "MANIFEST_v2.json", "data_facts.b_channel_share_U_vs_v1.coco_randk.U",
-                                       A33 + "check_coco_U_boot.json", "bootstrap.shares.refs1_to_refs5.b_channel_share.ci",
+    lam = [(lab, pt_ci(f, k + g + ".Lambda_U.point", f, k + g + ".Lambda_U.ci", f"Lambda_U {g}")) for g, lab in golds]
+    sh = [("1 → 5 references", pt_ci(W4S, "cells.r4_full5000_all9.channel_share.refs1_to_refs5",
+                                       A33, "bootstrap.shares.refs1_to_refs5.b_channel_share.ci",
                                        "b-channel share 1->5")),
-          ("1 reference → label gold", pt_ci(A33 + "MANIFEST_v2.json", "data_facts.b_channel_share_U_vs_v1.coco_refs1_to_inst.U",
-                                              A33 + "check_coco_U_boot.json", "bootstrap.shares.refs1_to_inst.b_channel_share.ci",
+          ("1 reference → label gold", pt_ci(W4S, "cells.r4_full5000_all9.channel_share.refs1_to_inst",
+                                              A33, "bootstrap.shares.refs1_to_inst.b_channel_share.ci",
                                               "b-channel share 1->label gold"))]
     return lam, sh
 

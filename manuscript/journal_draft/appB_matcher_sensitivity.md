@@ -2,7 +2,7 @@
 
 <!-- All numbers: .session_backup/2026-10-18/paperA_tasks/A8.4/sensitivity.json (sha256 969797ae99b7), label "post hoc sensitivity, not a registered test"; VERIFIED in manuscript/verification/paperA/A8.4.json. "nodes" = one English matcher (the E1 CHAIR rules, e1_chair_count.nodes) used for the reference gold in place of score_coco_probe.en_classes. -->
 
-This is a post-hoc sensitivity analysis, not a registered test. We re-ran every analysis in this paper that uses an English reference gold with one English matcher throughout: the CHAIR rules that score the English captions of Section 6 replace the reference-side extractor. We also re-ran the XM3600 analyses without the five doubtful Open Images mappings.
+This is a post-hoc sensitivity analysis, not a registered test. We re-ran every analysis in this paper that uses an English reference gold with one English matcher throughout: the CHAIR rules that score the English captions of Section 6 replace the reference-side extractor. We also re-ran the XM3600 analyses without the five doubtful Open Images mappings. The COCO rows below are the matcher sensitivity on COCO-2500, the seed-42 discovery half (Section 4.3), not re-run on COCO-5000.<!-- r0 --><!-- FILL_RULE A8.4 copy rule (CP-111a W5 (vi)): no patched A8.4 copy reproduced its frozen r0 sensitivity.json before commit 3 -->
 
 **Reproduction.** Run with the original matcher and map, the copied code reproduces the cited values exactly (34 of 34 comparisons)<!-- src: sensitivity.json :: reproduction_with_original_matcher_or_map.{all_equal = true, n_checks = 34} -->.
 

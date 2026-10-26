@@ -1,0 +1,1289 @@
+{
+ "label": "CC-108 W3, planned rows (exploratory / post hoc); COCO-2500 keeps the registered XM prior",
+ "gates": {
+  "check_coco_r0_equals_frozen_check_coco.json": true,
+  "h4_r0_equals_frozen_h4_check.json": true,
+  "a1_table_7_2_and_channel_share_reproduced_on_r0": true
+ },
+ "cells": {
+  "r0_2500_all9": {
+   "n_img": 2500,
+   "n_sys": 9,
+   "systems": [
+    "distill-detailed",
+    "distill-short",
+    "zeroshot-detailed",
+    "zeroshot-short",
+    "fuse2_s42-detailed",
+    "fuse2_s42-short",
+    "p1_s43-detailed",
+    "p1_s43-short",
+    "zeroshot-detailed+vcd"
+   ],
+   "slope_ci": {
+    "refs1_randk": [
+     -4.28,
+     [
+      -5.91,
+      -2.45
+     ]
+    ],
+    "refs2_randk": [
+     2.82,
+     [
+      0.86,
+      4.54
+     ]
+    ],
+    "refs3_randk": [
+     6.69,
+     [
+      5.21,
+      8.41
+     ]
+    ],
+    "refs4_randk": [
+     9.16,
+     [
+      7.77,
+      10.65
+     ]
+    ],
+    "refs5_randk": [
+     11.08,
+     [
+      9.76,
+      12.43
+     ]
+    ],
+    "inst": [
+     22.41,
+     [
+      21.27,
+      23.48
+     ]
+    ]
+   },
+   "b": {
+    "refs1_randk": 0.479,
+    "refs2_randk": 0.549,
+    "refs3_randk": 0.592,
+    "refs4_randk": 0.62,
+    "refs5_randk": 0.643,
+    "inst": 0.846
+   },
+   "M_range": [
+    0.84,
+    2.14
+   ],
+   "median_M": 1.19,
+   "P1_rises_every_step_and_to_inst": true,
+   "P2_inst_ci_above_0": true,
+   "P3_refs1": {
+    "Mstar_micro": 1.41,
+    "M_max": 2.14,
+    "holds": true,
+    "slope_negative_ci_below_0": true
+   },
+   "P4_sign_agree_mixed": "12/12",
+   "P1_holds": true,
+   "P4_holds": true,
+   "kill_fires": false,
+   "microF1_randk": {
+    "1": [
+     -1.84,
+     [
+      -3.136,
+      -0.548
+     ]
+    ],
+    "2": [
+     5.78,
+     [
+      4.48,
+      7.025
+     ]
+    ],
+    "3": [
+     9.96,
+     [
+      8.647,
+      11.215
+     ]
+    ],
+    "4": [
+     12.71,
+     [
+      11.393,
+      14.038
+     ]
+    ],
+    "5": [
+     14.69,
+     [
+      13.379,
+      15.977
+     ]
+    ]
+   },
+   "channel_share": {
+    "refs1_to_refs5": 0.613,
+    "refs1_to_inst": 0.709
+   },
+   "system_robustness": {
+    "1 ref": {
+     "slope_full": -4.2833,
+     "loo_min": -11.6152,
+     "loo_max": -1.6837,
+     "jackknife_t95": [
+      -21.9807,
+      13.4141
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [],
+     "system_r": -0.3391,
+     "subsets": {
+      "prompt=short": {
+       "n_systems": 4,
+       "M_range": [
+        0.8356,
+        1.19
+       ],
+       "slope_full": 28.4029,
+       "loo_min": 19.3361,
+       "loo_max": 29.3771,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.3536
+      },
+      "prompt=detailed": {
+       "n_systems": 5,
+       "M_range": [
+        1.0948,
+        2.1428
+       ],
+       "slope_full": -11.3399,
+       "loo_min": -12.7203,
+       "loo_max": -10.0327,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.6715
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.19,
+        2.1428
+       ],
+       "slope_full": -15.1821,
+       "loo_min": -17.3168,
+       "loo_max": 12.2077,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.5882
+      }
+     }
+    },
+    "5 refs": {
+     "slope_full": 11.0783,
+     "loo_min": 5.0061,
+     "loo_max": 13.3063,
+     "jackknife_t95": [
+      -3.8141,
+      25.9707
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [],
+     "system_r": 0.7241,
+     "subsets": {
+      "prompt=short": {
+       "n_systems": 4,
+       "M_range": [
+        0.8356,
+        1.19
+       ],
+       "slope_full": 39.2141,
+       "loo_min": 38.7343,
+       "loo_max": 41.5189,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.3536
+      },
+      "prompt=detailed": {
+       "n_systems": 5,
+       "M_range": [
+        1.0948,
+        2.1428
+       ],
+       "slope_full": 5.5335,
+       "loo_min": 3.5483,
+       "loo_max": 6.8915,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.6715
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.19,
+        2.1428
+       ],
+       "slope_full": 0.5868,
+       "loo_min": -1.096,
+       "loo_max": 22.1788,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.5882
+      }
+     }
+    },
+    "label gold": {
+     "slope_full": 22.4116,
+     "loo_min": 20.1534,
+     "loo_max": 23.2334,
+     "jackknife_t95": [
+      16.9001,
+      27.9231
+     ],
+     "jackknife_t95_excludes_0": true,
+     "loo_sign_flips": [],
+     "system_r": 0.9787,
+     "subsets": {
+      "prompt=short": {
+       "n_systems": 4,
+       "M_range": [
+        0.8356,
+        1.19
+       ],
+       "slope_full": 34.1767,
+       "loo_min": 31.559,
+       "loo_max": 49.3299,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.3536
+      },
+      "prompt=detailed": {
+       "n_systems": 5,
+       "M_range": [
+        1.0948,
+        2.1428
+       ],
+       "slope_full": 20.5605,
+       "loo_min": 19.9476,
+       "loo_max": 21.1744,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.6715
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.19,
+        2.1428
+       ],
+       "slope_full": 16.7824,
+       "loo_min": 15.9566,
+       "loo_max": 27.3778,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.5882
+      }
+     }
+    }
+   }
+  },
+  "r1_2500_five": {
+   "n_img": 2500,
+   "n_sys": 5,
+   "systems": [
+    "distill-detailed",
+    "distill-short",
+    "zeroshot-detailed",
+    "zeroshot-short",
+    "zeroshot-detailed+vcd"
+   ],
+   "slope_ci": {
+    "refs1_randk": [
+     -1.56,
+     [
+      -3.5,
+      0.18
+     ]
+    ],
+    "refs2_randk": [
+     5.3,
+     [
+      3.54,
+      7.04
+     ]
+    ],
+    "refs3_randk": [
+     8.95,
+     [
+      7.17,
+      10.66
+     ]
+    ],
+    "refs4_randk": [
+     11.21,
+     [
+      9.84,
+      12.64
+     ]
+    ],
+    "refs5_randk": [
+     12.95,
+     [
+      11.56,
+      14.37
+     ]
+    ],
+    "inst": [
+     22.89,
+     [
+      21.78,
+      23.98
+     ]
+    ]
+   },
+   "b": {
+    "refs1_randk": 0.516,
+    "refs2_randk": 0.582,
+    "refs3_randk": 0.621,
+    "refs4_randk": 0.647,
+    "refs5_randk": 0.667,
+    "inst": 0.844
+   },
+   "M_range": [
+    0.84,
+    2.14
+   ],
+   "median_M": 1.38,
+   "P1_rises_every_step_and_to_inst": true,
+   "P2_inst_ci_above_0": true,
+   "P3_refs1": {
+    "Mstar_micro": 1.64,
+    "M_max": 2.14,
+    "holds": true,
+    "slope_negative_ci_below_0": false
+   },
+   "P4_sign_agree_mixed": "12/12",
+   "P1_holds": true,
+   "P4_holds": true,
+   "kill_fires": false,
+   "microF1_randk": {
+    "1": [
+     0.74,
+     [
+      -0.72,
+      2.041
+     ]
+    ],
+    "2": [
+     7.99,
+     [
+      6.602,
+      9.275
+     ]
+    ],
+    "3": [
+     11.85,
+     [
+      10.506,
+      13.085
+     ]
+    ],
+    "4": [
+     14.37,
+     [
+      13.075,
+      15.567
+     ]
+    ],
+    "5": [
+     16.15,
+     [
+      14.881,
+      17.38
+     ]
+    ]
+   },
+   "channel_share": {
+    "refs1_to_refs5": 0.597,
+    "refs1_to_inst": 0.689
+   },
+   "system_robustness": {
+    "1 ref": {
+     "slope_full": -1.562,
+     "loo_min": -13.0699,
+     "loo_max": 0.9414,
+     "jackknife_t95": [
+      -30.6557,
+      27.5316
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [
+      "zeroshot-detailed+vcd",
+      "zeroshot-short"
+     ],
+     "system_r": -0.1516,
+     "subsets": {
+      "prompt=short": "not computed (2 systems)",
+      "prompt=detailed": {
+       "n_systems": 3,
+       "M_range": [
+        1.3788,
+        2.1428
+       ],
+       "slope_full": -7.3047,
+       "loo_min": -9.5466,
+       "loo_max": 12.2077,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.4409
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.19,
+        2.1428
+       ],
+       "slope_full": -15.1821,
+       "loo_min": -17.3168,
+       "loo_max": 12.2077,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.5882
+      }
+     }
+    },
+    "5 refs": {
+     "slope_full": 12.9477,
+     "loo_min": 2.9632,
+     "loo_max": 15.2649,
+     "jackknife_t95": [
+      -12.3197,
+      38.215
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [],
+     "system_r": 0.818,
+     "subsets": {
+      "prompt=short": "not computed (2 systems)",
+      "prompt=detailed": {
+       "n_systems": 3,
+       "M_range": [
+        1.3788,
+        2.1428
+       ],
+       "slope_full": 9.3047,
+       "loo_min": 7.8255,
+       "loo_max": 22.1788,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.4409
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.19,
+        2.1428
+       ],
+       "slope_full": 0.5868,
+       "loo_min": -1.096,
+       "loo_max": 22.1788,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.5882
+      }
+     }
+    },
+    "label gold": {
+     "slope_full": 22.8897,
+     "loo_min": 18.646,
+     "loo_max": 24.1108,
+     "jackknife_t95": [
+      12.0803,
+      33.6991
+     ],
+     "jackknife_t95_excludes_0": true,
+     "loo_sign_flips": [],
+     "system_r": 0.9808,
+     "subsets": {
+      "prompt=short": "not computed (2 systems)",
+      "prompt=detailed": {
+       "n_systems": 3,
+       "M_range": [
+        1.3788,
+        2.1428
+       ],
+       "slope_full": 23.5198,
+       "loo_min": 23.0765,
+       "loo_max": 27.3778,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.4409
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.19,
+        2.1428
+       ],
+       "slope_full": 16.7824,
+       "loo_min": 15.9566,
+       "loo_max": 27.3778,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.5882
+      }
+     }
+    }
+   }
+  },
+  "r2_full5000_five": {
+   "n_img": 5000,
+   "n_sys": 5,
+   "systems": [
+    "distill-detailed",
+    "distill-short",
+    "zeroshot-detailed",
+    "zeroshot-short",
+    "zeroshot-detailed+vcd"
+   ],
+   "slope_ci": {
+    "refs1_randk": [
+     -1.88,
+     [
+      -3.44,
+      -0.56
+     ]
+    ],
+    "refs2_randk": [
+     4.99,
+     [
+      3.86,
+      6.2
+     ]
+    ],
+    "refs3_randk": [
+     8.62,
+     [
+      7.55,
+      9.66
+     ]
+    ],
+    "refs4_randk": [
+     10.95,
+     [
+      9.95,
+      11.94
+     ]
+    ],
+    "refs5_randk": [
+     12.59,
+     [
+      11.63,
+      13.42
+     ]
+    ],
+    "inst": [
+     22.67,
+     [
+      21.92,
+      23.41
+     ]
+    ]
+   },
+   "b": {
+    "refs1_randk": 0.514,
+    "refs2_randk": 0.582,
+    "refs3_randk": 0.62,
+    "refs4_randk": 0.646,
+    "refs5_randk": 0.666,
+    "inst": 0.847
+   },
+   "M_range": [
+    0.84,
+    2.18
+   ],
+   "median_M": 1.39,
+   "P1_rises_every_step_and_to_inst": true,
+   "P2_inst_ci_above_0": true,
+   "P3_refs1": {
+    "Mstar_micro": 1.62,
+    "M_max": 2.18,
+    "holds": true,
+    "slope_negative_ci_below_0": true
+   },
+   "P4_sign_agree_mixed": "12/12",
+   "P1_holds": true,
+   "P4_holds": true,
+   "kill_fires": false,
+   "microF1_randk": {
+    "1": [
+     0.51,
+     [
+      -0.346,
+      1.354
+     ]
+    ],
+    "2": [
+     7.84,
+     [
+      7.004,
+      8.681
+     ]
+    ],
+    "3": [
+     11.71,
+     [
+      10.825,
+      12.559
+     ]
+    ],
+    "4": [
+     14.19,
+     [
+      13.316,
+      15.045
+     ]
+    ],
+    "5": [
+     15.94,
+     [
+      15.054,
+      16.782
+     ]
+    ]
+   },
+   "channel_share": {
+    "refs1_to_refs5": 0.599,
+    "refs1_to_inst": 0.69
+   },
+   "system_robustness": {
+    "1 ref": {
+     "slope_full": -1.8789,
+     "loo_min": -12.9153,
+     "loo_max": 0.4002,
+     "jackknife_t95": [
+      -29.7311,
+      25.9733
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [
+      "zeroshot-short"
+     ],
+     "system_r": -0.1903,
+     "subsets": {
+      "prompt=short": "not computed (2 systems)",
+      "prompt=detailed": {
+       "n_systems": 3,
+       "M_range": [
+        1.3914,
+        2.184
+       ],
+       "slope_full": -7.509,
+       "loo_min": -9.3699,
+       "loo_max": 8.1382,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.4508
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.2142,
+        2.184
+       ],
+       "slope_full": -15.0702,
+       "loo_min": -16.9976,
+       "loo_max": 8.1382,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.5871
+      }
+     }
+    },
+    "5 refs": {
+     "slope_full": 12.594,
+     "loo_min": 2.8141,
+     "loo_max": 14.7887,
+     "jackknife_t95": [
+      -12.1204,
+      37.3085
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [],
+     "system_r": 0.8153,
+     "subsets": {
+      "prompt=short": "not computed (2 systems)",
+      "prompt=detailed": {
+       "n_systems": 3,
+       "M_range": [
+        1.3914,
+        2.184
+       ],
+       "slope_full": 9.2142,
+       "loo_min": 8.0683,
+       "loo_max": 18.8495,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.4508
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.2142,
+        2.184
+       ],
+       "slope_full": 0.2012,
+       "loo_min": -1.3476,
+       "loo_max": 18.8495,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.5871
+      }
+     }
+    },
+    "label gold": {
+     "slope_full": 22.6739,
+     "loo_min": 18.5628,
+     "loo_max": 23.7753,
+     "jackknife_t95": [
+      12.2249,
+      33.1229
+     ],
+     "jackknife_t95_excludes_0": true,
+     "loo_sign_flips": [],
+     "system_r": 0.9826,
+     "subsets": {
+      "prompt=short": "not computed (2 systems)",
+      "prompt=detailed": {
+       "n_systems": 3,
+       "M_range": [
+        1.3914,
+        2.184
+       ],
+       "slope_full": 22.8974,
+       "loo_min": 22.5835,
+       "loo_max": 22.9347,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.4508
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.2142,
+        2.184
+       ],
+       "slope_full": 16.7455,
+       "loo_min": 16.2607,
+       "loo_max": 22.5835,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.5871
+      }
+     }
+    }
+   }
+  },
+  "r3_rest2500_five": {
+   "n_img": 2500,
+   "n_sys": 5,
+   "systems": [
+    "distill-detailed",
+    "distill-short",
+    "zeroshot-detailed",
+    "zeroshot-short",
+    "zeroshot-detailed+vcd"
+   ],
+   "slope_ci": {
+    "refs1_randk": [
+     -2.14,
+     [
+      -3.96,
+      -0.23
+     ]
+    ],
+    "refs2_randk": [
+     4.75,
+     [
+      3.07,
+      6.32
+     ]
+    ],
+    "refs3_randk": [
+     8.41,
+     [
+      6.92,
+      10.13
+     ]
+    ],
+    "refs4_randk": [
+     10.72,
+     [
+      9.51,
+      12.18
+     ]
+    ],
+    "refs5_randk": [
+     12.25,
+     [
+      11.01,
+      13.66
+     ]
+    ],
+    "inst": [
+     22.46,
+     [
+      21.4,
+      23.6
+     ]
+    ]
+   },
+   "b": {
+    "refs1_randk": 0.513,
+    "refs2_randk": 0.58,
+    "refs3_randk": 0.619,
+    "refs4_randk": 0.646,
+    "refs5_randk": 0.664,
+    "inst": 0.849
+   },
+   "M_range": [
+    0.85,
+    2.23
+   ],
+   "median_M": 1.4,
+   "P1_rises_every_step_and_to_inst": true,
+   "P2_inst_ci_above_0": true,
+   "P3_refs1": {
+    "Mstar_micro": 1.62,
+    "M_max": 2.23,
+    "holds": true,
+    "slope_negative_ci_below_0": true
+   },
+   "P4_sign_agree_mixed": "12/12",
+   "P1_holds": true,
+   "P4_holds": true,
+   "kill_fires": false,
+   "microF1_randk": {
+    "1": [
+     0.28,
+     [
+      -0.902,
+      1.586
+     ]
+    ],
+    "2": [
+     7.69,
+     [
+      6.523,
+      9.03
+     ]
+    ],
+    "3": [
+     11.58,
+     [
+      10.41,
+      12.902
+     ]
+    ],
+    "4": [
+     14.02,
+     [
+      12.874,
+      15.328
+     ]
+    ],
+    "5": [
+     15.73,
+     [
+      14.574,
+      17.019
+     ]
+    ]
+   },
+   "channel_share": {
+    "refs1_to_refs5": 0.599,
+    "refs1_to_inst": 0.689
+   },
+   "system_robustness": {
+    "1 ref": {
+     "slope_full": -2.1386,
+     "loo_min": -12.6657,
+     "loo_max": -0.0613,
+     "jackknife_t95": [
+      -28.6809,
+      24.4037
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [],
+     "system_r": -0.2266,
+     "subsets": {
+      "prompt=short": "not computed (2 systems)",
+      "prompt=detailed": {
+       "n_systems": 3,
+       "M_range": [
+        1.404,
+        2.2252
+       ],
+       "slope_full": -7.512,
+       "loo_min": -8.8208,
+       "loo_max": 3.1543,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.4605
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.2384,
+        2.2252
+       ],
+       "slope_full": -14.9069,
+       "loo_min": -16.4988,
+       "loo_max": 3.1543,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.586
+      }
+     }
+    },
+    "5 refs": {
+     "slope_full": 12.2476,
+     "loo_min": 2.6767,
+     "loo_max": 14.3287,
+     "jackknife_t95": [
+      -11.9171,
+      36.4122
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [],
+     "system_r": 0.8123,
+     "subsets": {
+      "prompt=short": "not computed (2 systems)",
+      "prompt=detailed": {
+       "n_systems": 3,
+       "M_range": [
+        1.404,
+        2.2252
+       ],
+       "slope_full": 9.1297,
+       "loo_min": 8.3048,
+       "loo_max": 15.8528,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.4605
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.2384,
+        2.2252
+       ],
+       "slope_full": -0.1813,
+       "loo_min": -1.5946,
+       "loo_max": 15.8528,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.586
+      }
+     }
+    },
+    "label gold": {
+     "slope_full": 22.4584,
+     "loo_min": 18.4666,
+     "loo_max": 23.452,
+     "jackknife_t95": [
+      12.2891,
+      32.6277
+     ],
+     "jackknife_t95_excludes_0": true,
+     "loo_sign_flips": [],
+     "system_r": 0.9841,
+     "subsets": {
+      "prompt=short": "not computed (2 systems)",
+      "prompt=detailed": {
+       "n_systems": 3,
+       "M_range": [
+        1.404,
+        2.2252
+       ],
+       "slope_full": 22.3114,
+       "loo_min": 18.3149,
+       "loo_max": 22.8018,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.4605
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.2384,
+        2.2252
+       ],
+       "slope_full": 16.7012,
+       "loo_min": 16.559,
+       "loo_max": 18.3149,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.586
+      }
+     }
+    }
+   }
+  },
+  "r4_full5000_all9": {
+   "n_img": 5000,
+   "n_sys": 9,
+   "systems": [
+    "distill-detailed",
+    "distill-short",
+    "zeroshot-detailed",
+    "zeroshot-short",
+    "fuse2_s42-detailed",
+    "fuse2_s42-short",
+    "p1_s43-detailed",
+    "p1_s43-short",
+    "zeroshot-detailed+vcd"
+   ],
+   "slope_ci": {
+    "refs1_randk": [
+     -4.77,
+     [
+      -6.1,
+      -3.54
+     ]
+    ],
+    "refs2_randk": [
+     2.32,
+     [
+      1.11,
+      3.43
+     ]
+    ],
+    "refs3_randk": [
+     6.26,
+     [
+      5.16,
+      7.09
+     ]
+    ],
+    "refs4_randk": [
+     8.76,
+     [
+      7.81,
+      9.61
+     ]
+    ],
+    "refs5_randk": [
+     10.57,
+     [
+      9.7,
+      11.43
+     ]
+    ],
+    "inst": [
+     22.13,
+     [
+      21.39,
+      22.89
+     ]
+    ]
+   },
+   "b": {
+    "refs1_randk": 0.475,
+    "refs2_randk": 0.546,
+    "refs3_randk": 0.589,
+    "refs4_randk": 0.617,
+    "refs5_randk": 0.638,
+    "inst": 0.85
+   },
+   "M_range": [
+    0.84,
+    2.18
+   ],
+   "median_M": 1.21,
+   "P1_rises_every_step_and_to_inst": true,
+   "P2_inst_ci_above_0": true,
+   "P3_refs1": {
+    "Mstar_micro": 1.38,
+    "M_max": 2.18,
+    "holds": true,
+    "slope_negative_ci_below_0": true
+   },
+   "P4_sign_agree_mixed": "12/12",
+   "P1_holds": true,
+   "P4_holds": true,
+   "kill_fires": false,
+   "microF1_randk": {
+    "1": [
+     -2.26,
+     [
+      -3.159,
+      -1.39
+     ]
+    ],
+    "2": [
+     5.45,
+     [
+      4.518,
+      6.286
+     ]
+    ],
+    "3": [
+     9.65,
+     [
+      8.703,
+      10.496
+     ]
+    ],
+    "4": [
+     12.36,
+     [
+      11.435,
+      13.203
+     ]
+    ],
+    "5": [
+     14.29,
+     [
+      13.331,
+      15.148
+     ]
+    ]
+   },
+   "channel_share": {
+    "refs1_to_refs5": 0.611,
+    "refs1_to_inst": 0.711
+   },
+   "system_robustness": {
+    "1 ref": {
+     "slope_full": -4.7655,
+     "loo_min": -11.981,
+     "loo_max": -2.329,
+     "jackknife_t95": [
+      -22.1728,
+      12.6418
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [],
+     "system_r": -0.378,
+     "subsets": {
+      "prompt=short": {
+       "n_systems": 4,
+       "M_range": [
+        0.843,
+        1.2142
+       ],
+       "slope_full": 26.5229,
+       "loo_min": 11.9419,
+       "loo_max": 28.8427,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.3649
+      },
+      "prompt=detailed": {
+       "n_systems": 5,
+       "M_range": [
+        1.1074,
+        2.184
+       ],
+       "slope_full": -12.0267,
+       "loo_min": -13.3401,
+       "loo_max": -10.9202,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.6791
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.2142,
+        2.184
+       ],
+       "slope_full": -15.0702,
+       "loo_min": -16.9976,
+       "loo_max": 8.1382,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.5871
+      }
+     }
+    },
+    "5 refs": {
+     "slope_full": 10.5704,
+     "loo_min": 4.5389,
+     "loo_max": 12.6749,
+     "jackknife_t95": [
+      -4.1801,
+      25.3208
+     ],
+     "jackknife_t95_excludes_0": false,
+     "loo_sign_flips": [],
+     "system_r": 0.7119,
+     "subsets": {
+      "prompt=short": {
+       "n_systems": 4,
+       "M_range": [
+        0.843,
+        1.2142
+       ],
+       "slope_full": 38.0056,
+       "loo_min": 36.1692,
+       "loo_max": 38.4155,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.3649
+      },
+      "prompt=detailed": {
+       "n_systems": 5,
+       "M_range": [
+        1.1074,
+        2.184
+       ],
+       "slope_full": 4.7332,
+       "loo_min": 3.6326,
+       "loo_max": 5.9538,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.6791
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.2142,
+        2.184
+       ],
+       "slope_full": 0.2012,
+       "loo_min": -1.3476,
+       "loo_max": 18.8495,
+       "sign_stable_under_loo": false,
+       "lnM_spread": 0.5871
+      }
+     }
+    },
+    "label gold": {
+     "slope_full": 22.1301,
+     "loo_min": 19.9609,
+     "loo_max": 22.9265,
+     "jackknife_t95": [
+      16.8513,
+      27.4088
+     ],
+     "jackknife_t95_excludes_0": true,
+     "loo_sign_flips": [],
+     "system_r": 0.981,
+     "subsets": {
+      "prompt=short": {
+       "n_systems": 4,
+       "M_range": [
+        0.843,
+        1.2142
+       ],
+       "slope_full": 33.269,
+       "loo_min": 30.7741,
+       "loo_max": 44.1287,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.3649
+      },
+      "prompt=detailed": {
+       "n_systems": 5,
+       "M_range": [
+        1.1074,
+        2.184
+       ],
+       "slope_full": 20.1519,
+       "loo_min": 19.5737,
+       "loo_max": 20.5635,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.6791
+      },
+      "zero-shot only": {
+       "n_systems": 3,
+       "M_range": [
+        1.2142,
+        2.184
+       ],
+       "slope_full": 16.7455,
+       "loo_min": 16.2607,
+       "loo_max": 22.5835,
+       "sign_stable_under_loo": true,
+       "lnM_spread": 0.5871
+      }
+     }
+    }
+   }
+  }
+ }
+}

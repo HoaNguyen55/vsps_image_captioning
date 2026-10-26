@@ -1,0 +1,310 @@
+{
+ "n_img": 5000,
+ "n_sys": 9,
+ "systems": [
+  "distill-detailed",
+  "distill-short",
+  "zeroshot-detailed",
+  "zeroshot-short",
+  "fuse2_s42-detailed",
+  "fuse2_s42-short",
+  "p1_s43-detailed",
+  "p1_s43-short",
+  "zeroshot-detailed+vcd"
+ ],
+ "median_M": 1.214,
+ "T2_identity_b_randk": {
+  "1": {
+   "point": 0.476,
+   "ci": [
+    0.463,
+    0.489
+   ]
+  },
+  "2": {
+   "point": 0.546,
+   "ci": [
+    0.533,
+    0.558
+   ]
+  },
+  "3": {
+   "point": 0.589,
+   "ci": [
+    0.575,
+    0.6
+   ]
+  },
+  "4": {
+   "point": 0.617,
+   "ci": [
+    0.604,
+    0.629
+   ]
+  },
+  "5": {
+   "point": 0.638,
+   "ci": [
+    0.625,
+    0.65
+   ]
+  }
+ },
+ "T2_microF1_randk": {
+  "1": {
+   "U": 1.363,
+   "slope": -2.26,
+   "slope_ci": [
+    -3.159,
+    -1.39
+   ],
+   "Lambda_micro": 0.02,
+   "Mstar_micro": 1.24,
+   "sign_agree": false
+  },
+  "2": {
+   "U": 1.687,
+   "slope": 5.45,
+   "slope_ci": [
+    4.518,
+    6.286
+   ],
+   "Lambda_micro": 0.514,
+   "Mstar_micro": 2.03,
+   "sign_agree": true
+  },
+  "3": {
+   "U": 1.862,
+   "slope": 9.65,
+   "slope_ci": [
+    8.703,
+    10.496
+   ],
+   "Lambda_micro": 0.785,
+   "Mstar_micro": 2.66,
+   "sign_agree": true
+  },
+  "4": {
+   "U": 1.983,
+   "slope": 12.36,
+   "slope_ci": [
+    11.435,
+    13.203
+   ],
+   "Lambda_micro": 0.969,
+   "Mstar_micro": 3.2,
+   "sign_agree": true
+  },
+  "5": {
+   "U": 2.078,
+   "slope": 14.29,
+   "slope_ci": [
+    13.331,
+    15.148
+   ],
+   "Lambda_micro": 1.105,
+   "Mstar_micro": 3.67,
+   "sign_agree": true
+  }
+ },
+ "T2_identity_b5_minus_b1": {
+  "point": 0.162,
+  "ci": [
+   0.155,
+   0.17
+  ]
+ },
+ "sign_agree_mixed_of_15": 15,
+ "sign_agree_micro_of_15": 10,
+ "T3": {
+  "slot1_minus_slots2to5": {
+   "b": {
+    "point": 0.003,
+    "ci": [
+     -0.007,
+     0.014
+    ]
+   },
+   "slope": {
+    "point": 0.439,
+    "ci": [
+     -0.282,
+     1.171
+    ]
+   },
+   "Gbar": {
+    "point": -0.002,
+    "ci": [
+     -0.018,
+     0.015
+    ]
+   },
+   "U": {
+    "point": 0.005,
+    "ci": [
+     -0.013,
+     0.024
+    ]
+   }
+  },
+  "lag1_minus_lag2plus_all": {
+   "b": {
+    "point": -0.001,
+    "ci": [
+     -0.005,
+     0.002
+    ]
+   },
+   "slope": {
+    "point": -0.123,
+    "ci": [
+     -0.391,
+     0.113
+    ]
+   },
+   "Gbar": {
+    "point": 0.002,
+    "ci": [
+     -0.003,
+     0.009
+    ]
+   },
+   "U": {
+    "point": 0.003,
+    "ci": [
+     -0.003,
+     0.008
+    ]
+   }
+  },
+  "lag1_minus_lag2plus_slots2to5": {
+   "b": {
+    "point": -0.003,
+    "ci": [
+     -0.008,
+     0.001
+    ]
+   },
+   "slope": {
+    "point": -0.17,
+    "ci": [
+     -0.552,
+     0.176
+    ]
+   },
+   "Gbar": {
+    "point": -0.004,
+    "ci": [
+     -0.012,
+     0.005
+    ]
+   },
+   "U": {
+    "point": -0.002,
+    "ci": [
+     -0.011,
+     0.006
+    ]
+   }
+  },
+  "pairs": {
+   "lag1": [
+    "p12",
+    "p23",
+    "p34",
+    "p45"
+   ],
+   "lag2plus": [
+    "p13",
+    "p14",
+    "p15",
+    "p24",
+    "p25",
+    "p35"
+   ],
+   "lag1_no_s1": [
+    "p23",
+    "p34",
+    "p45"
+   ],
+   "lag2plus_no_s1": [
+    "p24",
+    "p25",
+    "p35"
+   ]
+  },
+  "k_eff_adjacent_pair_slots2to5": {
+   "point": 1.993,
+   "ci": [
+    1.967,
+    2.02
+   ]
+  }
+ },
+ "T2_profile": {
+  "n0_notinst": {
+   "avg_share": 0.099,
+   "marg_share": 0.236,
+   "ratio_r": 2.388,
+   "ratio_ci": [
+    2.287,
+    2.503
+   ]
+  },
+  "n1": {
+   "avg_share": 0.071,
+   "marg_share": 0.13,
+   "ratio_r": 1.824,
+   "ratio_ci": [
+    1.719,
+    1.929
+   ]
+  },
+  "n2": {
+   "avg_share": 0.073,
+   "marg_share": 0.09,
+   "ratio_r": 1.238,
+   "ratio_ci": [
+    1.161,
+    1.318
+   ]
+  },
+  "n3": {
+   "avg_share": 0.09,
+   "marg_share": 0.076,
+   "ratio_r": 0.843,
+   "ratio_ci": [
+    0.784,
+    0.913
+   ]
+  },
+  "n4": {
+   "avg_share": 0.163,
+   "marg_share": 0.078,
+   "ratio_r": 0.479,
+   "ratio_ci": [
+    0.444,
+    0.516
+   ]
+  },
+  "n5": {
+   "avg_share": 0.414,
+   "marg_share": 0.104,
+   "ratio_r": 0.252,
+   "ratio_ci": [
+    0.235,
+    0.268
+   ]
+  },
+  "n0_inst": {
+   "avg_share": 0.091,
+   "marg_share": 0.287,
+   "ratio_r": 3.155,
+   "ratio_ci": [
+    3.042,
+    3.273
+   ]
+  }
+ },
+ "T2_share_draws_r_monotone_n1to5": 1.0
+}
