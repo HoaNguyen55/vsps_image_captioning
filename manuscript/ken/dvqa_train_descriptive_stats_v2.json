@@ -1,0 +1,427 @@
+{
+  "schema": "vsps.ken_dvqa_descriptive_stats.v2",
+  "label": "EXPLORATORY_DESCRIPTIVE_ONLY",
+  "ruling_authority": "CC-104 (F4, R2, R4, R6) & REVIEW_KEN_BATCH8 (W5, W8)",
+  "source_dataset": {
+    "name": "EPFL-DrivingVQA train.json",
+    "hf_revision": "02ce870cfe037b93cc034034cd747a7eecdd455c",
+    "train_json_sha256": "4a204e3fa7516db313ceeb91ac989919979e31da20e484bc5f4018c261bd483d",
+    "n_train_total": 3142,
+    "image_number_min": 2,
+    "image_number_max": 7022,
+    "distinct_train_images": 3142,
+    "missing_image_number_gaps_in_span": 3879
+  },
+  "manifests": {
+    "dev500": {
+      "path": "manuscript/ken/drivingvqa_dev500_ids.tsv",
+      "n_samples": 500,
+      "rule": "random.Random(20261025).shuffle(sorted_ids)[:500], sorted by int(sample_id)",
+      "tsv_sha256": "9896af1186ddd6a5806095ba696851b5aef512079f5d0813cff3f7f4fae9c4ce",
+      "id_column_sha256": "b034ec50c3c52bd45d9e6ab004239d14603d1fbc14ca951a0d0eab97897cfd97",
+      "img_filename_column_sha256": "8ef18072f2ba8441b53fd37337c67e5e15eeb93dbdd01d2bbb59e1c87d2e2b90",
+      "first_5_ids": [
+        "6",
+        "26",
+        "28",
+        "34",
+        "51"
+      ],
+      "last_5_ids": [
+        "3884",
+        "3895",
+        "3907",
+        "3908",
+        "3916"
+      ]
+    },
+    "dev500b": {
+      "path": "manuscript/ken/drivingvqa_dev500b_ids.tsv",
+      "n_samples": 500,
+      "rule": "First 500 of the 2,642 remaining train IDs ordered ascending by sha256('vsps|dvqa|p1b|' + str(id))",
+      "tsv_sha256": "86cc908cdf3e8622086caafd44572edf6ad35ef13ad0bdb8150bf393f3c30d54",
+      "id_column_sha256": "4ab9977f21f73f6612dd15d713bf11e6d707451be0a12c9f61a16acda6570fee",
+      "img_filename_column_sha256": "af7cd32dc641372661f813d6746a595065d3d06afe3afbca94a5560afbfd2fac",
+      "first_5_ids": [
+        "2853",
+        "2391",
+        "977",
+        "3689",
+        "2460"
+      ],
+      "last_5_ids": [
+        "1875",
+        "122",
+        "2827",
+        "1474",
+        "3277"
+      ],
+      "first_id_p1b_sha256": "0022b4cbcbb7095d3321897b13e609b489c667e00097ab09bdf1acdcffd99d65",
+      "last_id_p1b_sha256": "32b280607e2c0c87e6f69c7facef9517fb69a4110b36e9debd305a90abb19926"
+    },
+    "dev1000": {
+      "path": "manuscript/ken/drivingvqa_dev1000_ids.tsv",
+      "n_samples": 1000,
+      "rule": "dev500 (500 rows) concatenated with dev500b (500 rows) in exact pinned order",
+      "tsv_sha256": "636e04775153ef9cb879a7620d195fcaa7e86894ead73b008c8f95b47e268dec",
+      "id_column_sha256": "c8bad8f202cd0038078f7646415bddd5deff29512b0bd987729ab4f5bc5ac7c9",
+      "img_filename_column_sha256": "f570189831dcbfe85960489351583f410055a9ba81680fcbfd4b49e132009cfa",
+      "overlap_dev500_dev500b": 0
+    }
+  },
+  "subsets": {
+    "train_all_3142": {
+      "subset_name": "train_all_3142",
+      "n_samples": 3142,
+      "n_distinct_images": 3142,
+      "single_question_count": 2248,
+      "single_question_pct": 71.55,
+      "multiple_question_count": 894,
+      "multiple_question_pct": 28.45,
+      "k_ge_1_gold_box_samples": 3050,
+      "k_eq_0_gold_box_samples": 92,
+      "total_gold_boxes": 4506,
+      "mean_gold_boxes_per_sample": 1.4341,
+      "mean_gold_box_area_pct": 3.51,
+      "median_gold_box_area_pct": 1.26,
+      "pct_gold_boxes_lt_1pct_area": 42.96,
+      "pct_gold_boxes_lt_2pct_area": 62.34,
+      "pct_gold_boxes_lt_5pct_area": 80.76,
+      "num_options_distribution": {
+        "2": 1591,
+        "3": 317,
+        "4": 1234
+      },
+      "num_true_answers_distribution": {
+        "1": 2043,
+        "2": 999,
+        "3": 99,
+        "4": 1
+      },
+      "num_gold_boxes_distribution": {
+        "0": 92,
+        "1": 1917,
+        "2": 881,
+        "3": 195,
+        "4": 43,
+        "5": 14
+      },
+      "top_10_image_resolutions": {
+        "1500x863": 1046,
+        "1136x512": 297,
+        "614x353": 156,
+        "900x350": 150,
+        "1000x563": 115,
+        "3840x1632": 92,
+        "960x520": 89,
+        "4000x2300": 85,
+        "1280x500": 75,
+        "480x360": 65
+      },
+      "top_15_entity_labels": {
+        "car": 507,
+        "rear-view mirror": 202,
+        "directional sign": 158,
+        "speed limit sign": 151,
+        "solid line": 149,
+        "road sign": 148,
+        "dashed line": 138,
+        "pedestrian": 138,
+        "danger sign": 131,
+        "traffic light": 118,
+        "priority sign": 98,
+        "cyclist": 94,
+        "directional arrow": 83,
+        "truck": 80,
+        "yield sign": 80
+      },
+      "distinct_entity_labels": 237,
+      "combinatorial_uniform_nonempty_chance_exam_pct": 20.94,
+      "combinatorial_uniform_nonempty_chance_f1_pct": 51.25
+    },
+    "dev500": {
+      "subset_name": "dev500",
+      "n_samples": 500,
+      "n_distinct_images": 500,
+      "single_question_count": 359,
+      "single_question_pct": 71.8,
+      "multiple_question_count": 141,
+      "multiple_question_pct": 28.2,
+      "k_ge_1_gold_box_samples": 491,
+      "k_eq_0_gold_box_samples": 9,
+      "total_gold_boxes": 704,
+      "mean_gold_boxes_per_sample": 1.408,
+      "mean_gold_box_area_pct": 3.63,
+      "median_gold_box_area_pct": 1.26,
+      "pct_gold_boxes_lt_1pct_area": 42.19,
+      "pct_gold_boxes_lt_2pct_area": 63.49,
+      "pct_gold_boxes_lt_5pct_area": 80.97,
+      "num_options_distribution": {
+        "2": 250,
+        "3": 49,
+        "4": 201
+      },
+      "num_true_answers_distribution": {
+        "1": 327,
+        "2": 155,
+        "3": 17,
+        "4": 1
+      },
+      "num_gold_boxes_distribution": {
+        "0": 9,
+        "1": 318,
+        "2": 139,
+        "3": 29,
+        "4": 4,
+        "5": 1
+      },
+      "top_10_image_resolutions": {
+        "1500x863": 175,
+        "1136x512": 52,
+        "614x353": 26,
+        "1000x563": 23,
+        "900x350": 21,
+        "3840x1632": 16,
+        "4000x2300": 16,
+        "960x520": 14,
+        "480x360": 10,
+        "1920x1440": 9
+      },
+      "top_15_entity_labels": {
+        "car": 67,
+        "directional sign": 31,
+        "rear-view mirror": 30,
+        "solid line": 27,
+        "dashed line": 24,
+        "road sign": 24,
+        "speed limit sign": 23,
+        "pedestrian": 19,
+        "danger sign": 17,
+        "truck": 17,
+        "cyclist": 16,
+        "traffic light": 16,
+        "priority sign": 15,
+        "yield sign": 15,
+        "parking marking": 12
+      },
+      "distinct_entity_labels": 148,
+      "combinatorial_uniform_nonempty_chance_exam_pct": 20.75,
+      "combinatorial_uniform_nonempty_chance_f1_pct": 51.07
+    },
+    "dev500b": {
+      "subset_name": "dev500b",
+      "n_samples": 500,
+      "n_distinct_images": 500,
+      "single_question_count": 355,
+      "single_question_pct": 71.0,
+      "multiple_question_count": 145,
+      "multiple_question_pct": 29.0,
+      "k_ge_1_gold_box_samples": 483,
+      "k_eq_0_gold_box_samples": 17,
+      "total_gold_boxes": 697,
+      "mean_gold_boxes_per_sample": 1.394,
+      "mean_gold_box_area_pct": 3.63,
+      "median_gold_box_area_pct": 1.25,
+      "pct_gold_boxes_lt_1pct_area": 43.62,
+      "pct_gold_boxes_lt_2pct_area": 62.12,
+      "pct_gold_boxes_lt_5pct_area": 79.48,
+      "num_options_distribution": {
+        "2": 259,
+        "3": 53,
+        "4": 188
+      },
+      "num_true_answers_distribution": {
+        "1": 322,
+        "2": 159,
+        "3": 19
+      },
+      "num_gold_boxes_distribution": {
+        "0": 17,
+        "1": 309,
+        "2": 141,
+        "3": 27,
+        "4": 5,
+        "5": 1
+      },
+      "top_10_image_resolutions": {
+        "1500x863": 164,
+        "1136x512": 37,
+        "900x350": 28,
+        "614x353": 21,
+        "1280x500": 19,
+        "4000x2300": 17,
+        "1000x563": 15,
+        "3840x1632": 15,
+        "480x360": 12,
+        "1920x1440": 11
+      },
+      "top_15_entity_labels": {
+        "car": 64,
+        "traffic light": 24,
+        "road sign": 23,
+        "rear-view mirror": 22,
+        "speed limit sign": 22,
+        "cyclist": 20,
+        "directional sign": 19,
+        "pedestrian": 19,
+        "solid line": 18,
+        "dashed line": 17,
+        "danger sign": 15,
+        "priority sign": 15,
+        "roadside markers": 14,
+        "directional arrow": 12,
+        "no entry sign": 12
+      },
+      "distinct_entity_labels": 131,
+      "combinatorial_uniform_nonempty_chance_exam_pct": 21.29,
+      "combinatorial_uniform_nonempty_chance_f1_pct": 51.73
+    },
+    "dev1000": {
+      "subset_name": "dev1000",
+      "n_samples": 1000,
+      "n_distinct_images": 1000,
+      "single_question_count": 714,
+      "single_question_pct": 71.4,
+      "multiple_question_count": 286,
+      "multiple_question_pct": 28.6,
+      "k_ge_1_gold_box_samples": 974,
+      "k_eq_0_gold_box_samples": 26,
+      "total_gold_boxes": 1401,
+      "mean_gold_boxes_per_sample": 1.401,
+      "mean_gold_box_area_pct": 3.63,
+      "median_gold_box_area_pct": 1.25,
+      "pct_gold_boxes_lt_1pct_area": 42.9,
+      "pct_gold_boxes_lt_2pct_area": 62.81,
+      "pct_gold_boxes_lt_5pct_area": 80.23,
+      "num_options_distribution": {
+        "2": 509,
+        "3": 102,
+        "4": 389
+      },
+      "num_true_answers_distribution": {
+        "1": 649,
+        "2": 314,
+        "3": 36,
+        "4": 1
+      },
+      "num_gold_boxes_distribution": {
+        "0": 26,
+        "1": 627,
+        "2": 280,
+        "3": 56,
+        "4": 9,
+        "5": 2
+      },
+      "top_10_image_resolutions": {
+        "1500x863": 339,
+        "1136x512": 89,
+        "900x350": 49,
+        "614x353": 47,
+        "1000x563": 38,
+        "4000x2300": 33,
+        "3840x1632": 31,
+        "1280x500": 26,
+        "960x520": 23,
+        "480x360": 22
+      },
+      "top_15_entity_labels": {
+        "car": 131,
+        "rear-view mirror": 52,
+        "directional sign": 50,
+        "road sign": 47,
+        "solid line": 45,
+        "speed limit sign": 45,
+        "dashed line": 41,
+        "traffic light": 40,
+        "pedestrian": 38,
+        "cyclist": 36,
+        "danger sign": 32,
+        "priority sign": 30,
+        "truck": 29,
+        "yield sign": 25,
+        "roadside markers": 23
+      },
+      "distinct_entity_labels": 179,
+      "combinatorial_uniform_nonempty_chance_exam_pct": 21.02,
+      "combinatorial_uniform_nonempty_chance_f1_pct": 51.4
+    },
+    "remaining_bank_2142": {
+      "subset_name": "remaining_bank_2142",
+      "n_samples": 2142,
+      "n_distinct_images": 2142,
+      "single_question_count": 1534,
+      "single_question_pct": 71.62,
+      "multiple_question_count": 608,
+      "multiple_question_pct": 28.38,
+      "k_ge_1_gold_box_samples": 2076,
+      "k_eq_0_gold_box_samples": 66,
+      "total_gold_boxes": 3105,
+      "mean_gold_boxes_per_sample": 1.4496,
+      "mean_gold_box_area_pct": 3.45,
+      "median_gold_box_area_pct": 1.26,
+      "pct_gold_boxes_lt_1pct_area": 43.0,
+      "pct_gold_boxes_lt_2pct_area": 62.13,
+      "pct_gold_boxes_lt_5pct_area": 81.0,
+      "num_options_distribution": {
+        "2": 1082,
+        "3": 215,
+        "4": 845
+      },
+      "num_true_answers_distribution": {
+        "1": 1394,
+        "2": 685,
+        "3": 63
+      },
+      "num_gold_boxes_distribution": {
+        "0": 66,
+        "1": 1290,
+        "2": 601,
+        "3": 139,
+        "4": 34,
+        "5": 12
+      },
+      "top_10_image_resolutions": {
+        "1500x863": 707,
+        "1136x512": 208,
+        "614x353": 109,
+        "900x350": 101,
+        "1000x563": 77,
+        "960x520": 66,
+        "3840x1632": 61,
+        "4000x2300": 52,
+        "1280x500": 49,
+        "480x360": 43
+      },
+      "top_15_entity_labels": {
+        "car": 376,
+        "rear-view mirror": 150,
+        "directional sign": 108,
+        "speed limit sign": 106,
+        "solid line": 104,
+        "road sign": 101,
+        "pedestrian": 100,
+        "danger sign": 99,
+        "dashed line": 97,
+        "traffic light": 78,
+        "priority sign": 68,
+        "directional arrow": 64,
+        "cyclist": 58,
+        "yield sign": 55,
+        "no parking sign": 54
+      },
+      "distinct_entity_labels": 204,
+      "combinatorial_uniform_nonempty_chance_exam_pct": 20.9,
+      "combinatorial_uniform_nonempty_chance_f1_pct": 51.18
+    }
+  },
+  "published_paper_anchors_2501_04671": {
+    "table3_llava_onevision_7b_finetuned_exam_pct": {
+      "table3_image_split_QPR_EA_anyres4": 60.7,
+      "predicted_entities_visual_crops": 58.7,
+      "oracle_entities_visual_crops_QPRV_EA": 62.0,
+      "oracle_vs_predicted_finetuned_gain_pts": 3.3,
+      "sesoi_p1_threshold_pts": 3.0
+    },
+    "sec5_2_random_baseline_test_exam_pct": 19.8
+  }
+}

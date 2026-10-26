@@ -1,0 +1,31 @@
+{
+  "schema": "vsps.ken_dvqa_prompts.v1",
+  "ruling_authority": "CC-104 (F1, F2)",
+  "qa_direct_prompt": {
+    "id": "QP-A",
+    "source": "Corbiere et al. (2025), arXiv:2501.04671, Appendix C.1 (DirectAnswer without CoT)",
+    "max_new_tokens": 16,
+    "do_sample": false,
+    "num_beams": 1,
+    "template": "Unless explicitly stated otherwise, assume you are driving a car in France.\nSelect all correct answers to the following question from the available options. Provide only the letters corresponding to your answer in the format: 'Answer(s): <letters>'\nQuestion: {question}\nOptions: {options}",
+    "template_sha256": "6321df1eca893c2f45bf0a7c49648b2134e14c2fb731bae3096e8a0dd69ba1f5"
+  },
+  "p3_caption_prompt": {
+    "id": "P3-Step1-SceneCaption",
+    "source": "CC-104 F2 (objective scene description with no question or options; max_new_tokens=60 as in Paper C)",
+    "max_new_tokens": 60,
+    "do_sample": false,
+    "num_beams": 1,
+    "template": "Describe this driving scene objectively in 2 to 3 concise English sentences, focusing on road signs, traffic lights, lane markings, mirrors, vehicles, and pedestrians. Do not speculate.",
+    "template_sha256": "8354e25cd84b4b81b9f60f79944b58edc0cde7b7a6200dec7a4a5a9c3e83a5b1"
+  },
+  "p3_qa_from_caption_prompt": {
+    "id": "P3-Step2-TextOnlyQA",
+    "source": "CC-104 F2 (text-only QA with predicted scene caption prepended verbatim to QP-A)",
+    "max_new_tokens": 16,
+    "do_sample": false,
+    "num_beams": 1,
+    "template": "Scene description: {caption}\nUnless explicitly stated otherwise, assume you are driving a car in France.\nSelect all correct answers to the following question from the available options. Provide only the letters corresponding to your answer in the format: 'Answer(s): <letters>'\nQuestion: {question}\nOptions: {options}",
+    "template_sha256": "59dd04fbb0e42537622ab919738469f00c7444b94cdb931b35e453e131a85d51"
+  }
+}

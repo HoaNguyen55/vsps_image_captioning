@@ -1,0 +1,24 @@
+{
+ "rule": "replace the literal local-scratch path prefix of Ken's assistant (user home directory, assistant CLI brain folder and session uuid) with <ken local scratch>; nothing else changes (CC-104b ruling 2, CP-052 pattern). The exact prefix regex is kept with the originals, git-excluded.",
+ "files": [
+  {
+   "path": "manuscript/ken/ken_dvqa_pilot/build_splits_and_stats.py",
+   "sha256_old": "c1e40444d9a760105e817b6096cd0b3c924b51f40586eb0c557385783265109d",
+   "sha256_new": "9998241e1b82dbb561f167c7c368aa86625406e436aa7ea9a0782208ccd5a913",
+   "replacements": 1
+  },
+  {
+   "path": "manuscript/ken/PILOT_NOTE_DRIVINGVQA_P1_P2_P3_2026-10-26.md",
+   "sha256_old": "ecea90b87099854fa1ec34259168825a6fe68639cbdd4bc34ab4e8b04b18c494",
+   "sha256_new": "8036e7f13778abd2ecfc496b42377e4322c39d338d04f2163073e0c0b3c66f25",
+   "replacements": 1
+  },
+  {
+   "path": "manuscript/ken/PILOT_NOTE_DRIVINGVQA_P1_P2_P3_2026-10-26_v2.md",
+   "sha256_old": "6fc09d9002657d6c6122fa100855601369b213dcaeeb450c8b86e1d2c899f702",
+   "sha256_new": "88988660e789317895dff3b6e3a551528b327467b385a529c0858883b8fa0a03",
+   "replacements": 4
+  }
+ ],
+ "note": "v1 SHA256SUMS 8820f768 is committed unchanged; `sha256sum -c` on v1 fails for build_splits_and_stats.py by design; the git-excluded originals are the sha referents"
+}
