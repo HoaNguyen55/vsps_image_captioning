@@ -11,7 +11,8 @@ Parser rule (CC-104 F1 & REVIEW_KEN_BATCH8 W1):
 
 Bootstrap rule (CC-104 F4):
   - B = 10,000 draws with `np.random.default_rng(0)`.
-  - One shared index matrix per scored set: shape (10000, 1000) for P1/P2 (`dev1000`) and (10000, 500) for P3 (`dev500`).
+  - v4 (PI-1026c): P1, P2 and P3 all score the full train split (`train3142`), so there is one shared index
+    matrix of shape (10000, 3142). The K >= 1 descriptive check has its own (10000, n_K>=1) matrix.
 
 Usage:
   python3 scripts/ken_dvqa_pilot/score.py --selftest
@@ -28,14 +29,13 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 ROOT = next(
-    (p for p in HERE.parents if (p / "manuscript/ken/drivingvqa_dev500_ids.tsv").exists()),
+    (p for p in HERE.parents if (p / "manuscript/ken/drivingvqa_train3142_ids.tsv").exists()),
     HERE.parents[2],
 )
 
-DEV500_TSV = ROOT / "manuscript/ken/drivingvqa_dev500_ids.tsv"
-DEV500_SHA256 = "9896af1186ddd6a5806095ba696851b5aef512079f5d0813cff3f7f4fae9c4ce"
-DEV1000_TSV = ROOT / "manuscript/ken/drivingvqa_dev1000_ids.tsv"
-DEV1000_SHA256 = "636e04775153ef9cb879a7620d195fcaa7e86894ead73b008c8f95b47e268dec"
+TRAIN3142_TSV = ROOT / "manuscript/ken/drivingvqa_train3142_ids.tsv"
+TRAIN3142_SHA256 = "39219d099ea25ccb79ce7bae13aa61b7198b9409bd468a6075b2e0b4809afc45"
+N_ITEMS = 3142
 TRAIN_JSON_PIN = "4a204e3fa7516db313ceeb91ac989919979e31da20e484bc5f4018c261bd483d"
 
 MODELS = ("qwen25vl_7b", "internvl3_8b")
@@ -264,14 +264,11 @@ def score_runs_directory(runs_dir: Path, dvqa_dir: Path, ledger_path: Path) -> d
         raise SystemExit(f"REFUSED: missing or unverified train.json at {train_json}")
     gold_data = json.loads(train_json.read_text(encoding="utf-8"))
 
-    dev500_ids = load_manifest_ids(DEV500_TSV, DEV500_SHA256, 500)
-    dev1000_ids = load_manifest_ids(DEV1000_TSV, DEV1000_SHA256, 1000)
+    train_ids = load_manifest_ids(TRAIN3142_TSV, TRAIN3142_SHA256, N_ITEMS)
+    boot_all = make_bootstrap_matrix(N_ITEMS, BOOTSTRAP_B, BOOTSTRAP_SEED)
 
-    boot_1000 = make_bootstrap_matrix(1000, BOOTSTRAP_B, BOOTSTRAP_SEED)
-    boot_500 = make_bootstrap_matrix(500, BOOTSTRAP_B, BOOTSTRAP_SEED)
-
-    # K >= 1 subset indices within dev1000 (CC-104 F9 descriptive check)
-    k_ge_1_ids = [sid for sid in dev1000_ids if len(gold_data[sid].get("relevant_entities", [])) >= 1]
+    # K >= 1 subset indices within train3142 (CC-104 F9 descriptive check)
+    k_ge_1_ids = [sid for sid in train_ids if len(gold_data[sid].get("relevant_entities", [])) >= 1]
     boot_k_ge_1 = make_bootstrap_matrix(len(k_ge_1_ids), BOOTSTRAP_B, BOOTSTRAP_SEED)
 
     ledger_rows: list[dict] = []
@@ -284,30 +281,18 @@ def score_runs_directory(runs_dir: Path, dvqa_dir: Path, ledger_path: Path) -> d
                 continue
             preds_map = load_run_jsonl(run_file)
             is_p3 = arm == "P3-SelfCap"
-            target_ids = dev500_ids if is_p3 else dev1000_ids
-            boot_mat = boot_500 if is_p3 else boot_1000
-
-            cell_res = score_predictions_map(preds_map, target_ids, gold_data, boot_mat, is_p3=is_p3)
+            cell_res = score_predictions_map(preds_map, train_ids, gold_data, boot_all, is_p3=is_p3)
             cell_key = f"{arm}__{model}"
             rec_row = {
                 "cell": cell_key,
                 "arm": arm,
                 "model": model,
-                "set": "dev500" if is_p3 else "dev1000",
+                "set": "train3142",
                 "run_file": run_file.name,
                 "run_file_sha256": sha256_file(run_file),
                 **cell_res,
             }
             if arm in ("P1-Blind", "P1-Full", "P1-Oracle"):
-                # Also score on dev500 (so P3 can compare against P1-Full on the exact same 500 items)
-                dev500_sub = score_predictions_map(preds_map, dev500_ids, gold_data, boot_500, is_p3=False)
-                rec_row["dev500_subset"] = {
-                    "n_samples": 500,
-                    "exam": dev500_sub["exam"],
-                    "f1": dev500_sub["f1"],
-                    "exam_vec": dev500_sub["exam_vec"],
-                    "f1_vec": dev500_sub["f1_vec"],
-                }
                 # Descriptive check on K >= 1 subset (CC-104 F9)
                 k1_sub = score_predictions_map(preds_map, k_ge_1_ids, gold_data, boot_k_ge_1, is_p3=False)
                 rec_row["k_ge_1_subset"] = {
@@ -398,13 +383,12 @@ def selftest() -> None:
     assert compute_item_exam_f1([], ["A", "C"]) == (0.0, 0.0)
 
     # 3. Bootstrap index matrix shape and determinism tests (CC-104 F4)
-    m1000_a = make_bootstrap_matrix(1000, BOOTSTRAP_B, BOOTSTRAP_SEED)
-    m1000_b = make_bootstrap_matrix(1000, BOOTSTRAP_B, BOOTSTRAP_SEED)
-    m500 = make_bootstrap_matrix(500, BOOTSTRAP_B, BOOTSTRAP_SEED)
-    assert m1000_a.shape == (10000, 1000) and np.array_equal(m1000_a, m1000_b)
-    assert m500.shape == (10000, 500)
-    mat1000_sha = hashlib.sha256(m1000_a.tobytes()).hexdigest()
-    mat500_sha = hashlib.sha256(m500.tobytes()).hexdigest()
+    m_all_a = make_bootstrap_matrix(N_ITEMS, BOOTSTRAP_B, BOOTSTRAP_SEED)
+    m_all_b = make_bootstrap_matrix(N_ITEMS, BOOTSTRAP_B, BOOTSTRAP_SEED)
+    assert m_all_a.shape == (10000, 3142) and np.array_equal(m_all_a, m_all_b)
+    mat_all_sha = hashlib.sha256(m_all_a.tobytes()).hexdigest()
+    train_ids = load_manifest_ids(TRAIN3142_TSV, TRAIN3142_SHA256, N_ITEMS)
+    assert train_ids == sorted(train_ids, key=int)
 
     # 4. Verify per-cell unparseable_reasons logging in score_predictions_map (CC-104a W1)
     mini_boot = make_bootstrap_matrix(4, BOOTSTRAP_B, BOOTSTRAP_SEED)
@@ -431,8 +415,7 @@ def selftest() -> None:
     print(json.dumps({
         "script": "score.py",
         "selftest": "OK",
-        "bootstrap_10000x1000_sha256": mat1000_sha,
-        "bootstrap_10000x500_sha256": mat500_sha,
+        "bootstrap_10000x3142_sha256": mat_all_sha,
         "parser_checks_passed": 23,
     }, sort_keys=True))
 

@@ -1,8 +1,12 @@
 #!/bin/bash
 # M4 Operator Job Script: DrivingVQA Feasibility Pilot P1, P3, and Conditional P2 (CC-104 F1-F12; CC-104a W1-W8).
 # Runs EXCLUSIVELY on M4 (never on M3).
-# Stage A: P1 (cap 4500s = 1.25 GPU-h) then P3 (cap 2700s = 0.75 GPU-h) -> score.py -> decide.py (--stage A -> decide_pilot.json).
-# Stage B: P2 (cap 4500s = 1.25 GPU-h) runs ONLY if decide_pilot.json reports status=="COMPLETE" and P1_verdict=="GO",
+# v4 (PI-1026c, CC-108 W8): P1, P2 and P3 all run on the 3,142 train ids (drivingvqa_train3142_ids.tsv). Exploratory.
+# Caps scale CC-104 F3's estimates to n = 3,142, each >= 25% over its estimate, total 45,360 s = 12.6 GPU-h:
+#   P1 est 0.9 h x 3.142 = 2.83 h -> cap 14040 s (3.90 h); P3 est 0.6 h x 6.284 = 3.77 h -> cap 17100 s (4.75 h);
+#   P2 est 1.0 h x 3.142 = 3.14 h -> cap 14220 s (3.95 h).
+# Stage A: P1 (cap 14040s = 3.90 GPU-h) then P3 (cap 17100s = 4.75 GPU-h) -> score.py -> decide.py (--stage A -> decide_pilot.json).
+# Stage B: P2 (cap 14220s = 3.95 GPU-h) runs ONLY if decide_pilot.json reports status=="COMPLETE" and P1_verdict=="GO",
 #          writing ONLY decide_pilot_stageB.json (never rewriting Stage A decide_pilot.json, W6).
 # Usage: bash scripts/ken_dvqa_pilot/job.sh <expected_40_hex_git_HEAD> [<expected_SHA256SUMS_sha>]
 set -u
@@ -19,7 +23,7 @@ D="scripts/ken_dvqa_pilot"
 
 LB=/root/venv-lb/bin/python
 DVQA_DIR=/root/dvqa_pilot
-IMG_SHA_TSV=manuscript/ken/dvqa_dev1000_image_sha256.tsv
+IMG_SHA_TSV=manuscript/ken/dvqa_train3142_image_sha256.tsv
 O=.session_backup/2026-10-26/dvqa_pilot
 R=$O/runs
 LOG=$O/logs
@@ -34,9 +38,9 @@ Q25=$HUB/models--Qwen--Qwen2.5-VL-7B-Instruct/snapshots/cc594898137f460bfe9f0759
 IV3=$HUB/models--OpenGVLab--InternVL3-8B-hf/snapshots/259a3b64a14623c0ec91a045cb43f7c5af5fa6af
 VENV_PIN_PREFIX="685ffe2a"
 
-P1_CAP=4500
-P3_CAP=2700
-P2_CAP=4500
+P1_CAP=14040
+P3_CAP=17100
+P2_CAP=14220
 
 ts() { date -u +%FT%TZ; }
 say() { echo "$(ts) $*"; }
@@ -133,7 +137,7 @@ run_capped_block() {
   done
 }
 
-# ---------------------------------------------------------------- 2. Stage A: P1 (1.25 GPU-h cap) then P3 (0.75 GPU-h cap)
+# ---------------------------------------------------------------- 2. Stage A: P1 (3.90 GPU-h cap) then P3 (4.75 GPU-h cap)
 run_capped_block P1 "$P1_CAP" A "$DECIDE_OUT"
 run_capped_block P3 "$P3_CAP" A "$DECIDE_OUT"
 
@@ -151,7 +155,7 @@ if [ "$STATUS" != "COMPLETE" ]; then
   stop "Stage A ended with status=$STATUS (no verdict)"
 fi
 
-# ---------------------------------------------------------------- 3. Stage B: P2 (1.25 GPU-h cap), ONLY if P1_verdict == GO (W6: writes only decide_pilot_stageB.json)
+# ---------------------------------------------------------------- 3. Stage B: P2 (3.95 GPU-h cap), ONLY if P1_verdict == GO (W6: writes only decide_pilot_stageB.json)
 if [ "$P1_VERDICT" = "GO" ]; then
   say "P1_verdict is GO -> starting Stage B (P2, cap ${P2_CAP}s)"
   run_capped_block P2 "$P2_CAP" B "$DECIDE_B_OUT"

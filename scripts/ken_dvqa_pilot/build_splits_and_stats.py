@@ -18,9 +18,15 @@ REVIEW_KEN_BATCH8 W5 & W8 updates:
   - Writes `dvqa_train_descriptive_stats_v2.json` without overwriting `dvqa_train_descriptive_stats.json`,
     removing `55.6` and `78.3` and renaming `anyres4_upper_bound` to `table3_image_split_QPR_EA_anyres4: 60.7` (W8).
 
+v4 (PI-1026c, CC-108 W8): P1, P2 and P3 all run on the full train split.
+  - manuscript/ken/drivingvqa_train3142_ids.tsv: all 3,142 train IDs ordered by int(sample_id), same columns
+    as dev1000. Written by `--write-train3142`; `--selftest` checks its pin, its count, dev1000 inside it.
+  - The dev500/dev500b/dev1000 lists stay pinned as committed record; no v4 step reads them except that check.
+
 Usage:
   python3 scripts/ken_dvqa_pilot/build_splits_and_stats.py --selftest
   python3 scripts/ken_dvqa_pilot/build_splits_and_stats.py --train-json /root/dvqa_pilot/train.json
+  python3 scripts/ken_dvqa_pilot/build_splits_and_stats.py --train-json <train.json> --write-train3142
 """
 from __future__ import annotations
 
@@ -49,6 +55,10 @@ DEV500B_TSV_SHA256 = "86cc908cdf3e8622086caafd44572edf6ad35ef13ad0bdb8150bf393f3
 DEV500B_ID_COL_SHA256 = "4ab9977f21f73f6612dd15d713bf11e6d707451be0a12c9f61a16acda6570fee"
 DEV1000_TSV_SHA256 = "636e04775153ef9cb879a7620d195fcaa7e86894ead73b008c8f95b47e268dec"
 DEV1000_ID_COL_SHA256 = "c8bad8f202cd0038078f7646415bddd5deff29512b0bd987729ab4f5bc5ac7c9"
+
+TRAIN3142_TSV_SHA256 = "39219d099ea25ccb79ce7bae13aa61b7198b9409bd468a6075b2e0b4809afc45"
+TRAIN3142_TSV = KEN_DIR / "drivingvqa_train3142_ids.tsv"
+N_TRAIN = 3142
 
 HEADER = "sample_id\timg_filename\thas_multiple_questions\tnum_questions\tnum_gold_boxes\timage_size"
 
@@ -88,6 +98,56 @@ def compute_splits(train_data: dict) -> tuple[list[str], list[str], list[str], l
     bank2142_ids = rem_ordered[500:]
     dev1000_ids = dev500_ids + dev500b_ids
     return dev500_ids, dev500b_ids, dev1000_ids, bank2142_ids
+
+
+def train3142_ids(train_data: dict) -> list[str]:
+    """v4: every train ID, ascending int(sample_id). No sampling, no remainder."""
+    ids = sorted(train_data.keys(), key=lambda x: int(x))
+    if len(ids) != N_TRAIN or len(set(ids)) != N_TRAIN:
+        raise ValueError(f"Expected {N_TRAIN} unique train keys, got {len(set(ids))}")
+    if len({str(train_data[sid]["img_filename"]) for sid in ids}) != N_TRAIN:
+        raise ValueError("train img_filename values are not unique")
+    return ids
+
+
+def read_tsv_ids(path: Path) -> list[str]:
+    return [r.split("\t")[0] for r in path.read_text(encoding="utf-8").splitlines()[1:] if r.strip()]
+
+
+def check_train3142_tsv(path: Path = TRAIN3142_TSV) -> list[str]:
+    """v4: pinned sha, 3,142 unique IDs in int order, and dev1000 is a subset."""
+    if sha256_file(path) != TRAIN3142_TSV_SHA256:
+        raise ValueError(f"{path} sha256 mismatch against pinned {TRAIN3142_TSV_SHA256[:8]}...")
+    ids = read_tsv_ids(path)
+    assert len(ids) == N_TRAIN and len(set(ids)) == N_TRAIN
+    assert ids == sorted(ids, key=lambda x: int(x))
+    dev1000 = read_tsv_ids(KEN_DIR / "drivingvqa_dev1000_ids.tsv")
+    assert set(dev1000) <= set(ids), "dev1000 is not a subset of train3142"
+    return ids
+
+
+def power_table(ns: tuple[int, ...] = (500, 1000, N_TRAIN), discordance: tuple[float, ...] = (0.15, 0.25)) -> dict:
+    """v4 planning arithmetic (normal approximation, no data): 95% CI half-width of a paired Exam difference,
+    100 * 1.96 * sqrt(d / n) per backbone; pooled over two independent backbones divides by sqrt(2); fully
+    correlated backbones keep the per-backbone width. `p_pass_p1_true_3p3` = P(estimate >= 3.0) for a true +3.3."""
+    from statistics import NormalDist
+
+    nd = NormalDist()
+    out: dict = {}
+    for n in ns:
+        rows = {}
+        for d in discordance:
+            hw = 100.0 * 1.96 * (d / n) ** 0.5
+            hw_pool = hw / 2 ** 0.5
+            rows[f"d{int(round(d * 100))}"] = {
+                "ci_half_width_per_backbone": round(hw, 2),
+                "ci_half_width_pooled_independent": round(hw_pool, 2),
+                "ci_half_width_pooled_correlated": round(hw, 2),
+                "p_pass_p1_true_3p3_pooled_independent": round(nd.cdf((3.3 - 3.0) / (hw_pool / 1.96)), 3),
+                "p_pass_p1_true_3p3_pooled_correlated": round(nd.cdf((3.3 - 3.0) / (hw / 1.96)), 3),
+            }
+        out[f"n{n}"] = rows
+    return {"schema": "vsps.ken_dvqa_power.v4", "label": "PLANNING_ARITHMETIC_NO_DATA", "z": 1.96, "table": out}
 
 
 def format_tsv_rows(sample_ids: list[str], train_data: dict) -> str:
@@ -371,9 +431,22 @@ def selftest(train_json_path: Path = TRAIN_JSON_DEFAULT) -> None:
         assert s1["manifests"]["dev1000"]["tsv_sha256"] == DEV1000_TSV_SHA256
         recomputed_from_train = True
 
+    # 4b. v4 power arithmetic reproduces CC-104's n=500 per-backbone half-widths (3.4 / 4.4)
+    pw = power_table()["table"]
+    assert pw["n500"]["d15"]["ci_half_width_per_backbone"] == 3.39 and pw["n500"]["d25"]["ci_half_width_per_backbone"] == 4.38
+
+    # 5. v4: pinned train3142 list, and byte-identical regeneration from train.json when readable
+    ids_3142 = check_train3142_tsv(TRAIN3142_TSV)
+    if can_read_file(train_json_path):
+        train_data = json.loads(train_json_path.read_text(encoding="utf-8"))
+        regen = format_tsv_rows(train3142_ids(train_data), train_data)
+        assert sha256_text(regen) == TRAIN3142_TSV_SHA256
+
     print(json.dumps({
         "script": "build_splits_and_stats.py",
         "selftest": "OK",
+        "train3142_tsv_sha256": TRAIN3142_TSV_SHA256,
+        "train3142_n": len(ids_3142),
         "dev500_tsv_sha256": DEV500_TSV_SHA256,
         "dev500b_tsv_sha256": DEV500B_TSV_SHA256,
         "dev1000_tsv_sha256": DEV1000_TSV_SHA256,
@@ -386,9 +459,25 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--train-json", type=Path, default=TRAIN_JSON_DEFAULT)
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--write-train3142", action="store_true")
+    ap.add_argument("--write-power", action="store_true")
     args = ap.parse_args()
     if args.selftest:
         selftest(args.train_json)
+        return
+    if args.write_power:
+        out_p = KEN_DIR / "dvqa_train3142_power_v4.json"
+        out_p.write_text(json.dumps(power_table(), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(json.dumps({"status": "OK", "path": out_p.relative_to(ROOT).as_posix(), "sha256": sha256_file(out_p)}))
+        return
+    if args.write_train3142:
+        if sha256_file(args.train_json) != TRAIN_JSON_SHA256:
+            raise SystemExit(f"REFUSED: train.json sha256 mismatch at {args.train_json}")
+        train_data = json.loads(args.train_json.read_text(encoding="utf-8"))
+        text = format_tsv_rows(train3142_ids(train_data), train_data)
+        TRAIN3142_TSV.write_text(text, encoding="utf-8")
+        print(json.dumps({"status": "OK", "path": TRAIN3142_TSV.relative_to(ROOT).as_posix(),
+                          "n": N_TRAIN, "tsv_sha256": sha256_text(text)}, sort_keys=True))
         return
     stats = build_all(args.train_json, write_files=True)
     print(json.dumps({

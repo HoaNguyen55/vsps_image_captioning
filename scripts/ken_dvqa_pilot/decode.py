@@ -31,7 +31,7 @@ import numpy as np
 
 HERE = Path(__file__).resolve().parent
 ROOT = next(
-    (p for p in HERE.parents if (p / "manuscript/ken/drivingvqa_dev500_ids.tsv").exists()),
+    (p for p in HERE.parents if (p / "manuscript/ken/drivingvqa_train3142_ids.tsv").exists()),
     HERE.parents[2],
 )
 
@@ -43,10 +43,10 @@ PROMPT_SHAS = {
     "p3_qa_from_caption_prompt": "59dd04fbb0e42537622ab919738469f00c7444b94cdb931b35e453e131a85d51",
 }
 
-DEV500_TSV = ROOT / "manuscript/ken/drivingvqa_dev500_ids.tsv"
-DEV500_SHA256 = "9896af1186ddd6a5806095ba696851b5aef512079f5d0813cff3f7f4fae9c4ce"
-DEV1000_TSV = ROOT / "manuscript/ken/drivingvqa_dev1000_ids.tsv"
-DEV1000_SHA256 = "636e04775153ef9cb879a7620d195fcaa7e86894ead73b008c8f95b47e268dec"
+# v4 (PI-1026c): every stage decodes all 3,142 train ids
+TRAIN3142_TSV = ROOT / "manuscript/ken/drivingvqa_train3142_ids.tsv"
+TRAIN3142_SHA256 = "39219d099ea25ccb79ce7bae13aa61b7198b9409bd468a6075b2e0b4809afc45"
+N_ITEMS = 3142
 TRAIN_JSON_SHA256 = "4a204e3fa7516db313ceeb91ac989919979e31da20e484bc5f4018c261bd483d"
 
 MODELS = {
@@ -510,8 +510,7 @@ def run_stage_decode(
         raise SystemExit(f"REFUSED: invalid or missing train.json at {train_json_path}")
     train_data = json.loads(train_json_path.read_text(encoding="utf-8"))
 
-    dev500_ids = load_manifest_ids(DEV500_TSV, DEV500_SHA256, 500)
-    dev1000_ids = load_manifest_ids(DEV1000_TSV, DEV1000_SHA256, 1000)
+    train_ids = load_manifest_ids(TRAIN3142_TSV, TRAIN3142_SHA256, N_ITEMS)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     m = MODELS[model_key]
@@ -523,7 +522,7 @@ def run_stage_decode(
             out_file = out_dir / f"{arm}_{model_key}.preds.jsonl"
             done = load_existing_jsonl(out_file)
             with out_file.open("a", encoding="utf-8") as fh:
-                for sid in dev1000_ids:
+                for sid in train_ids:
                     if sid in done:
                         continue
                     item = train_data[sid]
@@ -566,7 +565,7 @@ def run_stage_decode(
         cap_max_tok = prompts_cfg["p3_caption_prompt"]["max_new_tokens"]
 
         with cap_file.open("a", encoding="utf-8") as fh_cap:
-            for sid in dev500_ids:
+            for sid in train_ids:
                 if sid in done_caps:
                     continue
                 item = train_data[sid]
@@ -590,7 +589,7 @@ def run_stage_decode(
 
         done_preds = load_existing_jsonl(pred_file)
         with pred_file.open("a", encoding="utf-8") as fh_pred:
-            for sid in dev500_ids:
+            for sid in train_ids:
                 if sid in done_preds:
                     continue
                 item = train_data[sid]
@@ -620,7 +619,7 @@ def run_stage_decode(
             out_file = out_dir / f"{arm}_{model_key}.preds.jsonl"
             done = load_existing_jsonl(out_file)
             with out_file.open("a", encoding="utf-8") as fh:
-                for sid in dev1000_ids:
+                for sid in train_ids:
                     if sid in done:
                         continue
                     item = train_data[sid]
@@ -675,9 +674,8 @@ def selftest() -> None:
     assert MODELS["internvl3_8b"]["single_tile_grid_hw"] == (16, 16)
 
     # 3. Verify manifest pins
-    dev500_ids = load_manifest_ids(DEV500_TSV, DEV500_SHA256, 500)
-    dev1000_ids = load_manifest_ids(DEV1000_TSV, DEV1000_SHA256, 1000)
-    assert dev1000_ids[:500] == dev500_ids
+    train_ids = load_manifest_ids(TRAIN3142_TSV, TRAIN3142_SHA256, N_ITEMS)
+    assert train_ids == sorted(train_ids, key=int)
 
     # 4. Verify 50% bbox expansion and image boundary clipping
     assert expand_bbox_50pct([100.0, 200.0, 40.0, 60.0], [1500, 863]) == [90.0, 185.0, 150.0, 275.0]

@@ -11,6 +11,9 @@ REVIEW_KEN_BATCH8 W7 updates:
   - Every return branch (`INCOMPLETE`, `JOB_STOP_UNPARSEABLE`, `JOB_STOP_EMPTY_CAPTIONS`, and `COMPLETE`)
     includes the `"cells"` summary table and `"k_ge_1_descriptive_check"` (`F9`).
 
+v4 (PI-1026c): P1, P2 and P3 are all evaluated on train3142 (n = 3,142) with one (10000, 3142) index matrix;
+P3 compares P1-Full and P3-SelfCap on the same 3,142 items. Rules and thresholds are unchanged.
+
 Usage:
   python3 scripts/ken_dvqa_pilot/decide.py --selftest
   python3 scripts/ken_dvqa_pilot/decide.py --ledger .session_backup/2026-10-26/dvqa_pilot/ledger.jsonl --gpu-seconds .session_backup/2026-10-26/dvqa_pilot/gpu_seconds.tsv --out .session_backup/2026-10-26/dvqa_pilot/decide_pilot.json
@@ -140,8 +143,7 @@ def evaluate_decision_from_cells(
     ledger_sha256: str | None = None,
     stage: str = "A",
 ) -> dict:
-    boot_1000 = SC.make_bootstrap_matrix(1000, SC.BOOTSTRAP_B, SC.BOOTSTRAP_SEED)
-    boot_500 = SC.make_bootstrap_matrix(500, SC.BOOTSTRAP_B, SC.BOOTSTRAP_SEED)
+    boot_all = SC.make_bootstrap_matrix(SC.N_ITEMS, SC.BOOTSTRAP_B, SC.BOOTSTRAP_SEED)
 
     # Always build cell_table and k_ge_1_descriptive_check first so every branch includes them (F9, W7)
     cell_table, k1_check = build_cell_table_and_k1_check(cells)
@@ -223,7 +225,7 @@ def evaluate_decision_from_cells(
             "gpu_budget": gpu_info,
         }
 
-    # 3. Evaluate P1 on dev1000 (n=1000) using unrounded floats for all threshold comparisons (W7)
+    # 3. Evaluate P1 on train3142 (n=3142) using unrounded floats for all threshold comparisons (W7)
     p1_blind_q = cells["P1-Blind__qwen25vl_7b"]
     p1_blind_i = cells["P1-Blind__internvl3_8b"]
     p1_full_q = cells["P1-Full__qwen25vl_7b"]
@@ -238,11 +240,11 @@ def evaluate_decision_from_cells(
     ora_pool_f1 = pooled_vec(p1_ora_q, p1_ora_i, "f1_vec")
 
     p1_ora_vs_full_pool_exam, p1_ora_vs_full_pool_exam_raw = paired_contrast_raw_and_display(
-        ora_pool_exam, full_pool_exam, boot_1000
+        ora_pool_exam, full_pool_exam, boot_all
     )
-    p1_ora_vs_full_pool_f1, _ = paired_contrast_raw_and_display(ora_pool_f1, full_pool_f1, boot_1000)
-    p1_ora_vs_full_q_exam, _ = paired_contrast_raw_and_display(p1_ora_q["exam_vec"], p1_full_q["exam_vec"], boot_1000)
-    p1_ora_vs_full_i_exam, _ = paired_contrast_raw_and_display(p1_ora_i["exam_vec"], p1_full_i["exam_vec"], boot_1000)
+    p1_ora_vs_full_pool_f1, _ = paired_contrast_raw_and_display(ora_pool_f1, full_pool_f1, boot_all)
+    p1_ora_vs_full_q_exam, _ = paired_contrast_raw_and_display(p1_ora_q["exam_vec"], p1_full_q["exam_vec"], boot_all)
+    p1_ora_vs_full_i_exam, _ = paired_contrast_raw_and_display(p1_ora_i["exam_vec"], p1_full_i["exam_vec"], boot_all)
 
     full_minus_blind_pool = float(np.mean(full_pool_exam - blind_pool_exam))
     full_minus_blind_q = float(np.mean(np.asarray(p1_full_q["exam_vec"]) - np.asarray(p1_blind_q["exam_vec"])))
@@ -261,28 +263,23 @@ def evaluate_decision_from_cells(
         p1_verdict = "STOP"
         p1_reason = "POOLED_ORACLE_GAIN_BELOW_3PTS_OR_CI_INCLUDES_0"
 
-    # 4. Evaluate P3 on dev500 (n=500) using unrounded floats
+    # 4. Evaluate P3 on train3142 (n=3142, same items as P1-Full) using unrounded floats
     p3_cap_q = cells["P3-SelfCap__qwen25vl_7b"]
     p3_cap_i = cells["P3-SelfCap__internvl3_8b"]
-    p1_full_dev500_q_exam = p1_full_q.get("dev500_subset", {}).get("exam_vec", p1_full_q["exam_vec"][:500])
-    p1_full_dev500_i_exam = p1_full_i.get("dev500_subset", {}).get("exam_vec", p1_full_i["exam_vec"][:500])
-    p1_full_dev500_q_f1 = p1_full_q.get("dev500_subset", {}).get("f1_vec", p1_full_q["f1_vec"][:500])
-    p1_full_dev500_i_f1 = p1_full_i.get("dev500_subset", {}).get("f1_vec", p1_full_i["f1_vec"][:500])
 
-    p3_q_exam_diff, p3_q_exam_raw = paired_contrast_raw_and_display(p1_full_dev500_q_exam, p3_cap_q["exam_vec"], boot_500)
-    p3_i_exam_diff, p3_i_exam_raw = paired_contrast_raw_and_display(p1_full_dev500_i_exam, p3_cap_i["exam_vec"], boot_500)
-    p3_q_f1_diff, _ = paired_contrast_raw_and_display(p1_full_dev500_q_f1, p3_cap_q["f1_vec"], boot_500)
-    p3_i_f1_diff, _ = paired_contrast_raw_and_display(p1_full_dev500_i_f1, p3_cap_i["f1_vec"], boot_500)
+    p3_q_exam_diff, p3_q_exam_raw = paired_contrast_raw_and_display(p1_full_q["exam_vec"], p3_cap_q["exam_vec"], boot_all)
+    p3_i_exam_diff, p3_i_exam_raw = paired_contrast_raw_and_display(p1_full_i["exam_vec"], p3_cap_i["exam_vec"], boot_all)
+    p3_q_f1_diff, _ = paired_contrast_raw_and_display(p1_full_q["f1_vec"], p3_cap_q["f1_vec"], boot_all)
+    p3_i_f1_diff, _ = paired_contrast_raw_and_display(p1_full_i["f1_vec"], p3_cap_i["f1_vec"], boot_all)
 
-    p3_pool_full_exam = 0.5 * (np.asarray(p1_full_dev500_q_exam) + np.asarray(p1_full_dev500_i_exam))
     p3_pool_cap_exam = pooled_vec(p3_cap_q, p3_cap_i, "exam_vec")
-    p3_pool_exam_diff, _ = paired_contrast_raw_and_display(p3_pool_full_exam, p3_pool_cap_exam, boot_500)
+    p3_pool_exam_diff, _ = paired_contrast_raw_and_display(full_pool_exam, p3_pool_cap_exam, boot_all)
 
     p3_q_ok = p3_q_exam_raw["delta"] >= 10.0 and p3_q_exam_raw["ci_lo"] > 0.0
     p3_i_ok = p3_i_exam_raw["delta"] >= 10.0 and p3_i_exam_raw["ci_lo"] > 0.0
     p3_verdict = "GO" if (p3_q_ok and p3_i_ok) else "STOP"
 
-    # 5. Evaluate P2 on dev1000 (n=1000) ONLY if P1_verdict == "GO"
+    # 5. Evaluate P2 on train3142 (n=3142) ONLY if P1_verdict == "GO"
     p2_summary: dict = {}
     if p1_verdict != "GO":
         p2_verdict = "CANCELLED_P1_STOP"
@@ -311,11 +308,11 @@ def evaluate_decision_from_cells(
             att_pool_f1 = pooled_vec(p2_att_q, p2_att_i, "f1_vec")
 
             p2_att_vs_grid_pool_exam, p2_att_vs_grid_pool_exam_raw = paired_contrast_raw_and_display(
-                att_pool_exam, grid_pool_exam, boot_1000
+                att_pool_exam, grid_pool_exam, boot_all
             )
-            p2_att_vs_grid_pool_f1, _ = paired_contrast_raw_and_display(att_pool_f1, grid_pool_f1, boot_1000)
-            p2_att_vs_grid_q_exam, _ = paired_contrast_raw_and_display(p2_att_q["exam_vec"], p2_grid_q["exam_vec"], boot_1000)
-            p2_att_vs_grid_i_exam, _ = paired_contrast_raw_and_display(p2_att_i["exam_vec"], p2_grid_i["exam_vec"], boot_1000)
+            p2_att_vs_grid_pool_f1, _ = paired_contrast_raw_and_display(att_pool_f1, grid_pool_f1, boot_all)
+            p2_att_vs_grid_q_exam, _ = paired_contrast_raw_and_display(p2_att_q["exam_vec"], p2_grid_q["exam_vec"], boot_all)
+            p2_att_vs_grid_i_exam, _ = paired_contrast_raw_and_display(p2_att_i["exam_vec"], p2_grid_i["exam_vec"], boot_all)
 
             oracle_gap = float(np.mean(ora_pool_exam - full_pool_exam))
             att_gain = float(np.mean(att_pool_exam - full_pool_exam))
@@ -332,7 +329,7 @@ def evaluate_decision_from_cells(
             p2_summary = {
                 "verdict": p2_verdict,
                 "reason": p2_reason,
-                "n_samples": 1000,
+                "n_samples": SC.N_ITEMS,
                 "pooled_att_vs_grid_exam": p2_att_vs_grid_pool_exam,
                 "pooled_att_vs_grid_f1": p2_att_vs_grid_pool_f1,
                 "qwen25vl_7b_att_vs_grid_exam": p2_att_vs_grid_q_exam,
@@ -352,7 +349,7 @@ def evaluate_decision_from_cells(
             "verdict": p1_verdict,
             "reason": p1_reason,
             "sesoi_anchor_note": "Anchored on Table 3 fine-tuned oracle-vs-predicted gain (62.0 vs 58.7 = +3.3 pts) in 2501.04671 (CC-104 F7)",
-            "n_samples": 1000,
+            "n_samples": SC.N_ITEMS,
             "pooled_oracle_vs_full_exam": p1_ora_vs_full_pool_exam,
             "pooled_oracle_vs_full_f1": p1_ora_vs_full_pool_f1,
             "qwen25vl_7b_oracle_vs_full_exam": p1_ora_vs_full_q_exam,
@@ -368,7 +365,7 @@ def evaluate_decision_from_cells(
         "P2_training_free_attention_crops": p2_summary,
         "P3_caption_bottleneck": {
             "verdict": p3_verdict,
-            "n_samples": 500,
+            "n_samples": SC.N_ITEMS,
             "pooled_full_minus_selfcap_exam": p3_pool_exam_diff,
             "qwen25vl_7b_full_minus_selfcap_exam": p3_q_exam_diff,
             "qwen25vl_7b_full_minus_selfcap_f1": p3_q_f1_diff,
@@ -390,7 +387,7 @@ def make_synthetic_cell(arm: str, model: str, exam_vec: np.ndarray, unparseable_
         "cell": f"{arm}__{model}",
         "arm": arm,
         "model": model,
-        "set": "dev500" if arm == "P3-SelfCap" else "dev1000",
+        "set": "train3142",
         "n_samples": n,
         "complete": True,
         "unparseable_count": int(round(unparseable_rate * n)),
@@ -403,23 +400,15 @@ def make_synthetic_cell(arm: str, model: str, exam_vec: np.ndarray, unparseable_
         "f1_vec": exam_vec.tolist(),
     }
     if arm in ("P1-Blind", "P1-Full", "P1-Oracle"):
-        boot500 = SC.make_bootstrap_matrix(500, SC.BOOTSTRAP_B, SC.BOOTSTRAP_SEED)
-        sub500 = exam_vec[:500]
-        res["dev500_subset"] = {
-            "n_samples": 500,
-            "exam": SC.bootstrap_mean_ci(sub500, boot500),
-            "f1": SC.bootstrap_mean_ci(sub500, boot500),
-            "exam_vec": sub500.tolist(),
-            "f1_vec": sub500.tolist(),
-        }
-        boot974 = SC.make_bootstrap_matrix(974, SC.BOOTSTRAP_B, SC.BOOTSTRAP_SEED)
-        sub974 = exam_vec[:974]
+        n_k1 = 3050  # train3142 items with K >= 1 (dvqa_train_descriptive_stats_v2.json :: subsets.train_all_3142)
+        boot_k1 = SC.make_bootstrap_matrix(n_k1, SC.BOOTSTRAP_B, SC.BOOTSTRAP_SEED)
+        sub_k1 = exam_vec[:n_k1]
         res["k_ge_1_subset"] = {
-            "n_samples": 974,
-            "exam": SC.bootstrap_mean_ci(sub974, boot974),
-            "f1": SC.bootstrap_mean_ci(sub974, boot974),
-            "exam_vec": sub974.tolist(),
-            "f1_vec": sub974.tolist(),
+            "n_samples": n_k1,
+            "exam": SC.bootstrap_mean_ci(sub_k1, boot_k1),
+            "f1": SC.bootstrap_mean_ci(sub_k1, boot_k1),
+            "exam_vec": sub_k1.tolist(),
+            "f1_vec": sub_k1.tolist(),
         }
     return res
 
@@ -428,13 +417,14 @@ def selftest() -> None:
     rng = np.random.default_rng(123)
     gpu_ok = {"steps": [{"step": "P1", "gpu_seconds": 3100, "status": "OK"}], "total_gpu_seconds": 3100, "total_gpu_hours": 0.8611, "timeout_hit": False}
 
-    # Build deterministic binary outcome vectors (0 or 100) for N=1000 and N=500
-    base_full = (rng.random(1000) < 0.50).astype(np.float64) * 100.0
-    base_blind = (rng.random(1000) < 0.25).astype(np.float64) * 100.0
-    ora_vec = np.where((base_full == 0.0) & (rng.random(1000) < 0.14), 100.0, base_full)
-    grid_vec = np.where((base_full == 0.0) & (rng.random(1000) < 0.04), 100.0, base_full)
-    att_vec = np.where((ora_vec == 100.0) & (base_full == 0.0) & (rng.random(1000) < 0.85), 100.0, grid_vec)
-    cap_vec = np.where((base_full[:500] == 100.0) & (rng.random(500) < 0.35), 0.0, base_full[:500])
+    # Build deterministic binary outcome vectors (0 or 100) for N=3142 (every arm on train3142)
+    n = SC.N_ITEMS
+    base_full = (rng.random(n) < 0.50).astype(np.float64) * 100.0
+    base_blind = (rng.random(n) < 0.25).astype(np.float64) * 100.0
+    ora_vec = np.where((base_full == 0.0) & (rng.random(n) < 0.14), 100.0, base_full)
+    grid_vec = np.where((base_full == 0.0) & (rng.random(n) < 0.04), 100.0, base_full)
+    att_vec = np.where((ora_vec == 100.0) & (base_full == 0.0) & (rng.random(n) < 0.85), 100.0, grid_vec)
+    cap_vec = np.where((base_full == 100.0) & (rng.random(n) < 0.35), 0.0, base_full)
 
     cells_go = {}
     for m in SC.MODELS:
@@ -492,11 +482,13 @@ def selftest() -> None:
     # 7. W7 unrounded threshold test: raw delta 2.996 rounds to 3.00 for display but is < 3.0 unrounded -> STOP
     cells_edge = dict(cells_go)
     ora_edge = base_full.copy()
-    ora_edge[:30] = base_full[:30] + 99.8666667  # mean diff = 2996.0 / 1000 = 2.996 (< 3.0 unrounded, rounds to 3.00)
+    ora_edge[:94] = base_full[:94] + 100.14289361702128  # mean diff = 94 * 100.142893617 / 3142 = 2.996 (< 3.0 unrounded, rounds to 3.00)
     for m in SC.MODELS:
         cells_edge[f"P1-Oracle__{m}"] = make_synthetic_cell("P1-Oracle", m, ora_edge)
     d_edge = evaluate_decision_from_cells(cells_edge, gpu_ok, ledger_sha256="0" * 64, stage="A")
     assert d_edge["P1_oracle_crop_gap"]["pooled_oracle_vs_full_exam"]["delta"] == 3.0
+    edge_raw = float(np.mean(ora_edge - base_full))
+    assert 2.995 <= edge_raw < 3.0, edge_raw
     assert d_edge["P1_verdict"] == "STOP", "W7 unrounded threshold check failed: 2.996 must not pass >= 3.0"
 
     print(json.dumps({

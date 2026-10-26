@@ -4,20 +4,21 @@
 Runs on M4 on CPU before any GPU timer or model load. Refuses to start if:
   1. The host is M3 (detected via `VSPS_MACHINE_ID`, `/root/.vsps_machine_id`, `/root/outputs/claude_ops/m3_rebuild_*.log`,
      missing `/root/outputs/claude_ops/m4_rebuild_*.log` when `--require-m4-marker` is set, or forbidden GPU UUID);
-  2. Any of the 7 pinned manifests or prereg exclusion files fails its SHA-256 check (including
-     `manuscript/ken/dvqa_dev1000_image_sha256.tsv`, sha256 `ddc41513...`);
-  3. The pilot image directory does not contain the exact 1,000 image files listed in
-     `drivingvqa_dev1000_ids.tsv`, or any staged image's SHA-256 differs from `dvqa_dev1000_image_sha256.tsv`;
+  2. Any of the 4 pinned files (the train3142 id list and the 3 prereg exclusion files) or the image
+     manifest `manuscript/ken/dvqa_train3142_image_sha256.tsv` fails its SHA-256 check;
+  3. The pilot image directory does not contain the exact 3,142 image files listed in
+     `drivingvqa_train3142_ids.tsv`, or any staged image's SHA-256 differs from `dvqa_train3142_image_sha256.tsv`;
   4. Any other image file (.jpg, .jpeg, .png, .webp, .bmp) exists under `--scan-root` (/root)
      outside the pilot image folder and the explicit system/venv/model-cache allowlist (`ALLOWLIST_SCAN_SKIP_REL_DIRS`);
   5. Any image SHA-256 overlaps `exclusion.json` (`image_sha256`), `lists.json` (`refuse.image_sha256`),
      or `ov_test_files.tsv` (8,179 forbidden test image hashes);
-  6. Any file under `--scan-root` or `--dvqa-dir` matches `test.json`, `c_test*`, or `ct_*`;
+  6. Any file under `--scan-root` or `--dvqa-dir` matches `test.json`, `c_test*`, or `ct_*`
+     (v4, CC-104b ruling 5: git-tracked files are exempt only under the repo base, and only `<repo>/.git/` is skipped);
   7. `train.json` in `--dvqa-dir` differs from pinned SHA-256 `4a204e3f...`.
 
 Usage:
   python3 scripts/ken_dvqa_pilot/host_check.py --selftest
-  python3 scripts/ken_dvqa_pilot/host_check.py --dvqa-dir /root/dvqa_pilot --scan-root /root --image-sha-tsv manuscript/ken/dvqa_dev1000_image_sha256.tsv --require-m4-marker --out .session_backup/2026-10-26/dvqa_pilot/host_check.json
+  python3 scripts/ken_dvqa_pilot/host_check.py --dvqa-dir /root/dvqa_pilot --scan-root /root --image-sha-tsv manuscript/ken/dvqa_train3142_image_sha256.tsv --require-m4-marker --out .session_backup/2026-10-26/dvqa_pilot/host_check.json
 """
 from __future__ import annotations
 
@@ -36,15 +37,9 @@ ROOT = next(
     HERE.parents[2],
 )
 
-PINS = {
-    "manuscript/ken/drivingvqa_dev500_ids.tsv":
-        "9896af1186ddd6a5806095ba696851b5aef512079f5d0813cff3f7f4fae9c4ce",
-    "manuscript/ken/drivingvqa_dev500b_ids.tsv":
-        "86cc908cdf3e8622086caafd44572edf6ad35ef13ad0bdb8150bf393f3c30d54",
-    "manuscript/ken/drivingvqa_dev1000_ids.tsv":
-        "636e04775153ef9cb879a7620d195fcaa7e86894ead73b008c8f95b47e268dec",
-    "manuscript/ken/dvqa_dev1000_image_sha256.tsv":
-        "ddc41513f02d5171fedc1a86146f9c708f87e09d7e88ddde83434bb7f1ef3289",
+# v4: the image manifest is pinned on its own (IMAGE_SHA_TSV_PIN) so stage_images.py manifest mode can load the
+# forbidden-hash set before that manifest exists.
+PREREG_PINS = {
     "manuscript/prereg/2026-10-21_dev_pools/exclusion.json":
         "c52a96d18925b974878ae1a970c3f9133fb3482216676fd41871eeabb68cc77f",
     "manuscript/prereg/2026-10-22_c_stage1/lists.json":
@@ -52,8 +47,14 @@ PINS = {
     "manuscript/prereg/2026-10-25_c_test/ov_test_files.tsv":
         "99d4fc49cc8283d1555d37b975cca5a32598ea0ec571d8bef8cf811df2c33695",
 }
-DEFAULT_IMAGE_SHA_TSV = ROOT / "manuscript/ken/dvqa_dev1000_image_sha256.tsv"
-IMAGE_SHA_TSV_PIN = "ddc41513f02d5171fedc1a86146f9c708f87e09d7e88ddde83434bb7f1ef3289"
+TRAIN3142_IDS_REL = "manuscript/ken/drivingvqa_train3142_ids.tsv"
+N_TRAIN = 3142
+PINS = {
+    TRAIN3142_IDS_REL: "39219d099ea25ccb79ce7bae13aa61b7198b9409bd468a6075b2e0b4809afc45",
+    **PREREG_PINS,
+}
+DEFAULT_IMAGE_SHA_TSV = ROOT / "manuscript/ken/dvqa_train3142_image_sha256.tsv"
+IMAGE_SHA_TSV_PIN = "7734bb326ece11cc423865ea6e83ff37986daf6fdb467ab4ea181bfcc1970708"
 TRAIN_JSON_SHA256 = "4a204e3fa7516db313ceeb91ac989919979e31da20e484bc5f4018c261bd483d"
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".webp", ".bmp"}
 FORBIDDEN_NAME_PATTERNS = (
@@ -83,9 +84,9 @@ def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def verify_repo_pins(repo_root: Path = ROOT) -> dict[str, str]:
+def verify_repo_pins(repo_root: Path = ROOT, pins: dict[str, str] = PINS) -> dict[str, str]:
     verified: dict[str, str] = {}
-    for rel, expected_sha in sorted(PINS.items()):
+    for rel, expected_sha in sorted(pins.items()):
         p = repo_root / rel
         if not p.is_file():
             raise SystemExit(f"REFUSED: missing pinned file {p}")
@@ -96,17 +97,16 @@ def verify_repo_pins(repo_root: Path = ROOT) -> dict[str, str]:
     return verified
 
 
-def load_expected_dev1000_images(repo_root: Path = ROOT) -> list[str]:
-    tsv_path = repo_root / "manuscript/ken/drivingvqa_dev1000_ids.tsv"
+def load_expected_train_images(tsv_path: Path = ROOT / TRAIN3142_IDS_REL, n: int = N_TRAIN) -> list[str]:
     lines = tsv_path.read_text(encoding="utf-8").splitlines()[1:]
     rels = [line.split("\t")[1].strip() for line in lines if line.strip()]
-    if len(rels) != 1000 or len(set(rels)) != 1000:
-        raise SystemExit(f"REFUSED: expected 1,000 distinct image filenames in {tsv_path}, got {len(set(rels))}")
+    if len(rels) != n or len(set(rels)) != n:
+        raise SystemExit(f"REFUSED: expected {n:,} distinct image filenames in {tsv_path}, got {len(set(rels))}")
     return sorted(rels)
 
 
 def load_forbidden_sha256_set(repo_root: Path = ROOT) -> set[str]:
-    verify_repo_pins(repo_root)
+    verify_repo_pins(repo_root, PREREG_PINS)
     excl = json.loads((repo_root / "manuscript/prereg/2026-10-21_dev_pools/exclusion.json").read_text(encoding="utf-8"))
     lists = json.loads((repo_root / "manuscript/prereg/2026-10-22_c_stage1/lists.json").read_text(encoding="utf-8"))
     ov_tsv = (repo_root / "manuscript/prereg/2026-10-25_c_test/ov_test_files.tsv").read_text(encoding="utf-8")
@@ -280,10 +280,12 @@ def run_host_check(
     skip_resolved = repo_root_to_skip.resolve() if repo_root_to_skip and repo_root_to_skip.exists() else None
     vsps_under_scan = (scan_root / "vsps").resolve() if (scan_root / "vsps").exists() else None
 
+    # CC-104b ruling 5 (c): the tracked exemption applies only under the repo base (ROOT or /root/vsps),
+    # never to a copy of a tracked path elsewhere under scan_root.
     git_tracked_rels: set[str] = set()
     git_ls_cache: dict[str, set[str]] = getattr(run_host_check, "_git_ls_cache", {})
     setattr(run_host_check, "_git_ls_cache", git_ls_cache)
-    for git_cand in (skip_resolved, vsps_under_scan, scan_root):
+    for git_cand in (skip_resolved, vsps_under_scan):
         if git_cand is not None and (git_cand / ".git").exists():
             cand_key = str(git_cand)
             if cand_key not in git_ls_cache:
@@ -299,7 +301,9 @@ def run_host_check(
                     git_ls_cache[cand_key] = set()
             git_tracked_rels |= git_ls_cache[cand_key]
 
-    repo_bases = [b for b in (skip_resolved, vsps_under_scan, scan_root) if b is not None]
+    repo_bases = [b for b in (skip_resolved, vsps_under_scan) if b is not None]
+    # CC-104b ruling 5 (d): skip only <repo>/.git/, not every directory named .git
+    repo_git_dirs = [b / ".git" for b in repo_bases]
     for root_to_walk in sorted({scan_root, dvqa_dir}):
         if not root_to_walk.exists():
             continue
@@ -307,11 +311,9 @@ def run_host_check(
             if not p.is_file():
                 continue
             p_posix = p.as_posix()
-            if "/.git/" in p_posix:
-                continue
             rp = p.resolve()
             rp_posix = rp.as_posix()
-            if "/.git/" in rp_posix:
+            if any(g in p.parents or g in rp.parents for g in repo_git_dirs):
                 continue
             low_posix = p_posix.lower()
             low_rp_posix = rp_posix.lower()
@@ -375,11 +377,16 @@ def run_host_check(
 
 def selftest() -> None:
     verified_pins = verify_repo_pins(ROOT)
-    expected_rels = load_expected_dev1000_images(ROOT)
+    expected_rels = load_expected_train_images()
     forbidden_shas = load_forbidden_sha256_set(ROOT)
-    assert len(verified_pins) == 7
-    assert len(expected_rels) == 1000
-    assert len(forbidden_shas) > 4000
+    assert len(verified_pins) == 4
+    assert len(expected_rels) == N_TRAIN
+    assert len(forbidden_shas) == 8179
+    # v4: the pinned image manifest lists exactly the 3,142 train images, none with a forbidden hash
+    assert sha256_file(DEFAULT_IMAGE_SHA_TSV) == IMAGE_SHA_TSV_PIN
+    manifest_rows = [ln.split("\t") for ln in DEFAULT_IMAGE_SHA_TSV.read_text(encoding="utf-8").splitlines() if ln.strip()]
+    assert [r[0] for r in manifest_rows] == expected_rels
+    assert not ({r[1] for r in manifest_rows} & forbidden_shas)
 
     sub_expected = expected_rels[:5]
     sample_forbidden_sha = sorted(forbidden_shas)[0]
@@ -572,6 +579,46 @@ def selftest() -> None:
         )
         assert res_bad_sha["ok"] is False and res_bad_sha["forbidden_sha256_hit_count"] == 1
 
+        # 9b. CC-104b ruling 5 (c): an untracked copy of a tracked path outside the repo base is refused
+        copy_of_tracked = scan_root / "data/dedup/ktvic_dup_train_test.json"
+        copy_of_tracked.parent.mkdir(parents=True, exist_ok=True)
+        copy_of_tracked.write_text("{}", encoding="utf-8")
+        res_copy = run_host_check(
+            dvqa_dir,
+            scan_root,
+            sub_expected,
+            forbidden_shas,
+            image_sha_manifest=synth_manifest,
+            require_train_json_sha=False,
+            require_image_manifest_pin=False,
+        )
+        assert res_copy["ok"] is False and res_copy["forbidden_filename_count"] == 1
+        copy_of_tracked.unlink()
+
+        # 9c. CC-104b ruling 5 (d): files inside a .git directory other than <repo>/.git/ are tested;
+        # <repo>/.git/ (here /root/vsps/.git) is still skipped
+        other_git = scan_root / "x/.git"
+        other_git.mkdir(parents=True, exist_ok=True)
+        for name in ("foo.jpg", "images.zip", "test.json"):
+            (other_git / name).write_text("x", encoding="utf-8")
+        repo_git_obj = scan_root / "vsps/.git/objects/test.json"
+        repo_git_obj.parent.mkdir(parents=True, exist_ok=True)
+        repo_git_obj.write_text("x", encoding="utf-8")
+        res_git = run_host_check(
+            dvqa_dir,
+            scan_root,
+            sub_expected,
+            forbidden_shas,
+            image_sha_manifest=synth_manifest,
+            require_train_json_sha=False,
+            require_image_manifest_pin=False,
+        )
+        assert res_git["ok"] is False
+        assert res_git["forbidden_filename_count"] == 2 and res_git["stray_images_outside_pilot_count"] == 1, res_git
+        for name in ("foo.jpg", "images.zip", "test.json"):
+            (other_git / name).unlink()
+        repo_git_obj.unlink()
+
         # 9. CC-104a W10 preflight check with an empty dvqa_pilot folder -> only missing_* problems
         for f_img in list(img_dir.glob("*")):
             f_img.unlink()
@@ -593,7 +640,8 @@ def selftest() -> None:
         "script": "host_check.py",
         "selftest": "OK",
         "verified_pins_count": len(verified_pins),
-        "dev1000_expected_images": len(expected_rels),
+        "train3142_expected_images": len(expected_rels),
+        "image_sha_tsv_pin": IMAGE_SHA_TSV_PIN,
         "forbidden_sha256_count": len(forbidden_shas),
         "sample_forbidden_sha256_prefix": sample_forbidden_sha[:16],
     }, sort_keys=True))
@@ -615,7 +663,7 @@ def main() -> None:
         return
 
     verify_repo_pins(ROOT)
-    expected_rels = load_expected_dev1000_images(ROOT)
+    expected_rels = load_expected_train_images()
     forbidden_shas = load_forbidden_sha256_set(ROOT)
     res = run_host_check(
         dvqa_dir=args.dvqa_dir,
