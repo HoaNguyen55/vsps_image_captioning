@@ -7,6 +7,7 @@ FAIR 2026 = "A Method for Reducing Hallucinations in Detailed Vietnamese Image C
 | Item in Paper B | In FAIR? | Status in Paper B |
 |---|---|---|
 | KTVIC / COCO dataset description; 558-image test split | yes (§IV-A) | reused setup, rewritten |
+| KTVIC training partition | FAIR: 3,700 training images "for supervision construction and SFT" + 69 held out with "no SFT" (§IV-A) | different partition. B's main systems use all 3,769; B's dev-gated systems use 3,469 + dev300 (sec3.1, supplement Table S1.1). FAIR's P1 seed 42 (149.8): count not established. FAIR §IV-A with §IV-D ("the same SFT recipe") points to 3,700, the code committed with its scores points to 3,769, and no run record decides. p1mask_s42 (seed 42, all 3,769) scores 147.67 (supplement S1) |
 | QLoRA recipe on Qwen2.5-VL-7B (§4.1) | yes (§IV-B) | reused, cited |
 | Zero-shot and P1 (gold SFT) systems; P1 seed 42 CIDEr 149.8 | yes (Table I) | reference point only, not a claim |
 | 113-entry Vietnamese object lexicon (= matcher v1) | yes (§IV-C) | reused as v1 |
