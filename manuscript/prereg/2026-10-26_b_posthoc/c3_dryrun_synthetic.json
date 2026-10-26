@@ -1,0 +1,111 @@
+{
+ "SYNTHETIC": "made-up ids, references and captions; no KTVIC file, member file or S1 output is read",
+ "runner_sha256": "afa827b02d8dc0e1c210dd3eadf85af8adb6323c1b080f2a476d2a405ee3d63e",
+ "prereg": {
+  "path": "manuscript/prereg/2026-10-26_b_posthoc/PREREG.md",
+  "sha256": "08afefd4fe87229c2d48415fc3f46f3ef95de11c05b52f937e953a807483f823"
+ },
+ "K_COV": {
+  "message": "STOP (K-COV): member(s) ['s44'] do not cover exactly the 60 test ids; no selection ran",
+  "scoring_calls": [],
+  "statistics_calls": 0
+ },
+ "K_L1_pass": {
+  "scoring_calls": [
+   "synthetic_s42-test-short",
+   "synthetic_s43-test-short",
+   "synthetic_s44-test-short",
+   "synthetic_mbr3-test-short"
+  ],
+  "statistics_calls": 1,
+  "K_L1": {
+   "s42": {
+    "rescored": 372.5118207724784,
+    "committed": 372.5118207724784
+   },
+   "s43": {
+    "rescored": 374.8660769475725,
+    "committed": 374.8660769475725
+   },
+   "s44": {
+    "rescored": 66.39590459500383,
+    "committed": 66.39590459500383
+   }
+  },
+  "kept_keys": [
+   "F0",
+   "K2",
+   "K3",
+   "K_F0_fired",
+   "absolute_cider_note",
+   "all_three_members_agree_share",
+   "clean_subset",
+   "deltas_vs_member_mean",
+   "member_mean",
+   "members_cider_spread",
+   "objects",
+   "per_image_cider_x100",
+   "primary",
+   "selection",
+   "systems",
+   "test_ids"
+  ],
+  "primary_keys": [
+   "B",
+   "D_MBR_x100_mean_lo_hi",
+   "n_images",
+   "rng",
+   "rule"
+  ],
+  "K2_keys": [
+   "dCHAIR_i_points",
+   "text"
+  ],
+  "K3_keys": [
+   "dF1_ktvic5_mean_lo_hi",
+   "text"
+  ],
+  "objects_keys": [],
+  "D_MBR_x100_mean_lo_hi": [
+   99.98432067278598,
+   87.87320230706801,
+   109.67362969931477
+  ],
+  "mbr_preds_sha256": "c661003fc9a65923d64700e355483459c13356b9380420dfda608dfb3c2f0d79"
+ },
+ "K_L1_stop": {
+  "message": "STOP (K-L1): member(s) ['s43'] differ from their committed L1 CIDEr-D by >= 1e-06; no record written, nothing re-run; tmp MBR preds sha256 c661003fc9a65923d64700e355483459c13356b9380420dfda608dfb3c2f0d79 deleted",
+  "scoring_calls": [
+   "synthetic_s42-test-short",
+   "synthetic_s43-test-short",
+   "synthetic_s44-test-short"
+  ],
+  "statistics_calls": 0,
+  "mbr_tmp_deleted": true,
+  "mbr_tmp_sha256": "c661003fc9a65923d64700e355483459c13356b9380420dfda608dfb3c2f0d79"
+ },
+ "G6_no_caption": {
+  "captured_output_chars": 0,
+  "caption_in_output": false,
+  "caption_in_record": false
+ },
+ "G1_comparison": {
+  "equal": [],
+  "self_check differs": [
+   "self_check"
+  ],
+  "pins differ": [
+   "pins"
+  ],
+  "scorer differs": [
+   "script_sha256"
+  ]
+ },
+ "G2_comparison": {
+  "equal": true,
+  "one id differs": false,
+  "count differs": false
+ },
+ "G7_refusal": "REFUSED (G7)",
+ "main_called": false
+}
