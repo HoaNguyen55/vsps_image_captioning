@@ -690,6 +690,14 @@ def cmd_verify(a) -> None:
 
 
 # ------------------------------------------------------------------------------------------------ self-test (CPU)
+def under_root(tmp: str):
+    """Selftest only: point OUT_ROOT at the temp dir, so out_ok holds on a GPU host too (VSPS_MACHINE_ID set by the
+    job); returns the previous root to restore."""
+    global OUT_ROOT
+    old, OUT_ROOT = OUT_ROOT, Path(tmp).resolve()
+    return old
+
+
 def qwen_guard_selftest(cfg: dict) -> None:
     """CC-103a point 2: drive Qwen's guard path (items, then verify) with every verifier loader replaced by one that
     fails if called; both refuse before any load. InternVL3's items are planned for Qwen3-VL only."""
@@ -704,6 +712,7 @@ def qwen_guard_selftest(cfg: dict) -> None:
     lp = ROOT / "manuscript/prereg/2026-10-22_c_stage1/lists.json"
     try:
         with tempfile.TemporaryDirectory() as tmp:
+            old = under_root(tmp)
             zs, items = Path(tmp) / "zs.json", Path(tmp) / "i.jsonl"
             zs.write_text(json.dumps({"model": "qwen25vl_7b", "dataset": "ov_test"}))
             items.write_text(json.dumps({"dataset": "ov_test", "image_id": "a", "class": "c",
@@ -711,10 +720,12 @@ def qwen_guard_selftest(cfg: dict) -> None:
             ns = argparse.Namespace(set="ov_test", runs=[zs], zs=zs, lists=lp, out=Path(tmp) / "o", items=items,
                                     snapshot=Path(tmp))
             assert C.refuses(lambda: cmd_items(ns)) and C.refuses(lambda: cmd_verify(ns)), "Qwen: no verifier pass"
+            under_root(old)
     finally:
         G.s2_verifier, G.hf_verifier = saved
     assert not calls and verifier_plan(cfg, "internvl3_8b") == "qwen3vl_8b", "no verifier loaded; Qwen3-VL only"
     with tempfile.TemporaryDirectory() as tmp:
+        old = under_root(tmp)
         out = Path(tmp) / "ov_test_internvl3_8b.cache.jsonl"
 
         def stopped():
@@ -728,8 +739,10 @@ def qwen_guard_selftest(cfg: dict) -> None:
         ns = argparse.Namespace(out=out, set="ov_test")
         try:
             cmd_verify(ns)
+            raise AssertionError("a recorded verifier stop did not stop cmd_verify")
         except SystemExit as e:
             assert e.code == 3, "a recorded verifier stop is final"
+        under_root(old)
         assert C.refuses(lambda: registered_fill(out, "xm_test2500", lambda: sys.exit("other failure"))), "re-raised"
         assert not stop_marker(out, "xm_test2500").exists()
 
@@ -788,12 +801,15 @@ def selftest() -> None:
         t6_selftest(tmp)
         host_selftest(tmp, lists)
     assert not ImageFile.LOAD_TRUNCATED_IMAGES and Image.MAX_IMAGE_PIXELS
-    if os.environ.get("VSPS_MACHINE_ID") is None:
-        os.environ["VSPS_MACHINE_ID"] = "selftest"
-        try:
-            assert C.refuses(lambda: out_ok("/root/outputs/c_stage2/x.json")) and out_ok(OUT_ROOT / "a/b.json")
-            assert C.refuses(lambda: cmd_xm_subset(argparse.Namespace(lists=None, xm_full=None, out=None)))
-        finally:
+    mid = os.environ.get("VSPS_MACHINE_ID")  # the same checks on and off a GPU host
+    os.environ["VSPS_MACHINE_ID"] = mid or "selftest"
+    try:
+        assert OUT_ROOT == Path("/root/outputs/c_test"), "the real output root is restored after the selftests"
+        assert C.refuses(lambda: out_ok("/root/outputs/c_stage2/x.json")) and out_ok(OUT_ROOT / "a/b.json")
+        assert C.refuses(lambda: out_ok(Path(tempfile.gettempdir()) / "x.json")), "a temp path is refused on a host"
+        assert C.refuses(lambda: cmd_xm_subset(argparse.Namespace(lists=None, xm_full=None, out=None)))
+    finally:
+        if mid is None:
             del os.environ["VSPS_MACHINE_ID"]
     print("selftest ok: 16 ct_ runs, no blind arm, no Qwen verifier pass (never loaded), W16 verifier stop final, per-block carve-out "
           "(1,997/2,001 OV, 2,500 XM; other sets, dev-B, KTVIC test and the B-raw twins stay refused), scored sets "
