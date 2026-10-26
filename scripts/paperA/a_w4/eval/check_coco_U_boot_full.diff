@@ -1,0 +1,49 @@
+--- .session_backup/2026-10-18/paperA_tasks/A3.3/check_coco_U_boot.py
++++ scripts/paperA/a_w4/eval/check_coco_U_boot_full.py
+@@ -1,4 +1,9 @@
+ #!/usr/bin/env python
++# PATCHED COPY for Paper A CP-111 W4 (2026-10-26) of .session_backup/2026-10-18/paperA_tasks/A3.3/check_coco_U_boot.py
++# (the A3.3 v3 post hoc bootstrap behind the sec4.3 channel-split and Lambda intervals). Estimator, RNG order and
++# bootstrap unchanged. Edits: manifest, instance gold, system set, output path and optional FULL_DIR from argv, as in
++# check_coco_full.py; coverage assert. See check_coco_U_boot_full.diff.
++# Run: python check_coco_U_boot_full.py MANIFEST INSTANCE_GOLD {all9|all9full} OUT_JSON [FULL_DIR]
+ # PATCHED COPY for Paper A task A3.3 v2 (2026-10-18) of .session_backup/2026-10-14/r11_litmaps/L1/scripts/check_coco.py.
+ # One change of method: gold size averaged over ALL images (U) instead of images with a non-empty gold.
+ # The other edits only import check_mstar from the original folder, rename the output key and write next to this copy.
+@@ -98,19 +103,23 @@
+ 
+ def main() -> None:
+     vi, syn = sc.load_vi_terms(), sc.load_synonyms()
+-    cids = sorted(i["cocoid"] for i in json.loads((ROOT / "data/coco_probe/manifest.json").read_text("utf-8"))["images"])
+-    cinst = {int(k): set(v["coco"]) for k, v in
+-             json.loads((ROOT / "data/coco_probe/instance_gold.json").read_text()).items()}
++    manifest, gold_file, sysset, out_path = sys.argv[1:5]
++    full_dir = sys.argv[5] if len(sys.argv) > 5 else "coco_transfer_full5000"
++    cids = sorted(i["cocoid"] for i in json.loads(Path(manifest).read_text("utf-8"))["images"])
++    cinst = {int(k): set(v["coco"]) for k, v in json.loads(Path(gold_file).read_text()).items()}
++    assert set(cids) <= set(cinst), "instance gold misses manifest ids"
+     kr = karpathy_refs(set(cids))
+     ref_sets = {c: [sc.en_classes(s, syn) for s in kr[c][:5]] for c in cids}
+     ments = {}
+-    for d in ("coco5000", "coco_transfer", "coco5000_vcd"):
++    for d in {"all9": ("coco5000", "coco_transfer", "coco5000_vcd"),
++              "all9full": ("coco5000", full_dir, "coco5000_vcd")}[sysset]:
+         for f in sorted((RES / d).glob("*.shard*.jsonl")):
+             name = f.name.split(".shard")[0] + ("+vcd" if d == "coco5000_vcd" else "")
+             ms = {}
+             for line in f.read_text("utf-8").splitlines():
+                 r = json.loads(line)
+                 ms[r["cocoid"]] = sc.vi_objects(r["caption"], vi)
++            assert set(cids) <= set(ms), f"{name} misses {len(set(cids) - set(ms))} manifest ids"
+             ments[name] = [ms.get(c, set()) for c in cids]
+     names = list(ments)
+     rng = np.random.default_rng(1)
+@@ -143,7 +152,7 @@
+               f"{fit['Mstar_mixed']} Mrange {fit['M_range']} median {res['median_M']} | corr {res['corr_logM_F1']:+.2f} "
+               f"slope {res['slope']:+.2f} {res['slope_ci']}", flush=True)
+     out["bootstrap"] = boot(keep, variants, names, len(cids))
+-    Path(__file__).resolve().parent.joinpath("check_coco_U_boot.json").write_text(json.dumps(out, indent=1))
++    Path(out_path).write_text(json.dumps(out, indent=1))
+ 
+ 
+ if __name__ == "__main__":
