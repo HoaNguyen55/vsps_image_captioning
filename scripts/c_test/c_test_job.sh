@@ -31,6 +31,10 @@ used() {  # closed blocks, plus every record a hard kill left open, up to its la
 }
 left() { echo $((CAP - BEFORE - ($(date +%s) - T0))); }
 capped() { [ $1 = 124 ] || { [ $1 = 137 ] && [ "$(left)" -le "${MIN_LEFT:-60}" ]; }; }  # timeout, TERM then KILL
+sums() {  # sums OUT FILE...: a block's SHA256SUMS without resume scratch (*.partial.jsonl), which the mirror skips
+  local out=$1; shift
+  printf '%s\n' "$@" | grep -v '\.partial\.jsonl$' | xargs -d '\n' sha256sum > $out
+}
 timed() {  # timed NAME LOGFILE CMD...: once, under the time left (E7, CC-103b W3); a timeout is a cap stop
   local name=$1 log=$2; shift 2
   local t; t=$(left); [ "$t" -gt "${MIN_LEFT:-60}" ] || cap_stop "20 GPU-h cap before $name"
@@ -66,6 +70,11 @@ if [ "$1" = "--selftest" ]; then  # the cap stop is final; the block refusals; t
   T0=$(date +%s); S0=$T0; ( timed quick $O/q.log sleep 10 ) > /dev/null
   [ -e $O/CAP_STOP ] && [ $(( $(date +%s) - S0 )) -ge 2 ] || { echo "timed: no cap stop by timeout"; rm -rf $O; exit 1; }
   echo "a preflight or decide call under timeout stops at the cap ok"
+  mkdir -p $O/b/e4 $O/m && echo 1 > $O/b/e4/e4_x.json && echo 2 > $O/b/e4/r.preds.json.partial.jsonl && echo 3 > $O/b/h.json
+  (cd $O/b && sums SHA256SUMS_e4 e4/* h.json) && rsync -a --exclude='*.partial.jsonl' $O/b/ $O/m/ \
+    && [ "$(wc -l < $O/m/SHA256SUMS_e4)" = 2 ] && (cd $O/m && sha256sum --quiet -c SHA256SUMS_e4) \
+    || { echo "a block's SHA256SUMS does not verify on a mirror without partials"; rm -rf $O; exit 1; }
+  echo "SHA256SUMS without partials verifies on an rsync mirror that skips them ok"
   rm -rf $O
   bash -n "$0" && ${PY:-python3} scripts/c_test/score_t.py --selftest && \
     sha256sum --quiet -c scripts/c_test/SHA256SUMS && echo "job selftest ok"
@@ -168,14 +177,14 @@ case $BLOCK in
         snap=$Q25; [ $m = internvl3_8b ] && snap=$IV3; freeze $LB
         [ -e $E4O/e4_$m.json ] || step e4_$m $LB $D/ctest.py e4 --model $m --snapshot $snap --lists $L --stage1 $S1 --out-dir $E4O
       done
-      (cd $O && sha256sum e4/* host_e4.json > SHA256SUMS_e4) ;;
+      (cd $O && sums SHA256SUMS_e4 e4/* host_e4.json) ;;
   ov) block ov_test; decide ov decide_ov.json
-      (cd $O && sha256sum runs/ct_*_ov_test-*.preds.json guard/ov_test_* emb_ov_test.npz ex_ov_test.json \
+      (cd $O && sums SHA256SUMS_ov runs/ct_*_ov_test-*.preds.json guard/ov_test_* emb_ov_test.npz ex_ov_test.json \
          ledger_ov_test_*.jsonl decide_ov.json host_ov.json $(ls runs/t6_retry_ov_test.jsonl guard/t6_retry_ov_test.jsonl \
-         t6_retry_ov_test.jsonl 2>/dev/null) > SHA256SUMS_ov) ;;
+         t6_retry_ov_test.jsonl 2>/dev/null)) ;;
   xm) block xm_test2500; decide xm decide_xm_m3.json
-      (cd $O && sha256sum runs/ct_*_xm_test2500-*.preds.json guard/xm_test2500_* emb_xm_test2500.npz \
+      (cd $O && sums SHA256SUMS_xm runs/ct_*_xm_test2500-*.preds.json guard/xm_test2500_* emb_xm_test2500.npz \
          ex_xm_test2500.json ledger_xm_test*.jsonl decide_xm_m3.json host_xm.json $(ls runs/t6_retry_xm_test2500.jsonl \
-         guard/t6_retry_xm_test2500.jsonl t6_retry_xm_test2500.jsonl 2>/dev/null) > SHA256SUMS_xm) ;;
+         guard/t6_retry_xm_test2500.jsonl t6_retry_xm_test2500.jsonl 2>/dev/null)) ;;
 esac
 say "BLOCK DONE $BLOCK gpu_h_wall $(( ($(date +%s) - T0) / 36 ))e-2 total $(( (BEFORE + $(date +%s) - T0) / 36 ))e-2"
