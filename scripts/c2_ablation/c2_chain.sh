@@ -55,11 +55,13 @@ local_inputs() {  # the OV-dev-B list from lists.json (id, file, sha; no caption
   while IFS=: read -r f h; do [ "$(lsha $DATA/$f)" = $h ] || die "memory source $f"; done <<< "$MEM"
   (cd $MIRB/c_stage2 && sha256sum --quiet -c SHA256SUMS) || die "local mirror of outputs/c_stage2"
   [ "$(lsha $MIRB/c_stage1/emb.npz)" = $EMB1 ] || die "local mirror of c_stage1/emb.npz"
+  (cd $DATA && sha256sum ktvic/train_data.json openviic/uit-openviic-annotation-train.json) > $STG/c2_json.sha256
+  sha256sum $ANN >> $STG/c2_json.sha256
   say "LOCAL OK: 925 OV-dev-B images, annotation $ANN_SHA, 2 memory sources, c_stage2 mirror, emb.npz $EMB1"
 }
 test_side_list() {  # GPU=m4 (PI-1026ai): every test-side image sha: exclusion.json, C-EN's three test-side records
-  # and lists.json refuse.image_sha256 (CC-133 W2); every source count must be exact (CC-133 W3: a truncated rsync
-  # --partial record would shrink the list silently)
+  # and lists.json refuse.image_sha256 minus its dev parts (CC-133 W2, CC-134); every source count must be exact
+  # (CC-133 W3: a truncated rsync --partial record would shrink the list silently)
   python3 - $REPO $STG/test_side.sha256 <<'PY' || die "test-side sha list: a source count is not exact (CC-133 W3)"
 import json, re, sys
 r = sys.argv[1]
@@ -69,22 +71,42 @@ for s in ("coco_test", "coco_kval", "nocaps_val"):
     rec = f"{r}/.session_backup/machines/M3/root/outputs/c_en/fetch/{s}.sha256.tsv"
     src[s] = set(re.findall(r"\b[0-9a-f]{64}\b", open(rec).read()))
 lists = json.load(open(f"{r}/manuscript/prereg/2026-10-22_c_stage1/lists.json"))
-src["lists.refuse"] = set(lists["refuse"]["image_sha256"])
-want = {"exclusion.json": 5180, "coco_test": 5000, "coco_kval": 5000, "nocaps_val": 4500, "lists.refuse": 6599}
+refuse = set(lists["refuse"]["image_sha256"])  # stage 1's memory-refusal list: test sets AND C's own dev-B sets
+dev = {x[2] for k in ("ov_dev_b", "xm_dev500") for x in lists["sets"][k]}  # CC-134: its dev parts, from lists.json
+src["lists.refuse_test_side"] = refuse - dev
+want = {"exclusion.json": 5180, "coco_test": 5000, "coco_kval": 5000, "nocaps_val": 4500,
+        "lists.refuse_test_side": 5175}
+if len(refuse) != 6599 or len(refuse & dev) != 1424:  # 924 OV-dev-B + 500 XM-dev500 shas, exact
+    sys.exit(1)
 out = set().union(*src.values())
 got = {k: len(v) for k, v in src.items()}
 print(" ".join(f"{k}={n}" for k, n in got.items()), f"union={len(out)}")
-if got != want or len(out) != 22260:
+if got != want or len(out) != 21336:
     sys.exit(1)
 open(sys.argv[2], "w").write("".join(f"{h}\n" for h in sorted(out)))
 PY
   say "test-side sha list: $(wc -l < $STG/test_side.sha256) shas (5 sources exact)"
 }
 allowed_list() { : > $STG/allowed.sha256; }  # C-2 on M4: no test-side sha is allowed
+STAGED_SHAS="$STG/ov_dev_b.sha256 $STG/c2_json.sha256"  # 925 OV-dev-B images; the 3 staged json files
+staged_vs_test_side() {  # CC-134: the staged image shas may hit the test-side union only at the allowed shas
+  python3 - $STG/test_side.sha256 $STG/allowed.sha256 $STAGED_SHAS <<'PY' \
+    || die "the staged shas intersect the test-side union beyond the allowed list (CC-134)"
+import sys
+test = set(open(sys.argv[1]).read().split())
+allowed = {x.split()[0] for x in open(sys.argv[2]) if x.strip()}
+staged = {x.split()[0] for f in sys.argv[3:] for x in open(f) if x.strip()}
+hits = staged & test
+print(f"staged {len(staged)} shas, test-side hits {len(hits)}, allowed {len(allowed)}")
+sys.exit(0 if hits == allowed else 1)
+PY
+  say "STAGED vs TEST-SIDE OK: hits = allowed ($(wc -l < $STG/allowed.sha256))"
+}
 if [ "$STEP" = dry-run ]; then
   bash -n "$0" || die "bash -n"
-  [ $GPU = m3 ] || { allowed_list; test_side_list; say "M4 lists: $(wc -l < $STG/allowed.sha256) allowed"; }
   local_inputs
+  [ $GPU = m3 ] || { allowed_list; test_side_list; staged_vs_test_side
+                     say "M4 lists: $(wc -l < $STG/allowed.sha256) allowed"; }
   say "DRY-RUN OK (no ssh): next steps stage, run, cleanup"
   exit 0
 fi
@@ -95,13 +117,13 @@ SSH="ssh -o BatchMode=yes -o ConnectTimeout=30 -o ServerAliveInterval=30 -p $POR
 SCP="scp -q -o BatchMode=yes -P $PORT"
 remote() { $SSH "$1" 2>&1 | tee -a $LOCAL_LOG; return "${PIPESTATUS[0]}"; }
 rec() { remote "mkdir -p $O && echo \"\$(date -u +%FT%TZ) $*\" >> $OPLOG" > /dev/null; }
-put() { $SCP "$1" root@$HOST:"$2" || die "upload $(basename $1)"; }
-rsha() { $SSH "sha256sum $1" | cut -c1-64; }
+put() { $SCP "$1" root@$HOST:"$2" < /dev/null || die "upload $(basename $1)"; }
+rsha() { $SSH "sha256sum $1" < /dev/null | cut -c1-64; }  # CC-134: never reads the caller's stdin
 RS() { rsync -a -e "ssh -o BatchMode=yes -p $PORT" "$@"; }
 [ "$(remote 'tr -d "[:space:]" < /root/.vsps_machine_id')" = $GPU ] || die "the host is not $GPU"
 [ "$(remote 'git -C /root/vsps rev-parse HEAD')" = "$HEAD" ] || die "$MNAME is not at $HEAD"
 test_scan() {  # GPU=m4: no test-split path and no test-side sha under $DS, except the allowed (sha path) lines
-  allowed_list; test_side_list; remote "mkdir -p $O/staging"
+  allowed_list; test_side_list; staged_vs_test_side; remote "mkdir -p $O/staging"
   put $STG/test_side.sha256 $O/staging/test_side.sha256; put $STG/allowed.sha256 $O/staging/allowed.sha256
   remote "[ -z \"\$(find $DS \( -iname 'test*' -o -iname '*-test*' -o -iname '*_test*' -o -name 'cen_*' \
     -o -iname 'xm3600*' -o -name 'c_ov_test' -o -name 'c_xm_test2500' \) 2>/dev/null)\" ]" \
@@ -148,8 +170,9 @@ case $STEP in
     fi
     for p in $STAGED; do remote "[ ! -e $p ]" || die "$p already on $MNAME"; done
     remote "mkdir -p $DS/ktvic $DS/openviic/images $O/staging"
-    while IFS=: read -r f h; do put $DATA/$f $DS/$f; [ "$(rsha $DS/$f)" = $h ] || die "$f sha on $MNAME"
-    done <<< "$MEM"
+    n=0; while IFS=: read -r f h; do put $DATA/$f $DS/$f; [ "$(rsha $DS/$f)" = $h ] || die "$f sha on $MNAME"
+      n=$((n + 1)); done <<< "$MEM"
+    [ $n = 2 ] || die "not 2 memory sources uploaded (CC-134)"
     tar -C $DATA/openviic/images -cf - -T $STG/ov_dev_b.files | $SSH "tar -C $DS/openviic/images -xf -" \
       || die "copy the OV-dev-B images"
     put $STG/ov_dev_b.sha256 $O/staging/ov_dev_b.sha256

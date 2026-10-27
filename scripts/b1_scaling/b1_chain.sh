@@ -79,8 +79,8 @@ PY
     "adapter $AD_SHA, hook $HOOK_SHA"
 }
 test_side_list() {  # GPU=m4 (PI-1026ai): every test-side image sha: exclusion.json, C-EN's three test-side records
-  # and lists.json refuse.image_sha256 (CC-133 W2); every source count must be exact (CC-133 W3: a truncated rsync
-  # --partial record would shrink the list silently)
+  # and lists.json refuse.image_sha256 minus its dev parts (CC-133 W2, CC-134); every source count must be exact
+  # (CC-133 W3: a truncated rsync --partial record would shrink the list silently)
   python3 - $REPO $STG/test_side.sha256 <<'PY' || die "test-side sha list: a source count is not exact (CC-133 W3)"
 import json, re, sys
 r = sys.argv[1]
@@ -90,12 +90,17 @@ for s in ("coco_test", "coco_kval", "nocaps_val"):
     rec = f"{r}/.session_backup/machines/M3/root/outputs/c_en/fetch/{s}.sha256.tsv"
     src[s] = set(re.findall(r"\b[0-9a-f]{64}\b", open(rec).read()))
 lists = json.load(open(f"{r}/manuscript/prereg/2026-10-22_c_stage1/lists.json"))
-src["lists.refuse"] = set(lists["refuse"]["image_sha256"])
-want = {"exclusion.json": 5180, "coco_test": 5000, "coco_kval": 5000, "nocaps_val": 4500, "lists.refuse": 6599}
+refuse = set(lists["refuse"]["image_sha256"])  # stage 1's memory-refusal list: test sets AND C's own dev-B sets
+dev = {x[2] for k in ("ov_dev_b", "xm_dev500") for x in lists["sets"][k]}  # CC-134: its dev parts, from lists.json
+src["lists.refuse_test_side"] = refuse - dev
+want = {"exclusion.json": 5180, "coco_test": 5000, "coco_kval": 5000, "nocaps_val": 4500,
+        "lists.refuse_test_side": 5175}
+if len(refuse) != 6599 or len(refuse & dev) != 1424:  # 924 OV-dev-B + 500 XM-dev500 shas, exact
+    sys.exit(1)
 out = set().union(*src.values())
 got = {k: len(v) for k, v in src.items()}
 print(" ".join(f"{k}={n}" for k, n in got.items()), f"union={len(out)}")
-if got != want or len(out) != 22260:
+if got != want or len(out) != 21336:
     sys.exit(1)
 open(sys.argv[2], "w").write("".join(f"{h}\n" for h in sorted(out)))
 PY
@@ -105,10 +110,25 @@ allowed_list() {  # B-1 on M4: the two named train twins (b1.TRAIN_TEST_TWINS, C
   PYTHONDONTWRITEBYTECODE=1 python3 -c "import sys; sys.path.insert(0, '$REPO/scripts/b1_scaling'); import b1; \
 [print(f'{h}  $DS/ktvic/images/{f}') for f, h in b1.TRAIN_TEST_TWINS.items()]" > $STG/allowed.sha256 || die "twins"
 }
+STAGED_SHAS=$STG/ktvic_train.sha256  # all 3,769 KTVIC train images, dev300 included
+staged_vs_test_side() {  # CC-134: the staged image shas may hit the test-side union only at the allowed shas
+  python3 - $STG/test_side.sha256 $STG/allowed.sha256 $STAGED_SHAS <<'PY' \
+    || die "the staged shas intersect the test-side union beyond the allowed list (CC-134)"
+import sys
+test = set(open(sys.argv[1]).read().split())
+allowed = {x.split()[0] for x in open(sys.argv[2]) if x.strip()}
+staged = {x.split()[0] for f in sys.argv[3:] for x in open(f) if x.strip()}
+hits = staged & test
+print(f"staged {len(staged)} shas, test-side hits {len(hits)}, allowed {len(allowed)}")
+sys.exit(0 if hits == allowed else 1)
+PY
+  say "STAGED vs TEST-SIDE OK: hits = allowed ($(wc -l < $STG/allowed.sha256))"
+}
 if [ "$STEP" = dry-run ]; then
   bash -n "$0" || die "bash -n"
-  [ $GPU = m3 ] || { allowed_list; test_side_list; say "M4 lists: $(wc -l < $STG/allowed.sha256) allowed"; }
   local_inputs
+  [ $GPU = m3 ] || { allowed_list; test_side_list; staged_vs_test_side
+                     say "M4 lists: $(wc -l < $STG/allowed.sha256) allowed"; }
   say "DRY-RUN OK (no ssh): next steps stage, run, cleanup"
   exit 0
 fi
@@ -119,12 +139,12 @@ SSH="ssh -o BatchMode=yes -o ConnectTimeout=30 -o ServerAliveInterval=30 -p $POR
 SCP="scp -q -o BatchMode=yes -P $PORT"
 remote() { $SSH "$1" 2>&1 | tee -a $LOCAL_LOG; return "${PIPESTATUS[0]}"; }
 rec() { remote "mkdir -p $O && echo \"\$(date -u +%FT%TZ) $*\" >> $OPLOG" > /dev/null; }
-put() { $SCP "$1" root@$HOST:"$2" || die "upload $(basename $1)"; }
-rsha() { $SSH "sha256sum $1" | cut -c1-64; }
+put() { $SCP "$1" root@$HOST:"$2" < /dev/null || die "upload $(basename $1)"; }
+rsha() { $SSH "sha256sum $1" < /dev/null | cut -c1-64; }  # CC-134: never reads the caller's stdin
 [ "$(remote 'tr -d "[:space:]" < /root/.vsps_machine_id')" = $GPU ] || die "the host is not $GPU"
 [ "$(remote 'git -C /root/vsps rev-parse HEAD')" = "$HEAD" ] || die "$MNAME is not at $HEAD"
 test_scan() {  # GPU=m4: no test-split path and no test-side sha under $DS, except the allowed (sha path) lines
-  allowed_list; test_side_list; remote "mkdir -p $O/staging"
+  allowed_list; test_side_list; staged_vs_test_side; remote "mkdir -p $O/staging"
   put $STG/test_side.sha256 $O/staging/test_side.sha256; put $STG/allowed.sha256 $O/staging/allowed.sha256
   remote "[ -z \"\$(find $DS \( -iname 'test*' -o -iname '*-test*' -o -iname '*_test*' -o -name 'cen_*' \
     -o -iname 'xm3600*' -o -name 'c_ov_test' -o -name 'c_xm_test2500' \) 2>/dev/null)\" ]" \
@@ -175,8 +195,9 @@ case $STEP in
     no_test
     remote "cd /root/vsps && NCS_DATA=/root/ncs-data .venv/bin/python scripts/ktvic_dev_split.py --verify \
       --json-dir $DS/ktvic_dev > /dev/null" || die "ktvic_dev json-dir"
-    while IFS=: read -r f h; do put $S5DIR/$f $O/s5_preds/$f; [ "$(rsha $O/s5_preds/$f)" = $h ] || die "s5 $f"
-    done <<< "$S5_PREDS"
+    n=0; while IFS=: read -r f h; do put $S5DIR/$f $O/s5_preds/$f; [ "$(rsha $O/s5_preds/$f)" = $h ] || die "s5 $f"
+      n=$((n + 1)); done <<< "$S5_PREDS"
+    [ $n = 3 ] && [ "$($SSH "ls $O/s5_preds | wc -l" < /dev/null)" = 3 ] || die "not 3 S5 preds uploaded (CC-134)"
     remote "[ ! -e $RUNS/p1dev_s42 ] && mkdir -p $RUNS" || die "$RUNS/p1dev_s42 already exists"
     $SCP -r $ADAPTER root@$HOST:$RUNS/p1dev_s42 || die "upload the p1dev_s42 adapter"
     [ "$(rsha $RUNS/p1dev_s42/adapter_model.safetensors)" = $AD_SHA ] || die "adapter sha on $MNAME"
