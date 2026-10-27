@@ -230,7 +230,10 @@ def url_ok(name: str, row: tuple) -> str:
     return url
 
 
-def get(url: str, tries: int = 3) -> tuple[bytes | None, str]:
+PNG_OK = {320612}  # CC-122: the COCO host serves this restval id as a PNG body under .jpg (200, 302,086 B)
+
+
+def get(url: str, tries: int = 3, png: bool = False) -> tuple[bytes | None, str]:
     err = ""
     for a in range(tries):
         try:
@@ -238,7 +241,7 @@ def get(url: str, tries: int = 3) -> tuple[bytes | None, str]:
                 b, final, status = r.read(), r.geturl(), r.status
             if final != url or status != 200:  # CC-120 W2: no redirect, no other status
                 err = f"status {status}" if final == url else "redirected"
-            elif not b.startswith(b"\xff\xd8"):  # JPEG SOI, a byte compare, not a decode
+            elif not (b.startswith(b"\xff\xd8") or (png and b.startswith(b"\x89PNG\r\n\x1a\n"))):  # JPEG SOI; PNG by id
                 err = "not a JPEG body"
             else:
                 return b, ""
@@ -307,7 +310,7 @@ def run_fetch(name: str, rows: list, rec_dir: Path, out_dir: Path | None, refuse
     failed = 0
 
     def one(r):
-        return r, *get(url_ok(name, r))
+        return r, *get(url_ok(name, r), png=name == "memory" and r[0] in PNG_OK)
 
     with cf.ThreadPoolExecutor(workers) as pool, open(rec_p, "a") as rec, open(ref_p, "a") as rf:
         for lo in range(0, len(todo), 512):
@@ -342,12 +345,33 @@ def run_fetch(name: str, rows: list, rec_dir: Path, out_dir: Path | None, refuse
     return {**marker, "complete": True}
 
 
-def run_stage(name: str, rows: list, rec_dir: Path, out_dir: Path, workers: int) -> dict:
-    """Stage a test-side set for one block (features, then decode): every image is fetched again and written only if
-    its sha256 equals the hash-only record; anything else on disk or any other sha is a STOP. Resumable."""
+RECORD_PINS = {  # CC-121 W2: the hash-only records as completed at 780ac71 (PREREG §11)
+    "coco_test": "614afa1b7cf63bde693fc9692b1699d47ba527d396b7a1216d031b1d50018fdf",
+    "coco_kval": "8c93f306f24588fb6e66eed0a8ba2ba97e61adf901ddf5ab614b37d5b677ee1c",
+    "nocaps_val": "fbbcd21ccd8e036e5d1a94bb0fa143538882ceec62ba76a1e9104d31f321cb33"}
+PREREG = f"{PDIR}/PREREG.md"
+
+
+def prereg_committed(root: Path = ROOT) -> None:
+    """CC-121 W9: --stage only after the C-EN prereg is committed: PREREG.md in HEAD and at its SHA256SUMS line."""
+    inside = subprocess.run(["git", "-C", str(root), "cat-file", "-e", f"HEAD:{PREREG}"], capture_output=True)
+    sums = root / SUMS
+    line = dict(reversed(x.split(maxsplit=1)) for x in sums.read_text().splitlines() if x) if sums.exists() else {}
+    if inside.returncode != 0 or line.get(PREREG) is None or sha_file(root / PREREG) != line[PREREG]:
+        raise SystemExit("REFUSED (CC-121 W9): the C-EN prereg is not committed; no test set is staged before it")
+
+
+def run_stage(name: str, rows: list, rec_dir: Path, out_dir: Path, workers: int, gate=prereg_committed,
+              pins: dict[str, str] = RECORD_PINS) -> dict:
+    """Stage a test-side set for one block (features, then decode): only after the prereg commit, against a record
+    at its pinned sha; every image is fetched again and written only if its sha256 equals the record; anything else on
+    disk or any other sha is a STOP. Resumable."""
+    gate()
     done_p, rec_p = rec_dir / f"{name}.done.json", rec_dir / f"{name}.sha256.tsv"
     if name not in TEST_SIDE or not done_p.exists() or json.loads(done_p.read_text())["record_sha256"] != sha_file(rec_p):
         raise SystemExit(f"REFUSED: {name} has no complete hash-only record to stage against")
+    if sha_file(rec_p) != pins[name]:
+        raise SystemExit(f"REFUSED (CC-121 W2): the {name} record is not at its pinned sha {pins[name][:8]}")
     want = {int(k): v[2] for k, v in read_rec(rec_p).items()}
     files = {r[1]: r[0] for r in rows}
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -436,7 +460,8 @@ def selftest() -> None:
             raise OSError("down")
         body = b"\xff\xd8" + hashlib.sha256(url.encode()).digest() * 8  # synthetic bytes, no dataset content
         return {"redirect": _Resp(body, url + "?r"), "status": _Resp(body, url, 404),
-                "html": _Resp(b"<html>", url)}.get(MODE.get(url), _Resp(body, url))
+                "html": _Resp(b"<html>", url), "png": _Resp(b"\x89PNG\r\n\x1a\n" + body[2:], url)
+                }.get(MODE.get(url), _Resp(body, url))
 
     MODE: dict[str, str] = {}
     globals()["MODE"] = MODE
@@ -448,7 +473,7 @@ def selftest() -> None:
     print("selftest ok: lists (965-style exclusion, url = instances coco_url, licence table, disjoint, NoCaps "
           "images key only, domains, vg1000), url rule refuses before any request, hash-only writes no image, memory "
           "gate needs all three complete test-side records, sha hits refused and never written, stray or changed "
-          "file STOP, W1 torn record STOP, W2 redirect/status/non-JPEG refused, N2 tmp, staging only at the recorded sha, resume makes no repeat request, failures leave the set incomplete, host check m3 + HEAD")
+          "file STOP, W1 torn record STOP, W2 redirect/status/non-JPEG refused, CC-122 X1 PNG body for memory id 320612 only (other ids, test side and --stage refused), N2 tmp, staging only after the prereg commit (W9), against the pinned record (W2), at the recorded sha, resume makes no repeat request, failures leave the set incomplete, host check m3 + HEAD")
 
 
 def _selftest(calls: list, down: set) -> None:
@@ -519,16 +544,39 @@ def _selftest(calls: list, down: set) -> None:
         assert run_fetch("nocaps_val", lists["nocaps_val"], rec_dir, None, set(), 2, lists)["complete"]
         assert len(calls) == n0 + 1, "resume fetches only the missing id"
         st = t / "stage" / "cen_coco_test" / "images"
-        assert run_stage("coco_test", lists["coco_test"], rec_dir, st, 2)["complete"] and len(list(st.iterdir())) == 1
+        pins = {s: sha_file(rec_dir / f"{s}.sha256.tsv") for s in TEST_SIDE}
+        ok = lambda: None  # noqa: E731  the prereg gate, tested on its own below
+
+        def run_stage_t(n, r, rd, o, w, gate=ok, pins=pins):
+            return run_stage(n, r, rd, o, w, gate, pins)
+
+        assert refuses(lambda: run_stage("coco_test", lists["coco_test"], rec_dir, st, 2, gate=lambda: prereg_committed(t))), \
+            "W9: --stage refuses before the prereg is committed"
+        assert not st.exists(), "nothing staged when the gate refuses"
+        assert refuses(lambda: run_stage("coco_test", lists["coco_test"], rec_dir, st, 2, ok, {**pins, "coco_test": "0" * 64})), \
+            "W2: a record not at its pin"
+        assert run_stage_t("coco_test", lists["coco_test"], rec_dir, st, 2)["complete"] and len(list(st.iterdir())) == 1
         (st / lists["coco_test"][0][1]).write_bytes(b"other")
-        assert refuses(lambda: run_stage("coco_test", lists["coco_test"], rec_dir, st, 2)), "staged file at another sha"
+        assert refuses(lambda: run_stage_t("coco_test", lists["coco_test"], rec_dir, st, 2)), "staged file at another sha"
         (st / lists["coco_test"][0][1]).unlink()
         rec_t = rec_dir / "coco_test.sha256.tsv"
         good = rec_t.read_text()
         rec_t.write_text(good.replace(good.split("\t")[2], "0" * 64))
-        assert refuses(lambda: run_stage("coco_test", lists["coco_test"], rec_dir, st, 2)), "record changed after done"
+        assert refuses(lambda: run_stage_t("coco_test", lists["coco_test"], rec_dir, st, 2)), "record changed after done"
         rec_t.write_text(good)
-        assert refuses(lambda: run_stage("memory", lists["memory"], rec_dir, st, 2)), "memory is never staged"
+        assert refuses(lambda: run_stage_t("memory", lists["memory"], rec_dir, st, 2)), "memory is never staged"
+        g = t / "git"
+        (g / PDIR).mkdir(parents=True)
+        (g / PREREG).write_text("x\n")
+        (g / SUMS).write_text(f"{sha_file(g / PREREG)}  {PREREG}\n")
+        git = ["git", "-C", str(g), "-c", "user.name=selftest", "-c", "user.email=selftest@invalid"]
+        subprocess.run(git[:3] + ["init", "-q"], check=True)
+        assert refuses(lambda: prereg_committed(g)), "W9: no commit yet"
+        subprocess.run(git + ["add", "-A"], check=True)
+        subprocess.run(git + ["commit", "-qm", "t"], check=True)
+        prereg_committed(g)
+        (g / PREREG).write_text("changed\n")
+        assert refuses(lambda: prereg_committed(g)), "W9: PREREG.md not at its SHA256SUMS line"
         refuse = refused_shas(rec_dir, ex, lists)
         for mode in ("redirect", "status", "html"):
             MODE[mem[0][2]] = mode
@@ -569,6 +617,26 @@ def _selftest(calls: list, down: set) -> None:
         mid.write_text("M3\n")
         assert refuses(lambda: host_ok("0" * 40, mid)), "wrong HEAD refused"
         assert refuses(lambda: host_ok("0" * 40, t / "none")), "missing machine id refused"
+        # CC-122 X1: a PNG body is accepted for memory id 320612 only
+        def coco_row(cid, part):
+            f = f"COCO_{part}_{cid:012d}.jpg"
+            return (cid, f, COCO_URL.format(filepath=part, file=f), "4")
+        png_id, other = coco_row(320612, "val2014"), coco_row(31, "train2014")
+        for r in (png_id, other):
+            MODE[r[2]] = "png"
+        rd, od = t / "rec_png", t / "img_png"
+        res = run_fetch("memory", [png_id, other], rd, od, set(), 2, lists)
+        assert (od / png_id[1]).read_bytes().startswith(b"\x89PNG") and 320612 in read_rec(rd / "memory.sha256.tsv"), \
+            "X1 (i): memory id 320612 with a PNG body is recorded"
+        assert not res["complete"] and not (od / other[1]).exists() and \
+            (rd / "memory.failed.tsv").read_text() == f"{other[0]}\tnot a JPEG body\n", "X1 (ii): any other id fails"
+        ts = run_fetch("coco_test", [png_id], t / "rec_png_t", None, set(), 2, lists)
+        assert not ts["complete"] and ts["failed"] == 1, "X1 (iii): a test-side row with a PNG body fails"
+        st2 = t / "stage_png" / "images"
+        MODE[lists["coco_test"][0][2]] = "png"
+        sp = run_stage("coco_test", lists["coco_test"], rec_dir, st2, 2, ok, pins)
+        assert not sp["complete"] and sp["failed"] == 1 and not any(st2.iterdir()), "X1 (iv): --stage refuses a PNG body"
+        MODE.clear()
     for s, (f, _n) in list(SETS.items()):
         SETS[s] = (f, {"coco_test": 5000, "coco_kval": 5000, "nocaps_val": 4500, "memory": 112322}[s])
 
