@@ -151,14 +151,21 @@ def take_lock(path: Path, outputs: Path = OUTPUTS, names: list[str] | None = Non
 
 
 def cmd_guard(a) -> None:
-    """M3 only, idle GPU, committed HEAD and a clean tree (grl common.host_ok), C-EN not running and no protected
-    C-EN set staged (common.m3_clear), and isolation() minus this job's own lock."""
+    """M3 or M4 (PI-1026ai), idle GPU, committed HEAD and a clean tree (grl common.host_ok); on M3 common.m3_clear,
+    on M4 no cen_ set staged and no C-EN process; and isolation() minus this job's own lock."""
     sys.path.insert(0, str(ROOT / "scripts/grl"))
     import common as K
 
-    if K.host_ok(a.head) != "m3":
-        raise SystemExit("REFUSED: C-2 runs on M3 only")
-    K.m3_clear()
+    mid = K.host_ok(a.head)
+    if mid == "m3":
+        K.m3_clear()
+    elif mid == "m4":  # PI-1026ai: dev-only M4 holds no C-EN data; still no cen_ set staged and no C-EN process
+        staged = [s for s in K.CEN_TEST_SIDE if (K.NCS_DATA / "datasets" / f"cen_{s}").exists()]
+        busy = subprocess.run(["pgrep", "-f", "scripts/c_en/"], capture_output=True, text=True).stdout.split()
+        if staged or busy:
+            raise SystemExit(f"REFUSED: C-EN trace on M4: staged {staged}, processes {busy}")
+    else:
+        raise SystemExit("REFUSED: C-2 runs on M3 or M4 only (PI-1026ac Q7, PI-1026ai)")
     others = [x for x in isolation() if x != f"lock {LOCK} exists"]
     if others:
         raise SystemExit(f"REFUSED: {others}")
