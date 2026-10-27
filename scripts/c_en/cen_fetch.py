@@ -361,6 +361,18 @@ def prereg_committed(root: Path = ROOT) -> None:
         raise SystemExit("REFUSED (CC-121 W9): the C-EN prereg is not committed; no test set is staged before it")
 
 
+GRL_RUNNING = Path("/root/outputs/grl_pilot/RUNNING")  # CC-124 r3: no --stage while a G-RL pilot holds M3
+
+
+def no_pilot(flag: Path = GRL_RUNNING) -> None:
+    try:
+        running = flag.exists()
+    except OSError:  # the laptop cannot traverse /root: no pilot lock is visible here
+        running = False
+    if running:
+        raise SystemExit(f"REFUSED (CC-124 r3): {flag} exists; no test set is staged while a G-RL pilot runs")
+
+
 def run_stage(name: str, rows: list, rec_dir: Path, out_dir: Path, workers: int, gate=prereg_committed,
               pins: dict[str, str] = RECORD_PINS) -> dict:
     """Stage a test-side set for one block (features, then decode): only after the prereg commit, against a record
@@ -406,6 +418,7 @@ def cmd_fetch(a) -> None:
     if a.stage:
         if a.set == "memory":
             raise SystemExit("--stage is for a test-side set only")
+        no_pilot()
         res = run_stage(a.set, lists[a.set], REC_DIR, STAGE_DIR / f"cen_{a.set}" / "images", a.workers)
         print(json.dumps(res))
         if not res["complete"]:
@@ -473,7 +486,7 @@ def selftest() -> None:
     print("selftest ok: lists (965-style exclusion, url = instances coco_url, licence table, disjoint, NoCaps "
           "images key only, domains, vg1000), url rule refuses before any request, hash-only writes no image, memory "
           "gate needs all three complete test-side records, sha hits refused and never written, stray or changed "
-          "file STOP, W1 torn record STOP, W2 redirect/status/non-JPEG refused, CC-122 X1 PNG body for memory id 320612 only (other ids, test side and --stage refused), N2 tmp, staging only after the prereg commit (W9), against the pinned record (W2), at the recorded sha, resume makes no repeat request, failures leave the set incomplete, host check m3 + HEAD")
+          "file STOP, W1 torn record STOP, W2 redirect/status/non-JPEG refused, CC-122 X1 PNG body for memory id 320612 only (other ids, test side and --stage refused), N2 tmp, staging only after the prereg commit (W9), against the pinned record (W2), never under a G-RL pilot lock (CC-124 r3), at the recorded sha, resume makes no repeat request, failures leave the set incomplete, host check m3 + HEAD")
 
 
 def _selftest(calls: list, down: set) -> None:
@@ -583,6 +596,15 @@ def _selftest(calls: list, down: set) -> None:
             assert get(mem[0][2]) == (None, {"redirect": "redirected", "status": "status 404",
                                               "html": "not a JPEG body"}[mode]), f"W2: {mode} body refused"
         MODE.clear()
+        (t / "RUNNING").write_text("")
+        assert refuses(lambda: no_pilot(t / "RUNNING")), "CC-124 r3: --stage refused while the pilot lock exists"
+        no_pilot(t / "no_lock")
+
+        class Raising(type(Path())):
+            def exists(self, **_kw):
+                raise PermissionError("not traversable")
+
+        no_pilot(Raising("/root/outputs/grl_pilot/RUNNING"))  # unreadable path: not a lock
         hit = sha_bytes(b"\xff\xd8" + hashlib.sha256(mem[3][2].encode()).digest() * 8)
         down.add(mem[5][2])
         res = run_fetch("memory", lists["memory"], rec_dir, out, refuse | {hit}, 3, lists)

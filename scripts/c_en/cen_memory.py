@@ -180,8 +180,19 @@ def nocaps_refs(cap: dict, ids: list[int]) -> dict[str, list[str]]:
     return {str(i): out[str(i)] for i in ids}
 
 
+def gpu_host(mid: Path = Path("/root/.vsps_machine_id")) -> bool:
+    """Never on a GPU host: the env first, then the machine-id file. A PermissionError/OSError on the path means this
+    process is not root on a GPU host (the laptop cannot traverse /root), so it counts as False (amendment 1)."""
+    if os.environ.get("VSPS_MACHINE_ID"):
+        return True
+    try:
+        return mid.exists()
+    except OSError:
+        return False
+
+
 def cmd_store(a) -> None:
-    if os.environ.get("VSPS_MACHINE_ID") or Path("/root/.vsps_machine_id").exists():
+    if gpu_host():
         raise SystemExit("store runs on the laptop, where the caption files are; never on a GPU host")
     if a.what == "nocaps_val":
         if F.sha_file(a.captions) != F.NOCAPS_CAPTIONS_SHA256:
@@ -243,9 +254,29 @@ def selftest() -> None:
             assert F.refuses(lambda: cmd_store(argparse.Namespace(what="memory", out=Path(tmp) / "x"))), "laptop only"
         finally:
             del os.environ["VSPS_MACHINE_ID"]
+        # amendment 1: a machine-id path that cannot be read (PermissionError on the laptop) is not a GPU host
+
+        class Raising(type(Path())):
+            def exists(self, **_kw):
+                raise PermissionError("not traversable")
+
+        assert gpu_host(Raising("/root/.vsps_machine_id")) is False and gpu_host(Path(tmp) / "none") is False
+        (Path(tmp) / "mid").write_text("m3\n")
+        assert gpu_host(Path(tmp) / "mid") is True
+        saved = globals()["gpu_host"]
+        globals()["gpu_host"] = lambda: saved(Raising("/root/.vsps_machine_id"))
+        missing = Path(tmp) / "no_captions.json"  # CC-127 W2: machine-independent; reads no dataset anywhere
+        try:
+            cmd_store(argparse.Namespace(what="nocaps_val", captions=missing, out=Path(tmp) / "x"))
+            raise AssertionError("store did not reach its first input after the guard")
+        except FileNotFoundError as e:  # F.sha_file(a.captions): past the guard, at the first real input
+            assert e.filename == str(missing), e.filename
+        finally:
+            globals()["gpu_host"] = saved
     print("selftest ok: near-duplicate drops per protected set (C's rule), unreadable dropped, clusters ordered by "
           "smallest cocoid, members[0] vector, examples (near cut, rand 8, deterministic, dose cuts), shown caption "
-          "= members[0]'s first sentence, COCO refs first 5, NoCaps refs 10, store refused on a GPU host")
+          "= members[0]'s first sentence, COCO refs first 5, NoCaps refs 10, store refused on a GPU host (env or machine-id file), not refused on an "
+          "unreadable /root (amendment 1)")
 
 
 def main() -> None:

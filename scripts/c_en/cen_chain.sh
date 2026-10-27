@@ -107,6 +107,12 @@ case $STEP in
          CLEAN_ON_FAIL=feats; job feats; CLEAN_ON_FAIL=""
          say "CPU wall so far: $(awk '$1 == "cpu" {s += $2} END {print s + 0}' $MIR/gpu_seconds.tsv) s" ;;
   build) job build; store memory $ST/cen_memory_captions.json ;;
+  store)  # amendment 1: the laptop-side caption store alone, after a mirrored and verified build, without re-running it
+         remote "[ -z \"\$(tmux ls 2>/dev/null)\" ]" > /dev/null || die "a tmux session is running on M3; no store while a block or pilot runs"
+         ! grep -q 'C-EN staged memory' $MIR/operator.log 2>/dev/null || die "the store was made once (CC-127 W1)"
+         [ -e $MIR/SHA256SUMS_build ] && (cd $MIR && sha256sum --quiet -c SHA256SUMS_build) || die "no verified build mirror"
+         remote "[ ! -e $ST ]" > /dev/null || die "$ST already exists on M3; the store is made once"
+         store memory $ST/cen_memory_captions.json ;;
   smoke) job smoke; delete "memory images after BUILD and SMOKE" $DS/cen_memory ;;
   coco) store coco_test $DS/cen_coco_test/refs.json
         stage_ok coco_test; tmux_run stage_coco "$PY fetch --set coco_test --stage --expect-head $HEAD"
@@ -119,6 +125,6 @@ case $STEP in
   cleanup) [ -n "$REASON" ] || die "cleanup needs a block and a reason"
            $SSH "tmux ls 2>/dev/null | grep -q cen" && die "a C-EN tmux session is still running"
            cleanup_block $ARG "$REASON" ;;
-  *) die "step must be hash, memory, pool, feats, build, smoke, coco, nocaps or cleanup" ;;
+  *) die "step must be hash, memory, pool, feats, build, store, smoke, coco, nocaps or cleanup" ;;
 esac
 say "CHAIN DONE $STEP"
