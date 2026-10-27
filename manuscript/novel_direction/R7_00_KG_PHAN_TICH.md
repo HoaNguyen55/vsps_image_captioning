@@ -115,7 +115,7 @@ Cách đọc: KG có ích khi nó đưa vào đúng chữ mà người chú thí
 - FoCUS (EMNLP 2026, 2609.00709): reward scene graph không kèm CIDEr; DOCCI C 11.10 → 9.08 [K2 §2.2].
 - Cho+ (Findings NAACL 2022, 2205.13115): reward CLIP-S thay CIDEr làm C 124.9 → 11.2; giữ thêm CIDEr thì 124.6 [K1 §2.5].
 - Hack độ dài: ESREAL (ECCV 2024, 2403.16167) bỏ reward tổng thể thì mô hình rút ngắn câu, C 7.85 → 3.83; FGAIF (2404.05046; TMLR 2025 theo header PDF) rút caption từ 216 xuống 60 token [K2 §2.2].
-- CIDEr-RL và ảo giác: Rohrbach+ (EMNLP 2018, 1809.02156): SCST làm TopDown CHs 8.4 → 13.6, CHi 6.1 → 8.8. Dai+ (EACL 2023, 2210.07688): ở baseline mạnh gần như trung tính (OFA-L CHi 4.7 → 4.2), nhưng ngoài miền tăng (VinVL-B, NoCaps out-domain, CHi 12.1 → 17.4). MOCHa (Findings ACL 2024, DOI 10.18653/v1/2024.findings-acl.657), ở độ mạnh như P1: BLIP-2 C 144.3 → 144.3, CHi 1.7 → 1.4 [K2 §2.1–2.2].
+- CIDEr-RL và ảo giác: Rohrbach+ (EMNLP 2018, 1809.02156): SCST làm TopDown CHs 8.4 → 13.6, CHi 6.1 → 8.8. Dai+ (EACL 2023, 2210.07688): ở baseline mạnh gần như trung tính (OFA-L CHi 4.7 → 4.2), nhưng ngoài miền tăng (VinVL-B, NoCaps out-domain, CHi 12.1 → 17.4). MOCHa (EMNLP 2024, pp. 22680-22698, DOI 10.18653/v1/2024.emnlp-main.1263), ở độ mạnh như P1: BLIP-2 C 144.3 → 144.3, CHi 1.7 → 1.4 [K2 §2.1–2.2].
 
 ### 3.6 Xu hướng 2024–2026: đồ thị chuyển từ "bơm vào" sang kiểm chứng, đánh giá, ảo giác
 Số bài arXiv khớp từ khóa trong tóm tắt, mỗi năm. 2026 tính đến 09/10, khoảng 77% năm [K1 §5].
@@ -396,7 +396,7 @@ Reward đồ thị, RL và ảo giác:
 - NES — AAAI 2026 theo trang OJS [venue chưa xác minh] — arXiv 2511.08909
 - Rohrbach+, Object Hallucination in Image Captioning — EMNLP 2018 — arXiv 1809.02156
 - Dai+, Plausible May Not Be Faithful — EACL 2023 — arXiv 2210.07688
-- MOCHa — Findings ACL 2024 — DOI 10.18653/v1/2024.findings-acl.657
+- MOCHa — EMNLP 2024 (main, pp. 22680-22698) — DOI 10.18653/v1/2024.emnlp-main.1263 (corrected per CC-114 W11)
 
 Đồ thị cho kiểm chứng, đánh giá, độ cụ thể:
 - Reefknot — Findings ACL 2025 — arXiv 2408.09429

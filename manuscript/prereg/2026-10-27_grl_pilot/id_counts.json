@@ -1,0 +1,91 @@
+{
+ "schema": "vsps.grl.id_counts.v1",
+ "script_sha256": "0c590058a908c0683366e385b70c68ca77b4ff80902b7a1398f216ce6e55d859",
+ "inputs_sha256": {
+  "manuscript/prereg/2026-10-21_dev_pools/exclusion.json": "c52a96d18925b974878ae1a970c3f9133fb3482216676fd41871eeabb68cc77f",
+  "data/datasets/uitviic/train_data.json": "441d22d29eb7aa12d32d49e330778a4a918c3a9413c23294a9daec92a238d110",
+  "data/datasets/uitviic/val_data.json": "fee7d116683670ef5ce14f405594aa73bb08dd1bdbf1f2cdc3f9e01bbfa9b044",
+  "data/datasets/karpathy/dataset_coco.json": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d",
+  ".session_backup/2026-10-14/r12_verify/gt_cache.json": "f986f8ff9e429cc71232902c6c2a64b6d9d4ce5657760cf8031cf3fe3e9c9418",
+  ".session_backup/2026-10-19/HL_human_labels/a_n3_instance_gold.json": "00e19c285fa459176de508344d12d88112fc7aa50e151f01e1469e11d512bcad",
+  "manuscript/prereg/2026-10-27_c_en/cen_coco_kval.tsv": "f7d8369f9e16375be087c87be454e90b021fb48670db8a29fbd3ce9379e2dbcd",
+  "manuscript/prereg/2026-10-27_c_en/cen_coco_test.tsv": "67555b281d87b01a0f742214da552be0f7c4f4977f543db98a9acd2901787eb1"
+ },
+ "counts": {
+  "kv": 5000,
+  "kv_minus_refused": 4870,
+  "kv_pool": 4740,
+  "kv_pool_a_excluded": 4224,
+  "kv_refused": 130,
+  "kv_refused_by_source": {
+   "chair500": 61,
+   "pope500": 70
+  },
+  "train": 2695,
+  "train_refused": 163,
+  "train_refused_by_source": {
+   "coco2500": 59,
+   "coco_karpathy_test": 133,
+   "chair500": 14,
+   "pope500": 21
+  },
+  "ut": 2532,
+  "ut_a_excluded": 2431,
+  "train_kv_raw": 132,
+  "ut_kv": 130,
+  "ut_gate1": 2402,
+  "ut_gate1_x_kv": 0,
+  "a_touched_ut_gate1": 88,
+  "ut_gate1_restval": 857,
+  "train_x_cen_coco_kval": 132,
+  "train_x_cen_coco_test": 133,
+  "ut_gate1_x_cen_coco_kval": 0,
+  "ut_gate1_x_cen_coco_test": 0,
+  "val_x_cen_coco_kval": 0,
+  "val_x_cen_coco_test": 0,
+  "ut_x_kv_pool": 0,
+  "ut_x_kv_pool_a_excluded": 0,
+  "a_touched_kv_pool": 516,
+  "a_touched_ut": 101,
+  "a_touched_train_raw": 131,
+  "val": 924,
+  "val_refused": 0,
+  "val_x_kv": 0,
+  "val_x_a_touched": 0,
+  "val_karpathy_split": {
+   "train": 924
+  },
+  "restval": 30504,
+  "restval_chair_or_pope_union": 734,
+  "restval_chair_plus_pope_sum": 739,
+  "restval_minus_refused": 29770,
+  "restval_minus_refused_minus_uitviic_train": 28913
+ },
+ "references_per_split": {
+  "ut2532": 12667,
+  "ut2402": 12012,
+  "val924": 4620
+ },
+ "id_lists_sha256": {
+  "ut": "288340b8ff7a3ca675f78c7e88bafad09c68f37a182b6c9ec0f4b786f5cb3a88",
+  "ut_gate1": "3969bfd448de7cf9e5749c40d510e25221fbc6783a4b8961b33ad5a53824ac5c",
+  "val": "92bb37947a12eb26189381f8ef55bf382b5356fad847ffa904250bd17e675559",
+  "kv": "b7a7a89dd86f75f60dc1984613bde9048118c37bc5246e028c7b22aeb4199477",
+  "kv_pool": "31b2164a42f247a4341ea41debc0ff6ad0f2034896cce9bf91c3a02a31439795",
+  "kv_pool_a_excluded": "86d9386324e8cb34c4c7216e494b21da0cbcfe458702952b9ce261a9f608f8f9"
+ },
+ "files_sha256": {
+  "ut2532.txt": "288340b8ff7a3ca675f78c7e88bafad09c68f37a182b6c9ec0f4b786f5cb3a88",
+  "ut2402.txt": "3969bfd448de7cf9e5749c40d510e25221fbc6783a4b8961b33ad5a53824ac5c",
+  "val924.txt": "92bb37947a12eb26189381f8ef55bf382b5356fad847ffa904250bd17e675559",
+  "kv5000.txt": "b7a7a89dd86f75f60dc1984613bde9048118c37bc5246e028c7b22aeb4199477"
+ },
+ "notes": [
+  "ids only; no caption field was used, printed or written",
+  "exclusion.json's image_sha256 rule is applied on M3 by scripts/grl/common.py (needs image bytes)",
+  "restval: 29,770 = minus exclusion.json; 28,913 = also minus UIT-ViIC train (885); 734 = CHAIR-500 or POPE-500 ids in restval, 739 = their sum (5 ids in both)",
+  "train-2695 has 131 A-touched ids, 101 of them in UT-2532 (training-side disclosure only)",
+  "Gate-1 pool = UT-2402 (PI-1026u Q2): the 130 Karpathy-val ids are a pre-fixed, disclosed leakage exclusion so that no model output exists on Karpathy val (C-EN PREREG l.67/l.159); 2,532 beside it",
+  "cen_* lists: only the id column is read"
+ ]
+}
