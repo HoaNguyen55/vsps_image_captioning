@@ -384,6 +384,7 @@ def decode_one_c2(s: dict, items: list, exids: dict, out: Path, ctx: dict, ex_pa
     resumed = part.exists()
     rows = lb.decode_slices(items, m["batch_size"], gen, part,
                             lb.run_key(C.PINS[C.B_N1], s, m, kw, json.dumps(tsha, sort_keys=True), items))
+    solo = [gen([it])[0][0] for it in items[:m["batch_size"]]] if m["batch_size"] > 1 else []
     status = lb.git("status", "--porcelain", "--untracked-files=no")
     prov = {"schema": lb.SCHEMA, "c_schema": SCHEMA, "label": LABEL, "design": C.DESIGN,
             "design_sha256": C.PINS[C.DESIGN], "c_prereg": f"{PDIR}/PREREG.md",
@@ -401,6 +402,7 @@ def decode_one_c2(s: dict, items: list, exids: dict, out: Path, ctx: dict, ex_pa
             "git_dirty": None if status is None else bool(status), "job_sha256": os.environ.get("VSPS_JOB_SHA256"),
             "venv_freeze_sha256": os.environ.get("VSPS_VENV_FREEZE_SHA256"), "packages": lb.packages(),
             "n_images": len(items), "resumed": resumed, "started_utc": started, "finished_utc": lb.utc(),
+            "parity_slice0": {"n": len(solo), "identical": sum(a == r["caption"] for a, r in zip(solo, rows))},
             "gpu": torch.cuda.get_device_name(0), "cuda": torch.version.cuda, "generate_kwargs": kw}
     lb.write_output(out, prov, rows)
     print(f"wrote {out.name}")
@@ -817,6 +819,12 @@ def selftest() -> None:
     noq = decide(l2, [r for r in c2 if r["run_id"] != spec_c2(cfg, "qwen25vl_7b", "rand", k=2)["run_id"]], cfg)
     assert noq["AB-K"]["P-K"]["outcome"] == "INCOMPLETE" and set(noq["AB-K"]["qwen25vl_7b"]["delta"]) == {4, 8}
     assert "pooled" in part["rand_minus_zs_100"]
+    # decode_one_c2's provenance holds every field lb.validate_output requires (STOP-M4-2, CC-135 W2)
+    import ast
+    fn = next(n for n in ast.parse(Path(__file__).read_text(encoding="utf-8")).body
+              if isinstance(n, ast.FunctionDef) and n.name == "decode_one_c2")
+    prov = next(n.value for n in ast.walk(fn) if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "prov")
+    assert not set(lb.PROV_FIELDS) - {k.value for k in prov.keys}, set(lb.PROV_FIELDS) - {k.value for k in prov.keys}
     selftest_host()
     print("c2 self-test ok")
 
