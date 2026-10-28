@@ -11,7 +11,7 @@ Called by scripts/lvlm/n9_rescue_job.sh on M3 (stdlib only). Every constant belo
   score1024 <score_k2_n9.py args>              attempt 2 only: the unchanged scorer, expecting max_new_tokens 1024
   --selftest
 """
-import hashlib, importlib.util, json, sys, time
+import ast, hashlib, importlib.util, json, sys, time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -22,7 +22,12 @@ CAP_FACTOR = 8 * 1.5                  # CC-140 r3: measured base time x 8 runs x
 N_METHOD_RUNS = 7                     # prereg §1: six methods + n9_povid_fullmerge
 START_DEADLINE = '2026-11-06T12:00:00Z'   # CC-140 r3: no method decode if the projected finish is later
 HARD_STOP = '2026-11-08T12:00:00Z'        # CC-142 W1: no N9 stage starts later; no result by then = NOT-TESTABLE
-MAX_NEW_TOKENS = {1: 512, 2: 1024}    # attempt 2 = LiM model_vqa.py l.71 (addendum §2)
+MAX_NEW_TOKENS = {1: 512, 2: 1024}
+DECODER = REPO / 'scripts/lvlm/decode_llava.py'
+VENV_FREEZE = REPO / 'scripts/lvlm/venv_n9_freeze.txt'   # amendment 1: /root/venv-n9 = H_VS freeze + PROTOBUF
+H_VS = '7332d343173e5681365cf6871671e36209c77803a1b2db70da1cc766d5c943ed'   # setup_gpu.sh H_VS
+PROTOBUF = 'protobuf==7.36.2'         # the 10-18 M2 venv (m2_venv_pre_sklearn.txt l.57); on PyPI since 2026-09-17
+DIST = {'google.protobuf': 'protobuf', 'PIL': 'pillow'}   # import name -> distribution name, where they differ    # attempt 2 = LiM model_vqa.py l.71 (addendum §2)
 epoch = lambda s: int(datetime.strptime(s, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc).timestamp())
 sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
 
@@ -104,6 +109,30 @@ def score1024(argv):
     return rc
 
 
+def venv_check():
+    """The decode venv is the H_VS freeze plus exactly the protobuf line, in pip's order, and provides every module
+    of decode_llava.py's dependency check and every third-party import of its main()."""
+    text = VENV_FREEZE.read_text()
+    lines = text.splitlines()
+    rest = ''.join(l + '\n' for l in lines if l != PROTOBUF)
+    assert lines.count(PROTOBUF) == 1 and hashlib.sha256(rest.encode()).hexdigest() == H_VS, 'freeze != H_VS + protobuf'
+    assert lines == sorted(lines, key=str.lower) and text.endswith('\n'), 'freeze not in pip freeze order'
+    dists = {l.split('==')[0].lower().replace('_', '-') for l in lines}
+    main = next(f for f in ast.parse(DECODER.read_text()).body if isinstance(f, ast.FunctionDef) and f.name == 'main')
+    calls_import = lambda n: any(isinstance(c, ast.Call) and getattr(c.func, 'id', '') == '__import__' for c in ast.walk(n))
+    check = {e.value for n in ast.walk(main) if isinstance(n, ast.For) and isinstance(n.iter, ast.Tuple) and calls_import(n)
+             for e in n.iter.elts if isinstance(e, ast.Constant)}
+    imports = {a.name for n in ast.walk(main) if isinstance(n, ast.Import) for a in n.names} | \
+              {n.module for n in ast.walk(main) if isinstance(n, ast.ImportFrom) and n.level == 0}
+    imports = {m for m in imports if m.split('.')[0] not in sys.stdlib_module_names}
+    assert {'sentencepiece', 'google.protobuf'} <= check, f'dependency check not found: {check}'
+    need = {DIST.get(m, m.split('.')[0]).lower() for m in check | imports}
+    missing = need - dists
+    assert not missing, f'venv-n9 lacks {missing}'
+    assert 'protobuf' in need - {l.split('==')[0].lower() for l in rest.splitlines()}   # H_VS alone fails (OPS-1028m-op)
+    return sorted(need)
+
+
 def selftest():
     import tempfile
     t = Path(tempfile.mkdtemp()) / 'gpu_seconds.tsv'
@@ -143,7 +172,8 @@ def selftest():
     (d / 'n9_base.json').write_text(json.dumps({'preds': [{'hit_max_new_tokens': False}]}))
     assert trigger2(d)[0] is False                         # sha no longer matches, and no caption hit 512
     assert epoch(START_DEADLINE) < epoch(HARD_STOP) and MAX_NEW_TOKENS[1] == 512
-    print('n9_rescue selftest ok')
+    need = venv_check()
+    print('n9_rescue selftest ok; venv-n9 = H_VS + ' + PROTOBUF + '; provides ' + ', '.join(need))
     return 0
 
 

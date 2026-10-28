@@ -227,3 +227,28 @@ The causes are: K_F failed on attempt 1 with attempt 2 void, K_F failed on both 
 ## 10. Amendments
 
 (none yet)
+
+### Amendment 1 (2026-10-28): decode venv `/root/venv-n9` (OPS-1028m-op)
+
+**Why.**
+- `base 1` stopped on M3 before any GPU second was charged (0 GPU-s in the ledger). The stop came from `decode_llava.py`'s own dependency check (`main()`: sentencepiece and google.protobuf, which the slow Llama tokenizer needs): "missing dependency google.protobuf".
+- M3's `/root/vsps/.venv`, at the `setup_gpu.sh` H_VS freeze, has sentencepiece but no protobuf. Neither does any other M3 venv.
+- The 10-18 M2 venv that decoded the K2 pair and the failed batch-8 base had `protobuf==7.36.2` (`.session_backup/machines/O-2308428/root/outputs/claude_ops/m2_venv_pre_sklearn.txt` l.57). It also had the same transformers 4.51.3, torch 2.5.1+cu121 and sentencepiece 0.2.2 as H_VS.
+- protobuf 7.36.2 is on PyPI, uploaded 2026-09-17, with a cp310 abi3 manylinux x86_64 wheel.
+- Stage had already passed (OPS-1028l-op), and the N9 lock is still held.
+
+**Venv design.**
+- A dedicated `/root/venv-n9`, built from `scripts/lvlm/venv_n9_freeze.txt` (sha256 `193d4cc337451c548dc6c4f2ba9079c97e5682896115b43f8c0eaa1d7875fb4e`).
+- That file is the H_VS freeze (`7332d343…`, 85 lines) plus exactly one line, `protobuf==7.36.2`, placed in pip's freeze order.
+- `n9_rescue_job.sh` builds it once, if absent, the way `setup_gpu.sh` `mkvenv` builds `.venv`: python3.10 venv, `pip install --no-deps` from PyPI plus the cu121 torch index, py_vncorenlp as a PEP 517 build. CPU and online, so it is not charged to the cap.
+- Before every decode stage (`base`, `methods`), the job checks that `pip freeze | sha256sum` equals that file's sha (`H_N9` in the job, and the file is pinned in `scripts/lvlm/SHA256SUMS`) and that `pip check` is clean.
+- `decode_llava.py` (unchanged) then runs with `/root/venv-n9/bin/python`.
+- A half-built venv fails the freeze check and stops the job. The operator removes `/root/venv-n9` before a retry.
+- `/root/vsps/.venv` is not modified. K_F, scoring, every threshold, the cap, the start rule and the dates are unchanged.
+
+**Check.** `n9_rescue.py --selftest` now asserts three things:
+- the freeze file minus the protobuf line hashes to H_VS;
+- the file is in pip order;
+- it provides every module of `decode_llava.py`'s dependency check and every third-party import of its `main()`, parsed from the script: pillow, protobuf, sentencepiece, torch, transformers. H_VS alone fails this check.
+
+**§6 gains deviation 8.** The decode stack on M3 is `/root/venv-n9`. It differs from the H_VS `.venv` by one package, `protobuf==7.36.2`, which the 10-18 M2 venv also had. This supersedes the software clause of §6 item 4. Each output still records its own stack.

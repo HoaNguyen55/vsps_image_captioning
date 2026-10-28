@@ -14,6 +14,7 @@
 #   bash scripts/lvlm/n9_rescue_job.sh --selftest            (CPU, repo root)
 if [ "$1" = "--selftest" ]; then
   bash -n "$0" && python3 scripts/lvlm/n9_rescue.py --selftest && sha256sum --quiet -c scripts/lvlm/SHA256SUMS \
+    && [ "$(sha256sum < scripts/lvlm/venv_n9_freeze.txt | cut -c1-64)" = "$(grep -o '^H_N9=[0-9a-f]*' "$0" | cut -c6-)" ] \
     && echo "n9_rescue_job selftest ok"
   exit
 fi
@@ -22,8 +23,8 @@ case "$STAGE" in stage|cleanup) ;; base|methods) case "$A" in 1|2) ;; *) echo "a
   *) echo "usage: stage|base|methods|cleanup A|REASON HEAD"; exit 1 ;; esac
 cd /root/vsps || exit 1
 export NCS_DATA=/root/ncs-data VSPS_MACHINE_ID=$(tr -d '[:space:]' < /root/.vsps_machine_id)
-PY=/root/vsps/.venv/bin/python
-H_VS=7332d343173e5681365cf6871671e36209c77803a1b2db70da1cc766d5c943ed   # setup_gpu.sh H_VS (.venv freeze)
+VN=/root/venv-n9; PY=$VN/bin/python; FRZ=scripts/lvlm/venv_n9_freeze.txt   # amendment 1; /root/vsps/.venv untouched
+H_N9=193d4cc337451c548dc6c4f2ba9079c97e5682896115b43f8c0eaa1d7875fb4e   # sha256 of $FRZ = setup_gpu.sh H_VS + protobuf
 H=scripts/lvlm/n9_rescue.py; DL=scripts/lvlm/decode_llava.py; IDS=data/coco_probe/chair500_ids.txt
 MAN=data/coco_probe/chair500_val2014.sha256
 O=/root/outputs/n9_rescue; LOCK=$O/RUNNING; L=$O/gpu_seconds.tsv; LOG=$O/logs
@@ -47,7 +48,6 @@ if [ $STAGE = cleanup ]; then
 fi
 python3 $H clock || stop "past the 11-08 hard stop: N9 is final NOT-TESTABLE (run cleanup)"
 [ -z "$(nvidia-smi --query-compute-apps=pid --format=csv,noheader)" ] || stop "a GPU process is running"
-[ "$($PY -m pip freeze | sha256sum | cut -c1-64)" = $H_VS ] || stop ".venv freeze differs from setup_gpu.sh H_VS"
 B=liuhaotian/llava-v1.5-7b@4481d270cc22fd5c4d1bb5df129622006ccd9234
 V=openai/clip-vit-large-patch14-336@ce19dc912ca5cd21c8a653c79e251e808ccabcd1
 P1=YiyangAiLab/llava_POVID_stage_one_lora@d6c79d54be16246404f910a4453eb64b8b31af25
@@ -73,6 +73,16 @@ if [ $STAGE = stage ]; then
   say "STAGE OK: 9 pinned snapshots, 500 CHAIR-500 images sha-checked"; exit 0
 fi
 [ -e $LOCK ] || stop "no N9 lock: run stage first"
+if [ ! -e $VN ]; then  # built once, as setup_gpu.sh mkvenv builds .venv (CPU, online, not charged)
+  say "building $VN from $FRZ"
+  { python3.10 -m venv $VN && grep -v '^py_vncorenlp==' $FRZ > $O/venv_n9.rest \
+    && $VN/bin/pip install -q --no-deps --index-url https://pypi.org/simple \
+         --extra-index-url https://download.pytorch.org/whl/cu121 -r $O/venv_n9.rest \
+    && { ! grep -q '^py_vncorenlp==' $FRZ || $VN/bin/pip install -q --no-deps --use-pep517 $(grep '^py_vncorenlp==' $FRZ); }
+  } >> $LOG/venv_n9.log 2>&1 || stop "building $VN failed: remove $VN before a retry"
+fi
+[ "$($VN/bin/pip freeze | sha256sum | cut -c1-64)" = $H_N9 ] || stop "$VN freeze differs from $FRZ"
+$VN/bin/pip check >> $LOG/venv_n9.log 2>&1 || stop "$VN pip check"
 (cd $IMG && sha256sum -c --quiet /root/vsps/$MAN) || stop "CHAIR-500 images differ from the manifest"
 mkdir -p $D
 $PY $DL --selftest >> $LOG/selftest.log 2>&1 || stop "decode_llava selftest"
