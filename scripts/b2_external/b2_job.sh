@@ -19,7 +19,7 @@ mkdir -p $LOG $P
 ts() { date -u +%FT%TZ; }
 say() { echo "$(ts) $*" | tee -a $LOG/job.log; }
 stop() { say "JOB STOP $*"; exit 1; }
-finish() { (cd $O && find preds logs -type f | sort | xargs -d '\n' sha256sum > SHA256SUMS); say "BLOCK DONE"; exit 0; }
+finish() { (cd $O && find preds logs -type f ! -path logs/job.log | sort | xargs -d '\n' sha256sum > SHA256SUMS); say "BLOCK DONE"; exit 0; }
 
 # ---------------------------------------------------------------- preflight (PREREG §5)
 [ -e $O/RUNNING ] || stop "no B-2 lock: run b2_chain.sh stage first"

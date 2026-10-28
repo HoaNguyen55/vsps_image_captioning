@@ -119,6 +119,7 @@ BLIP_GEN = {"max_length": 64, "num_beams": 5, "early_stopping": True, "no_repeat
 COCO_URL = "http://images.cocodataset.org/{filepath}/{file}"  # as in scripts/c_en/cen_fetch.py
 SMOKE_IMG = {"id": 368, "file": "000000000368.jpg", "url": COCO_URL.format(filepath="train2017", file="000000000368.jpg"),
              "sha256": "58b0179921d415ca01b697255d473955e52559123e4a4b565e4d009dbb6c5f17"}
+TRUNC = {"00000000768.jpg", "00000001010.jpg", "00000005095.jpg"}  # OpenViIC test, truncated in the release (CC-082 T6)
 NOT_RUNNABLE = "not runnable: empty output under the registered recipe (transformers 4.57.6)"  # CC-138 W3 (c)
 
 
@@ -647,24 +648,47 @@ def cmd_decode(a) -> int:
         run, _, info = captioner(s, a.snap, a.tok)
     except LoadFail as e:
         return write_loadfail(a.out.parent, a.sid, e)
-    preds = {}
+    preds, retried = {}, []
     with torch.inference_mode():
         for i, f, h in rows:
             p = a.images / f
             if sha_file(p) != h:
                 raise SystemExit(f"STOP: image {f} differs from the list")
-            preds[i] = run(Image.open(p).convert("RGB"))[0]
+            preds[i] = run(open_rgb(p, retried))[0]
     tmp = a.out.with_suffix(".partial")
     tmp.write_text(json.dumps(preds, ensure_ascii=False), encoding="utf-8")
     os.replace(tmp, a.out)
     prov = {"sid": a.sid, "hf": s["hf"], "rev": s["rev"], "set": s["set"], "n": len(preds),
             "seconds": round(time.time() - t0), "gpu": torch.cuda.get_device_name(0), "torch": torch.__version__,
             "transformers": transformers.__version__, "preds_sha256": sha_file(a.out),
-            "unexpected_keys": info.get("unexpected_keys", 0),
+            "unexpected_keys": info.get("unexpected_keys", 0), "truncated_retried": retried,
             "prereg": "manuscript/prereg/2026-10-28_b2_external/PREREG.md"}
     (a.out.parent / f"{a.sid}.prov.json").write_text(json.dumps(prov, indent=1))
     print(f"decoded {a.sid}: {len(preds)} images")
     return 0
+
+
+def open_rgb(p: Path, retried: list) -> "Image.Image":
+    """Strict decode; only the 3 OpenViIC files truncated in the release (C's CC-082 T6 list) are retried once with
+    PIL LOAD_TRUNCATED_IMAGES set and reset around the call (B-2 Amendment 2). Any other failure stops the job."""
+    from PIL import Image, ImageFile
+
+    if ImageFile.LOAD_TRUNCATED_IMAGES:
+        raise SystemExit("STOP: LOAD_TRUNCATED_IMAGES is set outside a T6 retry")
+    try:
+        with Image.open(p) as im:
+            return im.convert("RGB")
+    except OSError:
+        if p.name not in TRUNC:
+            raise
+    ImageFile.LOAD_TRUNCATED_IMAGES = True
+    try:
+        with Image.open(p) as im:
+            out = im.convert("RGB")
+    finally:
+        ImageFile.LOAD_TRUNCATED_IMAGES = False
+    retried.append(p.name)
+    return out
 
 
 # ------------------------------------------------------------------------------------------------- score (CPU)
@@ -974,6 +998,32 @@ def _st_smoke() -> None:
     assert SMOKE_IMG["url"].endswith("/train2017/" + SMOKE_IMG["file"])
 
 
+def _st_trunc(t: Path) -> None:
+    """Amendment 2: only a TRUNC-named truncated file is retried, the flag is reset, anything else still raises."""
+    import io
+
+    from PIL import Image, ImageFile
+
+    buf = io.BytesIO()
+    Image.new("RGB", (64, 64), (200, 10, 10)).save(buf, "JPEG")
+    cut = buf.getvalue()[:-40]
+    ok, named, other = t / "ok.jpg", t / "00000000768.jpg", t / "other.jpg"
+    buf.seek(0)
+    ok.write_bytes(buf.getvalue())
+    named.write_bytes(cut)
+    other.write_bytes(cut)
+    retried: list = []
+    assert open_rgb(ok, retried).size == (64, 64) and retried == []
+    assert open_rgb(named, retried).size == (64, 64) and retried == ["00000000768.jpg"]
+    assert not ImageFile.LOAD_TRUNCATED_IMAGES
+    try:
+        open_rgb(other, retried)
+        raise AssertionError("an unnamed truncated file must stop")
+    except OSError:
+        pass
+    assert retried == ["00000000768.jpg"] and not ImageFile.LOAD_TRUNCATED_IMAGES
+
+
 def selftest() -> None:
     import tempfile
 
@@ -989,6 +1039,7 @@ def selftest() -> None:
         _st_gate(t, refs, alias)
         _st_cap(t)
         _st_smoke()
+        _st_trunc(t)
     _st_score_table(refs)
     _st_load()
     print("selftest ok")
