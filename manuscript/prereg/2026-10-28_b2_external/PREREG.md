@@ -196,6 +196,53 @@ Full shas in `scripts/b2_external/SHA256SUMS`; this folder's `SHA256SUMS` covers
 ## 12. Amendments
 None after commit. Before commit, CC-132 (GO-with-fixes) W1–W8 are applied in this file and the code: the staging path, the parser fixes, the loading-info rule, the ≥ 3 sources condition, the not-run notes, the LOG.md look line, the pinned lists and the text of §5.2, §5.3, §10 and §13. W9 (commit timing) is the gatekeeper's.
 
+**Amendment 1 (2026-10-28, CC-138): smoke diagnostics, a second smoke input and the genuine-or-ours rule; no frozen value changes.**
+- **STOP OPS-1028c-op.** The first M3 run at `1ae7339d` passed FETCH OK at 2026-10-27T21:02:11Z. Its first GPU step then stopped: `smoke_K5` gave JOB STOP rc=1 at 21:02:15Z, "K5 generated an empty string on the smoke image" (not a LOADFAIL). It used 4 GPU-s, which stay charged. No test image was decoded and no preds file exists. Cleanup ran at 21:04Z: `b2_stage` was removed, `m3_clear` passed and the lock was released. K1 and K6 were never smoked, because `stop()` ends the whole job.
+- **Ruling CC-138.**
+  - Q1: the class-(a) gate result is genuine. `gate.json` (`5519b26d`, 0/10 PASS) is final: no parser amendment and no re-gate.
+  - Q4: the K5 empty output is not proven to be either ours or the model's. This amendment adds the means to tell the two apart before a restage.
+  - §8 l.168 opens this smoke failure to an amendment. The outputs it affects (the K5/K1/K6 smoke and preds files, and `scores.json`) do not exist yet, so §8's last item is met.
+- **W1, counts only.** For each input, `smoke` records n_new_tokens, n_special_new, first_new_is_eos and n_chars (the length of the decoded text). It writes them into `<sid>.smoke.json` or `<sid>.SMOKEFAIL.json` and prints them to the smoke log. The text itself is never written.
+  - **New tokens:**
+    - K5: `out[0, input_len:]`.
+    - K1 and K6: the output with its first id dropped if that id is the decoder-start id or BLIP's injected bos id, then one more id dropped if it is a bos id (the tokenizer's, or K1's `forced_bos_token_id`).
+  - **End ids (eos only):** the model's `generation_config.eos_token_id` and the tokenizer's eos id, plus, for K6, BLIP's text `sep_token_id` (the id BLIP's generate stops at). A pad id is not an end id: an immediate pad or `<|im_end|>` is case (b).
+  - **Special ids:** `all_special_ids` plus the added tokens flagged special.
+  - The decoded caption itself is unchanged, and so is every decode recipe of §2.3.
+- **W2, second smoke input**, fixed by rule: the UIT-ViIC TRAIN image with the smallest integer id in `uitviic/train_data.json` whose sha256 is on no test-side list.
+  - **Pinned:** id **368**, `000000000368.jpg` (COCO train2017, Karpathy train), sha256 **`58b0179921d415ca01b697255d473955e52559123e4a4b565e4d009dbb6c5f17`**.
+  - **Selection:** the candidate was chosen by ids only, then fetched to the laptop by `coco_url` (`data/datasets/uitviic/images/`, git-ignored) and hashed. No caption was opened or printed.
+  - **Laptop check, 0 hits on every list:**
+    - KTVIC test (`ktvic.tsv`, 558);
+    - OpenViIC test (`openviic.tsv`);
+    - UIT-ViIC test (the mirrored `uitviic_test_images.sha256.tsv`, 231);
+    - C-EN `coco_test`, `coco_kval` and `nocaps_val` (5,000, 5,000 and 4,500);
+    - `exclusion.json` `image_sha256` (5,180);
+    - `lists.json` `refuse.image_sha256` (all 6,599).
+    The 22,260-sha union of these lists is a superset of the 21,336-sha test-side union of B-1/C-2 Amendment 2. Id 368 is also in no UIT-ViIC val/test list, no `exclusion.json` COCO id list and no Karpathy test/val list.
+  - **On M3:** `b2.py smoke-fetch` fetches the image by `coco_url` (CPU, not charged) and refuses unless its sha equals the pin and lies outside `common.cen_test_shas()`. `smoke` re-checks the pin before use.
+  - **Inputs:** the flat grey image stays the first input. The same two inputs apply to K5, K1 and K6.
+- **W3, genuine-or-ours rule**, applied per input and then over both:
+  - **(a)** new tokens that are not special and not end tokens, but decode to an empty (or whitespace-only) string: our decode bug, JOB STOP to the judge.
+  - **(b)** a new token that is special but not an end token (e.g. `<image>`, `<|im_end|>`, a second bos): our template or processor, JOB STOP.
+  - **Zero new tokens:** ours, JOB STOP.
+  - (a), (b) and zero new tokens on either input override a pass on the other.
+  - **(c)** only eos tokens on BOTH inputs (the first new token is eos): genuine. The result is `<sid>.SMOKEFAIL.json` with rc 5, and the table note "`<sid>`: not runnable: empty output under the registered recipe (transformers 4.57.6)" (§7.1 style, beside LOADFAIL). `scores.json` lists it under `smokefail`.
+  - **(d)** text on either input: smoke PASS.
+- **W4.** `b2_job.sh` continues on rc 5 as it does on rc 4. That system becomes class (c), and its smoke and decode are skipped on resume. Every other non-zero rc stays a JOB STOP. `b2.py --selftest` covers (a)–(d), zero new tokens, the precedence of a STOP over a pass, the BART-shaped prefix (`[2, 0, text, 2]` passes, `[2, 2]` gives (c)), the counts carrying no text, and the table note.
+- **Disclosures.**
+  - **(i) Post hoc diagnostic.** CC-138 check 4 was a structure-only read of the fetched class-(a) files (key names, value types, id shapes and id overlap counts; 0 non-ASCII characters, no caption value printed). It found:
+    - K2: a per-epoch aggregate table;
+    - X1/X2: no id field;
+    - X3: 924/924 UIT-ViIC val ids;
+    - X4a–e: 401 train / 149 val / 28 test ids.
+    These are judge diagnostics, labelled post hoc, and not gate output.
+  - **(ii) Deviation.** That read opened fetched class-(a) files before `scores.json` exists, against §5.2 l.133. It was caller-requested and structure-only. All 10 files are permanently excluded, so no score of them will ever exist. It is a disclosed deviation, not a look.
+  - **(iii) Latent parser defect.** `CAP_KEYS` holds `caption` but not `caption pred`. Had X1/X2 carried an id field, the parser would have taken their reference column as the prediction, with only the reference-copy gate standing behind it. No file is affected (both fail on ids), so nothing is fixed.
+- **Q1-path trigger (CC-138 W8).** If K5, K1 or K6 ends as LOADFAIL, SMOKEFAIL or not-run (cap, or a final JOB STOP), B-2 cannot give "validated on external systems". The coordinator then logs "B Q1 condition (UPGRADE_PLAN §7 l.106) not met by B-2; B targeted at LRE Q2 (l.128)" and tells the PI the same day. This amendment adds no system and no test set.
+- **Unchanged:** the recipes, columns, splits, lists, cap, one look per system, the 0.5 reference-copy threshold and the ≥ 3 systems / ≥ 3 sources rule. The restage waits until the operator confirms on M3 that `/root/outputs/b2_external/RUNNING` is absent (CC-138 W7).
+- **New code:** `b2.py` `a10ff192cb487142a209cd4e3e15e8dbcb244969a28391d2a12708ee66c5a549`, `b2_job.sh` `c78cd82901ed91e999f20ca8ded60d23dae2633fa554a3b516af4468c2c8990d`, `b2_chain.sh` unchanged (`714dc1f6…`). Full shas in `scripts/b2_external/SHA256SUMS`.
+
 ## 13. Questions, ruled in CC-132
 1. **Q1** K1 is kept, labelled "KTVIC by model name only (card: unknown dataset)".
 2. **Q2** "validated on external systems" needs ≥ 3 systems AND ≥ 3 distinct source owners, both reported (§7.3). K2 (SuperCoolGuy855) is a distinct source although it trained on Skyler215's data copy.

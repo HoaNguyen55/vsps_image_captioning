@@ -4,7 +4,8 @@
 # PREREG manuscript/prereg/2026-10-28_b2_external/PREREG.md (CC-126 W13). No scoring and no reference on M3.
 # Cap: no GPU step starts after 2.5 GPU-h; every GPU step runs under `timeout` up to 3 GPU-h in total; a timeout or
 # the soft cap is a CAP STOP, final (CAP_STOP.json). A load failure (rc 4, LOADFAIL json) makes that system class (c)
-# and the job goes on. Any other failure is a JOB STOP back to the judge.
+# and the job goes on; so does an immediate eos on both smoke inputs (rc 5, SMOKEFAIL json; Amendment 1, CC-138 W4).
+# Any other failure is a JOB STOP back to the judge.
 # Usage, inside tmux b2 on M3, after b2_chain.sh stage took the lock and staged /root/ncs-data/b2_stage:
 #   bash scripts/b2_external/b2_job.sh <expected 40-hex HEAD>
 EXPECT=${1:?usage: b2_job.sh <expected HEAD>}
@@ -48,7 +49,8 @@ done
 $LB $X uit-fetch --list $ST/lists/uitviic.tsv --dest $ST/images/uitviic >> $LOG/fetch.log 2>&1 \
   || stop "uit-fetch (UIT-ViIC test images by coco_url, C-EN overlap refused)"
 cp $ST/images/uitviic.sha.tsv $O/uitviic_test_images.sha256.tsv
-say "FETCH OK: 3 snapshots verified, 231 UIT-ViIC test images"
+$LB $X smoke-fetch --dest $ST/smoke >> $LOG/fetch.log 2>&1 || stop "smoke-fetch (pinned UIT-ViIC train image 368)"
+say "FETCH OK: 3 snapshots verified, 231 UIT-ViIC test images, smoke image 368 pinned"
 
 # ---------------------------------------------------------------- decode (GPU, one per system, priority order)
 cap_stop() { [ -e $MARK ] || printf '{"cap_stop": "%s", "utc": "%s"}\n' "$1" "$(ts)" > $MARK; say "CAP STOP $1"; finish; }
@@ -63,18 +65,21 @@ gpu() {  # gpu NAME CMD...: one GPU step; no start after 2.5 GPU-h, killed at 3;
   echo "$name $(( $(date +%s) - t0 ))" >> $USED
   [ $rc = 0 ] && { say "OK $name"; return 0; }
   [ $rc = 4 ] && { say "LOADFAIL $name: class (c) by the load rule"; return 0; }
+  [ $rc = 5 ] && { say "SMOKEFAIL $name: not runnable, immediate eos on both smoke inputs (class (c))"; return 0; }
   [ $rc = 124 ] && cap_stop "3 GPU-h hard cap reached during $name"
   stop "$name rc=$rc"
 }
 declare -A SET=([K5]=uitviic [K1]=ktvic [K6]=openviic)
-for sid in K5 K1 K6; do  # smoke (PREREG §5.2): load, tokenizer round trip, one grey image; no test image
-  [ -e $P/$sid.smoke.json ] || [ -e $P/$sid.LOADFAIL.json ] && continue
+for sid in K5 K1 K6; do  # smoke (PREREG §5.2, Amendment 1): load, round trip, grey + train image 368; no test image
+  [ -e $P/$sid.smoke.json ] || [ -e $P/$sid.LOADFAIL.json ] || [ -e $P/$sid.SMOKEFAIL.json ] && continue
   TOK=(); [ $sid = K1 ] && TOK=(--tok $ST/hf/K1_tok)
-  gpu smoke_$sid $LB $X smoke --sid $sid --snap $ST/hf/$sid "${TOK[@]}" --out $P/$sid.smoke.json
+  gpu smoke_$sid $LB $X smoke --sid $sid --snap $ST/hf/$sid "${TOK[@]}" --img2 $ST/smoke/000000000368.jpg \
+    --out $P/$sid.smoke.json
 done
-say "SMOKE DONE: $(ls $P/*.smoke.json 2>/dev/null | wc -l) ok, $(ls $P/*.LOADFAIL.json 2>/dev/null | wc -l) LOADFAIL"
+say "SMOKE DONE: $(ls $P/*.smoke.json 2>/dev/null | wc -l) ok, $(ls $P/*.LOADFAIL.json 2>/dev/null | wc -l) LOADFAIL," \
+  "$(ls $P/*.SMOKEFAIL.json 2>/dev/null | wc -l) SMOKEFAIL"
 for sid in K5 K1 K6; do
-  [ -e $P/$sid.preds.json ] || [ -e $P/$sid.LOADFAIL.json ] && continue
+  [ -e $P/$sid.preds.json ] || [ -e $P/$sid.LOADFAIL.json ] || [ -e $P/$sid.SMOKEFAIL.json ] && continue
   s=${SET[$sid]}; L=$ST/lists/$s.tsv; [ $s = uitviic ] && L=$ST/images/uitviic.sha.tsv
   TOK=(); [ $sid = K1 ] && TOK=(--tok $ST/hf/K1_tok)
   gpu dec_$sid $LB $X decode --sid $sid --snap $ST/hf/$sid "${TOK[@]}" --images $ST/images/$s --list $L \

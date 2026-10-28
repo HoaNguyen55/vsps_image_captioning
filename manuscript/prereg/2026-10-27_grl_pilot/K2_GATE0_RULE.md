@@ -146,3 +146,167 @@ The verdict and the flag are written to `P1_VERDICT.md` and into `gate0_decide.j
 - Measured anchor: 5.29 s/img at 160 tokens (`step1_dev300_guard.json`, KTVIC dev300 detailed, Qwen3-VL-8B), which gives about 1.36 GPU-h for 924 images at 160.
 - At a larger frozen value the probe sets the figure. If the cap would exceed 5 GPU-h, Gate 0 is NOT RUN (cost) at the freeze and goes to the PI. At the all-hit bound: 256 → 2.8, 384 → 4.1, 512 → 5.4, 768 → 8.0 GPU-h (CC-124 l.33); with real slice lengths 256–384 projects to about 2.3–4.1.
 - Probe: about 0.1–0.2 GPU-h.
+
+## Amendment (2026-10-28, CC-136 / CC-136P): §6c P2 pilot, gold editor vs detector editor
+
+**Status.** Added on 2026-10-28, after Gate 0's output (18:45Z on 2026-10-27) and before any P2 output. §1–§6b, §7 and §8 above are unchanged: this text is appended, and nothing above it moves. Source: Ken's draft `manuscript/ken/K18_P2_ADDENDUM_DRAFT.md` (sha 5af47b76), which stays non-binding, as revised by the CC-136 single-judge read and by the five-judge panel CC-136P. CC-136P supersedes CC-136 wherever they differ. Code: `scripts/grl/k2_p2_detect.py` (detector, GPU), `scripts/grl/k2_p2.py` (reproduction, editing, scoring, decision, CPU) and `scripts/grl/k2_p2.sh` (the M3 job). The judge code read covers one frozen snapshot of the three files; any later change needs a new read (CC-136P W15).
+
+**What this measures.** Does replacing COCO instance gold with an open-vocabulary detector, in the same pinned editor (§2) on the same Gate 0 decodes, cost enough at the target level to justify testing gold at the student level? It is a dev screen, not a contribution. E_gold is edited with the same gold that scores it, so every number here is a **TARGET CEILING ONLY** and is never a method result (K14 l.150–152).
+
+**Authority.** CC-126 W9 / ruling 4 / Q6 (the screen, its GO rule and the 0.5 GPU-h cap), PI-1026ac Q6 (dev only), UPGRADE_PLAN §6 last row (a missed Ken pilot is dropped, not run in full), CC-132b (M3 order), CC-136 and CC-136P W1–W18.
+
+**Condition (CC-136P W7): met.** Gate 0 GO, fired [], P1-GO (OPS-1028c; `gate0_decide.json` sha 0b6da7e0). P1 check T is false. Gate 0 STOP or NOT RUN would have meant no P2.
+
+### 6c.1 Detector and pins (CC-136P W8)
+
+| Item | Value |
+|---|---|
+| Model | Grounding DINO-T (Swin-T, "OGC" checkpoint), README Checkpoints row 1: data `O365,GoldG,Cap4M`, COCO box AP "48.4 (zero-shot) / 57.2 (fine-tune)" |
+| Paper | Liu et al., *Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection*, ECCV 2024 (LNCS), DOI 10.1007/978-3-031-72970-6_3, arXiv:2303.05499 |
+| Code | `IDEA-Research/GroundingDINO` commit `856dde20aee659246248e20734ef9ba5214f5e44` (2024-08-12), Apache-2.0. Cloned at `/root/GroundingDINO`, outside `common.SCAN_ROOTS` (the repo's own asset images would fail the scan). The job asserts a clean checkout of this commit |
+| Config | `groundingdino/config/GroundingDINO_SwinT_OGC.py` at that commit (`num_queries` 900, `max_text_len` 256), with `text_encoder_type` set at run time to the local BERT directory below |
+| Weights | `groundingdino_swint_ogc.pth`, 693,997,677 bytes, sha256 `3b3ca2563c77c69f651d7bd133e97139c186df06231157a64c507099c52bc799`, from `https://huggingface.co/ShilongLiu/GroundingDINO/resolve/a94c9b567a2a374598f05c584e96798a170c56fb/groundingdino_swint_ogc.pth`. That is the HF LFS oid; the GitHub release asset publishes no digest. Stored at `$NCS_DATA/models/groundingdino-swint-ogc/` |
+| Text encoder | `google-bert/bert-base-uncased` @ `86b5e0934494bd15c9632b12f734a8a67f723594`, Apache-2.0. A local copy at `$NCS_DATA/models/bert-base-uncased-86b5e09/` holds exactly five files, each sha-asserted: `model.safetensors` 68d45e23…69d3, `config.json` 7160e155…7d20, `tokenizer.json` ce64fce7…9a98, `tokenizer_config.json` a025160e…bf10, `vocab.txt` 07eced37…38a3 (full values in `k2_p2_detect.FILES`). With no other weight file present, the load is the pinned safetensors. The Hub name is never resolved at run time |
+| venv-gd | `/root/venv-gd`, python3.10; torch **2.5.1+cu121** and torchvision **0.20.1+cu121** (download.pytorch.org/whl/cu121, the build already proven on M3), CUDA **12.1**, transformers **4.44.2** (the writer's choice, contemporary with the commit; untested with it, so the smoke run is the test). The rest of GD's `requirements.txt` is resolved by pip. GroundingDINO is installed with `pip install --no-build-isolation -e /root/GroundingDINO`. The MultiScaleDeformableAttention op needs nvcc 12.1 at build time. M3's rebuild record lists build-essential but no CUDA toolkit, so the build installs one. `run()` asserts torch, CUDA and transformers |
+| Freeze | the `pip freeze` sha256 of venv-gd is recorded in an OPS line after the build. `k2_p2.sh` requires it as `GD_FREEZE` and asserts it as `k2_gate0.sh` does for venv-lb, and the detector refuses a missing value (None = fault) |
+| Offline | `HF_HUB_OFFLINE=1`, `TRANSFORMERS_OFFLINE=1`. The only network step is `k2_p2_detect.py fetch` (the pinned URLs, sha-asserted in memory, then tmp + os.replace) |
+| Run-recorded | venv-gd freeze, s/img, peak GPU memory, prompt token count, load time, MSDA CUDA call count, unexpected checkpoint keys |
+
+### 6c.2 COCO exposure (disclosed; CC-136P W11)
+
+- **COCO instance labels: none, per the authors.** README row 1 gives T's data as `O365,GoldG,Cap4M` and its COCO AP as zero-shot. The paper's ‡ note on non-zero-shot COCO numbers applies to model L, not to T. Appendix B's "We use COCO, O365, and OpenImage(OI) for our model pretrain" describes the model family and is not quoted alone.
+- **HF model-card conflict.** The `ShilongLiu/GroundingDINO` card metadata lists `detection-datasets/coco`. That repo also holds checkpoint B, which is trained on COCO (README row 2). Both sources are disclosed, and the conflict is not resolved here.
+- **COCO images: possible.** GoldG contains Flickr30k Entities and Visual Genome images (GD appendix B; MDETR, Kamath et al., ICCV 2021, arXiv:2104.12763). VG's images come from the intersection of YFCC100M and MS-COCO (Krishna et al., IJCV 2017, DOI 10.1007/s11263-016-0981-7). All val-924 images are COCO train2014 (§7). GLIP releases a GoldG "without COCO images" (arXiv:2112.03857; `final_mixed_train_no_coco.json`), but the GD paper does not say which GoldG version T used. Cap4M's and O365's image sources were not checked.
+- **Direction.** Exposure would favour the detector arm and shrink the gold − detector gap, so it biases toward NO-GO.
+- **Struck (CC-136P W11):** the optional count of val-924 ids in VG's `coco_id` metadata. No pinned metadata file exists, and the count would decide nothing.
+
+### 6c.3 Editor, class source and the detection rule (CC-136P W1, W9, W10, W16)
+
+**Editor.** Exactly §2's pinned editor (W5): the `units` splitter, matcher v1 (`score_coco_probe.py` d11db7e1, `coco80_vi.json` 926e0857), the language check (`clean_supervision` 01f17200), the trailing-punctuation rule and `untruncate` (W3). It is imported from `k2_gate0.py` and not copied. **One change only:** the image's presence set is the detector's D(img) ⊆ COCO-80 instead of the gold G(img). A unit is deleted if it names a v1 class outside D(img) or fails the language check.
+
+**Class source (W10).** The 80 names are the pinned `COCO80` tuple in `k2_p2_detect.py`: COCO-2014's instance categories in category-id order, the `category_dict` order of `demo/test_ap_on_coco.py`. They are **not** taken from `gold_instances.json`, which names only 65 distinct classes on these 3,326 ids (Ken's draft l.76 is corrected here). Asserts: gold ⊆ COCO80, and COCO80 equals the class keys of `coco80_vi.json` minus `_note`. Equality with gold is never asserted. The mapping is identity by name, with no class outside COCO-80 and no many-to-one map.
+
+**Prompt.** `" . ".join(COCO80) + " ."`, which equals `test_ap_on_coco.py` l.174 and `build_captions_and_token_span(COCO80, True)[0]`; the job asserts the equality. No name contains "/", so the upstream `random.choice` branch never runs and the prompt is deterministic (asserted). **Token count: 195** of the 256 limit (CPU tokenisation on 2026-10-28 with the pinned `tokenizer.json`, CLS and SEP included). The run asserts ≤ 256 and that all 80 spans have tokens in the positive map; upstream silently drops a span whose `char_to_token` is None.
+
+**Preprocessing.** `demo/inference_on_a_image.py` `load_image` (l.58–70): `RandomResize([800], max_size=1333)`, `ToTensor`, ImageNet `Normalize`. The call is `util/inference.load_image`, which applies the same transform. Batch 1, fp32, `model.eval()`, `torch.no_grad`.
+
+**Rule (W1).** The source is `demo/inference_on_a_image.py` at 856dde2, l.117–133, given-phrase mode:
+- `create_positive_map_from_span` gives span-normalised rows (80 × 256);
+- `positive_maps @ sigmoid(pred_logits).T` gives an 80 × 900 class × query score;
+- class c ∈ D(img) iff some query scores **> 0.30**, the `box_threshold` argparse default at l.162.
+
+The rule caption is the model caption. The demo's tokenisation of its global `text_prompt` is not reproduced. Not used:
+- `PostProcessCocoGrounding` (top-300, no threshold, an AP tool);
+- `util/inference.predict()`'s max-over-all-tokens rule (0.35 in `predict_with_caption`);
+- `get_phrases_from_posmap` and `text_threshold`.
+
+D(img) at 0.35 is written beside it and reported descriptively only, as presence precision and recall; no E_det is built at 0.35.
+
+**Bias, disclosed both ways.** The span mean lowers multi-token classes (*traffic light*, *dining table*, *cell phone*). That adds misses, and a miss deletes the whole unit with its correct mentions, which biases toward a GO through recall. Possible VG image exposure (6c.2) biases toward NO-GO.
+
+**Fault asserts (W9), each NOT RUN (fault):**
+- the GD op `_C` imports, and the `MultiScaleDeformableAttnFunction` CUDA path is called (call count > 0 after the first image; a silent pytorch fallback is a fault);
+- `load_state_dict` reports `missing_keys == []`, and `unexpected_keys` lie within the pinned named set {`label_enc.weight`, `bert.embeddings.position_ids`}, which the smoke run confirms;
+- torch, CUDA, transformers, the weights, the five BERT files, the GD commit and the venv-gd freeze match their pins;
+- `k2_gate0.val_ids_ok` passes, and all 924 staged val images match `uitviic_val.tsv`, checked before the GPU pass and again per image.
+
+**Output.** `p2_detect.json`: D at 0.30 and at 0.35 for the 924 ids, the 80 per-class max scores per image (disclosure only, never tuning), and the pins and run figures. It is hashed into `p2_detect.sha256` before E_det is built (W13).
+
+### 6c.4 Data and the reproduction control (CC-136P W3)
+
+- **Scored set:** UIT-ViIC val 924 (`uitviic_val.tsv` 338252e1), under the same guard, `m3_clear`, tmux + RUNNING lock and `EXPECT_HEAD` as §3.
+- **Decodes:** Gate 0's own zero-shot val decode (Qwen3-VL-8B @ 0c351dd, `max_new_tokens` 512), shared with Gate 0 (W7). There is no new decode; the only GPU work is the detector.
+- **Reproduction control (W3).** E_gold is **recomputed**, not retrieved. The runner first asserts:
+  - `gate0_decide.json` sha256 = 0b6da7e083af…17a5;
+  - the decode sha256 = 8bb0192c76c1…0c51, as named in that record.
+
+  It then recomputes E_gold with the imported `k2_gate0.untruncate / edit / row / rates`. The recomputed zero-shot and edited rates must equal the record at its 4 decimals, `deleted_units` must equal it, and the record must hold edited CHAIR_i 1.795, R 65.28 and 277 deleted units (OPS-1028c). Any mismatch is NOT RUN (fault), never a look, and the detector record is not opened. Only after this does it build E_det = edit(c, D(img)).
+- **Scoring:** gold W21 (`gold_instances.json` 42c100f5), scorer W20 (matcher v2; negated or hedged mentions are hallucinations), pooled CHAIR_i and R as §2.
+
+### 6c.5 Decision rule (fixed by CC-126 W9 before Gate 0; unchanged) and the arm licence (CC-136P W4)
+
+| | Condition (point estimates on val 924) |
+|---|---|
+| **P2-GO** | CHAIR_i(E_det) − CHAIR_i(E_gold) ≥ **6.0**, **or** R(E_gold) − R(E_det) ≥ **4.0** (2 × SESOI, W1) |
+| **P2-NO-GO** | neither. `P2_STOP.md` with the measured values; no rerun, no threshold change, no detector change |
+| P2 NOT RUN (cost → TO-PI) | the detector step exceeds its 1,800 s timeout (exit 124). `P2_STOP.md` + `p2_decide.json`, `verdict: NOT-RUN`, `class: cost -> TO-PI`. It is not a negative pilot (CC-124 W2), and it closes the pilot |
+| P2 NOT RUN (fault → TO-PI) | a venv/op build or smoke failure, a pin or sha mismatch, a W3 or W9 assert, or any other non-zero exit. `P2_FAULT_<utc>.md` only. It is not a look, and no other detector or HF port is used without a new ruling |
+
+**Arm licence (W4), fixed after Gate 0 and before any P2 output.** `fired_arm` ∈ {chair, recall, both, none}.
+- (a) CHAIR arm fired (chair or both): it licenses drafting H-P2 (K14 l.130: gold-student CHAIR_i lower by ≥ 3.0, recall margin −2.0) **only if** Σhal(E_det) > Σhal(E_gold) (`driver: hallucination`). Otherwise the fire is `recall-driven` and licenses H-P2r as a secondary only.
+- (b) R arm only: it licenses H-P2r (gold-student R higher by ≥ 2.0, CHAIR_i non-inferior at margin +1.0) as a secondary only.
+- (c) Both arms with a hallucination driver: H-P2 is primary and H-P2r secondary.
+- **No GO by itself licenses the full P2 run (~39 GPU-h).** That still needs a K2 Gate 1 GO, the MT4 prereg and a fresh cost ruling. The judge decides H-P2's place in the fixed sequence.
+- A GO never claims "gold is better". A NO-GO never claims a detector can replace gold; it means only "no licence for a full P2".
+
+**Reachability note (W6; noted after Gate 0, before P2 output; rule unchanged).** CHAIR_i is pooled, Σhal / Σmen (`k2_gate0.py` l.100–110), and `edit` deletes whole units. A detector miss deletes units with correct mentions and shrinks Σmen, while a false positive keeps hallucinated units. CHAIR_i(E_det) is therefore not bounded by the zero-shot 9.375, and the CHAIR arm can fire through recall loss; the driver test above separates the two. R has the fixed denominator Σ|gold| and falls monotonically under deletion. The thresholds were set at CC-126 W9 (2026-10-27T04:59Z), before Gate 0's output (18:45Z). CC-136's "CHAIR arm nearly unreachable / ≤ 9.4" is struck.
+
+**Records (W2, W13)** go to `/root/outputs/grl_pilot/k2/p2/` only: `p2_detect.json` (+ `.sha256`), `smoke_<utc>.json`, `p2_decide.json`, and `P2_VERDICT.md` (GO), `P2_STOP.md` (NO-GO or cost) or `P2_FAULT_<utc>.md`, plus `runs.log`. **`gate0_decide.json` is never written.** The writer refuses that name, and the job asserts its sha before and after.
+
+`p2_decide.json` carries:
+- `verdict`, `fired_arm`, `driver`, `licence`;
+- E_gold and E_det rates;
+- Σhal, Σmen, Σtp and Σ|gold| for both arms, and `correct_mentions_lost` = Σtp(E_gold) − Σtp(E_det);
+- both deltas with bootstrap 95% half-widths (B = 2,000, `default_rng(0)`, one draw shared by both arms). They are reported only. If the fired arm's half-width ≥ its SESOI (3.0 / 2.0), the licence text says so;
+- deleted units and their negated-or-hedged share per arm, mean words, matched-count F1;
+- D presence precision and recall against gold at 0.30 and, descriptively, at 0.35;
+- the shas and the detector's run figures;
+- the label "TARGET CEILING ONLY".
+
+**One look (W13).** The look is the moment `p2_decide.json` is written. A fault rerun is allowed only before that file exists, and every attempt is logged in `runs.log` and the WORKFLOW_LOG. A `p2_detect.json` that matches its hash from a faulted attempt is reused, with no second GPU pass.
+
+### 6c.6 Cost and run order (CC-136P W5, W12, W18)
+
+- **Speed source:** YOLO-World (Cheng et al., CVPR 2024, DOI 10.1109/CVPR52733.2024.01599, arXiv:2401.17270), Tab. 2: GD-T at 1.5 FPS on one V100 without TensorRT, on LVIS minival. 924 / 1.5 ≈ 616 s ≈ 0.17 GPU-h, plus about 0.05 h for loading and checks, so about **0.22 GPU-h**. The conversion to an RTX 3090 and to an 80-class prompt has no source.
+- **Cap:** `timeout 1800` (0.5 GPU-h) on the detector step only (model load + 924 images). Exit 124 is NOT RUN (cost); any other non-zero exit is NOT RUN (fault). Editing, scoring and the bootstrap run on CPU.
+- **Order on M3 (W12; replaces the draft's C-EN-priority sentence, W18):**
+  1. B-2 CLEANUP DONE;
+  2. the W5 commit window;
+  3. the gatekeeper commit of §6c, the three scripts and SHA256SUMS;
+  4. the M3 HEAD move;
+  5. the venv-gd build: one attempt of at most ~1 h, outside the timeout, with the GD clone on M3 only after B-2 cleanup (CC-132 W8) and the freeze then recorded in an OPS line;
+  6. `k2_p2.sh` in tmux under `grl_pilot/RUNNING` (noclobber), running selftests, guard + `m3_clear`, `fetch`, the W3 reproduction, the **smoke** on the first 2 staged UT-2402 train images (never val-924; MSDA call count, shas, keys, s/img and peak memory; D not kept; not a look), then guard again, the detector under the cap, and the decision.
+
+  G-RL Gate 0 may run before or after P2, never concurrently with it.
+- **Refusals.** `k2_p2.sh` refuses to start if any other `/root/outputs/*/RUNNING` exists, if any other tmux session exists, if `/root/ncs-data/b2_stage` exists, or if a B-2 process is running. Locks are checked on M3 itself, never on the local mirror, and the mirror is never copied back. A build or smoke failure is P2 NOT RUN (fault) → PI.
+- **Commit timing (W5).** The commit lands only after `b2_chain` prints CLEANUP DONE and no C-2 or B-1 step pinned to 1ae7339d is pending (`b2_chain.sh` l.27/l.54, `c2_chain.sh` l.43, `b1_chain.sh` l.53). Re-pinning those steps instead is the PI's choice, after a judge diff check. The HEAD checks are never edited, and no machine's HEAD moves while one of its jobs runs.
+
+### 6c.7 Risks and pre-written MT4 sentences (CC-136P W16)
+
+**Risks.**
+1. Same-image exposure through VG/GQA (6c.2): it can be disclosed, not fixed, and it biases toward NO-GO.
+2. The model-card conflict: answered by README row 1, together with the fact that the HF repo also holds checkpoint B.
+3. The threshold choice: the authors use 0.30 (argparse) and 0.35 (README / `predict_with_caption`). 0.30 was fixed before the data; 0.35 is descriptive.
+4. The CUDA-op build (R3): a failure is NOT RUN (fault), with no HF port swap.
+5. Circularity: E_gold is near-clean by construction, so a target GO says nothing about a student.
+6. The finding holds for COCO-80 only.
+7. Tokeniser overflow: the measured count is 195 tokens against the 256 limit, and the run asserts it.
+8. Val 924 is used again (§7: B's WiSE-FT gate, B's adapter decodes, G-RL dev, Gate 0); this is disclosed (CC-136 R2).
+
+**Sentences.** X, Y, Z, W and V are filled from `p2_decide.json`.
+- **GO, CHAIR arm (hallucination-driven):** "On UIT-ViIC val (924 images), editing the same zero-shot Qwen3-VL-8B captions with the same rule, but with Grounding DINO-T detections (box threshold 0.30, the authors' default) in place of COCO instance gold, left CHAIR_i X points higher than gold editing (≥ 6.0, twice the SESOI), with more hallucinated mentions kept. This is a target-level ceiling, not a student result."
+- **GO, R arm or recall-driven CHAIR arm:** "… the detector-edited targets lost Y points of object recall (Z correct mentions) relative to gold-edited targets, because detector misses deleted whole clauses. Target-level ceiling only."
+- **NO-GO:** "Under the same editor and the same decodes, detector editing differed from gold editing by W CHAIR_i points and V recall points at the target level, below the pre-registered 6.0 / 4.0. It removed a share S = (9.375 − CHAIR_i(E_det)) / (9.375 − 1.795) of the gold-removable CHAIR_i (descriptive). By the pre-registered rule this gives no licence for a student-level gold-versus-detector test, and none was run."
+- **NOT RUN (cost):** "The detector pass did not finish within its pre-registered 0.5 GPU-h cap. Per the rule this is a cost outcome, not a negative result, and no comparison is reported."
+- **NOT RUN (fault):** "The pinned detector could not be run as registered (reason: …). No substitute detector was tried, and no comparison is reported."
+- **Disclosure with every outcome:** "Grounding DINO-T's released training data (O365, GoldG, Cap4M) contains no COCO instance annotations according to its authors, but GoldG includes Visual Genome images, a subset of which are COCO images. We could not rule out that the detector saw our validation images with non-COCO labels; any such exposure favours the detector arm."
+
+### 6c.8 Related work and the novelty claim (CC-136P W17, ruling 1)
+
+- **Cited:** Woodpecker (Yin et al., *Sci. China Inf. Sci.* 2024, DOI 10.1007/s11432-024-4251-x, arXiv:2310.16045; verified in K14_PRIOR_ART l.68). It corrects hallucinations with expert models, Grounding DINO among them, not with gold.
+- **Identifiers verified on 2026-10-28 (arXiv titles) by a non-Ken check; claims not yet verified:**
+  - SENTINEL, arXiv:2507.12455. Its abstract confirms an object cross-check "with two open-vocabulary detectors"; the detector names are not checked.
+  - CHAIR-DPO, arXiv:2508.20181 ("Object-aware Preference Optimization"). The DETR-as-truth claim is not checked.
+  - MARINE, arXiv:2402.08680. The "MARINE-Truth" oracle claim is not checked.
+  - ViGoR, arXiv:2402.06118.
+  - POPE, arXiv:2305.10355.
+
+  None of these five is cited for a detector-versus-gold claim until that claim is checked against the paper text.
+- **Narrowed novelty.** Prior work already uses detector truth in place of gold. P2 claims no novelty for that. What it may claim is a controlled comparison: the same decodes, the same deterministic editor, gold versus detector as the only change, toward a student-level effect, in Vietnamese. The value is application, answering "why human gold when a detector is free?". Ken's K14 l.131 sentence is not used.
+
+### 6c.9 Questions in the draft, resolved
+
+1. Does P1-ERROR block P2? Moot: the condition is met (P1-GO; W7).
+2. Threshold 0.30 or 0.35? 0.30 (argparse default, l.162); 0.35 is descriptive only.
+3. Is there a half-width conjunct on GO? No. Gate 0's output has been seen, so any change now would be post hoc; the half-widths are reported only (W4).
+4. Is the VG `coco_id` count run? No, it is struck (W11).

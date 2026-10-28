@@ -13,7 +13,8 @@ outside the preds files under .session_backup/ (laptop) or /root/outputs/b2_exte
   python scripts/b2_external/b2.py hf-fetch --sid S --dest DIR                  M3 CPU: pinned snapshot, sha-checked
   python scripts/b2_external/b2.py uit-fetch --list F --dest DIR                M3 CPU: UIT-ViIC test images by coco_url
   python scripts/b2_external/b2.py guard --head H | left --used F --marker M                        M3
-  python scripts/b2_external/b2.py smoke --sid S --snap DIR [--tok DIR] --out F                   M3 GPU, no test image
+  python scripts/b2_external/b2.py smoke-fetch --dest DIR                       M3 CPU: the pinned UIT-ViIC train smoke image
+  python scripts/b2_external/b2.py smoke --sid S --snap DIR [--tok DIR] --img2 F --out F          M3 GPU, no test image
   python scripts/b2_external/b2.py decode --sid S --snap DIR [--tok DIR] --images DIR --list F --out F   M3 GPU
   python scripts/b2_external/b2.py score --data D --fetched DIR --gate F --preds DIR --vnc DIR --thesis DIR
                                          --pilot F --out DIR                    laptop CPU, once
@@ -113,6 +114,12 @@ SYSTEMS = {s["sid"]: s for s in A_SYSTEMS + B_SYSTEMS}
 SMOL_PROMPT = "Mô tả bức ảnh này."  # the model card's usage prompt (rev 50467088)
 BLIP_GEN = {"max_length": 64, "num_beams": 5, "early_stopping": True, "no_repeat_ngram_size": 3,
             "repetition_penalty": 1.5}  # the model card's usage example (rev 1ffe73cf)
+# Second smoke input (B-2 Amendment 1, CC-138 W2): the UIT-ViIC TRAIN image with the smallest id whose sha256 is in no
+# test-side list (checked on the laptop 2026-10-28: 0 hits in 22,260 + the three B-2 lists); M3 re-checks the sha.
+COCO_URL = "http://images.cocodataset.org/{filepath}/{file}"  # as in scripts/c_en/cen_fetch.py
+SMOKE_IMG = {"id": 368, "file": "000000000368.jpg", "url": COCO_URL.format(filepath="train2017", file="000000000368.jpg"),
+             "sha256": "58b0179921d415ca01b697255d473955e52559123e4a4b565e4d009dbb6c5f17"}
+NOT_RUNNABLE = "not runnable: empty output under the registered recipe (transformers 4.57.6)"  # CC-138 W3 (c)
 
 
 # ------------------------------------------------------------------------------------------------------ hashing
@@ -425,6 +432,21 @@ def cmd_uit_fetch(a) -> None:
     print(len(out), "UIT-ViIC test images, C-EN overlap 0")
 
 
+def cmd_smoke_fetch(a) -> None:
+    """The pinned second smoke image (CC-138 W2) by coco_url; sha must equal the pin and lie outside C-EN's records."""
+    sys.path.insert(0, str(ROOT / "scripts/grl"))
+    import common as K
+
+    p = a.dest / SMOKE_IMG["file"]
+    data = p.read_bytes() if p.is_file() else K.fetch(SMOKE_IMG["url"])
+    h = hashlib.sha256(data).hexdigest()
+    if h != SMOKE_IMG["sha256"] or h in K.cen_test_shas():
+        raise SystemExit("STOP: the smoke image differs from its pin or is in C-EN's test-side records")
+    a.dest.mkdir(parents=True, exist_ok=True)
+    p.write_bytes(data)
+    print(f"smoke image {SMOKE_IMG['id']} sha verified")
+
+
 # ------------------------------------------------------------------------------------------------- decode (GPU)
 class LoadFail(Exception):
     """Raised only inside a registered from_pretrained call or a registered artifact check: class (c)."""
@@ -457,10 +479,57 @@ def declared_class(tk, snap: Path) -> None:
         raise LoadFail(f"tokenizer class {type(tk).__name__} is not the declared {want}")
 
 
+def _ids(*xs) -> set[int]:
+    """Token ids from ints, lists of ints or None."""
+    out: set[int] = set()
+    for x in xs:
+        out |= set(x) if isinstance(x, (list, tuple)) else set() if x is None else {int(x)}
+    return out
+
+
+def new_tokens(ids: list[int], start: set[int] = frozenset(), bos: set[int] = frozenset()) -> list[int]:
+    """Generated ids of an encoder-decoder or BLIP generate (B-2 Amendment 1): the first id is dropped if it is the
+    decoder-start / injected bos id, then one more if it is a bos id. Decoder-only outputs are sliced before."""
+    ids = list(ids)
+    if ids[:1] and ids[0] in start:
+        ids = ids[1:]
+    if ids[:1] and ids[0] in bos:
+        ids = ids[1:]
+    return ids
+
+
+def smoke_counts(new: list[int], text: str, end: set[int], special: set[int]) -> dict:
+    """W1: counts only, never the text."""
+    return {"n_new_tokens": len(new), "n_special_new": sum(t in special or t in end for t in new),
+            "first_new_is_eos": bool(new) and new[0] in end, "n_chars": len(text)}
+
+
+def smoke_class(new: list[int], text: str, end: set[int], special: set[int]) -> tuple[str, str]:
+    """W3 per input: 'stop' (ours: zero new tokens, (b) a special token other than eos, (a) text tokens decoding to
+    empty), 'eos' (only eos tokens) or 'text'."""
+    if not new:
+        return "stop", "zero new tokens"
+    if any(t in special and t not in end for t in new):
+        return "stop", "(b) a special token other than eos"
+    n_text = sum(t not in special and t not in end for t in new)
+    if n_text and not text.strip():
+        return "stop", "(a) text tokens decode to an empty string"
+    return ("text", "") if n_text else ("eos", "")
+
+
+def smoke_verdict(classes: list[tuple[str, str]]) -> tuple[int, str]:
+    """W3 over both inputs: any (a)/(b) -> JOB STOP (rc 1); immediate eos on both -> rc 5 (class (c)); else PASS."""
+    stops = [why for c, why in classes if c == "stop"]
+    if stops:
+        return 1, stops[0]
+    return (5, NOT_RUNNABLE) if all(c == "eos" for c, _ in classes) else (0, "ok")
+
+
 def captioner(s: dict, snap: Path, tok: Path | None):
     """The registered recipe per kind (PREREG §2.3): safetensors through transformers, no remote code, no pickle.
-    Returns (caption function, tokenizer, load-info counts). Only `pretrained` calls and the artifact checks raise LoadFail; any other
-    error is a bug of this code and reaches the job as a JOB STOP."""
+    Returns (caption function -> (text, new ids), tokenizer, load-info counts plus the end and special id sets). Only
+    `pretrained` calls and the artifact checks raise LoadFail; any other error is a bug of this code and reaches the
+    job as a JOB STOP."""
     import torch
     import transformers as T
 
@@ -474,9 +543,13 @@ def captioner(s: dict, snap: Path, tok: Path | None):
         if len(tk) != m.config.decoder.vocab_size or tk.convert_tokens_to_ids(["<s>", "<pad>", "</s>"]) != [0, 1, 2]:
             raise LoadFail("tokenizer.json does not match the decoder vocabulary or special ids")
 
+        gc = m.generation_config
+        start = _ids(m.config.decoder_start_token_id, gc.decoder_start_token_id)
+        bos = _ids(tk.bos_token_id, gc.forced_bos_token_id)
+
         def run(img):
-            return tk.decode(m.generate(proc(images=img, return_tensors="pt").pixel_values.to("cuda"))[0],
-                             skip_special_tokens=True)
+            out = m.generate(proc(images=img, return_tensors="pt").pixel_values.to("cuda"))[0]
+            return tk.decode(out, skip_special_tokens=True), new_tokens(out.tolist(), start, bos)
     elif s["kind"] == "smolvlm":
         proc = pretrained(T.AutoProcessor.from_pretrained, snap)
         m = load_model(T.AutoModelForImageTextToText.from_pretrained, snap, info, torch_dtype=torch.bfloat16, **kw)
@@ -488,19 +561,25 @@ def captioner(s: dict, snap: Path, tok: Path | None):
 
         def run(img):
             x = proc(text=prompt, images=[img], return_tensors="pt").to("cuda", torch.bfloat16)
-            out = m.generate(**x, max_new_tokens=64, do_sample=False)
-            return tk.decode(out[0, x["input_ids"].shape[1]:], skip_special_tokens=True)
+            out = m.generate(**x, max_new_tokens=64, do_sample=False)[0, x["input_ids"].shape[1]:]
+            return tk.decode(out, skip_special_tokens=True), out.tolist()
     elif s["kind"] == "blip":
         ip = pretrained(T.BlipImageProcessor.from_pretrained, snap)
         tk = pretrained(T.AutoTokenizer.from_pretrained, snap, trust_remote_code=False)
         declared_class(tk, snap)
         m = load_model(T.BlipForConditionalGeneration.from_pretrained, snap, info, **kw).to("cuda").eval()
+        start, bos = _ids(m.config.text_config.bos_token_id), _ids(tk.bos_token_id)
+        info["end"] = _ids(m.config.text_config.sep_token_id)  # BLIP's generate stops at the text sep id
 
         def run(img):
             px = ip(images=img, return_tensors="pt")["pixel_values"].to("cuda")
-            return tk.decode(m.generate(pixel_values=px, **BLIP_GEN)[0], skip_special_tokens=True)
+            out = m.generate(pixel_values=px, **BLIP_GEN)[0]
+            return tk.decode(out, skip_special_tokens=True), new_tokens(out.tolist(), start, bos)
     else:
         raise SystemExit(f"no recipe for kind {s['kind']}")
+    info["end"] = info.get("end", set()) | _ids(m.generation_config.eos_token_id, tk.eos_token_id)  # eos only, no pad
+    info["special"] = set(tk.all_special_ids) | {i for i, t in getattr(tk, "added_tokens_decoder", {}).items()
+                                                 if getattr(t, "special", False)}
     return run, tk, info
 
 
@@ -511,12 +590,16 @@ def write_loadfail(out_dir: Path, sid: str, e: LoadFail) -> int:
 
 
 def cmd_smoke(a) -> int:
-    """Before any test image (PREREG §5.2): load, the tokenizer round trip on an author-written phrase and one
-    generate on a flat grey image. Writes class names and lengths only. rc 4 = LOADFAIL; any other failure = STOP."""
+    """Before any test image (PREREG §5.2, Amendment 1): load, the tokenizer round trip on an author-written phrase,
+    one generate on a flat grey image and one on the pinned UIT-ViIC train image. Writes class names and token
+    counts only, never the text (CC-138 W1). rc 4 = LOADFAIL; rc 5 = immediate eos on both inputs (SMOKEFAIL json,
+    class (c)); a W3 (a)/(b) case or any other failure = STOP."""
     import torch
     from PIL import Image
 
     s = SYSTEMS[a.sid]
+    if sha_file(a.img2) != SMOKE_IMG["sha256"]:
+        raise SystemExit("STOP: the second smoke image differs from its pin")
     torch.manual_seed(0)
     try:
         run, tk, info = captioner(s, a.snap, a.tok)
@@ -525,13 +608,24 @@ def cmd_smoke(a) -> int:
     back = tk.decode(tk(SMOKE_PHRASE, add_special_tokens=False)["input_ids"], skip_special_tokens=True)
     if canon(back) != canon(SMOKE_PHRASE):
         raise SystemExit(f"STOP: {a.sid} tokenizer round trip differs ({len(back)} chars)")
+    imgs = {"grey": Image.new("RGB", (384, 384), (127, 127, 127)), "train368": Image.open(a.img2).convert("RGB")}
+    per, classes = {}, []
     with torch.inference_mode():
-        cap = run(Image.new("RGB", (384, 384), (127, 127, 127)))
-    if not cap.strip():
-        raise SystemExit(f"STOP: {a.sid} generated an empty string on the smoke image")
-    a.out.write_text(json.dumps({"sid": a.sid, "tokenizer": type(tk).__name__, "vocab": len(tk),
-                                 "smoke_chars": len(cap), "round_trip": True,
-                                 "unexpected_keys": info.get("unexpected_keys", 0)}))
+        for k, img in imgs.items():
+            text, new = run(img)
+            per[k] = smoke_counts(new, text, info["end"], info["special"])
+            classes.append(smoke_class(new, text, info["end"], info["special"]))
+    rc, why = smoke_verdict(classes)
+    rec = {"sid": a.sid, "tokenizer": type(tk).__name__, "vocab": len(tk), "round_trip": True,
+           "unexpected_keys": info.get("unexpected_keys", 0), "smoke": per}
+    print(json.dumps(rec))  # counts only
+    if rc == 1:
+        raise SystemExit(f"STOP: {a.sid} smoke, ours by CC-138 W3: {why}")
+    if rc == 5:
+        (a.out.parent / f"{a.sid}.SMOKEFAIL.json").write_text(json.dumps({**rec, "rc": 5, "reason": why}))
+        print(f"SMOKEFAIL {a.sid}: {why}")
+        return 5
+    a.out.write_text(json.dumps(rec))
     print(f"smoke ok {a.sid}")
     return 0
 
@@ -559,7 +653,7 @@ def cmd_decode(a) -> int:
             p = a.images / f
             if sha_file(p) != h:
                 raise SystemExit(f"STOP: image {f} differs from the list")
-            preds[i] = run(Image.open(p).convert("RGB"))
+            preds[i] = run(Image.open(p).convert("RGB"))[0]
     tmp = a.out.with_suffix(".partial")
     tmp.write_text(json.dumps(preds, ensure_ascii=False), encoding="utf-8")
     os.replace(tmp, a.out)
@@ -707,7 +801,7 @@ def cmd_score(a) -> None:
     for k, p in apreds.items():
         if gate[k]["pass"] and p:
             by_set.setdefault(SYSTEMS[k.split(":")[0]]["set"], {})[k] = p
-    loadfail = {}
+    loadfail, smokefail = {}, {}
     for s in B_SYSTEMS:
         f = a.preds / f"{s['sid']}.preds.json"
         lf = a.preds / f"{s['sid']}.LOADFAIL.json"
@@ -715,8 +809,10 @@ def cmd_score(a) -> None:
             by_set.setdefault(s["set"], {})[s["sid"]] = json.loads(f.read_text(encoding="utf-8"))
         elif lf.is_file():
             loadfail[s["sid"]] = json.loads(lf.read_text())["reason"]
+        elif (a.preds / f"{s['sid']}.SMOKEFAIL.json").is_file():
+            smokefail[s["sid"]] = NOT_RUNNABLE  # B-2 Amendment 1, CC-138 W3 (c)
     stop = "not run (cap)" if (a.preds.parent / "CAP_STOP.json").exists() else "not run (JOB STOP)"
-    not_run = {s["sid"]: stop for s in B_SYSTEMS if s["sid"] not in loadfail
+    not_run = {s["sid"]: stop for s in B_SYSTEMS if s["sid"] not in loadfail and s["sid"] not in smokefail
                and not (a.preds / f"{s['sid']}.preds.json").is_file()}
     rows = {}
     for name, systems in sorted(by_set.items()):
@@ -726,10 +822,10 @@ def cmd_score(a) -> None:
     looks = [{"sid": k, "set": SYSTEMS[k.split(":")[0]]["set"], "utc": time.strftime("%FT%TZ", time.gmtime())}
              for k in sorted(rows)]
     res = {"label": "DESCRIPTIVE B-2 (CC-126 W13)", "signature": SIGNATURE, "scorer_gate": sg, "rows": rows,
-           "looks": looks, "loadfail": loadfail, "not_run": not_run, **counts(rows),
+           "looks": looks, "loadfail": loadfail, "smokefail": smokefail, "not_run": not_run, **counts(rows),
            "code_sha256": sha_file(Path(__file__))}
     (a.out / "scores.json").write_text(json.dumps(res, indent=1))
-    (a.out / "table.md").write_text(table(rows, gate, loadfail, not_run), encoding="utf-8")
+    (a.out / "table.md").write_text(table(rows, gate, loadfail, {**smokefail, **not_run}), encoding="utf-8")
     print(json.dumps(counts(rows)))
     print(log_line(rows, sha_file(a.out / "scores.json")))  # the operator appends it to LOG.md (CC-132 W6)
 
@@ -854,6 +950,30 @@ def _st_load() -> None:
         assert "1 weights missing" in str(e)
 
 
+def _st_smoke() -> None:
+    """CC-138 W3 branches on synthetic token lists; W1 counts carry no text; the SMOKEFAIL note in the table."""
+    end, special = {2}, {0, 1, 2, 3, 7}  # 2 = eos, 1 = pad or <|im_end|>-like, 0 = bos, 3 = unk, 7 = <image>-like
+    assert new_tokens([2, 0, 11, 12, 2], start={2}, bos={0}) == [11, 12, 2]  # BART-shaped: start, bos, text, eos
+    assert new_tokens([2, 2], start={2}, bos={0}) == [2] and new_tokens([11, 2]) == [11, 2]
+    assert smoke_class([11, 12, 2], "x y", end, special) == ("text", "")  # (d)
+    assert smoke_class([2], "", end, special) == ("eos", "")  # (c) on one input
+    assert smoke_class([11, 2], "", end, special)[1].startswith("(a)")
+    assert smoke_class([11, 2], "  ", end, special)[1].startswith("(a)")
+    assert smoke_class([7, 2], "", end, special)[1].startswith("(b)") and smoke_class([0, 11], "x", end, special)[0] == "stop"
+    assert smoke_class([1], "", end, special)[1].startswith("(b)")  # an immediate pad / <|im_end|> is ours, not (c)
+    assert smoke_class([], "", end, special) == ("stop", "zero new tokens")
+    assert smoke_verdict([("eos", ""), ("eos", "")]) == (5, NOT_RUNNABLE)  # (c) on both: rc 5
+    assert smoke_verdict([("eos", ""), ("text", "")]) == (0, "ok") == smoke_verdict([("text", ""), ("eos", "")])
+    assert smoke_verdict([("text", ""), ("stop", "(b) x")]) == (1, "(b) x")  # a bug wins over a pass
+    c = smoke_counts([11, 12, 2], "mèo con", end, special)
+    assert c == {"n_new_tokens": 3, "n_special_new": 1, "first_new_is_eos": False, "n_chars": 7}
+    assert smoke_counts([2], "", end, special)["first_new_is_eos"] and "mèo" not in json.dumps(c, ensure_ascii=False)
+    assert _ids(2, [3, 4], None) == {2, 3, 4}
+    assert f"K5: {NOT_RUNNABLE}" in table({}, {}, {}, {"K5": NOT_RUNNABLE})
+    assert len(SMOKE_IMG["sha256"]) == 64 and SMOKE_IMG["file"] == f"{SMOKE_IMG['id']:012d}.jpg"
+    assert SMOKE_IMG["url"].endswith("/train2017/" + SMOKE_IMG["file"])
+
+
 def selftest() -> None:
     import tempfile
 
@@ -868,6 +988,7 @@ def selftest() -> None:
         t = Path(td)
         _st_gate(t, refs, alias)
         _st_cap(t)
+        _st_smoke()
     _st_score_table(refs)
     _st_load()
     print("selftest ok")
@@ -878,8 +999,9 @@ def main() -> int:
     ap.add_argument("--selftest", action="store_true")
     sub = ap.add_subparsers(dest="cmd")
     P = lambda *n: [sub.add_parser(x) for x in n]  # noqa: E731
-    fe, ga, li, hf, ui, gu, le, sm, de, sc = P("fetch", "gate", "lists", "hf-fetch", "uit-fetch", "guard", "left",
-                                               "smoke", "decode", "score")
+    fe, ga, li, hf, ui, gu, le, sm, de, sc, sf = P("fetch", "gate", "lists", "hf-fetch", "uit-fetch", "guard", "left",
+                                                   "smoke", "decode", "score", "smoke-fetch")
+    sf.add_argument("--dest", type=Path, required=True)
     fe.add_argument("--out", type=Path, required=True)
     for p in (ga, sc):
         p.add_argument("--fetched", type=Path, required=True)
@@ -895,7 +1017,7 @@ def main() -> int:
     gu.add_argument("--head", required=True)
     le.add_argument("--used", type=Path, required=True)
     le.add_argument("--marker", type=Path, required=True)
-    for p, ks in ((sm, ("snap", "out")), (de, ("snap", "images", "list", "out"))):
+    for p, ks in ((sm, ("snap", "img2", "out")), (de, ("snap", "images", "list", "out"))):
         p.add_argument("--sid", choices=[s["sid"] for s in B_SYSTEMS], required=True)
         for k in ks:
             p.add_argument(f"--{k}", type=Path, required=True)
@@ -919,7 +1041,7 @@ def main() -> int:
         print("guard ok")
         return 0
     fn = {"fetch": cmd_fetch, "gate": cmd_gate, "lists": cmd_lists, "hf-fetch": cmd_hf_fetch,
-          "uit-fetch": cmd_uit_fetch, "smoke": cmd_smoke, "decode": cmd_decode, "score": cmd_score}.get(a.cmd)
+          "uit-fetch": cmd_uit_fetch, "smoke-fetch": cmd_smoke_fetch, "smoke": cmd_smoke, "decode": cmd_decode, "score": cmd_score}.get(a.cmd)
     if fn is None:
         ap.error("a subcommand or --selftest is required")
     return fn(a) or 0
