@@ -8,7 +8,9 @@
 #                      the n2 p1dev_s42 adapter (227a3312), the .venv resume hook (05466ef5)
 #   run                M3: b1_job.sh in tmux b1, wait, mirror, sha-confirm (resume after a crash: run again)
 #   cleanup <reason>   after BLOCK DONE or a final stop: outputs back with a local sha list, then the hook (first),
-#                      datasets/ktvic and datasets/ktvic_dev removed and recorded (CC-099, CC-130 W4)
+#                      datasets/ktvic and datasets/ktvic_dev removed and recorded (CC-099, CC-130 W4), then the
+#                      staged n2 p1dev_s42 adapter (Amendment 3: removed only if its sha is 227a3312; stage uploads it
+#                      fresh and refuses an existing copy). Idempotent: run it again to clear a leftover adapter.
 # Every M3 step refuses while any tmux session or any /root/outputs/*/RUNNING exists, and requires grl
 # common.m3_clear (C-EN test-side records complete, no cen_ set staged, no C-EN process). C-EN steps run only through
 # cen_chain.sh; the queue follows CC-126 ruling 5; run needs ~12 h of usage headroom (W11).
@@ -235,6 +237,10 @@ case $STEP in
       && [ ! -e $DS/ktvic_dev ] \
       && echo \"\$(date -u +%FT%TZ) B-1 CLEANUP ($REASON): datasets/ktvic, ktvic_dev, hook removed\" >> $OPLOG" \
       || die "cleanup delete"
+    remote "[ ! -e $RUNS/p1dev_s42 ] || { [ \"\$(sha256sum $RUNS/p1dev_s42/adapter_model.safetensors | cut -c1-64)\" \
+      = $AD_SHA ] && rm -rf $RUNS/p1dev_s42 && [ ! -e $RUNS/p1dev_s42 ] \
+      && echo \"\$(date -u +%FT%TZ) B-1 CLEANUP ($REASON): runs/p1dev_s42 (n2 adapter $AD_SHA) removed\" >> $OPLOG; }" \
+      || die "cleanup: $RUNS/p1dev_s42 is not the staged n2 adapter $AD_SHA (left in place)"
     mirror
     say "CLEANUP DONE ($REASON): $(wc -l < $WORK/cleanup.sha256) files back" ;;
   *) die "step must be dry-run, stage, run or cleanup" ;;

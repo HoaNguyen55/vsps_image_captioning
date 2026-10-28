@@ -17,6 +17,9 @@ set -o pipefail
 B1=scripts/b1_scaling/b1.py; JOB=scripts/b1_scaling/b1_job.sh; KIT=scripts/kit_b
 O=/root/outputs/b1_scaling; D=$O/data; LOG=$O/logs; USED=$O/gpu_seconds.tsv; MARK=$O/CAP_STOP.json; LOCK=$O/RUNNING
 VS_FREEZE=7332d343173e5681365cf6871671e36209c77803a1b2db70da1cc766d5c943ed   # setup_gpu.sh H_VS = S5's venv pins
+# Amendment 3 (STOP-M4-3): kit B imports scipy, which .venv lacks; every kit-B step runs in the scoring venv, as c2_job.sh
+SC=/root/venv-c1score/bin/python
+SC_FREEZE=4b81b6b6a549771115529e6900b9589835cdbfff0c6acf179aef53d283b744d5   # setup_gpu.sh H_C1 (numpy, scipy)
 N2=$O/s5_preds/p1dev_s42_redecode-dev300-short.preds.json   # = the registered n2 preds (1e183383), Step 0
 mkdir -p $O $D $LOG
 ts() { date -u +%FT%TZ; }
@@ -30,15 +33,18 @@ trap 'rm -f $LOCK' EXIT
 git diff --quiet HEAD -- || stop "tracked files differ from HEAD"
 sha256sum --quiet -c scripts/b1_scaling/SHA256SUMS || stop "scripts/b1_scaling/SHA256SUMS does not verify"
 [ "$(pip freeze | sha256sum | cut -c1-64)" = $VS_FREEZE ] || stop ".venv freeze differs from H_VS"
+[ "$(/root/venv-c1score/bin/pip freeze | sha256sum | cut -c1-64)" = $SC_FREEZE ] || stop "scoring venv differs from H_C1"
 # CC-128 W1: the resume hook (S5 pin 05466ef5 = scripts/checkpoint_resume_hook.py) is the .venv sitecustomize
 HOOK=/root/vsps/.venv/lib/python3.10/site-packages/sitecustomize.py
 HOOK_SHA=05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895
 [ -e $HOOK ] && [ "$(sha256sum $HOOK | cut -c1-64)" = $HOOK_SHA ] \
   || stop "resume hook not installed at $HOOK (b1_chain.sh stage)"
 python $B1 --selftest >> $LOG/selftest.log 2>&1 || stop "b1 selftest"
+$SC $B1 --selftest-kit >> $LOG/selftest.log 2>&1 || stop "b1 kit selftest (scoring venv)"
 java -version 2>&1 | grep -q '11.0.32.1' || stop "Java is not openjdk 11.0.32.1 (kit B segmenter)"
-python $B1 check --machine --job $JOB --kit-b $KIT >> $LOG/check.log 2>&1 \
-  || stop "b1 check (prereg, lists, code, weights, train_data.json, job, kit B)"
+python $B1 check --machine --job $JOB >> $LOG/check.log 2>&1 \
+  || stop "b1 check (prereg, lists, code, weights, train_data.json, job)"
+$SC $B1 check --kit-b $KIT >> $LOG/check.log 2>&1 || stop "b1 check kit B (scoring venv)"
 G() { python $B1 guard --head "$EXPECT" >> $LOG/guard.log 2>&1 || stop "guard (host, GPU, C-EN, locks, test files)"; }
 G
 sha256sum $B1 $JOB scripts/b1_scaling/SHA256SUMS > $O/code_at_start.sha256
@@ -72,7 +78,7 @@ decode() {  # decode NAME [ADAPTER]: greedy short-prompt dev300 decode by evalua
   fi
 }
 finish() {  # CPU: kit-B score of whatever exists, then the registered decide once; mirror sums
-  [ -e $O/ledger.json ] || python $B1 score --dir $O --kit-b $KIT --out $O/ledger.json >> $LOG/score.log 2>&1 \
+  [ -e $O/ledger.json ] || $SC $B1 score --dir $O --kit-b $KIT --out $O/ledger.json >> $LOG/score.log 2>&1 \
     || stop "score"
   [ -e $O/decide.json ] || python $B1 decide --ledger $O/ledger.json --out $O/decide.json >> $LOG/decide.log 2>&1 \
     || stop "decide"

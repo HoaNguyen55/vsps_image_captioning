@@ -2,7 +2,8 @@
 """Paper B, B-1 (DEV CURVE): multi-seed data-scaling curve of the P1_dev recipe on KTVIC dev300.
 Prereg manuscript/prereg/2026-10-28_b1_scaling/PREREG.md (CC-126 W11, PI-1026ac Q7).
 
-    python scripts/b1_scaling/b1.py --selftest                      CPU, synthetic data only
+    python scripts/b1_scaling/b1.py --selftest                      CPU, synthetic data only (.venv: no kit B, no scipy)
+    python scripts/b1_scaling/b1.py --selftest-kit                  CPU, kit-B smoke, java stubbed (venv-c1score)
     python scripts/b1_scaling/b1.py lists --out F                   laptop: the pinned id lists (ids only)
     python scripts/b1_scaling/b1.py check                           prereg folder and code pins
     python scripts/b1_scaling/b1.py ids --dir D                     the five ids files from the pinned lists
@@ -11,7 +12,7 @@ Prereg manuscript/prereg/2026-10-28_b1_scaling/PREREG.md (CC-126 W11, PI-1026ac 
     python scripts/b1_scaling/b1.py lock --path P                   take this experiment's lock (O_EXCL)
     python scripts/b1_scaling/b1.py left --used F --marker M        seconds left under the 20 GPU-h cap, 0 = STOP
     python scripts/b1_scaling/b1.py step0 --redecode R --n2 N       >= 95% identical captions or exit 1 (counts only)
-    python scripts/b1_scaling/b1.py score --dir O --kit-b K --out L CPU on M3: kit-B stripped CIDEr-D per image
+    python scripts/b1_scaling/b1.py score --dir O --kit-b K --out L CPU (venv-c1score): kit-B stripped CIDEr-D per image
     python scripts/b1_scaling/b1.py decide --ledger L --out D       CPU: the registered rules, once
 
 Points: levels L1-L5 = 216, 433, 867, 1734, 3469 training images (nested prefixes of S5's one seeded permutation;
@@ -63,6 +64,10 @@ LIMIT, FLOOR, PARITY, LENGTH_GAP = 1.0, 2.0, 0.95, 0.10
 CAP_S, MIN_STEP_S = 20 * 3600, 60
 RULE = ("FUND_EXTERNAL_IMAGE_DATA if CI_lo(b) > +1; CLOSE_DATA_VOLUME_LEVERS if b < +1; INCONCLUSIVE otherwise "
         "(no external-data spend)")  # S5 prereg l.61, verbatim (asserted against the S5 JSON by the selftest)
+#: Amendment 3 (STOP-M4-3): kit B imports scipy, which the pinned .venv (7332d343) lacks; every kit-B step runs in
+#: /root/venv-c1score at setup_gpu.sh H_C1 (numpy 2.2.6, scipy 1.15.3), as c2_job.sh does
+SC_PY, SC_FREEZE = "/root/venv-c1score/bin/python", "4b81b6b6a549771115529e6900b9589835cdbfff0c6acf179aef53d283b744d5"
+JOB = ROOT / "scripts/b1_scaling/b1_job.sh"
 OUTCOMES = {"FUND_EXTERNAL_IMAGE_DATA": "PASS", "CLOSE_DATA_VOLUME_LEVERS": "FAIL", "INCONCLUSIVE": "INCONCLUSIVE"}
 LOCK = Path("/root/outputs/b1_scaling/RUNNING")
 #: fragments of the registered procedure (S5 §5 with the seed varied) that b1_job.sh must contain
@@ -623,7 +628,28 @@ def selftest() -> None:
     assert abs(r["s5_rescored_kit_b"]["b"] - 10.0) < 0.01  # log2 steps of 867, 1734, 3469 are ~1
     full = globals()["decide"](fake_ledger(3, 1))
     assert full["bootstrap"]["B"] == SP.B == 2000 and full["P-B1"]["verdict"] == "PASS"
-    # kit-B smoke on the pinned kit's Cider and stripper, with the java segmenter stubbed (the job runs the real one)
+    selftest_host()
+    job_venvs(JOB.read_text(encoding="utf-8"))
+    # STOP-M4-3: this core selftest runs in .venv, which has no scipy; kit B (scipy) is --selftest-kit's, in $SC
+    assert "scipy" not in sys.modules and "protocol_pilot" not in sys.modules, "core selftest loaded kit B / scipy"
+    print("b1 self-test ok")
+
+
+def job_venvs(text: str) -> None:
+    """Amendment 3: every kit-B step of the job (check --kit-b, --selftest-kit, score) runs under $SC, the scoring
+    venv, after its freeze check; the core selftest, check --machine and the GPU steps stay in .venv."""
+    lines = [x.strip() for x in text.splitlines() if not x.lstrip().startswith("#")]
+    assert f"SC={SC_PY}" in text and f"SC_FREEZE={SC_FREEZE}" in text
+    fz = next((j for j, x in enumerate(lines) if '"$(/root/venv-c1score/bin/pip freeze' in x and "$SC_FREEZE" in x), -1)
+    assert fz >= 0, "no scoring-venv freeze check in the job"
+    kit = [j for j, x in enumerate(lines) if "$B1" in x and any(k in x for k in ("--kit-b", "--selftest-kit", " score "))]
+    assert len(kit) >= 3 and all("$SC $B1" in lines[j] and "python $B1" not in lines[j] and j > fz for j in kit), kit
+    assert any("python $B1 --selftest " in x for x in lines)  # the core selftest, in .venv
+
+
+def selftest_kit() -> None:
+    """kit-B smoke on the pinned kit's Cider and stripper, with the java segmenter stubbed (the job runs the real one
+    in check --kit-b), then score_rows on synthetic text; venv-c1score only (kit B imports scipy)."""
     sys.path.insert(0, str(ROOT / "scripts/c_stage1"))
     import score as S1
 
@@ -637,8 +663,10 @@ def selftest() -> None:
             return list(texts)
 
     assert kit_smoke(Stub, PA) > 0
-    selftest_host()
-    print("b1 self-test ok")
+    gt = {"zq0": ["zq7 vx2 kp9 lm3 .", "zq7 vx2 kp9 ."], "zq1": ["bw4 hn8 dc6 yt1 .", "bw4 hn8 ."]}
+    rows = score_rows({"p": {"zq0": "zq7 vx2 kp9 .", "zq1": "bw4 hn8 dc6 ."}}, gt, Stub, PA)
+    assert rows["p"]["ids"] == ["zq0", "zq1"] and min(rows["p"]["cider_s"]) > 0
+    print("b1 kit self-test ok")
 
 
 def selftest_host() -> None:
@@ -717,6 +745,7 @@ def selftest_host() -> None:
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--selftest-kit", action="store_true")
     sub = ap.add_subparsers(dest="cmd")
     p = sub.add_parser("lists")
     p.add_argument("--out", type=Path, required=True)
@@ -748,6 +777,9 @@ def main() -> None:
     a = ap.parse_args()
     if a.selftest:
         selftest()
+        return
+    if a.selftest_kit:
+        selftest_kit()
         return
     handlers = {
         "lists": lambda: (SP.write_once(a.out, (json.dumps(make_lists(), indent=1) + "\n").encode()),
