@@ -1,0 +1,43 @@
+{
+ "n_ut": 2402,
+ "n_excluded": 10,
+ "pool_after": 2392,
+ "counts": {
+  "kv5000": {
+   "C1_C2_registered": 4,
+   "C3_sscd_0.75": 7,
+   "excluded": 7,
+   "report_sscd_0.5": 31
+  },
+  "oiv7_val": {
+   "C1_C2_registered": 3,
+   "C3_sscd_0.75": 3,
+   "excluded": 3,
+   "report_sscd_0.5": 6
+  }
+ },
+ "excluded_by_both_sets": 0,
+ "oiv7_lost": 0,
+ "n_compared": {
+  "kv5000": 5000,
+  "oiv7_val": 41164
+ },
+ "schema": "vsps.w25.v1",
+ "rule": "RULE \u00a73: (C1 byte-identical OR C2 min(pHash,dHash)<=10 AND SSCD>=0.5) OR C3 SSCD>0.75",
+ "oiv7_lost_ids": [],
+ "oiv7_val_to_compare": "41164 (41620 - 456 XM3600, refused for every non-C use; CC-153 r4)",
+ "xm3600_dropped_by_id": {
+  "nocaps_rows": 43,
+  "before_fetch": 413
+ },
+ "inputs_sha256": {
+  "ut_feats": "17d3ebf07ebf95bcd0c8bf123ff65fb8f2df65c52cd4e17ac492e05976b98c1d",
+  "coco_kval": "9783f7a669aa1b0a6df8e8a78aa3586fb7009f376d8151442ac3acc7da580a7e",
+  "nocaps_val": "b69dac29b4dd07e759d1ff2fc38cb5d716cbe31ddb34c4233ff8f8667b8acba6",
+  "oiv7_val_ids": "4b7a1813487dc5d74a5bd4aca7c36d0f6d2d3042d9cc6cf4091180dc473eabb0",
+  "xm3600_in_oiv7_val_ids": "54966ca78ce310201c091282603c9398155b8b05aaae9eb4cdf0abed88e6c5ef",
+  "sscd": "9f26bd4c848cc19b73d2ae92eea6e04886f61a7b764ceb7a13aeee62e6a6db56"
+ },
+ "utc": "2026-10-28T13:07:42Z",
+ "label": "W25 leakage exclusion: training side only, ids and counts"
+}
