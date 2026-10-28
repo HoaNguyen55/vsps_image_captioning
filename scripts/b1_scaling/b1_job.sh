@@ -34,11 +34,12 @@ git diff --quiet HEAD -- || stop "tracked files differ from HEAD"
 sha256sum --quiet -c scripts/b1_scaling/SHA256SUMS || stop "scripts/b1_scaling/SHA256SUMS does not verify"
 [ "$(pip freeze | sha256sum | cut -c1-64)" = $VS_FREEZE ] || stop ".venv freeze differs from H_VS"
 [ "$(/root/venv-c1score/bin/pip freeze | sha256sum | cut -c1-64)" = $SC_FREEZE ] || stop "scoring venv differs from H_C1"
-# CC-128 W1: the resume hook (S5 pin 05466ef5 = scripts/checkpoint_resume_hook.py) is the .venv sitecustomize
-HOOK=/root/vsps/.venv/lib/python3.10/site-packages/sitecustomize.py
+# CC-128 W1: the resume hook (S5 pin 05466ef5 = scripts/checkpoint_resume_hook.py), loaded by a .pth line (Amendment 4)
+HOOK=/root/vsps/.venv/lib/python3.10/site-packages/vsps_resume_hook.py; PTH=${HOOK%.py}.pth  # Amendment 4: /usr/lib/python3.10/sitecustomize.py shadows a venv sitecustomize
 HOOK_SHA=05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895
 [ -e $HOOK ] && [ "$(sha256sum $HOOK | cut -c1-64)" = $HOOK_SHA ] \
   || stop "resume hook not installed at $HOOK (b1_chain.sh stage)"
+python -c 'import sys; assert "vsps_resume_hook" in sys.modules' || stop "resume hook not imported (Amendment 4)"
 python $B1 --selftest >> $LOG/selftest.log 2>&1 || stop "b1 selftest"
 $SC $B1 --selftest-kit >> $LOG/selftest.log 2>&1 || stop "b1 kit selftest (scoring venv)"
 java -version 2>&1 | grep -q '11.0.32.1' || stop "Java is not openjdk 11.0.32.1 (kit B segmenter)"

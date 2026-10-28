@@ -14,7 +14,7 @@
 # Every M3 step refuses while any tmux session or any /root/outputs/*/RUNNING exists, and requires grl
 # common.m3_clear (C-EN test-side records complete, no cen_ set staged, no C-EN process). C-EN steps run only through
 # cen_chain.sh; the queue follows CC-126 ruling 5; run needs ~12 h of usage headroom (W11).
-# Hook rule (CC-130 W4): while .venv sitecustomize.py exists on M3, no evaluate.py or train_stage2.py process starts
+# Hook rule (CC-130 W4): while the .venv resume hook (vsps_resume_hook.py + .pth, Amendment 4) exists on M3, no evaluate.py or train_stage2.py process starts
 # outside b1_job.sh; the hook lives only between stage and cleanup (cleanup removes it first), and the staged KTVIC
 # images make every grl common.guard refuse in that window (CC-130 r5). Test twins: the two KTVIC train images whose
 # bytes equal KTVIC test images (train 3589 = test 1335, train 7511 = test 507) are staged as train data and exempted
@@ -43,7 +43,7 @@ S5DIR=$REPO/.session_backup/machines/O-2308423/root/outputs/t3_4_s5_data_scaling
 ADAPTER=$REPO/.session_backup/machines/n2/ncs-data/runs/p1dev_s42
 AD_SHA=227a3312a18cf69b355c20311ff1228167b2af1436e0cb443055dfdfcd40c5c3
 AD_CFG=93f042284aea64fcdf831590c592a7459849632dcb3ee4448b379177b7a298c5
-HOOK=/root/vsps/.venv/lib/python3.10/site-packages/sitecustomize.py
+HOOK=/root/vsps/.venv/lib/python3.10/site-packages/vsps_resume_hook.py; PTH=${HOOK%.py}.pth  # Amendment 4: /usr/lib/python3.10/sitecustomize.py shadows a venv sitecustomize
 HOOK_SHA=05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895
 S5_PREDS="p1dev_s42_f25-dev300-short.preds.json:b0ecf307c42486d4558eb1a2cf97cad01aa6ab52292ee7627fd028fbbb5c6b43
 p1dev_s42_f50-dev300-short.preds.json:a394053d8823ae09c4885358facda7aabb6c998a0ec1c0ba405e0e29f8db551d
@@ -203,8 +203,12 @@ case $STEP in
     remote "[ ! -e $RUNS/p1dev_s42 ] && mkdir -p $RUNS" || die "$RUNS/p1dev_s42 already exists"
     $SCP -r $ADAPTER root@$HOST:$RUNS/p1dev_s42 || die "upload the p1dev_s42 adapter"
     [ "$(rsha $RUNS/p1dev_s42/adapter_model.safetensors)" = $AD_SHA ] || die "adapter sha on $MNAME"
-    remote "[ ! -e $HOOK ] && ln -s /root/vsps/scripts/checkpoint_resume_hook.py $HOOK" || die "hook: $HOOK exists"
+    remote "[ ! -e $HOOK ] && [ ! -e $PTH ] && ln -s /root/vsps/scripts/checkpoint_resume_hook.py $HOOK \
+      && echo 'import vsps_resume_hook' > $PTH" || die "hook: $HOOK or $PTH exists"
     [ "$(rsha $HOOK)" = $HOOK_SHA ] || die "hook sha on $MNAME"
+    # Amendment 4 (STOP-M4-4): prove the hook is imported by the .venv interpreter, not just present
+    remote "/root/vsps/.venv/bin/python -c 'import sys; assert \"vsps_resume_hook\" in sys.modules'" \
+      || die "resume hook is installed but not imported on $MNAME"
     rec "B-1 STAGED head $HEAD: train json $TRAIN_SHA, 3769 images, ktvic_dev, 3 s5 preds, adapter $AD_SHA, hook"
     [ $GPU = m3 ] || test_scan
     say "STAGE OK" ;;
@@ -233,7 +237,7 @@ case $STEP in
     $SSH "tmux has-session -t b1" 2>/dev/null && die "tmux b1 is still running"
     mirror
     (cd $MIR && find . -type f | sort | xargs -d '\n' sha256sum) > $WORK/cleanup.sha256
-    remote "rm -f $HOOK && [ ! -e $HOOK ] && rm -rf $DS/ktvic $DS/ktvic_dev && [ ! -e $DS/ktvic ] \
+    remote "rm -f $HOOK $PTH && [ ! -e $HOOK ] && [ ! -e $PTH ] && rm -rf $DS/ktvic $DS/ktvic_dev && [ ! -e $DS/ktvic ] \
       && [ ! -e $DS/ktvic_dev ] \
       && echo \"\$(date -u +%FT%TZ) B-1 CLEANUP ($REASON): datasets/ktvic, ktvic_dev, hook removed\" >> $OPLOG" \
       || die "cleanup delete"
