@@ -1,5 +1,5 @@
 % paperA_v3.bib: Paper A bibliography, task A5.2 v3, built by build_a5_2_bib_v3.py.
-% Every entry is the version the IP&M rule asks for: the peer-reviewed version when a DOI or venue
+% Every entry is the version the journal rule asks for: the peer-reviewed version when a DOI or venue
 % page confirms one (see preprint_resolution_v3.tsv), otherwise the arXiv preprint. Comment lines give the
 % record each entry was built from (cached under v3_net/) and the files that cite it.
 
@@ -1134,4 +1134,120 @@
   url = {https://openreview.net/forum?id=sbmqh3IQ5j},
   eprint = {2501.15046},
   archivePrefix = {arXiv}
+}
+
+% gonzalezchavez2024metrics: published: journal-article DOI 10.1016/j.image.2023.117071; added 2026-10-27 for SPIC v2 (plan §2, CC-129 W11)
+%   records: Crossref api.crossref.org/works/10.1016/j.image.2023.117071 checked 2026-10-27 (title, 4 authors, volume 120, article 117071, issued 2024-01)
+@article{gonzalezchavez2024metrics,
+  author = {Gonz{\'a}lez-Ch{\'a}vez, Oth{\'o}n and Ruiz, Guillermo and Moctezuma, Daniela and Ramirez-delReal, Tania},
+  title = {Are metrics measuring what they should? {An} evaluation of Image Captioning task metrics},
+  journal = {Signal Processing: Image Communication},
+  year = {2024},
+  volume = {120},
+  pages = {117071},
+  publisher = {Elsevier BV},
+  doi = {10.1016/j.image.2023.117071}
+}
+
+% holm1979simple: published: journal-article; added 2026-10-27 for SPIC v2 (Ken minor 3; plan §2 "§3"); cited by bibliographic data without DOI (guide §1.4)
+%   records: OpenAlex search 2026-10-27 (title, Sture Holm, Scand. J. Stat. 6, 65-70, 1979; JSTOR 10.2307/4615733 not printed)
+@article{holm1979simple,
+  author = {Holm, Sture},
+  title = {A simple sequentially rejective multiple test procedure},
+  journal = {Scandinavian Journal of Statistics},
+  year = {1979},
+  volume = {6},
+  pages = {65--70}
+}
+
+% --- PASCAL-50S test (Section 7.4, 7.6; added 2026-10-29) ---
+% vedantam2015cider: Crossref 10.1109/CVPR.2015.7299087 checked 2026-10-29 (title, authors Vedantam/Zitnick/Parikh, CVPR 2015, pp. 4566-4575)
+@inproceedings{vedantam2015cider,
+  author = {Vedantam, Ramakrishna and Zitnick, C. Lawrence and Parikh, Devi},
+  title = {{CIDEr:} Consensus-based Image Description Evaluation},
+  booktitle = {2015 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year = {2015},
+  pages = {4566--4575},
+  publisher = {IEEE},
+  doi = {10.1109/CVPR.2015.7299087}
+}
+
+% rashtchian2010collecting: ACL Anthology W10-0721 page checked 2026-10-29 (title, pages 139-147, Los Angeles)
+@inproceedings{rashtchian2010collecting,
+  author = {Rashtchian, Cyrus and Young, Peter and Hodosh, Micah and Hockenmaier, Julia},
+  title = {Collecting Image Annotations Using {Amazon}'s {Mechanical Turk}},
+  booktitle = {Proceedings of the {NAACL HLT} 2010 Workshop on Creating Speech and Language Data with {Amazon}'s {Mechanical Turk}},
+  year = {2010},
+  pages = {139--147},
+  address = {Los Angeles},
+  publisher = {Association for Computational Linguistics},
+  url = {https://aclanthology.org/W10-0721}
+}
+
+% everingham2010pascal: Crossref 10.1007/s11263-009-0275-4 checked 2026-10-29 (IJCV 88, 303-338)
+@article{everingham2010pascal,
+  author = {Everingham, Mark and Van Gool, Luc and Williams, Christopher K. I. and Winn, John and Zisserman, Andrew},
+  title = {The {Pascal} Visual Object Classes ({VOC}) Challenge},
+  journal = {International Journal of Computer Vision},
+  year = {2010},
+  volume = {88},
+  number = {2},
+  pages = {303--338},
+  doi = {10.1007/s11263-009-0275-4}
+}
+
+% trushkowsky2013crowdsourced: Crossref 10.1109/ICDE.2013.6544865 checked 2026-10-29 (ICDE 2013, pp. 673-684); content per arXiv 1202.2335 only (CC-159 ruling 5)
+@inproceedings{trushkowsky2013crowdsourced,
+  author = {Trushkowsky, Beth and Kraska, Tim and Franklin, Michael J. and Sarkar, Purnamrita},
+  title = {Crowdsourced Enumeration Queries},
+  booktitle = {2013 IEEE 29th International Conference on Data Engineering (ICDE)},
+  year = {2013},
+  pages = {673--684},
+  publisher = {IEEE},
+  doi = {10.1109/ICDE.2013.6544865}
+}
+
+% --- Revision 1 prior art (A_META_REVIEW item 11; added 2026-10-29) ---
+% feng2024details: arXiv 2406.12663 abstract read 2026-10-29 via export.arxiv.org (authors Feng, Tang, Zhang, Xu; submitted 2024-06-18)
+@misc{feng2024details,
+  author = {Feng, Mingqian and Tang, Yunlong and Zhang, Zeliang and Xu, Chenliang},
+  title = {Do More Details Always Introduce More Hallucinations in {LVLM}-based Image Captioning?},
+  year = {2024},
+  eprint = {2406.12663},
+  archivePrefix = {arXiv},
+  primaryClass = {cs.CV}
+}
+
+% misra2016seeing: Crossref 10.1109/CVPR.2016.320 checked 2026-10-29 (title, authors, pp. 2930-2939); abstract read via arXiv 1512.06974
+@inproceedings{misra2016seeing,
+  author = {Misra, Ishan and Zitnick, C. Lawrence and Mitchell, Margaret and Girshick, Ross},
+  title = {Seeing through the Human Reporting Bias: Visual Classifiers from Noisy Human-Centric Labels},
+  booktitle = {2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year = {2016},
+  pages = {2930--2939},
+  publisher = {IEEE},
+  doi = {10.1109/CVPR.2016.320}
+}
+
+% spain2010measuring: Crossref 10.1007/s11263-010-0376-0 checked 2026-10-29 (IJCV 91(1):59-76); cited at title level, full text not read
+@article{spain2010measuring,
+  author = {Spain, Merrielle and Perona, Pietro},
+  title = {Measuring and Predicting Object Importance},
+  journal = {International Journal of Computer Vision},
+  year = {2011},
+  volume = {91},
+  number = {1},
+  pages = {59--76},
+  doi = {10.1007/s11263-010-0376-0}
+}
+
+% berg2012understanding: Crossref 10.1109/cvpr.2012.6248100 checked 2026-10-29 (pp. 3562-3569); cited at title level, full text not read
+@inproceedings{berg2012understanding,
+  author = {Berg, Alexander C. and Berg, Tamara L. and Daum{\'e} III, Hal and Dodge, Jesse and Goyal, Amit and Han, Xufeng and Mensch, Alyssa and Mitchell, Margaret and Sood, Aneesh and Stratos, Karl and Yamaguchi, Kota},
+  title = {Understanding and Predicting Importance in Images},
+  booktitle = {2012 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)},
+  year = {2012},
+  pages = {3562--3569},
+  publisher = {IEEE},
+  doi = {10.1109/CVPR.2012.6248100}
 }

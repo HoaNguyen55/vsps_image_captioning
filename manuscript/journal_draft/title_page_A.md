@@ -1,20 +1,17 @@
-# Title page, Paper A (IP&M)
+# Title page, Paper A (Signal Processing: Image Communication)
 
-<!-- Author order and corresponding author: the authors, 2026-10-21 (PD-25, PD-25b). Affiliations and emails of Trần Văn Lăng and Nguyễn Văn Thịnh are copied from the IEEE-stamped FAIR 2026 camera-ready, as the first author instructed on 2026-10-21. The first author's own email is not written here, by standing rule; add it at submission if wanted. -->
+<!-- v2 (SPIC, 2026-10-27). Author order and corresponding author: PD-25, PD-25b, kept by PI-1026ae (Hoa, Thinh, Lang*). Names and affiliations as in the IEEE-stamped FAIR 2026 camera-ready (pdftotext -layout, page 1). No first-author email, by standing rule (PI-1026ae P3). SPIC requires a full postal address and country for each affiliation (GfA capture l.514-523): the PI supplies them by 11-04; none is invented. Title: plan §1.1 T1, working title. CRediT is in declarations.md (SPIC places it in the manuscript). -->
 
-**Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores**
+**Gold Completeness and the Verbosity Slope of Object Hallucination Metrics: A Registered Audit**<!-- rev1 (item 5c): title changed (PI default = change); was "More References, Larger Verbosity Reward: A Registered Audit of Object Hallucination Metrics Under Incomplete Gold" -->
 
 Nguyễn Lê Minh Hòa^a^, Nguyễn Văn Thịnh^b^, Trần Văn Lăng^c,\*^
 
-^a^ Software Engineering Department, BOS Semiconductors Vietnam, Ho Chi Minh City, Vietnam<!-- confirmed by the first author 2026-10-21: as in FAIR 2026 -->
-^b^ Faculty of Information Technology, Ho Chi Minh City University of Education, Ho Chi Minh City, Vietnam
-^c^ Journal Editorial Department, Ho Chi Minh City University of Foreign Languages – Information Technology (HUFLIT), Ho Chi Minh City, Vietnam
+^a^ Software Engineering Department, BOS Semiconductors Vietnam, [ADDRESS: PI to supply by 11-04], Ho Chi Minh City, Vietnam
+^b^ Faculty of Information Technology, Ho Chi Minh City University of Education, [ADDRESS: PI to supply by 11-04], Ho Chi Minh City, Vietnam
+^c^ Journal Editorial Department, Ho Chi Minh City University of Foreign Languages – Information Technology (HUFLIT), [ADDRESS: PI to supply by 11-04], Ho Chi Minh City, Vietnam
 
 \* Corresponding author: Trần Văn Lăng, langtv@huflit.edu.vn
 
 Other author emails: Nguyễn Văn Thịnh, thinhnv@hcmue.edu.vn.
 
-**CRediT authorship contribution statement.**<!-- CC-074 (a): moved here from the anonymized declarations; same text as ../journal_draft/declarations.md -->
-**Nguyễn Lê Minh Hòa:** Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing – original draft, Writing – review & editing, Visualization, Project administration. **Nguyễn Văn Thịnh:** Conceptualization, Methodology, Supervision, Writing – review & editing. **Trần Văn Lăng:** Conceptualization, Methodology, Supervision, Writing – review & editing.
-
-**Data availability (for the editor).** The archive is reserved on Zenodo (DOI: [AUTHOR TO PROVIDE]) and stays unpublished until the decision; reviewers receive the anonymized copy as supplementary material.
+**Data availability (for the editor).** The release is deposited on Zenodo as a restricted record; reviewers receive a private access link [PI: link to be inserted at submission], and the record stays restricted while the manuscript is under review.<!-- PI-1026ae -->

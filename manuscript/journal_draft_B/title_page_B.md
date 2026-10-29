@@ -2,7 +2,7 @@
 
 <!-- Author order and corresponding author: the authors, 2026-10-21 (PD-25, PD-25b). Affiliations and emails of Trần Văn Lăng and Nguyễn Văn Thịnh are copied from the IEEE-stamped FAIR 2026 camera-ready, as the first author instructed on 2026-10-21. The first author's own email is not written here, by standing rule; add it at submission if wanted. -->
 
-**What a Vietnamese Captioning Benchmark Measures: A Validity Audit of KTVIC and an Open Evaluation Kit**
+**What Training-Data Gains Measure on a Vietnamese Captioning Benchmark: A Development Study with Two Reference Panels, a Validity Audit of KTVIC and an Open Evaluation Kit**
 
 Nguyễn Lê Minh Hòa^a^, Nguyễn Văn Thịnh^b^, Trần Văn Lăng^c,\*^
 

@@ -24,7 +24,7 @@ Framing (PD-24, 2026-10-20): audit-and-kit resource paper for LRE. Main text = d
 
 ## Open items (2026-10-20)
 
-- Author placeholders: the MIT licence (kit); [AUTHOR TO PROVIDE] Zenodo DOI; [AUTHOR TO PROVIDE] terms under which KTVIC, UIT-ViIC and UIT-OpenViIC were obtained (PD-24 b user question); [AUTHOR TO CONFIRM] AI tools/versions and AI-drafted text (sec7.4); [AUTHOR TO PROVIDE] FAIR 2026 proceedings title, pages, DOI (paperB.bib).
+- Author placeholders: the MIT licence (kit); [AUTHOR TO PROVIDE] Zenodo DOI; KTVIC and UIT-OpenViIC data use confirmed in writing 2026-10-28 (PI-1026az, LOG.md:635; BD revision 2026-10-29 item 15), [AUTHOR TO PROVIDE] UIT-ViIC (not covered by PI-1026az); [AUTHOR TO CONFIRM] AI tools/versions and AI-drafted text (sec7.4); [AUTHOR TO PROVIDE] FAIR 2026 proceedings title, pages, DOI (paperB.bib).
 - B-F1 ran once on 2026-10-21: registered verdict FAIL (D_MBR −0.391 [−2.437, +1.666]; data/results/b_f1/b_f1_run.json, CP-071).
 - Not run: POPE-500 for UIT-ViIC adapters; UIT-ViIC append-period effect; 8-gram scan of the kit archive; WiSE-FT addendum items; protocol-matched comparators.
 - Run 2026-10-22 (post hoc, CC-088 B-2; data/results/b2_controls/): the slot-rate-preserving null (sec3.2), the published-baseline punctuation, segmentation and PTB audit with the E4 τ reproduction (sec3.3, sec3.4), the matching-threshold grid (sec3.6) and the panel n-gram overlap (sec5.3).

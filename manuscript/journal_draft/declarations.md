@@ -1,31 +1,31 @@
 # Declarations (placed immediately before the references)
 
-<!-- IP&M / Elsevier rule (A0.2 v2, VERIFIED): a separate, titled section immediately before the references, naming each AI tool, its purpose and the authors' oversight. Grammar and spelling checks alone need no statement. AI tools are not authors. Every [AUTHOR TO CONFIRM: …] placeholder must be filled by the authors before submission (PD-23 (e)). -->
-
-## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
-
-During this work the authors used Claude (Anthropic) and Gemini (Google) to write and run analysis code, to draft and edit the manuscript text and to check references. The authors designed the study, directed and checked all analyses, reviewed and edited all text, and take full responsibility for the content.<!-- PD-25 fixed text (a), chosen by the author 2026-10-21. -->
-
-## Ethics
-
-No new human annotation was collected and no human subjects were involved; all human judgments are public datasets used under their licences (Section 11.2). No ethics approval was required: no new data from human participants were collected.
-
-## Data and code availability
-
-The code (MIT licence), matchers, pre-registration files with their commit times, the numbers manifest and score-only copies of the result files it cites (caption fields removed for licensing; original SHA-256 given; 29 of 804 rows marked as not releasable) are archived on Zenodo (DOI: [AUTHOR TO PROVIDE: DOI reserved on Zenodo before submission]); data files keep their sources' terms.<!-- PD-27b/27d: availability wording matches the staged archive (.session_backup/2026-10-21/zenodo_build; withheld A 38/655, B 44/484). --> The public datasets are available from their original sources; UIT-OpenViIC, KTVIC references and human-judgment ratings are not redistributed (Section 11.2).
-
-## Related manuscript
-
-A companion manuscript by the same authors on the validity of the Vietnamese captioning benchmark KTVIC is in preparation. It uses the same fine-tuned instrument. This paper's XM3600 results and its object-F1 slope results on UIT-ViIC appear only in this paper; the companion manuscript reports other analyses of some of the same UIT-ViIC system outputs and cites this paper for the slopes. A copy is available to the editor on request.<!-- PD-25 Q5 (a): A is submitted first; replace with the citation once B is submitted. -->
-
-## Competing interests
-
-The authors declare no competing interests.
-
-## Funding
-
-This research received no external funding; all costs, including rented GPU time and AI-tool subscriptions, were borne by the authors' team.
+<!-- v2 (SPIC, 2026-10-27): Signal Processing: Image Communication order and wording (plan §2 "Declarations", §3.3, §6; PI-1026ae). CRediT, competing interests (also entered in the Elsevier declarations tool at submission, .docx uploaded), funding (SPIC's exact no-funding sentence, PI-1026ae), data availability (Option C; the Zenodo record is restricted and reviewers get a private link, PI-1026ae, CC-074(c) kept), related manuscript (Paper B: in preparation, copy to the editor, PI-1026ae), ethics, the AI declaration (existing text kept as is, PD-25 (a)). Acknowledgements: none supplied by the authors; if any, they go in a separate section directly before the references, never on the title page (SPIC GfA capture l.811-815). -->
 
 ## CRediT authorship contribution statement
 
-**Nguyễn Lê Minh Hòa:** Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing – original draft, Writing – review & editing, Visualization, Project administration. **Nguyễn Văn Thịnh:** Conceptualization, Methodology, Supervision, Writing – review & editing. **Trần Văn Lăng:** Conceptualization, Methodology, Supervision, Writing – review & editing.<!-- author order and roles: the author's answers 2026-10-21 (PD-25, PD-25b); corresponding author Trần Văn Lăng (title page). -->
+**Nguyễn Lê Minh Hòa:** Conceptualization, Methodology, Software, Validation, Formal analysis, Investigation, Data curation, Writing – original draft, Writing – review & editing, Visualization, Project administration. **Nguyễn Văn Thịnh:** Conceptualization, Methodology, Supervision, Writing – review & editing. **Trần Văn Lăng:** Conceptualization, Methodology, Supervision, Writing – review & editing.<!-- author order and roles: the author's answers 2026-10-21 (PD-25, PD-25b), kept by PI-1026ae; corresponding author Trần Văn Lăng (title page). -->
+
+## Declaration of competing interest
+
+The authors declare no competing interests.<!-- authors' original wording (pre-v2 declarations.md), restored in pass 2 per coordinator; the Elsevier standard wording is listed as an option for the PI in V2_PROGRESS.md; the declarations tool output (.docx) is uploaded at submission (SPIC GfA capture l.311-321). -->
+
+## Funding
+
+This research did not receive any specific grant from funding agencies in the public, commercial, or not-for-profit sectors.<!-- SPIC exact sentence (GfA capture l.335), approved PI-1026ae (P7). -->
+
+## Data availability
+
+The code (MIT licence), matchers, pre-registration files with their commit times, the numbers manifest and score-only copies of the result files it cites (caption fields removed for licensing; original SHA-256 given; 29 of 804 rows marked as not releasable) are deposited on Zenodo as a restricted record; reviewers receive a private access link through the editor, and the record stays restricted while the manuscript is under review.<!-- PI-1026ae: Zenodo vsps-eval record stays private; reviewer-only private link; the artifacts anchor therefore stays below 2 at submission (disclose to the 11-08 panel). PD-27b/27d: availability wording matches the staged archive (.session_backup/2026-10-21/zenodo_build; not-released rows A 38/655, B 44/484). [PI: private-link URL to be inserted at submission.] --> Third-party data are given as pointers only (image identifiers, file hashes and, where used, cluster identifiers). The reference captions and human-judgment ratings of COCO, XM3600, UIT-ViIC, UIT-OpenViIC, KTVIC, LongCap-Arena, THumB, Polaris and DOCCI-Critique are not redistributed, because of their licences and terms of use; they are available from their original sources. UIT-OpenViIC and KTVIC are used only through aggregates and pointers; the UIT-OpenViIC and KTVIC authors confirmed this use in writing.<!-- plan §3.3, CC-126 W17; PI-1026az (LOG.md, 2026-10-28): the PI obtained written acceptance from the UIT-OpenViIC, KTVIC and PASCAL-50S authors; rev1 item 2 reverted to this wording on that record. --> PASCAL-50S (Vedantam et al., 2015) was obtained from the authors' public repository (commit f281464), which carries a BSD-2 licence notice and no separate data licence; written confirmation from the dataset authors was obtained (2026-10-28; on file with the corresponding author); it was used for evaluation only, and no caption or image is redistributed.<!-- rev1 (item 2): record = manuscript/prereg/2026-10-28_pascal50s/PREREG.md l.109 (PI statement in the committed registration, 353437f); PI to confirm the written document is on file --> Under the registered data rule, each of the 14 caption files shared at least one 8-gram with the PASCAL-50S references, so all were deleted on the scoring machine with the images and references; no hash of them was kept, a departure from the registration (Section 10.1). The registered verdicts can be recomputed only by re-running the registered job from the pinned model snapshots, decoder and code; per-image outputs cannot be audited. A reviewer can check independently the scoring code, the decide files with their SHA-256, the commit times of the registrations and the numbers manifest; the PASCAL-50S per-image outputs and the rows marked as not releasable cannot be checked.<!-- rev1 (items 7a, 15) --><!-- src (CC-164 W7): data/results/p50/EVENTS (2026-10-29T05:54Z, "8-gram check rc 1" for all 14 caption files); data/results/p50/ngram_p50_*.preds.json (hit counts); PREREG 2026-10-28_a_p50_kladder §6 W4 --><!-- PASCAL-50S sentence inserted 2026-10-29 (result used in Sections 7.4, 7.6); verbatim from the following comment: PASCAL-50S (CC-144 W2/W12, PI-1026az): insert as the next sentence once the PASCAL-50S result is used in the paper: "PASCAL-50S (Vedantam et al., 2015) was obtained from the authors' public repository (commit f281464), which carries a BSD-2 licence notice and no separate data licence; written confirmation from the dataset authors was obtained (2026-10-28; on file with the corresponding author); it was used for evaluation only, and no caption or image is redistributed." (prereg 2026-10-28_a_p50_kladder §1.4) -->
+
+## Related manuscript
+
+A companion manuscript by the same authors on the validity of the Vietnamese captioning benchmark KTVIC is in preparation; a copy is available to the editor. It uses the same fine-tuned instrument. This paper's XM3600 results and its object-F1 slope results on UIT-ViIC appear only in this paper; the companion manuscript reports other analyses of some of the same UIT-ViIC system outputs and cites this paper for the slopes.<!-- PD-25 Q5 (a), PI-1026ae: A is submitted first; replace with the citation once B is submitted. Our earlier conference paper (FAIR 2026) is cited in the text as Nguyen et al. (2026a). -->
+
+## Ethics
+
+No new human annotation was collected and no human subjects were involved; all human judgments are public datasets used under their licences (Section 10.2). No ethics approval was required.
+
+## Declaration of generative AI and AI-assisted technologies in the manuscript preparation process
+
+During this work the authors used Claude (Anthropic) and Gemini (Google) to write and run analysis code, to draft and edit the manuscript text and to check references. The authors designed the study, directed and checked all analyses, reviewed and edited all text, and take full responsibility for the content.<!-- PD-25 fixed text (a), chosen by the author 2026-10-21; kept as is (plan §6 row "AI declaration"). -->

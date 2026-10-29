@@ -39,4 +39,4 @@ Recomputed 2026-10-21 after the round-2 revision (R2 N-m4). The main text (sec1�
 
 **Estimated new material:** no primary result of Paper B appears in FAIR, and the reused content is confined to the rows marked "reused" above. The earlier word-share estimate (about 88%) was made on an older draft and is not repeated. Disclose FAIR in the cover letter (done).
 
-The two-way overlap with the companion paper (under review) is Table 7.1 of the main text (`sec7_limitations_ethics.md` §7.3).
+The two-way overlap with the companion paper (in preparation) is Table S13.1 of the supplement (moved from main-text Table 7.1 by CC-145 J6; pointer in `sec7_limitations_ethics.md` §7.3).

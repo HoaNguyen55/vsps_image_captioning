@@ -139,9 +139,9 @@ passed	.session_backup/machines/M3/root/outputs/c_test/decide_ov.json::P2.passed
 0.82	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::sensitivity.xm_test2392.d	0.8207326714046823	5606ad5df816	keyed	06_results.md
 -0.45	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::sensitivity.xm_test2392.lo	-0.45487570913461545	5606ad5df816	keyed	06_results.md
 2.11	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::sensitivity.xm_test2392.hi	2.1114573500209026	5606ad5df816	keyed	06_results.md
-3.15	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::per_model.qwen25vl_7b.d	3.14662252	5606ad5df816	keyed	06_results.md
-1.50	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::per_model.qwen25vl_7b.lo	1.503239428	5606ad5df816	keyed	06_results.md
-4.93	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::per_model.qwen25vl_7b.hi	4.929795936999999	5606ad5df816	keyed	06_results.md
+3.15	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::per_model.qwen25vl_7b.d	3.14662252	5606ad5df816	keyed	06_results.md,08_english_comparison.md
+1.50	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::per_model.qwen25vl_7b.lo	1.503239428	5606ad5df816	keyed	06_results.md,08_english_comparison.md
+4.93	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::per_model.qwen25vl_7b.hi	4.929795936999999	5606ad5df816	keyed	06_results.md,08_english_comparison.md
 3.39	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::sets.xm_test2392.detail.per_model.qwen25vl_7b.vs_rand.d	3.385035033444816	5606ad5df816	keyed	06_results.md
 1.55	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::sets.xm_test2392.detail.per_model.qwen25vl_7b.vs_rand.lo	1.548696483068562	5606ad5df816	keyed	06_results.md
 5.16	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::sets.xm_test2392.detail.per_model.qwen25vl_7b.vs_rand.hi	5.155919291387959	5606ad5df816	keyed	06_results.md
@@ -336,7 +336,7 @@ FAIL	.session_backup/2026-10-26/c_test/final/decide_xmb.json::XM_a_read.passed	F
 96.59	.session_backup/2026-10-26/c_test/final/decide_xmb.json::S3_verified.xm_test2500.pooled.hi	96.59102998065764	050ecf03d5cb	keyed	06_results.md,11_supplement_registered_rows.md
 0.636	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:rejected_per_image	0.6362699639361155	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
 0.122	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:deleted_rate	0.12158681092220505	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
-0.351	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:fallback_rate	0.3508500772797527	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
+0.351	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:fallback_rate	0.3508500772797527	50878193f1cf	keyed-ledger	03_method.md,06_results.md,11_supplement_registered_rows.md
 39.50	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:cider_s	39.501277231701415	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
 35.80	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-rand-k4-T2@-inf:cider_s	35.795820258866044	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
 2.91	.session_backup/2026-10-22/c_stage2/final/decide_final.json::ov_dev_b.H_G.pooled.d	2.9057969838152076	92a1f0e992cb	reader-reference	06_results.md
@@ -408,34 +408,34 @@ not detected	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::
 16597	.session_backup/machines/M3/root/outputs/c_test/gpu_seconds.tsv::line 4	16597.0	7aecc6a8414e	log	06_results.md
 4.90	.session_backup/2026-10-26/c_test/CHAIN.log::BLOCK DONE xm / gpu_h_wall (\S+) #0	4.9	fc543266fcc6	log	06_results.md
 17646	.session_backup/machines/M3/root/outputs/c_test/gpu_seconds.tsv::line 5	17646.0	7aecc6a8414e	log	06_results.md
-0.08	.session_backup/2026-10-26/c_test/CHAIN.log::BLOCK DONE e4 / total (\S+) #1	0.08	fc543266fcc6	log	06_results.md,07_disclosures.md
+0.08	.session_backup/2026-10-26/c_test/CHAIN.log::BLOCK DONE e4 / total (\S+) #1	0.08	fc543266fcc6	log	06_results.md,07_disclosures.md,11_supplement_registered_rows.md
 6.84	manuscript/prereg/2026-10-25_c_test/PREREG.md::§12 stage-1 used	6.84	acecd6527217	prereg-quoted	06_results.md
 4.91	manuscript/prereg/2026-10-25_c_test/PREREG.md::§12 stage-2 used	4.91	acecd6527217	prereg-quoted	06_results.md
-95	manuscript/prereg/2026-10-25_c_test/PREREG.md::§1.2 E4 pass	95	acecd6527217	design	07_disclosures.md
-52	.session_backup/machines/M3/root/outputs/c_test/e4/e4_qwen25vl_7b.json::n	52	804ceb1e7540	log	07_disclosures.md
-0	.session_backup/machines/M3/root/outputs/c_test/gpu_seconds.tsv::line 1	0.0	7aecc6a8414e	log	07_disclosures.md
+95	manuscript/prereg/2026-10-25_c_test/PREREG.md::§1.2 E4 pass	95	acecd6527217	design	07_disclosures.md,11_supplement_registered_rows.md
+52	.session_backup/machines/M3/root/outputs/c_test/e4/e4_qwen25vl_7b.json::n	52	804ceb1e7540	log	07_disclosures.md,11_supplement_registered_rows.md
+0	.session_backup/machines/M3/root/outputs/c_test/gpu_seconds.tsv::line 1	0.0	7aecc6a8414e	log	07_disclosures.md,11_supplement_registered_rows.md
 PASS	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_qwen25vl_7b.json::passed	True	01f5000153ed	verdict	07_disclosures.md
 PASS	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_internvl3_8b.json::passed	True	9a0ce244fb58	verdict	07_disclosures.md
-52	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_qwen25vl_7b.json::identical	52	01f5000153ed	log	07_disclosures.md
-52	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_qwen25vl_7b.json::n	52	01f5000153ed	log	07_disclosures.md
-52	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_internvl3_8b.json::identical	52	9a0ce244fb58	log	07_disclosures.md
-52	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_internvl3_8b.json::n	52	9a0ce244fb58	log	07_disclosures.md
-157	.session_backup/machines/M3/root/outputs/c_test/gpu_seconds.tsv::line 2	157.0	7aecc6a8414e	log	07_disclosures.md
+52	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_qwen25vl_7b.json::identical	52	01f5000153ed	log	07_disclosures.md,11_supplement_registered_rows.md
+52	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_qwen25vl_7b.json::n	52	01f5000153ed	log	07_disclosures.md,11_supplement_registered_rows.md
+52	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_internvl3_8b.json::identical	52	9a0ce244fb58	log	07_disclosures.md,11_supplement_registered_rows.md
+52	.session_backup/machines/M3/root/outputs/c_test/e4_run2/e4_internvl3_8b.json::n	52	9a0ce244fb58	log	07_disclosures.md,11_supplement_registered_rows.md
+157	.session_backup/machines/M3/root/outputs/c_test/gpu_seconds.tsv::line 2	157.0	7aecc6a8414e	log	07_disclosures.md,11_supplement_registered_rows.md
 PASS	.session_backup/machines/M3/root/outputs/c_test/e4/e4_qwen25vl_7b.json::passed	True	804ceb1e7540	verdict	07_disclosures.md
 PASS	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::passed	True	bc848c2882c3	verdict	07_disclosures.md
-52	.session_backup/machines/M3/root/outputs/c_test/e4/e4_qwen25vl_7b.json::identical	52	804ceb1e7540	log	07_disclosures.md
-100.0	.session_backup/machines/M3/root/outputs/c_test/e4/e4_qwen25vl_7b.json::pct	100.0	804ceb1e7540	log	07_disclosures.md
-52	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::identical	52	bc848c2882c3	log	07_disclosures.md
-52	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::n	52	bc848c2882c3	log	07_disclosures.md
-100.0	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::pct	100.0	bc848c2882c3	log	07_disclosures.md
-132	.session_backup/machines/M3/root/outputs/c_test/gpu_seconds.tsv::line 3	132.0	7aecc6a8414e	log	07_disclosures.md
-3	.session_backup/machines/M3/root/outputs/c_test/t6_retry_ov_test.jsonl::records	3	d358c81aa9ac	log	07_disclosures.md
-8	.session_backup/machines/M3/root/outputs/c_test/runs/t6_retry_ov_test.jsonl::steps	8	7f27c18047ed	log	07_disclosures.md
-24	.session_backup/machines/M3/root/outputs/c_test/runs/t6_retry_ov_test.jsonl::records	24	7f27c18047ed	log	07_disclosures.md
-1	.session_backup/machines/M3/root/outputs/c_test/guard/t6_retry_ov_test.jsonl::records	1	5914b170ef26	log	07_disclosures.md
+52	.session_backup/machines/M3/root/outputs/c_test/e4/e4_qwen25vl_7b.json::identical	52	804ceb1e7540	log	07_disclosures.md,11_supplement_registered_rows.md
+100.0	.session_backup/machines/M3/root/outputs/c_test/e4/e4_qwen25vl_7b.json::pct	100.0	804ceb1e7540	log	07_disclosures.md,11_supplement_registered_rows.md
+52	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::identical	52	bc848c2882c3	log	07_disclosures.md,11_supplement_registered_rows.md
+52	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::n	52	bc848c2882c3	log	07_disclosures.md,11_supplement_registered_rows.md
+100.0	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::pct	100.0	bc848c2882c3	log	07_disclosures.md,11_supplement_registered_rows.md
+132	.session_backup/machines/M3/root/outputs/c_test/gpu_seconds.tsv::line 3	132.0	7aecc6a8414e	log	07_disclosures.md,11_supplement_registered_rows.md
+3	.session_backup/machines/M3/root/outputs/c_test/t6_retry_ov_test.jsonl::records	3	d358c81aa9ac	log	07_disclosures.md,11_supplement_registered_rows.md
+8	.session_backup/machines/M3/root/outputs/c_test/runs/t6_retry_ov_test.jsonl::steps	8	7f27c18047ed	log	07_disclosures.md,11_supplement_registered_rows.md
+24	.session_backup/machines/M3/root/outputs/c_test/runs/t6_retry_ov_test.jsonl::records	24	7f27c18047ed	log	07_disclosures.md,11_supplement_registered_rows.md
+1	.session_backup/machines/M3/root/outputs/c_test/guard/t6_retry_ov_test.jsonl::records	1	5914b170ef26	log	07_disclosures.md,11_supplement_registered_rows.md
 00000007169.jpg	manuscript/prereg/2026-10-22_c_stage1/lists.json::unreadable_memory_dropped.ov_train.0	'00000007169.jpg'	5c479f03e8be	structural	07_disclosures.md
-3	manuscript/prereg/2026-10-25_c_test/PREREG.md::§14 OV-test files identical to removed OV-dev files	3	acecd6527217	structural	07_disclosures.md
-2	manuscript/prereg/2026-10-25_c_test/PREREG.md::§14 byte-identical OV-dev-B files	2	acecd6527217	structural	07_disclosures.md
+3	manuscript/prereg/2026-10-25_c_test/PREREG.md::§14 OV-test files identical to removed OV-dev files	3	acecd6527217	structural	07_disclosures.md,11_supplement_registered_rows.md
+2	manuscript/prereg/2026-10-25_c_test/PREREG.md::§14 byte-identical OV-dev-B files	2	acecd6527217	structural	07_disclosures.md,11_supplement_registered_rows.md
 121	manuscript/prereg/2026-10-22_c_stage2/PREREG.md::§3.3 X5 E-dev-A images	121	6d039398c88a	structural	07_disclosures.md
 2695	.session_backup/2026-10-13/decisions/CC-111.txt::l.62 UIT-ViIC train ids	2695	5c0f3ff901cd	ruling	07_disclosures.md
 163	.session_backup/2026-10-13/decisions/CC-111.txt::l.62 union (recounted from exclusion.json ids.coco ∩ UIT-ViIC train ids)	163	5c0f3ff901cd	ruling	07_disclosures.md,08_english_arm_placeholder.md
@@ -472,7 +472,7 @@ PASS	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::pa
 34.95	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_qwen25vl_7b_ov_test-rand-k8-T1@-inf:cider_ptb	34.95073485283641	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 0.275	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_qwen25vl_7b_ov_test-rand-k8-T1@-inf:chair_i	0.27484989993328884	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 2.32	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_qwen25vl_7b_ov_test-rand-k8-T1@-inf:mentions_per_image	2.3168469860896446	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
-2.82	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_qwen25vl_7b_ov_test-rand-k8-T1@-inf:pcm_vs_zs	2.8187479514913143	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
+2.82	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_qwen25vl_7b_ov_test-rand-k8-T1@-inf:pcm_vs_zs	2.8187479514913143	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
 0.226	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_qwen25vl_7b_ov_test-rand-k8-T1@-inf:neighbour_only_rate	0.22637313764732045	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 0.000	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_qwen25vl_7b_ov_test-rand-k8-T1@-inf:rejected_per_image	0.0	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 0.000	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_qwen25vl_7b_ov_test-rand-k8-T1@-inf:deleted_rate	0.0	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
@@ -494,9 +494,9 @@ PASS	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::pa
 0.004	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_qwen25vl_7b_ov_test-fix-k8-T1@-inf:hit_max_rate	0.0036063884595569293	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 34.32	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:cider_w	34.32134726119572	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 42.67	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:cider_ptb	42.674990776929924	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
-0.237	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:chair_i	0.23741166077738515	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
+0.237	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:chair_i	0.23741166077738515	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
 2.33	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:mentions_per_image	2.332818134981968	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
-5.80	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:pcm_vs_zs	5.798045602605863	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
+5.80	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:pcm_vs_zs	5.798045602605863	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
 0.338	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:neighbour_only_rate	0.3381183745583039	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 0.000	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:rejected_per_image	0.0	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 0.000	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:deleted_rate	0.0	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
@@ -506,7 +506,7 @@ PASS	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::pa
 0.003	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@-inf:hit_max_rate	0.002575991756826378	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 29.71	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:cider_w	29.70731784073187	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 35.83	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:cider_ptb	35.82988033981397	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
-0.254	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:chair_i	0.2537139528109525	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
+0.254	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:chair_i	0.2537139528109525	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
 1.77	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:mentions_per_image	1.7686759402369912	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 1.57	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:pcm_vs_zs	1.5681149950996405	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 0.338	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-ret-k4-last-T2@0.10:neighbour_only_rate	0.3381183745583039	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
@@ -529,7 +529,7 @@ PASS	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::pa
 35.32	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-rand-k4-T2@0.10:cider_ptb	35.32148091290564	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 0.267	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-rand-k4-T2@0.10:chair_i	0.2671161825726141	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 1.99	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-rand-k4-T2@0.10:mentions_per_image	1.986604842864503	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
-1.40	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-rand-k4-T2@0.10:pcm_vs_zs	1.4021669853409815	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
+1.40	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-rand-k4-T2@0.10:pcm_vs_zs	1.4021669853409815	50878193f1cf	keyed-ledger	06_results.md,11_supplement_registered_rows.md
 0.147	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-rand-k4-T2@0.10:neighbour_only_rate	0.1473636773321316	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 0.303	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-rand-k4-T2@0.10:rejected_per_image	0.3029366306027821	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
 0.086	.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl::ct_internvl3_8b_ov_test-rand-k4-T2@0.10:deleted_rate	0.08552292632663576	50878193f1cf	keyed-ledger	11_supplement_registered_rows.md
@@ -3157,3 +3157,530 @@ PASS	.session_backup/machines/M3/root/outputs/c_test/e4/e4_internvl3_8b.json::pa
 379	.session_backup/machines/M3/root/outputs/c_test/ledger_xm_test2392.jsonl::ct_internvl3_8b_xm_test2500-rand-k4-T2@-inf:guard_auroc.n	379	40a3e7c35999	keyed-ledger	11_supplement_registered_rows.md
 0.632	.session_backup/machines/M3/root/outputs/c_test/ledger_xm_test2392.jsonl::ct_internvl3_8b_xm_test2500-fix-k4-T2@-inf:guard_auroc.s	0.6315261044176707	40a3e7c35999	keyed-ledger	11_supplement_registered_rows.md
 263	.session_backup/machines/M3/root/outputs/c_test/ledger_xm_test2392.jsonl::ct_internvl3_8b_xm_test2500-fix-k4-T2@-inf:guard_auroc.n	263	40a3e7c35999	keyed-ledger	11_supplement_registered_rows.md
+PASS	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.verdict	'PASS'	efc6eac7fe5d	verdict	00_abstract.md,05_preregistration_and_analysis.md,06_results.md,07_disclosures.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+does not fire	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.L	False	efc6eac7fe5d	verdict	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+3.08	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.d	3.0764343771	efc6eac7fe5d	c-en-registered	00_abstract.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+2.08	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.lo	2.0840084127025	efc6eac7fe5d	c-en-registered	00_abstract.md,06_results.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+4.03	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.hi	4.032914425455	efc6eac7fe5d	c-en-registered	00_abstract.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+5000	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.n	5000	efc6eac7fe5d	structural	00_abstract.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+7.80	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.ret_minus_rand.d	7.7954258242	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+6.40	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.ret_minus_rand.lo	6.400678281615	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+9.17	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.ret_minus_rand.hi	9.173541668955	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+37.30	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.ret_minus_zs.d	37.2996973674	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+35.80	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.ret_minus_zs.lo	35.800829424689994	efc6eac7fe5d	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+38.75	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.ret_minus_zs.hi	38.75401108353499	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+29.50	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.rand_minus_zs.d	29.504271543199998	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+28.27	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.rand_minus_zs.lo	28.266528931059998	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+30.79	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.rand_minus_zs.hi	30.78976632646	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+11.37	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.len_ret	11.3718	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+11.16	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.len_rand	11.1636	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.019	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.length_gap	0.0186498978824035	efc6eac7fe5d	c-en-reported	08_english_comparison.md,09_limitations.md,11_supplement_registered_rows.md|c-pass2
+-1.64	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.ret_minus_rand.d	-1.64255707	efc6eac7fe5d	c-en-reported	00_abstract.md,08_english_comparison.md,09_limitations.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+-2.79	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.ret_minus_rand.lo	-2.7930714596949997	efc6eac7fe5d	c-en-reported	00_abstract.md,08_english_comparison.md,09_limitations.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+-0.49	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.ret_minus_rand.hi	-0.48985321679500143	efc6eac7fe5d	c-en-reported	00_abstract.md,08_english_comparison.md,09_limitations.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+6.49	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.ret_minus_zs.d	6.4855390906	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+5.27	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.ret_minus_zs.lo	5.26627362956	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+7.70	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.ret_minus_zs.hi	7.6999426338950006	efc6eac7fe5d	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+8.13	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.rand_minus_zs.d	8.1280961606	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+7.03	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.rand_minus_zs.lo	7.029254076815	efc6eac7fe5d	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+9.21	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.rand_minus_zs.hi	9.21276744492	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+12.47	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.len_ret	12.475	efc6eac7fe5d	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+12.72	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.len_rand	12.7198	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.019	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.length_gap	0.019245585622415424	efc6eac7fe5d	c-en-reported	08_english_comparison.md,09_limitations.md,11_supplement_registered_rows.md|c-pass2
+21.89	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.pooled_ret_minus_zs.d	21.892618229	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+20.90	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.pooled_ret_minus_zs.lo	20.8974627765775	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+22.88	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.pooled_ret_minus_zs.hi	22.881595936909996	efc6eac7fe5d	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+-1.05	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.secondary_neg_inf_internvl3.d	-1.0525030355999998	efc6eac7fe5d	c-en-registered	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+-2.22	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.secondary_neg_inf_internvl3.lo	-2.2234534869199996	efc6eac7fe5d	c-en-registered	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.08	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.secondary_neg_inf_internvl3.hi	0.07887552217499882	efc6eac7fe5d	c-en-registered	06_results.md,07_disclosures.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+not detected	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.secondary_neg_inf_internvl3.label	'not detected'	efc6eac7fe5d	verdict	00_abstract.md,01_introduction.md,05_preregistration_and_analysis.md,06_results.md,08_english_comparison.md,09_limitations.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+524	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.guard.neighbour_only	524	efc6eac7fe5d	c-en-reported	c-pass2
+302	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.guard.rejected	302	efc6eac7fe5d	c-en-reported	c-pass2
+110	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.guard.deleted	110	efc6eac7fe5d	c-en-reported	c-pass2
+182	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.guard.fallback	182	efc6eac7fe5d	c-en-reported	c-pass2
+123	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.guard_rand.neighbour_only	123	efc6eac7fe5d	c-en-reported	c-pass2
+112	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.guard_rand.rejected	112	efc6eac7fe5d	c-en-reported	c-pass2
+39	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.guard_rand.deleted	39	efc6eac7fe5d	c-en-reported	c-pass2
+73	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.guard_rand.fallback	73	efc6eac7fe5d	c-en-reported	c-pass2
+2026-10-27T10:30:58Z	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::utc	'2026-10-27T10:30:58Z'	efc6eac7fe5d	log	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+ed1e6c4192d1cc200aa90cc1e8abd317ab0f3ea8	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::head	'ed1e6c4192d1cc200aa90cc1e8abd317ab0f3ea8'	efc6eac7fe5d	log	c-pass2
+FAIL	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::S_NC.verdict	'FAIL'	9b4d972a5e6b	verdict	01_introduction.md,06_results.md,08_english_comparison.md,09_limitations.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+FAIL	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::S_NC_sensitivity_3500.verdict	'FAIL'	9b4d972a5e6b	verdict	01_introduction.md,06_results.md,08_english_comparison.md,09_limitations.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+not made	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::claim_transfers_to_nocaps	False	9b4d972a5e6b	verdict	01_introduction.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+1.73	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::S_NC.d	1.7261625993333332	9b4d972a5e6b	c-en-registered	00_abstract.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+0.94	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::S_NC.lo	0.940074709502778	9b4d972a5e6b	c-en-registered	00_abstract.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+2.50	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::S_NC.hi	2.4986029221749995	9b4d972a5e6b	c-en-registered	00_abstract.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+1.62	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::S_NC_sensitivity_3500.d	1.624015973	9b4d972a5e6b	c-en-registered	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.66	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::S_NC_sensitivity_3500.lo	0.6586494119999996	9b4d972a5e6b	c-en-registered	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+2.52	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::S_NC_sensitivity_3500.hi	2.5203975769071394	9b4d972a5e6b	c-en-registered	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+4500	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.n	4500	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+2.83	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.ret_minus_rand.d	2.829142988666667	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+1.69	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.ret_minus_rand.lo	1.6855470636055556	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+3.98	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.ret_minus_rand.hi	3.9830373989111107	9b4d972a5e6b	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+32.67	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.ret_minus_zs.d	32.66587191977777	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+31.37	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.ret_minus_zs.lo	31.371044417250005	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+33.93	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.ret_minus_zs.hi	33.93251522748889	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+29.84	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.rand_minus_zs.d	29.836728931111107	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+28.56	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.rand_minus_zs.lo	28.558466938622225	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+31.02	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.rand_minus_zs.hi	31.01595251736666	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+11.19	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.len_ret	11.191555555555556	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+11.10	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.len_rand	11.098	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+0.008	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.qwen25vl_7b.length_gap	0.008429947337858679	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.62	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.ret_minus_rand.d	0.62318221	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+-0.37	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.ret_minus_rand.lo	-0.3700531902666667	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+1.62	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.ret_minus_rand.hi	1.6219493825722198	9b4d972a5e6b	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+5.43	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.ret_minus_zs.d	5.428747205333333	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+4.37	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.ret_minus_zs.lo	4.370828401744443	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+6.48	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.ret_minus_zs.hi	6.480094069299999	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+4.81	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.rand_minus_zs.d	4.805564995333334	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+3.86	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.rand_minus_zs.lo	3.8608277922833327	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+5.77	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.rand_minus_zs.hi	5.774580568883332	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+12.58	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.len_ret	12.578222222222223	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+12.81	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.len_rand	12.81	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+0.018	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.length_gap	0.01809350333940495	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+19.05	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.pooled_ret_minus_zs.d	19.047309562555558	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+18.18	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.pooled_ret_minus_zs.lo	18.176551468575	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+19.95	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.pooled_ret_minus_zs.hi	19.945106827905555	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+1.00	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.secondary_neg_inf_internvl3.d	1.0041626748888888	9b4d972a5e6b	c-en-registered	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+-0.01	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.secondary_neg_inf_internvl3.lo	-0.009392905472222162	9b4d972a5e6b	c-en-registered	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+2.01	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.secondary_neg_inf_internvl3.hi	2.0141774138277757	9b4d972a5e6b	c-en-registered	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+not detected	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.secondary_neg_inf_internvl3.label	'not detected'	9b4d972a5e6b	verdict	00_abstract.md,01_introduction.md,05_preregistration_and_analysis.md,06_results.md,08_english_comparison.md,09_limitations.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+3500	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.n	3500	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+2.35	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.ret_minus_rand.d	2.354264866857142	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.96	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.ret_minus_rand.lo	0.9582245921142855	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+3.73	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.ret_minus_rand.hi	3.7301935234285684	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+32.44	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.ret_minus_zs.d	32.44396169542857	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+30.88	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.ret_minus_zs.lo	30.878774166628567	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+33.95	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.ret_minus_zs.hi	33.95140622610714	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+30.09	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.rand_minus_zs.d	30.08969682857143	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+28.67	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.rand_minus_zs.lo	28.665020313707142	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+31.47	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.rand_minus_zs.hi	31.470126360942853	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+11.17	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.len_ret	11.172571428571429	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+11.09	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.len_rand	11.092857142857143	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+0.007	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.qwen25vl_7b.length_gap	0.0071860914359304084	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.89	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.ret_minus_rand.d	0.8937670791428571	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+-0.34	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.ret_minus_rand.lo	-0.33941565207857183	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+2.00	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.ret_minus_rand.hi	2.000647290935714	9b4d972a5e6b	c-en-reported	02_related_work.md,06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+5.64	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.ret_minus_zs.d	5.635171321142858	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+4.47	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.ret_minus_zs.lo	4.465317688478571	9b4d972a5e6b	c-en-reported	06_results.md,11_supplement_registered_rows.md|c-pass2
+6.84	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.ret_minus_zs.hi	6.83863962625	9b4d972a5e6b	c-en-reported	06_results.md,11_supplement_registered_rows.md|c-pass2
+4.74	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.rand_minus_zs.d	4.741404242	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+3.65	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.rand_minus_zs.lo	3.649353719635714	9b4d972a5e6b	c-en-reported	06_results.md,11_supplement_registered_rows.md|c-pass2
+5.89	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.rand_minus_zs.hi	5.889500167135714	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+12.55	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.len_ret	12.55	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+12.78	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.len_rand	12.784	9b4d972a5e6b	c-en-reported	11_supplement_registered_rows.md|c-pass2
+0.018	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.per_model.internvl3_8b.length_gap	0.018304130162703377	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+19.04	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.pooled_ret_minus_zs.d	19.039566508285713	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+18.00	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.pooled_ret_minus_zs.lo	17.998467758264287	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+20.05	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.pooled_ret_minus_zs.hi	20.05341341333571	9b4d972a5e6b	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+1.09	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.secondary_neg_inf_internvl3.d	1.093200816857143	9b4d972a5e6b	c-en-registered	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+-0.12	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.secondary_neg_inf_internvl3.lo	-0.12354372476428595	9b4d972a5e6b	c-en-registered	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+2.21	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.secondary_neg_inf_internvl3.hi	2.214916315071428	9b4d972a5e6b	c-en-registered	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+not detected	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.secondary_neg_inf_internvl3.label	'not detected'	9b4d972a5e6b	verdict	00_abstract.md,01_introduction.md,05_preregistration_and_analysis.md,06_results.md,08_english_comparison.md,09_limitations.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+304	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.guard.neighbour_only	304	9b4d972a5e6b	c-en-reported	c-pass2
+234	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.guard.rejected	234	9b4d972a5e6b	c-en-reported	c-pass2
+72	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.guard.deleted	72	9b4d972a5e6b	c-en-reported	c-pass2
+154	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.guard.fallback	154	9b4d972a5e6b	c-en-reported	c-pass2
+110	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.guard_rand.neighbour_only	110	9b4d972a5e6b	c-en-reported	c-pass2
+107	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.guard_rand.rejected	107	9b4d972a5e6b	c-en-reported	c-pass2
+30	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.guard_rand.deleted	30	9b4d972a5e6b	c-en-reported	c-pass2
+76	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.per_model.internvl3_8b.guard_rand.fallback	76	9b4d972a5e6b	c-en-reported	c-pass2
+4.64	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.in-domain.d	4.6351016858513185	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+1.85	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.in-domain.lo	1.8490512906474816	9b4d972a5e6b	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+7.36	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.in-domain.hi	7.364282276378897	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+417	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.in-domain.n	417	9b4d972a5e6b	structural	c-pass2
+1.96	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.near-domain.d	1.9575809897003746	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+0.85	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.near-domain.lo	0.8525382812453182	9b4d972a5e6b	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+2.99	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.near-domain.hi	2.9942968647846433	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+2670	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.near-domain.n	2670	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.43	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.out-domain.d	0.4303984794762913	9b4d972a5e6b	c-en-reported	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+-0.85	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.out-domain.lo	-0.8511791570948339	9b4d972a5e6b	c-en-reported	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+1.73	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.out-domain.hi	1.7326984816790505	9b4d972a5e6b	c-en-reported	00_abstract.md,06_results.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+1413	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.out-domain.n	1413	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+2026-10-27T17:33:57Z	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::utc	'2026-10-27T17:33:57Z'	9b4d972a5e6b	log	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+f8cccb681c78950704beae3a90e23e42440c3dd8	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::head	'f8cccb681c78950704beae3a90e23e42440c3dd8'	9b4d972a5e6b	log	c-pass2
+112320	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::recorded	112320	babd1824339b	log	08_english_comparison.md|c-pass2
+112255	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::kept	112255	babd1824339b	log	08_english_comparison.md|c-pass2
+111927	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::clusters	111927	babd1824339b	log	08_english_comparison.md|c-pass2
+65	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::near_dropped_any	65	babd1824339b	log	c-pass2
+28	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::near_dropped.coco_test	28	babd1824339b	log	c-pass2
+15	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::near_dropped.nocaps_val	15	babd1824339b	log	c-pass2
+23	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::near_dropped.coco_kval	23	babd1824339b	log	c-pass2
+0	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::unreadable	0	babd1824339b	log	c-pass2
+2	.session_backup/machines/M3/root/outputs/c_en/fetch/memory.done.json::refused	2	28f768cbe435	log	c-pass2
+112320	.session_backup/machines/M3/root/outputs/c_en/fetch/memory.done.json::recorded	112320	28f768cbe435	log	08_english_comparison.md|c-pass2
+96	.session_backup/machines/M3/root/outputs/c_en/smoke_record.json::captions	96	2308addec850	log	c-pass2
+0	.session_backup/machines/M3/root/outputs/c_en/smoke_record.json::empty	0	2308addec850	log	c-pass2
+22797	.session_backup/machines/M3/root/outputs/c_en/gpu_seconds.tsv::line 5	22797.0	e684cb246a3e	log	08_english_comparison.md|c-pass2
+6.33	.session_backup/machines/M3/root/outputs/c_en/gpu_seconds.tsv::line 5 / 3600 (GPU-h)	6.3325	e684cb246a3e	log	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+24779	.session_backup/machines/M3/root/outputs/c_en/gpu_seconds.tsv::line 6	24779.0	e684cb246a3e	log	08_english_comparison.md|c-pass2
+6.88	.session_backup/machines/M3/root/outputs/c_en/gpu_seconds.tsv::line 6 / 3600 (GPU-h)	6.883055555555556	e684cb246a3e	log	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+47576	.session_backup/machines/M3/root/outputs/c_en/gpu_seconds.tsv::sum of 'test' lines	47576.0	e684cb246a3e	log	V2_PROGRESS_C.md|c-pass2
+13.22	.session_backup/machines/M3/root/outputs/c_en/gpu_seconds.tsv::sum of 'test' lines / 3600 (GPU-h)	13.215555555555556	e684cb246a3e	log	08_english_comparison.md,09_limitations.md,V2_PROGRESS_C.md|c-pass2
+2026-10-27T10:33:32Z	.session_backup/2026-10-27/c_en/CHAIN.log::HEAD MOVE line	'2026-10-27T10:33:32Z'	2910e675b810	log	08_english_comparison.md|c-pass2
+16 memory images	manuscript/prereg/2026-10-27_c_en/PREREG.md::§9 step 6 smoke	'16 memory images'	504018233074	prereg-quoted	08_english_comparison.md|c-pass2
+ed1e6c41	.session_backup/2026-10-27/c_en/CHAIN.log::HEAD MOVE from	'ed1e6c41'	2910e675b810	log	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+f8cccb68	.session_backup/2026-10-27/c_en/CHAIN.log::HEAD MOVE to	'f8cccb68'	2910e675b810	log	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+5000	manuscript/prereg/2026-10-27_c_en/PREREG.md::§3.1 COCO Karpathy test	'5,000'	504018233074	prereg-quoted	00_abstract.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+4500	manuscript/prereg/2026-10-27_c_en/PREREG.md::§3.2 NoCaps val	'4,500'	504018233074	prereg-quoted	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+3500	manuscript/prereg/2026-10-27_c_en/PREREG.md::§3.2 sensitivity	'3,500'	504018233074	prereg-quoted	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+1000	manuscript/prereg/2026-10-27_c_en/PREREG.md::§3.2 vg-mamf stratified 1,000	'stratified 1,000'	504018233074	prereg-quoted	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+417	manuscript/prereg/2026-10-27_c_en/PREREG.md::§3.2 domain counts	'417 in'	504018233074	prereg-quoted	c-pass2
+2670	manuscript/prereg/2026-10-27_c_en/PREREG.md::§3.2 domain counts	'2,670 near'	504018233074	prereg-quoted	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+1413	manuscript/prereg/2026-10-27_c_en/PREREG.md::§3.2 domain counts	'1,413 out'	504018233074	prereg-quoted	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+113287	manuscript/prereg/2026-10-27_c_en/PREREG.md::§4 candidates	'113,287'	504018233074	prereg-quoted	08_english_comparison.md|c-pass2
+965	manuscript/prereg/2026-10-27_c_en/PREREG.md::§4 refused	'965 refused'	504018233074	prereg-quoted	c-pass2
+112322	manuscript/prereg/2026-10-27_c_en/PREREG.md::§4 allowed	'**112,322**'	504018233074	prereg-quoted	08_english_comparison.md|c-pass2
+2.0	manuscript/prereg/2026-10-27_c_en/PREREG.md::§7 SESOI	'**+2.0**'	504018233074	prereg-quoted	01_introduction.md,05_preregistration_and_analysis.md,06_results.md,08_english_comparison.md|c-pass2
+25	manuscript/prereg/2026-10-27_c_en/PREREG.md::§10 test cap	'**25 GPU-h**'	504018233074	prereg-quoted	c-pass2
+0.69	manuscript/prereg/2026-10-27_c_en/PREREG.md::§10 Qwen per image-arm OV	'Qwen 0.69 s'	504018233074	prereg-quoted	09_limitations.md,V2_PROGRESS_C.md|c-pass2
+1.24	manuscript/prereg/2026-10-27_c_en/PREREG.md::§10 InternVL3 per image-arm OV	'InternVL3 1.24 s'	504018233074	prereg-quoted	09_limitations.md,V2_PROGRESS_C.md|c-pass2
+24	manuscript/prereg/2026-10-27_c_en/PREREG.md::§2 guard shared classes	'24 of its 80'	504018233074	prereg-quoted	c-pass2
+80	manuscript/prereg/2026-10-27_c_en/PREREG.md::§2 COCO-80 classes	'24 of its 80'	504018233074	prereg-quoted	c-pass2
+112	manuscript/prereg/2026-10-27_c_en/PREREG.md::§2 S2 class map	'112-class'	504018233074	prereg-quoted	c-pass2
+163	manuscript/prereg/2026-10-27_c_en/PREREG.md::§12.2	'163 distinct'	504018233074	prereg-quoted	c-pass2
+133	manuscript/prereg/2026-10-27_c_en/PREREG.md::§12.2	'133 coco_karpathy_test'	504018233074	prereg-quoted	c-pass2
+227	manuscript/prereg/2026-10-27_c_en/PREREG.md::§12.2	'= 227'	504018233074	prereg-quoted	c-pass2
+2441	manuscript/prereg/2026-10-27_c_en/PREREG.md::§12.3a	'2,441'	504018233074	prereg-quoted	08_english_comparison.md,V2_PROGRESS_C.md|c-pass2
+295	manuscript/prereg/2026-10-27_c_en/PREREG.md::§12.3b	'295 of the 5,000'	504018233074	prereg-quoted	c-pass2
+130	manuscript/prereg/2026-10-27_c_en/PREREG.md::§12.6 (PI-1026w wording)	'130 Karpathy-val ids'	504018233074	prereg-quoted	c-pass2
+9	manuscript/prereg/2026-10-27_c_en/PREREG.md::§12.3a A systems	'9 systems'	504018233074	prereg-quoted	c-pass2
+10	manuscript/prereg/2026-10-27_c_en/PREREG.md::§3.1 sixth reference	'10 of the 5,000'	504018233074	prereg-quoted	c-pass2
+5	manuscript/prereg/2026-10-27_c_en/PREREG.md::§3.1 first 5 references	'first 5'	504018233074	prereg-quoted	c-pass2
+2402	manuscript/prereg/2026-10-27_c_en/PREREG.md::§4.8 UT pool	'2,402 images'	504018233074	prereg-quoted	08_english_comparison.md,V2_PROGRESS_C.md|c-pass2
+2026-10-27	manuscript/prereg/2026-10-27_c_en/PREREG.md::amendment 1 date	'2026-10-27'	504018233074	prereg-quoted	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+C-2 / DEV-B MECHANISM NON-CONFIRMATORY	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::label	'C-2 / DEV-B MECHANISM, NON-CONFIRMATORY'	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+925	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::n_images	925	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+HOLDS	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.outcome	'HOLDS'	aa77ba3ded31	verdict	06_results.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+HOLDS	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.P-K.outcome	'HOLDS'	aa77ba3ded31	verdict	06_results.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+HOLDS	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.outcome	'HOLDS'	aa77ba3ded31	verdict	06_results.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+shaped by stage-A dev299 selection	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.P-K.label	'shaped by stage-A dev299 selection'	aa77ba3ded31	verdict	06_results.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+True	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::section6_explains_backbone_dependence	True	aa77ba3ded31	verdict	11_supplement_registered_rows.md|c-pass2
+True	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.M1_ci_hi_lt_0	True	aa77ba3ded31	verdict	11_supplement_registered_rows.md|c-pass2
+True	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.M2_did_le_minus_sesoi	True	aa77ba3ded31	verdict	11_supplement_registered_rows.md|c-pass2
+True	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.M3_monotone_points	True	aa77ba3ded31	verdict	11_supplement_registered_rows.md|c-pass2
+True	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.i_monotone	True	aa77ba3ded31	verdict	11_supplement_registered_rows.md|c-pass2
+True	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.ii_cost_ret_lt_rand	True	aa77ba3ded31	verdict	11_supplement_registered_rows.md|c-pass2
+True	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.iii_inf_ci_lo_le_0	True	aa77ba3ded31	verdict	11_supplement_registered_rows.md|c-pass2
+3.21	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.pooled.10.d	3.207885459459459	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+1.87	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.pooled.10.lo	1.8733905743243244	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+4.54	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.pooled.10.hi	4.53526725	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.772	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::mean_top1_cos.10	0.771806758918919	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+5.20	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.delta.10.d	5.204342162162163	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+3.30	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.delta.10.lo	3.298653924324324	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+7.03	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.delta.10.hi	7.028791964864862	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.992	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.src_share.10	0.9924324324324324	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+1.21	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta.10.d	1.2114287567567565	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-0.45	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta.10.lo	-0.45349215945945903	aa77ba3ded31	c2-dev-nonconfirmatory	00_abstract.md,06_results.md,10_conclusion.md,11_supplement_registered_rows.md|c-pass2
+2.88	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta.10.hi	2.877926705405404	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.993	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.src_share.10	0.9927027027027027	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+3.71	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta_tau_-inf.10.d	3.707177513513513	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+1.94	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta_tau_-inf.10.lo	1.9421310297297296	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+5.53	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta_tau_-inf.10.hi	5.526157027027026	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+7	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::composition.10.ktvic	7	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+212	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::composition.10.ktvic+openviic	212	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+600	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::composition.10.openviic	600	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+4.24	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.pooled.30.d	4.2398630270270266	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+2.90	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.pooled.30.lo	2.9023751405405407	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+5.58	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.pooled.30.hi	5.584446256756755	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.796	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::mean_top1_cos.30	0.7961509859459459	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+7.66	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.delta.30.d	7.6572299459459465	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+5.76	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.delta.30.lo	5.761414318918919	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+9.44	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.delta.30.hi	9.440320362162161	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.996	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.src_share.30	0.9964864864864865	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.82	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta.30.d	0.8224961081081078	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-0.97	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta.30.lo	-0.973980437837838	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+2.62	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta.30.hi	2.622124402702701	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.997	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.src_share.30	0.9967567567567568	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+3.61	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta_tau_-inf.30.d	3.6119114594594586	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+1.73	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta_tau_-inf.30.lo	1.734641935135135	aa77ba3ded31	c2-dev-nonconfirmatory	00_abstract.md,06_results.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2
+5.50	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta_tau_-inf.30.hi	5.498546008108103	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+9	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::composition.30.ktvic	9	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+643	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::composition.30.ktvic+openviic	643	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+1805	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::composition.30.openviic	1805	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+6.04	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.pooled.100.d	6.040306810810811	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+4.54	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.pooled.100.lo	4.537966012162162	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+7.58	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.pooled.100.hi	7.5849294986486475	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.821	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::mean_top1_cos.100	0.8210434724324325	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+9.67	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.delta.100.d	9.669615027027028	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+7.68	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.delta.100.lo	7.682322113513513	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+11.72	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.delta.100.hi	11.722116583783782	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.995	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.src_share.100	0.9952702702702703	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+2.41	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta.100.d	2.410998594594594	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.57	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta.100.lo	0.5734690027027027	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+4.26	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta.100.hi	4.256335067567567	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.995	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.src_share.100	0.9954054054054055	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+5.36	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta_tau_-inf.100.d	5.356432108108108	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+3.53	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta_tau_-inf.100.lo	3.527059591891892	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+7.12	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.delta_tau_-inf.100.hi	7.118694605405405	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+40	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::composition.100.ktvic	40	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+2133	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::composition.100.ktvic+openviic	2133	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+6017	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::composition.100.openviic	6017	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+819	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::subsets.10.n	819	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+2457	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::subsets.30.n	2457	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-2.83	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.did_pooled.d	-2.832421351351351	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-4.18	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.did_pooled.lo	-4.180348917567567	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-1.58	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.did_pooled.hi	-1.576574827027027	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-4.47	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.did.d	-4.465272864864864	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-6.55	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.did.lo	-6.551356791891892	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-2.56	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.qwen25vl_7b.did.hi	-2.564391716216216	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-1.20	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.did.d	-1.1995698378378374	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-2.94	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.did.lo	-2.9411106324324323	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.35	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-M.per_model.internvl3_8b.did.hi	0.3523802621621618	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+6.41	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.delta.2.d	6.408553837837838	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+4.46	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.delta.2.lo	4.464178035135135	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+8.49	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.delta.2.hi	8.490763413513513	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.306	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.copy4_memory.2	0.3063570069752695	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.009	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.verbatim_share.2	0.008648648648648649	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+16.65	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.2.ret.mean_syllables	16.649729729729728	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.992	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.2.ret.ends_punct	0.9924324324324324	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.285	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.2.ret.top3_open_share	0.28540540540540543	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+15.98	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.2.rand.mean_syllables	15.984864864864864	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.994	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.2.rand.ends_punct	0.9935135135135135	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.306	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.2.rand.top3_open_share	0.30594594594594593	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+1.93	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.delta.2.d	1.9337532972972975	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.16	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.delta.2.lo	0.1601057216216213	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+3.63	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.delta.2.hi	3.6309049648648637	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.239	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.copy4_memory.2	0.23945469125902166	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.003	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.verbatim_share.2	0.003243243243243243	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+16.48	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.2.ret.mean_syllables	16.478918918918918	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.935	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.2.ret.ends_punct	0.9351351351351351	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.138	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.2.ret.top3_open_share	0.13837837837837838	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+17.28	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.2.rand.mean_syllables	17.28	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.918	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.2.rand.ends_punct	0.9178378378378378	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.178	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.2.rand.top3_open_share	0.1783783783783784	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+7.11	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.delta.4.d	7.109014486486486	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+5.23	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.delta.4.lo	5.233738464864865	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+9.04	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.delta.4.hi	9.040374662162161	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+0.356	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.copy4_memory.4	0.35553232790801853	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.015	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.verbatim_share.4	0.015135135135135135	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+17.49	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.4.ret.mean_syllables	17.49081081081081	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.994	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.4.ret.ends_punct	0.9935135135135135	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.312	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.4.ret.top3_open_share	0.3124324324324324	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+16.70	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.4.rand.mean_syllables	16.696216216216218	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.999	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.4.rand.ends_punct	0.9989189189189189	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.323	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.4.rand.top3_open_share	0.3232432432432432	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+2.41	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.delta.4.d	2.410998594594594	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.57	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.delta.4.lo	0.5734690027027027	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+4.26	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.delta.4.hi	4.256335067567567	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.262	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.copy4_memory.4	0.2619425488017775	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.000	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.verbatim_share.4	0.0	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+16.62	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.4.ret.mean_syllables	16.62162162162162	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.881	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.4.ret.ends_punct	0.8810810810810811	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.129	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.4.ret.top3_open_share	0.12864864864864864	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+17.73	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.4.rand.mean_syllables	17.732972972972973	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.864	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.4.rand.ends_punct	0.8637837837837837	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.178	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.4.rand.top3_open_share	0.1783783783783784	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+9.67	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.delta.8.d	9.669615027027028	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+7.68	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.delta.8.lo	7.682322113513513	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+11.72	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.delta.8.hi	11.722116583783782	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.402	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.copy4_memory.8	0.4016521862982481	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.026	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.verbatim_share.8	0.025945945945945945	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+18.23	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.8.ret.mean_syllables	18.23135135135135	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.994	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.8.ret.ends_punct	0.9935135135135135	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.337	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.8.ret.top3_open_share	0.3372972972972973	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+17.46	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.8.rand.mean_syllables	17.460540540540542	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.997	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.8.rand.ends_punct	0.9967567567567568	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.365	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.qwen25vl_7b.style.8.rand.top3_open_share	0.3654054054054054	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+2.19	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.delta.8.d	2.1858827027027026	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.73	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.delta.8.lo	0.7312257135135136	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+3.76	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.delta.8.hi	3.759958764864863	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.272	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.copy4_memory.8	0.27175787988082173	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.005	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.verbatim_share.8	0.005405405405405406	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+16.79	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.8.ret.mean_syllables	16.787027027027026	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.869	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.8.ret.ends_punct	0.8691891891891892	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.129	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.8.ret.top3_open_share	0.12864864864864864	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+17.65	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.8.rand.mean_syllables	17.651891891891893	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.874	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.8.rand.ends_punct	0.8735135135135135	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.178	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.internvl3_8b.style.8.rand.top3_open_share	0.1783783783783784	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+3.26	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.P-K.did_8_minus_2.d	3.2610611891891894	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.98	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.P-K.did_8_minus_2.lo	0.9829138135135134	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+5.63	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-K.P-K.did_8_minus_2.hi	5.626153694594594	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+5.36	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.-inf.d	5.356432108108108	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+3.53	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.-inf.lo	3.527059591891892	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+7.12	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.-inf.hi	7.118694605405405	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.340	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.ret.neighbour_only_rate	0.3396048918156162	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.000	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.ret.rejected_per_image	0.0	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.000	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.ret.fallback_rate	0.0	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.000	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.ret.deleted_rate	0.0	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+77.31	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.ret.np	77.3109243697479	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+714	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.ret.np_sum_m	714	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+0.152	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.rand.neighbour_only_rate	0.1517472474868358	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.000	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.rand.rejected_per_image	0.0	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.000	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.rand.fallback_rate	0.0	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.000	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.rand.deleted_rate	0.0	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+73.50	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.rand.np	73.50157728706624	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+317	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.-inf.rand.np_sum_m	317	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+4.75	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.00.d	4.751922378378379	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+2.96	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.00.lo	2.9593911054054054	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+6.62	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.00.hi	6.615961554054052	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.340	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.ret.neighbour_only_rate	0.3396048918156162	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.084	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.ret.rejected_per_image	0.08432432432432432	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.063	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.ret.fallback_rate	0.0627027027027027	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.019	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.ret.deleted_rate	0.01945945945945946	aa77ba3ded31	c2-dev-nonconfirmatory	08_english_comparison.md,09_limitations.md,11_supplement_registered_rows.md|c-pass2
+79.73	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.ret.np	79.734219269103	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+602	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.ret.np_sum_m	602	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+0.152	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.rand.neighbour_only_rate	0.1517472474868358	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.052	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.rand.rejected_per_image	0.05189189189189189	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.034	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.rand.fallback_rate	0.03351351351351351	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.017	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.rand.deleted_rate	0.017297297297297298	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+81.50	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.rand.np	81.49606299212599	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+254	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.00.rand.np_sum_m	254	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+2.41	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.10.d	2.410998594594594	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.57	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.10.lo	0.5734690027027027	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+4.26	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.10.hi	4.256335067567567	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.340	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.ret.neighbour_only_rate	0.3396048918156162	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.621	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.ret.rejected_per_image	0.6205405405405405	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.344	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.ret.fallback_rate	0.34378378378378377	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.139	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.ret.deleted_rate	0.13945945945945945	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+83.75	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.ret.np	83.75	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+80	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.ret.np_sum_m	80	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+0.152	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.rand.neighbour_only_rate	0.1517472474868358	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.312	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.rand.rejected_per_image	0.3124324324324324	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.182	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.rand.fallback_rate	0.18162162162162163	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.088	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.rand.deleted_rate	0.08756756756756756	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+69.23	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.rand.np	69.23076923076923	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+13	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.10.rand.np_sum_m	13	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+2.15	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.20.d	2.1527552432432433	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.35	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.20.lo	0.34807998378378363	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+3.97	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.20.hi	3.9715238135135134	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.340	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.ret.neighbour_only_rate	0.3396048918156162	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.677	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.ret.rejected_per_image	0.6767567567567567	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.362	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.ret.fallback_rate	0.3621621621621622	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.145	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.ret.deleted_rate	0.14486486486486486	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+85.42	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.ret.np	85.41666666666667	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+48	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.ret.np_sum_m	48	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+0.152	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.rand.neighbour_only_rate	0.1517472474868358	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.328	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.rand.rejected_per_image	0.32756756756756755	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.187	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.rand.fallback_rate	0.18702702702702703	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.090	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.rand.deleted_rate	0.08972972972972973	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+75.00	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.rand.np	75.0	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+4	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.20.rand.np_sum_m	4	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+1.90	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.30.d	1.9018777297297296	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.07	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.30.lo	0.07199221351351315	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,09_limitations.md,11_supplement_registered_rows.md|c-pass2
+3.74	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.0.30.hi	3.738345829729729	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.340	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.ret.neighbour_only_rate	0.3396048918156162	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.734	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.ret.rejected_per_image	0.7340540540540541	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.383	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.ret.fallback_rate	0.3827027027027027	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.147	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.ret.deleted_rate	0.14702702702702702	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+68.75	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.ret.np	68.75	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+16	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.ret.np_sum_m	16	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+0.152	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.rand.neighbour_only_rate	0.1517472474868358	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.336	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.rand.rejected_per_image	0.3362162162162162	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.187	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.rand.fallback_rate	0.18702702702702703	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.094	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.rand.deleted_rate	0.09405405405405405	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.0.30.rand.np_sum_m	0	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+1.45	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.inf.d	1.4543457297297298	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-0.35	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.inf.lo	-0.3544941918918921	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+3.25	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.delta.inf.hi	3.249807954054053	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.340	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.ret.neighbour_only_rate	0.3396048918156162	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.781	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.ret.rejected_per_image	0.7805405405405406	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.389	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.ret.fallback_rate	0.3891891891891892	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.149	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.ret.deleted_rate	0.1491891891891892	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.ret.np_sum_m	0	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+0.152	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.rand.neighbour_only_rate	0.1517472474868358	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.343	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.rand.rejected_per_image	0.3427027027027027	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0.186	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.rand.fallback_rate	0.18594594594594593	aa77ba3ded31	c2-dev-nonconfirmatory	02_related_work.md,06_results.md,11_supplement_registered_rows.md|c-pass2
+0.095	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.rand.deleted_rate	0.09513513513513513	aa77ba3ded31	c2-dev-nonconfirmatory	11_supplement_registered_rows.md|c-pass2
+0	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.guard_rates.inf.rand.np_sum_m	0	aa77ba3ded31	c2-dev-nonconfirmatory	c-pass2
+-0.81	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.00.ret.d	-0.8137619459459459	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-1.39	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.00.ret.lo	-1.3901357027027026	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-0.32	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.00.ret.hi	-0.3193117837837839	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-0.21	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.00.rand.d	-0.20925221621621623	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-0.50	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.00.rand.lo	-0.4961741783783783	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+0.07	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.00.rand.hi	0.06972174594594593	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,09_limitations.md,11_supplement_registered_rows.md|c-pass2
+-5.43	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.10.ret.d	-5.427842486486487	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-6.76	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.10.ret.lo	-6.75717567027027	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-4.08	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.10.ret.hi	-4.084542683783784	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-2.48	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.10.rand.d	-2.482408972972973	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-3.44	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.10.rand.lo	-3.4391102756756755	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-1.51	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.10.rand.hi	-1.5078882891891894	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-5.83	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.20.ret.d	-5.829421405405405	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-7.19	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.20.ret.lo	-7.1872452162162155	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-4.49	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.20.ret.hi	-4.486874472972973	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-2.63	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.20.rand.d	-2.625744540540541	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-3.61	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.20.rand.lo	-3.6084054594594597	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-1.63	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.20.rand.hi	-1.633241281081082	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-6.04	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.30.ret.d	-6.042413297297297	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-7.44	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.30.ret.lo	-7.4385324	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-4.72	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.30.ret.hi	-4.721713416216217	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-2.59	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.30.rand.d	-2.587858918918919	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-3.58	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.30.rand.lo	-3.5773128405405403	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+-1.59	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::AB-tau.cost.0.30.rand.hi	-1.5918851918918924	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+10.38	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::rand_minus_zs_100.qwen25vl_7b.d	10.379110594594595	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+8.71	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::rand_minus_zs_100.qwen25vl_7b.lo	8.713052429729728	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+12.00	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::rand_minus_zs_100.qwen25vl_7b.hi	11.998075508108105	aa77ba3ded31	c2-dev-nonconfirmatory	02_related_work.md,06_results.md,11_supplement_registered_rows.md|c-pass2
+7.43	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::rand_minus_zs_100.internvl3_8b.d	7.4311912432432425	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+6.03	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::rand_minus_zs_100.internvl3_8b.lo	6.033128375675676	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+8.93	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::rand_minus_zs_100.internvl3_8b.hi	8.9258816972973	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+8.91	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::rand_minus_zs_100.pooled.d	8.905150918918919	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+7.70	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::rand_minus_zs_100.pooled.lo	7.69844664054054	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2
+10.16	.session_backup/machines/M4/root/outputs/c2_ablation/decide.json::rand_minus_zs_100.pooled.hi	10.158547290540541	aa77ba3ded31	c2-dev-nonconfirmatory	06_results.md,11_supplement_registered_rows.md|c-pass2
+52	.session_backup/machines/M4/root/outputs/c2_ablation/parity_qwen25vl_7b.json::identical	52	2e632fd99470	log	c-pass2
+52	.session_backup/machines/M4/root/outputs/c2_ablation/parity_qwen25vl_7b.json::n	52	2e632fd99470	log	c-pass2
+52	.session_backup/machines/M4/root/outputs/c2_ablation/parity_internvl3_8b.json::identical	52	450a032ffc9d	log	c-pass2
+52	.session_backup/machines/M4/root/outputs/c2_ablation/parity_internvl3_8b.json::n	52	450a032ffc9d	log	c-pass2
+3.32	.session_backup/machines/M4/root/outputs/c2_ablation/logs/job.log::BLOCK DONE gpu_h	'BLOCK DONE gpu_h 3.32'	22ad13781071	log	06_results.md,11_supplement_registered_rows.md|c-pass2
+11939	.session_backup/machines/M4/root/outputs/c2_ablation/gpu_seconds.tsv::sum of seconds lines	11939.0	5edf82a9e05b	log	c-pass2
+5	manuscript/prereg/2026-10-28_c2_ablation/PREREG.md::§2/§6	'Cap (5 GPU-h, hard 6)'	7a8f781f6f1d	prereg-quoted	c-pass2
+6	manuscript/prereg/2026-10-28_c2_ablation/PREREG.md::§2/§6	'Cap (5 GPU-h, hard 6)'	7a8f781f6f1d	prereg-quoted	c-pass2
+819	manuscript/prereg/2026-10-28_c2_ablation/PREREG.md::§2/§6	'10% = 819'	7a8f781f6f1d	prereg-quoted	c-pass2
+2457	manuscript/prereg/2026-10-28_c2_ablation/PREREG.md::§2/§6	'30% = 2,457'	7a8f781f6f1d	prereg-quoted	06_results.md,11_supplement_registered_rows.md|c-pass2
+8190	manuscript/prereg/2026-10-28_c2_ablation/PREREG.md::§2/§6	'8,190 clusters'	7a8f781f6f1d	prereg-quoted	03_method.md,04_data_and_splits.md,06_results.md,11_supplement_registered_rows.md|c-pass2
+925	manuscript/prereg/2026-10-28_c2_ablation/PREREG.md::§2/§6	'925 images'	7a8f781f6f1d	prereg-quoted	c-pass2
+96.36	.session_backup/machines/M3/root/outputs/c_en/ledger_coco_test_5000.jsonl::cen_qwen25vl_7b_coco_test-ret-k8-first-T1@-inf:mean_cider_ptb	96.36142193356199	58074daee2ff	c-en-reported	08_english_comparison.md|c-optionE-1029
+88.57	.session_backup/machines/M3/root/outputs/c_en/ledger_coco_test_5000.jsonl::cen_qwen25vl_7b_coco_test-rand-k8-T1@-inf:mean_cider_ptb	88.56599611723723	58074daee2ff	c-en-reported	08_english_comparison.md|c-optionE-1029
+59.06	.session_backup/machines/M3/root/outputs/c_en/ledger_coco_test_5000.jsonl::cen_qwen25vl_7b_coco_test-zs@-inf:mean_cider_ptb	59.06172457309298	58074daee2ff	c-en-reported	08_english_comparison.md|c-optionE-1029
+85.34	.session_backup/machines/M3/root/outputs/c_en/ledger_coco_test_5000.jsonl::cen_internvl3_8b_coco_test-ret-k4-last-T2@0.10:mean_cider_ptb	85.34023423609695	58074daee2ff	c-en-reported	08_english_comparison.md|c-optionE-1029
+86.98	.session_backup/machines/M3/root/outputs/c_en/ledger_coco_test_5000.jsonl::cen_internvl3_8b_coco_test-rand-k4-T2@0.10:mean_cider_ptb	86.98279131217254	58074daee2ff	c-en-reported	08_english_comparison.md|c-optionE-1029
+78.85	.session_backup/machines/M3/root/outputs/c_en/ledger_coco_test_5000.jsonl::cen_internvl3_8b_coco_test-zs@-inf:mean_cider_ptb	78.85469514943533	58074daee2ff	c-en-reported	08_english_comparison.md|c-optionE-1029
+91.13	.session_backup/machines/M3/root/outputs/c_en/ledger_nocaps_val_4500.jsonl::cen_qwen25vl_7b_nocaps_val-ret-k8-first-T1@-inf:mean_cider_ptb	91.1273266476606	c02f2b8f7636	c-en-reported	08_english_comparison.md|c-optionE-1029
+88.30	.session_backup/machines/M3/root/outputs/c_en/ledger_nocaps_val_4500.jsonl::cen_qwen25vl_7b_nocaps_val-rand-k8-T1@-inf:mean_cider_ptb	88.29818365376278	c02f2b8f7636	c-en-reported	08_english_comparison.md|c-optionE-1029
+58.46	.session_backup/machines/M3/root/outputs/c_en/ledger_nocaps_val_4500.jsonl::cen_qwen25vl_7b_nocaps_val-zs@-inf:mean_cider_ptb	58.461454726546535	c02f2b8f7636	c-en-reported	08_english_comparison.md|c-optionE-1029
+83.73	.session_backup/machines/M3/root/outputs/c_en/ledger_nocaps_val_4500.jsonl::cen_internvl3_8b_nocaps_val-ret-k4-last-T2@0.10:mean_cider_ptb	83.72693260821397	c02f2b8f7636	c-en-reported	08_english_comparison.md|c-optionE-1029
+83.10	.session_backup/machines/M3/root/outputs/c_en/ledger_nocaps_val_4500.jsonl::cen_internvl3_8b_nocaps_val-rand-k4-T2@0.10:mean_cider_ptb	83.10375039359164	c02f2b8f7636	c-en-reported	08_english_comparison.md|c-optionE-1029
+78.30	.session_backup/machines/M3/root/outputs/c_en/ledger_nocaps_val_4500.jsonl::cen_internvl3_8b_nocaps_val-zs@-inf:mean_cider_ptb	78.29818539991258	c02f2b8f7636	c-en-reported	08_english_comparison.md|c-optionE-1029
+119.7	arXiv:2209.15323::Tab.1 p.4 COCO Karpathy test CIDEr (SmallCap)	119.7	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+120.9	arXiv:2302.08268::Tab.1 p.4 Karpathy COCO test CIDEr, cross-entropy (EXTRA)	120.9	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+140.1	arXiv:2311.15879::Tab.1 p.5 COCO test CIDEr (EVCap)	140.1	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+92.9	arXiv:2307.16525::Tab.3 p.6 COCO test CIDEr (ViECap)	92.9	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+56.9	arXiv:2403.03715::Tab.2 p.6 COCO memory, MeaCap_TF CIDEr	56.9	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+77.9	arXiv:2209.15323::App.D Tab.8 p.11 NoCaps val overall CIDEr (SmallCap)	77.9	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+119.3	arXiv:2311.15879::Tab.1 p.5 NoCaps val overall CIDEr (EVCap)	119.3	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+66.2	arXiv:2307.16525::Tab.1 p.5 NoCaps val overall CIDEr (ViECap)	66.2	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+40.2	arXiv:2403.03715::Tab.1 p.6 NoCaps val overall, MeaCap_TF CIDEr	40.2	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+26.5	arXiv:2305.19821::Tab.6 p.7 XM3600 vi LMCap 0.265 (x100)	26.5	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+45.1	arXiv:2507.20411::Tab.10 p.19 XM3600 vi CONCAP CIDEr	45.1	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+75.58	arXiv:2305.04166::Tab.II p.6 OpenViIC test MDSANet CIDEr 75.5796	75.58	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+36	arXiv:2305.19821 and arXiv:2507.20411::XM3600 languages evaluated	36	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+10	arXiv:2512.00887::languages evaluated (en de fr es zh pt it ru ko nl)	10	-	published-reported	02_related_work.md,08_english_comparison.md|c-optionE-1029
+1.02	derived::P1 95% CI half-width = (decide_ov.json::P1.hi − .lo)/2	1.022921138910355	-	derived-post-hoc	05_preregistration_and_analysis.md
+1.21	derived::XM-a 95% CI half-width = (decide_xm_m3.json::XM_a.hi − .lo)/2	1.2134071502499997	-	derived-post-hoc	05_preregistration_and_analysis.md
+0.97	derived::P1-EN 95% CI half-width = (decide_coco_test.json::P1_EN.hi − .lo)/2	0.97445300637625	-	derived-post-hoc	05_preregistration_and_analysis.md
+0.78	derived::S-NC 95% CI half-width = (decide_nocaps_val.json::S_NC.hi − .lo)/2	0.7792641063361108	-	derived-post-hoc	05_preregistration_and_analysis.md
+6.2	derived::SESOI 2.0 / pooled rand score (OV-test; mean of the two per-backbone rand ledger means) ×100	6.207446664616981	-	derived-post-hoc	05_preregistration_and_analysis.md
+3.7	derived::SESOI 2.0 / pooled rand score (XM-test2500; mean of the two per-backbone rand ledger means) ×100	3.6646432590105262	-	derived-post-hoc	05_preregistration_and_analysis.md
+2.3	derived::SESOI 2.0 / pooled rand score (COCO; mean of the two per-backbone rand ledger means) ×100	2.2785688574513494	-	derived-post-hoc	05_preregistration_and_analysis.md
+2.3	derived::SESOI 2.0 / pooled rand score (NoCaps; mean of the two per-backbone rand ledger means) ×100	2.333695954034505	-	derived-post-hoc	05_preregistration_and_analysis.md
+13.9	derived::P1 point / pooled rand score ×100	13.949533408428412	-	derived-post-hoc	05_preregistration_and_analysis.md
+1.3	derived::XM-a point / pooled rand score ×100	1.28224716934795	-	derived-post-hoc	05_preregistration_and_analysis.md
+3.5	derived::P1-EN point / pooled rand score ×100	3.5049337818264004	-	derived-post-hoc	05_preregistration_and_analysis.md
+2.0	derived::S-NC point / pooled rand score ×100	2.0141693370349416	-	derived-post-hoc	05_preregistration_and_analysis.md
+0.06	derived::Monte Carlo SE of a 2.5% percentile endpoint at B=2000, normal approximation, in bootstrap SEs = sqrt(.025*.975/2000)/phi(1.96)	0.05973232863559438	-	derived-post-hoc	05_preregistration_and_analysis.md
+0.05	derived::largest Monte Carlo endpoint SE over registered rows (P1, XM-a, P1-EN, S-NC, P2 x2, XM-b) = 0.0598 × CI half-width / 1.96	0.047695311911190814	-	derived-post-hoc	05_preregistration_and_analysis.md
+twelve	derived::XM-a lower bound distance to 0 in Monte Carlo SEs = 0.453/(0.0598×0.617)	12.256056389837935	-	derived-post-hoc	05_preregistration_and_analysis.md
+2.95	derived::OV-dev-B InternVL3 ret−rand at τ=−∞ minus at τ=0.10 (devb_decomposition.json ret_minus_rand_tauneginf.d − ret_minus_rand_tau010.d)	2.945433513513514	-	derived-post-hoc	06_results.md
+2.59	derived::OV-test Qwen2.5-VL ΔP_cm(ret vs zs) − ΔP_cm(rand vs zs), ledger_ov_test_1941 pcm_vs_zs	2.5946378752803394	-	derived-post-hoc	06_results.md
+0.17	derived::OV-test InternVL3 τ=0.10 ΔP_cm(ret vs zs) − ΔP_cm(rand vs zs), ledger_ov_test_1941 pcm_vs_zs	0.16594800975865898	-	derived-post-hoc	06_results.md
+1.85	manuscript/prereg/2026-10-22_c_stage2/PREREG.md::§7.2 power note (SE ≈ 1.85 per backbone)	1.85	-	prereg-quoted	05_preregistration_and_analysis.md
+50	manuscript/prereg/2026-10-22_c_stage2/PREREG.md::§7.2 power note (about 50% if true Δ = +4)	50	-	prereg-quoted	05_preregistration_and_analysis.md
+3769	data/datasets/ktvic/train_data.json::len(images)	3769	-	structural	03_method.md
+300	manuscript/prereg/2026-10-22_c_stage1/LISTS_ADDENDUM.md::kt_dev300	300	-	structural	03_method.md
+4.1	arXiv:2308.01390::Appendix Tab. 9 OpenFlamingo-9B COCO RICES−random, 4 shots (89.0→93.1)	+4.1	-	published-reported	02_related_work.md
+9.5	arXiv:2308.01390::Appendix Tab. 9 OpenFlamingo-9B COCO RICES−random, 32 shots (99.5→109.0)	+9.5	-	published-reported	02_related_work.md
+-20.3	arXiv:2308.01390::Appendix Tab. 9 OpenFlamingo-9B Flickr-30K RICES−random, 0 shots (59.5→39.2)	-20.3	-	published-reported	02_related_work.md
+-13.6	arXiv:2308.01390::Appendix Tab. 9 OpenFlamingo-9B Flickr-30K RICES−random, 4 shots (65.8→52.2)	-13.6	-	published-reported	02_related_work.md
+33.6	arXiv:2305.19821::LMCap Tab. 6 XM3600 vi BB+CC 0.336	33.6	-	published-reported	08_english_comparison.md
+18.2	arXiv:2305.19821::LMCap Tab. 6 XM3600 vi LG 0.182	18.2	-	published-reported	08_english_comparison.md
+35.8	arXiv:2507.20411::CONCAP Tab. 10 XM3600 vi mBLIP	35.8	-	published-reported	08_english_comparison.md
+64.3	arXiv:2507.20411::CONCAP Tab. 10 XM3600 vi Pangea	64.3	-	published-reported	08_english_comparison.md

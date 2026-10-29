@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="330" viewBox="0 0 760 330">
+<defs><marker id="a" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#222222"/></marker></defs>
+<rect width="760" height="330" fill="#ffffff"/>
+<rect x="20" y="125" width="170" height="64" rx="6" fill="#ffffff" stroke="#222222" stroke-width="1.4"/>
+<text x="105.0" y="145.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="bold">KTVIC training images</text>
+<text x="105.0" y="161.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="normal">outside dev300</text>
+<text x="105.0" y="177.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="normal">(nested subsets)</text>
+<rect x="250" y="30" width="230" height="80" rx="6" fill="#eef3fa" stroke="#1f5fa8" stroke-width="1.4"/>
+<text x="365.0" y="50.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="bold">Forward direction</text>
+<text x="365.0" y="66.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="normal">one KTVIC caption per image</text>
+<text x="365.0" y="82.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="normal">216–3,469 images, 3 seeds</text>
+<rect x="250" y="205" width="230" height="80" rx="6" fill="#fbf1ea" stroke="#c4621b" stroke-width="1.4"/>
+<text x="365.0" y="225.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="bold">Reverse direction</text>
+<text x="365.0" y="241.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="normal">one OpenViIC caption, same image</text>
+<text x="365.0" y="257.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="normal">216–1,734 images, 2 seeds</text>
+<line x1="190" y1="145" x2="248" y2="75" stroke="#222222" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="190" y1="170" x2="248" y2="240" stroke="#222222" stroke-width="1.4" marker-end="url(#a)"/>
+<rect x="540" y="115" width="200" height="84" rx="6" fill="#ffffff" stroke="#222222" stroke-width="1.4"/>
+<text x="640.0" y="135.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="bold">187 dev300 images</text>
+<text x="640.0" y="151.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="normal">scored against both panels</text>
+<text x="640.0" y="167.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#222222" font-weight="normal">(same k references each)</text>
+<line x1="480" y1="70" x2="538" y2="140" stroke="#222222" stroke-width="1.4" marker-end="url(#a)"/>
+<line x1="480" y1="245" x2="538" y2="175" stroke="#222222" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="640.0" y="232.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#1f5fa8" font-weight="bold">KTVIC references</text>
+<text x="640.0" y="250.0" font-family="Helvetica, Arial, sans-serif" font-size="12" text-anchor="middle" fill="#c4621b" font-weight="bold">OpenViIC captions</text>
+<text x="640.0" y="280.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#666666" font-weight="normal">slope per doubling of training images,</text>
+<text x="640.0" y="296.0" font-family="Helvetica, Arial, sans-serif" font-size="11" text-anchor="middle" fill="#666666" font-weight="normal">own panel vs other panel</text>
+</svg>

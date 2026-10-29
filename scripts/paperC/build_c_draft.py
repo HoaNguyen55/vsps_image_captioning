@@ -1,3 +1,7 @@
+# RETIRED (2026-10-28): manuscript/journal_draft_C/ is the source of record from pass 2 on.
+# DO NOT RUN this script: it would overwrite the pass-2 text and number_manifest_C.tsv from the stale src/.
+# Checkers of record: scripts/paperC/c_pass2_check.py, c_pass2_manifest.py, c_pass2_supp.py.
+raise SystemExit("REFUSED: build_c_draft.py is retired (2026-10-28); journal_draft_C/ is the source of record")
 """Build the Paper C draft: fill {{ALIAS:key|fmt}} and {{TABLE:name}} placeholders in scripts/paperC/src/*.md from
 the decide files, ledgers and pinned sources, and write number_manifest_C.tsv (CP-116 W1).
 
