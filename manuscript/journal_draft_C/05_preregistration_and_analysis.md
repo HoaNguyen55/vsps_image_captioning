@@ -8,7 +8,7 @@
 | stage A, stage B | development stages: configuration choice (KTVIC dev299, OV-dev-A) and a one-look gate (OV-dev-B, XM-dev500) |
 | OV-test primary, XM-test2500 | the Vietnamese test sets (Table 3) |
 | P1, P1b, P2, XM-a, XM-b | registered Vietnamese predictions (Table 4) |
-| P1-EN, S-NC | registered English predictions (Table 16) |
+| P1-EN, S-NC | registered English predictions (Table 10) |
 | SESOI | smallest effect size of interest, +2.0 CIDEr-D points |
 | stripped CIDEr-D | CIDEr-D with trailing punctuation tokens removed (Section 3.6) |
 | ΔP_cm | change in count-matched object precision against the same model's zero-shot caption (Table 4) |
@@ -28,7 +28,7 @@
 
 The test registration was committed after the stage-B result was known and before any test output existed. Nothing in it was set from a test set: the SESOI and every threshold come from the stage-B registration or from the plan written before stage A.
 
-**One look in practice.** Each test set was decoded once and scored once with the frozen configuration, and each set's decision script ran once. During the runs nobody read a test caption, ledger row, score or partial decision output; monitoring used only counts, times, GPU seconds and return codes. Each decision file records the sha256 of every ledger it read.
+**One look in practice.** Each test set was decoded, scored and decided once with the frozen configuration. During the runs nobody read a test caption, ledger row, score or partial decision output; monitoring used only counts, times, GPU seconds and return codes.
 
 **Order.** The OpenViIC block ran first, then the XM3600 block. The XM3600 block was pre-committed to run whatever the OpenViIC verdict. Verified precision was scored offline, once, after the XM3600 block.
 
@@ -102,17 +102,12 @@ None of these can turn a failed prediction into a pass, and none enters the titl
 - **Multiplicity.** P1 is the single primary test, so no adjustment is needed. P2 is an intersection–union test over the two backbones. The XM3600 prediction is a conjunction of XM-a and XM-b, and in the separate English registration S-NC was gated in a fixed order after P1-EN. Everything else is secondary, reported with unadjusted CIs, with no family-wise claim.
 - **p-values.** None are reported. The registrations fixed CI-based rules, and a p-value added now would be post hoc and change no verdict.
 
-**Power and precision (the power note is registered; the other rows are descriptive and post hoc).** The stage-2 registration stated the power of the stage-B gate G1 (point ≥ +4.0, lower bound > 0): at a standard error of about 1.85 per backbone, the chance of passing G1 was about 50% if the true pooled difference were +4. No separate power statement was registered for P1. The achieved 95% CI half-widths of the registered pooled estimands, from the decision files, were 1.02 (P1), 1.21 (XM-a), 0.97 (P1-EN) and 0.78 (S-NC). For scale, the SESOI is about 6.2% of the pooled `rand` score on OV-test, 3.7% on XM-test2500 and 2.3% on both COCO and NoCaps; the observed pooled difference is about 13.9% of `rand` for P1, 1.3% for XM-a, 3.5% for P1-EN and 2.0% for S-NC. On COCO, where scores are higher, the same +2.0 is therefore relatively more lenient. XM-a's upper bound (1.97) lies just below +2.0.
-
-**Monte Carlo error of the bootstrap (post hoc, approximate).** Percentile endpoints at B = 2,000 carry Monte Carlo error. Under a normal approximation to each bootstrap distribution, the standard error of a 2.5% or 97.5% endpoint is about 0.06 bootstrap standard errors, which is at most about 0.05 CIDEr-D or precision points for every registered row. The registered bound closest to its threshold is XM-a's lower bound (−0.45 against 0), about twelve such standard errors away, so no verdict depends on this error.
+**Power and precision.** The stage-2 registration stated the power of the stage-B gate G1 (about 50% if the true pooled difference were +4); no separate power statement was registered for P1. The achieved 95% CI half-widths of the registered pooled estimands were 1.02 (P1), 1.21 (XM-a), 0.97 (P1-EN) and 0.78 (S-NC). The SESOI is about 6.2% of the pooled `rand` score on OV-test, 3.7% on XM-test2500 and 2.3% on COCO and NoCaps, so on COCO the same +2.0 is relatively more lenient. The bootstrap's Monte Carlo error is at most about 0.05 points for every registered row, far from any threshold. The supplement gives these post-hoc descriptives in full ("Disclosure detail").
 
 ### 5.5 Budget
 
-The test had a hard cap of 20 GPU-hours on one 24 GB GPU, against an estimated upper bound of 13.7. A cap stop would have been final for the set concerned. The cap was not reached (Section 6.9).
+The test had a hard cap of 20 GPU-hours on one 24 GB GPU (estimated need 13.7); a cap stop would have been final for the set concerned. The cap was not reached (Section 6.9).
 
 ### 5.6 Two later registrations
 
-Two further studies were registered after the Vietnamese test. Each has its own registration file, committed before any of its outputs existed, and neither amends the test registration above.
-- **The English arm (Section 8)** carries Table 2 and the P1 rule over to the COCO Karpathy test and NoCaps val, with one look per set.
-- **The mechanism ablations (Section 6.8)** vary τ, k and the memory size on OV-dev-B, one look, under the label "development set, non-confirmatory". The registration fixed in advance the condition under which Section 6.8 may say that the ablations explain the backbone dependence: the τ prediction's first two parts hold, and the memory prediction is not fully failed. The condition held, but Section 6.8 uses weaker wording, because the ablations do not isolate a property of the backbone.
-
+Two further studies were registered after the Vietnamese test, each in its own file committed before any of its outputs existed; neither amends the test registration above. **The English arm (Section 8)** carries Table 2 and the P1 rule to the COCO Karpathy test and NoCaps val, with one look per set. **The mechanism ablations (Section 6.8)** vary τ, k and the memory size on OV-dev-B, one look, labelled "development set, non-confirmatory". That registration fixed in advance when Section 6.8 may say the ablations explain the backbone dependence; the condition held, but Section 6.8 uses weaker wording.

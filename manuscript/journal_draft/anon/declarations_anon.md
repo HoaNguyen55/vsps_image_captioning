@@ -7,11 +7,11 @@ During this work the authors used Claude (Anthropic) and Gemini (Google) to writ
 
 ## Ethics
 
-No new human annotation was collected and no human subjects were involved; all human judgments are public datasets used under their licences (Section 11.2). No ethics approval was required: no new data from human participants were collected.
+No new human annotation was collected and no human subjects were involved; all human judgments are public datasets used under their licences (Section 9.2). No ethics approval was required: no new data from human participants were collected.
 
 ## Data and code availability
 
-Code, pre-registration files, the numbers manifest and score-only result files are provided to reviewers as an anonymized supplementary archive; a public Zenodo DOI will be added on acceptance. Caption fields are removed from the result files for licensing, and 29 of the 804 manifest rows cite sources that could not be released; they are marked. Data files keep their sources' terms. The public datasets are available from their original sources; UIT-OpenViIC, KTVIC references and human-judgment ratings are not redistributed (Section 11.2).
+Code, pre-registration files, the numbers manifest and score-only result files are provided to reviewers as an anonymized supplementary archive; a public Zenodo DOI will be added on acceptance. Caption fields are removed from the result files for licensing, and 29 of the 804 manifest rows cite sources that could not be released; they are marked. Data files keep their sources' terms. The public datasets are available from their original sources; UIT-OpenViIC, KTVIC references and human-judgment ratings are not redistributed (Section 9.2). UIT-ViIC (Lam et al., 2020) is likewise used only through aggregates and pointers, and no per-image UIT-ViIC panel is released; we have not received written permission from the UIT-ViIC authors and claim none.<!-- rev1 (PI-1029p item 5): UIT-ViIC authors have not given permission. -->
 
 ## Competing interests
 

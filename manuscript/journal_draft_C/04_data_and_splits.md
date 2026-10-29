@@ -20,7 +20,7 @@ All data are existing public datasets with their released references and labels.
 
 The 60 excluded files are near-duplicates of the KTVIC development images on which the configurations were chosen. They are a tuning overlap, so the exclusion applies to the primary, and the full 2,001-image result is reported beside it in the main table.
 
-Three test files are truncated: `00000000768.jpg`, `00000001010.jpg` and `00000005095.jpg`. They are in both the primary and the full set. They are decoded with the strict decoder first and, only after it fails, with truncated loading set and reset around that single call. This happened in every step that opens an image (supplement, "Test-run operations"). No file was excluded.
+Three test files are truncated: `00000000768.jpg`, `00000001010.jpg` and `00000005095.jpg`. They are in both the primary and the full set. They are decoded with the strict decoder first and, only if it fails, with truncated loading enabled for that single call (retry counts in the supplement, "Test-run operations"). No file was excluded.
 
 **XM3600.** All 3,600 XM3600 images were split before any output of this study existed:
 - 600 images (XM600) belong to the test of the companion object-precision study and are excluded here;

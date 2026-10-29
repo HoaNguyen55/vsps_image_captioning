@@ -21,7 +21,7 @@ Source convention: every number carries an HTML comment `<!-- src: path :: key -
 3. What Object Hallucination Metrics Measure: Count Control, Gold Completeness and Exchangeable References
 4. Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores
 
-**Revision 1 title (2026-10-29, A_META_REVIEW item 5c; PI default = change, PI may revert):** *Gold Completeness and the Verbosity Slope of Object Hallucination Metrics: A Registered Audit*. It names the measured quantity and does not state the near-mechanical reference ordering as the finding.
+**Revision 1 title (2026-10-29, A_META_REVIEW item 5c; PI default = change, approved by the PI in PI-1029p, 2026-10-29):** *Gold Completeness and the Verbosity Slope of Object Hallucination Metrics: A Registered Audit*. It names the measured quantity and does not state the near-mechanical reference ordering as the finding.
 
 **Earlier chosen title (the authors, 2026-10-21; CP-054 item 2):** option 4, *Object Metrics Under Incomplete Gold: A Measurement-Validity Analysis of Caption Hallucination Scores*. It leads with the one confirmed claim; option 1 led with the count part, which is no longer confirmatory. Avoid "first", "novel" and "law".
 
@@ -96,7 +96,7 @@ Companion-paper pointers (one line each in Paper A, citing Paper B as under revi
 
 ## File-to-section map (revision 1, A_META_REVIEW item 12d)
 
-The build reads `sec*.md` in version order. sec1 → §1, sec2 → §2, sec3 → §3, sec4 → §4, sec5 → §5, sec6 → §6, sec7 → §7, sec8 → §8, `sec9_preference_audit.md` → empty stub (comment only; renders nothing; its content is §8.4), sec10_discussion → §9, sec11_limitations_ethics → §10. `appB_matcher_sensitivity.md` is a comment-only stub that no build reads (content in Supplementary S2). Every "Section N" cross-reference uses the heading numbers, not the file names. Figures: Fig. 1 (gold levels, schematic, §3.1), Fig. 2 (§7), Fig. 3 (PASCAL-50S ladder, §7.4), Fig. 4 (Supplementary S1).
+Revision 1 after PI-1029p (2026-10-29): §6 and §8.3–8.4 moved to the Supplementary Material (A_META_REVIEW item 12f) and the sections renumbered. The build reads `sec*.md` in version order. sec1 → §1, sec2 → §2, sec3 → §3 (§3.3 carries the summary of the former §6, with the registered seed placebo and the unscored leaderboard; §3.6 carries the former §6.5 on code and reproducibility), sec4 → §4, sec5 → §5, `sec6_rescoring_published_methods.md` → empty stub (comment only; content in Supplementary S3, former Table 6.1 = Table S3.1), sec7 → §6 (Tables 6.1–6.3, formerly 7.1–7.3), sec8 → §7 (§7.1 LongCap-Arena, §7.2 span labels, §7.3 summary of the former §8.3–8.4 with the registered A20 and A21 verdicts, §7.4 former §8.5; former Table 8.1 = Table S6.1), `sec9_preference_audit.md` → empty stub, sec10_discussion → §8, sec11_limitations_ethics → §9. `appB_matcher_sensitivity.md` is a comment-only stub that no build reads (content in Supplementary S2). Every "Section N" cross-reference uses the heading numbers, not the file names. Figures: Fig. 1 (gold levels, schematic, §3.1), Fig. 2 (§6), Fig. 3 (PASCAL-50S ladder, §6.4), Fig. 4 (Supplementary S1). The section-plan table above keeps the pre-revision numbering and word counts.
 
 ## Figure and table plan
 

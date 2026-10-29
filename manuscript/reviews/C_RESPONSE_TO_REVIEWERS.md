@@ -2,14 +2,14 @@
 
 Target: ACM TALLIP. Source: `manuscript/reviews/C_META_REVIEW.md` (R1-R5). Every judgement, score and readiness estimate in this file is **AI opinion**; none of it is evidence or changes a registered verdict.
 
-No new experiment, GPU job, human label or test-set look was used. Every new number is arithmetic on values already in the decision files or ledgers, or a value copied from a published table, and each is a row of `number_manifest_C.tsv`. New rows use status `derived-post-hoc` (arithmetic on keyed raw values; the formula is in the key), `published-reported` or `prereg-quoted`. The n-gram scan (`ngram_scan_cen.py`) gave 0 hits on every edited file. Files were hash-checked against a snapshot before each write. No file changed underneath during this pass; the only hash change outside the checked write path was this pass's own regeneration of Figure 1. `tex/` was **not rebuilt**; `paperC.tex`, `body.tex` and `paperC.pdf` are stale until the next build.
+No new experiment, GPU job, human label or test-set look was used. Every new number is arithmetic on values already in the decision files or ledgers, or a value copied from a published table, and each is a row of `number_manifest_C.tsv`. New rows use status `derived-post-hoc` (arithmetic on keyed raw values; the formula is in the key), `published-reported` or `prereg-quoted`. The n-gram scan (`ngram_scan_cen.py`) gave 0 hits on every edited file. Files were hash-checked against a snapshot before each write. No file changed underneath during this pass; the only hash change outside the checked write path was this pass's own regeneration of Figure 1. `tex/` was not rebuilt in revision 1; revision 2 rebuilt it (below).
 
 ## Summary for the coordinator
 
 | # | Item | Status |
 |---|---|---|
 | 1 | Headline reframing | done |
-| 2 | Table 21 not a ranking | done (now Table 19) |
+| 2 | Table 21 not a ranking | done (now supplement Table S15, revision 2) |
 | 3 | Related-work gaps | done; 3(d) Li et al. was already cited |
 | 4 | Mechanism overclaim, contribution 3 | done |
 | 5 | SESOI origin, power, scale | done |
@@ -20,8 +20,22 @@ No new experiment, GPU job, human label or test-set look was used. Every new num
 | 10 | Domain-coverage reading | text done; memory swap → X5 |
 | 11 | Segmentation | done |
 | 12 | Self-contained instruments | partially done |
-| 13 | Length and operations log | partially done |
+| 13 | Length and operations log | mostly done in revision 2 (13,978 words, 33 + 26 pp); the ~25 pp target and the 13(e) `rand`−`zs` merge are not met |
 | 14 | Minor bundle | partially done |
+
+## Revision 2 (2026-10-29, PI-1029p (3) and (5))
+
+Moves to the supplement, no new number and no verdict change. Main text (`00`–`10` md files, `wc -w`, abstract file and comments included) went from 17,715 to 13,978 words; the abstract body (194 words) is unchanged. The build gives 33 main pages and 26 supplement pages, with no undefined reference or citation.
+- **Moved to the supplement:**
+  - old Table 19 and its inclusion rule → Table S15 ("Context from published systems"); §8.6 keeps one paragraph and the one reading the table supports;
+  - old Tables 12 and 14 (stage B, deletion decomposition) → Tables S16–S17; §6.7 keeps the H_G negative, the gate PASS (+6.04 [4.54, 7.58]) and the registered τ = −∞ secondary (now Table 9);
+  - old Tables 9, 10, 11, 15 dropped as duplicates of S5, S7, S6, S14; their registered headline numbers stay in §6.4–6.6 and §6.8 prose (S-zf, `fix`, copy baselines, PTB, dose-response, style, neighbour-only precision, P-τ/P-K/P-M);
+  - new supplement section "Disclosure detail": the §5.4 power and Monte Carlo paragraphs, the §7.1 split list, the §7.2 earlier-contact record, the §8.1 English memory counts, the §8.5 earlier-contact list, the §6.8 ablation disclosures, and the §2 literature-search note; the §3.3 pinned-revision table moved to "Instrument definitions".
+- **Kept in the main text:** every registered verdict with its CI, including P1 PASS, P2 PASS ×2, XM-a FAIL, XM-b PASS / XM not confirmed, P1-EN PASS, S-NC FAIL and its 3,500 sensitivity, InternVL3's no-gain rows (P1b +0.66 [−0.68, 1.99]; COCO −1.64 [−2.79, −0.49]; τ = −∞ on all four sets), Box 2 and the deviation summary.
+- **Renumbered:** old Tables 13, 16, 17, 18 are now Tables 9, 10, 11, 12; every in-text reference was checked against an existing caption or heading. §9.2 and §9.3 were condensed.
+- **Build (CC-167 W3):** `tex/build.sh` now writes the inlined supplement to `paperC_supplement.tex`, so `paperC_supp.tex` keeps its `\input{supp_body.tex}` stub and edits of `11_supplement_registered_rows.md` reach the supplement PDF (checked with `pdftotext`). The supplement now has a bibliography, so `Rohrbach2018CHAIR` and the Table S15 citations resolve.
+- **UIT-ViIC (PI-1029p (5)):** §7.2 and the §10 data statement say that UIT-ViIC is not a data set of this study, appears only as aggregate counts and image-id pointers, that no UIT-ViIC caption or per-image panel is shown or released, and that no permission from its authors is claimed. The UIT-OpenViIC and KTVIC "confirmed in writing" sentence is unchanged (PI-1026az).
+- **Checks:** every CI that left the main text is in the supplement; no new number lacks a manifest row (`c_pass2_check.py`); the n-gram scan gave 0 hits on every edited file; files were hash-checked against a rolling snapshot, and no outside change was detected at the final check.
 
 ## Point by point
 

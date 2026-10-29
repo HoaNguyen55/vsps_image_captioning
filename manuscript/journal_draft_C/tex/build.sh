@@ -38,7 +38,7 @@ Path(f"paperC_{d}.tex").write_text(t)
 PY
 }
 mk main "$TITLE" body.tex '\begin{abstract}\input{abstract.tex}\end{abstract}' '' '\bibliographystyle{ACM-Reference-Format}\bibliography{paperC}'
-mk supp "Supplementary Material: $TITLE" supp_body.tex '' '\setcounter{secnumdepth}{0}\footnotesize\setlength{\tabcolsep}{3pt}' ''
+mk supp "Supplementary Material: $TITLE" supp_body.tex '' '\setcounter{secnumdepth}{0}\footnotesize\setlength{\tabcolsep}{3pt}' '\bibliographystyle{ACM-Reference-Format}\bibliography{paperC}'
 for d in main supp; do
   latexmk -g -lualatex -interaction=nonstopmode -halt-on-error paperC_$d.tex > build_$d.out 2>&1 || { tail -30 build_$d.out; exit 1; }
 done
@@ -46,7 +46,8 @@ done
 python3 - <<'PY'
 import re
 from pathlib import Path
-for d, out in (("main", "paperC.tex"), ("supp", "paperC_supp.tex")):
+# write to names distinct from the latexmk inputs, so paperC_supp.tex keeps its \input stub (CC-167 W3)
+for d, out in (("main", "paperC.tex"), ("supp", "paperC_supplement.tex")):
     t = Path(f"paperC_{d}.tex").read_text()
     t = re.sub(r"\\input\{(body|supp_body|abstract)\.tex\}", lambda m: Path(m.group(1) + ".tex").read_text(), t)
     Path(out).write_text(t)

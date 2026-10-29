@@ -762,3 +762,153 @@ These definitions make the instruments of Sections 3 and 5 usable without the co
 - **Count-matched precision P_cm.** For image i, with M_i(run) and M_i(zs) the distinct matched classes of the run's caption and of the same model's zero-shot caption, k_i = min(|M_i(run)|, |M_i(zs)|). tp_cm counts how many of the first k_i classes of the run's caption are supported by the gold, and tp_cm,zs does the same for the zero-shot caption. ΔP_cm = 100 · (Σ tp_cm − Σ tp_cm,zs) / Σ k_cm. On every Vietnamese set the gold for an image is the union of the classes matched in its released references. Verified precision on XM3600 (XM-b) instead uses the released Open Images V7 human-verified labels, mapped to classes by the companion study's mapping rule, and counts all mentions rather than a matched number.
 - **English matcher.** The English port of the deletion step matches COCO-80 classes with the CHAIR synonym list [@Rohrbach2018CHAIR].
 - **Verifier question.** For a neighbour-only class, the verifier is asked "Is there {np} in the image? Answer yes or no.", where {np} comes from the fixed 112-class English class map of the companion scoring study's verifier protocol; the score is defined in Section 3.4.
+
+- **Pinned revisions (moved from Section 3.3).** Every snapshot file is pinned by hash. The pinned revisions are unchanged from stage A:
+
+| role | hub id | revision (prefix) |
+|---|---|---|
+| generator | Qwen/Qwen2.5-VL-7B-Instruct | `cc594898` |
+| generator | OpenGVLab/InternVL3-8B-hf | `259a3b64` |
+| verifier for InternVL3 | Qwen/Qwen3-VL-8B-Instruct | `0c351dd0` |
+| verifier for Qwen2.5-VL (stage B only) | OpenGVLab/InternVL3-8B | `853e3a79` |
+| embedder | google/siglip2-so400m-patch14-384 | `e8e48729` |
+
+The three virtual environments on the test machine (generation, scoring and verifier) matched their registered freezes: `685ffe2a`, `4b81b6b6` and `7332d343` (sha256 prefixes). Processor settings are those pinned with each snapshot.
+### Context from published systems (moved from Section 8.6)
+
+Table S15 prints numbers that other papers report on the benchmarks of this study beside this study's own runs, as context for the absolute level of a training-free prompt. It is not a ranking, and no claim of this study rests on it. The published numbers are copied from each paper's table and were not re-run. Scorers, tokenisation, document-frequency sets, memories, image subsets and, for Vietnamese, word segmentation differ between papers, and no test set of this study was re-scored with a published scorer, which would be a second look.
+
+**Inclusion rule.** English sets: every system discussed in Section 2 that reports a score on the set. XM3600 Vietnamese: every system in the Vietnamese column of the two cited tables (LMCap Tab. 6 and CONCAP Tab. 10), except the cited paper's own ablation variants. OpenViIC test: the best of the eight baselines in the dataset paper, the only published numbers we found.
+
+**Table S15. Published CIDEr scores (block A) and this study's runs (block B). No ordering is implied.** Settings: "trained" = the captioner is trained on captions; "text-only" = trained on text alone; "training-free" = no training. "Images" is the evaluated image set.
+
+*Block A. Published systems (copied from the cited tables, not re-run; CIDEr as reported, ×100).*
+
+| benchmark | system | setting | memory / training data (see source) | images | CIDEr | source |
+|---|---|---|---|---|---|---|
+| COCO Karpathy test | SmallCap | trained | COCO captions | 5,000 | 119.7 | @Ramos2023SmallCap, Tab. 1 |
+| COCO Karpathy test | EXTRA (cross-entropy) | trained | COCO captions | 5,000 | 120.9 | @Ramos2023EXTRA, Tab. 1 |
+| COCO Karpathy test | EVCap | trained | COCO captions; Vicuna-13B language model | 5,000 | 140.1 | @Li2024EVCap, Tab. 1 |
+| COCO Karpathy test | ViECap | text-only | text only | 5,000 | 92.9 | @Fei2023ViECap, Tab. 3 |
+| COCO Karpathy test | MeaCap | training-free | COCO caption memory | 5,000 | 56.9 | @Zeng2024MeaCap, Tab. 2 |
+| NoCaps val, overall | SmallCap | trained | COCO captions | 4,500 | 77.9 | @Ramos2023SmallCap, Tab. 8 |
+| NoCaps val, overall | EVCap | trained | COCO captions; Vicuna-13B language model | 4,500 | 119.3 | @Li2024EVCap, Tab. 1 |
+| NoCaps val, overall | ViECap | text-only | text only | 4,500 | 66.2 | @Fei2023ViECap, Tab. 1 |
+| NoCaps val, overall | MeaCap | training-free | CC3M caption memory | 4,500 | 40.2 | @Zeng2024MeaCap, Tab. 1 |
+| XM3600 Vietnamese | BB+CC (from Thapliyal et al. 2022) | trained | as in @Thapliyal2022XM3600 | XM3600, as in source | 33.6 | @Ramos2023LMCap, Tab. 6 |
+| XM3600 Vietnamese | LG (from Thapliyal et al. 2022) | trained | as in @Thapliyal2022XM3600 | XM3600, as in source | 18.2 | @Ramos2023LMCap, Tab. 6 |
+| XM3600 Vietnamese | LMCap | training-free; text-only generator, image used for retrieval | retrieved multilingual captions | XM3600, as in source | 26.5 | @Ramos2023LMCap, Tab. 6 |
+| XM3600 Vietnamese | mBLIP | trained | multilingual, partly machine-translated data | XM3600, as in source | 35.8 | @Ibrahim2025CONCAP, Tab. 10 |
+| XM3600 Vietnamese | Pangea | trained (instruction-tuned 7B MLLM) | multilingual instruction data | XM3600, as in source | 64.3 | @Ibrahim2025CONCAP, Tab. 10 |
+| XM3600 Vietnamese | CONCAP | trained | retrieved captions and concepts | XM3600, as in source | 45.1 | @Ibrahim2025CONCAP, Tab. 10 |
+| OpenViIC test | MDSANet, best of eight baselines | trained, CIDEr-optimised | OpenViIC train | full test | 75.58 | @Bui2023OpenViIC, Tab. II |
+
+*Block B. This study (per-run ledger aggregates, descriptive; no task training in this study, and the backbones' training data are not fully disclosed and may include COCO, Section 9.1).*
+
+| benchmark | system | memory | images | CIDEr column | `ret` / `rand` / `zs` |
+|---|---|---|---|---|---|
+| COCO Karpathy test | Qwen2.5-VL | COCO train + restval captions | 5,000 | PTB CIDEr-D | 96.36 / 88.57 / 59.06 |
+| COCO Karpathy test | InternVL3 (τ = 0.10) | COCO train + restval captions | 5,000 | PTB CIDEr-D | 85.34 / 86.98 / 78.85 |
+| NoCaps val, overall | Qwen2.5-VL | COCO train + restval captions | 4,500, images re-fetched from Open Images and scored locally | PTB CIDEr-D | 91.13 / 88.30 / 58.46 |
+| NoCaps val, overall | InternVL3 (τ = 0.10) | COCO train + restval captions | 4,500, as above | PTB CIDEr-D | 83.73 / 83.10 / 78.30 |
+| XM3600 Vietnamese | Qwen2.5-VL / InternVL3 (τ = 0.10), `ret` only | KTVIC + OpenViIC train | XM-test2500 | as-written CIDEr-D, word-segmented; **not comparable** | 59.13 / 53.47 |
+| OpenViIC test | Qwen2.5-VL / InternVL3 (τ = 0.10), `ret` only | KTVIC + OpenViIC train | all 2,001 files | as-written CIDEr-D, word-segmented; **not comparable** | 33.64 / 29.70 |
+
+The Vietnamese rows of block B are marked not comparable: they use the companion scoring kit's word-segmented as-written column on this study's image subsets, while the published rows use their own scorers on the full sets. The one reading the table supports is that a training-free prompt remains far below a fine-tuned system on OpenViIC test, which is the gap that motivates retrieval (Section 1).
+
+### Stage B and the decomposition of InternVL3's contrast (moved from Section 6.7)
+
+Development data only; these rows set nothing at test. At stage B the guard reduced InternVL3's neighbour-only mentions from 714 to 80.
+
+**Table S16. Stage B results, for the reader only; they set nothing at test.**
+
+| row | OV-dev-B (925) | XM-dev500 (500) |
+|---|---|---|
+| pooled `ret` − `rand` | +6.04 [4.54, 7.58] (gate PASS) | +1.46 [−1.07, 4.17] |
+| Qwen2.5-VL | +9.67 [7.68, 11.72] | +4.44 [0.98, 7.85] |
+| InternVL3 (τ = 0.10) | +2.41 [0.57, 4.26] | −1.52 [−5.41, 2.51] |
+
+**Table S17. Stage-B decomposition of InternVL3's contrast (post hoc, development data only; not a test result).** Recomputed on CPU from the stage-B ledger with the registered bootstrap. The τ = 0.10 column reproduces the stage-B decision file exactly, and the build asserts it.
+
+| set | `ret` − `rand` at τ = 0.10 (registered) | `ret` − `rand` at τ = −∞ | `ret`: τ = 0.10 minus τ = −∞ | `rand`: τ = 0.10 minus τ = −∞ |
+|---|---|---|---|---|
+| OV-dev-B (925) | +2.41 [0.57, 4.26] | +5.36 [3.53, 7.12] | −5.43 [−6.76, −4.08] | −2.48 [−3.44, −1.51] |
+| XM-dev500 (500) | −1.52 [−5.41, 2.51] | +1.54 [−2.12, 5.25] | −5.08 [−7.64, −2.77] | −2.02 [−3.26, −0.85] |
+
+At stage B, the deletion step lowered InternVL3's `ret` scores more than its `rand` scores on both development sets. This is a description of development data and is not tested here.
+
+### Disclosure detail (moved from Sections 5.4, 6.8, 7.1, 7.2, 8.1 and 8.5 of the main text)
+
+#### Power, precision and Monte Carlo error (Section 5.4)
+
+**Power and precision (the power note is registered; the other rows are descriptive and post hoc).** The stage-2 registration stated the power of the stage-B gate G1 (point ≥ +4.0, lower bound > 0): at a standard error of about 1.85 per backbone, the chance of passing G1 was about 50% if the true pooled difference were +4. No separate power statement was registered for P1. The achieved 95% CI half-widths of the registered pooled estimands, from the decision files, were 1.02 (P1), 1.21 (XM-a), 0.97 (P1-EN) and 0.78 (S-NC). For scale, the SESOI is about 6.2% of the pooled `rand` score on OV-test, 3.7% on XM-test2500 and 2.3% on both COCO and NoCaps; the observed pooled difference is about 13.9% of `rand` for P1, 1.3% for XM-a, 3.5% for P1-EN and 2.0% for S-NC. On COCO, where scores are higher, the same +2.0 is therefore relatively more lenient. XM-a's upper bound (1.97) lies just below +2.0.
+
+**Monte Carlo error of the bootstrap (post hoc, approximate).** Percentile endpoints at B = 2,000 carry Monte Carlo error. Under a normal approximation to each bootstrap distribution, the standard error of a 2.5% or 97.5% endpoint is about 0.06 bootstrap standard errors, which is at most about 0.05 CIDEr-D or precision points for every registered row. The registered bound closest to its threshold is XM-a's lower bound (−0.45 against 0), about twelve such standard errors away, so no verdict depends on this error.
+
+#### Splits and exclusions (Section 7.1)
+
+Section 4 gives every split with its full size. In summary:
+1. The primary OpenViIC set excludes 60 near-duplicates of the tuning images, and the full 2,001 is in the main table (Table 7).
+2. The OpenViIC test entries hold 1,997 distinct images (4 byte-identical pairs).
+3. Three truncated files are decoded with the retry rule of Section 4.
+4. XM-test2500 is XM3600 minus XM600 (the refused test set of a companion submission) and minus XM-dev500 (our stage-B set). The split was fixed by a hash order before any output of this study. A full-XM3600 result cannot exist without scoring those sets.
+5. The three-reference sensitivity (2,392 images) is reported beside each XM3600 prediction.
+6. OV-dev-A and OV-dev-B together are the whole OpenViIC dev set (2,011 files), 911 and 925 after de-duplication.
+7. KTVIC dev299 is the 300-image KTVIC development carve minus one image that is a near-duplicate of a KTVIC test image. KTVIC has no official validation split.
+8. The memory is KTVIC train minus the development carve, plus OpenViIC train, de-duplicated to 10,501 images. One unreadable OpenViIC training image (`00000007169.jpg`) was dropped from the memory.
+
+Three further facts concern overlap between splits:
+- 3 OpenViIC test files are byte-identical to three OpenViIC dev files. The protected-set filter removed those dev files from OV-dev-B, and no development set or memory entry shares their bytes.
+- 2 byte-identical OV-dev-B files affect stage B only.
+- KTVIC dev299 is not a fresh set. Its parent carve set decoding options for a companion submission, and zero-shot captions of it existed before this study. The Qwen2.5-VL zero-shot arm on dev299 reused one such earlier decode, after a check that its model revision, prompt, token cap, decoding and environment matched this study's.
+
+#### Earlier contact with the test data (Section 7.2)
+
+**Pinned lists.** To pin the OpenViIC manifest and the three-reference list, local CPU scripts read the OpenViIC test annotation's keys, the test image bytes (for hashes) and the per-image reference counts of XM3600. The JSON loader parsed the caption fields, but no caption was used, printed or written.
+
+**De-duplication.** Before stage A, perceptual hashes and copy-detection descriptors of the test images were computed on CPU for de-duplication. No model output was computed.
+
+**Earlier decodes on the XM3600 development images.** Another study of the group, now stopped, made zero-shot captions and guard scores on 121 of the XM-dev500 images, with the same backbones and prompt, before our stage-B XM block. Our stage-B result is fresh for our decisions, because the configuration was frozen first. Our zero-shot captions of those images are, however, not unseen outputs. That study never touched XM-test2500, and this study reuses none of its outputs.
+
+**Images read by an unrelated pre-check.** A pre-check for another project read reference captions, in aggregate, for the 2,695 UIT-ViIC training images. 163 of these are refused for development use. We recounted the 163 as the intersection of the refused COCO id lists with the UIT-ViIC training ids, using ids only. The lists overlap: the parts are 133, 59, 14 and 21, which sum to 227 because an image can sit in more than one list. The 924 UIT-ViIC validation images whose references the pre-check also read include 0 refused ids.
+
+We checked whether this touches this paper's sets:
+- what was read were UIT-ViIC Vietnamese references and their COCO-English counterparts;
+- no OpenViIC, KTVIC or XM3600 reference was read, so no reference that this paper scores against was exposed, whatever pixel overlap may exist between the source image pools.
+
+The exposure is therefore not relevant to the Vietnamese results. It is relevant to the English arm (133 of the images are in the COCO Karpathy test) and is disclosed there (Section 8.5).
+
+#### English references and memory (Section 8.1)
+
+**References and memory.**
+- **COCO references.** The first 5 references of each image, in Karpathy order. 10 of the 5,000 images have a sixth reference, which is not used.
+- **NoCaps references.** All references as released.
+- **Memory.** COCO Karpathy train and restval, 113,287 candidates. Removing 965 ids reserved for companion studies' test sets leaves 112,322. The fetch then recorded 112,320, after refusing 2 images that are byte copies of a Karpathy test image. Two more filters followed:
+  - near-duplicate drops against Karpathy test (28), NoCaps val (15) and Karpathy val (23), 65 distinct images because one image can match more than one set, left 112,255 images;
+  - clustering under the rule of Section 3.1 gave 111,927 clusters.
+- **Shown captions.** Each cluster shows the first reference of its smallest-id member.
+
+#### Earlier contact with the English sets (Section 8.5)
+
+**Earlier contact with the English sets.** None of the following outputs is reused here, and no design choice follows from them:
+1. The companion object-precision study scored 9 Vietnamese-output systems on the full Karpathy test, all Qwen2.5-VL-7B variants. None is a `ret` or `rand` arm. That study also used the references of 2,441 of these images.
+2. An earlier English zero-shot decode by both backbones, with the same zero-shot prompt and decoding, covers 295 of the 5,000 Karpathy test images. Its object precision and recall were seen; its CIDEr-D was not. These are, in effect, the `zs` arm on those images, and `zs` gates nothing.
+3. Another study of the group decoded and scored Qwen-model outputs on a stratified 1,000 NoCaps val images. The 3,500-image sensitivity excludes them.
+4. The 163-image reference exposure described above touches 133 Karpathy test images. Only gold references were read, in aggregate, and no image is dropped.
+5. Karpathy val features are used only to protect it, and no model output of this study exists on it. The evaluation sets of the companion object-precision study include 130 Karpathy-val ids; none of that study's outputs is reused or scored here.
+6. The memory includes a 2,402-image pool that another study of the group uses. These images are kept and disclosed.
+
+#### Disclosures for the development ablations (Section 6.8)
+
+The scorer, the stripped CIDEr-D column and the paired bootstrap (B = 2,000, one index matrix) are those of stage B. Before any new decode, the job reproduced the four published stage-B rows (Tables S16 and S17). Its run details are in Table S14.
+
+Three disclosures bound what Section 6.8 shows:
+1. **The set is not fresh.** OV-dev-B is the set of the stage-B gate, so its stage-B rows were known.
+2. **Two of the six τ points were known.** The τ = −∞ and τ = 0.10 points of AB-τ, and the deletion costs at τ = 0.10, were published in the stage-B decomposition (now Table S17) before AB-τ was registered. Only the four other points are new.
+3. **The k prediction is not blind.** Stage A chose Qwen2.5-VL's k = 8 on KTVIC dev299, so the registered k prediction carries the label "shaped by stage-A dev299 selection".
+
+Before deletion, the neighbour-only objects of InternVL3's `rand` captions had a reference-gold precision of 73.50 (317 mentions), against 77.31 (714 mentions) for `ret`. Per backbone, the post-hoc `rand` − `zs` on OV-dev-B was +10.38 [8.71, 12.00] for Qwen2.5-VL and +7.43 [6.03, 8.93] for InternVL3.
+
+#### Literature search (Section 2)
+
+Our searches were partial: a search of the arXiv API on 2026-10-21 for Vietnamese, captioning and in-context learning returned only the KTVIC and UIT-OpenViIC dataset papers, and the works above were added on 2026-10-29 from reviewer pointers, each checked against its arXiv record; OpenAlex and Semantic Scholar were not searched systematically.

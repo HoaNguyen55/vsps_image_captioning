@@ -6,7 +6,7 @@ We asked whether retrieved example captions help two open MLLMs caption images m
 
 **Outside the memory's source.** On XM3600 Vietnamese the gain was not detected (+0.70 [−0.45, 1.97]), and the registered XM3600 prediction is not confirmed. On NoCaps val the pooled gain was +1.73 [0.94, 2.50]: its CI lies above zero, but the point is below the SESOI under the stricter English rule (S-NC FAIL), so the transfer claim is not made. Its reported per-domain rows fall from the images with only COCO classes to those with none.
 
-**Controls.** In domain, the registered S-zf row puts `ret` − `zs` at +14.30 [13.38, 15.24], against P1's `ret` − `rand` of +4.49 [3.52, 5.57]. (The `rand` − `zs` comparison itself is descriptive and post hoc, from Table 6.) The per-backbone `ret` − `rand` rows are model-dependent: on OpenViIC test, the CI is above zero for Qwen2.5-VL and includes zero for InternVL3.
+**Controls.** In domain, the registered S-zf row puts `ret` − `zs` at +14.30 [13.38, 15.24], against P1's `ret` − `rand` of +4.49 [3.52, 5.57]; descriptively, random in-domain examples already score well above zero-shot (Table 6).
 
 **What a practitioner can take from this.** Three things are needed before a gain over zero-shot is attributed to retrieval:
 1. a random-example control at equal k, drawn from the same memory;
@@ -20,6 +20,6 @@ A post-decode deletion step needs the same care: on the development set it remov
 - the test code and the decision files;
 - scores, image ids and sha256 hashes.
 
-No caption from any dataset, no model caption and no per-image ledger is released. The authors of UIT-OpenViIC and KTVIC confirmed in writing (2026-10-28) the use of their datasets in this study; the confirmations are on file with the corresponding author.<!-- PI-1026az (2026-10-28); CC-126 W17 --> [Repository link and archive DOI withheld for anonymous review; an anonymised copy of the registrations, code and decision files can be provided to the editor.]
+No caption from any dataset, no model caption and no per-image ledger is released. The authors of UIT-OpenViIC and KTVIC confirmed in writing (2026-10-28) the use of their datasets in this study; the confirmations are on file with the corresponding author. UIT-ViIC is not used as data; it appears only as aggregate counts and image-id pointers (Section 7.2), no UIT-ViIC caption or per-image panel is shown or released, and no permission from its authors is claimed.<!-- PI-1026az (2026-10-28); CC-126 W17 --> [Repository link and archive DOI withheld for anonymous review; an anonymised copy of the registrations, code and decision files can be provided to the editor.]
 
 **Use of generative AI.** During this work the authors used AI-assisted tools (a large language model coding and writing assistant) to help write analysis scripts, check consistency between the text and the recorded results, verify bibliographic identifiers, and draft and edit text. The authors reviewed and edited all content and take full responsibility for it.

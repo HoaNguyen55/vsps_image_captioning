@@ -10,6 +10,12 @@ Point-by-point reply to `A_META_REVIEW.md` (items 1–15). Every judgement here 
 - Abstract: 237 words.
 - Highlights: each 78–84 characters.
 
+**PI decisions applied (PI-1029p, 2026-10-29: "Đồng ý các đề xuất mặc định, tiếp tục đi").** A second writer pass applied the PI's defaults for items 5c, 12f and 2. Write safety as above: hashes snapshotted in scratchpad `a1029p/sha_before.txt`, re-checked before every write, no mismatch. Pre-revision copies of the moved sections are in `.session_backup/2026-10-29/paperA_rev1_PI1029p/`.
+- **5c (title): approved.** The title "Gold Completeness and the Verbosity Slope of Object Hallucination Metrics: A Registered Audit" stands in `abstract_A.md`, `title_page_A.md`, `cover_letter_A.md` and `outline.md` (decision recorded), and is now also printed under the heading of both supplements. `highlights_A.md` and `anon/declarations_anon.md` carry no title.
+- **12f (move): done in full.** See item 12(f) below.
+- **2 (permissions):** UIT-OpenViIC, KTVIC and PASCAL-50S stay "confirmed in writing" (PI-1026az). **UIT-ViIC: the authors have not given permission.** `declarations.md` (Data availability), `anon/declarations_anon.md`, §9.2 and Supplementary S6 now say that UIT-ViIC is used only through aggregates and pointers, that no per-image UIT-ViIC panel is released, and that no written permission was received. The staged deposit (`.session_backup/2026-10-21/zenodo_build`) was checked. Every JSON file was walked recursively, and none holds a per-image UIT-ViIC score array. The only per-image UIT-ViIC content is a list of 133 COCO image identifiers, which counts as a pointer. The deposit README records an 8-gram scan with no dataset text. Supplementary S6 said "We have not obtained written confirmation" for UIT-OpenViIC, which contradicted PI-1026az. It now says the UIT-OpenViIC authors confirmed this use in writing, as does §9.2.
+- **Main-text words** (sec1–sec11, HTML comments removed, scratchpad `wc.py`): 13,403 before, 12,488 after (−915). Including `declarations.md`: 13,962 before, 13,080 after.
+
 **Status counts:** 12 items done, 3 partially done (items 3, 11, 12), none not done. Two FLAG items (5b, 9b): 9b was answered from a stored file; 5b goes to the coordinator.
 
 ## Tier 1
@@ -21,7 +27,7 @@ Point-by-point reply to `A_META_REVIEW.md` (items 1–15). Every judgement here 
 - External validity: adds the seven-LVLM English family.
 
 **2. Conflicting permission statements. Done; coordinator corrected to "confirmed in writing" per PI-1026az (LOG.md, 2026-10-28).**
-- `declarations.md`: "the UIT-OpenViIC and KTVIC authors confirmed this use in writing" now reads "written permission was requested … at submission no reply had been received". This matches the file's own comment and PD-2 Q4.
+- `declarations.md`: the first pass had changed the text to "written permission was requested … no reply had been received". The coordinator then restored "the UIT-OpenViIC and KTVIC authors confirmed this use in writing", following PI-1026az, and PI-1029p confirms that restoration.
 - PASCAL-50S "confirmation obtained 2026-10-28" is kept, because it is recorded in the committed registration (PREREG `2026-10-28_pascal50s` l.109, commit 353437f). The PI should confirm that the written document is on file.
 - The cover letter does not mention the permissions.
 
@@ -42,7 +48,7 @@ Point-by-point reply to `A_META_REVIEW.md` (items 1–15). Every judgement here 
 **5. Separate the expected part from the risky part.**
 - (a) Done: §1 and §9.1 now say that the reference levels are ordered even under SCAR, and give the tally for the non-nested label-gold step: XM3600 PASS under verified precision; second backbone PASS, with the lower bracket at +1.97 [−0.44, +4.01]; PASCAL-50S FAIL.
 - (b) Done: §7.4 and §10.1 add that the premise "VOC labels are more complete than 50 references" was assumed, not measured. The V20 50-reference slope (+9.74 [+7.29, +12.12]) is above the VOC-label slope (+7.45 [+4.98, +9.94]). The LLaVA-1.5-7B and LLaVA-OneVision-7B per-model slopes are negative.
-- (c) Done (PI default applied; PI may revert): the title is now "Gold Completeness and the Verbosity Slope of Object Hallucination Metrics: A Registered Audit" in the abstract, the title page and the cover letter. The choice is recorded in `outline.md`.
+- (c) Done and approved by the PI (PI-1029p): the title is now "Gold Completeness and the Verbosity Slope of Object Hallucination Metrics: A Registered Audit" in the abstract, the title page and the cover letter. The choice is recorded in `outline.md`.
 - **(5b) FLAG, coordinator.** Output-free gold sizes per level on V20 were not computed: that would need the PASCAL-50S references re-staged, which the data rule may forbid. The text says "was not tested", and the §10.1 comment marks the values "not retained".
 
 **6. System dependence and auditability of PASCAL-50S. Done.**
@@ -113,12 +119,29 @@ Point-by-point reply to `A_META_REVIEW.md` (items 1–15). Every judgement here 
 - (c) Already the case: `supplementary_SPIC.md` is the one submitted supplement, generated from `supplementary.md` by `manuscript/build/scrub_supp.py`. It was regenerated after these edits (rc 0).
 - (d) Done as a map: the stubs are comment-only, so they render nothing, and `appB` is not built. A file-to-section map was added to `outline.md`. The build scripts are unchanged.
 - (e) Done: "verbosity slope" is defined once (§3.6, signed) and used throughout. The "verbosity reward" wording is replaced.
-- (f) Partially done (PI default applied; PI may revert):
-  - The §6.2 discussion paragraphs and §6.3 moved verbatim to S3, with short summaries left in place.
-  - §8.3 moved verbatim to S8, with a summary left in place.
-  - Table 6.1, §6.4–6.5 and §8.4 stay in the main text, because they carry registered verdicts (A20–A23) and the reproducibility statement. Every section cross-reference still resolves.
+- (f) Done (PI default, approved in PI-1029p):
+  - **Former §6 → Supplementary S3.**
+    - Its introduction, data and fidelity text, Table 6.1 (now Table S3.1) and the leaderboard paragraph were copied verbatim, with their src comments. Its curve and placebo paragraphs were already in S3.
+    - `sec6_rescoring_published_methods.md` is now a comment-only stub.
+    - §3.3 keeps a four-sentence summary: 15 comparisons, 12 raw significant, 2/2/6 remaining, the registered seed placebo HELD (A22, calibration only), and the registered leaderboard not scored after its fidelity FAIL, |ΔCHAIR_i| = 1.49 > 1.0 (A23).
+    - The old §6.5 (code and reproducibility) is folded into §3.6, because §1 contribution 4 and §8.2 point to it.
+  - **Former §8.3–8.4 → Supplementary S8 and S6.** The full §8.4 text and Table S6.1 (all seven rows, same values as old Table 8.1) were already in S6. New §7.3 is a four-sentence summary that keeps the registered verdicts with estimate, interval and rule:
+    - A21 RLAIF-V: 0.514 [0.509, 0.520] against ≥ 0.60, FAIL, inside the kill interval;
+    - A20 VaPR: 0.849 [0.845, 0.853], PASS.
+  - **Renumbering.**
+    - Sections: old §7→§6, §8→§7 (old §8.4→§7.3, §8.5→§7.4), §9→§8, §10→§9.
+    - Tables: old 7.1–7.3 → 6.1–6.3; old 6.1 → S3.1; old 8.1 → S6.1.
+    - Method: one regex pass on visible text only, with no chained replacements.
+    - Also covered: Table 1's Sections column, the Where column of Table S4.0, supplement headings, the cover letter, both declarations (the anon copy's stale "Section 11.2" is now 9.2) and the Fig. 2 labels (SVG and `scripts/figures/paperA_figs.py`: Section 7.2/7.3 → 6.2/6.3).
+    - "Experiments II/III" are now "Experiments I/II".
+    - A resolver confirmed that every visible "Section N" and "Table N" reference has a target.
+  - **Registered results stay in the main text:**
+    - every PASS/FAIL row of Table 1, including the PASCAL-50S FAIL (A24) in §1, Table 1 and §6.4, untouched;
+    - A20 and A21 in §7.3;
+    - A22 and A23 in §3.3.
+  - `supplementary_SPIC.md` was regenerated from `supplementary.md` with `scrub_supp.py` (rc 0), and `supplementary_provenance_internal.tsv` was regenerated with it.
 - (g) Done: an Introduction paragraph on reference-set dependence of quality measures (González-Chávez et al., 2024) was added.
-- Net effect: visible main-text words went from 12,571 to 13,389 (+818), because the Tier 1–2 disclosures outweigh the moves. AI opinion: further cuts in §7.1–7.3 are the next clarity lever.
+- Net effect (first pass): visible main-text words went from 12,571 to 13,389 (+818). After the PI-1029p moves: 13,403 → 12,488 (sec1–sec11, scratchpad `wc.py`, all comments stripped). The first-pass 13,389 used a different counter, and the coordinator made edits between the passes, so the two series are not directly comparable. AI opinion: further cuts in §6.1–6.3 (old §7.1–7.3) are the next clarity lever.
 
 **13. Figures. Done.**
 - New Fig. 3 (PASCAL-50S, k = 1→50 on COCO-80 and V20, plus the VOC-label point, with the failed comparison marked). It is drawn by `scripts/figures/paperA_figs.py` from manifest rows only and is referenced in §7.4.
@@ -158,12 +181,14 @@ Point-by-point reply to `A_META_REVIEW.md` (items 1–15). Every judgement here 
 
 ## For the coordinator / PI
 
-1. PI: true status of the UIT-OpenViIC and KTVIC permission (default text now says "requested, no reply"), and confirmation that the PASCAL-50S written confirmation is on file.
-2. PI: keep the new title, and keep the partial move of §6/§8.3 (both reversible from `A_rev/orig/`).
+1. Resolved (PI-1029p): UIT-OpenViIC, KTVIC and PASCAL-50S are confirmed in writing (the PI forwards the e-mails to the corresponding author). UIT-ViIC has no permission, so aggregates and pointers only.
+2. Resolved (PI-1029p): the new title is kept, and §6 and §8.3–8.4 are moved in full.
+2a. Coordinator: `manuscript/journal_draft_B/cover_letter_B.md` l.19 still cites Paper A under its old title ("Object Metrics Under Incomplete Gold …"). It was not edited, because it is outside A's scope.
+2b. Coordinator: the bib entries for old Table 8.1's POVID and mDPO (zhou2024aligning, wang2024mdpo) and DOCCI (onoe2024docci) are now cited only in the Supplementary Material. They drop out of the main reference list (CAS build report).
 3. Coordinator, FLAG 5b: V20 gold sizes per level. This needs the references re-staged; check whether the data rule allows it. It would be post hoc, with no verdict.
 4. Coordinator:
    - any change to the deposit contents (item 15);
    - rows for the four new citations in `intext_trace.tsv`;
    - recount the "29 of 804 rows" in `declarations.md` and `anon/declarations_anon.md`, now that the manifest has grown.
-   - `anon/declarations_anon.md` holds no permission claim and was not edited; it lacks the new reproducibility sentence.
+   - `anon/declarations_anon.md` was edited in the PI-1029p pass: it gained the UIT-ViIC sentence, and its Section 11.2 reference became 9.2. It still lacks the new reproducibility sentence.
 5. PI admin, low priority: addresses and the reviewer link (item 3).

@@ -37,17 +37,7 @@ The prompt follows the image in the user turn of each model's own chat template.
 
 Tail T1 also asks the model to state only what is visible; tail T2 omits that sentence. "Order" fixes where the most similar example goes: `first` puts it first, `last` puts it next to the instruction. The template was written for this study, contains no dataset caption, and is pinned by its sha256 in the released code (prefix `7478361a`).
 
-Decoding is greedy (one beam, no sampling) with at most 60 new tokens, in bf16 with each model's pinned snapshot and processor settings. Every snapshot file is pinned by hash. The pinned revisions are unchanged from stage A:
-
-| role | hub id | revision (prefix) |
-|---|---|---|
-| generator | Qwen/Qwen2.5-VL-7B-Instruct | `cc594898` |
-| generator | OpenGVLab/InternVL3-8B-hf | `259a3b64` |
-| verifier for InternVL3 | Qwen/Qwen3-VL-8B-Instruct | `0c351dd0` |
-| verifier for Qwen2.5-VL (stage B only) | OpenGVLab/InternVL3-8B | `853e3a79` |
-| embedder | google/siglip2-so400m-patch14-384 | `e8e48729` |
-
-The three virtual environments on the test machine (generation, scoring and verifier) matched their registered freezes: `685ffe2a`, `4b81b6b6` and `7332d343` (sha256 prefixes). Processor settings are those pinned with each snapshot.
+Decoding is greedy (one beam, no sampling) with at most 60 new tokens, in bf16 with each model's pinned snapshot and processor settings: Qwen2.5-VL-7B-Instruct and InternVL3-8B as generators, Qwen3-VL-8B-Instruct as InternVL3's verifier, and the SigLIP2 embedder. Every snapshot file and virtual environment is pinned by hash, unchanged from stage A (hub ids and revisions in the supplement, "Instrument definitions").
 
 ### 3.4 Neighbour-only objects and the deletion step
 
@@ -63,7 +53,7 @@ Rejected classes are removed by a fixed rule:
 2. Drop each unit that names a rejected class, then rejoin the rest.
 3. Fall back to the model's zero-shot caption when the subject unit is hit or the result is malformed.
 
-At τ = −∞ nothing is rejected and the caption is unchanged. The step is related to Negative Entity Suppression [@Lu2025NES], which filters entities absent from the input out of retrieved captions in zero-shot captioning and also suppresses them at the attention level. Our step instead acts after decoding, on the model's own caption, and only on classes that the examples introduced.
+At τ = −∞ nothing is rejected and the caption is unchanged. Unlike Negative Entity Suppression [@Lu2025NES] (Section 2), the step acts after decoding, on the model's own caption, and only on classes that the examples introduced.
 
 The verifier for each generator is a different VLM. For InternVL3-8B the verifier is Qwen3-VL-8B-Instruct, and for Qwen2.5-VL-7B it is InternVL3-8B. The lineage is shared in part: InternVL3-8B's language model is Qwen2.5-7B, and Qwen3-VL belongs to the Qwen line. A run stops if, over the first 20 questions, the median probability mass on yes and no is below 0.5, since the position read would then not be the answer position.
 
@@ -90,7 +80,7 @@ At its frozen τ, InternVL3's `ret`, `rand` and `fix` captions pass through the 
 
 ### 3.6 Scoring
 
-All arms are scored by the companion scoring study's kit, loaded by hash. Candidates and references are segmented into words with RDRSegmenter [@Nguyen2018VnCoreNLP] (VnCoreNLP 1.2 [@Vu2018VnCoreNLP]) and lower-cased, so CIDEr-D n-grams are over word tokens. Caption length (rule L, Table 11) is counted in syllables, that is, in space-separated units before segmentation. CIDEr-D (×100) uses document frequencies computed over the scored set's own references.
+All arms are scored by the companion scoring study's kit, loaded by hash. Candidates and references are segmented into words with RDRSegmenter [@Nguyen2018VnCoreNLP] (VnCoreNLP 1.2 [@Vu2018VnCoreNLP]) and lower-cased, so CIDEr-D n-grams are over word tokens. Caption length (rule L, Table 4) is counted in syllables, that is, in space-separated units before segmentation. CIDEr-D (×100) uses document frequencies computed over the scored set's own references.
 
 **The decision column is stripped CIDEr-D: trailing punctuation tokens are removed from candidates and references.** This keeps any arm from gaining by a final period alone. The as-written column and a PTB-tokenised column are also reported.
 

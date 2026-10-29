@@ -474,6 +474,8 @@ The archive also ships `scripts/caption_exchangeability.py`, a registered script
 
 For UIT-OpenViIC the rule is stricter: it enters this paper only as aggregate scores. No OpenViIC caption, n-gram or per-image derived file is shown or released. The overlap matcher and the two-gold scripts run on a copy of OpenViIC that the reader obtains from its authors.
 
+In this paper and its kit, UIT-ViIC appears only as aggregates and pointers (aggregate scores and statistics, image ids and its source location). No UIT-ViIC caption, n-gram or per-image panel is shown or released, and no permission from its authors is claimed; readers obtain UIT-ViIC from its distributor (Section 3.7).<!-- PI-1029p (5) -->
+
 ## S15 Baseline code provenance and software
 
 <!-- Moved verbatim from main text Section 3.3 and Section 4.3 by CC-145 J6, 2026-10-28; numbers and src unchanged. -->
