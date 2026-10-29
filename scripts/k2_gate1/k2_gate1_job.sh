@@ -11,7 +11,7 @@
 set -euo pipefail
 H_Q3=2bb7397e7db350a2c225df590cdd9531df6a3247f7a3f217e1b64ed2d9f1be80   # venv_q3_freeze.txt (W22 PREREG §8)
 H_LB=685ffe2a0100ce2489cccd77313d366fb1dce4455871a9d82f65aa139fa85784   # setup_gpu.sh H_LB (Gate 0 teacher path)
-H_GD=5291fc308f4457cbc313431d73827e6bb5890c6534eb6177087d6720ff181cab   # venv-gd (OPS-1028h-op, P2)
+H_GD=696f7dc31a3d6de537d772a3f53f8b0a7db8ac2bc77af08ded8e4eeaaee16ef5   # venv-gd = sha256 of scripts/k2_gate1/venv_gd_freeze.txt (amendment 2a; M3 5291fc30 not reproducible)
 D=scripts/k2_gate1
 PY=/root/vsps/.venv/bin/python; [ -x $PY ] || PY=python3   # M3 system python3 has no numpy (OPS-1028x-op)
 if [ "${1:-}" = "--selftest" ]; then
