@@ -1,0 +1,72 @@
+CC-172a: Paper C (ACM TALLIP), C-T1 tier-1 DEV-EXPLORE, re-read of the CC-172 W1-W10 and N1-N11 fixes. Single judge. REVERSIBLE tier (actionable at >= 90; PI-1029e/j/o). Requested by the coordinator after CC-172.
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes, TIER 1 ONLY. W1-W10 and N1-N11 are applied and verified, except two new blocking items:
+- W11: the N6 LMCap run on OV-dev-B with COCO memory gives English shot answers under a Vietnamese instruction;
+- W12: the tier-3 Holm rule and the W7 predictor do not match.
+Both are small. Fix them in the draft, then:
+1. log the PREREG.md sha256 in LOG.md;
+2. gatekeeper commit by path (SUMS regenerated);
+3. run on M2 (role m4) under the CC-172 W5 queue.
+No further judge re-read is required if the W11/W12 diff touches only the lines named below. The gatekeeper checks that.
+
+CONFIDENCE: 92% (after W11 and W12). As drafted now: 80%.
+
+## Ranked options
+1. Apply W11 (drop the B3_lmcap_ri_ovb_coco step, or fix its shots as below) and W12, then finalise. 92%. Recommended.
+2. Finalise as drafted. The OV-dev-B COCO LMCap row would be mislabelled as "LMCap's own setting", and the tier-2 predictor would be optimistic against the Holm rule (the CC-171 W1 class of error). 70%. Not actionable.
+3. Defer finalisation until A-T1/BD-T1 are done. 55%. W5 already queues C-T1 behind BD-T1, so deferring the commit only idles the pipeline (keep-queue-full).
+
+## What I checked (myself)
+- Hashes match the request: PREREG_DRAFT 6452b228, registry eaa5824f, lists eebcd95b, RESTORED 48990bc7, c_t1.py d36297af, job 8ebc5a4e. The draft SUMS files list them, and scripts SUMS -c gives OK 2/2.
+- `c_t1.py --selftest`: ok. It covers: split, X1 draws, prompts, Vietnamese check, X2, selection (W1), contrasts + kill gate, pins (W2), summary (dev299 skipped, VI DESCRIPTIVE), C2 pins, guard, store refusal. `bash -n` on the job: ok.
+- W1: select() keeps only `ret` rows with τ −inf and no variant. Eligibility is ΔP_cm ≥ −1.0, hit_max ≤ 0.02, and verbatim ≤ 0.05 (None counts as not eligible). The pick key is (−cider_s, k, order != last, tpl != T1), which is DESIGN l.277 at τ −inf. None eligible gives None, then cmd_select rc 3, then the job tries the next backbone. PREREG §6.3 now matches DESIGN l.272-278. Closed.
+- W2: the selftest asserts that each model's sha256 pins are all null or all 64-hex (l.1035). Closed.
+- W3, C2_RUNS: I re-hashed the six stage-2 run files in .session_backup/machines/M3/root/outputs/c_stage2/runs. All six match the pins (5bf37a77, 9fa11f7b, 53ce8591, 745c3bd7, b05d9163, 991d289b). C2_LEDGER_SHA256 = be716482 (verified). The duplicated stage-2 zs rows are byte-identical per model, so keying the parity check by run_id is safe.
+- W3, parity gate: c2_parity needs exactly 6 τ −inf, no-variant matches within 1e-4, else STOP.
+- W3, summary: it reads C-T1 ledgers only; skips dev299, model-less rows and nn/fix/blind arms; and keys memory by suffix. lmcap_ri vi and coco therefore get separate keys.
+- W3, §7 commands: I traced the globs against the run_id formats (l.316-318, l.491). They do not double-list LMCap files, and EN zs runs are included through their own glob. Closed.
+- W4:
+  - cmd_extract refuses unless the machine id is m3, checks the zip sha against the registry, reads only carve/memory members, writes one .tar plus two manifests, and checks the counts.
+  - cmd_guard runs in preflight over $NCS_DATA and /root/outputs. It refuses .zip/.tar/.tar.gz/.tgz, flickr30k-images*, and any val/test file name.
+  - Collision check: 0 of C's 15,260 lists.json file names coincide with a Flickr30K val/test name, so there are no false refusals from C's sets.
+  - Closed.
+- W5: the job header and PREREG §5 now carry the queue, pre-emption, unstaging and deletion rules, plus the CC-171 r1 disclosure sentence. Closed. The disclosure must also appear in B+D's tier-3 prereg (coordinator, N-d).
+- W6: `rm -f ledger_kt_<m>.jsonl` runs before each B1 score, with one ledger per backbone. Closed.
+- W7: p_pass = max(0, Φ(z1) + Φ(z2) − 1), with a selftest that joint ≤ min(p_i). PREREG §8 fixes the val PASS rule, "PASS with margin" (val point ≥ +2.0 AND pooled P ≥ 0.98), the family, Holm, and no low-power route. One inconsistency remains -> W12.
+- W8:
+  - preflight runs the selftest under venv-lb and venv-c1score, then t1check under venv-t1 (check_snapshot of M-CLIP and xlm-roberta-large, open_clip build, offline);
+  - xlm_roberta_large pins c23d21b0: I compared the 4 files with the HF tree API at that revision. All are non-LFS, and the git-blob oids equal the registry (8e5fb14e, db9af13b, 463f3414, 34ddbd64);
+  - fetch for this model goes to the HF cache, the cache open_clip resolves by name.
+  - Closed.
+- W9: cmd_fetch exits rc 3 on open pins, checks the snapshot, then writes .c_t1_ok. pinsok gates every third-backbone step. With TB empty the job continues (N8). Closed.
+- W10: memcheck checks memfiles_vi and memfiles_coco (exists + sha256) in preflight. The staging text requires all members[0] per file, never an archive. Closed.
+- N1: an empty masked caption becomes "." in both languages. N2: VI labels are DESCRIPTIVE. N3: the ret_img prompt sha is computed over the interleaved text parts. N4: LMCap hit_max is computed. N5/N6/N9/N10/N11: the text is present. N7: smoke block S is charged, score refuses `-smoke`, and smoke outputs go to a separate directory. Budget: 15.3 GPU-h (+25% = 19.1) ≤ 20. All closed. The only gap is in N6's new run (W11).
+- LMCap paper (arXiv 2305.19821, App. D example): each shot's answer is written in the target language ("… in spanish is: Un caballo marrón …"), while the retrieved captions are English COCO captions.
+
+## Rulings
+r1. W1-W10 closed as listed above. N1-N11 closed except N6's new run.
+r2. W11 (blocking). B3_lmcap_ri_ovb_coco (job, after the B3 loop) calls cmd_lmcap with --memory coco on a Vietnamese set. The shots are built as `shots = [([shown(c) …], shown(s)) …]`, with shown() taken from the COCO caption store. So the three demonstrations end "… in vietnamese is: <English caption></s>". That is not LMCap's setting, where shot answers are in the target language, and XGLM will likely copy English. The row would be mislabelled "LMCap's own setting".
+r3. W12 (blocking). PREREG §8 makes the tier-3 PASS "point ≥ +2.0 AND Holm-adjusted one-sided p < 0.05". The predictor's z2 = d/SE − 1.96 corresponds to a two-sided 95% CI with no multiplicity correction. With a family of m > 1, the predictor is optimistic. Under PI-1029n, a P(PASS) ≥ 0.98 gate must predict the registered test rule.
+
+## Required fixes
+Blocking (draft edits only, no re-read needed if limited to these lines):
+W11. Choose one, before finalisation:
+  (a) Remove the B3_lmcap_ri_ovb_coco step from the job, remove its §7 score command, and drop "ri with the COCO memory on OV-dev-B" from §5 B3 (0.9 -> 0.7 GPU-h). Disclose in §4 that the paper's English-datastore setting was not run.
+  (b) Keep it, but for a Vietnamese set with --memory coco, draw the 3 shots from C's Vietnamese memory (images via memfiles_vi, answer = C.shown(vi caption)). Their K captions and the query's K captions are then retrieved from the COCO English store by M-CLIP. Add a selftest that the shot answers come from the vi store while the retrieved captions come from the coco store.
+  I recommend (a): less code, and the same-memory rows already answer the reviewers.
+W12. Make the predictor match the tier-3 rule. In p_pass and in the §8 text, use z2 = d/SE − Φ⁻¹(1 − 0.05/m), where m = the size of the tier-3 family, known when the tier-2 prereg is written. This is a Bonferroni bound on Holm's first step, so it is conservative. For tier-1 planning, print it at m = 1 and at m = the number of NOMINATEd claims. Keep z1 = (d − 2.0)/SE and the Fréchet joint. State that the val PASS rule (two-sided 95% CI_lo > 0) is unchanged. Add a selftest that p_pass decreases in m.
+
+Non-blocking:
+N-a. EN zs decodes carry spec.memory = "vi" (the argparse default), so their summary key becomes "<m>|zs_vi". It is harmless, because no contrast reads zs, but record memory = None for zs runs.
+N-b. A smoke failure (for example, Aya ret_img at k = 8 running out of memory) goes through gpu() -> stop and kills the job before B1. Recommended: run the smoke steps non-fatally (log "SMOKE FAIL <step>", drop that backbone's B6 carve step, continue). This avoids a re-commit for a known risk.
+N-c. cmd_extract: assert that no wanted basename occurs twice in the zip. Today a duplicate would pass the count check.
+N-d. The coordinator copies the CC-172 W5 / CC-171 r1 disclosure sentence into B+D's tier-3 prereg when that prereg is written.
+N-e. §7 names the F30K store `f30k_memory_captions.json`, while the job stages `c_t1_f30k_memory/captions.json`. Use one name.
+
+## Falsifiers
+Unchanged from CC-172 (kill gate, no NOMINATE, the two separate X4 outcomes, RICES ≥ ret, tier-2 fail or P < 0.98 -> test never touched).
+
+## For the PI
+Nothing new. CC-172's Q1 (laptop zip: NO, wait for M1) and Q2 (continue without a third backbone: YES) are now implemented as their defaults.

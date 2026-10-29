@@ -1,0 +1,54 @@
+CC-170b: Paper A (SPIC), A-T1 tier-1 DEV-EXPLORE package, ROUND 3 (last round; diff-focused re-read after the writer applied CC-170a W2', W5', N1-N6 and W8). Single judge, REVERSIBLE tier (actionable at >= 90; PI-1029o). Request under PI-1029r / PI-1029n, as CC-170 and CC-170a.
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: GO for A-T1 TIER 1 ONLY (option 1), with one text-only blocking fix (W5'') and three one-line items that the writer applies before finalisation. No further judge round is needed if the diff is limited to the W/N lines below; the coordinator checks them by grep at the finalisation commit. Then, unchanged from CC-170a: G2 pins, `split` on M1, `select`, `gold --set D1`, resolved V + map log + premise logged in LOG.md, PREREG.md sha256 in LOG.md and in a_t1.py, SHA256SUMS regenerated, gatekeeper commit by path (with the ledger line), then D1 decode on M2 (role m4) when M2 holds no other lock. Nothing here authorises tier 2 or tier 3.
+
+CONFIDENCE: 92% (tier 1 after W5''). As submitted: 88% (the frozen prereg contradicts itself on multiplicity: §5 says "Holm is not used", §7.1 uses Holm).
+
+Files judged (sha256 prefix at read time): PREREG_DRAFT.md ff8b4e0d (v3); a_t1.py ef4502ad; a_t1_job.sh b6cb2f15 (unchanged since CC-170a); scripts/a_t1/SHA256SUMS 61208e56. All untracked; HEAD f876585.
+
+## Ranked options
+1. GO, tier 1, after W5'' (text) + V1-V3 (one line each, no re-read). 92%. Recommended.
+2. GO as submitted. 88%. Below the bar only because §5/§7.1 freeze a contradiction on multiplicity, which a reviewer of the registered ledger would see.
+3. Add a hard stop when the W2' resolution removes any V class (gold exits before narratives, judge rules on the metadata). 85%. Safer against a V collapse, but it changes the rule CC-170a fixed; V1 (log and report) is enough because V is set before any narrative is read and only power is at stake.
+4. AD-2 only. 70% (as CC-170). No new reason.
+5. Defer / do nothing. 45% (as CC-170). No change in A's situation; A's freeze does not wait on A-T1.
+
+## What was checked
+- Ran: `python3 scripts/a_t1/a_t1.py --selftest` -> "a_t1 selftest ok", rc 0; `bash -n scripts/a_t1/a_t1_job.sh` rc 0; `sha256sum -c scripts/a_t1/SHA256SUMS` 7/7 OK (p50, p50x, score_g2b, decode_hf_vlm, b_r1 unchanged).
+- Read a_t1.py in full (617 lines) and PREREG_DRAFT v3 in full (182 lines); ledger l.170 of manuscript/directions/PORTFOLIO_3Y_2026-10-29.md.
+- Matcher probes (score_g2b MATCH["coco80"]["en"] on "a " + string; the strings are MY RECALL of objectInfo150 synonyms, not the pinned file, so indicative only): stool -> chair, seat -> chair, van -> car, pool table / billiard table -> dining table, minibike -> bicycle, trolley -> bus, passenger vehicle -> person, computer -> laptop (not in V), microwave oven -> {microwave, oven}.
+
+## W-item check (CC-170a -> v3)
+W2' (map, both directions): APPLIED, and it matches the intent of CC-170a W2' (the writer's question; ruling 1). Code: `info_names` (l.203-213) parses and name-checks the pinned objectInfo150 and hard-fails if absent/duplicated/unpinned; `reverse_conflicts` (l.222-231) lists every unmapped class any of whose names or synonyms the matcher sends into V; `resolve_map` (l.234-251) applies the fixed rule to a fixed point; `cmd_gold` (l.268-272) runs W1 + W2' on metadata BEFORE the narrative file is opened (l.273-278), refuses if a conflict remains, uses the resolved map for the label rung (l.282) and V for the narrative rung (l.278), and writes V, the resolved map and the log to the gold file (l.284-286). `cmd_score` takes V from the gold file (l.444). Selftest l.483-487: "stool" (first name -> exactly {chair}) is added; "zzz; trolley" (first name -> nothing, synonym -> bus) removes bus and its map entries; no conflict remains; ";" parsing.
+W5' (Holm for split cells): PARTLY APPLIED. §7.1 l.132-136 is correct (p <= 0.0125 or "nominal, not claimed"). §5 l.101-102 still says "Holm is not used". -> W5'' (blocking, text).
+N1: APPLIED (missing-objectInfo150 selftest l.488-497; ";" accepted l.199 + l.487).
+N2: APPLIED (l.158). N3: APPLIED (§3 l.79-80; `stage --set D1|D2` l.583 and the D2 premise gate via G["set"] l.296). N4: APPLIED (l.162-163).
+N5: NOT APPLIED. Module docstring l.16 still says "register ... D1 + smoke datasets"; `register` (l.311-327) stages D1 only. -> V3.
+N6: APPLIED. Strict sidecars (l.440-442); 8-gram exposure moved to the tier-3 prereg (§9 l.157-158).
+W8: APPLIED. Ledger l.170: "ADE20K SceneParsing val (2,000) + LN-ADE val | pixel labels + narratives | unused (A-T1 tier 3, CC-170) | A". Status wording differs from CC-170a's "reserved, tier-3 only" but carries the same meaning; accepted. It must land in the finalisation commit (CC-170a r3).
+W2'(iii) (synonym conflicts of kept classes written to the gold file as a descriptive list): NOT IMPLEMENTED, although §3 l.66-67 promises "synonym hits of mapped classes are reported descriptively". -> V2.
+
+## Rulings
+1. W2' as implemented matches the intent of CC-170a W2'. Details: (a) conflict detection over all names/synonyms of unmapped classes = CC-170a (ii); (b) the resolution rule (add if the first-listed name gives exactly one V class, else the hit V classes leave V) is the rule CC-170a fixed; (c) automatic resolution followed by a refuse-if-any-remain post-condition is equivalent to "SystemExit, then apply the fixed rule", because the rule is fixed before data and reads metadata only; the post-condition cannot fire after the fixed point and is kept as a guard; (d) synonyms of ADDED classes are not re-checked, consistent with CC-170a r2 (synonym-level conflicts of mapped classes are descriptive); (e) CC-170a asked for the resolved V and index list in §3 BEFORE finalisation; the writer cannot compute it without the pinned file (no downloads in this round), so it is computed by `gold` from the pinned objectInfo150 before any narrative is read, logged in LOG.md, and copied into PREREG.md before finalisation (§3 l.72-73, §10 l.170-171). This is accepted: the rule is fixed now, its input is metadata, and the code order is verifiable.
+2. Expected effect (indicative, from my probes): several unmapped classes will be ADDED (likely stool and seat -> chair, van -> car, pool table -> dining table, and minibike -> bicycle). Minibike is the one CC-170 dropped as a "contradiction"; under CC-170a r2 it now returns on the label side for bicycle. That is the consistent choice for this matcher (a narrative or caption saying "minibike" scores bicycle, so the label rung must hold it); the semantic oddity is disclosed, not fixed. The pre-declared descriptive sensitivity in V2 covers it. V shrinks only if an unmapped class's first name hits zero or several V classes while a synonym hits V; that costs power, not validity, and is visible before any GPU step (V1).
+3. Multiplicity: §5 must say what §7.1 already says (W5''). The tier-1 GO stays the conjunction (intersection-union); Holm applies only to single-test claims at tier 3. No code change.
+4. Everything else in CC-170 rulings 2-7 and CC-170a rulings 2-6 stands (design, SHARE_MIN 0.1%, predictors, outcome order, budget ~6.2 GPU-h cap 10 on M2/m4, custody on M1 only, placement §6.4/§6.6, no new section, A's freeze not delayed, operator note on the W9 guard).
+5. This is the last round. If the writer's diff touches anything beyond W5'' and V1-V3, the change goes back to a judge before finalisation.
+
+## Required fixes
+Blocking (before finalisation, text only):
+W5''. PREREG §5 "Multiplicity" (l.101-102): replace "Holm is not used." with: "The tier-1 and tier-2 GO and the paper's joint claim need both PASS (intersection-union, no adjustment). A single-test claim at tier 3 uses Holm over the pair at one-sided 0.025 (§7.1): the passing test's claim stands only if its p <= 0.0125; otherwise 'nominal, not claimed'."
+Required, one line each, no re-read:
+V1. Finalisation step (§10 l.170) and §3: after `gold --set D1`, log in LOG.md |V|, V, the map_resolution_log (added indices and any V_removed) and the premise, before `stage`. Replace "V = 24" / "24 classes" in §3 l.64 and §9 l.159 by "24 before the W2' resolution; the resolved V is in PREREG §3". If the resolution removes "person" or leaves |V| < 15, that is logged and reported; the rule is not changed (ruling 2).
+V2. Either implement W2'(iii) in `gold` (for each mapped index, synonyms whose matcher set is neither {its class} nor {} -> a "synonym_conflicts_descriptive" list in the gold file, names only) or delete the promise in §3 l.66-67. Also pre-declare now, descriptive only: the AD-1 point/CI and the premise recomputed with the W2'-ADDED indices excluded from the label rung (supplement; never a verdict input).
+V3. Docstring l.16: "register ... A-N2 blocks unchanged, D1 only (smoke listed, not staged)".
+Non-blocking (carry to the tier-2 prereg):
+T1. `register` takes no --set (always D1, main l.605); the tier-2 prereg adds it.
+T2. W10 stands: the tier-2 AD-2 predictor is an image bootstrap of the observed-minus-null excess.
+
+## For the PI
+- No question needs an answer before tier 1. Default: tier 1 proceeds on M2 after W5'' and V1-V3 (no further judge round).
+- The CC-170 M1/laptop question stands unchanged (recommended answer: wait for M1 for the CPU split step; default wait).
+- A's freeze and submission are not delayed; nothing in A's text waits on A-T1.

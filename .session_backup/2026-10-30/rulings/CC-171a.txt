@@ -1,0 +1,150 @@
+CC-171a: Paper B+D (LRE), BD-T1 tier-1 DEV-EXPLORE, round 2: a re-read after CC-171's W1-W5 and N1-N7 were applied. Single judge, REVERSIBLE tier (actionable at >= 90; PI-1029o). 2026-10-29T18:33Z.
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes, TIER 1 ONLY (option 1).
+- W1-W5 are closed in substance.
+- Four new items are blocking. Three are text-only (X1, X2, X4); X3 is one sentence in §2.1 plus either a rootscan code change or an OPS line.
+- No third re-read is needed if the diff is limited to those lines. The coordinator checks the diff against this list.
+- Then finalise (F1): PREREG.md sha256 into LOG.md, regenerate SHA256SUMS, gatekeeper commit by path.
+- Run on M2 (role m4) in the queue order set by CC-172: L1-b (now in crash triage, OPS-1030b), then A-T1, then BD-T1, then C-T1. The job's lock enforces the order.
+- Nothing here authorises tier 2 or tier 3.
+
+CONFIDENCE: 92% after X1-X4. As submitted: 82%, not actionable. The cause is a stale disclosure and a wrong power statement in a file that will be binding.
+
+## Ranked options
+1. Apply X1-X4 (text, plus a small rootscan change or an OPS line), then finalise and run tier 1. 92%. Recommended.
+2. Finalise as submitted. 82%.
+   - The §1 C-overlap numbers are pre-W5.
+   - §6 misstates where the low-power stop falls.
+   - §8 claims V1 equals B-1's L1, which is false.
+   - Tier-2 pooled scoring is underspecified.
+   - Wrong statements in a registered file feed the paper and the PI's Q1.
+3. Option 2 of CC-171 (split H 348/348 for the rehearsal). 70%. Unchanged reasoning, and no PI answer to Q2 is in LOG.md.
+4. Defer. 60%. B keeps its development-tier wording.
+
+## What I checked myself
+- Runs:
+  - `bd_t1.py --selftest`: "ok (design estimate 10.11 GPU-h, cap 15)", rc 0.
+  - `bash -n bd_t1_job.sh`: rc 0.
+  - `sha256sum -c scripts/bd_t1/SHA256SUMS`: 7/7 OK.
+- Current sha256 values:
+  - PREREG_DRAFT 1f42d911
+  - lists b6bbce8f (= LISTS_SHA256)
+  - sscd 13b9288c (= SSCD_SHA256)
+  - bd_t1.py 85820878
+  - job 5b603077
+  - bd_t1_sscd.py 40029ac8
+  - SUMS a6c3cdc6
+- SFT pins:
+  - I ran `bd_t1.py ids` into a scratch dir outside the repo, then the job's `build_gold_sft.py` call for V1-V5 on data/datasets/ktvic/train_data.json, then `bd_t1.py sft`.
+  - Result: "sft pins ok". The scratch dir was deleted.
+  - I also deleted the __pycache__ my import created (it is gitignored).
+- Sets, recounted from bd_t1_lists.json and _pairs.train:
+  - H = 686, T2 = 53, pool = 2,743, with levels 216/433/867/1734/2743, nested.
+  - H ∩ V5 = 0 and T2 ∩ V5 = 0.
+  - All 696 H candidates are out of the pool, including the 10 dropped from H.
+  - Of the 30 twins, 9 share an OV file, 10 are hash matches (hash_10 8, hash_9 2) and 11 are SSCD matches.
+  - The dropped ids match §1 (12).
+  - T1 = 187, and T2 ∩ T1 = 0.
+- C overlap after W5, recounted from c_stage1 lists.json (sets[*] are [file, file, sha] triples):
+  - H's OV files number 688.
+  - 352 are in ov_dev_a and 335 in ov_dev_b, so 687 of 688. 335 are in refuse.openviic_files.
+  - T2's 53 OV files: 0 in the dev sets, 29 in refuse.
+  - ov_dev_b (925) is a subset of refuse.
+  - N3's wording ("protected, not in C's final dev sets") is accurate.
+- V levels against B-1's b1_lists.json: V1 ∩ L1 = 171 of 216, V2 343/433, V3 676/867, V4 1370/1734. V1 is NOT identical to L1 (§8 says it is).
+- Predictor: I ran predict() on synthetic draws N(g, 1.7), n 187 to 686.
+
+  | g | point clause P(g >= 4.934) | CI clause |
+  |---|---|---|
+  | 7.0 | 0.856 | 0.997 |
+  | 8.0 | 0.944 | 0.9995 |
+  | 8.9 | 0.981 | |
+  | 9.87 | 0.996 | 1.000 |
+
+  The joint (Bonferroni) is lower still, so tier 1 stops at REPRODUCED_LOW_POWER for any tier-1 g below about 9. That is not "roughly 7" (§6 Reading).
+- OV-dev annotation sha256 = 2a68a3eb…, as §2.1 states. I hashed it and did not read it.
+- Scans:
+  - No Vietnamese caption text in the lists, the sscd json or the scripts (diacritic grep, 0 hits).
+  - No host, IP or port.
+- bd_t1_sscd.py, read in full:
+  - It uses match_openviic's load_image/sscd_input. SSCD is flip-invariant (match_openviic l.113-115), so mirrored copies are covered.
+  - It applies cosine >= 0.5 alone, unioned with the existing hash/shared-file rule for the pool. CC-171 W5 named the matcher's hash AND SSCD rule. This deviation excludes more, was fixed before any score and touches no outcome data, so I accept it. Disclose it (N-b).
+- Job and rootscan:
+  - rootscan runs once in preflight, after the lock and before any GPU step. The guard runs before every step.
+  - rootscan hashes only .jpg/.jpeg/.png (b1.IMAGES, b1.py l.84). Archives under /root are neither listed nor opened, but CC-171 r5 asked for "all files, archives listed" -> X3.
+- LOG.md: no PI answer to CC-171 Q1 or Q2 yet. The CC-172 queue order applies, and OPS-1030b shows L1-b crash triage on M2. WORKFLOW_LOG's last entries are from 10-28 and do not mention BD-T1. RESUME_2026-10-25_paperB still sets freeze 11-30.
+
+## Rulings on CC-171 items
+r1. W1 CLOSED.
+- predict(ci=True) = mean Φ((d - bar)/SE_H - 1.96), with SE_H = SD(draws)·sqrt(187/686).
+- joint() = max(0, 1 - Σ(1 - p_i)).
+- The selftests assert the Bonferroni value and that the CI clause is at or below the point clause.
+- §5 text matches the code.
+
+r2. W2 CLOSED in rule, OPEN in one detail -> X3b.
+- §2.1 fixes the exact §7 rule on T2 (rng(0) (2000, 53)) and the pooled T1 ∪ T2 predicted P >= 0.98. It reads the PI-1029n "margin" as those two conditions and states the false-stop risk, as CC-171 W2 allowed.
+- Missing: how the 240-image pool is scored. Is CIDEr computed separately per panel source (T1 with OV-train refs, T2 with OV-dev refs) and the per-image scores then concatenated? Or as one Cider over 240? CIDEr's IDF is corpus-level, so the two choices differ. Leaving it open until after the tier-1 score is the post-hoc freedom W2 was meant to close.
+
+r3. W3 CLOSED.
+- §7 fixes rng(0) (2000, 686), the D0 §3 k rule, hash selection with repeats dropped, the OV-dev file and its sha256, the laptop, and the time (after the tier-3 prereg is in LOG.md).
+- M1 only for H images.
+
+r4. W4 CLOSED. §6 clause 2 = stop, with only an explicit PI exception as an exit. outcome() returns "..._stop_unless_PI_exception" and the selftest covers it.
+
+r5. W5 CLOSED in substance, with three open points:
+- (a) The pool and H were rebuilt, and LISTS_SHA256, SSCD_SHA256 and SFT_PINS updated. The pins reproduce.
+- (b) The disclosure numbers were not updated (X1).
+- (c) The archive gap in rootscan (X3).
+
+r6. N1 applied (§7 wording, data-dependent SESOI caveat).
+- N2 is half-applied. The decode files and train_data.json are disclosed. Not yet stated: evaluate.py writes an aggregate KTVIC CIDEr over all of dev300, including T2's 53 K-side, into each result file and log (N-a).
+- N3 applied and verified.
+- N4 applied in the selftest only. §4 still says V5 2,754 and 10.15 GPU-h (N-c).
+- N5 needs the CC-172 order (X4).
+- N6 is this re-read.
+- N7 is carried to the tier-3 prereg.
+
+r7. Power, stated honestly.
+- With the predictor as written, PROCEED needs a tier-1 g of about 9 or more (SD of draws about 1.7). D0's B-1 estimate was 9.87.
+- If the true gap is 9.87 and the new pool's estimate has SD about 1.7, then P(PROCEED_TO_TIER2) is roughly Φ((9.87 - 9)/1.7) ≈ 0.7.
+- Tier-2 attrition comes on top (CC-171's 10-20% false-stop at T2).
+- Rough P(reaching tier 3) ≈ 0.6. This is the PI-1029n cost and it is accepted. The draft's "about 0.85" prior refers to tier-3 PASS given access and must not be quoted as the end-to-end chance.
+- The 10 GPU-h still buys a supplement dev replication in every branch, so the run is worth doing.
+
+## Required fixes (blocking before F1; text, plus X3)
+X1. §1 Disclosure, post-W5 numbers:
+- 687 of H's 688 OpenViIC-dev files are in C's dev sets (ov_dev_a 352, ov_dev_b 335); 335 are in C's refuse list.
+- Keep the 696/701 figures only if they are labelled "pre-W5 candidates".
+- State that the 10 H candidates dropped as near-copies of test images are in neither H nor the training pool.
+X2. §6 "Reading": replace "roughly 7" with the computed boundary. The point clause alone falls below 0.98 at g ≈ 8.9 (SD 1.7), and the joint falls lower. State P(PROCEED | true g = 9.87) ≈ 0.7 and P(reach tier 3) ≈ 0.6 (r7). Do the same in §0.1 next to the 0.85 prior.
+X3. Two items:
+- (a) Archives (CC-171 r5). Choose one:
+  - rootscan also lists every *.zip, *.tar* and *.7z under /root and refuses if any member name equals an H file name (zipfile/tarfile namelist, no extraction), with a selftest case; or
+  - the operator's OPS line before staging includes `find /root \( -name '*.zip' -o -name '*.tar*' -o -name '*.7z' \)` and a member check against H file names, with the result logged.
+  - If code changes, regenerate SUMS.
+- (b) §2.1, one sentence fixing the pooled-predictor scoring. My recommended default: per-panel-source Cider runs (T1 against its OV-train panel, as in tier 1; T2 against its OV-dev panel, as in the tier-2 rule), per-image scores concatenated, one rng(0) (2000, 240) matrix, SE_H = SD·sqrt(240/686).
+X4.
+- §8 "V1 is identical" is false. Write: V1-V4 keep B-1's N, but share only 171/216, 343/433, 676/867 and 1,370/1,734 ids with B-1's L1-L4, because the prefix is re-filtered.
+- §8 N5: tier 1 starts after the CC-172 queue ahead of it (L1-b, in triage under OPS-1030b, then A-T1) and M2's lock are released. Not "after L1-b" alone.
+
+Non-blocking:
+- N-a: the N2 aggregate dev300 CIDEr sentence (r6).
+- N-b: disclose the W5 rule deviation (SSCD >= 0.5 alone, unioned with the hash/shared-file rule, not the matcher's AND) and the 3 truncated OV-test files.
+- N-c: §4 numbers (2,743, 10.11 GPU-h).
+- N-d: §1 says no OpenViIC annotation was "opened" except the OV-test keys. bd_t1_sscd.py json-loads the whole OV-test file and uses its keys only. Reword to "loaded; only its keys (file names) used".
+
+## Falsifiers (unchanged from CC-171)
+- Tier 1: NOT_REPRODUCED or REPRODUCED_LOW_POWER (g below about 9) ends the direction as a supplement dev replication.
+- Tier 2: either §2.1 condition fails, and H is never touched.
+- Tier 3: FAIL or INCONCLUSIVE, reported in §5.5.
+
+## For the PI
+- Q1 (carried from CC-171, numbers corrected): accept H = 686 KTVIC-train images whose OpenViIC copies are all in the official OpenViIC dev split as B+D's single-look confirmation set?
+  - 687 of its 688 OpenViIC files were Paper C's dev data (base LVLMs, retrieval ICL).
+  - The training pool drops the 696 candidates and 30 near-twins (2,743 of 3,469; full-splits exception, disclosed).
+  - Recommendation: YES.
+  - Default: tier 1 proceeds (dev only, about 10 GPU-h on M2). The answer is needed before the tier-3 prereg.
+- Q2 (carried): T2 rehearsal (default) or a 343/343 H split. Recommendation: T2. It must be chosen before any tier-1 score, which means before BD-T1 starts on M2.
+- Note: under the PI-1029n 0.98 rule, the chance of reaching the held-out look is about 0.6 even if the effect is real (r7). The cost is accepted. A tier-1 stop still yields a supplement dev replication.

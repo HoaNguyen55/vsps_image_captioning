@@ -1,0 +1,60 @@
+CC-170a: Paper A (SPIC), A-T1 tier-1 DEV-EXPLORE package, ROUND 2 (re-read after the writer applied CC-170 W1-W13). Single judge, REVERSIBLE tier (actionable at >= 90; PI-1029o). Request under PI-1029r / PI-1029n, as CC-170.
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes for A-T1 TIER 1 ONLY (option 1, unchanged from CC-170). Two items are not fully applied and stay blocking BEFORE finalisation: W2' (map consistency, now a metadata gate in code, including the reverse direction) and W5' (split-cell wording in §7.1 needs Holm). Both are pre-data: they read only objectInfo150.txt (metadata) and prereg text. After W2', W5' and W8 (coordinator ledger line, now a precondition of the finalisation commit): PREREG.md sha256 in LOG.md, gatekeeper commit by path, premise logged, then D1 decode on M2 (role m4) when M2 holds no other lock. Nothing here authorises tier 2 or tier 3.
+
+CONFIDENCE: 90% (tier 1 after W2' + W5'). As submitted: 80%, not actionable (the premise gate and the label rung remain exposed to the matcher-consistency gap that made CC-170 W2 blocking; §7.1 makes unadjusted single-test claims that are frozen at finalisation).
+
+Files judged (sha256 prefix at read time): PREREG_DRAFT.md 87c473be (v2); a_t1.py 59c7ae79; a_t1_job.sh b6cb2f15; scripts/a_t1/SHA256SUMS 73da4092. Untracked (git status ??), HEAD f8765859.
+
+## Ranked options
+1. GO-with-fixes: apply W2' + W5' (code gate + one paragraph), then finalise and run tier 1 on M2, cap 10 GPU-h. 90%. Recommended.
+2. GO as submitted (accept the name-only map rule without a reverse check, accept "Holm not used" with single-test sentences). 80%. Below the bar: an unmapped ADE class the matcher sends into V (by my run: "minibike" -> {bicycle}, now that 117 is dropped) makes a caption that names it score as a hallucination against the label rung, which biases AD-1 and the premise in an unknown direction.
+3. AD-2 only (AD-1 descriptive). 70% (as CC-170). Not needed: W2' is a cheap fix.
+4. Defer / do nothing. 45% (as CC-170). No change in A's situation since CC-170.
+5. Re-rank to A-2 (COCO+LVIS) or A-3 (VG). 40% / 20% (as CC-170). No new evidence.
+
+## What was checked
+- Ran: `python3 scripts/a_t1/a_t1.py --selftest` -> "a_t1 selftest ok", rc 0; `bash -n scripts/a_t1/a_t1_job.sh` rc 0; `sha256sum -c scripts/a_t1/SHA256SUMS` 7/7 OK (a_t1.py 59c7ae79, job b6cb2f15; p50, p50x, score_g2b, decode_hf_vlm e2de1881, b_r1 unchanged from CC-170).
+- A's current section numbers: journal_draft/sec7_verbosity_sign.md l.86 "## 6.4 Large reference sets: PASCAL-50S", l.133 "## 6.6 Which objects references name". The prereg's §6.4/§6.6 placement matches. No stale "7.4" left (grep). A's title in abstract_A.md matches §0.
+- Ledger: manuscript/directions/PORTFOLIO_3Y_2026-10-29.md (CC-170 cited it without "directions/") has no ADE20K / Localized Narratives line yet (grep, 0 hits).
+- Frozen matcher (score_g2b MATCH["coco80"]["en"], my run): armchair -> {}, crt screen -> {}, minibike -> {bicycle}, motorbike -> {motorcycle}, computer -> {laptop}; the writer's three drops are correct by the name-only rule. All 30 kept names map to exactly their COCO class (selftest l.422 asserts it).
+- Synonyms (my run on synonym strings FROM MY RECALL of objectInfo150, not from the file, so indicative only): most map to {target} or {}; three map elsewhere: 81 bus "passenger vehicle" -> {person}; 66 toilet "stool" -> {chair}; 125 microwave "microwave oven" -> {microwave, oven}. Separately, ADE-150 has its own "stool" class (unmapped), and the matcher sends "stool" to chair, a V class. So the CC-170 W2 synonym clause would bite, and so does the reverse direction CC-170 did not state.
+
+## W-item check (CC-170 -> v2)
+W1 objectInfo150: APPLIED. parse_info splits tab, then comma synonyms (l.188-195); check_names is membership, not first name (l.198-201); gold hard-fails if objectInfo150.txt is absent or duplicated (l.225-227) and if its sha differs from PIN["objectinfo"] (l.229-230); real-format fixture incl. index 90 and a missing-synonym negative case (l.424-432). Minor gaps: ";" not accepted (fails safe), no selftest for the absent-file path (N1).
+W2 class map: PARTLY APPLIED. The rule was narrowed from "ADE name AND each synonym maps to {coco_k} or nothing" to "ADE name maps to exactly {coco_k}" (§3, l.55-58, l.422) without saying it deviates from CC-170 W2. The reverse direction (an unmapped ADE class whose name the matcher maps into V) is not checked at all. -> W2' (blocking).
+W3 custody: APPLIED. `split` refuses unless /root/.vsps_machine_id = m3 (l.127-129), checks the zip pin, writes training members + objectInfo150.txt and validation pHash/dHash numbers only (l.131-138); `select` refuses an archive holding images/validation (l.157-158). Minor: the refusal does not also test annotations/validation (N2; `split` makes it safe today).
+W4 premise before GPU: APPLIED. `stage` refuses unless the D1 premise at SHARE_MIN holds (l.246-248); prereg §3, §10 order. Tier-3 order stated in §7; tier-2 order not stated (N3).
+W5 multiplicity: PARTLY APPLIED. p-values defined (§5; code l.355 for AD-1, p50x for AD-2); the joint claim as intersection-union is correct. But §5 says "Holm is not used" while §7.1 cells 2 and 3 make single-test claims ("salience-driven missingness was again detected (p = ...)"; "the label step passed"). Under IUT only the joint claim is controlled; a single claim picked after one of two fails is a 2-test family. -> W5' (blocking, text only).
+W6 select asserts: MOSTLY APPLIED. Set sizes asserted (l.164-165), n_near_val_excluded logged (l.171). The ">= 18,000 candidates" assert is missing (N4).
+W7: APPLIED. W9: APPLIED (l.282-285; selftest l.484-490). W10: caveat in §5; binding at tier 2. W11: job header correct (D1 only, smoke listed but not staged); the module docstring l.15 still says "D1 + smoke datasets" (N5). W13: APPLIED (§5, §9).
+W12: PARTLY. finish() sums outputs; preds off the repo. But §9 promises an 8-gram exposure count that `score` does not compute, and the sidecar check (l.391-393) passes silently when the sidecar file is missing (N6).
+W8 ledger line: not done by the writer (told not to edit planning files). Ruling 3 below.
+
+## Rulings
+1. Ranking unchanged: A-1 first. Tier 1 GO-with-fixes at 90% after W2' and W5'.
+2. W2 is amended, not overruled silently. CC-170 W2's synonym clause is narrowed for a reason: WordNet-style synonyms ("passenger vehicle", "can", "set", "goggle box") are rare in captions and narratives, and dropping bus/toilet/microwave for them costs power without reducing the label-vs-narrative bias the clause targeted. What does bias that contrast is any ADE class the matcher sends into V without the label rung counting it (e.g. minibike -> bicycle, stool -> chair). So the binding rule becomes W2' below: name-level consistency in BOTH directions, enforced by code from the pinned objectInfo150 before any label or narrative is counted; synonym-level conflicts are reported descriptively. This supersedes CC-170 W2 where they differ.
+3. W8 is acceptable as non-blocking for the writer, but the coordinator must add the ledger line to manuscript/directions/PORTFOLIO_3Y_2026-10-29.md §2.3 BEFORE or IN the finalisation gatekeeper commit (CC-170 r1: "now, not at tier 3"). It is a precondition of finalisation, not of tier 3.
+4. W5: option (a). Split cells need Holm over the pair at one-sided 0.025: the passing test's claim stands only if its p <= 0.0125 when the other is not PASS (Holm step 1); otherwise the cell reads "registered joint claim not met; [test] nominal p = ..., not claimed". Holm is applied only at tier 3 (text only); no code change in tier 1, whose outcome is the conjunction.
+5. Everything else in CC-170 rulings 2-7 stands (design, SHARE_MIN 0.1%, predictors, outcome order, budget 6.2 GPU-h cap 10 on M2, custody, placement in §6.4/§6.6, no new section, A's freeze not delayed).
+6. Operator note: the W9 guard refuses any *.zip or "validation" filename anywhere under $NCS_DATA/datasets on M2. With L1-b, BD-T1 and C-T1 on the same M2 queue, A-T1 may refuse because of another job's staging. That is fail-safe; the operator clears or moves the other job's files only under that job's own rules, never by editing the guard.
+
+## Required fixes
+Blocking (before finalisation):
+W2'. In `gold`, BEFORE the narrative file is read (move the objectInfo150 block above l.218), add a metadata gate on the pinned objectInfo150.txt: for every ADE-150 index k, run the frozen matcher on "a " + each synonym. (i) Kept index k: its map name must give exactly {coco_k} (already true). (ii) Reverse: any NOT-kept index whose FIRST-LISTED name or the matcher-hit synonym gives a non-empty set inside V -> SystemExit listing them. Resolution rule fixed now: such an index is added to ADE2COCO for that class if its first-listed name gives exactly one class c in V (label rung = union of pixels, as for desk/coffee table -> dining table); otherwise c leaves V. (iii) Kept-index synonyms that give a set other than {coco_k} or {} are written to the gold file as a descriptive list (supplement), not a verdict input. The resulting ADE2COCO, V and index list go into §3 before finalisation, with the CC-170a reason sentence (ruling 2); update the selftest counts and add a fixture where an unmapped index (e.g. "stool") hits V and the gate refuses. All of this reads metadata only (no pixel, no narrative), so it is pre-data.
+W5'. Rewrite §5 "Multiplicity" and §7.1 cells 2-3 per ruling 4 (Holm at tier 3 for single claims, p <= 0.0125 for the passing one when the other fails; otherwise "nominal, not claimed").
+Non-blocking:
+N1. Selftest: an absent-objectInfo150 case (zip without the file -> SystemExit); accept ";" as well as "," in parse_info.
+N2. `select`: also refuse any "/annotations/validation/" member.
+N3. §6 cl.3: state that the tier-2 prereg runs `gold --set D2` and the premise gate before any D2 decode (`stage` needs a --set argument for D2).
+N4. `select`: assert n_candidates >= 18,000.
+N5. Docstring l.15: "D1 only" (smoke listed, not staged).
+N6. `score`: refuse if a .preds.json has no sha256 sidecar; either implement the 8-gram exposure count (p50.ngram pattern, descriptive) or remove the §9 promise for tier 1 and move it to tier 3.
+W8 (coordinator, precondition of the finalisation commit): add "ADE20K SceneParsing val (2,000) + LN-ADE val | pixel labels + narratives | reserved, tier-3 only | A" to manuscript/directions/PORTFOLIO_3Y_2026-10-29.md §2.3; W25 filter before the tier-3 prereg.
+
+## For the PI
+- No question needs an answer before tier 1. Default: tier 1 proceeds on M2 after W2', W5' and the ledger line.
+- The CC-170 M1/laptop question stands unchanged (recommended answer: wait for M1 for the CPU split step; default wait).
+- A's freeze and submission are not delayed; nothing in A's text waits on A-T1.

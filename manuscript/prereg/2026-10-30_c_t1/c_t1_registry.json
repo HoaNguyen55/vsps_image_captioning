@@ -1,0 +1,186 @@
+{
+ "schema": "vsps.c_t1_registry.v1",
+ "statement": "C-T1 additions only. The two C backbones use the B-N1 registry (9ff02dc2) unchanged; gemma3_4b and idefics3_8b are borrowed from the L1-b registry by path and sha256. Hashes from the HF tree API at the pinned revision on 2026-10-30, without authentication: LFS files sha256, others git blob sha1. Gated LFS hashes come back masked and are null here; they are filled from the authenticated tree API at this revision, in the same commit that records the gate acceptance, before any fetch (as CC-168 W1). Until then the model is skipped, never fetched.",
+ "models": {
+  "aya_vision_8b": {
+   "role": "third backbone, primary (non-Qwen LM: Command R7B; Vietnamese is one of its 23 listed languages)",
+   "hub_id": "CohereLabs/aya-vision-8b",
+   "revision": "d7601ac8fd3baf6f59c5fc9514c618ef0f24268f",
+   "licence": "cc-by-nc-4.0 (+ Cohere Labs acceptable-use policy); research, non-commercial",
+   "gated": "auto (HF click-to-accept)",
+   "lm_family": "cohere2 (Command R7B)",
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "processor_kwargs": {},
+   "image_input": "the snapshot's default tiling (disclosed); identical in every arm",
+   "transformers_min": "4.50 (AyaVisionForConditionalGeneration via AutoModelForImageTextToText; venv-lb has 4.57.6)",
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "ec34051f88a6506285ddc71b4ba884e9f0fd8bce"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "c9e9a42df738c71735f87217740f1319d1d625e0"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "b2af7da769d7f4683b0985d2584e18ffa6ae1df6"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "228d6ebb3b7dc645a50ce89fda9fdaed8fe853e1"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "42215345379cfd18557ccbe2c4273d04596e9de1"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "bc0c99ecbb4ef22cb7976680818bc302c72be599"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "cf33f2e5e3a66711d05c07c8047dcdb59005494e"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "7fff3b6e9069165a30ca99474b2a27f0b2d167db"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": null
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": null
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": null
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": null
+    },
+    "tokenizer.json": {
+     "kind": "sha256",
+     "hash": null
+    }
+   }
+  },
+  "xglm_2_9b": {
+   "role": "LMCap generator (Ramos et al. 2023 use facebook/xglm-2.9B)",
+   "hub_id": "facebook/xglm-2.9B",
+   "revision": "33c659ae27de09c0a54123d3902dac48cbb8592a",
+   "licence": "mit",
+   "gated": false,
+   "dtype": "float16",
+   "files": {
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "5259f0909bbb98005e355a94f0a9ad9902dc1810"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "b73e8f8fc85a983669324aeb7b0f9fc92e18f9f8"
+    },
+    "pytorch_model.bin": {
+     "kind": "sha256",
+     "hash": "9aa29d6635e7936bdd020bd8dab855ba8e7d3b507a1af78a98a7039648f66f23"
+    },
+    "sentencepiece.bpe.model": {
+     "kind": "sha256",
+     "hash": "c49dc7e82c10227af764e518924cf2f9d50c00462750d184fa74697bba65eef8"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "169adeb038b8bde6ecf79666dbfa49fcbaf9a087"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "98f7774e39cd7ce59acfe522852863101ccad1d8"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "9a478583cf78963e92ee738bf7dababc1b376cb2"
+    }
+   }
+  },
+  "mclip_h14": {
+   "role": "LMCap retriever and re-ranker (paper: M-CLIP xlm-roberta-large-ViT-H-14, open_clip)",
+   "hub_id": "laion/CLIP-ViT-H-14-frozen-xlm-roberta-large-laion5B-s13B-b90k",
+   "revision": "f9ab955287d06ac45c7654f26fecd29301c70a1f",
+   "licence": "mit",
+   "gated": false,
+   "dtype": "float16",
+   "open_clip_name": "xlm-roberta-large-ViT-H-14",
+   "files": {
+    "open_clip_pytorch_model.bin": {
+     "kind": "sha256",
+     "hash": "ee81ce53c8591d48ee5e7b390b2f10d502c721df5920c3096c6bdb54d1459881"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "c13c679c06519325749d1eef242ff98e2a5d2165"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "463f3414782c1c9405828c9b31bfa36dda1f45c5"
+    }
+   }
+  },
+  "xlm_roberta_large": {
+   "role": "text tower config/tokenizer that open_clip's xlm-roberta-large-ViT-H-14 loads BY NAME from the HF cache (HF_HUB_OFFLINE=1); weights come from mclip_h14's checkpoint",
+   "hub_id": "xlm-roberta-large",
+   "hub_canonical": "FacebookAI/xlm-roberta-large",
+   "revision": "c23d21b0620b635a76227c604d44e43a9f0ee389",
+   "licence": "mit",
+   "gated": false,
+   "files": {
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "8e5fb14e1352fd8fc678a7b293b63cfb5cf091f6"
+    },
+    "sentencepiece.bpe.model": {
+     "kind": "git_blob",
+     "hash": "db9af13bf09fd3028ca32be90d3fb66d5e470399"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "463f3414782c1c9405828c9b31bfa36dda1f45c5"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "34ddbd64a4cd3f2d9d8a9120d3662d0bf91baead"
+    }
+   }
+  }
+ },
+ "borrowed": {
+  "gemma3_4b": {
+   "registry": "manuscript/prereg/2026-10-29_l1b/l1b_registry.json",
+   "registry_sha256": "cd210a7ca0f85b10c6f9ee95f8b737284f5029ef5f05c84d1ee760d18e7b96e3",
+   "role": "third backbone, fallback 1 (gated manual; 4 null LFS hashes, as in L1-b)"
+  },
+  "idefics3_8b": {
+   "registry": "manuscript/prereg/2026-10-29_l1b/l1b_registry.json",
+   "registry_sha256": "cd210a7ca0f85b10c6f9ee95f8b737284f5029ef5f05c84d1ee760d18e7b96e3",
+   "role": "third backbone, fallback 2 (apache-2.0, ungated, complete pins; Llama-3.1 LM)"
+  }
+ },
+ "data": {
+  "flickr30k": {
+   "hub_id": "nlphuji/flickr30k (dataset)",
+   "revision": "2b239befc81b6e3f035ce6bd52f5f4d60f5625f7",
+   "gated": false,
+   "flickr_annotations_30k.csv": "395990db603ab8bafd5c7ab2746b22058bb1e75b78b3eb56ad755931364ac137",
+   "flickr30k-images.zip": "2ce2420c0d17f0531deaa89ac657b4d5067ec519da16ff1ea12acbf5619c7391",
+   "terms": "Flickr30K terms of use (non-commercial research); captions never committed"
+  }
+ },
+ "venv": {
+  "venv-t1": "venv-lb freeze (H_LB 685ffe2a) + open_clip_torch==2.32.0 + ftfy==6.3.1, exact pins, no resolution; freeze sha recorded at build and read by one judge before B3 (W-item); t1check (W8) builds M-CLIP offline from the pinned files before any GPU step"
+ }
+}

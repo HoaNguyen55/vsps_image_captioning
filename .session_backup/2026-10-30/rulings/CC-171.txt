@@ -1,0 +1,118 @@
+CC-171: Paper B+D (LRE), BD-T1 tier-1 DEV-EXPLORE prereg draft + job (forward two-panel gap, re-trained on a pool that excludes the future tier-3 set). Single judge, REVERSIBLE tier (actionable at >= 90; PI-1029o). Request under PI-1029r (acceptance-raising registered result inside the existing storyline) and PI-1029n (three-tier method; H only after tier-2 rehearsal with predicted P(PASS) >= 0.98).
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes for BD-1 TIER 1 ONLY (option 1). Blocking W1-W5 are fixed in the draft BEFORE finalisation (F1). Then: PREREG.md sha256 in LOG.md, gatekeeper commit by path, run on M2 (role m4) once M2 holds no other lock (L1-b). Nothing here authorises tier 2 or tier 3; each needs its own prereg and ruling. H as the tier-3 set and the 696-image training-pool exclusion go to the PI (Q1) before the tier-3 prereg. Tier 1 does not wait for that answer.
+
+CONFIDENCE: 91% (tier 1 after W1-W5). Without W1-W5: 70%, not actionable.
+
+## Ranked options
+1. BD-1, tier 1 now on M2, after W1-W5. Tier 2 = T2 (55 images, OV-dev panel), with its rule and predictor fixed NOW (W2). 91%. Recommended.
+2. BD-1 with a stronger rehearsal: hash-split H (sha256('bdt1|'+image sha)) into H_a (about 348, tier 2) and H_b (about 348, tier 3), plus T2 as a side check. 72%. Rehearsal n is 6x larger, but the tier-3 n halves (SE about 1.24 instead of 0.88, still about 4 SE above the SESOI), H_a must be decoded on M1 (H never on M2), and it adds about 2.5 GPU-h on M1, which queues behind A. Pick it at F1 only if the PI prefers rehearsal strength over test n. The choice must be made before any tier-1 score.
+3. Defer / do nothing. B+D keeps the development-tier wording that response item 5(e) already applied. 60%. No risk to B's 11-30 freeze, but the reviewers' weakest item (evidence tier, all five reviewers) stays open.
+4. BD-2 (H = 500 hash carve of KTVIC-train x OV-train-only, the CC-158 plan). 25%. Explicitly overrules CC-158 r2's H source (see r1).
+5. BD-3 (reverse-direction confirmation). 10%. The B-R1 reverse gap +1.69 [-0.72, 3.91] spans 0, so P(PASS) is low, and the reviewers asked for the forward gap only.
+
+## What I checked (myself, not from the draft's summary)
+- Run: `bd_t1.py --selftest` gives "ok (design estimate 10.15 GPU-h, cap 15)", rc 0. `bash -n bd_t1_job.sh` gives rc 0. `sha256sum -c scripts/bd_t1/SHA256SUMS` gives 5/5 OK. Current sha256: PREREG_DRAFT bd5dc5b8, lists 33d433f9 (= LISTS_SHA256 in bd_t1.py), bd_t1.py 5d01b185, job c25b8ea3, SUMS e9da49b1.
+- bd_t1_lists.json, recounted from data/ktvic_openviic_refs.json _pairs.train:
+  - Split membership: 751 KTVIC-train images have OV copies in dev only, which is H 696 + T2 55. H has 701 OV files, every one in dev.
+  - Overlaps: H ∩ eligible = 0 and T2 ∩ eligible = 0.
+  - Levels: 216/433/867/1734/2754, nested, ids_sha256 as in §1. 19 twins were excluded.
+  - H ∩ B-R1 r1_lists = 0 (ids and OV files).
+- Paper C overlap, recounted from manuscript/prereg/2026-10-22_c_stage1/lists.json:
+  - ov_dev_a 354 + ov_dev_b 341 = 695 of H's 701 OV files.
+  - refuse.openviic_files holds 341 H files and 29 T2 files. ov_dev_b was refused in C stage 1 and became C-2's held-out dev set: c2_ablation PREREG l.17 has 925 OV-dev-B images.
+  - C's systems are base LVLMs with retrieval ICL (Qwen2.5-VL, InternVL3; c2_ablation PREREG l.35, l.62, l.158). The c_stage2, c_test and c2_ablation preregs have no sft/adapter/fine-tune hit for an OV-dev decode. The only SFT in the LOG near that date, W22-SFT (CC-150, OPS-1028t), is a UIT-ViIC memory probe for K2. So no fine-tuned model appears in C's registered runs to date, and no forward-adapter O-side value on H has been seen.
+- BD-2 feasibility, my count: of the 2,335 OV-train-only images, 2,154 are outside dev300 and 506 are outside both dev300 and B-R1's R3 (1,734). Those 506 have 533 OV files, and 506 of the files are in C's retrieval memory. After twin filtering, fewer than 500 remain. B-R1, which is the same paper (B+D), trained on OV captions of the neighbouring 1,734.
+- Budget: B-1 gpu_seconds.tsv (.session_backup/machines/M4/root/outputs/b1_scaling/) gives train L1-L5 402/764/1523/2989/5953 s (s42), decodes 292-353 s, Step 0 322 s. 10.15 GPU-h is reproduced. B-1's real total was 11.97 h including faults, so the 15 h cap is a 1.48x margin.
+- D0 RULE §6 (manuscript/prereg/2026-10-29_b_d0/RULE.md l.96) fixes P1 SESOI = max(1, 0.5 g) "for the T/T2 study" before D0 ran, so the SESOI 4.934 is pre-fixed for exactly this study and not picked here. BD_META_REVIEW item 5(c) still calls it data-dependent; the paper must keep that caveat.
+- BD_META_REVIEW item 5 l.110-125 and "Items sent to the coordinator" #5 (l.35 of the response file): a future registered single look on unseen data, KTVIC test excluded, after the dev-explore and rehearsal stages. BD-1 matches this.
+- RESUME_2026-10-25_paperB l.7: freeze 11-30, submit before 01-25. LOG CC-158 r2, CC-161, PI-1029n (both lines), PI-1029r, CC-152a. Portfolio §2.3 l.169 (H = 500 OV-train-only carve-out, owner B, needs a PI line).
+- bd_t1.py predict/score l.199-275 and job l.1-111, read line by line.
+
+## Rulings
+r1 (point 1: BD-1 vs BD-2; is H "never used"?).
+- BD-1 is preferred. I explicitly overrule CC-158 r2's H source ("from the 2,335 OV-train-only"). B-R1 (CC-161, after CC-158) consumed 1,734 of those images as reverse-training data. That leaves 506 candidates, almost all in C's retrieval memory, so BD-2 can no longer supply 500 clean images.
+- H is acceptable as "never used by B+D": no B+D adapter, score, selection step or rule touched H or its OV-dev captions. B-1 L5 trained on H's KTVIC captions, but it is never scored on H. It is NOT a pristine set across the group: C used H's OV-dev captions as development references for base-model ICL systems, and ov_dev_b (341 of the files) was C-2's held-out dev set, where those images were decoded and scored.
+- The paper must call H "held-out images unused by any B+D adapter or analysis", never "a test set".
+- Required disclosure (tier-3 prereg + §5.4 + Table 5.2 note), stating:
+  - 695/701 OV-dev files were Paper C's development data (ov_dev_a 354, ov_dev_b 341);
+  - C ran base LVLMs with retrieval ICL, never a KTVIC-trained adapter;
+  - H is defined by official split membership, before any B+D score on it;
+  - H is KTVIC *train* (same campaign as the training captions);
+  - the training pool excludes H and 19 near-twins (full-splits rule, beside the full-pool B-1 result).
+- Under the full-splits rule this pool exclusion needs a PI line (as CC-158 r2 required for its H) -> Q1.
+
+r2 (point 2: T2 as the rehearsal). Adequate only as a panel-source rehearsal, not as a precision check. Rough power:
+- SE_T2 is about 1.69 x sqrt(187/55) = 3.1.
+- If the true g is about 9.9, P(T2 clears the §7 rule) is roughly 0.8-0.9, so there is a 10-20% false-stop risk. State that risk in the tier-2 prereg.
+- A T2-only predictor would almost never reach 0.98: it needs g_T2 >= about 11.6.
+- The draft leaves "PASS with margin" and the tier-2 predictor undefined. Defining them after tier 1 is a threshold chosen after seeing data -> W2 (blocking).
+- Option 2 (H split) is the stronger alternative.
+
+r3 (point 3: §7 tier-3 rule and the predictor).
+- §7 is accepted as consistent with D0 GO and P1: point g >= 4.934, CI_lo(g) > 0, CI_lo(g_rel) > 0, sigma=inf CI_lo(g) > 0; FAIL if g <= 0 or CI_hi < 4.934, otherwise INCONCLUSIVE.
+- Wording: a PASS means "positive gap, point estimate at or above the pre-fixed SESOI", not "gap >= SESOI". Report CI_lo against SESOI beside it (N1).
+- §7 must also fix the H bootstrap: one default_rng(0) (2000, 696) matrix (W3).
+- The predictor has two errors, both optimistic (W1):
+  - (a) min over clauses (l.252) is the UPPER Fréchet bound of the joint probability, not a conservative one.
+  - (b) the three "CI_lo > 0" clauses are predicted as P(point > 0) (bar 0.0, l.250-251). The bar must be about 1.96 x SE_H of that statistic.
+- At the expected g these errors do not change the number (both are about 1). They are still wrong code in a registered rule.
+
+r4 (point 4: budget).
+- 10.15 GPU-h verified from measured B-1 seconds. Cap 15 GPU-h on M2 (one RTX 3090 24 GB), timeout = final CAP STOP: accepted.
+- Machine parity is Step 0 (>= 95% identical captions). Any training crash follows CC-152a (delete unread, retrain once from scratch).
+- Tier 3 (about 4.9 GPU-h on M1) queues behind A's P50 and never displaces it.
+
+r5 (point 5: guard). Accepted in design: sha256 scan of H images under $NCS_DATA/datasets before every GPU step, the "*openviic*" name check, the KTVIC-test sha check, role m4 and the single lock. Gaps:
+- The scan covers only $NCS_DATA/datasets. B-R1 ran on M2 with KTVIC-train images, so the operator must run a one-time sha scan of /root (all files, archives listed) before staging and log it (W5).
+- train_data.json on M2 still holds H's KTVIC captions, which are the tier-3 K panel. That is allowed (they are train-split labels, the code filters by id, and nothing is computed on H). Disclose it (N2).
+
+r6 (point 6: storyline). The fit is exact (meta-review item 5, coordinator item 5).
+- Tier-1 result, whatever it is: supplement only, as "dev replication on a reduced pool". Main text gets at most one clause in §5.4.
+- Tier 3 only if tier 2 passes: one "held-out confirmation" column in Table 5.2 and §5.4-5.5 text. Abstract/§7.1 change "development data" to "development data, confirmed once on held-out images" only on PASS. A FAIL or INCONCLUSIVE is reported briefly in §5.5 (never hidden).
+- No new section.
+- No salami with C: C's claim is retrieval ICL, B+D's is the own-minus-other slope gap.
+- No risk to the 11-30 freeze if tier 3 lands by about 11-20. If it lands later, B freezes with the dev-tier wording and the confirmation goes to the revision.
+
+r7. §6 clause 2 (REPRODUCED_LOW_POWER -> "a tier-2 prereg that states the lower P") conflicts with PI-1029n, which says P >= 0.98 before any test access. Its only exits are: stop and report as a dev ablation, or a PI exception (W4).
+
+## Required fixes
+Blocking, in the draft before F1:
+W1. Fix the predictor (bd_t1.py predict/score + §5 text):
+  - joint = 1 - Σ(1 - p_i), labelled "lower bound", or the clauses simulated jointly from the same bootstrap row;
+  - CI clauses: bar = 1.96 x SE_H of that statistic (SE_H = SD(draws) x sqrt(187/696));
+  - add a selftest that min(p_i) >= joint lower bound and that a CI clause is stricter than the point clause.
+W2. Fix tier 2 now (§2 + §6, verbatim for the tier-2 prereg):
+  - T2 rehearsal PASS = the exact §7 rule on T2 (55, OV-dev panel, rng(0) (2000, 55));
+  - "margin" (PI-1029n) must not be dropped. Either set a number, or adopt my proposed reading: at n = 55 the margin IS the pooled P >= 0.98 condition below plus g_T2 point >= SESOI. Write the reading into the prereg and state the false-stop risk. The PI may override (Q2);
+  - tier-2 predicted P(PASS on H) = predict() run on the pooled T1 ∪ T2 per-image bootstrap, each image against its own panel source (n = 242), plus a stated panel-shift check: g_T2 point >= SESOI;
+  - Go to tier 3 only if both hold. Alternatively adopt option 2 here.
+W3. §7: the H bootstrap matrix default_rng(0) (2000, 696); the O panel exactly as §7 (D0 §3 k rule, hash selection, repeats dropped); state which OV-dev annotation file and sha256 is opened, on which machine (M1 or laptop), and when.
+W4. §6 clause 2: REPRODUCED_LOW_POWER -> stop (dev ablation in the supplement) or a PI exception. Delete "a tier-2 prereg that states the lower P".
+W5. Near-duplicate filter at the confirmatory bar, before the pins are frozen. Run scripts/match_openviic.py (min(pHash, dHash) <= 10 AND SSCD >= 0.5, mirrored, or byte-identical; the matcher C and L1-a used) on laptop CPU over:
+  - (a) H vs the B-1 pool. New twins leave the pool, then re-derive the levels and sft pins;
+  - (b) H vs OV-test and KTVIC-test (portfolio §2.3 image-level rule: one owner per image). Twins leave H.
+  Rules are fixed in the draft before running; counts are disclosed. Re-run `lists`, then update LISTS_SHA256 and SFT_PINS. Also: the operator's one-time /root sha scan on M2 for H images before staging, logged as OPS.
+
+Non-blocking:
+N1. Write the §7 PASS as "positive gap with point estimate >= pre-fixed SESOI"; report CI_lo vs SESOI; keep the 5(c) data-dependent-SESOI caveat.
+N2. Disclose that evaluate.py writes an aggregate KTVIC CIDEr over all of dev300, including T2's 55 K-side (as B-1 did), and that train_data.json with H's KTVIC captions sits on M2.
+N3. Name the 29 T2 OV files in C's refuse list by role (I read them as OV-dev, not test: T2 is dev-only by construction). One line in §1.
+N4. Selftest budget uses 2770 for V5; the lists say 2754 (cosmetic).
+N5. Sequencing: M2's lock is held by L1-b (OPS-1029u-op, cap 8 GPU-h). Start BD-T1 only after L1-b's BLOCK DONE and cleanup. Have the tier-2 CPU prereg ready the moment tier 1 is scored (keep-queue-full).
+N6. Show the W1-W5 diff to a one-judge re-read (CC-171a) before the gatekeeper commit.
+N7. At the tier-3 prereg, re-verify C's use of H's OV files: PI-1029r / CC-172 adds C head-to-head baselines, which may include fine-tuned models scored on OV-dev. If they do, add that to the r1 disclosure.
+
+## Falsifiers
+- Tier 1: NOT_REPRODUCED (g < 4.934 or any CI_lo <= 0 on T1 with the new pool) ends the direction (supplement dev replication).
+- Tier 2: the §7 rule fails on T2, or the pooled predicted P < 0.98, so H is never touched.
+- Tier 3: FAIL or INCONCLUSIVE on H, reported in §5.5.
+
+## For the PI
+Q1. Accept H = KTVIC-train images whose OpenViIC copies are all in the official OpenViIC dev split (696 images) as B+D's single-look confirmation set? It replaces CC-158's OV-train-only carve-out, which B-R1 used up. Caveats: 695 of H's 701 OpenViIC files were Paper C's dev data (base models with retrieval ICL, no fine-tuned adapter), and the 696 images plus 19 near-twins are removed from the tier-1 training pool (full-splits exception, disclosed beside the full B-1 result).
+- Recommendation: YES, with the r1 disclosure.
+- Default: tier 1 proceeds now (dev only, about 10 GPU-h on M2). The answer is needed before the tier-3 prereg.
+- If NO: the tier-1 adapters (about 10 GPU-h) serve only as a supplement dev replication.
+Q2 (optional). Rehearsal: T2 (55 images, keeps all 696 for the test; option 1, my default) or split H 348/348 (stronger rehearsal, smaller test; option 2)? Recommend option 1. It must be chosen before any tier-1 score. Same question: at n = 55, is the PI-1029n "margin" read as "pooled T1 ∪ T2 predicted P >= 0.98 plus g_T2 >= SESOI" (my default, W2), or do you want a numeric margin, which raises the false-stop risk above 20%?
