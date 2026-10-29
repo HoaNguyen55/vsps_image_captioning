@@ -3,7 +3,7 @@
 before any decode. ADE20K SceneParsing (exhaustive pixel labels, 150 classes) + Localized Narratives (one spoken
 description per image, CC BY 4.0). Tier 1 decodes D1 = 1,000 ADE20K *training* images on M2 (dev-only) with the
 A-N2 LVLM set; tier 2 = D2 (1,000 other training images); tier 3 = the full ADE20K validation split (2,000).
-Prereg: manuscript/prereg/2026-10-30_a_t1/PREREG_DRAFT.md (CC-170).
+Prereg: manuscript/prereg/2026-10-30_a_t1/PREREG.md (CC-170).
 
     python3 scripts/a_t1/a_t1.py --selftest                          CPU, synthetic data only
     python  scripts/a_t1/a_t1.py split --zip Z --train T --val-hash F   M1 only (role m3), CPU: training-only archive
@@ -13,7 +13,7 @@ Prereg: manuscript/prereg/2026-10-30_a_t1/PREREG_DRAFT.md (CC-170).
     python3 scripts/a_t1/a_t1.py stage --train T --gold O --set S --root R   laptop: one set's images + manifest
                                                                      for M2 (D1 in tier 1, D2 in tier 2); refuses
                                                                      unless that set's premise holds (CC-170 W4)
-    python  scripts/a_t1/a_t1.py register --root R --out REG         A-N2 blocks unchanged, the D1 dataset only
+    python  scripts/a_t1/a_t1.py register --root R --out REG         A-N2 blocks unchanged, D1 only (smoke listed, not staged)
     python  scripts/a_t1/a_t1.py guard --head H                      M2 only (machine id m4); no ADE val file
     python  scripts/a_t1/a_t1.py left --ledger L                     seconds left under the 10 GPU-h cap
     python3 scripts/a_t1/a_t1.py score --raw DIR --gold G --out O    laptop CPU, once, after the PREREG is logged
@@ -46,8 +46,11 @@ import p50x  # noqa: E402  salience() = the X4/X5 size-matched random-deletion n
 PDIR = ROOT / "manuscript/prereg/2026-10-30_a_t1"
 LISTS = PDIR / "a_t1_lists.json"
 PREREG = PDIR / "PREREG.md"
-PREREG_SHA256 = ""  # finalisation; `score` refuses while empty
-PIN = {"zip": "", "train": "", "objectinfo": "", "ln_train": ""}  # G2 gate: full zip (M1), training-only archive
+PREREG_SHA256 = "d7bc92f634eaec8e78bbd5e80843feca468e01418f48ab9e2084b2dc287de297"  # finalisation; `score` refuses while empty
+PIN = {"zip": "7ff1be44964418441f542a7cc1e1a650e7dc0fc275f5d23252bc9bbdbc977b29",
+       "train": "2f2042c48136f180dc50320cbe0e99cec2cfc2505ad605140fcf087ab6c81e52",
+       "objectinfo": "c368be0cf078eb49264b5a0d0c4ad2e63bbfedf260c48458984302e2a7995671",
+       "ln_train": "78a0a8784e26591399493996ecd6863e4497dca36c5c5501b6747fff1343841e"}  # G2 gate: full zip (M1), training-only archive
 # (written by `split`, sha in M1 EVENTS), objectInfo150.txt, ade20k_train_captions.jsonl
 PREREG_ID = "2026-10-30_a_t1_ade_dev"
 N_D, N_SMOKE, SHARE_MIN, SHARES = 1000, 20, 0.001, (0.0, 0.001, 0.005)  # SHARE_MIN = primary label-presence rule

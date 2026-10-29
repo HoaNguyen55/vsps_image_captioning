@@ -1,7 +1,9 @@
-# Paper A, A-T1: tier-1 dev-explore for a registered gold-completeness test with a MEASURED completeness premise (DRAFT v3.1, after CC-170b GO 92%)
+# Paper A, A-T1: tier-1 dev-explore for a registered gold-completeness test with a MEASURED completeness premise (FINAL, v3.1 after CC-170b GO 92%)
 
-Status: DRAFT v3, 2026-10-30, after CC-170 (GO-with-fixes 91%; W1–W13) and CC-170a (GO-with-fixes 90%; W2′, W5′, N1–N6, W8), see §11. Nothing downloaded,
-decoded or scored under this file. Everything below is AI opinion. Binding: PI-1029n (three tiers), PI-1029q (public
+Status: FINAL, 2026-10-30, after CC-170 (GO-with-fixes 91%; W1–W13), CC-170a (GO-with-fixes 90%; W2′, W5′, N1–N6, W8)
+and CC-170b (GO 92%; W5″, V1–V3), see §11. Before this commit, on M1 (role m3), CPU only: G2 downloads and pins (§1),
+`split`, `select` (`a_t1_lists.json`) and `gold --set D1` (resolved V in §3; the D1 premise is logged in LOG.md).
+Nothing decoded or scored under this file. Everything below is AI opinion. Binding: PI-1029n (three tiers), PI-1029q (public
 datasets usable), PI-1029r (fit the storyline; no new section), full official splits, one look per test set, no new
 human labels (AI labels are not evidence), no personal e-mail in any request, no host/IP/port in repo files.
 
@@ -49,6 +51,11 @@ Flickr30K test (C).
 - **G2 gate (before `split`):** `PIN` holds sha256 of the full zip, the training-only archive (recorded in M1's
   EVENTS by `split`), objectInfo150.txt and the train narratives; ADE20K terms of use quoted in the run record
   (PI-1029q covers use). Downloads use no e-mail and no personal header.
+- **G2 pins (2026-10-30, official sources):** `ADEChallengeData2016.zip` from data.csail.mit.edu/places/ADEchallenge
+  (sceneparsing.csail.mit.edu; its page states "License: BSD 3-Clause License") 7ff1be44…; objectInfo150.txt (member
+  of that zip) c368be0c…; training-only archive (`split`) 2f2042c4…; `ade20k_train_captions.jsonl` (20,476 lines) from
+  storage.googleapis.com/localized-narratives/annotations 78a0a878…. Full values in `a_t1.py PIN`. Zip members:
+  training 20,210 images + 20,210 PNGs, validation 2,000 + 2,000.
 
 ## 2. Sets (fixed by `a_t1.py select` on the laptop, ids only, before any decode)
 
@@ -60,6 +67,11 @@ Flickr30K test (C).
 
 ## 3. Vocabulary, gold rungs and the premise (frozen now)
 
+- **Resolved map (W2′ applied by `gold --set D1` to the pinned objectInfo150.txt, 2026-10-30; V1):** |V| = 24, V =
+  {airplane, bed, bench, bicycle, boat, book, bottle, bus, car, chair, clock, couch, dining table, microwave, oven,
+  person, refrigerator, sink, sports ball, toilet, traffic light, truck, tv, vase} (person kept; none removed).
+  Resolution log: added 32 seat → chair, 57 pool table → dining table, 88 streetlight → traffic light, 103 van → car,
+  111 stool → chair, 117 minibike → bicycle. Resolved map (36 indices): the 30 below plus these 6.
 - **Class map, forward direction (W2, fixed before data):** an ADE20K-150 class is kept iff the frozen English
   matcher maps its listed ADE name to exactly {that COCO-80 class}. Start map: 30 ADE indices → V = 24 COCO names before the W2′ resolution
   (`a_t1.py ADE2COCO`); dropped: armchair (no match), minibike (→ bicycle), crt screen (no match). Departure from
