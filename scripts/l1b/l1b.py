@@ -45,13 +45,15 @@ L1A_PREDS = ROOT / ".session_backup/machines/M2/root/outputs/l1a/preds"
 L1A_IMG_SHA = {"qwen25vl_7b": "ebfddfa7ddde895ce4d66005be2a082314f48d325e7055d1332a5feaa3841645",
                "qwen3vl_8b": "c4cf7cab497da4ca1c1d8d6a0ec5e07880a7e44ad737bb1a803fef81a3b36f14",
                "internvl3_8b": "9cc4db1841248a526329d213c315dd496fa832ee6d9b9f5e6125f6f7fd4dd23e"}  # OPS-1029q
+REUSE_DEC = {"idefics3_8b": ("ec3f8478e1f28b02460318e8435bf53160bd09b81cce252669da00370b3b4426",
+                             "d312c12899d9d10eccaf6197dd3f3b9bd429ea07d42194af819b9d56c69026a6")}  # AMENDMENT_1 §4: (preds sha, l1b.py sha that wrote it)
 QWEN = tuple(L1A_IMG_SHA)
 NONQWEN = ("gemma3_4b", "idefics3_8b")  # both run in this order; score uses the first assessable (PREREG §3)
 MODELS = QWEN + NONQWEN
 CAP_S = 8 * 3600
 SALT = "l1b-split-2026-10-29"
 MAX_VAR, MAX_CAND = 108, 256  # per syllable, per answer (PREREG §4.2)
-PARITY_N, PARITY_K, PARITY_TOL = 4, 8, 0.25  # items, candidates, nats (PREREG §4.4)
+PARITY_N, PARITY_K, PARITY_TOL = 4, 8, 2.0  # items, candidates, nats (PREREG §4.4; tol 0.25 -> 2.0 by AMENDMENT_1)
 ALPHA, TAU = (0.0, 0.5, 1.0), (0.0, 0.5, 1.0, 2.0)
 SESOI, STRONG, PRIOR_MARGIN, HARM = 1.0, 2.0, 0.5, 0.25  # EM points; harm = flips to wrong / flips to right
 NQ_MIN_EM, NQ_MIN_DIAC = 0.20, 30
@@ -94,8 +96,8 @@ def variants(syl: str) -> list[str]:
     one form per l1a.sig signature, the syllable's own signature removed. [] for digits, no vowel, or > MAX_VAR."""
     s = unicodedata.normalize("NFC", syl)
     low = [strip_tone(c) for c in s.lower()]
-    if any(len(c) != 1 or c.isdigit() for c in low) or not any(c in BASE_OF for c in low):
-        return []
+    if any(len(c) != 1 or c.isdigit() for c in low) or tone_pos([BASE_OF.get(c, c) for c in low]) is None:
+        return []  # AMENDMENT_1: a bare qu- (u is the consonant glide) has no tone-bearing vowel either
     opts = [VOWEL_OPT[BASE_OF[c]] if c in BASE_OF else c for c in low]
     stop = "".join(low).endswith(("p", "t", "c", "ch"))
     tones = STOP_TONES if stop else TONE_CH
@@ -440,6 +442,8 @@ def score_cached(net, enc, conts: list[list[int]], batch: int) -> list[float]:
     with torch.no_grad():
         o = net(**enc, use_cache=True)
     first, cache = o.logits[0, -1].float().log_softmax(-1), o.past_key_values
+    inner = next((x for x in (getattr(net, "model", None), net) if getattr(x, "rope_deltas", None) is not None), None)
+    rd = inner.rope_deltas if inner is not None else None  # Qwen M-RoPE prefix state (1, 1); None for 1-D RoPE models
     out = []
     for i in range(0, len(conts), batch):
         ch = conts[i:i + batch]
@@ -447,6 +451,8 @@ def score_cached(net, enc, conts: list[list[int]], batch: int) -> list[float]:
         ids = torch.tensor([c + [c[-1]] * (L - len(c)) for c in ch], device=net.device)
         c = copy.deepcopy(cache)
         c.batch_repeat_interleave(B)
+        if rd is not None:  # AMENDMENT_1: expand with the cache (transformers 4.57.6 qwen2_5_vl repeats a (1, 1) delta on dim 1)
+            inner.rope_deltas = rd.repeat_interleave(B, 0)
         with torch.no_grad():
             lp = net(input_ids=ids, attention_mask=torch.ones(B, P + L, dtype=torch.long, device=net.device),
                      past_key_values=c, cache_position=torch.arange(P, P + L, device=net.device),
@@ -578,10 +584,11 @@ def outcome(rows: dict[str, dict]) -> tuple[str, str]:
     return "INCONCLUSIVE", "neither KILL nor GO; judge"
 
 
-def check_prov(head: dict, o: Path, f: Path) -> None:
-    """CC-168 W4b: the GPU file was written by the pinned l1b.py / job under this prereg and split."""
+def check_prov(head: dict, o: Path, f: Path, l1b_sha: str | None = None) -> None:
+    """CC-168 W4b: the GPU file was written by the pinned l1b.py / job under this prereg and split (l1b_sha: the
+    l1b.py sha a pinned reused file was written by, AMENDMENT_1 §4)."""
     start = {Path(x.split()[1]).name: x.split()[0] for x in (o / "code_at_start.sha256").read_text().splitlines()}
-    want = {"split_sha256": SPLIT_SHA256, "prereg_sha256": PREREG_SHA256, "l1b_sha256": start.get("l1b.py"),
+    want = {"split_sha256": SPLIT_SHA256, "prereg_sha256": PREREG_SHA256, "l1b_sha256": l1b_sha or start.get("l1b.py"),
             "job_sha256": start.get("l1b_job.sh")}
     bad = {k: head.get(k) for k, v in want.items() if v is None or head.get(k) != v}
     if bad or start.get("l1b.py") != l1a.sha(Path(__file__)):
@@ -623,7 +630,9 @@ def cmd_score(a) -> None:
         lines = rp.read_text(encoding="utf-8").splitlines()
         check_prov(json.loads(lines[0]), a.out_dir.parent, rp)
         if k in NONQWEN:
-            check_prov(json.loads(bp.read_text(encoding="utf-8")), a.out_dir.parent, bp)
+            pin = REUSE_DEC.get(k, ("", ""))
+            check_prov(json.loads(bp.read_text(encoding="utf-8")), a.out_dir.parent, bp,
+                       pin[1] if l1a.sha(bp) == pin[0] else None)
         rr = {x["qa_id"]: x for x in map(json.loads, lines[1:])}
         base = load_base(bp, k, ids)
         if set(rr) != set(ids):
@@ -739,6 +748,8 @@ def selftest() -> None:
     check("đ is never changed (base letter)", all("đ" in x for x in variants("đi")) and not any(
         "d" == x[0] for x in variants("đi")))
     check("digits and vowel-less syllables get no candidates", variants("12a") == [] and variants("str") == [])
+    check("bare qu- has no tone-bearing vowel: no candidates (AMENDMENT_1)",
+          variants("qu") == variants("Qư") == [] and "quà" in variants("qua") and "gì" in variants("gi"))
     check("NFD input = NFC input", variants(unicodedata.normalize("NFD", "hòa")) == variants("hòa"))
     b, c = candidates("Đó là bàn.")
     check("candidates: one syllable changed at a time, punctuation kept",
@@ -837,7 +848,8 @@ def selftest_score() -> list[str]:
     import types
 
     g = globals()
-    keep = {k: g[k] for k in ("PREREG", "PREREG_SHA256", "SPLIT", "SPLIT_SHA256", "OUT", "L1A_PREDS", "L1A_IMG_SHA")}
+    keep = {k: g[k] for k in ("PREREG", "PREREG_SHA256", "SPLIT", "SPLIT_SHA256", "OUT", "L1A_PREDS", "L1A_IMG_SHA",
+                              "REUSE_DEC")}
     keep_l1a = (l1a.load_src, l1a.pinned_lists)
     golds = ["bàn ăn", "người", "xôi gấc", "12"]
     strip = lambda x: "".join(c for c in unicodedata.normalize("NFD", x) if not unicodedata.combining(c))
@@ -939,11 +951,27 @@ def selftest_score() -> list[str]:
         raise AssertionError("score: a missing sidecar under CAP_STOP.json is not NOT_ASSESSABLE")
     if not (refuses(no_side) and refuses(bad_head)):
         raise AssertionError("score: missing sidecar without CAP_STOP.json, or a header sha mismatch, not refused")
+
+    def old_dec(t, pin_it):  # AMENDMENT_1 §4: the idefics3 decode was written by an earlier l1b.py
+        bp = t / "out" / "l1b_idefics3_8b_img.preds.json"
+        bp.write_text(json.dumps({**json.loads(bp.read_text(encoding="utf-8")), "l1b_sha256": "1" * 64}))
+        Path(str(bp) + ".sha256").write_text(f"{l1a.sha(bp)}  x\n")
+        g["REUSE_DEC"] = {"idefics3_8b": (l1a.sha(bp) if pin_it else "2" * 64, "1" * 64)}
+
+    d4 = run(QWEN + ("idefics3_8b",), lambda t: old_dec(t, True))[0]
+    try:
+        run(QWEN + ("idefics3_8b",), lambda t: old_dec(t, False))
+        unpinned = False
+    except SystemExit:
+        unpinned = True
+    if not (d4["nonqwen_used"] == ["idefics3_8b"] and unpinned):
+        raise AssertionError("score: the pinned reused decode is not accepted, or an unpinned old decode is not refused")
     return ["score end to end (synthetic): GO_STRONG, M* = (alpha 0, tau 2) by the tie rule, T* no gain, dEM 50.0, "
             "cross-fit rows, idefics3 absent -> not assessable, second run refused, no answer text in decide.json",
             "score without gemma (W19): idefics3_8b is the non-Qwen backbone in use, gemma not assessable",
             "score W4a/W4b (W19): sidecar missing + CAP_STOP -> incomplete; without CAP_STOP or with a header l1b sha "
-            "mismatch -> refused"]
+            "mismatch -> refused",
+            "score AMENDMENT_1 §4: a decode by an earlier l1b.py is accepted only when its sha and writer sha are pinned"]
 
 
 def selftest_tiny() -> list[str]:
@@ -983,7 +1011,25 @@ def selftest_tiny() -> list[str]:
     cached = score_cached(net, enc, conts, 3)
     if max(abs(x - y) for x, y in zip(full, cached)) > 1e-4:
         raise AssertionError(f"cached {cached} != full {full}")
-    return ["tiny LLaVA: cached prefix + right-padded batches (3+1) = full forward, 4 continuations, < 1e-4 nats"]
+    # AMENDMENT_1: Qwen2.5-VL M-RoPE (rope_deltas = -2 here) on a batch-repeated cache; crashes without the expansion
+    qcfg = tf.Qwen2_5_VLConfig(
+        vocab_size=64, hidden_size=32, intermediate_size=64, num_hidden_layers=2, num_attention_heads=4,
+        num_key_value_heads=2, max_position_embeddings=256, rope_scaling={"type": "mrope", "mrope_section": [2, 1, 1]},
+        vision_config={"depth": 1, "hidden_size": 16, "intermediate_size": 32, "num_heads": 2, "out_hidden_size": 32,
+                       "patch_size": 2, "spatial_merge_size": 2, "temporal_patch_size": 2, "in_channels": 3,
+                       "window_size": 4, "fullatt_block_indexes": [0]},
+        image_token_id=60, video_token_id=63, vision_start_token_id=61, vision_end_token_id=62)
+    qnet = tf.Qwen2_5_VLForConditionalGeneration(qcfg).eval()
+    ids = [5, 6, 61] + [60] * 4 + [62, 7, 8]
+    qenc = {"input_ids": torch.tensor([ids]), "attention_mask": torch.ones(1, len(ids), dtype=torch.long),
+            "pixel_values": torch.randn(16, 24), "image_grid_thw": torch.tensor([[1, 4, 4]])}
+    full = [score_full(qnet, qenc, c) for c in conts]
+    cached = score_cached(qnet, qenc, conts, 3)
+    if max(abs(x - y) for x, y in zip(full, cached)) > 1e-4:
+        raise AssertionError(f"Qwen2.5-VL cached {cached} != full {full}")
+    return ["tiny LLaVA: cached prefix + right-padded batches (3+1) = full forward, 4 continuations, < 1e-4 nats",
+            f"tiny Qwen2.5-VL (transformers {tf.__version__}): M-RoPE rope_deltas expanded with the cache, batches "
+            "(3+1) = full forward, < 1e-4 nats (AMENDMENT_1)"]
 
 
 def main() -> None:
