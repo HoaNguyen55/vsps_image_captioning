@@ -1,0 +1,79 @@
+CC-176 (2026-10-30): use of M1's GPU (machine id m3), idle since 2026-10-29T19:48:56Z. Proposal: C-T1 AMENDMENT_1, i.e. run Paper C's tier-1 DEV-EXPLORE job on M1 under read isolation. Also the PREREG §11 W-b T1_FREEZE read. Single judge. REVERSIBLE tier: actionable at >= 90 (PI-1029o). All estimates are AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes, TIER 1 ONLY, on M1. Option (a) after the blocking fixes W1-W5. These are one code line, one selftest assert and text. A diff limited to W1-W5 needs no re-read. Launch after W1-W5 are committed, ssh is back and the checklist N1-N5 is logged.
+T1_FREEZE: the spec 2cb23ab9 is NOT accepted as is. It is accepted with exactly one added line, wcwidth==<the exact version installed> (W1).
+
+CONFIDENCE: 91%
+
+Ranked options (AI opinion):
+1. (a) AMENDMENT_1 with W1-W5, C-T1 on M1 now. 91%.
+2. (d) Committed plan unchanged: C-T1 on M2 after BD-T1 (from about 00:30Z + 10 GPU-h). 80%. No amendment risk, but M1 idles for about a day, against keep-GPU-queue-full, and C's tier 1 slips by about 11-15 h.
+3. (a) as drafted. 70%. The venv-t1 spec cannot import open_clip, so t1check STOPs every launch (W1). The text also overclaims "just as strong" (W3).
+4. (b) Idle until CC-175 is committed. 35%. CC-175 (LOG 21:18Z, GO-with-fixes 90) lets K1/K6 tier 1 start only after DEV_RULE, the §8 cost amendment and W25-K1 are committed, and after UIT-ViIC val 924 is re-staged (CC-175 R2-3). None of these is done. K1+K6 is the Q2/2028 floor (CC-174 r1/Q2), below C in the path order.
+5. (c) Swap: C-T1 on M2 after L1-b, BD-T1 later. 20%. It delays BD-T1, i.e. Paper B, which nothing may do. It contradicts CC-172 W5 bullet 1 on M2. The train-only tar 93282dd4 was deleted (OPS-1030g), so it also needs a fresh extract on M1 and a full re-stage on M2.
+
+What I checked (myself, not the summary):
+- LOG.md tail through OPS-1030g "M1 SSH DOWN" and CC-175; CC-174.txt r5, W3, Q2; CC-175.txt r4, R2-3; CC-172.txt W5, W6; WORKFLOW_LOG tail (A-T1 20:14Z); RESUME_2026-10-25_paperC.md (nothing on C-T1).
+- AMENDMENT_1.md read in full, sha 3578d9aa. PREREG.md unchanged in the working tree, sha f1d06278 = SUMS. c_t1.py d2e663dd and c_t1_job.sh 86351ee1 = scripts SUMS. prereg SUMS 5/5 OK.
+- Full `git diff HEAD -- scripts/c_t1/ manuscript/prereg/2026-10-30_c_t1/`: +131/-13 lines in 4 files.
+- `python3 scripts/c_t1/c_t1.py --selftest` on the laptop: rc 0, it ends with the "AMENDMENT_1 isolation (...)" item. `bash -n` OK.
+- Probe (scratchpad, laptop): a symlink named flickr30k-images.zip or v1.jpg (a refused name) that points to an allowed file → iso_denied returns None (allowed). guard_problems flags both by name.
+- The ftfy-6.3.1 and open_clip_torch-2.32.0 wheels (pip download --no-deps, read as zip). ftfy METADATA: "Requires-Dist: wcwidth". ftfy/__init__.py imports ftfy.formatting, which does "from wcwidth import wcswidth, wcwidth". open_clip/tokenizer.py does a top-level "import ftfy". timm is imported under try/except (optional).
+- Expected freeze 2cb23ab9: 45 lines; minus the open_clip_torch and ftfy lines its sha is exactly 685ffe2a (= H_LB). No wcwidth line.
+- Read paths the job really uses (job script and c_t1.py): $CS1/emb.npz, $CS1/exemplars.json, $CS2/emb_ov_dev_b.npz, $CS2/ex_ov_dev_b.json and $CEN/cen_memory_emb.npz are 5 of the 6 RESTORED_SHA256 files. datasets/{ktvic,openviic}/ annotation files (decode_icl l.162/166, score.py l.69/73), $NCS_DATA/vncorenlp (protocol_pilot l.35), repo files and the HF cache are also read. C2_DIR (/root/outputs/c_stage2/runs) is only reached through an explicit --c2-dir, which the job never passes. cen_decode.out_ok is not called by c_t1. b1 is imported only in lock/left, which are not hooked. No grl common / cen_test_shas path is reachable from ISO_CMDS. gpu_host() is used only to refuse laptop-only commands.
+- I found no path the job needs that the hook would wrongly deny. Two conditions apply: HF_HOME must lie outside $NCS_DATA and /root/outputs (N2), and VnCoreNLP must be under $NCS_DATA/vncorenlp (N3).
+
+Rulings:
+r1. CC-174 does not cover C-T1. CC-174 r5 restricts only K1/K6 and L1 GPU work on M1. Its question was "what M1 runs after A-T1/C-T1", which presumes C-T1 on M1. OPS-1030d already queued C-T1 on M1 after K2 Gate 1. CC-174 r5's "idle rather than filler" applies to non-admissible jobs. C-T1 is a committed, preregistered tier-1 job of an active paper, not filler.
+r2. Dev work on the test-capable M1 departs from "M4 for dev". It stands on the precedents CC-174 r5 and CC-175 r4 (K1/K6 tier 1 on M1). Paper C's test is spent (CC-103), and no test image is staged.
+r3. CC-172 W5 bullet 1 ("C-T1 may start only after BD-T1 tier 1 has finished") is OVERRULED for a C-T1 run on M1 only. Its reason was BD-T1's *openviic* / H-sha guard on the shared M2. With separate hosts that guard cannot see C-T1's staging, and BD-T1 (Paper B) is not delayed. The rest of W5 still binds: A/B pre-emption at slice boundaries, deleting ktvic/ and openviic/ after the run (logged), and the CC-171 r1 disclosure sentence for B+D. If C-T1 ever moves back to M2, bullet 1 binds again.
+r4. Queue on M1: C-T1 yields to C's test (CC-103), to any A or B job, and to admissible L1 tier-2 work (CC-174 r5), as AMENDMENT_1 §2.6 says. K1/K6 tier 1 (CC-175) does NOT pre-empt C-T1, because C comes before new work. K1/K6 starts after C-T1 is DONE and cleaned up. CC-175's one-tmux rule makes concurrency moot anyway.
+r5. No threshold, rule or SESOI changes. AMENDMENT_1 §3 matches the diff. No selection, scoring, label, kill-gate, cap or block line is touched; the code changes are confined to iso_*, guard scope, the main() hook, the selftest and the job's m3|m4 check and guard roots. The 20 GPU-h hard cap and the B7 → B6 → B5 stop order stand. The AI budget estimate is about 9-10 GPU-h if idefics3 fails §6.2 and about 15 if it passes.
+r6. Isolation strength. The fence holds for what the job opens through Python under $NCS_DATA and /root/outputs. It is weaker than absence in three disclosed ways:
+   (i) native and child-process opens are not seen (§4). The model paths come from the registry, and the guard scans those dirs;
+   (ii) paths outside both roots (HF cache, repo, /tmp, /root/ops) are not fenced;
+   (iii) the name rule is applied to the resolved target only (fixed in W2).
+   For the Flickr30K val/test images the real guarantee still holds: they exist only inside the zip in f30k_raw. The test-side records on M1 are denied by both the path and the restored-file rules. I find this adequate for a tier-1 DEV-EXPLORE run whose every input path is explicit.
+r7. Pilot conditions are met: a pre-written rule and SESOI (PREREG, +2.0 PTB CIDEr-D), dev data only, a GPU cap of 20 h, the named machine M1, and stop conditions (CAP STOP final, JOB STOP on any guard or check failure, slice-boundary pre-emption). If M1 ssh has not returned when M2 frees after BD-T1, option (d) applies under the unamended PREREG. That also needs a fresh extract and is logged.
+r8. The OPS-1030g staging on M1 was done before this amendment. It is ratified as a logged departure: the zip fetched at the pinned sha into quarantine, extract on m3 as the PREREG allows, the tar deleted, staging by list with sha checks.
+
+Required fixes (blocking, before the gatekeeper commit):
+W1. T1_FREEZE. Install wcwidth at one exact pin (--no-deps). In venv-t1, check that `python -I -c "import ftfy, open_clip"` works offline. The freeze must equal 2cb23ab9's 45 lines plus that one wcwidth line, and nothing else. Record its sha as T1_FREEZE in LOG (OPS line).
+   Add one sentence to AMENDMENT_1 §5: "venv-t1 also pins wcwidth==X, ftfy 6.3.1's declared dependency, which it needs at import; environment-only, no rule change (PREREG §11 W-b)."
+   Any other difference from that spec needs a new judge read.
+W2. iso_denied. Apply the refused-name test and the archive-suffix test to the basename of the path as requested AND to the basename of the realpath. Add one selftest assert: a symlink named "v1.jpg" (and one named "*.zip") that points to an allowed file is denied in iso_denied and in the child hook. AMENDMENT_1 §2.2 then matches the code.
+W3. AMENDMENT_1 wording.
+   - §1 "just as strong for what the job can open" → "just as strong for Python-level opens under $NCS_DATA and /root/outputs; paths outside both roots are not fenced, and native or child-process opens are not seen (§4)".
+   - §2.3 "exactly the roots the job can read" → "the job's readable roots under $NCS_DATA and /root/outputs, plus the HF hub cache".
+   - Add `fetch` to the §2.2 list of commands that are not hooked.
+W4. AMENDMENT_1 §2.6, rulings cited. State that CC-172 W5 bullet 1 is overruled for M1 only by CC-176 r3 (separate hosts), and that the rest of W5 and the CC-171 r1 disclosure bind. State that K1/K6 (CC-175) does not pre-empt C-T1 (r4). Cite CC-174 r5 / OPS-1030d for C-T1 on M1, and r8 for the staging ratification.
+W5. Regenerate scripts/c_t1/SHA256SUMS and the prereg SHA256SUMS. Then run the selftest on the laptop and `bash -n`. The gatekeeper commits exactly 5 paths by name: scripts/c_t1/c_t1.py, scripts/c_t1/c_t1_job.sh (modified: the m3|m4 check and the guard roots), scripts/c_t1/SHA256SUMS, manuscript/prereg/2026-10-30_c_t1/SHA256SUMS and manuscript/prereg/2026-10-30_c_t1/AMENDMENT_1.md (new). This corrects the '4 paths' copied into OPS-1030j, with no AI attribution and no host, IP or e-mail. HEAD on M1 is moved by git bundle. Launch with that HEAD.
+
+Non-blocking (N-items; N1-N5 are the M1 launch checklist, logged before launch, all fail-closed):
+N1. `ls $NCS_DATA/datasets` lists exactly the six C-T1 dirs; otherwise the guard STOPs.
+N2. HF_HOME is unset or outside $NCS_DATA and /root/outputs. The hub cache holds no datasets--nlphuji--flickr30k (the guard would STOP on its *.zip link name). Delete it, logged, if present.
+N3. $NCS_DATA/vncorenlp/VnCoreNLP-1.2.jar with its models/, java, venv-c1score and /root/vsps/.venv are present. The B1 score needs the first two if idefics3 passes vicheck; otherwise there is a JOB STOP after GPU time.
+N4. The COCO per-file fetch is complete (111,927, 0 failed) and the coco_fetch, c_t1_fetch and venv_t1 tmux sessions have ended before the launch. memcheck catches a gap.
+N5. An inventory outside the fenced roots, logged: find under /root and /tmp (-xdev) for flickr30k-images*, *.zip and *.tar*, and any refused val/test name. Expected: only f30k_raw and ade20k_raw. Anything else is moved into a quarantine dir under $NCS_DATA before launch.
+N6. ARCHIVES may be extended to ".tar.*" and ".7z", for parity with CC-171a X3(a). This is optional in the W2 diff.
+N7. After C-T1, delete ktvic/ and openviic/ from M1's datasets/ (logged), before K1/K6 re-stages UIT-ViIC (CC-175 R2-3).
+N8. Aya and Gemma stay skipped (null pins). If the PI clicks the Aya gate before launch, CC-172a/PREREG W-a applies (pins in the commit that records the gate). Do not fill pins mid-run.
+
+For the PI (informational; nothing below 80 on this ruling):
+- M1, the test-capable machine, runs Paper C's tier-1 dev job for about 10-15 GPU-h (AI estimate) under read isolation. This follows the precedents CC-174 r5 and CC-175 r4. Paper B's BD-T1 stays on M2 and is not delayed.
+- Optional: the Aya-Vision HF gate click is still open. Without it, idefics3 is the only third backbone (PREREG §6.1).
+
+ADDENDUM (same ruling, written after the coordinator's update; verified against LOG lines OPS-1030i, OPS-1030j and PI-1030a):
+- OPS-1030i: both rentals expired at about 04:30 VN, and all on-host data is lost. New hosts are being set up with the same roles (m3 test-capable, m4 dev-only). The decision is unchanged: (a) with fixes, C-T1 on the new m3 host. Option (d) loses its "no staging" advantage, because M2 must first resume L1-b and then run BD-T1. The ranking stands. Confidence stays at 91%.
+- r8 is moot for the lost host. The new m3 repeats the OPS-1030g steps under AMENDMENT_1:
+  - zip fetched at sha 2ce2420c into the quarantine dir;
+  - `extract` on m3 only;
+  - the carve and memory manifests must equal 79c41b1d and c0d0084f, else STOP and return to the judge;
+  - tar deleted;
+  - staging by list with sha checks;
+  - the COCO per-file fetch.
+  Each step is logged. The N1-N5 checklist runs on the new host.
+- PI-1030a: the Aya-Vision-8B gate is accepted, and Aya stays first in the §6.1 fallback order (PREREG W-a). Its 5 pins are filled by a separate gatekeeper gate commit after the download. The selftest's "all null or all 64-hex" check holds. The HF token is used per command and never stored or written. The launch HEAD must contain the AMENDMENT_1 commit and the gate commit, and the job is launched with that HEAD. Aya lives under $NCS_DATA/models/c_t1_aya_vision_8b, a readable root, so the hook does not affect it.
+- Budget (AI estimate): if Aya passes the 0.95 check and C's stage-A rule, the run is about 15 GPU-h. The hard cap stays 20, and W-d (the smoke drops the third backbone in B6 first) still applies.
+- N8 is replaced by this addendum.
+- W1 stays OPEN until venv-t1 is rebuilt on the new m3 host. OPS-1030j reports that W2-W4 and N6 were applied on the laptop (c_t1.py 022af90e, AMENDMENT_1 b88bbd80). I have not re-read them. The closing read is limited to those lines plus the W1 fill, which is one judge's diff read, with no new ruling.

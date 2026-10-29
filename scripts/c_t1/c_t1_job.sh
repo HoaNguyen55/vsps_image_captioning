@@ -1,6 +1,8 @@
 #!/bin/bash
-# Paper C tier 1 (DEV-EXPLORE, C-T1) on the dev-role machine (machine id m4). Rule:
-# manuscript/prereg/2026-10-30_c_t1/PREREG.md. Dev data only: KTVIC dev299, OV-dev-B, a 1,000-image carve of
+# Paper C tier 1 (DEV-EXPLORE, C-T1) on machine id m4 (M2) or, under AMENDMENT_1, m3 (M1). Rule:
+# manuscript/prereg/2026-10-30_c_t1/PREREG.md + AMENDMENT_1.md (read isolation: every c_t1.py data command runs under an
+# open() audit hook that refuses Flickr30K val/test names, archives, and $NCS_DATA / /root/outputs paths outside the
+# staged dirs and the restored files; the guard scans exactly the roots the job reads). Dev data only: KTVIC dev299, OV-dev-B, a 1,000-image carve of
 # Flickr30K train (+ its other 28,000 train images as the X5 memory). Never a Flickr30K val or test image, never an
 # OpenViIC/KTVIC/XM3600 test image. Blocks run in priority order B0..B7 under one 20 GPU-h cap (b1.left accounting); a
 # timeout is a CAP STOP, final, and the remaining blocks are reported NOT RUN. rc 3 from vicheck = that backbone is not
@@ -17,9 +19,10 @@
 # Usage, inside tmux:  bash scripts/c_t1/c_t1_job.sh <expected 40-hex HEAD>
 set -euo pipefail
 EXPECT=${1:?usage: c_t1_job.sh <expected HEAD>}
-[ "$(cat /root/.vsps_machine_id 2>/dev/null)" = m4 ] || { echo "REFUSED: /root/.vsps_machine_id is not m4"; exit 1; }
+MID=$(cat /root/.vsps_machine_id 2>/dev/null)
+case "$MID" in m3|m4) ;; *) echo "REFUSED: /root/.vsps_machine_id is not m3 or m4"; exit 1;; esac
 cd /root/vsps
-export NCS_DATA=/root/ncs-data HF_HUB_OFFLINE=1 VSPS_MACHINE_ID=m4
+export NCS_DATA=/root/ncs-data HF_HUB_OFFLINE=1 VSPS_MACHINE_ID=$MID
 LB=/root/venv-lb/bin/python; T1=/root/venv-t1/bin/python; SC=/root/venv-c1score/bin/python; PY=/root/vsps/.venv/bin/python
 LB_FREEZE=685ffe2a0100ce2489cccd77313d366fb1dce4455871a9d82f65aa139fa85784   # setup_gpu.sh H_LB
 T1_FREEZE=${T1_FREEZE:?set T1_FREEZE to the judge-read venv-t1 freeze sha256}   # W-item: recorded at build
@@ -49,7 +52,8 @@ sha256sum --quiet -c manuscript/prereg/2026-10-30_c_t1/RESTORED_SHA256 || stop "
 [ "$(/root/venv-t1/bin/pip freeze | sha256sum | cut -c1-64)" = $T1_FREEZE ] || stop "venv-t1 freeze differs"
 $LB $X --selftest >> $LOG/selftest.log 2>&1 || stop "c_t1 selftest (venv-lb)"
 $SC $X --selftest >> $LOG/selftest.log 2>&1 || stop "c_t1 selftest (venv-c1score, the scorer's venv; W8)"
-$PY $X guard --roots $NCS_DATA /root/outputs >> $LOG/guard.log 2>&1 || stop "custody guard (W4)"
+$PY $X guard --datasets $DS --roots $DS $NCS_DATA/models $NCS_DATA/vncorenlp $O ${HF_HOME:-/root/.cache/huggingface}/hub \
+  >> $LOG/guard.log 2>&1 || stop "custody guard (W4; AMENDMENT_1: the readable roots)"
 $PY $X memcheck --mem-files $MEM/memfiles_vi.json --root $DS >> $LOG/memcheck.log 2>&1 || stop "memcheck vi (W10)"
 $PY $X memcheck --mem-files $MEM/memfiles_coco.json --root $DS/cen_memory/images >> $LOG/memcheck.log 2>&1 || stop "memcheck coco (W10)"
 for m in xglm_2_9b mclip_h14; do $PY $X pinsok --model $m --snapshot $(snap $m) >> $LOG/pins.log 2>&1 || stop "$m snapshot"; done

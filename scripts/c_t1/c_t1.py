@@ -575,21 +575,87 @@ def cmd_extract(a) -> None:
     print(f"tar {sha(a.out)}; carve {len(man['carve'])}, memory {len(man['memory'])}")
 
 
-def guard_problems(roots: list[Path], refused: set[str]) -> list[str]:
-    """W4 (CC-170 W9 style): no archive, no Flickr30K zip tree, no Flickr30K val/test file name anywhere."""
-    bad = []
+#: AMENDMENT_1 read isolation (job on M1, role m3, beside test-side files): the only $NCS_DATA/datasets dirs the job
+#: may read, the other $NCS_DATA dirs it may read, and the commands that run under the open() audit hook.
+ISO_DATASETS = ("ktvic", "openviic", "c_t1_f30k_carve", "c_t1_f30k_memory", "cen_memory", "c_t1_mem")
+ISO_NCS = ("models", "vncorenlp")
+ISO_CMDS = ("draws", "embed", "decode", "lmcap", "score", "select", "vicheck", "memcheck", "t1check", "pinsok", "cfg")
+ARCHIVES = (".zip", ".tar", ".tar.gz", ".tgz", ".7z")  # plus any ".tar.*" (N6)
+RESTORED = PDIR / "RESTORED_SHA256"
+
+
+def refused_names() -> set[str]:
+    lists = load_lists()
+    return set(lists["refuse"]["val"]) | set(lists["refuse"]["test"])
+
+
+def iso_config(ncs: Path, outputs: Path, restored: list[str], refused: set[str]) -> dict:
+    rp = os.path.realpath
+    return {"ncs": rp(ncs), "outputs": rp(outputs), "refused": refused,
+            "ncs_ok": [rp(Path(ncs) / "datasets" / d) for d in ISO_DATASETS] + [rp(Path(ncs) / d) for d in ISO_NCS],
+            "out_ok": [rp(Path(outputs) / "c_t1")], "files_ok": {rp(f) for f in restored}}
+
+
+def iso_default() -> dict:
+    files = [ln.split(maxsplit=1)[1] for ln in RESTORED.read_text().splitlines() if ln.strip()]
+    return iso_config(lb.DATA, Path("/root/outputs"), files, refused_names())
+
+
+def is_archive(name: str) -> bool:
+    return name.endswith(ARCHIVES) or ".tar." in name
+
+
+def _under(p: str, root: str) -> bool:
+    return p == root or p.startswith(root.rstrip("/") + "/")
+
+
+def iso_denied(path, cfg: dict) -> str | None:
+    """Why the job may not open this path (None = allowed). Symlinks are resolved first."""
+    asked = os.fsdecode(path)
+    p = os.path.realpath(asked)
+    names = {os.path.basename(asked), os.path.basename(p)}  # CC-176 W2: the name as requested and as resolved
+    if names & cfg["refused"]:
+        return "a Flickr30K val/test file name"
+    if any(is_archive(n) for n in names):
+        return "an archive"
+    if _under(p, cfg["ncs"]) and not any(_under(p, r) for r in cfg["ncs_ok"]):
+        return "outside the staged $NCS_DATA dirs"
+    if _under(p, cfg["outputs"]) and p not in cfg["files_ok"] and not any(_under(p, r) for r in cfg["out_ok"]):
+        return "outside /root/outputs/c_t1 and the restored files"
+    return None
+
+
+def iso_install(cfg: dict) -> None:
+    """AMENDMENT_1: every Python-level open() (builtins, io, os.open) of a denied path raises PermissionError.
+    Ceiling: native-code opens (safetensors, tokenizers) and child processes are not seen; they only get model
+    paths from the registry, and the guard scans those dirs."""
+    def hook(event, args):
+        if event == "open" and isinstance(args[0], (str, bytes, os.PathLike)):
+            why = iso_denied(args[0], cfg)
+            if why:
+                raise PermissionError(f"C-T1 isolation (AMENDMENT_1): {os.fsdecode(args[0])}: {why}")
+    sys.addaudithook(hook)
+
+
+def guard_problems(roots: list[Path], refused: set[str], cfg: dict | None = None,
+                   datasets: Path | None = None) -> list[str]:
+    """W4 (CC-170 W9 style): no archive, no Flickr30K zip tree, no Flickr30K val/test file name in the job's readable
+    roots; AMENDMENT_1: no symlink that resolves to a denied path, and $NCS_DATA/datasets holds only C-T1's dirs."""
+    bad = [str(datasets / n) for n in sorted(os.listdir(datasets)) if n not in ISO_DATASETS] if datasets else []
     for r in roots:
         for dirpath, dirs, files in os.walk(r):
             for n in dirs + files:
                 q = Path(dirpath) / n
-                if n.endswith((".zip", ".tar", ".tar.gz", ".tgz")) or n.startswith("flickr30k-images") or n in refused:
+                if is_archive(n) or n.startswith("flickr30k-images") or n in refused:
                     bad.append(str(q))
+                elif cfg and q.is_symlink() and iso_denied(q, cfg):
+                    bad.append(f"{q} -> {os.path.realpath(q)}")
     return bad
 
 
 def cmd_guard(a) -> None:
-    lists = load_lists()
-    bad = guard_problems([Path(x) for x in a.roots], set(lists["refuse"]["val"]) | set(lists["refuse"]["test"]))
+    bad = guard_problems([Path(x) for x in a.roots], refused_names(), iso_default(),
+                         Path(a.datasets) if a.datasets else None)
     if bad:
         raise SystemExit(f"REFUSED: {len(bad)} forbidden paths, e.g. {bad[:3]}")
     print("guard ok")
@@ -1115,7 +1181,62 @@ def selftest() -> None:
             (g / "x" / bad_name).write_text("")
             assert guard_problems([g], {"v1.jpg"}), bad_name
             (g / "x" / bad_name).unlink()
+        # AMENDMENT_1 isolation: deny rules, symlink escapes, extra datasets dirs, and the open() hook in a child
+        ncs, outs = Path(tmp) / "ncs", Path(tmp) / "out"
+        for d in ("datasets/c_t1_f30k_carve/images", "f30k_raw", "ade20k_raw", "models/m"):
+            (ncs / d).mkdir(parents=True)
+        for d in ("c_t1", "c_en", "c_test"):
+            (outs / d).mkdir(parents=True)
+        files = {"carve_img": ncs / "datasets/c_t1_f30k_carve/images/t1.jpg", "model": ncs / "models/m/w.bin",
+                 "restored": outs / "c_en/cen_memory_emb.npz", "own_output": outs / "c_t1/a.json",
+                 "elsewhere": Path(tmp) / "elsewhere.txt", "f30k_zip": ncs / "f30k_raw/flickr30k-images.zip",
+                 "f30k_raw": ncs / "f30k_raw/x.jpg", "ade20k": ncs / "ade20k_raw/y.png",
+                 "test_side": outs / "c_en/emb_coco_test.npz", "c_test": outs / "c_test/a.json",
+                 "val_name": ncs / "models/m/v1.jpg", "archive": outs / "c_t1/x.tar"}
+        allowed = {"carve_img", "model", "restored", "own_output", "elsewhere"}
+        for f in files.values():
+            f.write_text("x")
+        link = ncs / "datasets/c_t1_f30k_carve/images/esc.jpg"
+        link.symlink_to(files["f30k_raw"])
+        named = {"named_val": ncs / "datasets/c_t1_f30k_carve/images/v1.jpg",
+                 "named_zip": ncs / "datasets/c_t1_f30k_carve/images/flickr30k-images.zip"}
+        for f in named.values():  # CC-176 W2: a refused or archive name that points to an allowed file
+            f.symlink_to(files["carve_img"])
+        cfg = iso_config(ncs, outs, [str(files["restored"])], {"v1.jpg"})
+        for k, f in files.items():
+            assert (iso_denied(f, cfg) is None) == (k in allowed), k
+        assert iso_denied(link, cfg), "a symlink into a denied dir is denied"
+        assert all(iso_denied(f, cfg) for f in named.values()), "a denied name is denied even if it resolves to an allowed file"
+        assert iso_denied(outs / "c_t1/x.tar.zst", cfg) and iso_denied(outs / "c_t1/x.7z", cfg), "N6 archive forms"
+        (ncs / "datasets/extra").mkdir()
+        gp = guard_problems([ncs / "datasets/c_t1_f30k_carve"], {"v1.jpg"}, cfg, ncs / "datasets")
+        assert any("esc.jpg" in x for x in gp) and any(x.endswith("extra") for x in gp), gp
+        probe = {k: str(f) for k, f in files.items()} | {"link": str(link)} | {k: str(f) for k, f in named.items()}
+        child = (f"import json, os, sys; sys.argv = ['x']; sys.path.insert(0, {str(Path(__file__).parent)!r})\n"
+                 "import c_t1 as T\n"
+                 f"T.iso_install(T.iso_config({str(ncs)!r}, {str(outs)!r}, [{str(files['restored'])!r}], {{'v1.jpg'}}))\n"
+                 "res = {}\n"
+                 "for k, p in json.loads(sys.stdin.read()).items():\n"
+                 "    for how, fn in (('open', lambda: open(p).read()), ('os.open', lambda: os.close(os.open(p, os.O_RDONLY)))):\n"
+                 "        try:\n            fn(); res[k + ' ' + how] = 'read'\n"
+                 "        except PermissionError:\n            res[k + ' ' + how] = 'refused'\n"
+                 "print(json.dumps(res))\n")
+        import subprocess
+        r = subprocess.run([sys.executable, "-c", child], input=json.dumps(probe), capture_output=True, text=True)
+        assert r.returncode == 0, r.stderr[-500:]
+        want = {f"{k} {h}": "read" if k in allowed else "refused" for k in probe for h in ("open", "os.open")}
+        assert json.loads(r.stdout) == want, "the hook refuses exactly the denied paths"
+        live = iso_default()  # the real config: M1's test-side files are denied, the staged ones are not
+        assert len(live["files_ok"]) == 6 and len(live["refused"]) == 2014
+        for p in ("/root/ncs-data/f30k_raw/flickr30k-images.zip", "/root/ncs-data/ade20k_raw/ADEChallengeData2016.zip",
+                  "/root/ncs-data/datasets/c_test/x.jpg", "/root/outputs/c_test/x.json",
+                  "/root/outputs/c_en/emb_coco_test.npz", "/root/outputs/c_stage2/runs/x.json"):
+            assert iso_denied(p, live), p
+        for p in ("/root/ncs-data/datasets/c_t1_f30k_carve/images/a.jpg", "/root/outputs/c_en/cen_memory_emb.npz",
+                  "/root/outputs/c_t1/out/x.json", "/root/ncs-data/models/c_t1_xglm_2_9b/config.json"):
+            assert iso_denied(p, live) is None, p
     ok.append("summary end to end (dev299 skipped, VI descriptive), C2 pins, guard, store refusal")
+    ok.append("AMENDMENT_1 isolation (deny rules, symlink escape, datasets allow-list, open/os.open hook in a child)")
     print("selftest ok: " + "; ".join(ok))
 
 
@@ -1172,6 +1293,7 @@ def main() -> None:
     p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("guard")
     p.add_argument("--roots", nargs="+", required=True)
+    p.add_argument("--datasets", type=Path, help="AMENDMENT_1: $NCS_DATA/datasets may hold only C-T1's staged dirs")
     p = sub.add_parser("memcheck")
     p.add_argument("--mem-files", type=Path, required=True)
     p.add_argument("--root", type=Path, required=True)
@@ -1205,6 +1327,8 @@ def main() -> None:
     a = ap.parse_args()
     if a.selftest:
         return selftest()
+    if a.cmd in ISO_CMDS and machine_id() in ("m3", "m4"):  # AMENDMENT_1: on a GPU host, always under the hook
+        iso_install(iso_default())
 
     def lock():
         import b1
