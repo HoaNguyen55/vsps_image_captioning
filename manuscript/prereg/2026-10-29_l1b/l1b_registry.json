@@ -1,0 +1,143 @@
+{
+ "schema": "vsps.l1b_registry.v1",
+ "statement": "L1-b additions only; the B-N1 registry (9ff02dc2) is reused unchanged for the Qwen-family backbones. Hashes from the HF tree API at the pinned revision (2026-10-29): LFS files sha256, others git blob sha1. venv-lb (setup_gpu.sh H_LB 685ffe2a, transformers 4.57.6) is used unchanged. Hashes from the HF tree API without authentication; gated LFS hashes come back masked, so they are null here (CC-168 W1).",
+ "models": {
+  "gemma3_4b": {
+   "role": "non-Qwen LM, primary (CC-165 r5). Run only when GATES G3_gemma is filled AND every hash below is set: the 4 null sha256 values (both safetensors, tokenizer.json, tokenizer.model) are hidden by the HF gate and are filled from the authenticated HF tree API at this revision in the same commit that fills G3_gemma (CC-168 W1); until then gemma is skipped, never fetched",
+   "hub_id": "google/gemma-3-4b-it",
+   "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+   "licence": "gemma (Gemma Terms of Use)",
+   "gated": "manual (HF click-to-accept on the account that already accepted the ViTextVQA gate; no agent account, no e-mail field)",
+   "lm_family": "gemma3",
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 8,
+   "processor_kwargs": {},
+   "image_input": "one 896 x 896 view, 256 image tokens (do_pan_and_scan off, the snapshot default; disclosed like InternVL's single tile)",
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "e17bde03d42feda32d1abfca6d3b598b9a020df7"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "719b0cd0d7a373a400b0c119ee0e051f41ea88d9"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "fcdc8a6cd637c7ae460065204e7fd0d8c00a38fc"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "37a4c871d263a349f50e4a313db3e72164950702"
+    },
+    "model-00001-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": null
+    },
+    "model-00002-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": null
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "4b95241f208f06d324d17c9675568ec58dafd9fb"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "b1e00fc184f61b698181821169c6374cd5813e5c"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "453c7966d4b5d0b4a317c585989f64c58c2a6bf0"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "1a6193244714d3d78be48666cb02cdbfac62ad86"
+    },
+    "tokenizer.json": {
+     "kind": "sha256",
+     "hash": null
+    },
+    "tokenizer.model": {
+     "kind": "sha256",
+     "hash": null
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "7bdd14f0eaec30c8d2c56bc9d543587676e19c0f"
+    }
+   }
+  },
+  "idefics3_8b": {
+   "role": "non-Qwen LM, second; always run after gemma3_4b (CC-168 W2); score uses the first assessable of (gemma3_4b, idefics3_8b), the other is descriptive",
+   "hub_id": "HuggingFaceM4/Idefics3-8B-Llama3",
+   "revision": "fddb4ff79181e55a994674777e06cd5456ce3dc3",
+   "licence": "apache-2.0",
+   "gated": false,
+   "lm_family": "llama3.1",
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "processor_kwargs": {},
+   "image_input": "the snapshot's default image splitting (longest edge 1456, 364 px tiles + a global view)",
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "00911fc317ce4e0c16d2047a51298f7bfcbef244"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "85d5cab0ae3aa514a23a550e63f2f9dbef7a56be"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "de0aafa3d30b6785a14a741114ee689c6918c5fe"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "ef19d72d25d0040a591043b47be6f46cc05d208eb3f9317581577e3723f5b1fc"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "8068f285e43b7278553738613a378718de214c2a43d019be1ba81586c0cd62b4"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "532b89a16785817830280bd198d93200fd1af082dedaa2b650c3c364716cb250"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "cda6d4ab485b2cbce9dfac23bc028757af9cd75fc715d1396085393ae9768204"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "3c6ef6a31793fb7593a3bd21042a83d87ea5f34c"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "1fbf22ae5a1007e24b06ffd88f1f710a7bba2dbf"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "ce4483dcd7fdb385039cd3262aa8e58a79767fcc"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "7d56ca39148be0911c7088aac61837758259e858"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "c21236688663320a9448dbfb7d36c3c7c4c2bcba"
+    }
+   }
+  }
+ },
+ "cand_batch": {
+  "qwen25vl_7b": 16,
+  "qwen3vl_8b": 8,
+  "internvl3_8b": 16,
+  "gemma3_4b": 16,
+  "idefics3_8b": 8
+ }
+}
