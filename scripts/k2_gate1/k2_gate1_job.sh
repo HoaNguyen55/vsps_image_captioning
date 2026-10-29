@@ -20,6 +20,7 @@ if [ "${1:-}" = "--selftest" ]; then
   $PY $D/gate1_decide.py --selftest
   sha256sum --quiet -c $D/SHA256SUMS
   ! grep -qE '[|] *t[e]e' "$0" || { echo "a tee pipe masks exit codes (the N9 bug)"; exit 1; }
+  [ "$(grep -cE '^ *step [^#]*partial[.]jsonl" --' "$0")" = 3 ] || { echo "a decode step lacks its fresh partial (F1)"; exit 1; }
   r=0; out=$(GPU=m4 EXPECT_HEAD=x bash "$0" 2>&1) || r=$?
   [ "$r" = 1 ] && [[ $out == *"M3 only"* ]] || { echo "GPU=m4 was not refused"; exit 1; }
   echo "k2_gate1_job selftest ok"
@@ -43,6 +44,9 @@ git diff --quiet HEAD -- || { echo "REFUSED: tracked files differ from HEAD"; ex
 [ -n "${TMUX:-}" ] || { echo 'REFUSED: run inside a tmux session'; exit 1; }
 [ "$(tmux ls 2>/dev/null | wc -l)" = 1 ] || { echo "REFUSED: another tmux session exists"; exit 1; }
 [ ! -e /root/ncs-data/b2_stage ] || { echo "REFUSED: /root/ncs-data/b2_stage exists"; exit 1; }
+for p in /root/ncs-data/datasets/pascal50s /root/ncs-data/p50_raw; do   # amendment 2 (RULE §5): no P50 test data
+  [ ! -e "$p" ] || { echo "REFUSED: $p exists (PASCAL-50S staging; delete and log it first)"; exit 1; }
+done
 OTHER=$(ls /root/outputs/*/RUNNING 2>/dev/null || true)
 [ -z "$OTHER" ] || { echo "REFUSED: a lock exists: $OTHER"; exit 1; }
 mkdir -p "$O"; touch "$L"
@@ -88,21 +92,30 @@ if [ ! -s "$UV/images.sha256" ]; then
   rm -rf "$UV/src"
   G || fault "guard refused after staging"
 fi
+# amendment 2: a reused manifest (resume on a restaged host) must name exactly the staged images
+for m in ut probe; do
+  [ ! -s "$O/$m.tsv" ] || $PY $X stagecheck --manifest "$O/$m.tsv" >> "$O/runs.log" 2>&1 || fault "staged images differ from $m.tsv"
+done
 export VSPS_MACHINE_ID="$MACHINE" VSPS_JOB_SHA256="$(sha256sum "$0" | cut -c1-64)"
 # 2. GPU steps: each under timeout = min(its cap, the 36 GPU-h Gate 1 total left); ledger lines before and after
-step() {  # step NAME CAPS_ARG -- command...   (skipped when NAME.done matches its recorded output sha)
-  local name=$1 caps=$2 left t0 rc=0; shift 3
+step() {  # step NAME CAPS_ARG PARTIAL -- command...   (skipped when NAME.done matches its recorded output sha)
+  local name=$1 caps=$2 part=$3 left t0 rc=0; shift 4
   if [ -s "$O/$name.done" ] && (cd "$O" && sha256sum -c --status "$name.done" 2>/dev/null); then
     echo "$(date -u +%FT%TZ) $name reused (sha matches), no GPU step" >> "$O/runs.log"; return 0
   fi
   rc=0; left=$($PY $X left --ledger "$L" --stage "$name" $caps) || rc=$?
-  [ "$rc" = 4 ] && fault "HELD: $name would cross NOT_AFTER 11-06T12:00Z minus cleanup (rerun after N9 needs a ruling)"
+  [ "$rc" = 4 ] && fault "HELD: $name would cross NOT_AFTER (k2_gate1.NOT_AFTER) minus cleanup (a rerun needs a ruling)"
+  [ "$rc" = 6 ] && fault "ledger: an open start before $name (closed at its full logged timeout; rerunnable, CC-162 W8)"
   [ "$rc" = 0 ] || fault "left exit $rc before $name"
   [ "$left" -gt 0 ] || cost "Gate 1 total spent before $name"
   G || fault "guard refused before $name"
-  t0=$(date +%s); echo "$name start $t0" >> "$L"
+  if [ -n "$part" ]; then   # CC-162a F1: every attempt starts from zero (no resume across a kill or a lost host)
+    $PY $X fresh --partial "$part" >> "$O/runs.log" 2>&1 || fault "fresh $name"
+  fi
+  t0=$(date +%s)   # the start line logs the timeout (charged in full if left open) and is fsynced before the step
+  $PY $X ledger --ledger "$L" --line "$name start $t0 $left" || fault "ledger start $name"
   timeout "$left" "$@" >> "$O/$name.log" 2>&1 || rc=$?
-  echo "$name $(( $(date +%s) - t0 ))" >> "$L"
+  $PY $X ledger --ledger "$L" --line "$name $(( $(date +%s) - t0 ))" || fault "ledger end $name"   # measured seconds
   [ "$rc" = 124 ] && cost "exit 124 in $name ($left s: its cap or the Gate 1 total)"
   [ "$rc" = 5 ] && fault "OOM in $name: NOT-RUN (fault), TO-PI; no switch to C2 (CC-151 r13)"
   [ "$rc" = 0 ] || fault "$name exit $rc"
@@ -116,19 +129,19 @@ $LB scripts/lb/decode_hf_vlm.py --prereg "$O/reg_teacher.json" --check-snapshot 
   || fault "teacher snapshot check"
 TP=$O/k2g1_qwen3vl_8b_ut-detailed.preds.json
 export VSPS_VENV_FREEZE_SHA256=$H_LB
-step teacher "" -- \
+step teacher "" "$TP.partial.jsonl" -- \
   $LB scripts/lb/decode_hf_vlm.py --prereg "$O/reg_teacher.json" --run-id k2g1_qwen3vl_8b_ut-detailed --snapshot $SNAP --out-dir "$O"
 done_sha teacher "$(basename "$TP")"
 # 2b. detector: k2_p2_detect's pinned GD-T model and 0.30 rule on the same pool
 export GD_FREEZE_SHA256=$H_GD
-step detect "" -- $GD $X detect --manifest "$O/ut.tsv" --out "$O/detect.json"
+step detect "" "" -- $GD $X detect --manifest "$O/ut.tsv" --out "$O/detect.json"
 done_sha detect detect.json
 # 2c. targets (CPU): unedited / gold-edited / detector-edited / references; counts only on stdout
 [ -s "$O/targets.json" ] || $PY $X targets --teacher "$TP" --detect "$O/detect.json" --out "$O/targets.json" >> "$O/runs.log" 2>&1 \
   || fault "targets"
 # 2d. timing probe: the base path (fresh zero LoRA) on the 40 W22 train ids, no val image; then the caps (> 36 = cost)
 export VSPS_VENV_FREEZE_SHA256=$H_Q3
-step timing "" -- \
+step timing "" "$O/k2g1_timing.preds.json.partial.jsonl" -- \
   $VQ $X decode --arm timing --manifest "$O/probe.tsv" --out-dir "$O" --snapshot $SNAP
 done_sha timing k2g1_timing.preds.json
 if [ ! -s "$O/caps.json" ]; then
@@ -138,18 +151,19 @@ if [ ! -s "$O/caps.json" ]; then
 fi
 # 2e. four arms, seed 0, 2 epochs, last checkpoint
 for A in unedited gold det ref; do
-  step "train_$A" "--caps $O/caps.json" -- \
+  step "train_$A" "--caps $O/caps.json" "" -- \
     $VQ $X train --arm $A --targets "$O/targets.json" --out-dir "$O/adapters" --snapshot $SNAP
   done_sha "train_$A" "adapters/$A/adapter_model.safetensors" "adapters/$A/train.json"
 done
 # 2f. five val-924 decodes on the one student path (base_s = the same net with its fresh, zero LoRA)
 for S in base_s unedited gold det ref; do
   AD=(); [ "$S" = base_s ] || AD=(--adapter "$O/adapters/$S")
-  step "decode_$S" "--caps $O/caps.json" -- \
+  step "decode_$S" "--caps $O/caps.json" "$O/k2g1_$S.preds.json.partial.jsonl" -- \
     $VQ $X decode --arm $S "${AD[@]}" --manifest $VAL --out-dir "$O" --snapshot $SNAP
   done_sha "decode_$S" "k2g1_$S.preds.json"
 done
-# 3. one look (CPU)
+# 3. one look (CPU); never at or after NOT_AFTER (MT4 PREREG amendment 1, §0 row 3)
+$PY $X deadline >> "$O/runs.log" 2>&1 || fault "HELD: past NOT_AFTER, no decision may be written (Branch K1+K6 binds)"
 BF=(); [ -s "$G0DEC" ] && BF=(--bf16 "$G0DEC")   # the diagnostic row exists on M3 only
 rc=0; $PY $DEC decide --dir "$O" "${BF[@]}" >> "$O/runs.log" 2>&1 || rc=$?
 [ "$rc" = 0 ] || [ "$rc" = 3 ] || fault "decide exit $rc"

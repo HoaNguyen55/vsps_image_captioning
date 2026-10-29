@@ -5,6 +5,10 @@ W11-W13). Target builders, trainer, student decoder, detector pass, guard and ca
     python3 k2_gate1.py --selftest                                       CPU, synthetic rows (laptop or M3)
     python3 k2_gate1.py guard HEAD                                       M3 only: common.guard (M4 refused, CC-151)
     python3 k2_gate1.py manifest --set ut|probe --out TSV                CPU: pool (UT-2402 minus W25) or 40 probe ids
+    python3 k2_gate1.py stagecheck --manifest TSV                        CPU: staged shas = the manifest's; exit 7 if not
+    python3 k2_gate1.py deadline                                         CPU: exit 4 at or after NOT_AFTER (no decide)
+    python3 k2_gate1.py ledger --ledger L --line TEXT                    CPU: one durable (fsynced) ledger line
+    python3 k2_gate1.py fresh --partial P                                CPU: delete a step's decode partial (F1)
     python3 k2_gate1.py reg --manifest TSV --out REG.json                CPU: LB registration of the teacher decode
     $GD     k2_gate1.py detect --manifest TSV --out DET.json             GPU, venv-gd: D(img) at 0.30 on the pool
     python3 k2_gate1.py targets --teacher PREDS --detect DET --out T.json   CPU: unedited / gold / det / ref targets
@@ -14,6 +18,8 @@ W11-W13). Target builders, trainer, student decoder, detector pass, guard and ca
     $VQ|$GD k2_gate1.py imports --venv q3|gd                             CPU: every Gate 1 symbol; exit 3 = missing
     python3 k2_gate1.py left --ledger L --stage S [--caps CAPS.json]     CPU: timeout s = min(stage cap, total left);
                                                                          exit 4 = HELD (the step would cross NOT_AFTER)
+                                                                         exit 6 = FAULT (an open start, closed at
+                                                                         its full logged timeout first)
 
 Caption text is read only by code (targets, trainer); every printed line and every record is numbers and shas.
 """
@@ -45,7 +51,7 @@ TEACHER_RUN = "k2g1_qwen3vl_8b_ut-detailed"
 S512, S64, S_BF16, S_DET = 0.7892, 0.454, 3.25, 0.2089
 LOAD_H, CAP_FACTOR, CPU_ALLOW, NF4_PLAN = 0.1, 1.2, 1.25, 2.0
 GATE1_TOTAL_H = 36.0  # RULE §8: MT4 dev 40 GPU-h (PI-1026bb Q3: cap 170 = test 100 + dev 40 + English 30) - W22 - W25
-NOT_AFTER = 1793966400  # 2026-11-06T12:00:00Z: A's N9 rescue starts on M3 (CC-148 W12, CC-151 W4)
+NOT_AFTER = 1794312000  # 2026-11-10T12:00:00Z (amendment 2, MT4 amendment 1, CC-162 r2); was 11-06 12:00Z (N9)
 CLEANUP_H = 2.0  # RULE §5: pull outputs, delete the staged UT/val images, verify; reserved before NOT_AFTER
 N_REFS_PLAN, UT_PLAN, VAL_N, PROBE_N = 12012, 2402, 924, 40
 LORA_TENSORS = 36 * 7 * 2  # lora_A + lora_B over 7 projections x 36 layers
@@ -104,6 +110,34 @@ def teacher_reg(man: Path) -> dict:
 
 def rows_of(man: Path) -> list[tuple[str, str, str]]:
     return [tuple(x.split("\t")[:3]) for x in man.read_text().splitlines()]
+
+
+def stage_mismatch(rows: list[tuple[str, str, str]], sha: dict[str, str]) -> int:
+    """Amendment 2: manifest rows whose staged image is missing or has another sha256 (a restaged pool must equal
+    the one the reused teacher decode and targets were built on). A count only."""
+    return sum(sha.get(f) != h for _, f, h in rows)
+
+
+def cmd_ledger(a) -> None:
+    ledger_append(Path(a.ledger), a.line)
+
+
+def cmd_fresh(a) -> None:
+    print(f"fresh: {'deleted' if fresh(Path(a.partial)) else 'no'} partial {Path(a.partial).name}")
+
+
+def cmd_deadline(a) -> None:
+    """MT4 PREREG amendment 1 (§0 row 3): no gate1_decide.json may be written at or after NOT_AFTER."""
+    if time.time() >= NOT_AFTER:
+        print("HELD: past NOT_AFTER; Gate 1 has no decision and Branch K1+K6 binds")
+        sys.exit(4)
+
+
+def cmd_stagecheck(a) -> None:
+    rows = rows_of(Path(a.manifest))
+    n = stage_mismatch(rows, staged_sha())
+    print(f"stagecheck: {n} of {len(rows)} manifest images differ from the staged shas")
+    sys.exit(7 if n else 0)
 
 
 # ------------------------------------------------------------------------------------------------ targets
@@ -390,29 +424,78 @@ def worst_rate(s_probe: float, rows: list[dict]) -> float:
     return s_probe * N_NEW / KG.slice_steps(rows, N_NEW, BATCH)
 
 
+def ledger_append(ledger: Path, line: str) -> None:
+    """One ledger line, durable before the caller goes on (Codex CC-162 re-read): write, flush, fsync the file, then
+    fsync the directory, so a host lost right after a start line cannot erase it."""
+    with ledger.open("a") as f:
+        f.write(line.rstrip("\n") + "\n")
+        f.flush()
+        os.fsync(f.fileno())
+    fd = os.open(ledger.parent, os.O_RDONLY)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+
+
+def fresh(partial: Path) -> bool:
+    """CC-162a F1: before a GPU step without a matching .done, its decode partial is deleted, so every attempt starts
+    from zero and a step longer than its cap still ends in exit 124 (cost), however often it is killed."""
+    if partial.exists():
+        partial.unlink()
+        return True
+    return False
+
+
+def _lines(ledger: Path) -> list[list[str]]:
+    return [x.split() for x in ledger.read_text().splitlines() if x.strip()] if ledger.exists() else []
+
+
+def _is_start(p: list[str]) -> bool:
+    return len(p) in (3, 4) and p[1] == "start"
+
+
 def used_seconds(ledger: Path, now: float | None = None) -> float:
-    """`NAME start EPOCH` before a step and `NAME SECONDS` after it (b1.used_seconds rule): an open start is charged
-    to the next start or to now, so a reboot cannot undercount."""
-    if not ledger.exists():
-        return 0.0
+    """`NAME start EPOCH TIMEOUT` before a step and `NAME SECONDS` after it. An open start that logged its TIMEOUT
+    (amendment 2, CC-162 W8) is charged that full timeout, whatever the cause and the clock. A legacy open start
+    (no TIMEOUT, written before amendment 2) is charged to the next start or to now (b1 rule)."""
     total, open_t = 0.0, None
-    for p in (x.split() for x in ledger.read_text().splitlines() if x.strip()):
-        if len(p) == 3 and p[1] == "start":
-            total += float(p[2]) - open_t if open_t is not None else 0.0
-            open_t = float(p[2])
+    for p in _lines(ledger):
+        if _is_start(p):
+            if open_t is not None:  # the previous start never closed
+                total += open_t[1] if open_t[1] is not None else float(p[2]) - open_t[0]
+            open_t = (float(p[2]), float(p[3]) if len(p) == 4 else None)
         else:
             total, open_t = total + float(p[1]), None
-    return total + ((time.time() if now is None else now) - open_t if open_t is not None else 0.0)
+    if open_t is not None:
+        total += open_t[1] if open_t[1] is not None else (time.time() if now is None else now) - open_t[0]
+    return total
+
+
+def open_start(ledger: Path) -> list[str] | None:
+    """The last ledger line when it is a start: the host died or the job was killed inside that step."""
+    ls = _lines(ledger)
+    return ls[-1] if ls and _is_start(ls[-1]) else None
 
 
 def left(ledger: Path, stage: str, caps: Path | None = None, now: float | None = None) -> int:
     """Timeout seconds for a stage: min(its cap, the Gate 1 total minus every GPU second so far). Before caps.json
     exists (teacher, detect, timing) the caps come from plan() at the planning decode rate. A step whose timeout
-    would end after NOT_AFTER - CLEANUP_H is HELD (exit 4): a rerunnable fault, never a cost stop (CC-151 W4)."""
+    would end after NOT_AFTER - CLEANUP_H is HELD (exit 4): a rerunnable fault, never a cost stop (CC-151 W4).
+    An open start (exit 6, a rerunnable FAULT) is first closed at its full logged timeout, so a retry can never
+    lower the charge; a legacy open start without a logged timeout is closed only by a committed amendment."""
+    if (o := open_start(ledger)) is not None:
+        if len(o) == 4:
+            ledger_append(ledger, f"{o[0]} {int(float(o[3]))}")
+            print(f"FAULT: open start of {o[0]} closed at its full logged timeout {o[3]} s; rerunnable")
+        else:
+            print(f"FAULT: open start of {o[0]} logged no timeout; close it by a committed amendment")
+        sys.exit(6)
     c = json.loads(caps.read_text())["cap_h"] if caps else plan(S_BF16 * NF4_PLAN)["cap_h"]
     t = max(0, int(min(round(c[stage] * 3600), GATE1_TOTAL_H * 3600 - used_seconds(ledger))))
     if (time.time() if now is None else now) + t > NOT_AFTER - CLEANUP_H * 3600:
-        print(f"HELD: {stage} ({t} s) would cross NOT_AFTER 2026-11-06T12:00Z minus {CLEANUP_H} h cleanup")
+        na = time.strftime("%Y-%m-%dT%H:%MZ", time.gmtime(NOT_AFTER))
+        print(f"HELD: {stage} ({t} s) would cross NOT_AFTER {na} minus {CLEANUP_H} h cleanup")
         sys.exit(4)
     return t
 
@@ -435,6 +518,110 @@ def hold_selftest(repo: Path) -> None:
         if stage == "untracked":
             subprocess.run(g + ["add", W25_REL, PREREG_REL], check=True)
             subprocess.run(g + ["commit", "-qm", "x"], check=True)
+
+
+def kill_rerun_selftest(d: Path) -> None:
+    """CC-162a F1 with the real resume code (decode_hf_vlm.decode_slices): a step that needs 5 slices under a cap of 3
+    is killed after 2. Resuming from the partial would finish it on the retry (the cost-stop loophole); after fresh()
+    the retry starts from zero and hits its cap again, so the step can only end in exit 124."""
+    import decode_hf_vlm as LB
+
+    items = [(str(i), f"{i}.jpg", "h") for i in range(5)]
+    part = d / "x.preds.json.partial.jsonl"
+
+    def budget(n: int):
+        left_ = [n]
+
+        def gen(sl):
+            if left_[0] == 0:
+                raise TimeoutError  # the cap: timeout's exit 124
+            left_[0] -= 1
+            return [(f"c {i}", 3, False) for i, _, _ in sl]
+        return gen
+
+    def finishes(n: int) -> bool:
+        try:
+            LB.decode_slices(items, 1, budget(n), part, "k", log=lambda *a, **k: None)
+        except TimeoutError:
+            return False
+        return True
+
+    for retry_fresh in (False, True):
+        part.unlink(missing_ok=True)
+        assert not finishes(2)  # killed after 2 of 5 slices
+        if retry_fresh:
+            assert fresh(part) and not part.exists()
+        done = finishes(3)
+        assert done is not retry_fresh, ("resume finished the step" if retry_fresh else "the model test is wrong")
+    assert fresh(part) and not fresh(part)
+
+
+def ledger_selftest(led: Path) -> None:
+    """The ledger, left and NOT_AFTER rules (CC-151 W4, CC-162 W8, amendment 2)."""
+    calls = []
+    real = os.fsync
+    os.fsync = lambda fd: calls.append(fd) or real(fd)  # Codex: the start line is fsynced (file + directory)
+    try:
+        ledger_append(led, "s start 1 600")
+    finally:
+        os.fsync = real
+    assert len(calls) == 2 and led.read_text() == "s start 1 600\n" and open_start(led) == ["s", "start", "1", "600"]
+    ledger_append(led, "s 42")  # a killed child exits with a code: charged its measured seconds (CC-162a ruling 4)
+    assert used_seconds(led, now=10 ** 9) == 42.0 and open_start(led) is None
+    led.write_text("teacher start 100\nteacher 50\ndetect start 1000\n")
+    assert used_seconds(led, now=1030) == 80.0
+    led.write_text("a start 100\nb start 160\nb 10\n")  # a never closed: charged to the next start
+    assert used_seconds(led) == 70.0 and open_start(led) is None
+    # CC-162 W8 + Codex: an open start is charged its full logged timeout, whatever the clock, before any retry
+    led.write_text("x 1000\ns start 5000 600\n")
+    assert used_seconds(led, now=5001) == used_seconds(led, now=10 ** 9) == 1600.0
+    for i in (1, 2):  # the host is lost twice in the same step: each loss costs the full timeout
+        try:
+            left(led, "teacher", now=NOT_AFTER - 10 ** 6)
+        except SystemExit as e:
+            assert e.code == 6, e
+        else:
+            raise AssertionError("an open start was not refused")
+        assert used_seconds(led, now=0) == 1000 + 600 * i and open_start(led) is None
+        assert left(led, "teacher", now=NOT_AFTER - 10 ** 6) == 10080  # rerunnable once charged
+        with led.open("a") as f:
+            f.write("s start 9000 600\n")
+    led.write_text(f"x {int(GATE1_TOTAL_H * 3600) - 300}\ns start 1 600\n")  # the charge exhausts the total
+    try:
+        left(led, "teacher", now=NOT_AFTER - 10 ** 6)
+    except SystemExit as e:
+        assert e.code == 6, e
+    assert left(led, "teacher", now=NOT_AFTER - 10 ** 6) == 0  # the job's cost stop, never another retry
+    led.write_text("y 2\nz start 5\n")  # legacy open start, no logged timeout: refused, nothing written
+    try:
+        left(led, "teacher", now=NOT_AFTER - 10 ** 6)
+    except SystemExit as e:
+        assert e.code == 6 and led.read_text() == "y 2\nz start 5\n", e
+    else:
+        raise AssertionError("a legacy open start was charged")
+    # amendment 2: the M3 ledger with train_det closed at its 1.7 h cap = 14,250 + 6,120 s = 5.6583 GPU-h
+    led.write_text("teacher start 1793193222\nteacher 7718\ndetect start 1793200941\ndetect 512\n"
+                   "timing start 1793201483\ntiming 287\ntrain_unedited start 1793201771\ntrain_unedited 2876\n"
+                   "train_gold start 1793204648\ntrain_gold 2857\ntrain_det start 1793207506\ntrain_det 6120\n")
+    assert open_start(led) is None and used_seconds(led, now=0) == 20370.0
+    rows = [("1", "a.jpg", "h1"), ("2", "b.jpg", "h2")]
+    assert stage_mismatch(rows, {"a.jpg": "h1", "b.jpg": "h2"}) == 0 and stage_mismatch(rows, {"a.jpg": "x"}) == 2
+    assert 20370 / 3600 + (1.7 + 8.0 + 2.3 + 4 * 2.8) <= GATE1_TOTAL_H  # used + every remaining cap
+    early = NOT_AFTER - 10 ** 6  # well before the N9 window
+    assert left(led, "teacher", now=early) == 10080  # the 2.8 GPU-h cap; 5.66 h used of the 36 h total
+    led.write_text(f"x {int(GATE1_TOTAL_H * 3600) - 600}\n")  # 600 s of the total left: below the 2.8 h cap
+    assert left(led, "teacher", now=early) == 600 and left(led, "detect", now=early) == 600
+    led.write_text(f"x {int(GATE1_TOTAL_H * 3600) + 5}\n")
+    assert left(led, "detect", now=early) == 0
+    led.write_text("")
+    edge = NOT_AFTER - CLEANUP_H * 3600 - 10080
+    assert left(led, "teacher", now=edge) == 10080  # ends exactly at NOT_AFTER - cleanup: allowed
+    try:
+        left(led, "teacher", now=edge + 1)
+    except SystemExit as e:
+        assert e.code == 4, e
+    else:
+        raise AssertionError("a step crossing NOT_AFTER was started")
 
 
 def selftest() -> None:
@@ -466,26 +653,8 @@ def selftest() -> None:
     big = plan(30.0)  # a 30 s/img student decode cannot fit the total
     assert not big["fits"] and big["cap_total_h"] > GATE1_TOTAL_H
     with tempfile.TemporaryDirectory() as d:
-        led = Path(d) / "gpu_seconds.tsv"
-        led.write_text("teacher start 100\nteacher 50\ndetect start 1000\n")
-        assert used_seconds(led, now=1030) == 80.0
-        led.write_text("a start 100\nb start 160\nb 10\n")  # a never closed: charged to the next start
-        assert used_seconds(led) == 70.0
-        early = NOT_AFTER - 10 ** 6  # well before the N9 window
-        assert left(led, "teacher", now=early) == 10080  # the 2.8 GPU-h cap; 70 s used of the 36 h total
-        led.write_text(f"x {int(GATE1_TOTAL_H * 3600) - 600}\n")  # 600 s of the total left: below the 2.8 h cap
-        assert left(led, "teacher", now=early) == 600 and left(led, "detect", now=early) == 600
-        led.write_text(f"x {int(GATE1_TOTAL_H * 3600) + 5}\n")
-        assert left(led, "detect", now=early) == 0
-        led.write_text("")
-        edge = NOT_AFTER - CLEANUP_H * 3600 - 10080
-        assert left(led, "teacher", now=edge) == 10080  # ends exactly at NOT_AFTER - cleanup: allowed
-        try:
-            left(led, "teacher", now=edge + 1)
-        except SystemExit as e:
-            assert e.code == 4, e
-        else:
-            raise AssertionError("a step crossing NOT_AFTER was started")
+        ledger_selftest(Path(d) / "gpu_seconds.tsv")
+        kill_rerun_selftest(Path(d))
         hold_selftest(Path(d) / "repo")
     from train import schedule
 
@@ -533,6 +702,12 @@ def main() -> None:
     for f in ("--manifest", "--out-dir", "--snapshot"):
         de.add_argument(f, required=True)
     sp.add_parser("imports").add_argument("--venv", choices=("q3", "gd"), required=True)
+    sp.add_parser("stagecheck").add_argument("--manifest", required=True)
+    sp.add_parser("deadline")
+    lg = sp.add_parser("ledger")
+    lg.add_argument("--ledger", required=True)
+    lg.add_argument("--line", required=True)
+    sp.add_parser("fresh").add_argument("--partial", required=True)
     u = sp.add_parser("left")
     u.add_argument("--ledger", required=True)
     u.add_argument("--stage", required=True)
@@ -547,7 +722,8 @@ def main() -> None:
     else:
         try:
             {"imports": cmd_imports, "detect": cmd_detect, "targets": cmd_targets, "caps": cmd_caps,
-             "train": cmd_train, "decode": cmd_decode}[a.cmd](a)
+             "train": cmd_train, "decode": cmd_decode, "stagecheck": cmd_stagecheck,
+             "deadline": cmd_deadline, "ledger": cmd_ledger, "fresh": cmd_fresh}[a.cmd](a)
         except Exception as e:  # an OOM is NOT-RUN (fault) -> TO-PI, never a switch to C2 (CC-151 r13)
             if type(e).__name__ != "OutOfMemoryError":
                 raise
