@@ -1,0 +1,524 @@
+# K2 Gate 1 NO-GO: STOP. No KV look for K2, no rerun, no tuning; MT4 headline falls back to K1 + K6 (PI-1026u Q4); UPGRADE_PLAN §6 pivot review
+
+- K2 Gate 1: DEV / NOT A METHOD RESULT (val 924, one seed, licenses the MT4 PREREG only)
+- failed: ['G1', 'G3', 'G4', 'G6']
+
+```json
+{
+ "verdict": "NO-GO",
+ "failed": [
+  "G1",
+  "G3",
+  "G4",
+  "G6"
+ ],
+ "gates": {
+  "G1": "dCHAIR_i(K - base_s) <= -3.0",
+  "G2": "dR(K - base_s) >= -2.0",
+  "G3": "dCHAIR_i(K - unedited) <= -3.0",
+  "G4": "CHAIR_i(base_s frontier at R(K)) - CHAIR_i(K) >= 3.0",
+  "G5": "mean words(K) >= 90% of base_s",
+  "G6": "captions failing the language check (K) <= 2%"
+ },
+ "pass": {
+  "G1": false,
+  "G2": true,
+  "G3": false,
+  "G4": false,
+  "G5": true,
+  "G6": false
+ },
+ "label": "K2 Gate 1: DEV / NOT A METHOD RESULT (val 924, one seed, licenses the MT4 PREREG only)",
+ "n_images": 924,
+ "thresholds": {
+  "chair": -3.0,
+  "recall": -2.0,
+  "vs_unedited": -3.0,
+  "frontier_gap": 3.0,
+  "words": 0.9,
+  "lang_max_pct": 2.0
+ },
+ "rates": {
+  "base_s": {
+   "CHAIR_i": 9.2164,
+   "R": 62.3738,
+   "CHAIR_i_unasserted_excluded": 6.296,
+   "CHAIR_i_negation_blind": 7.6135,
+   "CHAIR_i_union_gold": 8.8602
+  },
+  "unedited": {
+   "CHAIR_i": 8.2192,
+   "R": 67.6354,
+   "CHAIR_i_unasserted_excluded": 5.5532,
+   "CHAIR_i_negation_blind": 6.5172,
+   "CHAIR_i_union_gold": 7.721
+  },
+  "gold": {
+   "CHAIR_i": 6.6468,
+   "R": 67.0236,
+   "CHAIR_i_unasserted_excluded": 4.3231,
+   "CHAIR_i_negation_blind": 4.8999,
+   "CHAIR_i_union_gold": 6.2633
+  },
+  "det": {
+   "CHAIR_i": 7.6744,
+   "R": 60.7219,
+   "CHAIR_i_unasserted_excluded": 4.659,
+   "CHAIR_i_negation_blind": 5.6279,
+   "CHAIR_i_union_gold": 7.2558
+  },
+  "ref": {
+   "CHAIR_i": 0.3743,
+   "R": 40.7158,
+   "CHAIR_i_unasserted_excluded": 0.3743,
+   "CHAIR_i_negation_blind": 0.3743,
+   "CHAIR_i_union_gold": 0.2246
+  },
+  "base_bf16": {
+   "CHAIR_i": 9.375,
+   "R": 65.647,
+   "CHAIR_i_unasserted_excluded": 6.4924,
+   "CHAIR_i_negation_blind": 7.728,
+   "CHAIR_i_union_gold": 8.9527
+  }
+ },
+ "sums": {
+  "base_s": {
+   "hal": 207,
+   "men": 2246,
+   "tp": 2039,
+   "g": 3269
+  },
+  "unedited": {
+   "hal": 198,
+   "men": 2409,
+   "tp": 2211,
+   "g": 3269
+  },
+  "gold": {
+   "hal": 156,
+   "men": 2347,
+   "tp": 2191,
+   "g": 3269
+  },
+  "det": {
+   "hal": 165,
+   "men": 2150,
+   "tp": 1985,
+   "g": 3269
+  },
+  "ref": {
+   "hal": 5,
+   "men": 1336,
+   "tp": 1331,
+   "g": 3269
+  },
+  "base_bf16": {
+   "hal": 222,
+   "men": 2368,
+   "tp": 2146,
+   "g": 3269
+  }
+ },
+ "delta": {
+  "G1_CHAIR_i_K_minus_base_s": {
+   "point": -2.5696,
+   "half_width": 1.147
+  },
+  "G2_R_K_minus_base_s": {
+   "point": 4.6497,
+   "half_width": 1.2918
+  },
+  "G3_CHAIR_i_K_minus_unedited": {
+   "point": -1.5724,
+   "half_width": 0.9823
+  },
+  "G4_frontier_gap": {
+   "point": 2.5696,
+   "half_width": 1.147,
+   "ci95": [
+    1.4054,
+    3.6994
+   ]
+  }
+ },
+ "frontier": {
+  "frontier_clamped_low": false,
+  "frontier_clamped_high": true,
+  "frontier_points_R_CHAIR_by_k": [
+   [
+    20.5262,
+    3.1746
+   ],
+   [
+    26.7666,
+    4.5802
+   ],
+   [
+    31.1716,
+    3.9585
+   ],
+   [
+    34.6589,
+    4.3882
+   ],
+   [
+    38.8498,
+    4.7262
+   ],
+   [
+    44.1725,
+    4.1805
+   ],
+   [
+    48.8835,
+    4.0816
+   ],
+   [
+    51.8201,
+    4.1313
+   ],
+   [
+    53.6556,
+    4.4662
+   ],
+   [
+    54.9709,
+    4.8199
+   ],
+   [
+    56.2251,
+    5.404
+   ],
+   [
+    57.0205,
+    5.668
+   ],
+   [
+    57.7241,
+    5.8383
+   ],
+   [
+    58.4582,
+    6.3235
+   ],
+   [
+    59.1924,
+    6.4313
+   ],
+   [
+    59.6513,
+    7.1429
+   ],
+   [
+    60.1407,
+    7.1766
+   ],
+   [
+    60.569,
+    7.563
+   ],
+   [
+    60.9055,
+    7.8241
+   ],
+   [
+    61.3032,
+    8.0312
+   ],
+   [
+    61.5479,
+    8.2117
+   ],
+   [
+    61.6396,
+    8.3258
+   ],
+   [
+    61.7314,
+    8.3976
+   ],
+   [
+    61.8844,
+    8.4615
+   ],
+   [
+    62.0067,
+    8.6525
+   ],
+   [
+    62.0679,
+    8.7269
+   ],
+   [
+    62.0985,
+    8.805
+   ],
+   [
+    62.1597,
+    8.7971
+   ],
+   [
+    62.2209,
+    8.7892
+   ],
+   [
+    62.2209,
+    8.7892
+   ],
+   [
+    62.2209,
+    8.871
+   ],
+   [
+    62.282,
+    8.863
+   ],
+   [
+    62.282,
+    8.9038
+   ],
+   [
+    62.3126,
+    8.9405
+   ],
+   [
+    62.3126,
+    9.0219
+   ],
+   [
+    62.3126,
+    9.0625
+   ],
+   [
+    62.3432,
+    9.0585
+   ],
+   [
+    62.3738,
+    9.095
+   ],
+   [
+    62.3738,
+    9.095
+   ],
+   [
+    62.3738,
+    9.095
+   ],
+   [
+    62.3738,
+    9.095
+   ],
+   [
+    62.3738,
+    9.1759
+   ],
+   [
+    62.3738,
+    9.1759
+   ],
+   [
+    62.3738,
+    9.1759
+   ],
+   [
+    62.3738,
+    9.1759
+   ],
+   [
+    62.3738,
+    9.1759
+   ],
+   [
+    62.3738,
+    9.2164
+   ],
+   [
+    62.3738,
+    9.2164
+   ],
+   [
+    62.3738,
+    9.2164
+   ],
+   [
+    62.3738,
+    9.2164
+   ],
+   [
+    62.3738,
+    9.2164
+   ],
+   [
+    62.3738,
+    9.2164
+   ],
+   [
+    62.3738,
+    9.2164
+   ],
+   [
+    62.3738,
+    9.2164
+   ],
+   [
+    62.3738,
+    9.2164
+   ]
+  ],
+  "k_max": 55,
+  "frontier_clamped": true,
+  "CHAIR_i_frontier_at_R_edited": 9.2164,
+  "check_T_truncation_meets_G1": false,
+  "check_T_k": []
+ },
+ "words_mean": {
+  "base_s": 214.5119,
+  "unedited": 212.513,
+  "gold": 213.1569,
+  "det": 206.118,
+  "ref": 11.1883,
+  "base_bf16": 221.9221
+ },
+ "language_check_fail_caption_pct": {
+  "base_s": 2.1645,
+  "unedited": 3.5714,
+  "gold": 4.5455,
+  "det": 3.2468,
+  "ref": 0.0,
+  "base_bf16": 4.329
+ },
+ "out_of_script_char_pct": {
+  "base_s": 0.0079,
+  "unedited": 0.0126,
+  "gold": 0.0957,
+  "det": 0.0331,
+  "ref": 0.0,
+  "base_bf16": 0.0162
+ },
+ "noncoco_nouns_per_caption": {
+  "base_s": 11.9513,
+  "unedited": 11.7273,
+  "gold": 11.6461,
+  "det": 11.4177,
+  "ref": 0.9448,
+  "base_bf16": 12.3366
+ },
+ "secondary_not_gating": {
+  "matched_count_F1": {
+   "K_vs_base_s": [
+    73.5982,
+    72.4577
+   ],
+   "K_vs_ref": [
+    56.9123,
+    57.2176
+   ],
+   "estimator": "Paper A matched prefix, cited as a tool"
+  },
+  "H_P2r_dev": {
+   "R_K_minus_det": {
+    "point": 6.3016,
+    "half_width": 1.2567
+   },
+   "CHAIR_i_K_minus_det": {
+    "point": -1.0276,
+    "half_width": 1.0255
+   }
+  },
+  "ceiling_retention": 0.339,
+  "ceiling_retention_note": "numerator NF4 student path, denominator Gate 0 bf16 (9.375 - 1.7948)"
+ },
+ "decode_sha256": {
+  "base_s": "9bb6f7c4ad05093efcbf68687664045e032ec6cdbeebf1cb947b6851413829d7",
+  "unedited": "e1a51ef3c0c2bb98e46a53d3a2d5c86a297ab1448270dd6ca86e9bec1146d28e",
+  "gold": "77965c4df4f223442c4a3f4782fbeac8de1f63ba9d76db8c202ccaa689823476",
+  "det": "7991e54ebd886d8b38f6da332d5e0156628e3c7d49fdcff1b77fe453ad0af5d2",
+  "ref": "53bd86a6e3a3da8d736d832d187b68e6b7595804b5e632c58ad0b95150efac21",
+  "base_bf16": "8bb0192c76c1a52df883d2a03333062f7e4fde0d08813a919a36d179f50e0c51"
+ },
+ "cap_hit_pct": {
+  "base_s": 0.7576,
+  "unedited": 1.1905,
+  "gold": 1.0823,
+  "det": 0.6494,
+  "ref": 0.0,
+  "base_bf16": 1.1905
+ },
+ "s_per_image": {
+  "base_s": 7.2548,
+  "unedited": 7.3433,
+  "gold": 7.3248,
+  "det": 7.2155,
+  "ref": 0.5041,
+  "base_bf16": null
+ },
+ "adapter_sha256": {
+  "base_s": null,
+  "unedited": "056b92cccd677bcda458d13ca6575f4dbc8a284c25d692bfec9347272247aa42",
+  "gold": "055a9793d9672c5fc3cdf47fb710660b037f14cf7ff9d97fd5b0c014391e89d7",
+  "det": "481d844775eb3dc23ede657638a118e85e866e209211ada6d683cfb9bd624537",
+  "ref": "afeb1022131f62e07ab8ab24fae9aa300c67354f8a8a41870536f0b9b7bc47ce",
+  "base_bf16": null
+ },
+ "caps.json": {
+  "projection_h": {
+   "teacher": 2.2594,
+   "detect": 0.2388,
+   "timing": 0.1722,
+   "train_unedited": 1.4109,
+   "train_gold": 1.4109,
+   "train_det": 1.4109,
+   "train_ref": 6.6558,
+   "decode_base_s": 1.869,
+   "decode_unedited": 2.2815,
+   "decode_gold": 2.2815,
+   "decode_det": 2.2815,
+   "decode_ref": 2.2815
+  },
+  "cap_h": {
+   "teacher": 2.8,
+   "detect": 0.3,
+   "timing": 0.3,
+   "train_unedited": 1.7,
+   "train_gold": 1.7,
+   "train_det": 1.7,
+   "train_ref": 8.0,
+   "decode_base_s": 2.3,
+   "decode_unedited": 2.8,
+   "decode_gold": 2.8,
+   "decode_det": 2.8,
+   "decode_ref": 2.8
+  },
+  "projection_total_h": 24.5539,
+  "cap_total_h": 30.0,
+  "gate1_total_h": 36.0,
+  "fits": true,
+  "s_per_image_base_path_measured": 6.8924,
+  "s_per_image_worst_512": 8.4993
+ },
+ "targets.json.counts.json": {
+  "deleted_units": {
+   "gold": 584,
+   "det": 2535
+  },
+  "dropped_empty": {
+   "unedited": 0,
+   "gold": 0,
+   "det": 0,
+   "ref": 0
+  },
+  "examples_per_epoch": {
+   "unedited": 2392,
+   "gold": 2392,
+   "det": 2392,
+   "ref": 11962
+  },
+  "train_data_json_staged_sha256": "16ece263b40aaff7e1393c17ffe8be2bbfa03f5ce478f756c2a748eafe3fe25f",
+  "n_refs": 11962
+ },
+ "written_epoch": 1793303334.673,
+ "not_after_epoch": 1794312000
+}
+```
