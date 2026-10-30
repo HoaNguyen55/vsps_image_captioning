@@ -58,7 +58,7 @@ CAP_GPU_H = 40.0  # THE A-T3 GPU cap (all tiers, all machines); PI-1030d (CC-184
 AYA_DEADLINE = "2026-11-03T00:00:00Z"  # CC-184 F9 default (or 72 h after M2 tier-1 BLOCK DONE, if earlier)
 DATE_STOP = {1: "2099-01-01T00:00:00Z", 2: "2026-11-05T00:00:00Z", 3: "2026-11-07T00:00:00Z"}  # F2: no decode starts after
 SCORE_DIR = ROOT / "data/results/a_t3"  # F9: score writes only data/results/a_t3/tier{n}.json
-VALSHA_SHA256 = ""  # sha256 of the m3-made val2017 image-sha file; `guard` fails closed while empty (W8)
+VALSHA_SHA256 = "51baa3e4fc4c8cb373fb3e2938709aa16502526d15369ef79dad536f792b8787"  # sha256 of the m3-made val2017 image-sha file; `guard` fails closed while empty (W8)
 PREREG_ID = "2026-10-30_a_t3_coco_dev"
 PIN = {"karpathy": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d",  # dataset_coco.json
        "val2017_ids": "ea37cee007069bde6d45a67186cc6c2591d0c6d7effd3c481996b6b367e060b6",  # prereg val2017_ids.txt
