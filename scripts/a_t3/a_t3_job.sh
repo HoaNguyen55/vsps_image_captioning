@@ -15,6 +15,7 @@
 set -euo pipefail
 EXPECT=${1:?usage: a_t3_job.sh <expected HEAD> <tier>}
 T=${2:?usage: a_t3_job.sh <expected HEAD> <tier>}
+[ "$T" = 2 ] || { echo "REFUSED: tier $T; tier 3 runs only from a_t3_t3_job.sh (CC-203 W4)"; exit 1; }
 MID=$(cat /root/.vsps_machine_id 2>/dev/null || true)
 case "$MID" in m3|m4) ;; *) echo "REFUSED: machine id is not m3/m4"; exit 1 ;; esac
 [ -n "${TMUX:-}" ] || { echo "REFUSED: run inside a tmux session"; exit 1; }

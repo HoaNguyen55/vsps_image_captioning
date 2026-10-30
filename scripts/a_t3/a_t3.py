@@ -16,7 +16,9 @@ Prereg: manuscript/prereg/2026-10-30_a_t3/PREREG.md (CC-183).
     python  scripts/a_t3/a_t3.py register --root R --set S --models M.. --out REG   runtime registration
     python  scripts/a_t3/a_t3.py guard --head H --val2017-ids F --valsha V    before every GPU step (W8)
     python  scripts/a_t3/a_t3.py left --ledger L --cap-h C                    seconds left under a cap
-    python  scripts/a_t3/a_t3.py jobcfg --tier T --host H --reg REG           a_t3_job.sh: out dir and cap (tier 2 only)
+    python  scripts/a_t3/a_t3.py jobcfg --tier T --host H --reg REG           job out dir and cap (tier 2; tier 3 m3 only)
+    python  scripts/a_t3/a_t3.py t3gate --test-list F [--gold G]              m3: tier-3 precheck (CC-203 W3/W6)
+    python  scripts/a_t3/a_t3.py stage3 --test-list F --gold G --src D --root R --valsha V   m3: stage the test ids
     python  scripts/a_t3/a_t3.py valsha --dir D --out O                       m3 only: val2017 image sha256 (numbers)
     python  scripts/a_t3/a_t3.py neardup --cand-dir D --ref NAME=DIR.. --sscd PT --out O   m3 only (W2): drop ids
     python3 scripts/a_t3/a_t3.py testlist --karpathy K --val2017-ids F [--drop NAME=FILE..] --out O   W1 builder;
@@ -52,7 +54,7 @@ import common  # noqa: E402  host_ok(), scan(), COCO_RE (GRL guard helpers), unc
 PDIR = ROOT / "manuscript/prereg/2026-10-30_a_t3"
 LISTS, REGISTRY, PREREG = PDIR / "a_t3_lists.json", PDIR / "a_t3_registry.json", PDIR / "PREREG.md"
 PREREG_SHA256 = "a7422fbfd6e35e84c6862c9c0314648eca4e36226d4acec3849dec015b3f3c64"  # finalisation; `score` refuses while empty
-TEST_RESERVED = ""  # CC-183 r9: the LOG id of the re-read ruling that reserves the W1 list; empty = no tier-3 step
+TEST_RESERVED = "CC-197"  # CC-183 r9: the LOG id of the re-read ruling that reserves the W1 list; empty = no tier-3 step
 PI_X4_ACCEPT = ""  # CC-184 F1: LOG id of the PI accepting an AD-1'/X5-only replication; empty = X4_NOT_EVALUABLE stops
 AYA_OUT = ""  # CC-184 F9: LOG id recording Aya's §4 drop; empty = tier 1 waits for both Aya preds
 CAP_GPU_H = 40.0  # THE A-T3 GPU cap (all tiers, all machines); PI-1030d (CC-184 P1). Never changed after a decode
@@ -85,7 +87,11 @@ N_D1, N_D2, N_SMOKE = 1000, 1000, 20
 N_TEST_PLAN = 3500  # fixed planning lower bound for the predictors (W1 count <= 3,685); never replaced by the W1 count
 P_GO, ALPHA, KS = 0.98, 0.025, (1, 2, 5)
 CAP_H = {"tier1_m4": 6.0, "tier1_m3": 2.0,  # per-machine caps inside CAP_GPU_H; tier 2 (OPS-1030at3p): measured
-         "tier2_m4": 6.0, "tier2_m3": 2.0}  # tier-1 use m4 3.92 h, m3 1.42 h on the same 1,000-image size
+         "tier2_m4": 6.0, "tier2_m3": 2.0,  # tier-1 use m4 3.92 h, m3 1.42 h on the same 1,000-image size
+         "tier3_m3": 19.69}  # CC-203 W5: the PREREG tier-3 projection for 3,685 images, fixed from the ledger
+T3_LIST_SHA = "5aaa479fa57f9749ecd1258ae7a9f91d8b0e9b322ea1fd4418a5f91b1354db26"  # r9 list file (CC-197)
+T3_IDS_SHA = "b0aefdb4a61c8099369d7f42a5625ab5aa83ec310a9f28f04bc2f00102727215"  # its 3,232 ids
+TIER2_SHA = "5bc221e4041a8e3ca4a2780eefc2bb52222946b20626eeae061681dce032eaa0"  # tier2.json (TIER2.sha256, d43f787)
 B_REH, R_REH = 200, 200  # tier-2 rehearsal: image-bootstrap resamples, null replicates per resample
 C_NEAR_DROPS = (129062, 284623, 427649, 458410, 465179, 471991, 527616, 562059)  # C's 8 drops (CC-183 chair)
 BAD_NAME = re.compile(r"val2017|val2014\.zip|train2014\.zip|annotations_trainval|captions_val|instances_val", re.I)
@@ -367,16 +373,68 @@ def reg_tier(reg: Path) -> int:
 
 
 def job_cfg(tier: int, mid: str, reg: Path) -> tuple[str, float]:
-    """a_t3_job.sh (OPS-1030at3p): tier 2 only, from a registration whose every run is at3t2_*; its own out dir
-    (ledger, SUMS, EVENTS) and per-machine cap. Tier 1 was scored once (0515a15); tier 3 lands in the r9 commit (F5)."""
+    """a_t3_job.sh / a_t3_t3_job.sh (OPS-1030at3p, CC-203 W4): tier 2, or tier 3 on m3 only, from a registration
+    whose every run is at3t{tier}_*; its own out dir (ledger, SUMS, EVENTS) and per-machine cap."""
     runs = [r["run_id"] for r in json.loads(reg.read_text())["runs"]]
-    if tier != 2 or not runs or not all(r.startswith(f"at3t{tier}_") for r in runs):
-        raise SystemExit(f"REFUSED: job tier {tier}, registration runs {runs[:2]}; this job runs tier 2 only")
+    if tier not in (2, 3) or (tier == 3 and mid != "m3") or not runs or not all(r.startswith(f"at3t{tier}_") for r in runs):
+        raise SystemExit(f"REFUSED: job tier {tier} on {mid}, registration runs {runs[:2]}; tier 2, or tier 3 on m3")
     return f"/root/outputs/a_t3_t{tier}", CAP_H[f"tier{tier}_{mid}"]
 
 
 def left(ledger: Path, cap_h: float) -> int:
     return max(0, int(cap_h * 3600 - sum(b for _, b, _ in p50.ledger_rows(ledger))))
+
+
+# ------------------------------------------------------------------------------------------------ tier 3 (CC-203)
+def t3gate(lst: Path, gold: Path | None = None, mid_file: Path = Path("/root/.vsps_machine_id"),
+           now: str | None = None) -> str:
+    """CC-203 W3/W6, outside the frozen gold/score code (PREREG l.221): the reserved list, the committed
+    REHEARSAL_PASS tier-2 result, m3, the tier-3 date stop and, with a gold file, its test-list provenance."""
+    if machine_id(mid_file) != "m3":
+        raise SystemExit("REFUSED t3gate: not the m3-role machine")
+    date_ok(3, now)
+    L = json.loads(lst.read_bytes())
+    ids_sha = sha_bytes(("\n".join(L["ids"]) + "\n").encode())
+    if p50.sha_file(lst) != T3_LIST_SHA or ids_sha != T3_IDS_SHA or L["ids_sha256"] != ids_sha or L["n"] != 3232:
+        raise SystemExit("REFUSED t3gate: the test list is not the CC-197 r9 list")
+    t2 = SCORE_DIR / "tier2.json"
+    pin = (PDIR / "TIER2.sha256").read_text().split()[0]
+    if not t2.is_file() or p50.sha_file(t2) != TIER2_SHA or pin != TIER2_SHA:
+        raise SystemExit("REFUSED t3gate: tier2.json is not the committed TIER2.sha256 file")
+    if json.loads(t2.read_text())["outcome"] != "REHEARSAL_PASS":
+        raise SystemExit("REFUSED t3gate: tier 2 is not REHEARSAL_PASS")
+    msg = f"t3gate ok list {T3_LIST_SHA} ids {T3_IDS_SHA} tier2 {TIER2_SHA} REHEARSAL_PASS m3"
+    if gold is not None:
+        G = json.loads(gold.read_text(encoding="utf-8"))
+        pv = G["provenance"]
+        if G["set"] != "test" or pv["ids_sha256"] != T3_IDS_SHA or pv["member"] != TEST_MEMBER or \
+                pv["pins"]["ann2017"] != PIN["ann2017"]:
+            raise SystemExit("REFUSED t3gate: the gold file is not the reserved-list val2017 gold")
+        msg += f" goldfile {p50.sha_file(gold)} premise gate_R1 {G['premise']['gate_R1']}"
+    return msg
+
+
+def cmd_stage3(lst: Path, gold: Path, src: Path, root: Path, valsha: Path) -> dict:
+    """Tier-3 staging (PREREG §6 F5 deviation, CC-203 W4): the 3,232 reserved ids copied from the m3 val2017 dir,
+    each byte-checked against the pinned m3 sha list; refused unless the gate and the pre-decode premise hold."""
+    print(t3gate(lst, gold))
+    G = json.loads(gold.read_text(encoding="utf-8"))
+    if not G["premise"]["gate_R1"]:
+        raise SystemExit(f"PREMISE_NOT_MET on test: {G['premise']} (no decode; PREREG §3 sentence)")
+    valsha_set(valsha)
+    want = json.loads(Path(valsha).read_text())["sha256"]
+    (root / "images").mkdir(parents=True, exist_ok=True)
+    rows = ""
+    for i in json.loads(lst.read_bytes())["ids"]:
+        f = f"{int(i):012d}.jpg"
+        b = (src / f).read_bytes()
+        if sha_bytes(b) != want[str(int(i))]:
+            raise SystemExit(f"{i}: sha256 differs from the m3 val2017 sha list")
+        (root / "images" / f).write_bytes(b)
+        rows += f"{i}\t{f}\t{sha_bytes(b)}\n"
+    (root / "sets").mkdir(parents=True, exist_ok=True)
+    (root / "sets/a_t3_test.tsv").write_text(rows, encoding="utf-8")
+    return {"test": sha_bytes(rows.encode()), "n": len(rows.splitlines()), "premise": G["premise"]}
 
 
 # ------------------------------------------------------------------------------------------------ m3-only steps
@@ -722,7 +780,34 @@ def selftest() -> None:
                 raise AssertionError(f"job tier {tt} accepted {rp.name}")
             except SystemExit:
                 pass
-        assert sum(CAP_H.values()) + 19.69 <= CAP_GPU_H  # tier 3 = 25.03 GPU-h x 3,685 / 4,685 (OPS-1030at3o)
+        r3 = Path(t) / "reg_t3.json"
+        r3.write_text(json.dumps({**reg, "runs": [{**r, "run_id": run_id(r["model"], r["prompt_mode"], 3)}
+                                                 for r in reg["runs"]]}))
+        assert job_cfg(3, "m3", r3) == ("/root/outputs/a_t3_t3", 19.69)
+        for tt, h, rp in ((3, "m4", r3), (2, "m3", r3), (3, "m3", mixed)):
+            try:
+                job_cfg(tt, h, rp)
+                raise AssertionError(f"job tier {tt} on {h} accepted {rp.name}")
+            except SystemExit:
+                pass
+        # CC-203 W5: spent 5.34 (tier 1) + 1.45 + 3.92 (tier 2 BLOCK DONE) = 10.71, plus the tier-3 cap, within 40
+        assert 5.34 + 1.45 + 3.92 + CAP_H["tier3_m3"] <= CAP_GPU_H
+        # t3gate (CC-203 W3/W6): the committed files pass every sha check; refused off m3, after the stop, on a copy
+        tl, m3f = PDIR / "r9/a_t3_testlist_r9_drop_all.json", Path(t) / "m3"
+        m3f.write_text("m3\n")
+        assert t3gate(tl, None, m3f, "2026-11-06T23:59:59Z").startswith("t3gate ok")
+        bad_l = Path(t) / "l.json"
+        bad_l.write_text(tl.read_text() + " ")
+        gf = Path(t) / "g.json"
+        gf.write_text(json.dumps({"set": "test", "premise": {"gate_R1": True}, "provenance": {
+            "ids_sha256": T3_IDS_SHA[::-1], "member": TEST_MEMBER, "pins": PIN}}))
+        for args in ((tl, None, Path(t) / "mid_none", None), (tl, None, m3f, "2026-11-07T00:00:00Z"),
+                     (bad_l, None, m3f, "2026-11-01T00:00:00Z"), (tl, gf, m3f, "2026-11-01T00:00:00Z")):
+            try:
+                t3gate(*args)
+                raise AssertionError(f"t3gate passed {args}")
+            except SystemExit:
+                pass
         for bad in (lambda: tier1_binding(t1), lambda: tier1_binding(None), lambda: excluded_ids(None, 1)):
             try:
                 bad()
@@ -802,7 +887,9 @@ def selftest() -> None:
     text = (HERE / "a_t3_job.sh").read_text(encoding="utf-8")
     assert "set -euo pipefail" in text and "$X guard" in text and "aya_vision_8b" in text
     assert "R=at3t${T}_$M-$Q" in text and "$X jobcfg" in text and "at3t1_" not in text
-    assert "O=/root/outputs/a_t3" not in text and "/root/outputs/a_t3/" not in text
+    assert "O=/root/outputs/a_t3" not in text and "/root/outputs/a_t3/" not in text and '[ "$T" = 2 ]' in text
+    t3 = (HERE / "a_t3_t3_job.sh").read_text(encoding="utf-8")
+    assert t3.count("$X t3gate") == 1 and t3.count("T3G") >= 5 and "--tier 3" in t3 and "at3t3_" in t3
     print("a_t3 selftest ok")
 
 
@@ -825,6 +912,11 @@ def main() -> None:
     s.add_argument("--valsha", type=Path, required=True)
     s = sub.add_parser("left"); s.add_argument("--ledger", type=Path, required=True); s.add_argument("--cap-h", type=float, required=True)  # noqa: E702
     s = sub.add_parser("models"); s.add_argument("--host", required=True, choices=["m3", "m4"])  # noqa: E702
+    s.add_argument("--tier", type=int, default=1)
+    s = sub.add_parser("t3gate"); s.add_argument("--test-list", type=Path, required=True); s.add_argument("--gold", type=Path)  # noqa: E702
+    s = sub.add_parser("stage3"); s.add_argument("--test-list", type=Path, required=True); s.add_argument("--gold", type=Path, required=True)  # noqa: E702
+    s.add_argument("--src", type=Path, required=True); s.add_argument("--root", type=Path, required=True)  # noqa: E702
+    s.add_argument("--valsha", type=Path, required=True)
     s = sub.add_parser("jobcfg"); s.add_argument("--tier", type=int, required=True); s.add_argument("--reg", type=Path, required=True)  # noqa: E702
     s.add_argument("--host", required=True, choices=["m3", "m4"])
     s = sub.add_parser("valsha"); s.add_argument("--dir", type=Path, required=True); s.add_argument("--out", type=Path, required=True)  # noqa: E702
@@ -864,7 +956,12 @@ def main() -> None:
         print(left(a.ledger, a.cap_h))
     elif a.cmd == "models":
         R = registry()
-        print(" ".join(m for m in in_models(R) if R["families"][m]["host_role"] == a.host))
+        print(" ".join(m for m in in_models(R) if R["families"][m]["host_role"] == a.host
+                       or (a.tier == 3 and a.host == "m3")))  # CC-203 W4: the tier-3 m3 list = all in-set models
+    elif a.cmd == "t3gate":
+        print(t3gate(a.test_list, a.gold))
+    elif a.cmd == "stage3":
+        print(json.dumps(cmd_stage3(a.test_list, a.gold, a.src, a.root, a.valsha)))
     elif a.cmd == "jobcfg":
         print(*job_cfg(a.tier, a.host, a.reg))
     elif a.cmd == "valsha":
