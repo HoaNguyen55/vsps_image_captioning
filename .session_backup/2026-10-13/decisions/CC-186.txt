@@ -1,0 +1,161 @@
+CC-186: Re-panel of CC-174 (the 2027 Q1 replacement), triggered by the L1-b result (decide.json sha 85c534f6 = NO_VERDICT). The questions were: (1) rank the realistic routes to a Q1 ACCEPTED paper by 31-12-2027; (2) should the 2027 Q1 target formally move to 2028 (CC-174 Q5)? (3) what to do with the L1-b write-up; (4) a 2-week plan that does not starve Paper A. Three-judge panel (J1 rigor, J2 path, J3 adversary) with a chair tally. Tiers (PI-1029o): the main direction, the test-set assignment and the 2027->2028 target move are IRREVERSIBLE and need >= 92 (band 92-98). The L1-b note, the plan-file revisions and the 2-week queue are REVERSIBLE and need >= 90.
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: NOT ACTIONABLE at either tier as a panel commit (3/3 on the substance).
+- Irreversible: NO-GO on committing any 2027 Q1 main direction today. No route reaches 92, and the best single route is about 4-8% to be accepted by 31-12-2027. L1-P1 with the fix leg is REJECTED, because GO cannot be reached arithmetically.
+- 2027 -> 2028: the move goes to the PI with a YES recommendation (about 88; it is the PI's own goal, PI-1029h).
+- Reversible: GO-with-fixes in substance (3/3). The pieces are:
+  - L1-b stays NO_VERDICT, recorded as a brief registered negative.
+  - The fix leg is closed. No rerun.
+  - The 2-week plan runs A first, then C-T1, then MT4 K1+K6 tier 1, the last only after its DEV_RULE is committed.
+  - Panel confidence is 89, one point under the 90 bar, so the plan package goes to the PI as the default (Q4, Q5).
+- Parts of the plan already bind under earlier rulings and do not depend on this panel:
+  - M2 runs A first with BD-T1 as filler (CC-181, 92).
+  - No K1/K6 GPU step runs before the gatekeeper commit (CC-175r2, CC-174 W3).
+  - The NO_VERDICT label is fixed by L1-b PREREG §6 clause 1.
+
+CONFIDENCE: 89% (mean of J1 90, J2 89, J3 89; all three are in the majority). Steps that would raise it:
+- Reversible plan to >= 90:
+  (i) The PI answers Q4 on A's dates. This closes the only split, J1's 11-10 freeze against the 12-05 freeze of J2 and J3.
+  (ii) The gatekeeper commits the MT4 K1+K6 DEV_RULE.md, the cost amendment and W25K1. The directory is untracked today; the chair re-checked `git status` and it shows ?? for PREREG_DRAFT.md.
+  (iii) One machine-h ledger is reconciled against PI-1030b.
+- Irreversible 2027 main direction to >= 92: no step within reach. Every route sits at 1-8% (table below), and no pending data can move that. The 2028 move needs the PI's decision, not more data.
+
+## Panel votes (final round)
+| Judge | Final decision | Conf | 2027 Q1 commit | 2027->2028 | L1-b | A dates | M2 filler |
+|---|---|---|---|---|---|---|---|
+| J1 rigor | GO-with-fixes reversible; NO-GO irreversible | 90 | none reaches 92 | PI, rec YES (90) | NO_VERDICT, brief negative, no rerun | internal freeze ~11-10, mock review, submit <= 12-15 | BD-T1 filler (changed on CC-181) |
+| J2 path | Same; no 2027 commit | 89 | none reaches 92 | PI, rec YES (88) | same | review snapshot 11-10, freeze <= 12-05, submit <= 12-15 | BD-T1 filler (changed on CC-181) |
+| J3 adversary | NOT ACTIONABLE irreversible; GO-with-fixes reversible | 89 | none reaches 92 | PI, rec YES (88) | same | freeze <= 12-05, submit <= 12-15 (changed on PI-1030e) | BD-T1 filler |
+
+Agreement: 3/3 on NO-GO for a 2027 commit, on sending the 2028 move to the PI with YES, on the L1-b handling and on the test-set ledger. A dates: 2/3, with J1 dissenting. Two votes changed in the exchange, both on evidence:
+- J1 and J2 added BD-T1 as the M2 filler, on CC-181 and LOG l.844.
+- J3 dropped the 11-10 freeze, on PI-1030e and LOG l.869.
+
+## Ranked options (mean of the three final estimates; P = P(Q1 ACCEPTED by 31-12-2027))
+1. Move the Q1 target formally to 2028 and keep 2027 as a stretch goal with no budget of its own. Panel 88-90 (J1 90, J2 88, J3 88). IRREVERSIBLE, below 92, so it is a PI decision. Recommended.
+2. L1 as a diagnosis-only or benchmark paper. Scope: the Qwen family, built on L1-a's diacritic-only shares of 13.5-21.9%, with L1-b as a registered negative. Venue: the IP&M VSI or IEEE Access.
+   - P is about 3-8%, fit about 7 or below, 10-20 GPU-h.
+   - It would spend the unspent ViTextVQA or MTVQA test, and access to that test gold is unverified.
+   - It is parked at 0 GPU and 0 test spend until A is submitted. It is not a Q1 route today.
+3. MT4 K1+K6 at NEUCOM, ESWA, NCA or the IP&M VSI.
+   - P is about 3-5%, about 76.5 GPU-h, fit 5-6, and KV-4,224 is committed to it and unspent.
+   - PI-1029h Q3 sets it for 05/2028. Keep it as the Q2/2028 floor.
+   - It is the next M1 job after C-T1 and the A-T3 M1 cells, once its DEV_RULE is committed, and A may preempt it. Reversible queue item, at about 90.
+4. L2-P1 at TOMM. P(2027) is about 1-2% and it needs 105-225 GPU-h. It is the lead candidate for a 2028 Q1, gated on the L2-a pilot, which runs only after A is submitted.
+5. IEEE Access as a fast 2027 tail at fit 6-7, which lowers the CC-174 W4 bar of 8. NOT recommended (J1 and J2 say NO; J3 allows it only after a re-score reaches 8). PI question Q2.
+6. Paper A moved to a Q1 venue (PRL 5, CVIU 5, IEEE Access 6). P is about 1-5%.
+   - A owns no unspent test set: the val2017 list is a guard input, not a reservation (dbb74f4, CC-183 r9).
+   - It conflicts with PI-1030c (SPIC). REJECT. At most a fallback after a SPIC desk reject, and that needs the PI.
+7. C moved to a Q1 venue: about 2%. PI-1029p(5) holds C at TALLIP. REJECT.
+8. B+D at LRE: 0% under PI-1026bi, because LRE is Q2 in CS Applications (Q1 only in Linguistics and LIS). REJECT as a Q1 route. It stays as a Q2 paper with the B freeze on 11-30.
+9. L1-P1 with the fix leg: about 1%. GO cannot be reached: all three assessable backbones have CI_hi < 1.0, below the SESOI. REJECT (about 95 for the rejection).
+10. Defer again, or do nothing. REJECT. No pending data can change the picture, and the pivot rule binds: doubt about a 2027 Q1 is above 88%.
+
+Combined P(at least one Q1 accepted in 2027) is about 5-12% (all three judges).
+
+## What was checked
+- L1-b decide.json:
+  - The chair re-hashed `.session_backup/2026-10-29/l1b/decide.json`: sha256 85c534f6a1cbe4b77de50a743d3346449090a43a19350fee1f291b36cb1ead58. This equals `manuscript/prereg/2026-10-29_l1b/decide.sha256` (commit 316fa1d); J3 also verified it.
+  - Content as logged in OPS-1030l1b: qwen25vl_7b +0.09 [-0.09, +0.27], qwen3vl_8b -0.05 [-0.14, 0.00], internvl3_8b +0.14 [-0.09, +0.37]. idefics3_8b is not assessable (base EM 15.2% < the 20% floor), and gemma3_4b was skipped.
+  - The NO_VERDICT label comes from PREREG §6 clause 1 (l.267). GO cannot be reached (l.273-274).
+- MT4 K1+K6 prereg directory:
+  - The chair re-checked it: `git status` shows `?? manuscript/prereg/2026-10-30_mt4_k1k6/`.
+  - It holds PREREG_DRAFT.md, SHA256SUMS, k1k6_lists.json, power_planning.json and t2_ids.txt. There is no DEV_RULE.md (J1, J2 and J3).
+- LOG.md:
+  - l.804, CC-174: DEFER until the re-panel on L1-b.
+  - l.840, PI-1030b: about 110 h on both machines at about 18k VND/h, so about 220 single-machine hours. The question's figure of about 200 at about 9k VND/h is the same money.
+  - l.844, CC-181: A first, BD-T1 as filler (92).
+  - l.869, PI-1030e: no forced November submission, plan for December, hard cap 18/12; the A-T3 date stops of 11-05 and 11-07 stay.
+- Commit dbb74f4 and CC-183 r9: A-T3 makes no test reservation and takes no test look.
+- A_ALLOUT_PLAN §3.0 l.83: "A owns no unspent test set". The 11-10 freeze and 11-12 submission at l.6, l.137 and l.149 were a target pending PI Q6, which PI-1030e answers.
+- Venue quartiles (J2, scimago): SPIC is Q2 in all of its CS categories (13803). LRE is Q2 in CS Applications (145663). The 436-day SPIC review time stays UNVERIFIED.
+- CC-174.txt, CC174_PREP.md, PORTFOLIO_3Y_2026-10-29.md and A_ALLOUT_PLAN_2026-10-30.md were read by the panel.
+
+## Rulings
+r1. L1-b is recorded exactly as NO_VERDICT (decide sha 85c534f6, PREREG §6 clause 1). It is not relabelled KILL. One descriptive sentence may be added: "every assessable backbone had dEM < 1.0 (SESOI) with CI_lo <= 0, so GO is unreachable."
+r2. No further L1-b runs of any kind:
+  - no gemma run;
+  - no change to the idefics3 floor or prompt;
+  - no change to alpha, tau or the candidate rule;
+  - no new or replacement non-Qwen backbone;
+  - no explore round.
+  The fix leg is closed. CC-174 option (b), L1-P1 with the fix leg, is withdrawn.
+r3. No 2027 Q1 main direction is committed today. No route reaches 92.
+r4. The 2027 -> 2028 move goes to the PI with recommendation YES (Q1). Until the PI answers, plan files label 2027 a "stretch goal (pending PI Q1)", and no 2028 direction is committed now.
+r5. The L1-b write-up is a brief registered negative: one paragraph and one table, taken only from decide.json, filed in the L1 line or the proposal. It never goes into A, B or C.
+  - M* and the alpha grid are labelled post hoc and descriptive.
+  - Disclose the idefics3 floor failure, the gemma skip, AMENDMENT_2 and the input restore from backup with sha checks (OPS-1030l1b).
+r6. The test-set ledger is unchanged:
+  - KV-4,224 stays with MT4.
+  - The ViTextVQA and MTVQA tests stay unspent with L1.
+  - Nothing is reassigned to A.
+  Any reassignment, and any L1 test use, needs its own ruling at >= 92.
+r7. MT4 K1+K6 is the Q2/2028 floor, not a 2027 Q1 bet. No K1/K6 GPU step runs before the gatekeeper commits DEV_RULE.md, the cost amendment and W25K1 (CC-175r2). On M1 the order is: C-T1, then the A-T3 M1 cells (date stops 11-05 and 11-07), then K1+K6 tier 1. Any A job may preempt it.
+r8. M2, until 11-02 04:46 VN: A-T3 tiers 1-2 first, then BD-T1 as filler (CC-181). M2 is extended only if an A job needs it.
+r9. No L1 or L2 GPU work, and no L1 CPU feasibility work, before A is submitted. A's daily text work comes first (PI-1030b/c).
+r10. A dates (2/3, J1 dissenting) under PI-1030e:
+  - review-draft snapshot on 11-10, for a mock SPIC review;
+  - final freeze by 12-05 at the latest;
+  - submission by 12-15 at the latest, inside the hard cap of 18/12;
+  - the A-T3 date stops are unchanged (tier 2 by 11-05, tier 3 by 11-07);
+  - the B freeze stays 11-30.
+  An earlier freeze is allowed if A is ready, but it is not a target. Final word: PI Q4.
+
+## Required fixes (union of the majority, deduplicated)
+W1. Write the L1-b registered note (r1, r5): one page at most, verbatim NO_VERDICT, cite sha 85c534f6, each backbone's dEM and CI, the "GO unreachable" sentence, and the disclosures. Do it on the laptop, after A's text tasks for the day (about 0.5 day).
+W2. Revise Q1_2027_PLAN.md, Q1_PER_YEAR_PLAN.md and PORTFOLIO_3Y (§2.1 and row 6), on CPU:
+  - drop the fix leg and withdraw CC-174 (b);
+  - P(2027) about 5-12%, with 2027 labelled stretch (pending PI Q1);
+  - 2028 candidates: L2-P1 as lead (gated on L2-a), MT4 K1+K6 as the Q2/2028 floor, L1 as diagnosis-only (demoted);
+  - commit no irreversible 2028 direction.
+W3. Log the venue quartile checks: SPIC Q2 in all CS categories (13803); LRE Q2 in CS Applications and Q1 only in Linguistics and LIS (145663). The 436-day SPIC review time stays UNVERIFIED.
+W4. The gatekeeper commits the K1+K6 DEV_RULE.md, the cost amendment and W25K1 (CC-175r2). Until then, no K1/K6 GPU step runs (r7).
+W5. Leave the test-set ledger unchanged (r6). The A-T3 val2017 list is a guard, not a reservation.
+W6. M2 queue per r8; M1 queue per r7.
+W7. Keep one machine-h ledger against the PI-1030b top-up. State the unit: about 110 h on both machines = about 220 single-machine hours, or about 200 at 9k VND/h. A-T3 is capped at 40 h (PI-1030d), and MT4 tier 1 stays inside its line. Report the balance at each tick.
+W8. No L1 or L2 GPU work and no L1 CPU feasibility work before A is submitted (r9). After A is submitted, the L1 CPU checks are:
+  - ViTextVQA test-gold access and licence;
+  - the MTVQA-vi test count;
+  - reading ViPhoVQA;
+  - a fit re-score (admissible only at fit >= 8, with an honest Qwen-family scope).
+W9. A dates per r10, pending PI Q4.
+
+## Two-week plan (10-30 to 11-13; reversible; default pending PI Q4/Q5)
+- Laptop:
+  - A text T1-T6 every day first;
+  - then W1 (the L1-b note) and W2/W3 (plan revisions);
+  - A review-draft snapshot and mock SPIC review around 11-10.
+- M2 (until 11-02 04:46 VN): A-T3 tiers 1-2, then BD-T1 as filler. Let M2 lapse unless A needs it.
+- M1:
+  - C-T1 runs to completion;
+  - then the A-T3 M1 cells (tier 2 by 11-05, tier 3 by 11-07);
+  - then K1+K6 tier 1, once W4 holds, preemptible by A.
+- No L1 or L2 GPU work. No test-set changes.
+
+## For the PI (each with recommendation and default)
+Q1. Make 2028 the first planned year for a Q1 ACCEPTED paper, and keep 2027 as a stretch goal with no budget of its own?
+- Recommended: YES, because P(2027) is about 5-12% on any route.
+- Default: YES, with the 2027 row labelled stretch and the venue bar not lowered.
+Q2. Count IEEE Access as a 2027 tail for a paper at fit 6-7, which lowers the fit-8 bar?
+- Recommended: NO. Allow it only at fit >= 8, with the CS Q1 quartile re-checked at submission and again at acceptance.
+- Default: NO.
+Q3. Close the L1 fix leg and continue L1 only as diagnosis-only work? It would be parked at 0 GPU and 0 test spend until A is submitted, with no Q1 claim, and no L1 test would be spent until a new panel rules at >= 92.
+- Recommended: YES.
+- Default: YES.
+Q4. A's dates: review draft 11-10, final freeze by 12-05, submission by 12-15 (hard cap 18/12), with the A-T3 date stops unchanged? J1 would prefer an internal freeze around 11-10.
+- Recommended: YES, as stated.
+- Default: YES. An earlier freeze is allowed if A is ready.
+Q5. Confirm the M1 order (C-T1, then the A-T3 M1 cells, then MT4 K1+K6 tier 1, preemptible by A), and run the L2-a pilot (the 2028 Q1 lead) only after A is submitted, around mid-December?
+- Recommended: YES.
+- Default: YES.
+
+## Dissents
+- A dates: J1 recommends an internal freeze around 11-10, then a mock SPIC review, then submission by 12-15. Reason: an early freeze adds review rounds and costs no tests. J2 and J3 hold that PI-1030e answered the pending PI Q6 (A_ALLOUT l.6, l.137) in favour of December, so a hard 11-10 freeze contradicts the PI's plan. Majority: an 11-10 review snapshot, with the freeze by 12-05. The PI decides (Q4).
+- IEEE Access: J3 would allow it as the 2027 stretch venue if a re-score reaches fit >= 8. J1 and J2 say NO for now. In practice they agree: all three keep the fit-8 bar, and all defaults are NO.
+- Confidence spread: 90 / 89 / 89. J1 alone is at the reversible bar.
+- Superseded first-round positions, withdrawn on evidence:
+  - J2: "A-T3 holds the only fresh test" (refuted by dbb74f4 and CC-183 r9);
+  - J1 and J2: no M2 filler (corrected on CC-181);
+  - J3: keep the 11-10 freeze (corrected on PI-1030e).

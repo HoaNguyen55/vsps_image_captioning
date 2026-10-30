@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" font-family="Times New Roman, serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+    </marker>
+  </defs>
+  <rect width="1600" height="900" fill="#ffffff"/>
+
+  <!-- year columns -->
+  <g font-size="26" font-weight="bold" text-anchor="middle" fill="#000">
+    <rect x="200" y="20" width="460" height="56" fill="#e8eef7" stroke="#6b7a99"/>
+    <text x="430" y="56">Năm 1 (11/2026 – 10/2027)</text>
+    <rect x="660" y="20" width="460" height="56" fill="#e8f3ea" stroke="#6b9973"/>
+    <text x="890" y="56">Năm 2 (11/2027 – 10/2028)</text>
+    <rect x="1120" y="20" width="460" height="56" fill="#f7efe4" stroke="#a08460"/>
+    <text x="1350" y="56">Năm 3 (11/2028 – 10/2029)</text>
+  </g>
+  <g font-size="19" font-style="italic" text-anchor="middle" fill="#333">
+    <text x="430" y="104">Nền tảng đo lường và dữ liệu</text>
+    <text x="890" y="104">Ngữ nghĩa, dữ liệu, huấn luyện có kiểm chứng</text>
+    <text x="1350" y="104">Biểu diễn mệnh đề và agentic captioning</text>
+  </g>
+
+  <!-- lanes -->
+  <g stroke="#bbb" stroke-dasharray="6 6">
+    <line x1="20" y1="300" x2="1580" y2="300"/>
+    <line x1="20" y1="480" x2="1580" y2="480"/>
+    <line x1="20" y1="660" x2="1580" y2="660"/>
+  </g>
+  <g font-size="21" font-weight="bold" fill="#000">
+    <text x="28" y="190">MT1</text><text x="28" y="216" font-size="16" font-weight="normal">Quan hệ đối tượng</text>
+    <text x="28" y="370">MT2</text><text x="28" y="396" font-size="16" font-weight="normal">Ngữ nghĩa mở rộng,</text><text x="28" y="416" font-size="16" font-weight="normal">bộ đánh giá LLM</text>
+    <text x="28" y="550">MT3</text><text x="28" y="576" font-size="16" font-weight="normal">MLLM, agentic,</text><text x="28" y="596" font-size="16" font-weight="normal">đo ảo giác tin cậy</text>
+    <text x="28" y="740">MT4</text><text x="28" y="766" font-size="16" font-weight="normal">Họ phương pháp</text><text x="28" y="786" font-size="16" font-weight="normal">huấn luyện</text>
+  </g>
+
+  <!-- boxes: published (solid dark), in progress (solid), planned (dashed) -->
+  <g font-size="17" fill="#000">
+    <!-- FAIR 2026 -->
+    <rect x="215" y="130" width="200" height="150" rx="8" fill="#dfe7f5" stroke="#2b4a80" stroke-width="2.5"/>
+    <text x="315" y="160" text-anchor="middle" font-weight="bold">[B0] FAIR 2026</text>
+    <text x="315" y="186" text-anchor="middle">Mệnh đề kiểm chứng</text>
+    <text x="315" y="208" text-anchor="middle">được (VSPS)</text>
+    <text x="315" y="236" text-anchor="middle" font-style="italic">IEEE, đã công bố</text>
+    <text x="315" y="262" text-anchor="middle" font-size="15">MT1.1, MT3.1, MT4.1</text>
+
+    <!-- A -->
+    <rect x="215" y="320" width="210" height="140" rx="8" fill="#eef2fa" stroke="#2b4a80" stroke-width="2"/>
+    <text x="320" y="348" text-anchor="middle" font-weight="bold">[B1] Tính hợp lệ của</text>
+    <text x="320" y="370" text-anchor="middle" font-weight="bold">độ đo ảo giác</text>
+    <text x="320" y="396" text-anchor="middle">Scorer kiểm soát số đối tượng</text>
+    <text x="320" y="422" text-anchor="middle" font-style="italic">Tạp chí Q2, 11/2026</text>
+    <text x="320" y="446" text-anchor="middle" font-size="15">MT2.2, MT3.2</text>
+
+    <!-- B -->
+    <rect x="440" y="500" width="210" height="140" rx="8" fill="#eef2fa" stroke="#2b4a80" stroke-width="2"/>
+    <text x="545" y="528" text-anchor="middle" font-weight="bold">[B2] Giao thức đánh giá</text>
+    <text x="545" y="550" text-anchor="middle" font-weight="bold">tiếng Việt + bộ kit</text>
+    <text x="545" y="576" text-anchor="middle">Audit KTVIC, lượng dữ liệu</text>
+    <text x="545" y="602" text-anchor="middle" font-style="italic">Tạp chí Q2, 05/2027</text>
+    <text x="545" y="626" text-anchor="middle" font-size="15">MT3.3, MT2.2</text>
+
+    <!-- C -->
+    <rect x="675" y="320" width="210" height="140" rx="8" fill="#eef6ef" stroke="#2f6b3a" stroke-width="2"/>
+    <text x="780" y="348" text-anchor="middle" font-weight="bold">[B3] Chú thích theo ngữ</text>
+    <text x="780" y="370" text-anchor="middle" font-weight="bold">cảnh truy xuất</text>
+    <text x="780" y="396" text-anchor="middle">Đối chiếu Anh – Việt</text>
+    <text x="780" y="422" text-anchor="middle" font-style="italic">Tạp chí Q2, 11/2027</text>
+    <text x="780" y="446" text-anchor="middle" font-size="15">MT2.1</text>
+
+    <!-- MT1 paper -->
+    <rect x="1135" y="130" width="210" height="150" rx="8" fill="#ffffff" stroke="#8a6a3c" stroke-width="2" stroke-dasharray="8 5"/>
+    <text x="1240" y="158" text-anchor="middle" font-weight="bold">[B4] Biểu diễn mệnh đề</text>
+    <text x="1240" y="180" text-anchor="middle" font-weight="bold">gắn vùng ảnh</text>
+    <text x="1240" y="206" text-anchor="middle">Quan hệ có trạng thái kiểm</text>
+    <text x="1240" y="228" text-anchor="middle">chứng; bộ đánh giá LLM</text>
+    <text x="1240" y="252" text-anchor="middle" font-style="italic">Tạp chí Q2, 11/2028</text>
+    <text x="1240" y="272" text-anchor="middle" font-size="15">MT1.1–1.2, MT2.2</text>
+
+    <!-- MT3 paper -->
+    <rect x="1360" y="500" width="215" height="140" rx="8" fill="#ffffff" stroke="#8a6a3c" stroke-width="2" stroke-dasharray="8 5"/>
+    <text x="1467" y="528" text-anchor="middle" font-weight="bold">[B5] Agentic captioning</text>
+    <text x="1467" y="550" text-anchor="middle" font-weight="bold">sửa thay vì xóa</text>
+    <text x="1467" y="576" text-anchor="middle">Tác nhân xác thực đa nguồn</text>
+    <text x="1467" y="602" text-anchor="middle" font-style="italic">Tạp chí Q2, 05/2029</text>
+    <text x="1467" y="626" text-anchor="middle" font-size="15">MT3.1–3.3</text>
+
+    <!-- MT4 paper -->
+    <rect x="897" y="680" width="213" height="160" rx="8" fill="#ffffff" stroke="#2f6b3a" stroke-width="2" stroke-dasharray="8 5"/>
+    <text x="1003" y="708" text-anchor="middle" font-weight="bold">[B6] Huấn luyện có</text>
+    <text x="1003" y="730" text-anchor="middle" font-weight="bold">kiểm chứng, cùng độ phủ</text>
+    <text x="1003" y="756" text-anchor="middle">Kiểm định đăng ký trước</text>
+    <text x="1003" y="778" text-anchor="middle">Đầu vào: B0, B1, K1+K6</text>
+    <text x="1003" y="804" text-anchor="middle" font-style="italic">Tạp chí Q1, 05/2028</text>
+    <text x="1003" y="826" text-anchor="middle" font-size="15">MT4.1–4.3, MT4.5</text>
+
+    <!-- pilot strip MT4 -->
+    <rect x="670" y="680" width="210" height="160" rx="8" fill="#ffffff" stroke="#2f6b3a" stroke-width="2" stroke-dasharray="8 5"/>
+    <text x="775" y="708" text-anchor="middle" font-weight="bold">[MT4] Nhánh K1+K6</text>
+    <text x="775" y="730" text-anchor="middle" font-weight="bold">(đã đăng ký trước)</text>
+    <text x="775" y="756" text-anchor="middle">SFT đa tham chiếu, nhãn</text>
+    <text x="775" y="778" text-anchor="middle">gold; Qwen3-VL 8B và 4B</text>
+    <text x="775" y="804" text-anchor="middle" font-style="italic">Tập phát triển, 2026–2027</text>
+    <text x="775" y="826" text-anchor="middle" font-size="15">MT4.1</text>
+    <rect x="440" y="690" width="210" height="110" rx="8" fill="#fbfbfb" stroke="#999" stroke-dasharray="4 4"/>
+    <text x="545" y="716" text-anchor="middle">Tiền trạm Gate 1 của</text>
+    <text x="545" y="738" text-anchor="middle">MT4 trên tập phát triển:</text>
+    <text x="545" y="760" text-anchor="middle">không đạt (10/2026),</text>
+    <text x="545" y="782" text-anchor="middle">chuyển sang K1+K6</text>
+  </g>
+
+  <!-- dependency arrows -->
+  <g stroke="#333" stroke-width="2" fill="none" marker-end="url(#a)">
+    <path d="M415,205 L1135,205"/>
+    <path d="M425,390 L675,390"/>
+    <path d="M425,440 C470,470 480,480 500,500"/>
+    <path d="M885,390 C1000,370 1150,340 1185,282"/>
+    <path d="M1300,280 C1370,360 1430,430 1450,500"/>
+    <path d="M650,580 L1360,580"/>
+    <path d="M650,620 C680,650 700,665 720,680"/>
+    <path d="M880,760 L897,760"/>
+    <path d="M545,800 L545,851 L1003,851 L1003,842"/>
+  </g>
+
+  <!-- legend -->
+  <g font-size="16" fill="#000">
+    <rect x="215" y="862" width="34" height="18" fill="#dfe7f5" stroke="#2b4a80" stroke-width="2.5"/><text x="258" y="877">Đã công bố</text>
+    <rect x="400" y="862" width="34" height="18" fill="#eef2fa" stroke="#2b4a80" stroke-width="2"/><text x="443" y="877">Bản thảo đã có kết quả</text>
+    <rect x="660" y="862" width="34" height="18" fill="#fff" stroke="#2f6b3a" stroke-width="2" stroke-dasharray="8 5"/><text x="703" y="877">Kế hoạch (giả thuyết, chưa có kết quả)</text>
+    <text x="1050" y="877">Mũi tên: kết quả bài trước là đầu vào bài sau · Qx: hạng chất lượng mục tiêu</text>
+  </g>
+</svg>

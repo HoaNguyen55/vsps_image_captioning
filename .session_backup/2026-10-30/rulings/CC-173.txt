@@ -1,0 +1,72 @@
+CC-173  L1-b AMENDMENT_1 (tier 1 DEV-EXPLORE, ViTextVQA dev half E): code fix, PARITY_TOL, decode reuse, relaunch on M2 (id m4)
+Single judge, reversible tier (actionable >= 90, PI-1029o ranked options). AI opinion. 2026-10-30.
+
+DECISION: GO-with-fixes. Option 1, AMENDMENT_1 as drafted plus the text fixes W1 and W2, is approved for one relaunch on M2 at the new HEAD.
+CONFIDENCE: 91%
+
+WHAT I CHECKED (myself, on the laptop)
+- AMENDMENT_1.md sha 504aad40 = the brief. PREREG.md is unchanged (b6034c4a, SUMS OK). I read §4.2-4.4, the budget (l.315-340) and the finalisation steps (l.383-398).
+- `git diff HEAD` on l1b.py and both SUMS is byte-identical to l1b_amend1/diff_vs_58160ccf.patch. HEAD f876585. l1b.py = 391f1e88.
+- `sha256sum -c` passes for both SUMS (8/8, 4/4). `bash -n l1b_job.sh` passes. `--selftest` gives 46 ok on the laptop (tiny-model tests skipped: no torch).
+- Code read: score_cached, cmd_rerank (run key = l1b.py sha + split + base sha + revision + batch; parity on items 0-3; PARITY_FAIL short-circuit in job.sh l.74), load_base, check_prov, cmd_score's REUSE_DEC branch, outcome() l.566-569, l1b_job.sh (decode skipped when the sidecar exists, code_at_start written at the start, finish() sums out/ + logs/ only), b1.used_seconds.
+- Debug scripts dbg, dbg2 (the --zero-delta probe at l.61), dbg3 (fp32 control), dbg4, tinyq and candcmp print only diffs, counts, lengths and timings. None prints answer text. They contain no host, IP, port or e-mail. The same holds for AMENDMENT_1 and the patch.
+- CC-168 W6, CC-168b W17 and PREREG l.395.
+- Not verifiable from the laptop, so accepted on OPS-1030b's statement: no gold on M2, M1 untouched, the measured parity and timing numbers, and the 48 ok selftest on M2.
+
+RULINGS
+1. Root causes. All three hold.
+   (A) The fix sets rope_deltas = rd.repeat_interleave(B, 0) after batch_repeat_interleave. That is the right per-sequence expansion. Qwen2.5-VL's prefill and score_full recompute rope_deltas, so the mutated state does not leak across items or arms. The fixed code gives qwen25 parity of 0.15-0.21 nats, and delta forced to 0 gives 16-31 nats, so the fix works and the gate can see this class of bug.
+   (B) bf16 kernel-path noise is shown independently of the tolerance value. The unchanged cache path agrees with the full pass to 1-2e-4 nats in fp32 for idefics3. The gap is the same at B=1 and B=8. It grows with answer length.
+   (C) I re-derived this by reading the code. tone_pos is None after the qu-strip only for a bare qu/qư. On such input the old code always reached w[None] (TypeError) at the first non-empty tone. The new guard therefore returns [] only on inputs that used to crash, which is consistent with §4.2 ("qu- counts as consonant", "no vowel -> no variants"). The 3x2,210 identical cand_sha lists agree with this. The registered candidate rule is unchanged. (95%)
+2. PARITY_TOL 0.25 -> 2.0 nats: ACCEPTED with disclosure (90%).
+   - The gate is a gold-free engineering check, not an outcome threshold. §4.4 already says parity numbers do not spend the one look. A looser tol cannot push the verdict toward GO or KILL.
+   - The strongest support for calling 0.25 miscalibrated is the counterfactual: with the fixed code, 0.25 would also fail qwen3vl (0.415) and probably internvl3 (0.240-0.296). That is 3 of 4 backbones rejected for noise that the fp32 control shows is not a cache bug.
+   - The disclosure in §3.2 is adequate. W3 and W4 add the limits it omits.
+   Ranked options for the tolerance:
+     1. 2.0 nats on the summed LL, as drafted: 90.
+     2. Per-token tolerance, or summed LL with a length-scaled tol. Better physics, since the gap scales with length, but it is equally post hoc and needs a new code change and selftest: 75.
+     3. Different gate items: just as post hoc, and it does not touch the noise: 40.
+     4. fp32 LM head: removes only 10-50% of the gap (measured): 35.
+     5. Keep idefics3 NOT_ASSESSABLE and fix only Qwen at 0.25: idefics3 is the only non-Qwen backbone (gemma skipped, P2b), so outcome() l.568 returns NO_VERDICT for certain (P3). qwen3vl would also fail. This wastes ~5 GPU-h: 10.
+     6. Full fp32 rerank: CPU offload is far outside the 8 h cap: 5.
+3. Reuse of dec_idefics3_8b (ec3f8478, writer d312c128): ACCEPTED (93%).
+   - cmd_decode is not in the diff. The pin is exact on (file sha, writer sha). The selftest refuses an unpinned old decode.
+   - Re-decoding could even differ, because bf16 kernels are non-deterministic, so reuse is the cleaner choice.
+   - This is CC-168b W17 option (b), limited to one file. It narrows PREREG l.395 "re-runs all backbones" for the decode step only. Every rerank is re-run. The amendment must say this explicitly (W2). Today §8 reads as though nothing departs from W17(a).
+4. variants() does not alter the §4.2 rule (see 1C) (95%).
+5. GPU-h: ACCEPTED (90%).
+   - 0.74 h is charged, and the 0.54 h debug wall span is charged conservatively by one tsv line in the format b1.used_seconds parses. That makes 1.27 h.
+   - The estimate of 5.3 h is measured on E items 4-23 and scaled by the mean candidate count. It is plausible. Total is about 6.6 h; the cap stays 8 and is not raised.
+   - Order idefics3 -> qwen25 -> internvl3 -> qwen3vl puts the verdict-critical backbone first. A cap stop leaves the last rerank NOT_ASSESSABLE (CC-168 W4a), and that is acceptable.
+   - Headroom of 1.4 h absorbs even a doubled debug charge, so W5 is non-blocking.
+6. Relaunch hygiene: ACCEPTED (92%).
+   - Moving the PARITY_FAIL, the partial rerank files, the old code_at_start and job.log out of out/ is required. Otherwise rerank() returns 3 at once, or the run key differs and the step refuses.
+   - superseded_58160ccf/ is outside finish()'s sums. job.sh 3c260686 is unchanged, so the reused decode's job_sha256 still matches. The decode .partial stays and is excluded from the sums.
+   - The parity file of the new run records tol 2.0.
+7. Leakage and binding rules: none broken on the evidence available (90%).
+   - There is no score/decide.json, and no answer text is printed.
+   - Only dev E data is used, with no test set. The work runs on the dev machine.
+   - No paper or prereg body is edited; PREREG.md is unchanged.
+   - No host, IP, port or e-mail appears in the files read.
+   - The tol was chosen on gold-free parity gaps only.
+
+REQUIRED FIXES
+Blocking. Both are text only, before the gatekeeper commit. Editing AMENDMENT_1.md changes its sha, so regenerate the prereg SHA256SUMS. l1b.py and the scripts SUMS stay. No re-read is needed if the diff is limited to these lines plus the SUMS.
+- W1. In §3.5, change "47 ok on M2" to 48 (46 + tiny LLaVA + tiny Qwen2.5-VL), to match OPS-1030b.
+- W2. In §5 and §8, say explicitly that this narrows PREREG l.395 and CC-168b W17 option (a) by using W17 option (b), a single-file sha + writer pin, for the idefics3 decode only. All reranks are re-run.
+Non-blocking. Do these before score, or in the decide/paper disclosure.
+- W3. Sensitivity floor. The deliberate-bug probe covers Qwen2.5-VL M-RoPE only, and the fp32 control covers idefics3 only. InternVL3 and qwen3vl have neither. State that at 2.0 the gate catches gross (>= ~2 nat) position, mask or cache errors, not subtle ones.
+- W4. Selection noise. bf16 path noise of up to ~1 nat on the summed LL for long answers is the same size as tau in {0, 0.5, 1}. Its effect on selection was never measured (B=1 vs B=8 compared cached with full only). Name it as a limitation of the rerank. It mostly adds random flips, which counts as harm and pushes toward KILL.
+- W5. Ledger evidence, given this group's history of fabricated ledgers. Before the relaunch, archive the timestamped raw stdout of dbg, dbg2, dbg3, dbg4, tinyq and candcmp beside the scripts in .session_backup/2026-10-30/l1b_amend1/. Confirm in the OPS line that every GPU debug run, the dbg4 timings and the M2 tiny selftests fall inside 17:54:32-18:26:50Z or ran on CPU.
+- W6. The commit scope is exactly l1b.py, scripts/l1b/SHA256SUMS, AMENDMENT_1.md and the prereg SHA256SUMS. Leave out the unrelated working-tree changes (paperA_figs.py, scripts/b_r1/SHA256SUMS, cfp/*). M2's preflight requires a clean tree.
+- W7. If the relaunch hits any rc other than 0, 3 or 124, it is a JOB STOP back to the judge. A parity failure at 2.0 is final NOT_ASSESSABLE. There is no AMENDMENT_2 for parity in this run.
+
+RANKED OVERALL OPTIONS
+1. GO with W1 and W2 blocking and W3-W7 as listed: 91.
+2. GO as drafted, with no text fixes: 80. It leaves the W17 departure unstated.
+3. GO with a per-token tolerance instead of 2.0: 72.
+4. Defer to the PI: 50. There is no outcome risk and no deadline risk to A or B, because this runs on the dev machine.
+5. Fix only Qwen and keep idefics3 NOT_ASSESSABLE: 10. NO_VERDICT for certain.
+
+FOR THE PI
+Nothing needs your decision; this is above the 90% bar. For information: the 0.25 nat gate was set too tight before any bf16 measurement. It is loosened to 2.0 on gold-free numbers, with disclosure. The expected L1-b total is about 6.6 of the 8 GPU-h on M2. A and B are not affected.
