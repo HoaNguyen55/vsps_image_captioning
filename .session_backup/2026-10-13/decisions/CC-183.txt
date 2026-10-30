@@ -1,0 +1,124 @@
+CC-183 (2026-10-30T03:10Z): Paper A new GPU replication A-T3 (PI 2026-10-30: "Không có kết quả gpu thì sao mà gửi bài được"). Rule on manuscript/directions/A_T3_DATASET_SCOUT_2026-10-30.md: (1) does C's retrieval-memory use spend val2017 images for A, (2) the exclusions under the full-datasets rule, (3) which hypotheses A-T3 registers, (4) the XM3600 overlap check under CC-153 r4, (5) dev slices, (6) custody of the laptop premise read, (7) machines and models, (8) GO/NO-GO on writing and committing the A-T3 prereg. Three-judge panel (J1 rigor, J2 path, J3 adversary), one exchange round, chair tally. Tiers (PI-1029o): irreversible (test-set assignment, test-spending prereg commit, test look, submission, main direction) >= 92, band 92-98; reversible (dev pilots, drafts, infra) >= 90.
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes (3/3) to write and commit the A-T3 prereg for tier-1 dev-explore on Karpathy restval minus val2017. The tier-2/3 design may be written into the same prereg and frozen there (J2's forking-path point), but the val2017 test-id reservation is NOT actionable under this ruling. It becomes actionable only after the test list is rebuilt from source files (W1/W2), its sha is pinned, and one judge re-reads it (J1 and J3 condition, accepted by J2). Joint primary = AD-1' (label vs ONE reference R1, labelled a NEW variant) AND AD-2 (X5). The registered union form L vs R5 is always reported as PREMISE_NOT_MET. O2 is secondary; X4 enters only by a pre-written power rule. This ruling allows no test look.
+
+CONFIDENCE: 91% (mean of J1 91, J2 92, J3 91; all three in the majority). Tier: reversible (tier-1 dev prereg), bar 90, ACTIONABLE. The irreversible part (test reservation, test-spending commit) is below 92 today and is gated (r9).
+
+## Panel votes
+| Judge | Final vote | Conf | Changed in round 2? |
+|---|---|---|---|
+| J1 rigor | GO-with-fixes: tier-1 prereg 91; test reservation 92 only after W1 rebuild + one-judge re-read | 91 | Yes, on evidence: its 3,746 count missed POPE-500 (53 scored ids in restval). Accepted "new variant, never copied" wording from J2 |
+| J2 path | GO-with-fixes: one prereg for all three tiers, commit and ledger only after W1-W3 | 92 | Yes, on evidence: added C's 8 near-dup drops (cen_memory.json counts) and found that the restval gate numbers include the 3,799 val2017 ids (W3) |
+| J3 adversary | GO-with-fixes: tier-1 prereg 91; test reservation NOT ACTIONABLE until W1/W2 re-read at >= 92 | 91 | Yes, on evidence: moved from "union H1 primary, R1 descriptive" to AD-1' co-primary with X5 (the A-T1 §3 premise is output-free and computed on dev) |
+Tally: 3/3 GO-with-fixes on the tier-1 prereg. 3/3 that no test reservation happens before the rebuilt list is pinned and re-read. Split on packaging only: J1/J3 commit tier 1 now and reserve later; J2 wants one all-tier prereg committed after the rebuild (see Dissents).
+
+## What was checked (chair, on the laptop, 2026-10-30)
+- Scout l.12 ("~3,640 in memory") and l.104 ("Fresh 3,746: never scored"; the same row says 3,693 of the 3,799 restval ids are in memory). The two numbers in the scout disagree.
+- Chair recount: .session_backup/2026-10-13/research_r9/C8_backbone/s0/val2017_names.txt (5,000) crossed with data/datasets/karpathy/dataset_coco.json and manuscript/prereg/2026-10-21_dev_pools/exclusion.json ids.coco:
+  - val2017 ∩ restval = 3,799;
+  - chair500: 73 in val2017, 53 in restval; pope500: 74 in val2017, 53 in restval (disjoint from chair500);
+  - coco_karpathy_test 593, cv295 and coco2500 0 in restval, uitviic_test 0;
+  - restval minus every exclusion.json coco list = 3,693;
+  - the 8 C near-dup drops named by J1/J2/J3 (129062, 284623, 427649, 458410, 465179, 471991, 527616, 562059) all lie in the 3,693, giving 3,685 before the Flickr-id hits (<= 9) and the W2 near-dup pass.
+  This confirms J2/J3 and the corrected J1 count. Note: val2017_names.txt is in .session_backup, not in git; W1 must pin its sha (or rebuild it from instances_val2017.json) before use.
+- Judges' cited evidence (not re-run by the chair): POPE-500 decoded and scored (data/results/pope_vi/scores.txt); C's cen_memory.json counts (allowed 112,322, near_dropped_any 65, kept 112,255); A-T1 PREREG §3 (N_i is a union over references; premise output-free, on dev); meta-review items 5(a)-(c), 6, 8; CC-181 r4-r7; CC-153 r4; CC-171; CC-108 l.77/l.179.
+
+## Per-question tally
+| Q | Majority ruling | J1 / J2 / J3 | Panel conf | Tier | Actionable? |
+|---|---|---|---|---|---|
+| 1 Memory spends? | No. Memory-only images are "unused by A, not pristine, disclosed" (CC-171 pattern) | 93 / 93 / YES | 93 | irreversible principle | YES as principle; the list itself waits for r9 |
+| 2 Exclusions | Pre-fixed, disclosed, by id, counts beside 5,000, no full-5,000 result | 93 / 93 / YES | 93 | irreversible principle | YES |
+| 3 Hypotheses | Joint primary AD-1' ∧ X5; L vs R5 always reported PREMISE_NOT_MET; O2 secondary; X4 by power rule | 89 / 92 / 91 | 91 | reversible in tier-1 prereg; binding on test commit | YES for tier 1 |
+| 4 XM3600 check | PI decision. Default if silent: Flickr-id map (+ byte-sha) only, 1,745 unchecked ids disclosed | 85 / 85-88 / default (a) | 85 | rule lift = PI | NO (goes to PI) |
+| 5 Dev slices | D1/D2 from restval minus val2017, minus all exclusion.json coco lists, minus near-dups; exposure mismatch disclosed | 91 / 91 / agrees (W7) | 91 | reversible | YES |
+| 6 Custody | Not tainted for outcomes (gold-only aggregates); disclose; recompute gate on restval minus val2017 (W3) and on m3 before decode | 91 / 92 / agrees (W6) | 91.5 | irreversible (test validity) | Gated with r9 |
+| 7 Machines/models | Tier 1 on M2 after setup steps 6-8, selftests, L1-b end, prereg commit; tier 3 on M1 after C-T1 ends and is mirrored; Aya on M1; cap 30 default | 88 / 90 / agrees (W8/W9) | 89 | reversible | Core sequence YES via W-fixes; cap and tier-2 placement go to PI |
+| 8 GO/NO-GO | GO on writing and committing the tier-1 prereg | 91 / 92 / 91 | 91 | reversible | YES |
+
+## Ranked options
+Item 8 (overall):
+ 8a. GO-with-fixes: commit the tier-1 dev-explore prereg now (tier 2/3 design may be frozen in it); test reservation after W1/W2 + re-read. 91 [>=90 ACTIONABLE, reversible].
+ 8b. One all-tier prereg including the test ids, committed after W1-W3 (J2). 92 (J2 only) / 88 (J2's rating of the split route is the inverse). Majority prefers 8a sequencing; 8a with a frozen tier-2/3 section gives J2 the same protection.
+ 8c. Text + G0 only (CC-181 Q1 default). 65-70. PI-1030 overrides it.
+ 8d. Defer past the 11-10 freeze. 20-45.
+ 8e. VG paragraph backup. 8-10 (premise 1.18 fails).
+ 8f. Reserve the test now from the scout's 3,737/3,746 list. 15-20. Refused: contains 53 scored POPE-500 ids and 8 near-dups.
+Item 1:
+ 1a. Memory-only use does not spend an image for A; disclose "not pristine". 93 [>=92 as principle].
+ 1b. Memory counts as spent (no fresh COCO set). 12-15.
+Item 2:
+ 2a. Exclusions fixed before any decode, counts beside 5,000, no full-5,000 result (CC-108 precedent). 93 [>=92].
+ 2b. Also score the full 5,000. 3-4. Refused: second look at Karpathy test, POPE/CHAIR-500, KV.
+Item 3:
+ 3a. AD-1' ∧ X5 joint primary (intersection-union, one-sided 0.025 each; Holm for single claims); L vs R5 always reported PREMISE_NOT_MET; O2 secondary near-mechanical; X4 by pre-written power rule. 91 [>=90 ACTIONABLE in tier-1 prereg].
+ 3b. J3's original form: union H1 primary (expected PREMISE_NOT_MET), X4 and X5 primary, L vs R1 descriptive. 70-80. Honest, but X4 has one level (|R5|/|R1| = 1.54) and the confirmatory core may be NOT_EVALUABLE. PI fallback.
+ 3c. Union form only, no gate. 30.
+ 3d. Present the k=1 form as "copied from A-T1". 5-8. Refused (comparator-shopping; A-T1 N_i is a union).
+Item 4:
+ 4a. Narrow PI lift of CC-153 r4: compare cached XM hash/SSCD features (feat_3dc1409f) with val2017 hashes on m3; no XM image moved; output = drop ids only. 85. PI.
+ 4b. Flickr-id map (+ byte-sha) only, 1,745 unchecked ids disclosed. 85-88. Default if the PI is silent.
+ 4c. Stage XM3600 images. 2-3. Refused.
+Item 5:
+ 5a. Dev from restval minus val2017 and all exclusion lists, near-dups removed, ordered by sha256(id). 91 [>=90 ACTIONABLE].
+ 5b. Carve dev from val2017. 20-25.
+Item 6:
+ 6a. Not tainted for outcomes; disclose the laptop read and the scratch copy; recompute gate on restval minus val2017 before commit and on m3 before decode; premise logged as non-informative. 91.5 (below 92; raised by W3 + r9 re-read).
+ 6b. Treat val2017 as tainted. 10.
+Item 7:
+ 7a. Tier 1 on M2 (after L1-b, setup steps 6-8, selftests, prereg commit); tier 2 on M2 if done before ~11-02, else M1; tier 3 on M1 (m3) after C-T1 ends and is mirrored; 5 families, cap 30 GPU-h with a stop rule. 89 (below 90; raised by PI answers on cap and rental end).
+ 7b. 7 models / 14 runs, cap 40 (J1). 80. Only if the PI raises the cap.
+
+## Rulings
+r1. Memory use (Q1). C's retrieval memory uses val2017 captions as exemplars; the images were never decoded or scored by C (C-EN PREREG l.73-86). That does not spend them for A. A discloses them as "unused by A, not pristine" (CC-171 pattern). 3,693/3,693 candidate ids are in memory, not ~3,640.
+r2. Scout erratum. "Never scored" (scout l.104) is false for 53 POPE-500 ids in restval (decoded and scored against COCO instance gold, A's own gold type). The fresh base is 3,693, then 3,685 after C's 8 near-dup drops (chair recount). The scout's sha 81b826c5 and 9 Flickr hits are unverifiable (files deleted).
+r3. Exclusions (Q2). Allowed under the full-datasets rule as principled, pre-fixed, disclosed exclusions: Karpathy test 593, KV 608, CHAIR-500 73, POPE-500 74, C's 8 near-dup drops, Flickr-id hits, W2 near-dups. Counts printed beside 5,000. No full-5,000 result (it would be a second look).
+r4. Hypotheses (Q3). Joint primary AD-1' = slope[L|V] − slope[R1|V] (R1 by frozen draw() rng 1, 20 replicates) AND AD-2 = X5. AD-1' is a NEW variant chosen by A-T1's output-free premise rule on dev size ratios, never "copied from A-T1". Sign rules only; the scout's +2.0 SESOI is rejected. L vs R5 (the faithful A-T1 §3 transplant) is registered and always reported with its CI as PREMISE_NOT_MET (1.40). The paper never says "A4 replicates" or "label > every reference gold". This is a power choice made on gold sizes, not on any outcome, and is not comparator-shopping provided W3 holds.
+r5. X4 and O2. X4 joins the Holm family only if tier-1 predicted P(PASS) >= 0.98; otherwise descriptive. O2 secondary, labelled near-mechanical (2.16x size).
+r6. XM3600 (Q4). Goes to the PI (CC-153 r4, CC-181 r6 bind). Until the PI answers: Flickr-id map plus byte-sha only, with the 1,745 unchecked ids disclosed. No XM3600 image is staged anywhere for A.
+r7. Dev (Q5). D1/D2 from restval minus val2017, minus every exclusion.json coco list (incl. the 367 POPE-500 and 372 CHAIR-500 restval ids outside val2017 per J3), minus W2 near-dups, ordered by sha256(id). The train2017 exposure mismatch is disclosed; tier-2 P(PASS) is labelled possibly optimistic. Nothing is carved from val2017.
+r8. Custody (Q6). The laptop gold-only read (scout §6) is not an outcome look and does not taint val2017, but it is a deviation from A-T1 §1 and is disclosed. New evidence (J2): the restval gate numbers 2.09/1.13/1.39 were computed on all 30,504 restval ids, which include the 3,799 val2017 candidates, and the val2017 ratio 2.162 was seen first. So the comparator justification must be recomputed on restval minus val2017 (W3) before commit, with the order disclosed. From now on val2017 gold and images exist only on m3.
+r9. Test reservation gate (irreversible). No ledger reservation and no test-spending commit under this ruling. Panel conf for the reservation today: J1 92 (conditional), J2 92 (conditional), J3 < 92. It becomes actionable when: W1 list built and sha-pinned, W2 near-dup pass done (and Q4 answered or defaulted), W3 numbers logged and still pick R1, and one judge re-reads the list and numbers. That re-read is a short ruling (CC-next) that records the >= 92 confidence.
+r10. Machines (Q7). Standing CC-181 r7: tier 1 starts on M2 only after the prereg commit, setup_gpu.sh steps 6-8 and the selftests, and L1-b's end; never pre-empts. Tier 3 on M1 (m3) only after C-T1 has ended and been mirrored, staged outside C-T1's guard roots. Aya cells on M1 after C-T1 unless the PI gives a token for M2. Cap 30 GPU-h (default) with a stop rule, re-estimated from tier-1 timings.
+r11. Gain vs cost (Q8). AI opinion: +2 to +7 pp P(accept) at SPIC if AD-1' ∧ X5 pass (J2 +3-7, J3 +2-5), for ~23 GPU-h. The three tiers cap the downside at one dev-ablation sentence; a registered tier-3 FAIL is still reported briefly (papers-aim-for-pass).
+
+## Required fixes (union of the majority, deduplicated)
+W1. Rebuild the test list from source files by id only: val2017 (5,000; pin the sha of the val2017 id source) ∩ restval = 3,799, minus every exclusion.json coco list (CHAIR-500, POPE-500) = 3,693, minus C's 8 near-dup drops = 3,685, minus Flickr-id hits (F30K, NoCaps val, OIV7 val), minus any id decoded by any study (smokes included), minus W2. Print every count beside 5,000, pin the sha. One judge re-reads the list before the ledger line.
+W1b. Erratum line in the scout and in LOG.md: "never scored" is false for the 53 POPE-500 ids; memory count is 3,693/3,693, not ~3,640.
+W2. Near-dup pass with C's build_memory.near rule unchanged (min(pHash,dHash) <= 10 and SSCD >= 0.5, mirrored) against Karpathy test 5,000, KV, CHAIR-500, POPE-500, cv295, NoCaps val, F30K test, PASCAL-50S, and XM3600 only if the PI says YES to Q4. Hashes computed on m3; only numbers leave; output = drop ids. Same rule between D1/D2 and the test.
+W3. Recompute the gate numbers (L/R1, L/(2·R1∩L), L/R5) on restval minus val2017 minus POPE/CHAIR, log them before commit, and justify R1 on those numbers only. Disclose that the val2017 ratio (2.162) was seen first.
+W4. Primary per r4: AD-1' ∧ AD-2 (X5), intersection-union at one-sided 0.025 each, Holm (p <= 0.0125) for a single claim; sign rules only, no SESOI; "new variant" label.
+W5. Register L vs R5 and always report it with its CI as PREMISE_NOT_MET (1.40). Wording: "label > one reference"; never "A4 replicates" or "label > every reference gold" in abstract or cover letter. Disclose the ~2x size advantage.
+W6. X4 per r5. Pre-fixed stop: if tier 1 shows AD-1' or X5 PASS_LOW_POWER, or X4 NOT_EVALUABLE, tiers 2-3 go ahead only if the PI accepts an AD-1'/X5-only replication (Q8); otherwise stop and write one dev-ablation sentence.
+W7. Tier-3 premise computed on m3 with the frozen draw() before any decode; logged as known-to-pass and non-informative; fixed PREMISE_NOT_MET sentence written now. Tier-2 rehearsal: P(PASS) >= 0.98 by image bootstrap (three-tier rule). Tier-3 code frozen at commit.
+W8. Custody: disclose the laptop gold read (scout §6) and the instances_val2017.json copy in the other tool's scratch as a deviation from A-T1 §1. From now on val2017 gold and images live only on m3; M2's guard refuses fresh ids by id and by sha.
+W9. Dev D1/D2 per r7; disclose exposure mismatch; tier-2 P(PASS) labelled optimistic.
+W10. Models: describe by vision and LLM family (InternVL3 uses Qwen2.5, LLaVA-OV uses Qwen2; "non-Qwen" is false). Copy pins into an A registry (InternVL3 259a3b64, LLaVA-OV 0d506805, Idefics3 fddb4ff7, Gemma-3 093f9f38, Aya d7601ac8). Model set and a pre-written Aya drop/move rule fixed before tier 1.
+W11. New Gemma-3/Aya decode code and the A registry each get a one-judge read before tier 1. Tier 1 starts only after the prereg commit (CC-181 r7), setup steps 6-8 and the selftests on M2.
+W12. Text: COCO-80 gold is "annotated", not "exhaustive" (cite RePOPE-type label errors). Fix every outcome's placement sentence now (§6.4, §6.6, Table 1, supplement). Report every FAIL briefly. A-T3 adds at most ~400 words within the 9,000-word cap.
+W13. Ledger line (only after r9): reserve the list for A-T3 scoring only; C may keep these captions as exemplars but must never decode, score or tune on these images; no other paper may score them. Cite CC-170 A-2, CC-171, CC-153 r4.
+
+## For the PI (each with recommendation and default)
+Q1. Run A-T3 on ~3,680 fresh COCO val2017 images (exact count after W1/W2), 5 model families, ~23 GPU-h? Recommend YES. Default YES (PI-1030).
+Q2. Treat val2017 images used only as C retrieval exemplars (never decoded or scored) as "unused by A, not pristine, disclosed"? Recommend YES. Default YES.
+Q3. Accept the exclusions (~1,320 of 5,000: 593 test, 608 KV, 73 CHAIR, 74 POPE, 8 C near-dups, Flickr hits, W2 near-dups) with counts beside 5,000 and no full-5,000 result? Recommend YES. Default YES.
+Q4. Primary label step = label vs ONE reference (new variant), with label vs all references always reported as premise-not-met, and no claim that A4 replicates? Alternative (J3's first form): X4/X5 only as primaries. Recommend AD-1' AND X5. Default AD-1' AND X5.
+Q5. XM3600 near-dup check: (a) Flickr-id + byte-sha only, 1,745 unchecked ids disclosed, or (b) narrow lift of CC-153 r4 so cached XM hash/SSCD numbers are compared on m3 (no XM image moved, output = drop ids)? Panel split: J1/J2 recommend (b), J3 recommends (a). Chair recommends (b) if you are comfortable lifting r4 for numbers only. Default if silent: (a).
+Q6. GPU cap: 30 GPU-h (5 families) or 40 (7 models)? Recommend 30 unless budget allows 40. Default 30.
+Q7. Aya: give your HF token per command on M2, or run Aya cells on M1 after C-T1? Recommend M1 after C-T1. Default M1.
+Q8. If tier 1 shows the joint primary underpowered, or X4 NOT_EVALUABLE: stop before tiers 2-3 and submit A with text + G0 + one dev-ablation sentence (unless you accept an AD-1'/X5-only replication)? Recommend YES. Default YES.
+Q9. When do the M1 and M2 rentals end? Recommend telling us now. Default: M2 ends 11-02; tier 2 moves to M1 after C-T1.
+
+## Steps that would raise the gated items above their bars
+- Test reservation (r9, irreversible, need >= 92): W1 list + sha, W2 near-dup drops, W3 restval-minus-val2017 gate numbers still selecting R1, Q4/Q5 answered or defaulted, one-judge re-read.
+- Q6 custody (91.5 -> >= 92): W3 logged before commit and the disclosure text in the prereg.
+- Q7 machines (89 -> >= 90): PI answers Q6 (cap) and Q9 (rental end); W11 code read done.
+
+## Dissents and residual differences (no dissent on the decision)
+- Packaging (J2): one all-tier prereg including the test ids, committed after W1-W3, to save a panel cycle against M2's ~11-02 expiry and the 11-10 freeze. J1/J3: tier-1 prereg now, test reservation after a separate re-read, because the scout's list had two independent errors. Majority (2/3) sequencing adopted; the tier-2/3 design may be frozen in the tier-1 prereg so J2's forking-path protection is kept.
+- Q3 hypotheses: J3 first ruled union H1 primary with R1 descriptive; changed in round 2 on evidence (A-T1 §3 premise is output-free and computed on dev). J3's form remains the PI fallback (option 3b).
+- Q3 justification (J2): the "chosen on restval" claim was not independent of the test candidates (restval gate numbers include the 3,799 val2017 ids; val2017 ratio seen first). Absorbed as W3, not a vote change.
+- Q4: J1/J2 recommend the narrow r4 lift (b); J3 recommends the Flickr-id + byte-sha route (a) because CC-153 r4 and CC-181 r6 bind until lifted. Same default.
+- Q6 GPU cap: J1 recommends 40 if budget allows; J2/J3 30. Default 30.
+- Q1 counts: J1's first count (3,746 / ~3,729) missed POPE-500; corrected by J1 in round 2. Chair recount confirms 3,693 -> 3,685.

@@ -1,0 +1,471 @@
+{
+ "families": {
+  "aya_vision_8b": {
+   "host_role": "m3",
+   "lm_family": "cohere2 (Command R7B)",
+   "pins_complete": true,
+   "source": "c_t1",
+   "vision_tower": "SigLIP2-so400m-patch14-384 (verify at pin)"
+  },
+  "gemma3_4b": {
+   "host_role": "m4",
+   "lm_family": "gemma3",
+   "pins_complete": false,
+   "source": "l1b",
+   "vision_tower": "SigLIP-400M (verify at pin)"
+  },
+  "idefics3_8b": {
+   "host_role": "m4",
+   "lm_family": "llama3.1 (Llama-3.1-8B)",
+   "pins_complete": true,
+   "source": "a_n2",
+   "vision_tower": "SigLIP-so400m (verify at pin)"
+  },
+  "internvl3_8b": {
+   "host_role": "m4",
+   "lm_family": "qwen2.5 (Qwen2.5-7B)",
+   "pins_complete": true,
+   "source": "a_n2",
+   "vision_tower": "InternViT-300M (verify at pin)"
+  },
+  "llava_ov_7b": {
+   "host_role": "m4",
+   "lm_family": "qwen2 (Qwen2-7B)",
+   "pins_complete": true,
+   "source": "a_n2",
+   "vision_tower": "SigLIP-so400m (verify at pin)"
+  }
+ },
+ "models": {
+  "aya_vision_8b": {
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "dtype": "bfloat16",
+   "files": {
+    "chat_template.json": {
+     "hash": "ec34051f88a6506285ddc71b4ba884e9f0fd8bce",
+     "kind": "git_blob"
+    },
+    "config.json": {
+     "hash": "c9e9a42df738c71735f87217740f1319d1d625e0",
+     "kind": "git_blob"
+    },
+    "generation_config.json": {
+     "hash": "b2af7da769d7f4683b0985d2584e18ffa6ae1df6",
+     "kind": "git_blob"
+    },
+    "model-00001-of-00004.safetensors": {
+     "hash": "9c512930122e19778049588afae30f92ef59d5dabdae9a4de295ce95353a0e2e",
+     "kind": "sha256"
+    },
+    "model-00002-of-00004.safetensors": {
+     "hash": "56b1ad53279adec4c4bbf438fd2de5463b7f8a506ba76cc1b05903a3136470ce",
+     "kind": "sha256"
+    },
+    "model-00003-of-00004.safetensors": {
+     "hash": "8e73ccc57f0cf5cee4cb4c8bfe5e24e79c51441988d822b6d4ccd6f836b4a303",
+     "kind": "sha256"
+    },
+    "model-00004-of-00004.safetensors": {
+     "hash": "23a828b046634d0f512b0f4dc7f0ccc94d76f4d5316113b047dbf194fdbe5105",
+     "kind": "sha256"
+    },
+    "model.safetensors.index.json": {
+     "hash": "228d6ebb3b7dc645a50ce89fda9fdaed8fe853e1",
+     "kind": "git_blob"
+    },
+    "preprocessor_config.json": {
+     "hash": "42215345379cfd18557ccbe2c4273d04596e9de1",
+     "kind": "git_blob"
+    },
+    "processor_config.json": {
+     "hash": "bc0c99ecbb4ef22cb7976680818bc302c72be599",
+     "kind": "git_blob"
+    },
+    "special_tokens_map.json": {
+     "hash": "cf33f2e5e3a66711d05c07c8047dcdb59005494e",
+     "kind": "git_blob"
+    },
+    "tokenizer.json": {
+     "hash": "4e460757615246bc56832d97ee6d90a60cd58bf491b8c3fc1a1d72d437aab474",
+     "kind": "sha256"
+    },
+    "tokenizer_config.json": {
+     "hash": "7fff3b6e9069165a30ca99474b2a27f0b2d167db",
+     "kind": "git_blob"
+    }
+   },
+   "gated": "auto (HF click-to-accept)",
+   "hub_id": "CohereLabs/aya-vision-8b",
+   "image_input": "the snapshot's default tiling (disclosed); identical in every arm",
+   "licence": "cc-by-nc-4.0 (+ Cohere Labs acceptable-use policy); research, non-commercial",
+   "lm_family": "cohere2 (Command R7B)",
+   "processor_kwargs": {},
+   "revision": "d7601ac8fd3baf6f59c5fc9514c618ef0f24268f",
+   "role": "third backbone, primary (non-Qwen LM: Command R7B; Vietnamese is one of its 23 listed languages)",
+   "transformers_min": "4.50 (AyaVisionForConditionalGeneration via AutoModelForImageTextToText; venv-lb has 4.57.6)"
+  },
+  "gemma3_4b": {
+   "attn_implementation": "sdpa",
+   "batch_size": 8,
+   "dtype": "bfloat16",
+   "files": {
+    "added_tokens.json": {
+     "hash": "e17bde03d42feda32d1abfca6d3b598b9a020df7",
+     "kind": "git_blob"
+    },
+    "chat_template.json": {
+     "hash": "719b0cd0d7a373a400b0c119ee0e051f41ea88d9",
+     "kind": "git_blob"
+    },
+    "config.json": {
+     "hash": "fcdc8a6cd637c7ae460065204e7fd0d8c00a38fc",
+     "kind": "git_blob"
+    },
+    "generation_config.json": {
+     "hash": "37a4c871d263a349f50e4a313db3e72164950702",
+     "kind": "git_blob"
+    },
+    "model-00001-of-00002.safetensors": {
+     "hash": null,
+     "kind": "sha256"
+    },
+    "model-00002-of-00002.safetensors": {
+     "hash": null,
+     "kind": "sha256"
+    },
+    "model.safetensors.index.json": {
+     "hash": "4b95241f208f06d324d17c9675568ec58dafd9fb",
+     "kind": "git_blob"
+    },
+    "preprocessor_config.json": {
+     "hash": "b1e00fc184f61b698181821169c6374cd5813e5c",
+     "kind": "git_blob"
+    },
+    "processor_config.json": {
+     "hash": "453c7966d4b5d0b4a317c585989f64c58c2a6bf0",
+     "kind": "git_blob"
+    },
+    "special_tokens_map.json": {
+     "hash": "1a6193244714d3d78be48666cb02cdbfac62ad86",
+     "kind": "git_blob"
+    },
+    "tokenizer.json": {
+     "hash": null,
+     "kind": "sha256"
+    },
+    "tokenizer.model": {
+     "hash": null,
+     "kind": "sha256"
+    },
+    "tokenizer_config.json": {
+     "hash": "7bdd14f0eaec30c8d2c56bc9d543587676e19c0f",
+     "kind": "git_blob"
+    }
+   },
+   "gated": "manual (HF click-to-accept on the account that already accepted the ViTextVQA gate; no agent account, no e-mail field)",
+   "hub_id": "google/gemma-3-4b-it",
+   "image_input": "one 896 x 896 view, 256 image tokens (do_pan_and_scan off, the snapshot default; disclosed like InternVL's single tile)",
+   "licence": "gemma (Gemma Terms of Use)",
+   "lm_family": "gemma3",
+   "processor_kwargs": {},
+   "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+   "role": "non-Qwen LM, primary (CC-165 r5). Run only when GATES G3_gemma is filled AND every hash below is set: the 4 null sha256 values (both safetensors, tokenizer.json, tokenizer.model) are hidden by the HF gate and are filled from the authenticated HF tree API at this revision in the same commit that fills G3_gemma (CC-168 W1); until then gemma is skipped, never fetched"
+  },
+  "idefics3_8b": {
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "card_languages": [
+    "en"
+   ],
+   "chat_template_file": "chat_template.json",
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "files": {
+    "chat_template.json": {
+     "hash": "00911fc317ce4e0c16d2047a51298f7bfcbef244",
+     "kind": "git_blob"
+    },
+    "config.json": {
+     "hash": "85d5cab0ae3aa514a23a550e63f2f9dbef7a56be",
+     "kind": "git_blob"
+    },
+    "generation_config.json": {
+     "hash": "de0aafa3d30b6785a14a741114ee689c6918c5fe",
+     "kind": "git_blob"
+    },
+    "model-00001-of-00004.safetensors": {
+     "hash": "ef19d72d25d0040a591043b47be6f46cc05d208eb3f9317581577e3723f5b1fc",
+     "kind": "sha256"
+    },
+    "model-00002-of-00004.safetensors": {
+     "hash": "8068f285e43b7278553738613a378718de214c2a43d019be1ba81586c0cd62b4",
+     "kind": "sha256"
+    },
+    "model-00003-of-00004.safetensors": {
+     "hash": "532b89a16785817830280bd198d93200fd1af082dedaa2b650c3c364716cb250",
+     "kind": "sha256"
+    },
+    "model-00004-of-00004.safetensors": {
+     "hash": "cda6d4ab485b2cbce9dfac23bc028757af9cd75fc715d1396085393ae9768204",
+     "kind": "sha256"
+    },
+    "model.safetensors.index.json": {
+     "hash": "3c6ef6a31793fb7593a3bd21042a83d87ea5f34c",
+     "kind": "git_blob"
+    },
+    "preprocessor_config.json": {
+     "hash": "1fbf22ae5a1007e24b06ffd88f1f710a7bba2dbf",
+     "kind": "git_blob"
+    },
+    "special_tokens_map.json": {
+     "hash": "ce4483dcd7fdb385039cd3262aa8e58a79767fcc",
+     "kind": "git_blob"
+    },
+    "tokenizer.json": {
+     "hash": "7d56ca39148be0911c7088aac61837758259e858",
+     "kind": "git_blob"
+    },
+    "tokenizer_config.json": {
+     "hash": "c21236688663320a9448dbfb7d36c3c7c4c2bcba",
+     "kind": "git_blob"
+    }
+   },
+   "gated": false,
+   "hub_id": "HuggingFaceM4/Idefics3-8B-Llama3",
+   "licence": "apache-2.0",
+   "params": 8462086384,
+   "processor_kwargs": {},
+   "revision": "fddb4ff79181e55a994674777e06cd5456ce3dc3",
+   "source": {
+    "info": "hf_api/HuggingFaceM4__Idefics3-8B-Llama3.info.json",
+    "info_sha256": "429c06cbf10728ab71be88d3533abe8242edde839ba6365a593327ba672befd1",
+    "tree": "hf_api/HuggingFaceM4__Idefics3-8B-Llama3.tree.json",
+    "tree_sha256": "61b33af5dfe4d7f351b52231f2d2cfa59d2c905fb8c47e00f931da68cf61795b"
+   },
+   "vietnamese_documented": false,
+   "vietnamese_source": null,
+   "weights_gb_loaded": 16.92,
+   "weights_gb_on_disk": 16.92
+  },
+  "internvl3_8b": {
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "card_languages": [
+    "multilingual"
+   ],
+   "chat_template_file": "chat_template.jinja",
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "files": {
+    "added_tokens.json": {
+     "hash": "0a9f9d06987f6742b9b7400602993942f6e420b8",
+     "kind": "git_blob"
+    },
+    "chat_template.jinja": {
+     "hash": "0b19f45e0cd40b10374f24065639b0c2eee18a22",
+     "kind": "git_blob"
+    },
+    "config.json": {
+     "hash": "7c8a0ff0332c77c2e1f0531948cb856eb79f1c7c",
+     "kind": "git_blob"
+    },
+    "generation_config.json": {
+     "hash": "ca5b455bc4e6053fd7d790c2bc01b7f9dd312154",
+     "kind": "git_blob"
+    },
+    "merges.txt": {
+     "hash": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+     "kind": "git_blob"
+    },
+    "model-00001-of-00004.safetensors": {
+     "hash": "7a34fa2f58c41aa1e6dbf28e9f4e43be590fb6077d33e4befe54a8413db03641",
+     "kind": "sha256"
+    },
+    "model-00002-of-00004.safetensors": {
+     "hash": "11a0e1a80e29b9451771e03b9b2da118cfd8da0912631b6de0d4e1137f63dffc",
+     "kind": "sha256"
+    },
+    "model-00003-of-00004.safetensors": {
+     "hash": "8b578604029b9046396b61bf4ae223e0e85c9e89e138da067505bc6f7f9de921",
+     "kind": "sha256"
+    },
+    "model-00004-of-00004.safetensors": {
+     "hash": "6814f162cc1ca061db92cb8808c7202876d8c1a56a0e7e856db12b21cba23a28",
+     "kind": "sha256"
+    },
+    "model.safetensors.index.json": {
+     "hash": "3874f5938bc915748d19c439e4b9fa3186f8d716",
+     "kind": "git_blob"
+    },
+    "preprocessor_config.json": {
+     "hash": "a7b376e0a83f26eaa784db792ef61be7aac5494f",
+     "kind": "git_blob"
+    },
+    "processor_config.json": {
+     "hash": "e543bcb3b7550029f450d28cf138706d7f9a5ef5",
+     "kind": "git_blob"
+    },
+    "special_tokens_map.json": {
+     "hash": "253d50d9027f558bd5478163a49ccd263fc27959",
+     "kind": "git_blob"
+    },
+    "tokenizer.json": {
+     "hash": "7cc80b7e20adf8bf6f6ca442bf1abfac8056bb3b7d3e0b11c9d497d3e79398c9",
+     "kind": "sha256"
+    },
+    "tokenizer_config.json": {
+     "hash": "2f1a515133aa18a5f828c497aba8b7e81056b3b0",
+     "kind": "git_blob"
+    },
+    "vocab.json": {
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569",
+     "kind": "git_blob"
+    }
+   },
+   "gated": false,
+   "hub_id": "OpenGVLab/InternVL3-8B-hf",
+   "licence": "qwen",
+   "params": 7944373760,
+   "processor_kwargs": {},
+   "revision": "259a3b64a14623c0ec91a045cb43f7c5af5fa6af",
+   "source": {
+    "info": "hf_api/OpenGVLab__InternVL3-8B-hf.info.json",
+    "info_sha256": "6ac5308f0ac2d37edaab5b9a81e4d14600eef6133965b1bf3e90bc000234fd18",
+    "tree": "hf_api/OpenGVLab__InternVL3-8B-hf.tree.json",
+    "tree_sha256": "c9e4264bd505d6a353b1aa6d9dba145f099fa0c212d400a7f23dd514e6d579cd"
+   },
+   "vietnamese_documented": true,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen2.5-7B-Instruct.md ('Vietnamese')",
+   "weights_gb_loaded": 15.89,
+   "weights_gb_on_disk": 15.89
+  },
+  "llava_ov_7b": {
+   "attn_implementation": "sdpa",
+   "batch_size": 2,
+   "card_languages": [
+    "en",
+    "zh"
+   ],
+   "chat_template_file": "chat_template.json",
+   "checkpoint_dtype": [
+    "F16"
+   ],
+   "dtype": "float16",
+   "files": {
+    "added_tokens.json": {
+     "hash": "f4d12380a35b1f8032caad7bc7a006f5d3fa759e",
+     "kind": "git_blob"
+    },
+    "chat_template.json": {
+     "hash": "68724c68b1612e9ab2e31f84e3279099ad656ff6",
+     "kind": "git_blob"
+    },
+    "config.json": {
+     "hash": "8d521d1a36cf77226122b007ef02e1ac4ee33968",
+     "kind": "git_blob"
+    },
+    "generation_config.json": {
+     "hash": "9f451858a72667b8ed295a9c44c14cefb99deb8f",
+     "kind": "git_blob"
+    },
+    "merges.txt": {
+     "hash": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+     "kind": "git_blob"
+    },
+    "model-00001-of-00004.safetensors": {
+     "hash": "ad4cb27d2a3f6e987147619cf2508a5bbb1b6b4c2d5533501fcc4a287a90e5af",
+     "kind": "sha256"
+    },
+    "model-00002-of-00004.safetensors": {
+     "hash": "cfaed9e4ba187283a936fd6df5d55148a6de5a8416f1279778b364232c05f39a",
+     "kind": "sha256"
+    },
+    "model-00003-of-00004.safetensors": {
+     "hash": "86cb0bb7f7d57873b27f16fd66b54be71055e582a48ce26e30884bfb209dffd4",
+     "kind": "sha256"
+    },
+    "model-00004-of-00004.safetensors": {
+     "hash": "a2d1e40e47e9b524efcbbcab68e97fe4e7aadfe9a51bc14b54cc2331c48ebff6",
+     "kind": "sha256"
+    },
+    "model.safetensors.index.json": {
+     "hash": "7633dacca90a226592e47853d352026bce8f90a8",
+     "kind": "git_blob"
+    },
+    "preprocessor_config.json": {
+     "hash": "1ff68626f165d5d9e234e1d6d293e646f7d269bf",
+     "kind": "git_blob"
+    },
+    "processor_config.json": {
+     "hash": "7779c690fef0fe2026261c1f68eac18c57448319",
+     "kind": "git_blob"
+    },
+    "special_tokens_map.json": {
+     "hash": "2c53454aff27c6d22873cc28c884c2b2d5d07693",
+     "kind": "git_blob"
+    },
+    "tokenizer.json": {
+     "hash": "532b756b16b09479d11b1b5696d96d773555a053",
+     "kind": "git_blob"
+    },
+    "tokenizer_config.json": {
+     "hash": "56b32ac3b80eecdfd02f54f03daf1c14a3b78c84",
+     "kind": "git_blob"
+    },
+    "video_preprocessor_config.json": {
+     "hash": "54bfac33b4d586990eabc014123202e3322e1f22",
+     "kind": "git_blob"
+    },
+    "vocab.json": {
+     "hash": "4783fe10ac3adce15ac8f358ef5462739852c569",
+     "kind": "git_blob"
+    }
+   },
+   "gated": false,
+   "hub_id": "llava-hf/llava-onevision-qwen2-7b-ov-hf",
+   "licence": "apache-2.0",
+   "params": 8030807584,
+   "processor_kwargs": {},
+   "revision": "0d50680527681998e456c7b78950205bedd8a068",
+   "source": {
+    "info": "hf_api/llava-hf__llava-onevision-qwen2-7b-ov-hf.info.json",
+    "info_sha256": "180be64ccbe1bf557c2bf2fbeda7c31de38aeb93e74cdd8529e66be07309889f",
+    "tree": "hf_api/llava-hf__llava-onevision-qwen2-7b-ov-hf.tree.json",
+    "tree_sha256": "91fec816d5fadbfe18716386c29f8e762026048d8cbc87299a2c3aa6a11bcc9f"
+   },
+   "vietnamese_documented": false,
+   "vietnamese_source": "hf_api/readme_Qwen__Qwen2-7B-Instruct.md ('Vietnamese')",
+   "weights_gb_loaded": 16.06,
+   "weights_gb_on_disk": 16.06
+  }
+ },
+ "order": [
+  "internvl3_8b",
+  "llava_ov_7b",
+  "idefics3_8b",
+  "gemma3_4b",
+  "aya_vision_8b"
+ ],
+ "prereg_id": "2026-10-30_a_t3_coco_dev",
+ "schema": "vsps.a_t3_registry.v1",
+ "sources": {
+  "a_n2": {
+   "path": "manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json",
+   "sha256": "d5714e2b25e5f1d36fa42813cc5891a82d0b80a73e69fb08d940e05e2055f309"
+  },
+  "c_t1": {
+   "path": "manuscript/prereg/2026-10-30_c_t1/c_t1_registry.json",
+   "sha256": "09e6f90a09735125fed09620b6a1323ef12dafc6bf0a4a4bdf1a4af1087eba3c"
+  },
+  "l1b": {
+   "path": "manuscript/prereg/2026-10-29_l1b/l1b_registry.json",
+   "sha256": "cd210a7ca0f85b10c6f9ee95f8b737284f5029ef5f05c84d1ee760d18e7b96e3"
+  }
+ },
+ "statement": "A-T3 model set. Every model block is copied byte-for-byte (as JSON) from its source registry, checked by `registry --check`. A model whose block has a null hash at the finalisation commit is out of A-T3 for all three tiers (no late fill; CC-168b W16)."
+}

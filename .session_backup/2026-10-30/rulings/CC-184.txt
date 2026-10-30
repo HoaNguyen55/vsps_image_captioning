@@ -1,0 +1,192 @@
+CC-184 (2026-10-30T02:55Z, system clock): A-T3 one-judge reads required by CC-183 W11 (Read 1: Gemma/Aya decode path; Read 2: A registry) and GO/NO-GO on the tier-1 dev prereg commit. Single judge, reversible tier, bar 90 (PI-1029o). Subject files: manuscript/prereg/2026-10-30_a_t3/{PREREG.md 85b75d12, a_t3_registry.json a4356496, a_t3_lists.json 84abf5b3, a_t3_w3_gate.json 57be64f9, val2017_ids.txt ea37cee0, JUDGE_READ_REQUEST.md c7ede5bf, SHA256SUMS cfc2fcaf}; scripts/a_t3/{a_t3.py bf03a9b0, a_t3_job.sh e4036c28, SHA256SUMS 2d9f8037}.
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes on finalising and committing the A-T3 tier-1 dev prereg. Both W11 reads pass on the decoder path and on the registry. The author's deviation (dev-test near-dups dropped on the TEST side) is ACCEPTED, and CC-183 r7 is amended by name (r1). Before the commit, fixes F1-F6 are required. Tiers 2-3 code freezes at this commit, so its bugs must be fixed now, not by a later amendment. F7-F12 are required before the step each one names. There is no test look and no test reservation (CC-183 r9 unchanged).
+
+CONFIDENCE: 91% overall, tier reversible, bar 90, ACTIONABLE once F1-F6 are in. Per item: (a) 92, (b) 91, (c) 90, (d) 85 (goes to the PI), (e) 90.
+
+## What I checked (myself, on the laptop, CPU only; no machine access)
+- sha256 of every subject file equals the request. Both SUMS files verify OK. PREREG.md is not in the prereg SUMS; it is pinned instead through a_t3.py PREREG_SHA256 at finalisation, which is acceptable.
+- Frozen dependencies are unchanged vs HEAD 12f34d1, with git diff clean on each:
+  - decode_hf_vlm.py e2de1881 (= p50.DECODER_SHA)
+  - score_g2b.py 66c665c7
+  - p50.py 2387ca05
+  - p50x.py 3f562e87
+  - a_t1.py dcaa2893
+  - grl/common.py bbe7ee61
+  - c_stage1/build_memory.py e771b92d
+- Selftest with ~/.venvs/c_stage1_lists/bin/python -I printed "a_t3 selftest ok" (4 s).
+- `registry --check` printed "registry ok: [internvl3_8b, llava_ov_7b, idefics3_8b, aya_vision_8b]".
+- Source registries match their pins: A-N2 d5714e2b, l1b cd210a7c, c_t1 09e6f90a. Each model block equals its source. The revisions are 259a3b64, 0d506805, fddb4ff7, 093f9f38 and d7601ac8, which are the CC-183 W10 pins.
+  - Gemma: 4 null hashes (both safetensors, tokenizer.json, tokenizer.model), so pins_complete is false and Gemma is out.
+  - Aya: all 13 hashes are set, including the 5 from the a03d3d2 gate commit.
+- Independent recount from dataset_coco.json (2fd99922), val2017_ids.txt (equal as a set to .session_backup/.../val2017_names.txt 612097d2) and exclusion.json c52a96d1:
+  - restval 30,504; restval ∩ val2017 3,799; CHAIR-500 319 more; POPE-500 314 more; other lists 0; pool 26,077.
+  - D1, D2 and smoke equal pool order by sha256(str(id)) [0:1000], [1000:2000], [2000:2020].
+  - 0 val2017 or excluded ids are in any dev set.
+  - Every dev id has Karpathy filepath val2014 and is not in val2017, so all are in train2017. The train2017 URL in coco_url is correct.
+  - The 319/314 counts are consistent with CC-183 J3's 372/367: 372 = 319 + 53 and 367 = 314 + 53, where the 53 are val2017 ids.
+- W3 gate recomputed with a_t3.py gold:
+  - pool: n 26,077, ΣL 74,566, L/R1 2.102, L/(2R1∩L) 1.138, L/R5 1.385;
+  - D1: ΣL 2,855, L/R1 2.098, L/(2R1∩L) 1.133, L/R5 1.385;
+  - NEW D2: n 1,000, ΣL 2,829, L/R1 2.094, L/(2R1∩L) 1.129, L/R5 1.399. The D2 gate holds.
+  - All of these match the draft. Custody disclosure: I read the zip at /home/hoanguyen/.gemini/antigravity-cli/brain/07455829-…/scratch/annotations_trainval2017.zip (sha 113a836d = PIN ann2017). I read the train2017 member only; the code refuses the val2017 member off m3. My temporary gold files were deleted. No caption text was printed.
+- P50 ledger (data/results/p50/gpu_seconds.tsv), to check the §8 timing basis:
+  - InternVL3: 1,371.2 + 3,482.4 = 4,853.6 s.
+  - LLaVA-OV: 864.6 + 3,174.0 = 4,038.6 s.
+  - So the §8 figures are per model, both prompts. Tier 1 on M2 ≈ 3.8 GPU-h, which is right, and the 6 h cap holds.
+  - Idefics3 smoke is 172.6 s vs InternVL3's 169.0 s, so ≈ 4,950 s is plausible. Aya's 4,900 s is an assumption.
+- Decode path:
+  - load() uses AutoProcessor and AutoModelForImageTextToText with trust_remote_code=False, left padding and the registry dtype/attn.
+  - make_generate uses apply_chat_template (one image + text per conversation, padding=True), greedy decoding, and cuts at the first token in generation_config.eos_token_id (a list or an int).
+  - Aya already decodes through this unchanged harness in C-T1 (c_t1.py imports decode_hf_vlm at l.307/679/706, with a partial run on M1 per CC-180).
+  - Gemma is out, so its path is moot.
+- Guard and job:
+  - guard → common.host_ok (machine id, idle GPU, HEAD clean);
+  - valsha_set fails closed when VALSHA_SHA256 is empty, the file is missing or its sha is wrong (selftest asserts this);
+  - m4 runs bad_names (id plus BAD_NAME regex) over all of $NCS_DATA/datasets and refuses pascal50s/xm3600/nocaps dirs; common.scan checks id and sha in the staging dir;
+  - stage fetches train2017 only and refuses a val2017 sha;
+  - the job refuses any other RUNNING lock, so it never pre-empts L1-b.
+- A's paper: sec7_verbosity_sign.md l.64 already decodes "eight public LVLMs" (A-N2), including InternVL3, LLaVA-OV and Idefics3.
+- Stray files: /home/hoanguyen/.gemini/antigravity-cli/brain/07455829-a545-476c-aa35-70eae0d4c2ef/scratch/annotations/instances_val2017.json (19,987,840 B) and ../scratch/annotations_trainval2017.zip (113a836d), in the Gemini CLI's scratch. Searched under /tmp and /home/hoanguyen only.
+- Rulings read: CC-183 (full), CC-182, CC-181 r7, CC-170b (the A-T1 score-time premise precedent, a_t1.py l.408/417), CC-177/CC-180 (open-ledger closes after host loss), CC-168b W16 (no late fill).
+
+## W1-W13 coverage (CC-183)
+- W1: code testlist, by id. It refuses an unreserved list in the repo and prints counts beside 5,000. Correctly deferred to before tier 3.
+  - Gap: there is no named step for "minus any id decoded by any study, smokes included", nor for the Flickr-id map. Both come in as --drop files. See F10.
+- W1b: the erratum line is proposed but not yet in LOG.md (F12).
+- W2: code neardup (m3 only, BM.near unchanged). Test-side deviation accepted (r1). The dev-side pass against the other protected sets is missing (F8).
+- W3: done; numbers verified above.
+- W4: family() and outcome1 implement intersection-union plus Holm.
+- W5: L_vs_R5 is hard-labelled PREMISE_NOT_MET.
+- W6: the outcome clauses are written, but the code lets PASS_LOW_POWER and X4_NOT_EVALUABLE reach tier 2 (F1).
+- W7: the tier-3 premise and its sentence are fixed. Tier-2 rehearsal requires P ≥ 0.98 on both. Deviation: tier-3 staging/decode is NOT frozen here (§6). Accepted, because it is mechanical on the unchanged decoder, but it must be labelled a deviation from W7 "tier-3 code frozen at commit" and is covered by the r9 re-read (F5).
+- W8: guard is OK. Ledger crash gap (F4). Laptop zip (r5).
+- W9: OK.
+- W10: the registry is OK. The wording is not (F3).
+- W11: these reads.
+- W12: OK. The RePOPE citation must be a verified reference.
+- W13: deferred, which is correct.
+
+## Rulings
+r1. (a) DEVIATION ACCEPTED, 92%. CC-183 r7 is amended by name: dev-test near-duplicates are dropped from the TEST side, and D1/D2 do not move.
+  - Reason: this is the conservative direction for test validity. No test image may resemble a decoded dev image.
+  - It is outcome-independent, because D1/D2 are fixed by sha order and the drop rule is mechanical.
+  - The cost (a few test ids) is counted beside 5,000 and re-read at r9.
+  - Condition: the reference set for the dev-test pass is fixed now as D1 ∪ D2 ∪ smoke (2,020 ids), whether or not tier 2 runs.
+  - The rest of r7's W2 (dev vs Karpathy test, KV, CHAIR-500, POPE-500, cv295, PASCAL-50S, NoCaps val, F30K test) is NOT waived. It becomes a pre-fixed analysis-set exclusion before `score --tier 1` (F8), so D1/D2 still stay final.
+r2. (b) Gemma OUT for all tiers, 91%. Its hashes are null at finalisation, so by the CC-168b W16 rule it gets no late fill. pins_complete/in_models/register enforce this, and SOURCES pins the l1b sha, so a fill changes the sha and fails registry --check.
+  - The set is now 4 models / 8 runs: InternVL3 (Qwen2.5 LLM), LLaVA-OV (Qwen2), Idefics3 (Llama-3.1), Aya (Command R7B). That is three distinct LLM families, two models of which are Qwen-family. MIN_MODELS = 3 stays the floor (as for p50).
+  - "Four model families outside our main Qwen-VL set" is NOT acceptable wording. Three of the four are already in A's eight-LVLM ladder (sec7 l.64), and two are Qwen-family LLMs.
+  - Vision encoders (InternViT-300M, SigLIP-so400m ×2, SigLIP2-so400m-384) match my knowledge of the model cards. They stay marked "verify at pin" until the operator reads config.json from the snapshot (F3).
+r3. (c) The tier-1 design is still informative, 90%.
+  - The output-free gate holds on the pool (2.102), D1 (2.098), D2 (2.094, newly computed here) and val2017 (2.162, seen). The gate is a premise, not the effect, so a 5% margin does not void the design.
+  - The score-time premise is recomputed on the clean-caption analysis set. This follows the A-T1 precedent (CC-170b, a_t1.py l.417), and it is kept. Reason: the slopes are computed on that set.
+  - Pre-written: if the score-time gate fails while the pre-decode gate held, the verdict is PREMISE_NOT_MET as coded. It is reported with the number of dropped images, with no re-scoring or re-cleaning (F6).
+  - Residual risk, disclosed: AD-1′ partly rides the ~2.1× size advantage of L over R1. X5 is the non-mechanical member, so the joint primary is what carries the claim.
+r4. (d) GPU cap, 85%, so it goes to the PI.
+  - Measured basis: tier 1 5.2 + tier 2 5.2 + tier 3 5.2 × 3.685 = 19.2, total ≈ 29.6 GPU-h with zero overhead.
+  - Model loads, one host-loss rerun (two this week: CC-177, CC-180) or a 10% slower Aya push the stop-rule projection over 30. I estimate the stop fires at 30 with probability ≈ 0.5.
+  - That would stop A-T3 on budget after a passing dev tier, and it hands the PI a cap decision made after seeing tier-1 results (a mild forking path).
+  - Recommend 40, fixed now before any decode. The cost is +10 GPU-h on already-rented 3090s.
+  - Default if silent: 30 (CC-183 Q6), with the stop rule as written.
+  - Either way, §8's projection must be stated as a sum over all in-set runs (F2).
+r5. (e) Custody of the stray val2017 gold, 90%. The laptop must not keep val2017 instance gold beyond the dev-gold step (r8, "from now on only on m3").
+  - The only remaining laptop need for the zip is the D1/D2 gold files.
+  - Order: (1) build gold D1 and D2 on the laptop now (train member; the code refuses the val member) and record their shas in LOG;
+  - (2) log the sha and size of the extracted instances_val2017.json and of the zip;
+  - (3) the coordinator, with a one-line notice to the PI because the files sit in the Gemini CLI's scratch, deletes both files from the laptop;
+  - (4) m3 re-downloads the zip at pin 113a836d for `gold --set test`.
+  - This is reversible: the files are public and re-downloadable at the pin.
+  - Disclosed in PREREG §1 (ii), plus one line saying that CC-184 itself read the zip's train member.
+  - Not chosen:
+    - keep the files and disclose only, 70: it leaves A's test-gold type on a laptop many agents read;
+    - re-pin an extracted instances_train2017.json and change the code, 75: more change for the same result.
+r6. Read 1 (decode path): PASS, 92%.
+  - Same harness and settings as A-N2; no model-specific override (processor_kwargs {} for all; Aya default tiling, disclosed in its block; bf16, with LLaVA-OV fp16 as in A-N2).
+  - The first-EOS cut honours list eos ids.
+  - Aya is proven live on this harness in C-T1.
+  - The job never fetches Aya (it stops if the snapshot is missing).
+  - The m3 guard branch scans the A-T3 staging dir only. That is acceptable, because M1 is the test-role machine and stage fetches train2017 only.
+  - The id-only scan outside the staging dir on M2 is acceptable: the BAD_NAME and COCO-id refusal cover names, and nothing fetches val2017 there.
+  - Faults that require fixes: the ledger crash gap (F4) and valsha not checking ids (F7).
+r7. Read 2 (registry): PASS, 92%. The blocks equal their sources, the pins are as in W10 and the registry is regenerated and checked in every job. The model-set path has two holes, fixed by F1/F9:
+  - score binds whatever preds exist;
+  - "once per tier" is bypassable with another --out.
+r8. GO on finalisation and gatekeeper commit after F1-F6, 91%. The bar is 90 and the tier is reversible. This allows no test reservation and no tier-3 step.
+
+## Required fixes
+Before the finalisation commit (code and text; the tiers 2-3 logic freezes here):
+F1. tier1_binding (a_t3.py l.495-503) may pass only PROCEED_TO_TIER2.
+  - X4_NOT_EVALUABLE may pass only if a constant PI_X4_ACCEPT = "<LOG id>" is set, following the TEST_RESERVED pattern.
+  - PASS_LOW_POWER never passes (§6 clause 2).
+  - Add selftest asserts for all three.
+F2. §8 stop rule, written as: projected = spent_all_machines + Σ over in-set runs of (measured s/image) × (1,000 + 3,685).
+  - Add a date stop: no tier-2 decode starts after 2026-11-05T00:00Z and no tier-3 decode after 2026-11-07T00:00Z. If either is missed, A-T3 stops and the fixed "stopped" sentence (§7) is used. This protects the 11-10 freeze.
+F3. Wording.
+  - The a_t3.py docstring l.2 says "non-Qwen-only replication". Replace it (W10).
+  - In §0, §4 and §7, replace "four [five] model families outside our main Qwen-VL set" with the four models named. Say that they span three LLM families (two Qwen-family) and three vision encoders, that they are not used in A's XM3600 label-gold tests, and that three also appear in A's eight-LVLM ladder.
+  - Before any public sentence, first verify which systems A's XM3600 X4/X5 headline used.
+  - Pre-write the 3-model sentence for the case where Aya drops (two of three Qwen-family).
+  - Remove "[five]".
+  - The operator records the vision tower from each snapshot's config.json at the pin, in the run log (numbers/names only).
+F4. Ledger crash rule (§8, operator text; p50.timed is frozen). On a host loss, close the run with one ledger row before any restart: label, wall = (last partial or log mtime) − START ts in EVENTS, rc 137. This is the CC-177/CC-180 pattern. The cap arithmetic then counts it.
+F5. §6/§11: label "tier-3 staging/decode job not frozen here" as a deviation from CC-183 W7. Limit it to the unchanged decoder, the same registration and prompts, and at3t3_* run ids. It is covered by the r9 re-read.
+F6. §5: one sentence for the r3 precedent and the PREMISE_NOT_MET-at-score rule. The score output also records n_dropped_unclean.
+
+Before the named step:
+F7. Before `valsha`: add an id check, set(ids) == val2017_ids, in cmd_valsha.
+  - On M1 while C-T1 runs, valsha runs only under CC-182 conditions:
+    - CPU, nice/ionice;
+    - scratch /root/a_t3_m3 outside $NCS_DATA and /root/outputs and outside C-T1's guard roots;
+    - val2017.zip from images.cocodataset.org with its sha256 logged;
+    - no tmux c_t1 touch, no RUNNING file, no pip into C-T1 venvs.
+  - Only the sha json leaves M1.
+  - The images may stay in the scratch for tier 3, or be deleted. Either way, log it.
+F8. Before `score --tier 1`: a dev-side W2 pass on m3. D1 ∪ D2 is checked against Karpathy test, KV, CHAIR-500, POPE-500, cv295, PASCAL-50S, NoCaps val and F30K test (XM3600 only if the PI answers CC-183 Q5 = b).
+  - Use BM.near unchanged; output numbers/ids only.
+  - Hits are removed from the tier-1/2 analysis set by a pre-fixed --exclude file whose sha is recorded in the score output; the lists do not change.
+  - This needs a small score change, made in the finalisation commit.
+F9. Model-set lock (fixed in the finalisation commit).
+  - score writes only to a fixed path, data/results/a_t3/tier{n}.json; any other --out is refused.
+  - Tier 1 refuses while aya_vision_8b is in-set and its two preds are absent, unless the constant AYA_OUT = "<LOG id>" records the §4 drop.
+  - The Aya deadline, now with a default because the M1 rental end (CC-183 Q9) is unknown: the earlier of 72 h after M2 tier-1 BLOCK DONE and 2026-11-03T00:00Z.
+F10. Before the r9 re-read: testlist is called with named drop files: flickr_ids, decoded_any (all studies, smokes included), w2_test (vs the CC-183 W2 list), dev_test (vs D1 ∪ D2 ∪ smoke, r1). Each count is printed beside 5,000.
+F11. Custody per r5, steps (1)-(4), before the zip is next needed on m3.
+F12. Append the W1b erratum line and the W3 line (PREREG §2) to LOG.md, with the D2 gate (2.094 / 1.129 / 1.399) added.
+
+## Ranked options
+Overall:
+- O1. GO-with-fixes (F1-F6 before the commit), 91. Chosen.
+- O2. NO-GO until a second full re-read of the fixed code, 75. It costs about a day against M2's 11-02 expiry, and F1-F6 are small, each with a selftest assert or a text line. The gatekeeper checks that the diff touches only F1-F3/F6/F8/F9 code paths and the PREREG text, and that the selftest passes.
+- O3. Commit as drafted, 40. tier1_binding and the score bypass would freeze into tiers 2-3.
+- O4. Defer A-T3, 20. This is against PI-1030 and CC-183.
+
+(a):
+- Accept test-side, with dev-side vs other sets kept as an analysis exclusion: 92.
+- Dev-side drops on m3 before stage, as in r7: 80. Valid, but it blocks tier 1 behind an m3 feature pass while M1 runs C-T1.
+- Waive near-dup checks for dev: 30.
+
+(b):
+- 4 models with corrected wording: 91.
+- Wait for the Gemma gate fill: 35. No late fill is allowed (CC-168b W16), and the PI action is not scheduled.
+
+(c):
+- Proceed (all gates hold; D2 now known): 90.
+- Raise the bar or add a margin requirement: 40. That would be a post-hoc threshold.
+
+(d):
+- 40 fixed now: 85.
+- 30 with the stop rule: 75.
+- Decide after tier 1: 55 (forking path).
+
+(e):
+- Build D1/D2 gold, log, delete both laptop copies, re-download on m3: 90.
+- Re-pin an extracted train json: 75.
+- Disclose only: 70.
+
+## For the PI
+P1. GPU cap for A-T3: 40 GPU-h, fixed now before any decode, or 30 as registered? Measured need is ≈ 29.6 with no overhead, so 30 likely stops the study on budget after a passing dev tier. Recommend 40. Default if silent: 30 (CC-183 Q6).
+P2. May the coordinator delete the val2017 annotation copies in the Gemini CLI scratch (the extracted instances_val2017.json and annotations_trainval2017.zip) after the D1/D2 gold files are built? They are public and re-downloadable at the pin. Recommend YES. Default if silent: YES after a 24 h notice, because the step is reversible.
+P3. When does the M1 rental end (CC-183 Q9)? The Aya deadline and the tier-3 slot depend on it. Default: Aya deadline 2026-11-03T00:00Z; tier-3 decode must start by 2026-11-07T00:00Z.
