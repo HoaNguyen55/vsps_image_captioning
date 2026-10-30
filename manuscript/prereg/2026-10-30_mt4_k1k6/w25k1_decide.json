@@ -1,0 +1,82 @@
+{
+ "n_pool": 15249,
+ "n_excluded": 1144,
+ "counts": {
+  "kv5000": {
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 0,
+   "excluded": 0,
+   "report_sscd_0.5": 24
+  },
+  "oiv7_val": {
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 0,
+   "excluded": 0,
+   "report_sscd_0.5": 5
+  },
+  "ktvic_test": {
+   "C1_C2_registered": 440,
+   "C3_sscd_0.75": 441,
+   "excluded": 442,
+   "report_sscd_0.5": 453
+  },
+  "uitviic_test": {
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 0,
+   "excluded": 0,
+   "report_sscd_0.5": 3
+  },
+  "openviic_test": {
+   "C1_C2_registered": 674,
+   "C3_sscd_0.75": 711,
+   "excluded": 717,
+   "report_sscd_0.5": 841
+  },
+  "t2": {
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 1,
+   "excluded": 1,
+   "report_sscd_0.5": 5
+  },
+  "sha:ktvic_test": {
+   "C1_sha_list": 2,
+   "excluded": 2
+  },
+  "sha:xm3600_all_images": {
+   "C1_sha_list": 0,
+   "excluded": 0
+  },
+  "sha:cv295": {
+   "C1_sha_list": 0,
+   "excluded": 0
+  },
+  "sha:chair500": {
+   "C1_sha_list": 0,
+   "excluded": 0
+  },
+  "sha:uitviic_test": {
+   "C1_sha_list": 0,
+   "excluded": 0
+  }
+ },
+ "n_compared": {
+  "kv5000": 5000,
+  "oiv7_val": 41164,
+  "ktvic_test": 558,
+  "uitviic_test": 231,
+  "openviic_test": 2001,
+  "t2": 2000
+ },
+ "schema": "vsps.mt4_k1k6.w25k1.v1",
+ "inputs_sha256": {
+  "pool.npz": "d217bdba40cd23ffa1e4d75cc5c0fa0a2b62e4b50909b20e9bbb94dcb1f65daf",
+  "kv5000.npz": "4e3eac3e19e51c0e704fc3b2a620338a1e369d8da3756c17e588e91a90bc1a0c",
+  "oiv7_val.npz": "2ca7e2f56bc3695dc4be13f10d4511881e4460d6d0815c27a6ab1220d8e7c5bb",
+  "ktvic_test.npz": "cd985050fd2042b87049410334a05a6406b4363d69c05a45e6ed28ccae86702d",
+  "uitviic_test.npz": "4f4784903fb0164309a3b1b6b3ba4fbaa9c09da6c4be5294a6c43f75581ff95f",
+  "openviic_test.npz": "f4c79b825a1b62256dfac15b6ce59bce1054b83386ab4d5d932ac3c4e73d360e",
+  "t2.npz": "98f61bae0c8e03c389db3563a5e6fbec7aa1a6f531a38d027f7c5ed54aba4268"
+ },
+ "utc": "2026-10-30T18:11:32Z",
+ "label": "W25-K1 leakage exclusion: training side only, keys and counts"
+}
