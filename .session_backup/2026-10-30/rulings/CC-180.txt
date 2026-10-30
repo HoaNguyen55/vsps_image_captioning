@@ -1,0 +1,60 @@
+CC-180 (2026-10-30): C-T1 on M1 (machine id m3). The host froze at about 00:05-00:16Z and rebooted at 00:26:29Z during step B1_aya_vision_8b_kt_k2firstT1. Question: (a) close the open ledger line with 1459 s, (b) remove the stale RUNNING lock, (c) relaunch the same command so the step resumes its partial. Reversible ops step, bar >=90 (PI-1029o). Single judge, as CC-178/179. No machine access, no pred opened, no caption text read. AI opinion.
+
+DECISION: GO-with-fixes. Ledger option (a) 1459 s, then remove the stale lock after W1, then one relaunch of the same command at HEAD a03d3d2 in tmux c_t1. The step resumes its own partial.
+CONFIDENCE: 93% (a) 1459: 93; (b) lock removal with W1: 95; (c) relaunch and resume: 92.
+
+What I checked (myself)
+- LOG: OPS-1030p (CC-179 swap 00:31:32Z, coco_captions.json 9c830e22 on M1) and OPS-1030q (btime 00:26:29Z; last write 00:05:16Z; partial 50 lines, sha 351534d1, last byte LF; ledger 5468056f = 730 s closed + open `B1_aya_vision_8b_kt_k2firstT1 start 1793318530`; stale RUNNING from pid 15059; not relaunched).
+- `date -u -d @1793318530` = 2026-10-30 00:02:10Z. 00:02:10Z to 00:26:29Z = 1,459 s. The arithmetic matches.
+- PREREG f1d06278 l.158-162: 20 GPU-h hard cap, b1.left accounting, "No step is retried after a failure other than a resume of its own partial file", never concurrent (b1.take_lock). AMENDMENT_1 §2.6 (~l.62): C-T1 "resumes from its .done/partial files". AMENDMENT_1 §3: cap, stop order and rules unchanged.
+- CC-177 r1 (Q1): an open start was closed at an evidence-backed upper bound (host-gone time) instead of the code default. Precedent followed here, not overruled.
+- CC-179 r4: the N9 Aya rate substitute is "Aya's B1 step seconds". This interacts with the 1459 line (see W4).
+- Code, at HEAD a03d3d2 (git log; scripts/c_t1 and the prereg dir have no working-tree change):
+  - c_t1_job.sh l.37-42: the job calls `c_t1.py lock --path $O/RUNNING`, with an EXIT trap that removes the lock. A host reboot never runs the trap, so the lock outlives the dead job.
+  - c_t1_job.sh l.68-82 gpu(): skips a step that has a .done file; computes `left`; appends `NAME start EPOCH`; on return appends `NAME SECONDS`. The ledger lines are space-separated.
+  - b1.py used_seconds (l.193-211): lines are split on whitespace. A 2-field line adds float(p[1]) and clears the open start. A 3-field `start` line followed later by another start is charged from its EPOCH to that next start. So without a closing line, the relaunch's next start would charge 00:02:10Z up to the relaunch, downtime included. With the 2-field line `B1_aya_vision_8b_kt_k2firstT1 1459`, the open start is closed at exactly 1459 s. The JOB DONE awk (`$2 != "start"`) also sums it. The format is accepted.
+  - b1.py take_lock/isolation/locks (l.115-145): it refuses if any /root/outputs/*/RUNNING exists, or if the job is outside tmux, or if a C-EN tmux session exists. It creates the lock with O_EXCL. The stale lock therefore blocks every relaunch until it is removed. The pid in the lock is informational only.
+  - c_t1.py l.317 + 339: run_id = t1_{model}_{set}-{arm}-k{k}-{order}-{tpl}. The partial path is <out>.partial.jsonl. decode_hf_vlm.open_partial (l.119-137): the first line must carry the same run_key, otherwise SystemExit (no silent mix). Finished slices are kept, and only a torn last line is dropped. decode_slices (l.140-157) skips finished slices, after checking that each one holds the same image ids, and decodes only the rest. With the same command, the same args and the same HEAD, the key matches and the finished slices resume correctly. The partial's first line is the run_key header, so its slice count = line count - 1.
+  - Gap: run_key and the slice ids do not cover the exemplar file (--ex) or the prompt. On every launch, c_t1_job.sh l.95 re-runs `draws` unconditionally and rewrites KT_EX = out/x1_ktvic_dev299.json. cmd_draws (c_t1.py) is deterministic over the restored, sha-checked C embeddings, and it hard-fails (PARITY FAIL) unless draw 0 and ret equal C's committed exemplars.json. So a rewrite should be byte-identical. W1/S2/S5 add sha evidence for this.
+  - The CC-179 swap does not touch this step. k2firstT1 uses `--memory vi`, and memory_text (c_t1.py l.288-296) then reads C's memory captions via decode_icl. coco_captions.json is read only for memory coco/f30k (English blocks).
+
+Rulings
+r1. Ledger close, ranked:
+    (a) `B1_aya_vision_8b_kt_k2firstT1 1459` (start to boot btime): 93%. This is an upper bound backed by evidence: no process can outlive the reboot. It meets used_seconds' "a reboot cannot undercount" purpose, as in CC-177 r1.
+    (d) code default (charge start to the relaunch, about 40+ min): 60%. It is safe but charges GPU-less downtime against a 20 GPU-h cap whose bottom blocks (B7) are already at risk (CC-179 r4). Acceptable only as a fallback if (a) cannot be done cleanly.
+    (b) 186 s (start to last write): 10%. It can undercount: the GPU may have kept working until the freeze (about 00:16) without finishing a slice. That violates the no-undercount rule.
+r2. Stale lock: remove /root/outputs/c_t1/RUNNING only after W1. This is lock hygiene, not a rule change. take_lock's purpose (never concurrent) is kept by the W1 checks.
+r3. Relaunch: the same command, HEAD a03d3d2 and T1_FREEZE 1766dc23, in tmux c_t1. The preflight re-checks HEAD, both SUMS, RESTORED_SHA256, both freezes, the selftests, the guard and memcheck. Steps with .done are skipped; k2firstT1 resumes its partial. This is the resume PREREG l.159 allows. It is not a retry or a rerun of any finished step. No threshold, SESOI, cap, stop order or arm changes.
+
+Approved steps (in order, on M1 = m3)
+S1. Check that no job is live: `tmux ls` shows no c_t1 session, `pgrep -af "c_t1"` shows no c_t1.py/c_t1_job.sh process, nvidia-smi shows no compute process, and no CAP_STOP.json exists. Do not judge by pid 15059 alone (pids restart at boot).
+S2. Verify the files before writing:
+    - `sha256sum gpu_seconds.tsv` = 5468056f...; `tail -n1` is the open start line; `tail -c1 | xxd` shows 0a.
+    - The partial is still sha 351534d1.
+    - datasets/c_t1_mem/coco_captions.json = 9c830e22... (CC-179 swap survived the reboot).
+    - Record the sha of out/x1_ktvic_dev299.json (k2firstT1's --ex, written before the crash) and the partial's line count.
+S3. `echo "B1_aya_vision_8b_kt_k2firstT1 1459" >> /root/outputs/c_t1/gpu_seconds.tsv`. Use a space separator, as gpu() writes. Log the post-append sha and `c_t1.py left`. Expected: CAP_S 72000 (c_t1.py l.48) - 730 - 1459 = 69811 s, so job.log prints "left 1163 min" at the step START.
+S4. `rm /root/outputs/c_t1/RUNNING`. Log its contents first (pid line).
+S5. Relaunch in a new tmux session c_t1, with the exact env and command of the original launch (`T1_FREEZE=1766dc23... bash scripts/c_t1/c_t1_job.sh a03d3d2...`). Confirm the following:
+    - job.log shows JOB START head a03d3d2;
+    - job.log shows `START B1_aya_vision_8b_kt_k2firstT1`;
+    - the step log has no "belongs to another configuration", "holds other images" or PARITY FAIL error (this is the real stop condition);
+    - the first new `slice k/N` printed is (partial line count - 1) + 1;
+    - out/x1_ktvic_dev299.json sha after the relaunch's draws equals the S2 value;
+    - when the step ends, the record's ex_sha256 equals that value.
+S6. One OPS line in LOG with S1-S5 values (step names and shas only; no caption text).
+
+Required fixes
+W1. (blocking) S1 and S2 must pass before S3/S4. If anything differs (live process, other sha, CAP_STOP present, partial changed), stop and ask again.
+W2. (blocking) If any of the following happens, stop the job between steps and ask:
+    - the step log shows a run_key or slice-id mismatch;
+    - the x1_ktvic_dev299.json sha differs from S2.
+    Do not move or delete the partial: that would be a restart or mixed inputs, not a resume.
+W3. Disclosure in the C-T1 write-up and the run record:
+    - the host reboot;
+    - the ledger line 1459 s as an upper bound (CC-180 r1), so total GPU-h includes up to about 20 min with no GPU behind it;
+    - the resumed step and its 50 pre-crash lines.
+W4. CC-179 r4 N9 projection (text-ret Aya rate, as r4 says; r4 not overruled). The rate must not use the 1459 s line: it holds downtime, and the slices over it are unknown. Use the closed seconds of the resumed k2firstT1 segment divided by the slices it decoded after the resume, or any later fully run B1 ret step (k2lastT1 onward). Do not use the zs step: it carries no exemplars and is not a ret rate. Label the projection post hoc, timing only.
+W5. N-item for after the run (no change now): the job's EXIT trap cannot clear the lock after a host reboot. A stale-lock check (pid alive and boot id) can be added to take_lock via the gatekeeper after C-T1 ends, with CC-178 N1/N2.
+
+For the PI: nothing below 90; nothing to decide. The 1459 s charge is about 0.4 GPU-h. The code default would charge about 0.7+ GPU-h. Both are small against the 20 GPU-h cap; the choice follows CC-177.

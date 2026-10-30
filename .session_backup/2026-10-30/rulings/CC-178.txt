@@ -1,0 +1,28 @@
+CC-178 (2026-10-30): closing diff read required by the CC-176 addendum for C-T1 (commits 6a0ab0f AMENDMENT_1 and a03d3d2 Aya gate). Single judge, diff read only, no new ruling on substance. Run already live on M1 (m3) since 23:47:21Z (06:47 VN); no machine access, no pred opened. AI opinion.
+
+DECISION: CONFIRM-with-notes. The run continues. No HALT condition is found.
+CONFIDENCE: 93%
+
+What I checked (myself):
+- CC-176.txt incl. addendum; LOG lines OPS-1030j/k/m-op/n (all four n lines), PI-1030a, CC-177.
+- `git show` 6a0ab0f and a03d3d2 in full; `git diff 3fc70bf a03d3d2` (only the C-T1 paths plus daa48bf's L1-b files, which are CC-177's).
+- Working-tree shas = commit values: PREREG f1d06278 (unchanged since 3fc70bf; no diff), AMENDMENT_1 84665ee1, registry 09e6f90a, prereg SUMS cc8aa79d, c_t1.py 022af90e, c_t1_job.sh 86351ee1, scripts SUMS 8c547283; both SUMS `sha256sum -c` OK; no working-tree change in either dir.
+- Rule-touching lines in the c_t1.py/job diff: none. The code diff is confined to ISO_*/iso_*, guard_problems/cmd_guard (+--datasets), the selftest block, main()'s hook install, and the job's m3|m4 check, VSPS_MACHINE_ID and guard roots. No SESOI (+2.0 CIDEr-D), label, kill gate, 0.95 check, cap (20 GPU-h), stop order, block, arm or split line changed. AMENDMENT_1 §3 matches.
+- No token (hf_ pattern), host, IP or attribution line in either commit.
+
+Rulings:
+r1. W1 implemented as ruled: AMENDMENT_1 §5 carries the required sentence with wcwidth==0.2.13 and T1_FREEZE 1766dc23 = 2cb23ab9 + one line, matching OPS-1030n (diff shows exactly one added line; offline import OK). Job takes T1_FREEZE from env and checks the freeze sha in preflight.
+r2. W2 implemented: iso_denied tests refused names and archive suffixes on {basename as requested, basename of realpath}; selftest asserts both symlinks (v1.jpg, flickr30k-images.zip -> allowed file) are denied in iso_denied and in the child open()/os.open() hook. N6 (.tar.*, .7z) added and asserted.
+r3. W3 implemented in AMENDMENT_1 §1, §2.2 (fetch listed as not hooked) and §2.3, wording as ruled.
+r4. W4 implemented in §2.6: CC-176 r1/r3/r4, CC-174 r5/OPS-1030d cited; rest of CC-172 W5 and CC-171 r1 disclosure bind. r8 ratification cited in §5 heading, with the M1 loss and the manifests to reproduce (OPS-1030n reports 79c41b1d/c0d0084f reproduced).
+r5. W5: both SUMS regenerated and OK; selftest/bash -n reported by OPS-1030n (laptop and M1). Commit was 6 paths, not 5: the sixth is CC-176.txt itself (ruling record, not code/prereg). Accepted.
+r6. Aya pins: the 5 registry hashes equal OPS-1030m-op/OPS-1030n full 64-hex values byte for byte; the registry diff touches only those 5 "hash" lines (rev d7601ac8 and the 8 git_blob pins unchanged). Filled by a separate gate commit inside the launch HEAD a03d3d2, before launch, per PREREG W-a and the CC-176 addendum. Not mid-run.
+r7. xlm-roberta-large refs/main: environment-only, no pinned weight changes. The registry entry (rev c23d21b0, 4 git_blob pins: config, sentencepiece, tokenizer, tokenizer_config) holds no weights; the M-CLIP text weights come from mclip_h14's checkpoint. refs/main only makes open_clip's by-name offline load resolve to the pinned snapshot; t1check re-verifies that snapshot with check_snapshot at the pinned revision before launch, and it passed (OPS-1030n).
+
+Notes (non-blocking; no action on the live run):
+N1. Reproducibility gap: cmd_fetch for xlm_roberta_large writes no refs/main and needs the marker dir pre-created (rc 1 on first run). A future host rebuild must repeat both manual steps (logged in OPS-1030n). Fix in code only after C-T1 ends, via the gatekeeper; not needed for this run.
+N2. c_t1_job.sh header comment still says the guard scans "exactly the roots the job reads" (W3 wording targeted AMENDMENT_1 only). Comment-only; correct with N1's fix.
+N3. Reporting: C-T1 write-up cites AMENDMENT_1 §4 ceiling (Python-level opens only) and the N5 inventory finding (repo-tracked stage1_records.tar.gz outside the fenced roots; KTVIC stage-1 records, not a Flickr30K val/test file).
+N4. CC-176 N7 binds after the run (delete ktvic/, openviic/ from M1 datasets/, logged), then restore uitviic from hold_c_t1 for K1/K6.
+
+For the PI: nothing below 80; nothing to decide.

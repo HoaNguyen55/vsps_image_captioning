@@ -1,0 +1,127 @@
+CC-182 (2026-10-30T01:41Z): One-judge code read of the G0 glue (CC-181 item 1, W4/W5): scripts/a_g0/a_g0.py sha256 f0ef33ef..., pinned note manuscript/prereg/2026-10-30_a_g0/NOTE.md sha256 2780de24..., against the frozen scripts/pascal50s/p50.py 2387ca05 (commit 353437f) and the score_g2b English matcher. Also: the SEED flag (CC-181 W4 "draw() seed 0"), and whether G0 may run on M1 while the C-T1 GPU job is live. Single judge, reversible tier (>= 90). Everything below is AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes. Run G0 once on M1 (machine id m3), CPU only, concurrent with C-T1 allowed, under the pre-run conditions S1-S10 below. The NOTE is not amended. The seed is accepted as frozen (default_rng(1)), and CC-181 W4's "seed 0" is overruled as an erratum (r3).
+CONFIDENCE: 92%
+
+## What I checked (re-run, not from summary)
+- sha256: NOTE.md 2780de24ab02...e10fa, a_g0.py f0ef33efb72e...699a; both equal the G0-NOTE LOG line (01:35:52Z). Both files are untracked.
+- p50.py on disk 2387ca05 = `git show 353437f:scripts/pascal50s/p50.py`. The tree is clean.
+- No commit since 353437f touches scripts/g2b, scripts/score_coco_probe.py, scripts/pascal50s, scripts/lb, rescap, data/coco_probe/chair_synonyms.txt. Laptop sha256 values:
+  - score_g2b.py 66c665c7a71d3b97abbf89fd5bf13871910449ad1c053ff5fb0b18663e3e7ae5
+  - score_coco_probe.py d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070
+  - chair_synonyms.txt b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2
+  - p50_1000_ids.txt a8539efb...4cb4 (= p50.IDS pin)
+- p50_job.sh l.30-31:
+  - JSON_URL = raw.githubusercontent.com/ramavedantam/cider @ f281464.../data/pascal50S.json
+  - TAR_URL = thor.robots.ox.ac.uk/pascal/VOC/voc2008/VOCtrainval_14-Jul-2008.tar
+  - The NOTE cites these lines.
+- Selftest, run by me on the laptop:
+  - `python3 -I scripts/a_g0/a_g0.py --selftest` fails: ModuleNotFoundError numpy. The laptop system python has no numpy.
+  - `/home/hoanguyen/.venvs/c_stage1_lists/bin/python -I scripts/a_g0/a_g0.py --selftest` (numpy 2.5.4) prints "a_g0 selftest ok", rc 0.
+- p50x.py l.112-123 (salience), l.136-142 and l.185-191 (X5), and data/results/p50/p50x_decide.json (X5 refs1_randk|V20: sum_complete_scored 1782, sum_k_scored_mean 1039.6).
+- C-T1 fences: AMENDMENT_1 §2.2-2.4; c_t1_job.sh l.37 (lock $O/RUNNING), l.47 (`git diff --quiet HEAD --`, tracked files only), l.55-56 (guard roots); b1.py l.124-133 (refuses on a `cen*` tmux session or any /root/outputs/*/RUNNING); CC-176 r4; CC-180 r3 (relaunch re-checks HEAD).
+
+## Code read: findings
+F1. Frozen functions are imported unchanged. `import p50` and `import score_g2b as g` load them, with no copy and no monkeypatch. Used: p50.V20, voc_gold, load_refs, id_list, draw, sha_file, dump, P50_JSON, VOC_TAR_BYTES, K_LADDER, and g.MATCH["coco80"]["en"].
+   - counts() builds R_i = ∪(en(ref) ∩ V20). This is identical to p50x.analysis l.141 plus g1 at l.186.
+   - draw() is called on the 1,000 ids in id order, as P50 and p50x call it, so the rung draws reproduce P50's draws.
+F2. Pin checks run before any data read. run() checks the p50.py sha, the JSON sha and size, and the tar sha and size, then id_list (pinned), then load_refs, then read_voc.
+   - Minor (N1): p50 and score_g2b are imported, and so executed, before the p50.py sha check, and the matcher files are not sha-checked by the script. Covered by S4. No code change needed.
+F3. Streaming, XML only:
+   - tarfile mode "r|" reads members in memory via extractfile().read(). Only members whose last two path parts are Annotations/<id>.xml are read.
+   - It refuses on a duplicate or a missing member. Nothing is written; the selftest asserts no new file and that a JPEG member is skipped.
+   - voc_gold raises Refused on an out-of-V20 name, so it fails closed.
+F4. The output holds numbers, COCO class names, the label and sha fields only: no image ids and no reference text.
+   - The NOTE adds the `p50.py ngram` check, which exits 1 on any 8-gram hit and requires a positive control.
+   - stdout prints 5 scalar fields.
+F5. Labelling:
+   - The output has label "POST HOC DESCRIPTIVE, NO VERDICT (CC-181)".
+   - The NOTE carries POST HOC DESCRIPTIVE, NO VERDICT, "consistent with" only, and keeps the P50-A4 FAIL in the abstract and cover letter.
+   - Both outcome sentences are fixed verbatim in the NOTE before the run.
+F6. 997 vs 1,000 is disclosed (NOTE §Disclosure; CC-181 r2). The anchor S_voc >= 1782 is valid because the 997 set is a subset of the 1,000.
+F7. The outcome is already determined by registered numbers. This is the main finding.
+   - In p50x salience, sum_k_scored_mean = mean over the 20 draws of Σ_i |R¹_i ∩ L_i| over the 997 clean images = 1039.6.
+   - Because R¹_i ⊆ R⁵⁰_i, S_ref(1,000) >= Σ|R⁵⁰ ∩ L| >= 1039.6.
+   - S_voc(1,000) <= 1782 + 3 × 20 = 1842.
+   - So the ratio is <= 1.772 < 2, and outcome B is certain before the run.
+   - This is not a threshold picked after seeing data (the 2x rule is p50x l.189's convention, and B is the conservative direction). But G0's binary outcome is not new evidence. Its content is the exact ratio, the overlap/difference sums and the per-class rows.
+   - The bounds also give a free integrity check (S7).
+
+## Rulings
+r1. Code. a_g0.py f0ef33ef is approved as is. It meets CC-181 W4/W5 on:
+   - frozen imports;
+   - pins before reads;
+   - streaming XML only, no JPEG and no reference text written;
+   - numbers and class names only;
+   - labelling.
+   No code change is required. N1 is handled operationally (S4).
+r2. NOTE. 2780de24 is approved as is and is NOT amended, because a change would break the pre-run pin chain. The NOTE already states the true seed (default_rng(1), used unchanged) and flags the W4 wording. This ruling, written before any run, is the record.
+r3. SEED. CC-181 W4 "draw() seed 0" is overruled explicitly as an erratum, for three reasons:
+   - The frozen draw() uses SUBSET_SEED = 1 (p50.py l.56, l.163; P50 PREREG §3.2).
+   - Seed 0 in P50/p50x is BOOT_SEED and the p50x null seed. G0 uses neither.
+   - The primary quantities (items 1-3 of the NOTE) use no randomness; only the rung rows use draw(), unchanged.
+   Using seed 0 would change frozen code and break the reproduction of P50's draws, so 1 is the only admissible value.
+r4. F7 binds the write-up. The paper and the OPS line must say that outcome B follows from the registered X5 numbers (Σ|voc20| 1,782 < 2 × 1,039.6 = 2,079.2, the evaluability bound already in sec7 and number_manifest l.1235). They must not present B as a finding of G0. G0 reports the exact ratio and the per-class composition, as post hoc descriptive. Wording stays "consistent with".
+r5. Concurrency with C-T1 on M1: ACCEPTED (CC-176 r4: C-T1 yields to A jobs; G0 does not even need C-T1 to yield).
+   - The C-T1 read fence is a Python audit hook inside C-T1's own processes. It does not and need not cover a separate G0 process.
+   - G0 reads no C-T1 path, and C-T1 never opens G0's scratch dir.
+   - The real risks are C-T1's preflight checks on a relaunch:
+     - the guard refuses extra `$NCS_DATA/datasets` entries and any *.tar in its roots;
+     - b1.take_lock refuses on any /root/outputs/*/RUNNING or a `cen*` tmux session;
+     - the preflight checks HEAD = a03d3d2.
+   - All three are avoided by S2-S6. CPU and IO contention under nice 19 / ionice -c3 for a run of a few minutes is negligible.
+r6. Machine. M1 (m3 role) satisfies P50 PREREG §6 W8 and CC-181 r3. Not M2, and not the laptop.
+
+## Required pre-run conditions and steps (S1-S10, in order; operator on M1)
+S1. `cat /root/.vsps_machine_id` = m3. Otherwise STOP.
+S2. Scratch dir /root/g0_scratch, outside $NCS_DATA (/root/ncs-data) and /root/outputs.
+   - Never use p50.DATA_ROOT (/root/ncs-data/datasets/pascal50s): the C-T1 guard would refuse it on a relaunch.
+   - Run `df -h /root` first; it needs >= 1.5 GB free.
+S3. Code copy, never touching the C-T1 checkout (no pull, no checkout, no new files in it):
+   - `git -C <M1 repo> archive a03d3d2 scripts data/coco_probe rescap | tar -x -C /root/g0_scratch/repo`. Add any other top-level dir the imports need, from the same commit.
+   - Copy a_g0.py to /root/g0_scratch/repo/scripts/a_g0/.
+S4. In /root/g0_scratch/repo, sha256-check before running:
+   - p50.py 2387ca05;
+   - score_g2b.py 66c665c7;
+   - score_coco_probe.py d11db7e1;
+   - chair_synonyms.txt b685537b;
+   - p50_1000_ids.txt a8539efb;
+   - a_g0.py f0ef33ef.
+   Any mismatch: STOP.
+S5. Interpreter: an existing venv on M1 that already has numpy, run read-only with `-I -B`.
+   - No pip install into venv-lb, venv-t1 or venv-c1score: C-T1's preflight checks their freeze shas.
+   - Run `a_g0.py --selftest` there first; it must print "a_g0 selftest ok".
+S6. Download into /root/g0_scratch/data using exactly the two URLs of p50_job.sh l.30-31.
+   - No *.tar or *.json may be placed under $NCS_DATA or /root/outputs.
+   - No RUNNING file is created anywhere.
+   - If tmux is used, the session is named `a_g0` (never `cen*`).
+S7. Run `nice -n 19 ionice -c3 <py> -I -B scripts/a_g0/a_g0.py --json data/pascal50S.json --tar data/VOCtrainval_14-Jul-2008.tar --out out/g0.json`. Pins refuse on any mismatch.
+   INTEGRITY STOP: the result is void, unused, logged and sent back to the judge if ANY of these holds:
+   - outcome != "B";
+   - S_voc_voc20 outside [1782, 1842];
+   - S_ref_refs50_V20 < 1039.6;
+   - rungs.refs1_randk.sum_refs_V20_and_voc_mean < 1039.6;
+   - anchor false.
+   One run only. No re-run with changed code, matcher or inputs.
+S8. Run `<py> -I -B scripts/pascal50s/p50.py ngram --json data/pascal50S.json out/g0.json`. It must exit 0 (positive control > 0, 0 hits). Otherwise STOP and delete the output.
+S9. Mirror only out/g0.json to the laptop (data/results/a_g0/g0.json) and record its sha256. Then `rm -rf /root/g0_scratch` and confirm with ls.
+S10. Write one OPS line in LOG/WORKFLOW_LOG. It holds:
+   - the shas of S4 and of g0.json, plus the 5 headline numbers;
+   - the time window and the deletion;
+   - the r4 sentence: "outcome B follows from the registered X5 numbers; G0 adds the exact ratio and per-class rows".
+   No reference text.
+
+## Required fixes (W)
+W1. Write-up (r4): wherever G0 appears (§7.4, §10.1, supplement), state that B is implied by the X5 evaluability bound. Report the ratio, the sums and the per-class rows as POST HOC DESCRIPTIVE, NO VERDICT, "consistent with". Disclose 1,000 vs 997.
+W2. Record the selftest interpreter in the OPS line: laptop `~/.venvs/c_stage1_lists` python -I, numpy 2.5.4, plus the M1 venv used. `python3 -I` without numpy is not a valid selftest.
+W3. Commit NOTE.md and a_g0.py through the gatekeeper on the laptop branch at any time. Do NOT pull that commit into M1's C-T1 checkout while C-T1 is live (its relaunch checks HEAD = a03d3d2).
+
+## For the PI
+Nothing blocking. FYI: G0's yes/no outcome (B: VOC labels are not >= 2x the 50-reference gold on V20) is already implied by the registered X5 numbers. G0 adds only the exact ratio and the per-class gaps, at about 0 GPU and a few CPU-minutes. Recommendation: run it as approved. Default: run.
+
+## Ranked options
+1. GO-with-fixes, run on M1 concurrent with C-T1 under S1-S10, NOTE unchanged, W4 seed overruled as an erratum. 92 [>= 90 ACTIONABLE]
+2. Same, but wait until C-T1 ends. 85 (safe, but delays a CPU-minute job for no benefit).
+3. Amend the NOTE wording on the seed and re-pin before the run. 70 (churn; the NOTE is already correct).
+4. Drop G0, since the outcome is implied by X5. 60 (loses the per-class rows, which T-plan §7.4 uses).
+5. Run with seed 0. 5 (changes frozen code; refused).

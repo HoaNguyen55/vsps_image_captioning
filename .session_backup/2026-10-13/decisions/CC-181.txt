@@ -1,0 +1,102 @@
+CC-181 (2026-10-30T01:40Z): Paper A all-out plan (PI-1030b/c, focus = A, SPIC). Rule item by item on manuscript/directions/A_ALLOUT_PLAN_2026-10-30.md: (1) G0 0-GPU gold-size check, (2) A-T2 XM3600 replication on the 1,519 images outside the registered 600, (3) A ahead of BD-T1 on M2, (4) venue SPIC / JVCIR, (5) text plan T1-T6. Three-judge panel (J1 rigor, J2 path, J3 adversary), one exchange round, chair tally. Tiers (PI-1029o): irreversible (test-set assignment, test-spending prereg commit, test look, submission, venue/main direction) >= 92; reversible (dev, drafts, infra, descriptive analysis) >= 90.
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes overall (3/3). Item 1 G0: GO-with-fixes, post hoc descriptive, on M1 (m3-role), CPU only, on ALL 1,000 PASCAL-50S images. Item 2 A-T2 as a confirmatory/one-look test: NO-GO (gate falsified: no unscored XM3600 image exists). XM3600 does not go to M2 for A. Item 3: A-first as a standing rule, GO (moot today: no A prereg is committed). Item 4: SPIC primary stands on PI-1030c, not on this panel (panel 88% < 92); JVCIR fallback goes to the PI. Item 5: text plan GO-with-fixes, T3 mandatory, T4 reworded.
+
+CONFIDENCE: 93% (mean of J1 93, J2 92, J3 93; all in the majority).
+
+## Panel votes
+| Judge | Final vote | Conf | Changed in round 2? |
+|---|---|---|---|
+| J1 rigor | GO-with-fixes; A-T2 confirmatory NO-GO; G0 on all 1,000 | 93 | Yes, on evidence: dropped "use the 997 set" (ids not recoverable) and accepted the CC-153 r4 bar on any A XM3600 use |
+| J2 path | GO-with-fixes on 1,3,4,5; A-T2 NO-GO | 92 | Added J3's 1,000-image point (files confirm); vote unchanged |
+| J3 adversary | GO-with-fixes; A-T2 NO-GO; G0 on M1 on 1,000 | 93 | Accepted CC-153 r4 constraint; vote unchanged |
+Tally: 3/3 on every item's decision. No dissent on a decision; see "Dissents" for the residual differences.
+
+## Per-item tally
+| Item | Majority ruling | J1 / J2 / J3 | Panel conf | Tier | Actionable? |
+|---|---|---|---|---|---|
+| 1 G0 | GO-with-fixes, M1, all 1,000, post hoc descriptive | 92 / 92 / 91 | 92 | reversible (>=90): gold only, no outputs, no verdict | YES |
+| 2 A-T2 test | NO-GO | 96 / 97 / 96 | 96 | irreversible (>=92) | YES (the NO-GO) |
+| 3 Priority | A with committed prereg first, no pre-emption; BD-T1 filler after L1-b | 91 / 92 / 92 | 92 | reversible (>=90) | YES |
+| 4 Venue | SPIC primary | 80 / 92 / 92 | 88 | irreversible (>=92) | NOT by this panel; stands on PI-1030c + CC-154 |
+| 5 Text | T1-T6 with W-fixes, T3 mandatory, T4 reworded | 93 / 92 / 93 | 93 | reversible (>=90) | YES |
+
+## Ranked options (several per item; >=92 irreversible / >=90 reversible marked)
+Item 1 (reversible, bar 90):
+ 1a. G0 on M1 (m3-role), CPU only, pinned pascal50S.json 5384abf1 + VOC tar 7f0ca53c, XMLs only, frozen p50 V20 map/matcher, all 1,000 images, outcome sentences pinned before the run, numbers only, data deleted after. 92 [>=90 ACTIONABLE].
+ 1b. Same on the laptop as a disclosed deviation from P50 PREREG §6 W8 (CC-158 W2 precedent), XMLs streamed, no JPEG. 82 (85/86/75). Below bar.
+ 1c. No G0; write "not retained". 67. Default if M1 is not free by 11-05.
+ 1d. G0 on the 997-image analysis set. Refused: set is defined by deleted model outputs (p50.py:350-351; PREREG l.186); ids not recoverable.
+ 1e. Defer past the freeze. 40.
+Item 2 (irreversible, bar 92):
+ 2a. NO-GO on A-T2 tiers 2-3; no A confirmatory XM3600 result. 96 [>=92 ACTIONABLE].
+ 2b. Descriptive non-Qwen dev run on A's own spent XM600, M1 only, <= 6 GPU-h, supplement only. Needs a PI lift of CC-153 r4. 57 (65/75/30). Recommended NO before the freeze.
+ 2c. Text + G0 only, no A GPU work. 88 (J2). Equivalent to 2a + 2b=NO.
+ 2d. Take KV-4,224 from MT4 (G3). ~15. PI decision, not recommended.
+ 2e. Overrule CC-108 r2 and reuse C's XM-test2500 / dev500. 4-10. Refused.
+Item 3 (reversible, bar 90):
+ 3a. A jobs with a committed prereg go first on any free GPU, never pre-empting a running job; BD-T1 runs after L1-b as filler. 92 [>=90 ACTIONABLE].
+ 3b. No priority change. 75.
+ 3c. BD-T1 permanently ahead of A. 30.
+ 3d. Hold M2 idle for A. 10. Refused (keep-GPU-queue-full).
+Item 4 (irreversible, bar 92):
+ 4a. SPIC primary. 88 (80/92/92). Below the panel bar; stands on PI-1030c and CC-154.
+ 4b. JVCIR replaces EMNLP 2027 as fallback, used only after SPIC's decision. ~85. PI question.
+ 4c. Keep CC-154 EMNLP 2027 fallback. not ranked high.
+ 4d. PRL / IEEE Access. 20-25. 4e. Switch primary now. 15.
+Item 5 (reversible, bar 90):
+ 5a. T1-T6 with W-fixes; T3 mandatory; T4 names C's dev and test sets. 93 [>=90 ACTIONABLE].
+ 5b. Drop T3. Refused (A-T1 PREREG l.127-128 registered clause-0 sentence).
+ 5c. No cut. 50. 5d. Cut without integrity checks. 40.
+
+## What was checked
+By the judges (from their finals): data/results/p50 (only decide/plan/stage/refcheck + 110-114 B ngram stubs; no ids); p50_decide analysis_set (n_images 997, no id list); p50x_decide X5 sum_complete_scored 1,782 on the 997 set; p50.py:350-351 and P50 PREREG l.186 (analysis set defined by outputs); M1 mirror same; data/xm3600/oiv7_labels.json (2,584 images + _provenance) and the xm3600_oiv7 resolved pool (2,119); xm3600_in_oiv7_val_ids.txt (107 of 456 r4 ids inside XM600); c_test mirrors on M1/M3 (decodes, decide_xm_m3.json, guard scoring); LOG l.633-843 (CC-108 r2, CC-153 r4, CC-157, CC-160 l.33/l.80 r6, PI-1029h Q5 l.711, PI-1026ba l.636, PI-1030b/c); A-T1 PREREG l.127-128; paperA.bib:1232, :1244; no journal_draft file mentions ADE20K.
+By the chair (re-run, not from summary):
+- Partition: data/xm3600_subset.txt (600), .session_backup/2026-10-22/c_stage2/subsets/xm_dev500.files (500), .session_backup/2026-10-26/c_test/staging/xm_test2500.files (2,500): pairwise overlap 0/0/0, union 3,600. Every XM3600 image is in A's XM600, C's dev500 or C's spent XM-test2500. The A-T2 gate fails on any pool.
+- LOG l.636 PI-1026ba: "A (SPIC, khóa 18/12)" confirmed; plan gives freeze 11-10 / submit 11-12.
+- sec7_verbosity_sign.md l.38 is the XM3600 design paragraph; the plan's "rest held out" reading conflicts with the ledger.
+- Note: .claude/agents/judge.md "papers' path" (A = IP&M, freeze 11-10, submit 12-20) is stale vs PI-1030c (A at SPIC); this ruling follows the LOG.
+
+## Rulings
+r1. Item 1 legality. G0 reads gold only (PASCAL-50S references and VOC XML labels), no model output, no verdict, aggregate counts only. It is not a second look under the P50 prereg and does not touch the P50-A4 registered FAIL (p50_decide part 2, -2.29 [-5.15, 0.61]), which stays FAIL in the abstract and cover letter. It is labelled POST HOC DESCRIPTIVE, NO VERDICT, wording "consistent with", never "explains".
+r2. Item 1 image set. The 997-image analysis set cannot be rebuilt (defined by clean captions in every run; outputs deleted; rebuilding needs new decodes, which are forbidden). G0 runs on all 1,000 images (stage.json n_images 1000, refcheck 1:1), matching the registered all-1,000 sensitivity (sec7:99), and discloses that X5's 1,782 is on 997, so the comparison is approximate.
+r3. Item 1 machine and re-staging. References and VOC XMLs may be re-staged on M1 (m3-role, P50 PREREG §6 W8), CPU only, in a scratch dir outside every C-T1 read path (or after C-T1 ends), pins checked before reading, XMLs only, no JPEG, numbers only, no reference text stored or leaving M1, data deleted and logged. Laptop only as a disclosed deviation (option 1b, below bar). Not M2.
+r4. Item 2. A-T2 as a confirmatory/one-look test is NO-GO (96%). The plan's §3.0 "never scored" check searched data/results only; the c_test mirrors hold C's decodes and guard scoring of the 2,500. The two counts both judges reported are both right and differ only by pool: resolved pool 1,519 = 1,271 (test2500) + 248 (dev500); OIV7-labelled pool 1,984 = 1,673 + 311. Zero images outside the three sets. Using them overrules CC-108 r2 (refused).
+r5. Ledger vs sec7:38. The ledger's "XM3600 all spent" is correct. sec7:38 / the plan's "held out" is wrong as a status claim; the text must say the other 3,000 images are the development (500) and one-look test (2,500) sets of a separate registered study and are not used here. "Not used" alone is rejected (implies unseen).
+r6. XM3600 on M2: NO, for any A purpose (CC-157; CC-160 r6, l.705). Any A use of XM3600, even descriptive on A's own XM600, needs a PI lift of CC-153 r4 (CC-160 l.33/l.80; PI-1029h Q5 lifted it only for L2-a dev on M1). Panel recommends NO before the freeze.
+r7. Item 3. Standing rule: an A job with a committed prereg goes first on any free GPU, never pre-empting a running job (C-T1, L1-b); BD-T1 runs on M2 after L1-b (~11:00 VN) as filler. Today no A GPU job exists (r4), so BD-T1 proceeds.
+r8. Item 4. Venue is irreversible-tier; panel confidence 88% < 92, so this panel does not rule the venue. SPIC primary stands on PI-1030c and CC-154. JVCIR-as-fallback (replacing EMNLP 2027) is a PI question. Raising it above 92 needs: SJR/quartile and the 436-day review-time figure verified on scimagojr.com and the journal pages (CC-154 W10), and J1's scope-fit check of A against SPIC aims.
+r9. Item 5. T1-T6 GO-with-fixes. T3 (A-T1 PREMISE_NOT_MET, ratio 1.24 < 2) is mandatory, verbatim in the supplement plus one clause in §6.4/§7.4. T4 is rewritten per r5. No registered FAIL/NOT_EVALUABLE leaves the main text.
+r10. Freeze date. PI-1026ba (LOG l.636) "A (SPIC, khóa 18/12)" vs plan 11-10 freeze / 11-12 submit. Not a conflict under do-work-early (11-10 target, 18/12 hard cap), but it must be logged and confirmed by the PI (Q6). Does not block text work.
+
+## Required fixes (union of the majority, deduplicated)
+W1. Plan: strike A-T2 tiers 1-3, the A-T2 schedule rows and the plan's Q1 test assignment. Correct plan §3.0 ("unscored" checked data/results only).
+W2. Ledger: one LOG line "A-T2 confirmatory closed by CC-181" with both partitions (1,519 = 1,271 + 248 resolved; 1,984 = 1,673 + 311 labelled) and 600 + 500 + 2,500 = 3,600 disjoint; cite CC-108 r2, CC-153 r4, CC-160 l.80.
+W3. sec7:38: "The other 3,000 XM3600 images are the development (500) and one-look test (2,500) sets of a separate registered study and are not used here." Keep double-anonymized. Add a src comment naming the three id files and the split.
+W4. G0 pinned note in LOG BEFORE the run: inputs pascal50S.json 5384abf1, VOC tar 7f0ca53c; frozen p50.py V20 map/matcher at the committed sha (aeroplane gap stays), draw() seed 0; image set all 1,000; quantities Σ|refs50∩V20|, Σ|voc20|, per-class |voc20\refs50| and |refs50∩V20\voc20|, optional k = 1..50 rungs; comparator = the 2x convention; both outcome sentences verbatim; label POST HOC DESCRIPTIVE, NO VERDICT, "consistent with" only; disclose that 1,782 is on 997 (approximate comparison).
+W5. G0 execution: M1 (m3-role), CPU only, scratch dir outside C-T1 read paths or after C-T1; sha-check pins before reading; extract XMLs only, no JPEG; print counts only, no reference text stored or leaving M1; delete data and log in EVENTS/LOG; new glue code gets a one-judge read.
+W6. Results placement: G0 in §7.4 and §10.1 as post hoc descriptive; P50-A4 FAIL stays in abstract and cover letter.
+W7. T3 mandatory: A-T1 PREMISE_NOT_MET sentence (ratio 1.24 < 2) verbatim in supplement + one clause in §6.4/§7.4.
+W8. T1 cut to <= 9,000 words, counted on the body excluding HTML comments. No registered FAIL/NOT_EVALUABLE leaves the main text (XM-2, XM-5, P50-A4, X5 NOT_EVALUABLE, A-T1 PREMISE_NOT_MET; each keeps a main-text pointer). Numbers byte-identical to number_manifest.tsv: run the number diff and the 8-gram scan after each section cut; sha snapshot before every writer pass (INC-1027a).
+W9. T5: read Spain & Perona 2010 and Berg et al. 2012 (paperA.bib:1232, :1244) in full text or drop them; recount the trace rows from the files.
+W10. Venue/dates: mark SPIC/JVCIR SJR values and the 436-day review figure UNVERIFIED until checked on scimagojr.com / journal pages (CC-154 W10); log A's dates as target freeze 11-10 / submit 11-12, hard cap 18/12 (PI-1026ba) pending PI Q6.
+W11. Any A use of XM3600 (incl. descriptive XM600) only after a PI lift of CC-153 r4; if lifted: M1 only, dev prereg at >= 90, <= 6 GPU-h, no confirmatory wording, never reading C's preds.
+
+## For the PI (each with recommendation and default)
+Q1. A-T2 has no fresh XM3600 test set (all 1,519/1,984 non-XM600 images are C's dev500 or spent XM-test2500). Accept that A goes to SPIC with no new confirmatory GPU result (text fixes + G0 only)? Recommend YES. Default YES.
+Q2. Run G0 (CPU only, gold only, numbers only, all 1,000 images) on M1 under W4-W5? Recommend YES, at idle CPU time. Default: write "not retained" if M1 is not free by 11-05.
+Q3. Lift CC-153 r4 for a descriptive non-Qwen run on A's spent XM600 (M1, <= 6 GPU-h, supplement only)? Recommend NO before the 9k-word cut; revisit after. Default NO.
+Q4. Allow XM3600 on M2? Recommend NO (CC-160 r6; M2 expires 11-02). Default NO.
+Q5. Venue: SPIC primary, JVCIR replacing EMNLP 2027 as fallback after SPIC's decision, after SJR verification? Recommend YES. Default YES.
+Q6. A's dates: freeze 11-10 / submit 11-12 as target, 18/12 (PI-1026ba) as hard cap? Recommend YES. Default YES.
+Q7. Take KV-4,224 from MT4 for an A test? Recommend NO. Default NO.
+Q8. Priority: A job with a committed prereg goes first on a free GPU, no pre-emption; BD-T1 runs as filler after L1-b? Recommend YES. Default YES.
+
+## Dissents and residual differences (no dissent on any decision)
+- Item 4 venue: J1 80% (J2-lens deferral, venue outside rigor remit) vs J2/J3 92%. Pulls the item below the irreversible bar; hence r8.
+- Item 1 laptop route: J1 85, J2 86, J3 75. J3 rates the second W8 deviation lower; all rank it 2nd.
+- Item 2b descriptive XM600: J1 65, J2 75, J3 30. J3: the gain is one supplement line. All recommend NO before the freeze.
+- Freeze date (r10): J3 recommends 11-10 only if T1-T3 land, else 18/12; J1/J2 recommend 11-10 target with 18/12 cap. Same default in practice.
+- XM3600 pool counts (1,519 vs 1,984): not a dissent; different pools, same conclusion (r4).

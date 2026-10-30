@@ -1,0 +1,88 @@
+CC-179 (2026-10-30): C-T1 tier-1 live on M1 (m3, JOB START 23:47:21Z). Smoke S_aya_vision_8b_img (KeyError at c_t1.py:297) and S_lmcap ("embedded memory is not the caption memory", c_t1.py:435-436) failed. Question: the coco_captions.json format fix, and whether to re-smoke for N9. Reversible environment fix, bar >=90 (PI-1029o). Single judge (as CC-178; time-bound, the job keeps running). No machine access, no pred opened, no caption text printed. AI opinion.
+
+DECISION: GO option (a): environment-only unwrap of the caption store, swapped atomically on M1 before B3_lmcap_ri_carve starts. Re-smoke: NO. N9 is handled by timing-only substitutes, disclosed.
+CONFIDENCE: 93% (a). Re-smoke NO 95%. N9 handling 90%.
+
+What I checked (myself):
+- scripts/c_t1/c_t1.py:
+  - memory_text 289-297 reads a flat {cid: caption} for memory coco/f30k; caps[c] at 297 is the KeyError.
+  - cmd_store 128-151 writes flat json.dumps(out, ensure_ascii=False)+"\n".
+  - cmd_lmcap 435-436 compares embedding keys with sorted(caps); with the wrapper, sorted(caps) = the 5 wrapper keys.
+  - score, English branch, 788-800: caps[x] is flat too, so the laptop scoring copy (PREREG 7, l.205, $ST/coco_captions.json) has the same defect.
+- scripts/c_en/cen_memory.py:161-164 and 206-214: `store --what memory` writes {schema, what, release_sha256, memory_sha256, captions}.
+- Laptop .session_backup/2026-10-30/c_t1_stage/coco_captions.json:
+  - sha 9ff13d01 (matches OPS-1030g, LOG l.814).
+  - Top-level keys = the 5 wrapper keys; schema vsps.c_en.v1; memory_sha256 b77e4bde = RESTORED_SHA256 l.5 (cen_memory.json).
+  - 111,927 captions, all str; key set == memfiles_coco.json (081899c5) keys.
+- cen_memory_emb.npz from the M1 mirror: add1d92a = RESTORED_SHA256 l.6. keys.npy parsed: 111,927 keys, none with "|", set == caption keys. So the 435 check passes after the unwrap.
+- f30k_memory_captions.json (c7f275e8) is already flat (28,000 str), so B7 is not affected.
+- c_t1_job.sh 25-179:
+  - No preflight, SUMS, RESTORED_SHA256, registry or code_at_start entry hashes coco_captions.json. code_at_start covers only $X and $JOB.
+  - grep of the prereg dir and scripts/c_t1 finds no 9ff13d01 pin.
+  - The swap breaks no check.
+- Scope (job lines 91, 117-130, 135-138, 146-149): EN_MEM feeds every non-zs English step:
+  - B3_lmcap_{ri,se}_carve;
+  - B4_*_carve_ret / _rand (Qwen, InternVL3, third backbone);
+  - B6_qwen_carve_img and B6_${TB}_carve_img.
+  Each reads the file once at process start. Non-S failures go through gpu() to `stop`, which is fatal (PREREG l.158-160: no retry except resuming a step's own partial file).
+- PREREG f1d06278: l.71 (memory b77e4bde/add1d92a), l.148 (smoke), l.158-162 (cap, stop order, N9), l.289-290 (W-d); AMENDMENT_1 §5 l.80-95 (stores built with `cen_memory.py store`); CC-176 l.77; CC-178.
+- .session_backup/ is git-excluded (.git/info/exclude:9), untracked.
+- Not read this time: WORKFLOW_LOG and RESUME files. The subject is a C-T1 ops fix with no effect on A or B.
+
+Options, ranked:
+1. (a) Unwrap the store, environment only, and swap atomically. 93%.
+   - Same 111,927 captions, same keys, same shown-caption rule (members[0]'s first sentence, C-EN). Only the JSON envelope is removed.
+   - No code, rule, threshold, SESOI, split, arm or cap change, and the job is not restarted.
+   - No result has been seen: smoke outputs are never scored, and neither failure produced a caption.
+2. (b) Code change so that memory_text and score unwrap. 70%.
+   - Frozen code changes mid-run, so EXPECT HEAD and code_at_start break.
+   - Needs a gatekeeper commit, regenerated SUMS and a job restart, and it races the B3-carve deadline.
+   - Keep it for the post-run producer/consumer reconciliation (with CC-178 N1).
+3. (d) Stop the job, swap, restart. 60%. A restart is unnecessary: an atomic mv cannot affect a running step, and the swap must land before a later step's start.
+4. (c) Do nothing. 2%. The job dies at B3_lmcap_ri_carve (JOB STOP). B3-carve is then lost, and B4, B5, B6 and B7 never run. That is most of C's English (C-EN comparison) evidence.
+
+Rulings:
+r1. GO (a), steps S1-S7 below. The swap must complete before `START B3_lmcap_ri_carve` appears in job.log.
+    - The watch signal is `START B3_lmcap_ri_ovb`.
+    - If B3_lmcap_ri_carve has already STARTed or failed when the operator gets there, do NOT act. Return to the judge (PREREG l.160).
+r2. Logged departure, not an amendment. AMENDMENT_1 §5 names `cen_memory.py store` as the producer. Its output needed one unwrap step to match c_t1.py's documented consumer format (memory_text docstring; cmd_store convention). Content is identical; this is a staging correction. Disclose it in the tier-1 write-up beside AMENDMENT_1 §5.
+r3. Re-smoke: NO.
+    - PREREG l.159: no step is retried after a failure, other than resuming its own partial file.
+    - The live job holds the lock, and PREREG l.160-161 forbids running concurrently with another job.
+    - gpu() already wrote .done for both S_* failures, so a restart would not redo them.
+    - Report S_aya_vision_8b_img and S_lmcap as SMOKE FAIL (store-format mismatch, timing not measured), never hidden.
+r4. N9/W-d without smoke rates. Label this post hoc; timing only, no outcome is read.
+    - LMCap rate: substitute the measured seconds of B3_lmcap_ri_ovb from gpu_seconds.tsv.
+    - Aya rate: substitute Aya's B1 step seconds (text ret; its ret_img rate stays unmeasured).
+    - Log the projection in an OPS line before B6 starts.
+    - Default: no manual drop of B6's third backbone. W-d's trigger needs the smoke and cannot be evaluated as written. The 20 GPU-h cap and the bottom-trim stop order (B7 → B6 → B5, PREREG l.158, unchanged) govern.
+    - This default costs only C (B7 at risk), not A or B.
+    - If the logged projection exceeds 20 GPU-h by more than 2 GPU-h, the operator may ask a one-judge ruling on dropping B6_${TB}_carve_img. Do not act without that ruling.
+r5. Residual risk, accepted. Aya's interleaved ret_img path has never executed. Its first real run is B6_${TB}_carve_img, the last B6 step. A model-specific failure there is fatal but costs only B7. B3 carve's LMCap code after line 436 is first exercised by B3_lmcap_ri_ovb (Vietnamese memory), which runs before the carve.
+
+Approved steps (operator):
+S1. Laptop: copy .session_backup/2026-10-30/c_t1_stage/coco_captions.json to coco_captions.wrapper_9ff13d01.json in the same directory. Keep the wrapper; do not delete it. Verify the copy's sha is 9ff13d01.
+S2. Laptop, python3 -I, printing no caption text:
+    - load the wrapper;
+    - assert sha == 9ff13d01..., what == "memory", memory_sha256 == b77e4bdec5613fbce7d2b44ef8e6c5883900c6e2d8e717603e5c09b4524eb91e;
+    - assert set(captions) == set(memfiles_coco.json keys) and len == 111,927, all values str;
+    - write json.dumps(c["captions"], ensure_ascii=False)+"\n" (utf-8) to coco_captions.flat.tmp;
+    - re-load it and assert it equals c["captions"]; record its sha F;
+    - mv it over c_t1_stage/coco_captions.json. That path is the PREREG §7 $ST store.
+S3. M1: check that job.log has no `START B3_lmcap_ri_carve` line; otherwise stop and go to the judge (r1). Check that the current datasets/c_t1_mem/coco_captions.json sha == 9ff13d01.
+S4. scp the flat file to M1 datasets/c_t1_mem/coco_captions.json.tmp_cc179 (same directory). Run sha256sum on M1 and require = F.
+S5. M1: mv -f coco_captions.json.tmp_cc179 coco_captions.json, which is atomic within one directory. Re-check sha = F. Leave no other file in c_t1_mem/. Do not stop, restart or signal the job; touch no .done file.
+S6. Do not open preds, logs' caption lines or the store text. Read only the line counts and START/OK lines in job.log.
+S7. Write one OPS LOG line: both shas (9ff13d01 to F), the S3 checks, the swap UTC and the job.log tail state (step names only). Cite CC-179.
+
+Required fixes:
+W1. Do S1-S7 before B3_lmcap_ri_carve starts (r1).
+W2. Before B6, log the N9 projection from timing-only substitutes, labelled post hoc (r4).
+W3. Tier-1 write-up:
+    - disclose r2, the departure (store unwrap);
+    - disclose r3, the two smoke fails with rates not measured;
+    - disclose r4, the substitute rates and W-d not evaluable.
+W4. After the run, via the gatekeeper, with CC-178 N1/N2: one consumer/producer format check, either memory_text and score accepting only the flat dict with a clear error, or a `c_t1.py` unwrap at store time, plus a selftest. Not during this run.
+W5. Note: cmd_store refuses stores inside the repo, but the laptop stores sit in .session_backup/, which is inside the working tree. It is git-excluded (.git/info/exclude:9) and untracked, so nothing is at risk now. After the run, move the stores outside the tree or record the exclude reliance in the W4 commit. Not blocking.
+
+For the PI: nothing below 80; nothing to decide. For information: without this fix, C-T1's English blocks (B3-carve, B4, B6-carve) would have been lost at about 09:30 VN.
