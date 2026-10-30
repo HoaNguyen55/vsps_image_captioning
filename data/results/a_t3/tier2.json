@@ -1,0 +1,159 @@
+{
+ "label": "A-T3 TIER 2 (dev, not a test result)",
+ "prereg": {
+  "path": "manuscript/prereg/2026-10-30_a_t3/PREREG.md",
+  "sha256": "a7422fbfd6e35e84c6862c9c0314648eca4e36226d4acec3849dec015b3f3c64"
+ },
+ "outcome": "REHEARSAL_PASS",
+ "reason": "test look allowed after the r9 reservation",
+ "models": [
+  "internvl3_8b",
+  "llava_ov_7b",
+  "idefics3_8b",
+  "aya_vision_8b"
+ ],
+ "analysis": {
+  "runs": [
+   "at3t2_internvl3_8b-short_en",
+   "at3t2_internvl3_8b-detailed_en",
+   "at3t2_llava_ov_7b-short_en",
+   "at3t2_llava_ov_7b-detailed_en",
+   "at3t2_idefics3_8b-short_en",
+   "at3t2_idefics3_8b-detailed_en",
+   "at3t2_aya_vision_8b-short_en",
+   "at3t2_aya_vision_8b-detailed_en"
+  ],
+  "n_images": 997,
+  "n_dropped_unclean": 1,
+  "M": [
+   1.489468405215647,
+   2.5616850551654964,
+   1.5215646940822467,
+   2.2276830491474424,
+   1.4844533600802408,
+   2.062186559679037,
+   1.662988966900702,
+   2.4744232698094284
+  ],
+  "slopes": {
+   "L": 8.198633353509182,
+   "R1": -26.65893818099346,
+   "R2": -20.48487275878132,
+   "R5": -9.174182658805224
+  },
+  "premise": {
+   "n_images": 997,
+   "sum_L": 2823,
+   "sum_R": {
+    "1": 1347.75,
+    "2": 1649.4,
+    "5": 2016.9
+   },
+   "sum_R_in_L": {
+    "1": 1247.7,
+    "2": 1488.2,
+    "5": 1726.0
+   },
+   "sum_Rall": 2017,
+   "L_over_R1": 2.094602114635504,
+   "L_over_2R1inL": 1.131281558066843,
+   "L_over_R5": 1.3996727651346124,
+   "evaluable_2x": true,
+   "gate_R1": true,
+   "gate_R5_A_T1_form": false
+  },
+  "AD1p": {
+   "point": 34.85757153450264,
+   "ci95": [
+    32.70465198812161,
+    36.90452815951262
+   ],
+   "verdict": "PASS",
+   "rule_outcome": "PASS",
+   "p_one_sided": 0.000999000999000999
+  },
+  "L_vs_R5": {
+   "point": 17.372816012314406,
+   "ci95": [
+    14.650517190160992,
+    19.798472066426868
+   ],
+   "verdict": "PREMISE_NOT_MET",
+   "rule_outcome": "PASS",
+   "p_one_sided": 0.000999000999000999
+  },
+  "O2": {
+   "R2-R1": {
+    "point": 6.174065422212138,
+    "ci95": [
+     5.47305645970954,
+     6.900945774572738
+    ],
+    "verdict": "PASS",
+    "rule_outcome": "PASS",
+    "p_one_sided": 0.000999000999000999
+   },
+   "R5-R2": {
+    "point": 11.310690099976098,
+    "ci95": [
+     10.194130843392912,
+     12.407192363284883
+    ],
+    "verdict": "PASS",
+    "rule_outcome": "PASS",
+    "p_one_sided": 0.000999000999000999
+   },
+   "verdict": "PASS"
+  },
+  "X5": {
+   "observed": -29.384965967171063,
+   "null_mean": -10.045758643813901,
+   "null_lo": -11.87639146554443,
+   "null_median": -10.04701739318952,
+   "null_hi": -8.29531194347707,
+   "excess": -19.33920732335716,
+   "p_one_sided": 0.000999000999000999,
+   "sum_k_scored_mean": 1247.7,
+   "sum_complete_scored": 2823,
+   "verdict": "PASS"
+  },
+  "X4": {
+   "observed": -26.65893818099346,
+   "null_mean": -16.799291497935037,
+   "null_lo": -18.136444897126168,
+   "null_median": -16.818690058017832,
+   "null_hi": -15.422854514191204,
+   "excess": -9.859646683058422,
+   "p_one_sided": 0.000999000999000999,
+   "sum_k_scored_mean": 1347.75,
+   "sum_complete_scored": 2017,
+   "verdict": "PASS"
+  },
+  "family": {
+   "joint": "PASS",
+   "holm_p": {
+    "AD1p": 0.000999000999000999,
+    "X5": 0.000999000999000999,
+    "X4": 0.000999000999000999
+   },
+   "holm_survives": {
+    "AD1p": true,
+    "X5": true,
+    "X4": true
+   },
+   "x4_in_family": true
+  }
+ },
+ "predicted_p_pass": {
+  "AD1p": 1.0,
+  "X5": 1.0
+ },
+ "n_test_plan": 3500,
+ "provenance": {
+  "script_sha256": "4bfeaef99e1423ea50e48748d8c47f44da3f04885bbfe32be004f71d2cd9bd6b",
+  "gold_sha256": "a4b0abe96245aae33ee85e76a59b7043e9c7160efe412364fca054ed2119a62d",
+  "tier1_sha256": "6d12159243af57dde1bde91fea7cfc9fdf99786afe6062b1667ad0eaaea6e613",
+  "exclude_sha256": "00873d9fe74e2de6321e6ab79963d502b705a800b161fd55e3e0b409de8f125f",
+  "n_excluded_w2": 5
+ }
+}
