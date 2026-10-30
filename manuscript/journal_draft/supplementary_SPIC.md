@@ -654,7 +654,7 @@ Prediction verdicts (clean subsets): G2B-O1 and G2B-P1 PASS on COCO-295, UIT-ViI
 
 Counted after the registered result, from the references and the VOC XML labels only, on all 1,000 images (no model output, no verdict; the registered P50-A4 FAIL stands). Per image, the 50-reference set is the union of V20 classes named in the 50 references; the label set is every VOC object class mapped to V20. Totals: 1,787 label instances against 2,162 reference classes (ratio 0.83); 1,521 in both, 266 in the labels only and 641 in the references only. The outcome sentence was fixed before the count: "On all 1,000 PASCAL-50S images, the VOC labels hold 1,787 class instances on the 20 VOC classes against 2,162 named in the 50 references (ratio 0.83). This post hoc descriptive count, with no verdict, is consistent with the label rung not being a substantially more complete gold than the 50 references under the 2x convention; the registered P50-A4 FAIL stands as registered." The registered X5 numbers already implied this outcome (1,782 label pairs on the 997-image analysis set against 2 × 1,039.6); the analysis set cannot be rebuilt, so the comparison of 1,782 with 1,787 is approximate. The English matcher's "aeroplane" gap stays, as registered.
 
-**Table S7.7.** Image–class pairs per V20 class, all 1,000 images.
+**Table S7.6.** Image–class pairs per V20 class, all 1,000 images.
 
 | Class | In both | Labels only | References only |
 |---|---|---|---|
@@ -679,7 +679,7 @@ Counted after the registered result, from the references and the VOC XML labels 
 | train | 52 | 0 | 12 |
 | tv | 64 | 12 | 5 |
 
-**Table S7.8.** Reference gold size on V20 by number of references (mean over the 20 frozen random draws), and its overlap with the labels.
+**Table S7.7.** Reference gold size on V20 by number of references (mean over the 20 frozen random draws), and its overlap with the labels.
 
 | References | Σ classes named | Σ classes named and labelled |
 |---|---|---|
@@ -691,7 +691,7 @@ Counted after the registered result, from the references and the VOC XML labels 
 
 ### Material moved from Section 6 in revision 2
 
-*Paragraphs in this subsection are the pre-revision main-text wording, kept verbatim. Their section and table references follow the pre-revision numbering (old Table 6.2 is Table S10.1, old Table 6.3 is Table S7.6, old Table 2.1 is Table S9.1; the PASCAL-50S departures are now in Section 9.2), and statements that the PASCAL-50S label premise was not measured predate the post hoc gold-size count of Table S7.7.*
+*Paragraphs in this subsection are the pre-revision-2 main-text wording. Their cross-references follow the current numbering (Table 6.2 before revision 2 is Table S7.5, Table 6.3 before revision 2 is Table S7.8; the PASCAL-50S departures are in Section 9.2). Statements that the PASCAL-50S label premise was not measured predate the post hoc gold-size count of Table S7.6.*
 
 #### A measured completeness premise on ADE20K (registered; ended before any decode)
 
@@ -703,7 +703,7 @@ A registered development test (tier 1 of a three-tier design; its outcome clause
 
 #### Moved from Section 6.3 primary result (revision 2, for length)
 
-**Primary result.** All four primary claims PASS on each set. They were scored once, after all 23 registered decodes were committed; no withdrawal rule was triggered and no run excluded. On the clean subsets (263 of 295, 209 of 231 and 537 of 600 images), the one-reference and label-gold slopes are those of Table 6.1, and the slope rises at each level (Table 6.2): all references minus one reference is +12.00 [+7.85, +15.73], +22.75 [+19.70, +25.95] and +5.89 [+4.76, +6.87]; label gold minus all references is +12.60 [+6.91, +18.38], +35.56 [+30.86, +40.18] and +20.10 [+17.39, +23.05]. The all-image values are a registered sensitivity analysis without verdicts (Table 6.1; Supplementary S7).  Under the lower precision rule, the XM3600-600 label-gold slope (+1.97) stays above the all-reference slope implied by the levels (−6.39) at point level only (post hoc derived; no interval). A post hoc random-deletion check (design committed before the run) finds that the slope against reference gold restricted to label-gold classes lies below the 95% range of size-matched random deletions in all eight cells tested, so which objects annotators name matters beyond how many (no verdict; Supplementary S7).
+**Primary result.** All four primary claims PASS on each set. They were scored once, after all 23 registered decodes were committed; no withdrawal rule was triggered and no run excluded. On the clean subsets (263 of 295, 209 of 231 and 537 of 600 images), the one-reference and label-gold slopes are those of Table 6.1, and the slope rises at each level (Table S7.5): all references minus one reference is +12.00 [+7.85, +15.73], +22.75 [+19.70, +25.95] and +5.89 [+4.76, +6.87]; label gold minus all references is +12.60 [+6.91, +18.38], +35.56 [+30.86, +40.18] and +20.10 [+17.39, +23.05]. The all-image values are a registered sensitivity analysis without verdicts (Table 6.1; Supplementary S7).  Under the lower precision rule, the XM3600-600 label-gold slope (+1.97) stays above the all-reference slope implied by the levels (−6.39) at point level only (post hoc derived; no interval). A post hoc random-deletion check (design committed before the run) finds that the slope against reference gold restricted to label-gold classes lies below the 95% range of size-matched random deletions in all eight cells tested, so which objects annotators name matters beyond how many (no verdict; Supplementary S7).
 
 #### Moved from Section 6.3, truncation (revision 2, for length)
 
@@ -724,7 +724,7 @@ A registered development test (tier 1 of a three-tier design; its outcome clause
 
 #### Moved from Section 6.4 design (revision 2, for length)
 
-**Design.** PASCAL-50S (Vedantam et al., 2015) gives 50 references for each of the 1,000 UIUC PASCAL Sentences images (Rashtchian et al., 2010), all in VOC2008 trainval, whose object labels on 20 classes (Everingham et al., 2010) serve as the label gold (V20). The test reuses the frozen eight-model English LVLM set of Section 6.3 with its short and detailed prompts; the 8 GPU-hour cap, fixed before the run, kept seven models (Idefics3-8B left first in the registered drop order), so the family has 14 runs. The registration, its evaluator and the 1,000-image list were committed on 2026-10-29 at 00:49:49Z, before the run started (00:51:22Z); the outputs were scored once. The analysis set is the 997 images whose caption is clean in every run, and intervals use 1,000 image-bootstrap draws, as registered. Whether the five original UIUC captions of an image are among its 50 references is unknown, and no adjacency or exchangeability check was registered for PASCAL-50S. Two departures from the registration (no hash of the deleted caption files; a structure check of the reference file on a local machine before the commit) are disclosed in Section 9.1; neither changes a verdict.
+**Design.** PASCAL-50S (Vedantam et al., 2015) gives 50 references for each of the 1,000 UIUC PASCAL Sentences images (Rashtchian et al., 2010), all in VOC2008 trainval, whose object labels on 20 classes (Everingham et al., 2010) serve as the label gold (V20). The test reuses the frozen eight-model English LVLM set of Section 6.3 with its short and detailed prompts; the 8 GPU-hour cap, fixed before the run, kept seven models (Idefics3-8B left first in the registered drop order), so the family has 14 runs. The registration, its evaluator and the 1,000-image list were committed on 2026-10-29 at 00:49:49Z, before the run started (00:51:22Z); the outputs were scored once. The analysis set is the 997 images whose caption is clean in every run, and intervals use 1,000 image-bootstrap draws, as registered. Whether the five original UIUC captions of an image are among its 50 references is unknown, and no adjacency or exchangeability check was registered for PASCAL-50S. Two departures from the registration (no hash of the deleted caption files; a structure check of the reference file on a local machine before the commit) are disclosed in Section 9.2; neither changes a verdict.
 
 #### Moved from Section 6.4 P50-O2 bullet (revision 2, for length)
 
@@ -738,11 +738,11 @@ A registered development test (tier 1 of a three-tier design; its outcome clause
 
 **System dependence.** The intervals hold the 14 runs fixed (7 models × short and detailed prompts). On V20 the mean number of named classes forms two clusters, 1.12–1.35 for short and 1.61–2.24 for detailed captions, so the slope is in effect a short-versus-detailed contrast, as in every registered family. Per model (descriptive, two runs each) the VOC-label slope ranges from −1.05 to +14.75 and is negative for LLaVA-1.5-7B and LLaVA-OneVision-7B (Supplementary S7). Whether detailed captions reached the 160-token cap was not recorded. No system-level interval exists, and none can be computed, because the 14 caption files were deleted under the registered data rule; the decide files, the event log, the evaluator hashes and the job script are in the deposit.
 
-#### Moved from Section 6.5 (whole section body, with Table 6.3, now Table S7.6) (revision 2, for length)
+#### Moved from Section 6.5 (whole section body, with Table 6.3, now Table S7.8) (revision 2, for length)
 
 The intervals of Table 6.1 hold the systems fixed. We recomputed every cell of Table 6.1 with each system left out in turn and formed a system jackknife interval (standard error from the leave-one-out slopes; t with n − 1 degrees of freedom). This analysis is post hoc and changes no registered verdict.
 
-**Table S7.6** (Table 6.3 before revision 2). Slope of mixed F1 on $\ln M$ (XM3600 label gold as in Table 6.1): full family, the range over leave-one-system-out fits, and the system jackknife 95% interval in brackets.
+**Table S7.8** (Table 6.3 before revision 2). Slope of mixed F1 on $\ln M$ (XM3600 label gold as in Table 6.1): full family, the range over leave-one-system-out fits, and the system jackknife 95% interval in brackets.
 
 | Family (systems) | 1 ref | 5 refs | Label gold |
 |---|---|---|---|
@@ -760,7 +760,7 @@ Rows for the OPERA, Less-is-More and UIT-ViIC families are computed from per-sys
 
 **The ordering.** On XM3600 the ordering one reference < all references < label gold holds in all 6 leave-one-out fits, including the fit without the zero-shot detailed run (+10.52 < +18.07 < +23.21); on the second backbone the label-gold minimum (+13.55) is above the one-reference maximum (−11.86).
 
-**Label gold.** Dropping any one system never changes the sign of the label-gold slope, in any family (smallest leave-one-out slope +1.49, Less-is-More). Its jackknife interval (Table S7.6) includes 0 for the two English LVLM families and for UIT-ViIC with the Vietnamese lexicon. This sign stability holds under the registered precision rule; under the lower rule of the bracket no leave-one-out fit was computed.
+**Label gold.** Dropping any one system never changes the sign of the label-gold slope, in any family (smallest leave-one-out slope +1.49, Less-is-More). Its jackknife interval (Table S7.8) includes 0 for the two English LVLM families and for UIT-ViIC with the Vietnamese lexicon. This sign stability holds under the registered precision rule; under the lower rule of the bracket no leave-one-out fit was computed.
 
 **Reference gold.** On XM3600 the zero-shot detailed run names 4.29 objects per caption, against 1.08–1.78 for the other five systems. Without it the one-reference slope is +10.52 instead of −8.99, and the all-references slope +18.07 instead of −2.43; dropping any other system leaves them between −11.16 and −8.32, and between −4.56 and −1.73. On XM3600 the reference-gold signs therefore rest on one verbose system. On the second backbone the one-reference sign is stable (−12.52 to −11.86). The one-reference jackknife interval includes 0 on COCO-5000, UIT-ViIC with the COCO-80 lexicon and XM3600; within-prompt subsets are in Supplementary S7.
 
@@ -861,7 +861,7 @@ DOCCI-Critique (Gordon et al., 2025) gives sentence-level factuality ratings for
 
 ### Material moved from Section 2 in revision 2
 
-*Paragraphs in this subsection are the pre-revision main-text wording, kept verbatim. Their section and table references follow the pre-revision numbering (old Table 6.2 is Table S10.1, old Table 6.3 is Table S7.6, old Table 2.1 is Table S9.1; the PASCAL-50S departures are now in Section 9.2), and statements that the PASCAL-50S label premise was not measured predate the post hoc gold-size count of Table S7.7.*
+*Paragraphs in this subsection are the pre-revision-2 main-text wording of Section 2, kept verbatim; Table S9.1 is Table 2.1 before revision 2.*
 
 For detailed captions, CompreCap (Lu et al., 2025), DeCapBench (Ye et al., 2025), CapProbe (Huang et al., 2026) and FaithScore (Jing et al., 2024) score finer units, and HalDec-Bench (Saito et al., 2025) and DetailVerifyBench (Wang et al., 2026) benchmark hallucination detection in captions.
 
@@ -890,7 +890,7 @@ For long captions, CapArena (Cheng et al., 2025) and LongCap-Arena (Matsuda et a
 
 ## S10 Material moved from the main text in revision 2
 
-*Paragraphs in this subsection are the pre-revision main-text wording, kept verbatim. Their section and table references follow the pre-revision numbering (old Table 6.2 is Table S10.1, old Table 6.3 is Table S7.6, old Table 2.1 is Table S9.1; the PASCAL-50S departures are now in Section 9.2), and statements that the PASCAL-50S label premise was not measured predate the post hoc gold-size count of Table S7.7.*
+*Paragraphs in this section are the pre-revision-2 main-text wording, kept verbatim except that cross-references follow the current numbering and that paragraphs already given in full in Supplementary S7 are replaced by pointers. Captions marked "pre-revision" are the earlier, longer captions of tables that stay in the main text. Statements that the PASCAL-50S label premise was not measured predate the post hoc gold-size count of Table S7.6.*
 
 ### From Section 1
 
@@ -908,7 +908,7 @@ For long captions, CapArena (Cheng et al., 2025) and LongCap-Arena (Matsuda et a
 
 - **RQ3 (human judgments and preference data; registered).** Do existing human judgments penalize object count, does a count-controlled score track them better than the raw score, and does the count channel enter public preference data? (Section 7)
 
-**Table 1.** Registered predictions grouped by outcome, with verdicts copied from the decide files. Registered = committed before the first output it predicts (Section 3.6). The full ledger, with plain-language test names, registry identifiers and the section of each, is Supplementary Table S4.0; exploratory analyses and their times are in Supplementary S4.
+**Pre-revision caption of Table 1.** Registered predictions grouped by outcome, with verdicts copied from the decide files. Registered = committed before the first output it predicts (Section 3.6). The full ledger, with plain-language test names, registry identifiers and the section of each, is Supplementary Table S4.0; exploratory analyses and their times are in Supplementary S4.
 
 **Motivating case and exchangeability.** In earlier work on Vietnamese captioning (Nguyen et al., 2026a), KTVIC's reference-derived gold counted real but unreferenced objects as hallucinated, so its CHAIR values were upper bounds. Reference-count analyses also assume independent writers, which a diagnostic tests (Section 5).
 
@@ -966,38 +966,25 @@ Positively dependent references cover fewer objects, so $k$ captions from one wr
 
 Every analysis that varies the number of references rests on (A1), yet caption datasets rarely document it.
 
-**Table 5.1.** Adjacent-doubleton share (exchangeable null 0.40; 95% image-bootstrap intervals; lag-1 Jaccard excess and split rows in Supplementary S5).
+**Pre-revision caption of Table 5.1.** Adjacent-doubleton share (exchangeable null 0.40; 95% image-bootstrap intervals; lag-1 Jaccard excess and split rows in Supplementary S5).
 
 ### From Section 6
 
-**COCO-5000.** Four predictions were pre-specified on COCO-2500, the seed-42 half of COCO-5000: they were timestamped before the first output but never committed, so the test is exploratory. All four held on COCO-2500 and on COCO-5000 (post hoc full-split extension): the slope is ordered, −4.77 < +10.57 < +22.13, and it rises at every step $k \to k+1$ and again to instance gold. The positive five-reference slope is a dataset-specific outcome (Supplementary S7).
-
-**English LVLM outputs.** For the public CHAIR outputs of the two release families of Section 3.3 (pre-specified, never committed; exploratory), the one-reference and ordering predictions held in both, and the five-reference prediction (slope > 0) **failed** in both (−29.57 and −22.86), as did the instance-gold prediction for OPERA (+4.24 [−0.09, +8.51]). What failed is the crossing's location, not its direction: five references do not turn the slope positive for systems that name about three objects (median $M$ 3.13 and 3.03).
+*The pre-revision COCO-5000, English LVLM output and UIT-ViIC paragraphs of Section 6.1 and the pre-revision Table 6.2 are not repeated here: their full versions are in Supplementary S7 ("Further detail for Section 6") and Table S7.5, which holds every value of the pre-revision Table 6.2.*
 
 Two registered rules applied: if 2 or more of the three sign predictions failed, the result would be demoted to a diagnostic; if the one-reference prediction failed, the sign-change claim would be dropped (Supplementary S4). With one of three sign predictions failed, neither rule was triggered. The registration also froze 15 gold-size values on these images; 14 were reproduced, and the one-reference non-empty gold size missed its interval (1.8768 against 1.8831; OUT; Supplementary S7).
 
 **Reading.** The slopes are ordered, as predicted. The verified labels are scored with verified precision (Section 3.1), so we bounded the label-gold slope post hoc (design fixed before the run; no verdict; Supplementary S7). Counted as errors, unverifiable mentions leave the slope at +5.83 [+3.82, +7.82] here, still above both reference slopes at point level, but on the second backbone's XM3600-600 outputs the lower bound is +1.97 [−0.44, +4.01] (Table 6.1). For the two sets jointly, the positive label-gold slope therefore depends on excluding unverifiable mentions (post hoc). Under the lower rule the ordering holds at point level only; no interval on the differences was computed. The positive slope with 2–3 references failed: the crossing lies at a more complete gold, which the transferred exponent missed (in-sample 0.503 against 0.549). XM3600 supports the ordering of the slopes, not the location of the sign change.
 
-The post hoc random-deletion check of Section 6.3 was registered for PASCAL-50S in a companion protocol committed with the P50 registration. It is co-primary in its registered companion family {X4, X5} and secondary to the paper's confirmatory claim: it asks which objects people mention, not how many, and it does not change the confirmatory claim. The direction was anticipated: it held in 8 of 8 exploratory cells (Supplementary S7) and in 4 of 4 cells of a post hoc check on spent development sets. Take the 50-reference consensus as the complete gold. For each image, a null gold keeps a uniformly random subset of its classes, of the same size as the one- or five-reference gold on that image (1,000 replicates). The prediction (X4) is that the slope against the real one- or five-reference gold lies below the 2.5th percentile of the null; a slope at or above the null median is a FAIL.
+The post hoc random-deletion check on the sets of Sections 6.2–6.3 (Supplementary S7) was registered for PASCAL-50S in a companion protocol committed with the P50 registration. It is co-primary in its registered companion family {X4, X5} and secondary to the paper's confirmatory claim: it asks which objects people mention, not how many, and it does not change the confirmatory claim. The direction was anticipated: it held in 8 of 8 exploratory cells (Supplementary S7) and in 4 of 4 cells of a post hoc check on spent development sets. Take the 50-reference consensus as the complete gold. For each image, a null gold keeps a uniformly random subset of its classes, of the same size as the one- or five-reference gold on that image (1,000 replicates). The prediction (X4) is that the slope against the real one- or five-reference gold lies below the 2.5th percentile of the null; a slope at or above the null median is a FAIL.
 
 - **X4, five references: PASS.** Observed −20.99 against [−9.28, −6.87] (excess −12.89; p ≤ 0.001). Here 0.001 is the floor at 1,000 replicates; the null holds images and runs fixed, so p describes the random choice of gold, not the sampling of images or systems.
 
 This section reports the slope of object F1 on $\ln M$ (Section 3.6); the confirmatory claim is its ordering by gold completeness (Section 1). The one-reference sign is registered but not derived from the theory, and the multi-reference sign is not predicted. Rows of Table 6.1 are registered or exploratory and report mixed F1.
 
-**Table 6.1.** Slope of mixed F1 on $\ln M$ by gold (label gold: Section 3.1; plotted in Fig. 2). On XM3600 images the label-gold F1 combines verified precision with recall over the verified-present classes pooled over images (micro), as registered. 95% image-bootstrap intervals. The last two columns are a post hoc precision bracket (not registered; no verdict): the label-gold slope when mentions the labels cannot verify are counted as errors (lower) or as correct (upper); "—" means not computed.
+**Pre-revision caption of Table 6.1.** Slope of mixed F1 on $\ln M$ by gold (label gold: Section 3.1; plotted in Fig. 2). On XM3600 images the label-gold F1 combines verified precision with recall over the verified-present classes pooled over images (micro), as registered. 95% image-bootstrap intervals. The last two columns are a post hoc precision bracket (not registered; no verdict): the label-gold slope when mentions the labels cannot verify are counted as errors (lower) or as correct (upper); "—" means not computed.
 
 - **Multiplicity.** The companion family {X4, X5} was registered for Holm correction at one-sided α = 0.025; with X5 not evaluable the family has one member, so no adjustment applied. A descriptive family-wise Holm reading over {P50-A4, P50-O2, X4} gives p = 0.939 for P50-A4 (does not survive) and 0.001 for P50-O2 and X4 (Supplementary S7); it changes no verdict.
-
-**Table S10.1** (Table 6.2 before revision 2). Second backbone (mixed F1; XM3600 label gold as in Table 6.1), registered primary level statistics on the clean subsets (verdicts as registered; point and 95% image-bootstrap interval). Secondary statistics and the all-image values are in Supplementary S7.
-
-| Statistic (registered id) | COCO-295 (n = 263) | UIT-ViIC-231 (n = 209) | XM3600-600 (n = 537) |
-|---|---|---|---|
-| Slope, all references − one reference (G2B-O1) | +12.00 [+7.85, +15.73], PASS | +22.75 [+19.70, +25.95], PASS | +5.89 [+4.76, +6.87], PASS |
-| Slope, label gold − all references (G2B-O1) | +12.60 [+6.91, +18.38], PASS | +35.56 [+30.86, +40.18], PASS | +20.10 [+17.39, +23.05], PASS |
-| Exponent, b(all references) − b(one reference) (G2B-P1) | +0.097 [+0.038, +0.151], PASS | +0.223 [+0.187, +0.260], PASS | +0.070 [+0.051, +0.087], PASS |
-| Exponent, b(label gold) − b(all references) (G2B-P1) | +0.207 [+0.125, +0.289], PASS | +0.391 [+0.340, +0.440], PASS | +0.511 [+0.461, +0.562], PASS |
-
-**UIT-ViIC.** UIT-ViIC test (231 COCO train2017 images; exposure possible) was scored before any prediction existed. Under both matchers the slope is ordered and negative at one reference, but the five-reference sign depends on the matcher (Table 6.1).
 
 **Design.** The families above use one backbone (Qwen2.5-VL-7B). The second-backbone test repeats the measurement with Qwen3-VL-8B zero-shot, six systems per set (three temperatures × a short and a detailed Vietnamese prompt; detailed captions capped at 160 new tokens), on three sets:
 
@@ -1053,7 +1040,7 @@ Object-level hallucination scores respond to the gold and to the number of objec
 
 **Other overlaps.** Some UIT-ViIC training images are in COCO-5000 and POPE-500; no UIT-ViIC-trained adapter is scored on those sets.
 
-**PASCAL-50S outputs.** Under the registered data rule, each of the 14 caption files shared at least one 8-gram with the PASCAL-50S references, so all were deleted on the scoring machine with the images and references; no hash of them was kept. Keeping no hash departs from the registration, which said that each file's SHA-256 would leave the machine with the aggregates; the job copied a hash only for files without hits. A second departure: before the registration was committed, the structure of the PASCAL-50S reference file (keys and reference counts, no text) was checked once on a local machine, although the registration placed all PASCAL-50S data steps on the scoring machine. Neither departure changes a verdict. The registered verdicts can be recomputed only by re-running the registered job from the pinned model snapshots, decoder and code; per-image outputs cannot be audited.
+*The pre-revision "PASCAL-50S outputs" paragraph of Section 9 is not repeated here: its content is given in full in Supplementary S7 ("Compute and data handling" and "Departures from the PASCAL-50S registration").*
 
 **Construct validity: precision rule.** Verified precision is the preferred estimand because OIV7 verifies presence or absence only for its labelled classes, so a mention outside them is unknown, not wrong; OIV7 can verify between 43.4% and 69.7% of the mapped mentions of each scored system (stored descriptive values, Supplementary S7). The positive label-gold slope on XM3600 depends on the verified-precision rule: counting unverifiable mentions as errors leaves its interval including 0 on the second backbone's XM3600-600 outputs (post hoc; Section 6.2). Under that rule the ordering holds at point level only, and the leave-one-system-out analysis was not repeated.
 
