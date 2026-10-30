@@ -16,6 +16,7 @@ Prereg: manuscript/prereg/2026-10-30_a_t3/PREREG.md (CC-183).
     python  scripts/a_t3/a_t3.py register --root R --set S --models M.. --out REG   runtime registration
     python  scripts/a_t3/a_t3.py guard --head H --val2017-ids F --valsha V    before every GPU step (W8)
     python  scripts/a_t3/a_t3.py left --ledger L --cap-h C                    seconds left under a cap
+    python  scripts/a_t3/a_t3.py jobcfg --tier T --host H --reg REG           a_t3_job.sh: out dir and cap (tier 2 only)
     python  scripts/a_t3/a_t3.py valsha --dir D --out O                       m3 only: val2017 image sha256 (numbers)
     python  scripts/a_t3/a_t3.py neardup --cand-dir D --ref NAME=DIR.. --sscd PT --out O   m3 only (W2): drop ids
     python3 scripts/a_t3/a_t3.py testlist --karpathy K --val2017-ids F [--drop NAME=FILE..] --out O   W1 builder;
@@ -83,7 +84,8 @@ MODELS = {"internvl3_8b": ("a_n2", "259a3b64", "qwen2.5 (Qwen2.5-7B)", "InternVi
 N_D1, N_D2, N_SMOKE = 1000, 1000, 20
 N_TEST_PLAN = 3500  # fixed planning lower bound for the predictors (W1 count <= 3,685); never replaced by the W1 count
 P_GO, ALPHA, KS = 0.98, 0.025, (1, 2, 5)
-CAP_H = {"tier1_m4": 6.0, "tier1_m3": 2.0}  # per-machine tier-1 caps inside CAP_GPU_H
+CAP_H = {"tier1_m4": 6.0, "tier1_m3": 2.0,  # per-machine caps inside CAP_GPU_H; tier 2 (OPS-1030at3p): measured
+         "tier2_m4": 6.0, "tier2_m3": 2.0}  # tier-1 use m4 3.92 h, m3 1.42 h on the same 1,000-image size
 B_REH, R_REH = 200, 200  # tier-2 rehearsal: image-bootstrap resamples, null replicates per resample
 C_NEAR_DROPS = (129062, 284623, 427649, 458410, 465179, 471991, 527616, 562059)  # C's 8 drops (CC-183 chair)
 BAD_NAME = re.compile(r"val2017|val2014\.zip|train2014\.zip|annotations_trainval|captions_val|instances_val", re.I)
@@ -362,6 +364,15 @@ def date_ok(tier: int, now: str | None = None) -> None:
 
 def reg_tier(reg: Path) -> int:
     return int(re.match(r"at3t(\d)_", json.loads(reg.read_text())["runs"][0]["run_id"]).group(1))
+
+
+def job_cfg(tier: int, mid: str, reg: Path) -> tuple[str, float]:
+    """a_t3_job.sh (OPS-1030at3p): tier 2 only, from a registration whose every run is at3t2_*; its own out dir
+    (ledger, SUMS, EVENTS) and per-machine cap. Tier 1 was scored once (0515a15); tier 3 lands in the r9 commit (F5)."""
+    runs = [r["run_id"] for r in json.loads(reg.read_text())["runs"]]
+    if tier != 2 or not runs or not all(r.startswith(f"at3t{tier}_") for r in runs):
+        raise SystemExit(f"REFUSED: job tier {tier}, registration runs {runs[:2]}; this job runs tier 2 only")
+    return f"/root/outputs/a_t3_t{tier}", CAP_H[f"tier{tier}_{mid}"]
 
 
 def left(ledger: Path, cap_h: float) -> int:
@@ -697,6 +708,21 @@ def selftest() -> None:
             except SystemExit:
                 pass
         assert reg_tier(Path(t) / "reg.json") == 1
+        # job config (OPS-1030at3p): tier-1 registration and outputs refused; tier-2 dir, ledger and caps separate
+        r2 = Path(t) / "reg_t2.json"
+        r2.write_text(json.dumps({**reg, "runs": [{**r, "run_id": run_id(r["model"], r["prompt_mode"], 2)}
+                                                 for r in reg["runs"]]}))
+        assert reg_tier(r2) == 2 and job_cfg(2, "m4", r2) == ("/root/outputs/a_t3_t2", 6.0)
+        assert job_cfg(2, "m3", r2) == ("/root/outputs/a_t3_t2", 2.0)
+        mixed = Path(t) / "reg_mixed.json"
+        mixed.write_text(json.dumps({**reg, "runs": json.loads(r2.read_text())["runs"][:1] + reg["runs"]}))
+        for tt, rp in ((1, Path(t) / "reg.json"), (2, Path(t) / "reg.json"), (3, r2), (1, r2), (2, mixed)):
+            try:
+                job_cfg(tt, "m4", rp)
+                raise AssertionError(f"job tier {tt} accepted {rp.name}")
+            except SystemExit:
+                pass
+        assert sum(CAP_H.values()) + 19.69 <= CAP_GPU_H  # tier 3 = 25.03 GPU-h x 3,685 / 4,685 (OPS-1030at3o)
         for bad in (lambda: tier1_binding(t1), lambda: tier1_binding(None), lambda: excluded_ids(None, 1)):
             try:
                 bad()
@@ -775,6 +801,8 @@ def selftest() -> None:
         pass
     text = (HERE / "a_t3_job.sh").read_text(encoding="utf-8")
     assert "set -euo pipefail" in text and "$X guard" in text and "aya_vision_8b" in text
+    assert "R=at3t${T}_$M-$Q" in text and "$X jobcfg" in text and "at3t1_" not in text
+    assert "O=/root/outputs/a_t3" not in text and "/root/outputs/a_t3/" not in text
     print("a_t3 selftest ok")
 
 
@@ -797,6 +825,8 @@ def main() -> None:
     s.add_argument("--valsha", type=Path, required=True)
     s = sub.add_parser("left"); s.add_argument("--ledger", type=Path, required=True); s.add_argument("--cap-h", type=float, required=True)  # noqa: E702
     s = sub.add_parser("models"); s.add_argument("--host", required=True, choices=["m3", "m4"])  # noqa: E702
+    s = sub.add_parser("jobcfg"); s.add_argument("--tier", type=int, required=True); s.add_argument("--reg", type=Path, required=True)  # noqa: E702
+    s.add_argument("--host", required=True, choices=["m3", "m4"])
     s = sub.add_parser("valsha"); s.add_argument("--dir", type=Path, required=True); s.add_argument("--out", type=Path, required=True)  # noqa: E702
     s.add_argument("--val2017-ids", type=Path, required=True)
     sub.add_parser("datecheck").add_argument("--reg", type=Path, required=True)
@@ -835,6 +865,8 @@ def main() -> None:
     elif a.cmd == "models":
         R = registry()
         print(" ".join(m for m in in_models(R) if R["families"][m]["host_role"] == a.host))
+    elif a.cmd == "jobcfg":
+        print(*job_cfg(a.tier, a.host, a.reg))
     elif a.cmd == "valsha":
         p50.dump(cmd_valsha(a.dir, a.val2017_ids), a.out)
     elif a.cmd == "datecheck":

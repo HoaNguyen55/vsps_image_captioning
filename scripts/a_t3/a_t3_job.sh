@@ -1,25 +1,32 @@
 #!/bin/bash
-# Paper A, A-T3 (TIER 1, DEV-EXPLORE ONLY): the A-T3 model set decodes D1 = 1,000 COCO train2017 images (Karpathy
-# restval minus val2017 minus every exclusion list), short_en and detailed_en, with scripts/lb/decode_hf_vlm.py
-# unchanged. M2 (machine id m4) runs the m4 families; M1 (machine id m3) runs aya_vision_8b only, after C-T1 has ended
-# and been mirrored (CC-183 r10, PI default Q7). No val2017 image, id or annotation is ever on M2 (guard, W8).
-# No scoring here: preds go to the laptop, scored once by `a_t3.py score --tier 1` (PREREG §5-§6).
-# Cap (PREREG §8): 6 GPU-h on m4, 2 GPU-h on m3 inside a_t3.py CAP_GPU_H; a timeout or an exhausted cap is a final
-# CAP STOP. Host loss: before any restart the operator closes the open run with one ledger row (PREREG §8, CC-184 F4).
-# Staged before (operator): $NCS_DATA/datasets/a_t3/{images,sets} from `a_t3.py stage --set D1` (after the D1 premise
-# held), $NCS_DATA/datasets/a_t3/a_t3_reg.json from `a_t3.py register`, and the m3-made val2017 sha list at $VALSHA.
-# Usage, inside tmux:   bash scripts/a_t3/a_t3_job.sh <expected 40-hex HEAD>
+# Paper A, A-T3 (TIER 2, DEV REHEARSAL ONLY; tier 1 ran from 265b0f1a and was scored once, 0515a15): the A-T3 model
+# set decodes D2 = the next 1,000 COCO train2017 images (Karpathy restval minus val2017 minus every exclusion list),
+# short_en and detailed_en, run ids at3t2_*, with scripts/lb/decode_hf_vlm.py unchanged. M2 (machine id m4) runs
+# the m4 families; M1 (machine id m3) runs aya_vision_8b only (PREREG §4 host roles, CC-183 r10). No val2017 image, id or annotation is ever on M2 (guard, W8).
+# No scoring here: preds go to the laptop, scored once by `a_t3.py score --tier 2` (PREREG §5-§6).
+# Outputs: /root/outputs/a_t3_t2 (own raw, ledger, EVENTS, SHA256SUMS); /root/outputs/a_t3 (tier 1) is never written.
+# Cap (PREREG §8): a_t3.py CAP_H tier2_m4 6 / tier2_m3 2 GPU-h inside CAP_GPU_H, on the tier-2 ledger only (`jobcfg`);
+# a timeout or an exhausted cap is a final CAP STOP. Host loss: before any restart the operator closes the open run
+# with one ledger row (PREREG §8, CC-184 F4).
+# Staged before (operator): $NCS_DATA/datasets/a_t3/{images,sets} from `a_t3.py stage --set D2` (after the D2 premise
+# held), $NCS_DATA/datasets/a_t3/a_t3_reg_t2.json from `a_t3.py register --set D2 --tier 2 --models <host models>`
+# (the tier-1 a_t3_reg.json stays as it is), and the m3-made val2017 sha list at $VALSHA.
+# Usage, inside tmux:   bash scripts/a_t3/a_t3_job.sh <expected 40-hex HEAD> 2
 set -euo pipefail
-EXPECT=${1:?usage: a_t3_job.sh <expected HEAD>}
+EXPECT=${1:?usage: a_t3_job.sh <expected HEAD> <tier>}
+T=${2:?usage: a_t3_job.sh <expected HEAD> <tier>}
 MID=$(cat /root/.vsps_machine_id 2>/dev/null || true)
-case "$MID" in m4) CAP=6 ;; m3) CAP=2 ;; *) echo "REFUSED: machine id is not m3/m4"; exit 1 ;; esac
+case "$MID" in m3|m4) ;; *) echo "REFUSED: machine id is not m3/m4"; exit 1 ;; esac
 [ -n "${TMUX:-}" ] || { echo "REFUSED: run inside a tmux session"; exit 1; }
 cd /root/vsps
 export NCS_DATA=/root/ncs-data HF_HUB_OFFLINE=1
 PY=/root/venv-lb/bin/python; X=scripts/a_t3/a_t3.py; P=scripts/pascal50s/p50.py; DEC=scripts/lb/decode_hf_vlm.py
-S=$NCS_DATA/datasets/a_t3; REG=$S/a_t3_reg.json; VALSHA=$NCS_DATA/a_t3_val2017_sha.json
+S=$NCS_DATA/datasets/a_t3; REG=$S/a_t3_reg_t$T.json; VALSHA=$NCS_DATA/a_t3_val2017_sha.json
 V17=manuscript/prereg/2026-10-30_a_t3/val2017_ids.txt
-O=/root/outputs/a_t3; RAW=$O/raw; LOG=$O/runs.log; L=$O/gpu_seconds_$MID.tsv; LOCK=$O/RUNNING; MARK=$O/CAP_STOP_$MID.json
+[ -s "$REG" ] || { echo "REFUSED: runtime registration $REG not staged"; exit 1; }
+CFG=$($PY $X jobcfg --tier "$T" --host "$MID" --reg "$REG") || { echo "REFUSED: jobcfg (tier $T, $REG)"; exit 1; }
+read -r O CAP <<< "$CFG"
+RAW=$O/raw; LOG=$O/runs.log; L=$O/gpu_seconds_$MID.tsv; LOCK=$O/RUNNING; MARK=$O/CAP_STOP_$MID.json
 mkdir -p "$O" "$RAW"; touch "$L"
 ts() { date -u +%FT%TZ; }
 say() { echo "$(ts) $*" | tee -a "$O/EVENTS"; }
@@ -44,7 +51,6 @@ $PY $X --selftest >> "$LOG" 2>&1 || stop "a_t3 selftest"
 $PY $X registry --check >> "$LOG" 2>&1 || stop "A registry differs from its sources"
 G() { $PY $X guard --head "$EXPECT" --val2017-ids "$V17" --valsha "$VALSHA" >> "$LOG" 2>&1 || stop "guard (W8)"; }
 G
-[ -s "$REG" ] || stop "runtime registration not staged"
 MODELS=$($PY $X models --host "$MID") || stop "model list"
 say "JOB START $MID head $EXPECT reg $(sha256sum < "$REG" | cut -c1-64) models [$MODELS] venv-lb $($PY -m pip freeze | sha256sum | cut -c1-64)"
 for M in $MODELS; do   # snapshots at the A-registry pins; gated models (aya) are never fetched here (no token in a job)
@@ -54,7 +60,7 @@ for M in $MODELS; do   # snapshots at the A-registry pins; gated models (aya) ar
   HF_HUB_OFFLINE=0 timeout 2h $PY $DEC --prereg "$REG" --fetch "$M" --snapshot "$W" >> "$LOG" 2>&1 || stop "fetch $M"
 done
 
-# ---------------------------------------------------------------- GPU: D1 decodes (decode_hf_vlm resumes by slice)
+# ---------------------------------------------------------------- GPU: D2 decodes (decode_hf_vlm resumes by slice)
 run() {
   local t; t=$($PY $X left --ledger "$L" --cap-h "$CAP") || stop "cap arithmetic"
   [ "$t" -gt 60 ] || cap_stop "$CAP GPU-h cap before $1"
@@ -69,7 +75,7 @@ run() {
 }
 for M in $MODELS; do   # A-registry order: internvl3_8b llava_ov_7b idefics3_8b gemma3_4b (m4); aya_vision_8b (m3)
   for Q in short_en detailed_en; do
-    R=at3t1_$M-$Q
+    R=at3t${T}_$M-$Q
     [ -s "$RAW/$R.preds.json" ] || run "$R" "$RAW" "$M"
   done
 done
