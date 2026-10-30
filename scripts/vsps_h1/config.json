@@ -1,0 +1,12 @@
+{
+ "_doc": "VSPS H1 pilot detector config. Fixed 2026-10-31 before Phase A. One change after the 5-image train plumbing smoke: OWLv2 0.20 -> 0.10 (the transformers OWLv2 example value; at 0.20 OWLv2 found no man in 3/3 images where GroundingDINO did). Any later change is a prereg amendment.",
+ "detectors": {
+  "gdino": {"repo": "IDEA-Research/grounding-dino-base", "revision": "12bdfa3120f3e7ec7b434d90674b3396eccf88eb",
+            "box_threshold": 0.35, "text_threshold": 0.25},
+  "owlv2": {"repo": "google/owlv2-base-patch16-ensemble", "revision": "cfd3195ba4ea9592eec887ded089f4c08eff231d",
+            "box_threshold": 0.10}
+ },
+ "max_boxes_per_prompt": 5,
+ "gdino_prompts_per_call": 8,
+ "env_pins": {"python": "3.12", "torch": "2.15.0", "transformers": "5.22.1", "pillow": "13.0.0"}
+}

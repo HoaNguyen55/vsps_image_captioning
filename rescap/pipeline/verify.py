@@ -287,6 +287,11 @@ class VerificationConfig:
     contradiction_detection: bool = True     # A4
     spatial_verification: bool = True        # A7
 
+    #: VSPS H1 (scripts/vsps_h1): boxes come from detector consensus, so an
+    #: entity without one was either not looked for (unmapped noun) or not agreed
+    #: on. False makes that absence ⊥ instead of a measured 0.0. Default keeps v1.
+    absent_bbox_is_evidence: bool = True
+
     thresholds: Thresholds = field(default_factory=Thresholds)
     weights: Weights = field(default_factory=Weights)
     calibration: SignalCalibration = field(default_factory=SignalCalibration)
@@ -371,6 +376,8 @@ class VerificationConfig:
             flags.append("A4")
         if not self.spatial_verification:
             flags.append("A7")
+        if not self.absent_bbox_is_evidence:
+            flags.append("H1-bbox")
         if self.per_type_thresholds:
             flags.append("per_type")
         return f"{self.decision_rule_version}+{'+'.join(flags)}"
@@ -984,6 +991,7 @@ def evidence_signals(
     geometric: GeometricCheck | None = None,
     acquiescent: bool = False,
     xanh_unresolved: bool = False,
+    absent_bbox_is_evidence: bool = True,
 ) -> list[EvidenceSignal]:
     """The inputs to E, each with its own reason string (formulation/09 §3.4)."""
     cal = calibration
@@ -1000,6 +1008,12 @@ def evidence_signals(
         )
     elif box is not None:
         signals.append(EvidenceSignal("bbox", 1.0))
+    elif not absent_bbox_is_evidence:
+        signals.append(
+            EvidenceSignal(
+                "bbox", None, unavailable="không có hộp từ đồng thuận detector (không tính là bằng chứng)"
+            )
+        )
     elif any(as_box(e.get("bbox")) is not None for e in entities):
         # Other entities in THIS image are grounded and this one is not — that
         # is a measured deficiency of this proposition.
@@ -2026,6 +2040,31 @@ def decide(
     return Verdict.UNCERTAIN, "unclear"
 
 
+def detector_vote(verdict: Verdict, branch: str, vote: str | None) -> tuple[Verdict, str]:
+    """VSPS H1 existence rule: the two-detector vote meets the verifier verdict.
+
+    Agreement keeps it; a detector SUPPORTED lifts UNCERTAIN and a disagreement
+    in either direction becomes UNCERTAIN. Detectors alone never REJECT: an
+    open-vocabulary miss on a translated prompt is not "the image says no", and
+    a REJECTED existence would cascade onto every dependent claim. Ceilings are
+    applied after this, so a promotion is still capped (gender, inference).
+
+    >>> detector_vote(Verdict.UNCERTAIN, "gate", "SUPPORTED")
+    (<Verdict.SUPPORTED: 'SUPPORTED'>, 'detector_support')
+    >>> detector_vote(Verdict.SUPPORTED, "support", "REFUTED")
+    (<Verdict.UNCERTAIN: 'UNCERTAIN'>, 'detector_dispute')
+    >>> detector_vote(Verdict.REJECTED, "no_support", "REFUTED")
+    (<Verdict.REJECTED: 'REJECTED'>, 'no_support')
+    """
+    if vote == "SUPPORTED" and verdict is not Verdict.SUPPORTED:
+        if verdict is Verdict.UNCERTAIN:
+            return Verdict.SUPPORTED, "detector_support"
+        return Verdict.UNCERTAIN, "detector_dispute"
+    if vote == "REFUTED" and verdict is Verdict.SUPPORTED:
+        return Verdict.UNCERTAIN, "detector_dispute"
+    return verdict, branch
+
+
 def apply_ceilings(verdict: Verdict, ceilings: Sequence[Ceiling]) -> Verdict:
     """Clamp a verdict down to the strictest ceiling. Never up.
 
@@ -2052,6 +2091,8 @@ _BRANCH_VI: dict[str, str] = {
     "no_support": "Không có bằng chứng hỗ trợ trong ảnh",
     "no_support_signal": "Không thu được tín hiệu hỗ trợ nào",
     "unclear": "Bằng chứng không rõ ràng",
+    "detector_support": "Hai detector cùng thấy đối tượng",
+    "detector_dispute": "Detector và mô hình kiểm chứng bất đồng",
 }
 
 _BRANCH_EN: dict[str, str] = {
@@ -2060,6 +2101,8 @@ _BRANCH_EN: dict[str, str] = {
     "no_support": "No supporting evidence in the image",
     "no_support_signal": "No support signal could be obtained",
     "unclear": "The evidence is inconclusive",
+    "detector_support": "Both detectors find the object",
+    "detector_dispute": "The detectors and the verifier disagree",
 }
 
 
@@ -2152,8 +2195,13 @@ def verify(
     propositions: Sequence[dict],
     config: VerificationConfig | None = None,
     colour_verifier: VLM | None = None,
+    entity_votes: dict[str, str] | None = None,
 ) -> tuple[list[VerificationResult], VerificationStats]:
     """Run M4 over one image document.
+
+    `entity_votes` (VSPS H1) maps entity id -> two-detector vote SUPPORTED /
+    REFUTED / UNCERTAIN; it changes existence verdicts only, via
+    `detector_vote`. None (the default) is the v1 rule, unchanged.
 
     Mutates each proposition in place — `verification`, `contradicts` and the
     `evidence.*` channels — and returns the richer results plus statistics.
@@ -2374,6 +2422,7 @@ def verify(
             geometric=geometry.get(pid),
             acquiescent=outcome.acquiescent,
             xanh_unresolved=xanh_unresolved,
+            absent_bbox_is_evidence=config.absent_bbox_is_evidence,
         )
         scores.e, limiting[pid] = aggregate_evidence(signals[pid])
         image_scores[pid] = scores
@@ -2506,6 +2555,8 @@ def verify(
 
         thresholds = config.thresholds_for(str(proposition.get("type")))
         verdict, branch = decide(scores, thresholds, constraint=constraint, cascade_from=cascade)
+        if entity_votes and str(proposition.get("type")) == "entity" and branch != "hard_constraint":
+            verdict, branch = detector_vote(verdict, branch, entity_votes.get(_subject_id(proposition) or ""))
 
         result = _build_result(
             proposition,
