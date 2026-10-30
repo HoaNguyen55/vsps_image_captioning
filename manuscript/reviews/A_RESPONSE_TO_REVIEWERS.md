@@ -192,3 +192,63 @@ Point-by-point reply to `A_META_REVIEW.md` (items 1–15). Every judgement here 
    - recount the "29 of 804 rows" in `declarations.md` and `anon/declarations_anon.md`, now that the manifest has grown.
    - `anon/declarations_anon.md` was edited in the PI-1029p pass: it gained the UIT-ViIC sentence, and its Section 11.2 reference became 9.2. It still lacks the new reproducibility sentence.
 5. PI admin, low priority: addresses and the reviewer link (item 3).
+
+## Round 3 (2026-10-30): ruling CC-181 text items, G0 (CC-182), plan T1–T6
+
+Everything here is AI writer work, not a judge ruling. Nothing was committed. Every file was sha256-snapshotted before the first edit. Manuscript, bib, manifest, trace and response files were re-checked against the last known sha immediately before each write (guarded editor; no conflict seen). Not guarded: the first edits to the two plan files, the two LOG appends and the `scrub_supp.py` outputs (regenerated deterministically).
+
+**W1 (plan).** `manuscript/directions/A_ALLOUT_PLAN_2026-10-30.md`: A CC-181 banner was added. A-T2 is struck everywhere it appears: the Vietnamese summary item 3, G1 row, ranked item 2, the M2 start note, the budget line, schedule rows 10-30 to 11-03, Q1 and Q8. §3.0 is struck and corrected: the "never scored" check had looked at `data/results` only, and the 1,519 images are C's test2500 (1,271) plus dev500 (248). Cosmetic: `~~` does not render across paragraphs, and the struck G1 row has fewer cells than its header.
+
+**W2 (ledger).** One OPS line was appended to LOG.md. It gives both partitions: 1,519 = 1,271 + 248 (resolved pool, from the chair's check) and 1,984 = 1,673 + 311 (OIV7-labelled pool, re-run by the writer on `data/xm3600/oiv7_labels.json`). It also gives 600 + 500 + 2,500 = 3,600 with pairwise overlap 0/0/0 (re-run) and cites CC-108 r2, CC-153 r4 and CC-160 l.80. Host-clock note: the line is stamped 01:35:35Z, which is before CC-181's nominal 01:40Z, so the host clock and the ruling stamp differ by a few minutes. The line was not edited.
+
+**W3 (sec7:38).** The sentence now reads: "The other 3,000 XM3600 images are the development (500) and one-look test (2,500) sets of a separate registered study and are not used here." A src comment names `data/xm3600_subset.txt`, `xm_dev500.files` and `xm_test2500.files`. There are three new manifest rows (counted). No other A file said "held out".
+
+**W6 (G0; CC-182).**
+- The G0 note and result arrived during this round: `data/results/a_g0/g0.json` (sha 23e12cbd), outcome B.
+- §6.4 (old §7.4) has a "Gold sizes (post hoc descriptive, no verdict)" paragraph. It carries the NOTE's pinned outcome-B sentence verbatim, filled with 1,787 / 2,162 / 0.83.
+- Per CC-182 W1, that paragraph also says outcome B already follows from X5 (1,782 vs 2 × 1,039.6), and it discloses 997 vs 1,000 images.
+- §8.1 (old §10.1) and §9.1 carry one clause each, using "consistent with" only.
+- Supplementary S7 holds the per-class table (Table S7.7) and the k-level sizes (Table S7.8).
+- There are 76 G0 manifest rows.
+- CC-182 integrity condition holds: S_voc 1,787 is in [1,782, 1,842], S_ref 2,162 ≥ 1,039.6, and the outcome is B.
+- P50-A4 stays FAIL in §1, Table 1, §6.4, the abstract and the cover letter. The abstract and the cover letter were not edited.
+- The "assumed, not measured" wording now reads "assumed at registration" wherever G0 measured the premise.
+
+**W7 (A-T1).**
+- Supplementary S7 has a new block with the registered clause-0 sentence verbatim: "the label rung was measured and was not twice as complete as one narrative on ADE20K training images".
+- It also gives the numbers 1,553 / 1,248, ratio 1.24 < 2, from `gold_D1.json` (sha e0248451, matching LOG l.809).
+- §6.4 has one sentence with the numbers, as PREREG §7.1 asks. It says the test was on a different dataset.
+- New bib entries, both Crossref-checked: `zhou2017scene` (ADE20K) and `ponttuset2020connecting` (Localized Narratives).
+
+**W8 (length and SPIC framing).**
+- Main text went from 12,488 to 8,992 words: sec1–sec11, HTML comments stripped, scratchpad `wc.py`.
+- Moved to the supplement (verbatim, with src comments):
+  - Table 2.1 and the detail sentences of §2 → S9;
+  - Table 6.2 → S10.1 (the same values are in Table S7.5);
+  - Table 6.3 and the whole of old §6.5 → S7.6;
+  - the full §6.3/§6.4 design, secondary and system-dependence paragraphs → S7;
+  - every other condensed paragraph (§1, §3–§5, §6.1–6.2, §7.4, §8, §9) → new S10.
+- The main text keeps condensed versions.
+- Every registered FAIL, NOT_EVALUABLE and not-testable result keeps its verdict word, estimate and interval in its own main-text section: A2, A5, A10, A14, A15, A18, A19, A21, A23, A24, A24c and X-G6, checked by script.
+- SPIC framing, wording only, no new citation: the opening paragraph and §8.4 now call object-hallucination scores reference-based quality measures of a visual description, whose reference is the gold.
+- Number check (scratchpad `numdiff.py`): no number left the main text without appearing in the supplement, apart from the deleted heading number "7.4". Every new number has a manifest row; the only new 4-digit token is the citation year 2017.
+- 8-gram/6-gram scan on all edited files: PASS, 0 hits.
+- `supplementary_SPIC.md` was regenerated with `scrub_supp.py` (rc 0).
+- CAS build to scratch: 21 pages, 0 overfull boxes, no placeholders.
+- One regression was found and fixed during the build: the "Nguyen et al., 2026a" tie-break in §6.2 needed its cite comment next to the mention.
+
+**W9 (citations).** Both papers were read in full text from open copies, with no e-mail in any request:
+- Spain & Perona (IJCV 2011): CaltechAUTHORS author manuscript, sha 661ab380. Sect. 3 defines importance as the probability that a viewer mentions the object first.
+- Berg et al. (CVPR 2012): author copy on umiacs.umd.edu, sha a6d1711d. Its abstract uses "what people describe as a proxy for importance".
+
+Both support the §2 and §4.1 claim, so both are kept, and their bib comments were updated. `intext_trace.tsv` gained 8 A rows: Spain and Berg ×2 (SUPPORTED), Feng and Misra (NOT_SAMPLED; abstract only), ADE20K and Localized Narratives. A rows went from 88 to 96: 36 SUPPORTED, 12 PARTLY, 43 NOT_SAMPLED, 5 CANNOT_CHECK.
+
+**W10.** SJR values and the 436-day figure are marked UNVERIFIED in the plan (§2 and banner) and in `V2_WRITING_PLAN_SPIC` l.383; the cover letter has neither. A LOG line records the target freeze 11-10 / submit 11-12 and the hard cap 18/12 (PI-1026ba), pending PI Q6.
+
+**T6.** The reproducibility sentence was copied verbatim into `anon/declarations_anon.md`. `declarations.md` "(Section 9.1)" was corrected to 9.2, where the PASCAL departures are. §6.4 had the same stale reference, and it is fixed too.
+
+**Not done / for the coordinator.**
+1. The "29 of 804 rows" count (declarations, anon declarations, cover letter) comes from the Zenodo builder selection (CP-099, "recount at build"). It was not recounted, because the deposit was not rebuilt.
+2. The abstract and the cover letter were not reframed for SPIC or extended with G0. They still state the P50-A4 FAIL.
+3. No SPIC quality-measure papers were added (T2 asked for 2–3 after reading). That would need full-text reads and trace rows.
+4. The moved blocks in S7, S9 and S10 keep their pre-revision section and table references and the pre-G0 "not measured" wording. A visible note at the head of each block says so. Supplementary S10 holds the pre-revision wording of condensed paragraphs. Some of it overlaps S7, and an editor may prefer it trimmed.
