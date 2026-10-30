@@ -1,0 +1,46 @@
+CC-185 (2026-10-30): C-T1 AMENDMENT_2. B3_lmcap_ri_ovb stopped at the XGLM load (c_t1.py:469, CVE-2025-32434 guard in transformers 4.57.6 on torch 2.5.1). Questions: (Q1) may a failed step be rerun from scratch under PREREG l.160 through this amendment; (Q2) is an added model.safetensors, unpinned in the registry and checked by operator sha, acceptable instead of a registry change (and the A-T3 cross-pin); (Q3) any comparability risk.
+Single judge, as CC-177/178/179/180 for C-T1 and L1-b run operations, and as AMENDMENT_2's header states (PI-1029o reversible tier; PI 10-28 small run steps = 1 judge). Bar: >= 90, reversible. The amendment touches dev data only, reads no test image and changes no decision rule, so it is not test-spending-adjacent, PROVIDED W3 holds (if W3 fails the bar becomes >= 92 and the relaunch comes back). No machine access, no pred, caption text or score opened. AI opinion.
+
+DECISION: GO-with-fixes. Option (a), AMENDMENT_2 as drafted, plus blocking fixes W1-W4 before the relaunch.
+CONFIDENCE: 93% (Q1 93, Q2 92, Q3 95)
+
+WHAT I CHECKED (laptop, myself)
+- AMENDMENT_2.md 1abc877c (untracked); prereg SHA256SUMS f90cac57 (modified, 6 entries): `sha256sum -c` OK on all 6 (PREREG f1d06278, registry 09e6f90a, f30k_lists eebcd95b, RESTORED_SHA256 48990bc7, AMENDMENT_1 84665ee1, AMENDMENT_2 1abc877c). scripts/c_t1/SHA256SUMS OK: c_t1.py 022af90e, c_t1_job.sh 86351ee1.
+- PREREG l.159-160: "No step is retried after a failure other than a resume of its own partial file." l.160 names machine id m4; CC-176 moved C-T1 to M1 (m3) and binds here.
+- Registry xglm_2_9b: rev 33c659ae, 7 files, pytorch_model.bin sha256 9aa29d66. No safetensors entry.
+- scripts/lb/decode_hf_vlm.py:85 check_snapshot only checks that each pinned file exists with its hash; an extra file passes. c_t1.py:425-426 calls it for xglm and mclip; c_t1.py:469 loads with no use_safetensors, so transformers prefers model.safetensors when present.
+- Proof files: verify_xglm_st.py 5d09e549, verify.json bc51943a (both match the amendment). verify.json: bin 772 keys, st 771, only_bin = lm_head.weight (tied), raw_mismatch [], dtypes float16 only, model_missing_bin_key [], model_mismatch [], model_keys_not_in_bin [], tied lm_head = bin embed, PASS. The script asserts both pins before comparing and compares the fp16 model state_dict to every bin tensor with torch.equal. I read the script: the check is sound.
+- Mirror of M1 ledger .session_backup/machines/M1/root/outputs/c_t1/gpu_seconds.tsv: sha 57c16f82, 34 lines, last two `B3_lmcap_ri_ovb start 1793329039` / `B3_lmcap_ri_ovb 45` (matches §3). Mirrored logs/B3_lmcap_ri_ovb.log ends in the CVE ValueError from check_torch_load_is_safe. S_lmcap.done exists (smoke failure is non-fatal, c_t1_job.sh:81), so S_lmcap is skipped on relaunch.
+- c_t1_job.sh gpu(): a rerun appends a second `B3_lmcap_ri_ovb start` + close line; b1.used_seconds sums every closed line, so the cap counts both attempts (45 s + rerun). Correct.
+- a_t3.py:74-75 pins c_t1_registry.json at 09e6f90a, so a registry edit now would break A-T3's committed code (dbb74f4/9eb4197).
+- `git diff --name-only a03d3d2..HEAD` (HEAD 9eb4197), excluding journal_draft and .session_backup: only A-G0/A-T3 files (scripts/a_g0, scripts/a_t3, prereg 2026-10-30_a_g0 and _a_t3, A directions/review files, data/results/a_g0). Nothing under scripts/c_t1, scripts/lb, scripts/c_stage1, c_stage2, c_en, b1_scaling, scripts/build_memory or the C-T1 prereg dir; c_t1.py imports only from those (c_t1.py:37-41).
+- Job guard (c_t1_job.sh:55) scans $DS, $NCS_DATA/models, $NCS_DATA/vncorenlp, $O and the HF hub. /root/a_t3_m3 (A-T3 val2017 images, on M1 since 03:08Z per OPS-1030at3b/c) is outside those roots, but it arrived after the C-T1 N5 inventory (23:50Z) and must be confirmed on the host (W3).
+
+RULINGS
+r1. Q1, the rerun. PREREG l.160 alone does not allow it: CC-177 (§5.5) and CC-180 r3 (l.159) were resumes the prereg itself allows. This rerun is allowed by AMENDMENT_2, as a single, outcome-blind exception. The rule's purpose is to stop retries chosen after seeing output. Here the step wrote no output, nothing was opened, the failure is deterministic and environmental (the .bin path can never load under this torch), it happened before any generation, and the LMCap spec (PREREG §4) is unchanged. Scope: exactly one from-scratch run of B3_lmcap_ri_ovb, and first runs of the B3 se/carve steps on the same file. It sets no precedent for rerunning any step that wrote output or whose output was seen. Any further failure is a JOB STOP back to the judge (§4 step 6). 93%.
+r2. Q2, ranked:
+    (a) safetensors from refs/pr/2 (e16cf021, sha 9e292657) beside the 7 untouched pinned files, operator sha before and after, disclosed: 92%. The tensor proof makes the weights the pinned ones; the 444 mode plus the two sha checks bound the custody gap; success itself proves the .bin was not used (it always raises).
+    (e) registry pin now + move A-T3's cross-pin in a_t3.py: 35%. Edits A's committed frozen code for C's benefit, and changes the c_t1 inputs the B0-B2 preds were recorded under.
+    (b) local .bin to safetensors conversion: 30%. Same proof, not fetchable by others.
+    (f) skip B3 (LMCap NOT RUN) and continue B4-B7: 20%. Drops the only published training-free multilingual retrieval baseline (PREREG l.94, "high"); also needs an amendment.
+    (c) torch >= 2.6 in venv-t1: 10%. Changes T1_FREEZE and the stack under M-CLIP mid-run.
+    defer: 10%. M1 GPU idle, nothing gained.
+    (d) transformers safety bypass: 5%. Refused while (a) exists.
+    (g) do nothing: 5%. C-T1 ends at B2; B3-B7 never run (most of C-EN evidence, as CC-179 opt c).
+r3. The amendment §6 post-run plan "pin the file in the registry (with A-T3's pin moved in the same commit)" is NOT pre-approved. Moving A-T3's pin means editing a_t3.py, which the same amendment refuses for c_t1.py for the same reason. Any later pin goes in a sidecar/addendum file that leaves 09e6f90a and a_t3.py untouched, and needs its own ruling.
+r4. Q3, comparability. No tensor-level risk: same fp16 tensors, same dtype path (the .bin was already fp16, torch_dtype=float16). The first fp16 CUDA generate and M-CLIP re-rank carry crash risk only; §4 step 6 turns a crash into a STOP. No output sanity check may be added now (it would be a rule written during the run). All LMCap rows (ri/se x ovb/carve) use the same file, so they stay comparable to each other.
+r5. The run now spans two HEADs: B0-B2, the smoke steps and the 45 s attempt ran at a03d3d2; the rest runs at the new HEAD. c_t1.py, the job and every imported module are byte-identical across both (checked above), so code_at_start.sha256 is unchanged. Disclose it in the run record.
+r6. N9 / CC-179 r4: the LMCap rate substitute is the rerun's own closing ledger line for B3_lmcap_ri_ovb (the last such line), never the 45 s line and never their sum. The cap arithmetic (sum of all closed lines) is unaffected.
+
+REQUIRED FIXES (W1-W4 blocking before launch; operator, logged with shas/names only)
+W1. Add to §4 step 2 (S2): `$NCS_DATA/datasets/c_t1_mem/coco_captions.json` must be 9c830e22 (the CC-179 flat store). B3 carve, B4 and B6 carve run for the first time and would die on the wrapper (CC-179). If not 9c830e22: stop and ask.
+W2. After the gatekeeper commit and before the bundle: `git diff --name-only a03d3d2..<new HEAD>` in full must list only AMENDMENT_2.md, the C-T1 prereg SHA256SUMS and paths outside scripts/c_t1, scripts/lb, scripts/c_stage1, scripts/c_stage2, scripts/c_en, scripts/b1_scaling, scripts/build_memory*, scripts/kit_b and manuscript/prereg/2026-10-30_c_t1. Log the list's sha. Any hit: stop and ask.
+W3. Because /root/a_t3_m3/val2017 (A-T3 test images) arrived on M1 after the C-T1 launch checks: before S4, re-run the guard dry run (same roots as c_t1_job.sh:55) and the N5 inventory, and log that /root/a_t3_m3 is under none of the guard roots, none of the c_t1 command-line paths and not under $NCS_DATA. If it is: stop; the relaunch becomes test-adjacent and comes back (bar >= 92). Do not move or read those images.
+W4. Text fixes to AMENDMENT_2 before the commit (then regenerate SUMS): (i) §4 cite CC-176 for running on M1 (m3) and CC-185 r1 for the scope of the exception; (ii) §6 replace the "pin ... with A-T3's pin moved" sentence by r3; (iii) §6 add the two-HEAD disclosure (r5) and the N9 line (r6); (iv) header "Judge: CC-185 GO-with-fixes".
+N1 (not blocking). The proof ran fp32 generate on CPU only; record the rerun's peak GPU memory in the OPS line if the job logs it.
+N2 (not blocking). After C-T1, add an S_lmcap that reaches the generator (as §6 says), with CC-178 N1.
+
+APPROVED STEPS: AMENDMENT_2 §4 steps 1-8 as written, with W1 added to step 2, W2 between steps 1 and 2, W3 before step 3, and W4 applied before step 1. Gatekeeper commit = exactly AMENDMENT_2.md + manuscript/prereg/2026-10-30_c_t1/SHA256SUMS (+ this CC-185.txt if the gatekeeper includes rulings, as in OPS-1030n), no AI attribution, no host/IP/port.
+
+FOR THE PI
+Nothing needs a PI decision. FYI: C-T1 stopped at the LMCap baseline because of a library security check, not a result. The fix loads the same weights from another file format (proved bit-identical) and reruns that one step once, disclosed. Lost: 45 GPU-seconds. A's files are not touched.
