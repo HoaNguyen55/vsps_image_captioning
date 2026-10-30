@@ -1,0 +1,1 @@
+Cost-only amendment (PREREG §8 l.145), Branch K1+K6 = manuscript/prereg/2026-10-30_mt4_k1k6/DEV_RULE.md §8, sha256 685e4dd617df53236a1b5b2e5ccd24a43f04eaa7bc4c3096351a029cf401807e; one-judge read CC-189.

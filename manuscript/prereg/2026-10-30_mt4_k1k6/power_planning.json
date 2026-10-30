@@ -1,0 +1,65 @@
+{
+ "label": "PLANNING ONLY: existing val-924 dev decodes, Qwen2.5-VL SFT pair, not K1 and not a rule input",
+ "inputs_sha256": {
+  "uitviic_p1_s42-short.preds.json": "47f3e0ba08c2209023d2c7435518922e2087bf805c92c4640de61abae45f0567",
+  "uitviic_fuse2_s42-short.preds.json": "6120c566536dd2cc15aacc71717ecb88b6ecdd81de82770396ab7c2f46e8dcc8"
+ },
+ "n": 924,
+ "observed": {
+  "dF1": 5.669,
+  "dP": -0.169,
+  "sd_per_image_F1": 14.923,
+  "sd_per_image_P": 7.624
+ },
+ "P_HB1_two_level_bootstrap_at_observed_effect_n2_924": 0.9855,
+ "by_n2": {
+  "924": {
+   "P_HB1_frechet_lower_by_t2_point_dF1": {
+    "+2.5": 0.8069,
+    "+3.0": 0.9525,
+    "+4.0": 0.9849,
+    "+5.0": 0.985,
+    "+8.0": 0.985,
+    "+12.0": 0.985,
+    "+16.0": 0.985
+   },
+   "dF1_needed_for_P98": 3.11
+  },
+  "1500": {
+   "P_HB1_frechet_lower_by_t2_point_dF1": {
+    "+2.5": 0.8632,
+    "+3.0": 0.9827,
+    "+4.0": 0.9956,
+    "+5.0": 0.9956,
+    "+8.0": 0.9956,
+    "+12.0": 0.9956,
+    "+16.0": 0.9956
+   },
+   "dF1_needed_for_P98": 2.92
+  },
+  "2000": {
+   "P_HB1_frechet_lower_by_t2_point_dF1": {
+    "+2.5": 0.8896,
+    "+3.0": 0.9914,
+    "+4.0": 0.9982,
+    "+5.0": 0.9982,
+    "+8.0": 0.9982,
+    "+12.0": 0.9982,
+    "+16.0": 0.9982
+   },
+   "dF1_needed_for_P98": 2.83
+  },
+  "3000": {
+   "P_HB1_frechet_lower_by_t2_point_dF1": {
+    "+2.5": 0.9193,
+    "+3.0": 0.997,
+    "+4.0": 0.9995,
+    "+5.0": 0.9995,
+    "+8.0": 0.9995,
+    "+12.0": 0.9995,
+    "+16.0": 0.9995
+   },
+   "dF1_needed_for_P98": 2.73
+  }
+ }
+}

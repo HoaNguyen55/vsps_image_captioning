@@ -1,0 +1,128 @@
+CC-188: The 2027 plan under PI-1030g. The PI prefers a Q1 in 2027 and rejects CC-186's "move to 2028". Targets: one Q1 journal paper SUBMITTED by 06/2027; plus 2 papers in reputable Q2-Q4 journals or conferences submitted between 01/2027 and 12/2027. Paper A (SPIC, Q2) stays submitted by 12/2026, with all-out focus until then. The questions were: (1) pick the Q1-by-06/2027 vehicle; (2) are B+D (LRE) and C (TALLIP) the right two 2027 Q2-Q4 papers; (3) a month-by-month schedule 11/2026-12/2027 that does not starve A; (4) the preregs, rulings and first GPU job the Q1 vehicle needs. Three-judge panel (J1 rigor, J2 path, J3 adversary) with a chair tally. Tiers (PI-1029o): the Q1 vehicle (main direction) and any test-set assignment are IRREVERSIBLE and need >= 92 (band 92-98). The schedule, the gate rule, the plan-file wording, the MT4 relabel and the queue are REVERSIBLE and need >= 90.
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: NOT ACTIONABLE as a panel commit at either tier (3/3 on the substance).
+- Irreversible: no Q1 vehicle and no test-set assignment is chosen today. Nothing reaches 92. The choice goes to a dated gate panel (+Codex, >= 92) around 2027-01-08 to 01-12, with the criteria written now (r2).
+- Reversible: GO-with-fixes in substance (3/3) on this plan:
+  - the Q1 vehicle is picked at the gate: L2-P1 (TOMM) if L2-a passes, else L1 diagnosis-only (IP&M VSI MMLowRes) if its rubric fit is >= 8, else no Q1 submission in 06/2027 and the PI is told (order 2/3, J2 dissenting);
+  - MT4 K1+K6 is NOT a Q1 vehicle; it becomes a 2027 Q2 journal paper (about 07/2027), pending the PI (Q3);
+  - B+D (LRE) and C (TALLIP) are the two 2027 Q2 papers, both submitted on or after 2027-01-01;
+  - conferences are extras only, after a salami ruling.
+  Panel confidence is 89, one point under the 90 bar, so the plan goes to the PI as the default (Q1-Q4).
+- One blocking fix binds now because it is a rule matter, not a direction (3/3, verified by the chair): MT4's T2-2000 collides with 397 A-T3 ids. T2 must be re-carved before the MT4 DEV_RULE commit (W1). This protects Paper A.
+- Parts already bind under earlier rulings: A first through 12/2026 (PI-1030b/c, CC-186 r10); no L1/L2 GPU work and no L1 CPU feasibility work before A is submitted (CC-186 r9); no K1/K6 GPU step before the gatekeeper commits DEV_RULE.md, the cost amendment and W25K1 (CC-175r2); the test-set ledger is unchanged (CC-186 r6).
+
+CONFIDENCE: 89% (mean of J1 89, J2 87, J3 90; all three are in the majority on the shape). Steps that would raise it:
+- Reversible plan to >= 90:
+  (i) The PI answers Q1-Q4 (the submission-not-acceptance reading, the gate, the MT4 relabel, the 2027 pair).
+  (ii) W1 is done: T2 re-carved, overlap 0 against every id list under manuscript/prereg/, then the gatekeeper commits DEV_RULE.md, the cost amendment and W25K1.
+  (iii) W6 is done: TOMM and IP&M SJR CS quartiles and the IP&M VSI 333393 deadline and scope checked on primary pages.
+  (iv) One GPU-h ledger at capped figures is reconciled against PI-1030b (W5).
+- Irreversible Q1 vehicle to >= 92: not reachable before the gate. It needs (a) the L2-a result under a committed L2-a prereg, (b) rubric re-scores of L2-P1 and L1 diagnosis-only at fit >= 8, (c) L1 test-gold access and licence verified, (d) the 2027 GPU money decided (PI Q5). All of (a)-(c) run only after A is submitted.
+
+## Panel votes (final round)
+| Judge | Final decision | Conf | Q1 vehicle today | Gate order | Gate date | MT4 K1+K6 | 2027 Q2 pair | T2 re-carve |
+|---|---|---|---|---|---|---|---|---|
+| J1 rigor | GO-with-fixes reversible; irreversible not actionable | 89 | none reaches 92 | L2-P1, then L1, then none | ~01-12 | Q2 ~07/2027 (changed from Q1 primary) | B+D LRE, C TALLIP (93) | blocking (raised it) |
+| J2 path | Same | 87 | none reaches 92 (86) | L1, then L2-P1, then none | 01-08 | Q2 ~07/2027 | same (91) | blocking (adopted) |
+| J3 adversary | Same | 90 | none reaches 92 | L2-P1, then L1, then none | ~01-12 | Q2 ~07/2027 | same | blocking (adopted) |
+
+Agreement:
+- 3/3: no irreversible pick today; MT4 not Q1; B+D (LRE) and C (TALLIP) as the 2027 pair; W1 T2 re-carve; MT4 at 92.6 h capped; P(Q1 accepted in 2027) about 5-10%; CC-186 r9 stands.
+- 2/3 (J2 dissenting): gate order L2-P1 first, L1 second; gate date around 01-12.
+Votes changed in the exchange, all on evidence:
+- J1 withdrew MT4 as the primary Q1, on CC174_PREP l.46-50 (fit 6 at the VSI, 5 at NEUCOM) and PREREG_DRAFT l.29 ("Q2/2028 floor, not a 2027 Q1 bet").
+- J2 withdrew its partial overrule of CC-186 r9 (pre-A L1 CPU checks), because r9 rests on PI-1030b/c, and moved the gate from 12-20 to 01-08.
+- J2 and J3 adopted J1's T2 collision after re-intersecting the id files.
+- J2 corrected the MT4 cost from 76.5 h to 92.6 h capped.
+
+## Ranked options (panel estimates; reversible unless marked)
+1. G1 (RECOMMENDED): a Q1 gate panel around 2027-01-08 to 01-12, panel + Codex at >= 92, criteria fixed now. First L2-P1 to TOMM if L2-a passes and its rubric fit is >= 8; else L1 diagnosis-only to the IP&M VSI MMLowRes if its rubric fit is >= 8; else no Q1 submission in 06/2027, PI told. Panel 89 (J1 90, J2 87 on its own L1-first ordering, J3 90). REVERSIBLE until a test set is assigned; below 90, so it goes to the PI as the default. P(an admissible Q1 submitted by 06/2027) about 55-65%.
+2. L1 diagnosis-only as the conditional lead (J2's ordering). Cheapest (about 20-30 GPU-h, inside the funded top-up); ViTextVQA test and MTVQA test are owned by L1 and unspent (CC-186 r6). But L1-a is PROCEED, not RAISE, Qwen-family only; the fit of 8 (CC174_PREP l.40) included the closed fix leg, so it is about 7 until re-scored; the VSI deadline 2027-08-31 is from mailing lists only; Vietnamese fit for an indigenous/endangered-language CFP is unproven. As the lead: J2 86, J1 about 50, J3 45-50. Kept as G1's second branch. P(accepted in 2027) about 5-10%.
+3. L2-P1 committed as the Q1 vehicle now: NO (about 65). IRREVERSIBLE. No L2-a prereg exists and L2-a has not run; OIV7 val is released only after L2-a passes (PI-1029h Q4); full OIV7 val (PI-1026v) costs 105-225 GPU-h, unfunded. Fit 9 is a scout score [s]. It is G1's first branch. P(accepted in 2027) about 2-4%.
+4. MT4 K1+K6 as the 06/2027 Q1: NO (85-88 for the rejection, 3/3). Fit 6 at the VSI (5 if 05/2028 holds) and 5 at NEUCOM (CC174_PREP l.42-50); its own draft calls it the "Q2/2028 floor, not a 2027 Q1 bet" (PREREG_DRAFT l.29) and "not a method claim". KV-4,224 is committed and unspent, but a fresh test does not lift fit. YES as a 2027 Q2 journal paper about 07/2027 (about 88), which overrules PI-1029h Q3's 05/2028 date and needs the PI (Q3). Cost 92.6 GPU-h capped (76.5 projected; PREREG_DRAFT l.254, l.265).
+5. Upgrade B+D or C to a Q1: NO (93). LRE is Q2 in CS Applications (Q1 only in Linguistics and LIS; CC-186 W3). C is held at TALLIP (PI-1029p(5)); C at IJMIR/NEUCOM is disputed at fit 7-8.
+6. A new branch-map direction (remote sensing, social-media retrieval): NO (92). No Vietnamese gold, no assets, no prereg; the social-media branch (SOCRET) would salami C.
+7. Conferences in place of B or C (ICMR 2027 deadline 01-31, ACL ARR 01-04, IJCAI 01-11): NO. Each needs December writing that competes with A's all-out period, conferences carry no SJR quartile, and ICMR would salami C. A CF1 kit at KSE/RIVF/SoICT/MAPR 2027 (Scopus proceedings) is allowed only as an extra paper, after a journal rejection or with spare capacity, and only after a salami ruling.
+8. IEEE Access as a fast Q1 below fit 8: NO (CC-186 Q2).
+9. Move Paper A to a Q1 venue: NO. Conflicts with PI-1030c (SPIC).
+10. Defer or do nothing: REJECT. The PI has set the target.
+
+Honest odds (3/3): P(Q1 ACCEPTED in 2027 | submitted 06/2027) about 5-10%, given Q1 review times of several months plus a revision round. The PI's target is the submission; acceptance is most likely in 2028.
+
+## What was checked
+- The chair re-intersected the id files:
+  - manuscript/prereg/2026-10-30_mt4_k1k6/t2_ids.txt has 2,000 ids;
+  - overlap with manuscript/prereg/2026-10-30_a_t3/val2017_ids.txt = 257;
+  - overlap with a_t3_lists.json sets: D1 68, D2 69, smoke 3 (D1/D2/smoke are disjoint from val2017 within T2);
+  - distinct collision = 397 ids.
+  - A-T3 is committed (dbb74f4, 6808556); A PREREG l.78-83 excludes "any id decoded by any study". MT4 PREREG_DRAFT l.55 claims T2 "has never been decoded or scored by any group model". Both cannot hold once D1/D2 are decoded.
+  - `git status` shows manuscript/prereg/2026-10-30_mt4_k1k6/ as untracked (??), and no T2 output exists, so a blind re-carve is still possible.
+- MT4 PREREG_DRAFT l.29: "Q2/2028 floor, not a 2027 Q1 bet"; l.254: 76.5 h projected, 92.6 h capped; l.265: total 92.6.
+- CC174_PREP l.40: L1 at the IP&M VSI scored 8, the only venue at 8, with the fix leg; l.42-50: MT4-as-K1+K6 = 6 at the VSI (5 if 05/2028), 5 at NEUCOM, "The K2-era fit of 8 does not transfer."
+- L1-b decide.json re-hashed: sha256 prefix 85c534f6 (NO_VERDICT; CC-186).
+- CC-186 r6 (test ledger), r7 (MT4 floor, M1 order), r9 (no L1/L2 work before A is submitted), r10 (A dates); CC-175r2 (MT4 commit gate); CC-181 (M2 queue).
+- LOG.md: PI-1030g entry (~17:40 VN 10-30) and PI-1030f (dedup policy: full near-dup only for TEST sets).
+- Not checked by the chair: the venue quartiles and the VSI page live (W6); the branch-map JSONs beyond the judges' reports.
+
+## Rulings
+r1. PI-1030g is read as: a Q1 journal SUBMISSION by 06/2027 (not an acceptance), plus two papers in reputable Q2-Q4 venues submitted 01-12/2027, plus A at SPIC by 12/2026. CC-186 Q1's "move to 2028" is answered NO by the PI. Every plan file states P(Q1 accepted in 2027) about 5-10% next to the submission target (3/3).
+r2. No irreversible Q1-vehicle choice and no test-set assignment today. The gate rule is written now (G1): L2-P1 at TOMM if L2-a passes and its rubric fit is >= 8; else L1 diagnosis-only at the IP&M VSI if its rubric fit is >= 8 and its test-gold access and licence are verified; else no Q1 submission in 06/2027 and the PI is told. Gate panel around 2027-01-08 to 01-12, + Codex, >= 92. Kill switch 02-15: if the chosen vehicle has no committed tier-3 prereg path by then, fall back to the next branch (2/3 on the order, J2 dissenting).
+r3. MT4 K1+K6 is not a Q1 vehicle (3/3). It is relabelled a 2027 Q2 journal paper, target about 07/2027, with the PREREG l.106 "strong baseline, not a method claim" framing kept. This overrules PI-1029h Q3's 05/2028 date and so needs the PI (Q3).
+r4. W1 is BLOCKING for MT4 (3/3): T2-2000 is re-carved before the DEV_RULE commit. The collision is logged as found before any T2 output existed.
+r5. The 2027 Q2 pair is B+D (LRE) and C (TALLIP) (3/3; J1 93, J2 91). B+D submitted 2027-01-05 to 01-25; C submitted in 02/2027. Both on or after 2027-01-01 so they count in the PI's window and do not compete with A in December. The B freeze stays 11-30 as a text freeze.
+r6. Conferences do not replace B or C. A Scopus regional or CORE-B conference (KSE, RIVF, SoICT, MAPR 2027) is an optional extra only after a journal rejection or with spare capacity, and only after a salami ruling. No ICMR, ARR or IJCAI paper for 01/2027.
+r7. CC-186 r9 stands (3/3, J2's overrule withdrawn): no L1 or L2 GPU work and no L1 CPU feasibility work before A is submitted. After A is submitted (<= 12-15): L1 CPU checks, the L1 and L2-P1 rubric re-scores, the L2-a prereg and L2-a (<= 15 GPU-h, dev only), all by the gate date.
+r8. M1 order is unchanged from CC-186 r7: C-T1, then the A-T3 M1 cells, then MT4 K1+K6 tier 1 only after W1 and the CC-175r2 commit; any A job preempts it. M2 lapses 11-02 unless A needs it (CC-186 r8).
+r9. The test-set ledger is unchanged (CC-186 r6): KV-4,224 stays with MT4; ViTextVQA test and MTVQA test stay unspent with L1; OIV7 val is released only after L2-a passes. Any assignment to the Q1 vehicle is the gate's irreversible step, at >= 92.
+r10. Budget: GPU-h are counted at capped figures (W5). The 2027 Q1 work does not fit in the PI-1030b top-up if L2-P1 wins; the shortfall goes to the PI by 12-15 (Q5).
+
+## Schedule (reversible; default pending PI Q1-Q4)
+- 11/2026: A text every day first. M1: C-T1, then A-T3 M1 cells (tier 2 by 11-05, tier 3 by 11-07), then W1 + CC-175r2 commit, then MT4 tier 1 (preemptible by A). M2 lapses 11-02. A review-draft snapshot 11-10. B text freeze 11-30.
+- 12/2026: A final freeze <= 12-05, submitted <= 12-15 (hard cap 12-18). After A: L1 CPU checks, L1 and L2-P1 rubric re-scores, L2-a prereg committed, L2-a run (<= 15 GPU-h, dev), MT4 AMENDMENT_2 panel (>= 92) before tier 2. GPU money flagged to PI by 12-15.
+- 01/2027: Q1 gate panel 01-08 to 01-12 (>= 92, +Codex). B+D to LRE 01-05 to 01-25. Q1 vehicle tier 1 (dev) on M1 or the own PC.
+- 02/2027: C to TALLIP. Q1 vehicle tier-2 rehearsal; tier-3 prereg committed by 02-28. Kill switch 02-15.
+- 03-04/2027: Q1 full runs and the one official test look (three-tier rule: rehearsal P(PASS) >= 98% or no test look).
+- 05-06/2027: Q1 writing; submitted by 06-30.
+- 07/2027: MT4 K1+K6 to a Q2 journal (after its own tier-3 prereg and one look on KV-4,224).
+- H2 2027: revisions for A, B+D, C and the Q1; an optional conference extra only per r6.
+
+## Required fixes (union of the majority, deduplicated)
+W1. BLOCKING, before the MT4 DEV_RULE commit: re-carve T2-2000 with the same salt (mt4_k1k6_t2_2026-10-30), excluding every A-T3 id: all of val2017_ids.txt, D1, D2, smoke, the W2 drops (a_t3_w2_dev_drops.json) and any later A-T3 list. Collision verified at 397 distinct ids (257 + 68 + 69 + 3). Update the PREREG_DRAFT §1 counts and claims (l.50-55), the t2_ids sha and k1k6_lists.json. Re-verify overlap 0 against every id list under manuscript/prereg/. Log the collision as found before any T2 output existed.
+W2. No irreversible Q1-vehicle or test-set assignment today. Write the gate rule (r2) into the plan files now, with the kill switch and the PORTFOLIO l.71 demote rule; hold the gate panel 2027-01-08 to 01-12, + Codex, >= 92.
+W3. Draft and commit an L2-a prereg before any L2 GPU step: a 0-GPU matcher-parity step first, dev sets only, <= 15 GPU-h, kill and demote rules. It runs no earlier than A's submission (CC-186 r9).
+W4. Relabel MT4 K1+K6 as a 2027 Q2 paper (pending PI Q3) and keep the PREREG l.106 framing. After W1, the gatekeeper commits DEV_RULE.md, the cost amendment and W25K1 (CC-175r2) before any K1/K6 GPU step. The kv4224.txt writer is judged before KV staging; AMENDMENT_2 goes to a panel at >= 92 before tier 2. A preempts.
+W5. One GPU-h ledger at capped figures against PI-1030b: MT4 92.6 h, L2-a <= 15 h, L2-P1 105-225 h (conditional), L1 about 20-30 h, plus B/C leftovers. Show the 2027 shortfall and flag it to the PI by 12-15; get the M1 rental end date.
+W6. Re-score L1 diagnosis-only (no fix leg) and L2-P1 with the CC174_PREP rubric; admissible only at fit >= 8. Verify live on primary pages: TOMM and IP&M SJR CS quartiles; the IP&M VSI 333393 deadline (2027-08-31) and scope (Vietnamese fit). Re-check at submission. After A is submitted, the L1 CPU checks: ViTextVQA test-gold access and licence, MTVQA-vi test count, ViPhoVQA read, non-Qwen backbone availability.
+W7. Date B+D (LRE, 01-05 to 01-25-2027) and C (TALLIP, 02/2027) on or after 2027-01-01, with no December writing that competes with A. B text freeze stays 11-30.
+W8. Plan-file wording: L1-a = PROCEED (not RAISE), Qwen-family scope; the fix leg is closed; P(Q1 accepted in 2027) about 5-10% next to every submission target. No 2027 conference paper without a salami ruling.
+
+## For the PI (each with recommendation and default)
+Q1. Is the 2027 Q1 target a SUBMISSION by 06/2027, with acceptance most likely in 2028 (P(accepted in 2027) about 5-10%)?
+- Recommended: YES.
+- Default: YES.
+Q2. Approve the gate, ruled around 2027-01-08 to 01-12 (>= 92): L2-P1 to TOMM if L2-a passes, else L1 diagnosis-only to the IP&M VSI if fit >= 8, else no Q1 in 06/2027?
+- Recommended: YES, in this order (J2 would put L1 first; see Dissents).
+- Default: YES.
+Q3. Make MT4 K1+K6 a 2027 Q2 journal paper (about 07/2027), not a Q1, overruling PI-1029h Q3's 05/2028? Tier 1 runs on M1 after the T2 re-carve, preemptible by A.
+- Recommended: YES.
+- Default: YES.
+Q4. Keep B+D (LRE, 01/2027) and C (TALLIP, 02/2027) as the two 2027 Q2-Q4 papers? Do conference papers count toward the pair, given that conferences have no SJR quartile?
+- Recommended: YES to the pair; conferences do NOT count toward it and are optional extras after a salami ruling.
+- Default: as recommended.
+Q5. 2027 GPU money: build the own RTX 3090 PC (PI-1029i) by 01/2027, or a top-up of about 1-2M VND (L2-P1 alone needs 105-225 h)? And when does the M1 rental end?
+- Recommended: own PC by 01/2027 plus one rental Feb-Apr 2027 for the full runs; keep M1 through 12-31 for A-T3 and MT4 tier 1.
+- Default: one rental Feb-Apr 2027; extend M1 if it ends before A-T3 finishes.
+Q6. Allow <= 1 day of L1 CPU-only checks (gold access, licence, VSI scope) between 12-01 and 12-15, by a non-A agent, before A is submitted? This would narrowly overrule CC-186 r9.
+- Recommended: NO; do them right after A is submitted, the gate date leaves time.
+- Default: NO.
+
+## Dissents
+- Gate order and date: J2 puts L1 diagnosis-only first and gates on 01-08. Reason: L1 is the cheapest route (about 30 GPU-h, funded) and its tests are owned and unspent, while L2-P1 needs 105-225 unfunded hours. J1 and J3 put L2-P1 first: L1-a is PROCEED not RAISE, the fix leg that earned fit 8 is closed, the VSI deadline is unverified, and Vietnamese fit for the CFP is unproven. Majority: L2-P1 first, around 01-12; the chair's window 01-08 to 01-12 covers both dates. In practice the gate applies fit >= 8 to both, so the order matters only if both pass.
+- Pre-A L1 CPU checks: J2's first-round partial overrule of CC-186 r9 was withdrawn by J2; J3 lists it as PI Q6 with default NO.
+- Confidence spread: 89 / 87 / 90. Only J3 is at the reversible bar.
+- Superseded first-round positions, withdrawn on evidence:
+  - J1: MT4 K1+K6 as the primary Q1 (refuted by CC174_PREP l.46-50 and PREREG_DRAFT l.29);
+  - J2: pre-A L1 CPU checks and a 12-20 gate (CC-186 r9, PI-1030b/c);
+  - J2: MT4 cost 76.5 h (capped figure is 92.6 h).

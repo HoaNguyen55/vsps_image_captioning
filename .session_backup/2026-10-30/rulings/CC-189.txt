@@ -1,0 +1,149 @@
+CC-189 (2026-10-30T12:09Z): MT4 Branch K1+K6. (1) Is the CC-188 W1 T2 re-carve correct? (2) Is the package ready for the gatekeeper commit under CC-175r2 and CC-188 W4? (3) The M1 order: C-T1, then the A-T3 Aya cells, then K1+K6 tier 1, with A preempting.
+Judge mode: single judge. This follows CC-175 and CC-187 (single judge, reversible). MT4 PREREG §8 l.145 prescribes "a one-judge diff read" for the cost amendment. No panel workflow was run.
+Tiers (PI-1029o): the DEV_RULE commit, the T2 carve, the cost amendment, the relabel and the machine order are REVERSIBLE (bar 90). Any test-set assignment and AMENDMENT_2 are IRREVERSIBLE (bar 92) and are NOT licensed here (see r2).
+
+Everything below is AI opinion, not expert-validated.
+
+DECISION: GO-with-fixes, TIER 1 ONLY. The re-carve is correct. The package is NOT yet committable: W1-W5 are blocking for the commit. Tier 1 additionally waits for W6 (the W25-K1 run) and for the GATES fields. The M1 order is confirmed with the conditions in r6.
+CONFIDENCE: 90% (the minimum of the item confidences: r1 96, r2 95, r3 91, r4 90, r5 92, r6 92).
+
+## Ranked options
+1. GO-with-fixes: fix W1-W5, commit DEV_RULE + cost amendment + pins; tier 1 after W25-K1 and GATES. Move D_K to 2027-02-28T12:00Z before the commit (r4); the PI's veto must come BEFORE that commit. Confidence 90.
+2. Same as 1, but keep D_K = 2026-12-31T12:00Z (CC-175 J-7 as written). Confidence 80. CC-188 now puts AMENDMENT_2 after A is submitted (12-15, hard cap 12-18). That leaves about 2 weeks over the holidays for about 76 capped GPU-h of tier 2 and tier 3 on one preemptible M1, plus the AMENDMENT_2 panel and Codex, the kv4224 writer read and the KV staging. Lines after D_K are descriptive, so the likely outcome is H-B1 NOT-RUN.
+3. Commit DEV_RULE now and hold the cost amendment until the PI answers on D_K. Confidence 85. This is clean, but it leaves a committed §8 text with a date the ruling expects to change. A later D_K weakly dominates: the freeze instant is min(completion + 24 h, D_K), so a later D_K only reduces HOLDs and never delays anything.
+4. Commit as is. Confidence 30. DEV_RULE.md, the relabel, the DEV_RULE pin and GATES.json are all missing (r3).
+5. Defer the branch. Confidence 40. CC-186 r7 and CC-188 r8 order tier 1 after the A-T3 M1 cells, and M1 would idle.
+6. Do nothing. Confidence 10.
+
+## What was checked (by this judge, not from the summary)
+- Hashes recomputed:
+  - t2_ids.txt 298ae5e1 (2,000 ids, 2,000 distinct, all in Karpathy restval);
+  - k1k6_lists.json d45e5693, which records script_sha256 5b73fb81 = the current k1k6.py;
+  - power_planning.json d4062c1c;
+  - prereg-folder SHA256SUMS 3/3 OK;
+  - scripts/mt4_k1k6/SHA256SUMS 2/2 OK (k1k6.py 5b73fb81, k1k6_job.sh 27d2b431). The SUMS use repo-root paths, so the check must run from the repo root.
+- Selftests:
+  - `python3 -I k1k6.py --selftest` fails under system python on the numpy import. The c_stage1_lists venv gives "k1k6 selftest ok".
+  - `bash k1k6_job.sh --selftest` gives "k1k6_selftest ok k1k6_job selftest ok".
+- Independent re-carve (own script, scratchpad, no import of k1k6):
+  - steps: restval 30,504 -> minus exclusion 29,770 -> minus UIT-ViIC all 28,913 -> minus A-touched 25,791 -> minus listed 20,354 candidates (listed removed 5,437); 2,000 smallest sha256("mt4_k1k6_t2_2026-10-30:"+id);
+  - the result equals t2_ids.txt byte for byte (sha 298ae5e1);
+  - the same salt and sampler with the old txt/tsv-only reading on today's files give 22,301 candidates. So the .json reading is the change that removes A-T3 D1/D2/smoke/W2 drops, as claimed;
+  - the input set also grew, because val2017_ids.txt was committed after the first carve. The draft says this (l.56-60).
+- Overlap of the new T2:
+  - with A-T3: val2017_ids.txt 0, D1 0, D2 0, smoke 0, a_t3_w2_dev_drops.json (drop_any and every per-set list) 0;
+  - with exclusion.json coco 0, UIT-ViIC 0, A-touched 0, Karpathy train/val/test 0;
+  - broad scan: every integer token in every .txt/.tsv/.csv/.jsonl/.json under manuscript/prereg/ (outside the MT4 folder and cen_memory_allowed.tsv) gives 1 hit. The hit is 15797 in 2026-10-18_g2b_qwen3vl_ladder.json, a `"bytes": 15797` field, not an id. Every 4-6-digit token in every other file type under manuscript/prereg/ gives 0 hits;
+  - cen_memory_allowed.tsv holds all 2,000. This is disclosed (CC-175 r7: memory side, nothing of C is scored on T2).
+- Not re-checked by this judge:
+  - the draft's l.62-65 claims of 0 overlap with data/ subset lists, data/results and the mirrors' outputs/ (OPS-1030mt4w1);
+  - the old-carve figures (397 collisions, 1,585 ids kept). The old t2_ids.txt 9f0e0c0b is gone; these rest on CC-188's chair check.
+- Code delta:
+  - `git diff -- scripts/mt4_k1k6` is empty because the folder is untracked (no HEAD version). The caller's premise is wrong.
+  - No copy of the CC-175r2 version 738f5b96 exists in .session_backup (sha scan of the .py files).
+  - Read by this judge: json_int_lists and prereg_int_ids (l.140-171, plus their selftest l.1084-1089); cmd_lists; t2_ids pin (l.60, l.218); the R2-1 wiring (kvscore l.968-970 passes the anchored t2_decide.json utc as not_before; selftest l.1203).
+  - The rest of the 738f5b96 -> 5b73fb81 delta is UNREAD. It is accepted for tier 1 only, on the passing selftests. The AMENDMENT_2 panel (irreversible, before tier 2) must read the whole file at its committed sha (W7).
+- Gaps in prereg_int_ids: it misses ids held as scalars inside lists of dicts (for example [{"id": n}]). The broad token scan shows this does not affect T2 today (non-blocking N1).
+- Package state:
+  - no DEV_RULE.md;
+  - no GATES.json;
+  - no w25k1_excluded_keys.txt or w25k1_decide.json anywhere in the repo;
+  - the cost amendment exists only as PREREG_DRAFT §8 (O-4);
+  - the draft l.29 still reads "Q2/2028 floor";
+  - the folder's SHA256SUMS has no DEV_RULE.md line.
+- KV-4,224: already reserved and pinned by the committed MT4 PREREG §1 l.29 (commit 70c898a, sha 86d93863, CC-153 W10). kv4224.txt is not written; its writer is O-1, judged separately.
+- D_K = 1798718400 at k1k6.py l.84. It is used by `left` (l.535, HELD after D_K) and by freeze_set (l.940, l.949: lines after D_K are descriptive).
+- Read: CC-175 r1-r7, round 2 and R2-1..3; CC-188 r3, r4, r8, W1, W4 and the schedule; MT4 PREREG l.29, l.94-96, l.140-145; AMENDMENT_1 l.3, l.101, l.119; LOG through OPS-1030mt4w1. No PI answer to CC-188 Q1-Q5 is in LOG yet. WORKFLOW_LOG tail: nothing new on MT4. The newest RESUME_*_paper{A,B,C,E}.md (10-25) say nothing on MT4.
+- Salami: unchanged from CC-175 r7. MT4 makes no count-control claim (A), no KTVIC-protocol claim (B) and no retrieval claim (C).
+
+## Rulings
+r1. The re-carve is CORRECT (96). It uses the same salt, steps and sampler. The only code change is the .json id-list reading in prereg_int_ids. The inputs also grew by the A-T3 files committed after 04:37 VN. The re-carve reproduces exactly, and it has 0 overlap with every A-T3 list and with every id list under manuscript/prereg/ except the disclosed C-EN memory list. It was done before any T2 output existed (no T2 image fetched, featured or decoded), so it is outcome-blind. CC-188 W1 is CLOSED.
+
+r2. Reversible vs irreversible parts (95):
+- REVERSIBLE (bar 90, ruled here):
+  - DEV_RULE.md (the tier-1 rule, the T2-2000 dev-confirm set, the tier-2/3 gate text);
+  - the cost-only amendment (PREREG §8 l.145 assigns it a one-judge diff read; it may not change any H, threshold, SESOI, matcher, gold, test set, freeze rule, binding branch or H-system seed count, and §8 changes none of them);
+  - GATES.json; the relabel; the M1 order.
+- The commit RESERVES NO TEST SET. KV-4,224 was reserved by the committed MT4 PREREG (70c898a, CC-153). Its tier-2/3 text does not bind until AMENDMENT_2 (CC-175 r3).
+- IRREVERSIBLE (bar 92, NOT licensed here):
+  - AMENDMENT_2 (the T2 gate, the K1+K6 freeze mechanics, the KV gold and scorer pins), panel + Codex before any tier-2 step;
+  - the kv4224.txt writer and file (O-1).
+  - If the gatekeeper puts kv4224.txt or kv_gold.json into this commit, that part is outside this ruling and must be taken out.
+- One lock point: D_K becomes immutable at the gatekeeper commit. §8 is the PREREG's ONE cost-only amendment (l.145), so any change after the commit would be a second one, which is forbidden. PREREG l.96 ("before any K1 training") is the latest possible date, not the lock.
+
+r3. The package is NOT ready. What is missing is exactly W1-W6 below. Blocking for the commit: W1-W5. Blocking for tier 1: W6 plus GATES W25K1 and COST.
+
+r4. D_K. This EXPLICITLY OVERRULES CC-175 J-7 ("D_K 2026-12-31T12:00Z as written", 88%) (90).
+- J-7 assumed about 8 weeks of room before D_K.
+- CC-188 (schedule and W4) now puts AMENDMENT_2 after A is submitted (12-15, hard cap 12-18).
+- CC-188 r3 makes MT4 a ~07/2027 paper (PI default YES on Q3).
+- With D_K at 12-31, tier 2 and tier 3 (26.4 + 12.6 + 37.1 h capped) would have to fit into about 2 holiday weeks on one preemptible M1. The rental end and the money (CC-188 Q5) are unknown.
+- A later D_K changes no H, threshold, set or rule. It is set before any K1 output exists. Because the freeze instant is min(completion + 24 h, D_K), it only removes HOLD risk.
+- New D_K = 2027-02-28T12:00:00Z (epoch 1803816000). This is before the Q1 vehicle's full runs in 03-04/2027 (CC-188 schedule) and leaves 4 months to the ~07/2027 submission.
+- This passes the 90 bar only because the PI gets a veto BEFORE the commit (PI Q1). After the commit D_K is final. M1 is busy until the A-T3 Aya cells end (about 11-02) and W25-K1 needs about 5.4 h after the commit, so waiting for the answer costs no GPU time.
+
+r5. The MT4 relabel (CC-188 r3 and W4) is written into the rule now with the PI's default (CC-188 Q3 YES). If the PI answers NO, only the label line changes: no rule, set or date depends on the label (92).
+
+r6. M1 order CONFIRMED (CC-186 r7, CC-188 r8): C-T1 (SR-187, ends at worst about 21:30Z 10-30), then the A-T3 Aya cells (deadline 2026-11-02T07:20:39Z), then K1+K6 tier 1 (11.1 h capped) (92). Conditions:
+- (a) Tier 1 starts only when the GATES W25K1 and COST fields hold LOG ids at HEAD and the job's own guard dry run passes.
+- (b) C-T1's test-side staging is cleaned under C's prereg before tier 1. The K1 guard refuses non-COCO names outside k1k6_pool/, so a leftover is a FAULT, never a mix.
+- (c) O-8: re-stage UIT-ViIC val 924 and the probe images; end every other tmux session first. The job refuses a second tmux session (k1k6_job.sh l.40).
+- (d) "A preempts" is enforced by the OPERATOR, not by the code:
+  - the job has no A-awareness;
+  - the A-T3 CPU jobs now run via setsid outside tmux, so the tmux check does not see them;
+  - before each tier-1 launch the operator checks that no A-T3 GPU job is due (A-T3 tier 2 by 11-05, tier 3 by 11-07). If one is due, the operator ends the k1k6 tmux session. k1k6_job.sh has NO CAP_STOP mechanism (only K1K6_COST.txt, l.49). The open start line is charged its full timeout before any retry (ledger exit 6).
+- (e) No MT4 step on M2: the job pins the m3 role (l.26, l.36), and M2 lapses 11-02.
+- (f) Tier 1 on M1 departs from "M4 for dev". It rests on CC-175 r4 and PREREG l.44, unchanged.
+
+## Required fixes
+Blocking before the gatekeeper commit (W1-W5; a one-judge diff read limited to these lines):
+
+W1. Rename PREREG_DRAFT.md -> DEV_RULE.md. Title: drop "(DRAFT)". Replace the Status lead "DRAFT v2, 2026-10-30 (CC-175 round 1 ...)" with:
+"**Status.** DEV RULE v3, committed <date> by the gatekeeper under CC-175 round 2 (GO 92, tier 1 only), CC-188 W1/W4 and CC-189. Written blind: [the four bullets unchanged]."
+Keep l.9-10 ("Nothing here binds until ...") as a historical sentence, or drop it.
+
+W2. Relabel l.29. Replace it with:
+"- This branch is a **2027 Q2 journal paper (target about 07/2027)**, not a Q1 vehicle (CC-188 r3; PI default YES on CC-188 Q3, which overrules PI-1029h Q3's 05/2028)."
+Keep the l.30 framing (PREREG l.106) unchanged.
+
+W3. D_K (r4).
+- In k1k6.py l.84, set: `D_K = 1803816000  # 2027-02-28T12:00:00Z: Branch K1+K6 freeze date (cost-only amendment, §5 l.96; CC-189 r4); KV lines after it are descriptive`.
+- In DEV_RULE §8, set: "**D_K = 2027-02-28T12:00:00Z** (epoch 1803816000; `k1k6.D_K`; CC-189 r4, overruling CC-175 J-7's 2026-12-31 before any K1 training)."
+- Update §13 J-7 to match.
+- Re-run both selftests (venv python).
+- Regenerate scripts/mt4_k1k6/SHA256SUMS.
+- Do NOT rerun `k1k6.py lists` for O-7. cmd_lists rewrites t2_ids.txt from the current prereg inputs, so any list committed after 11:50Z would give a different carve; the t2_ids pin would refuse it, but it is a trap. Leave k1k6_lists.json as written (it records writer 5b73fb81). Add to §14 O-7:
+"k1k6_lists.json was written by k1k6.py 5b73fb81 (CC-188 W1 re-carve); the later edit changed only D_K (CC-189 W3). T2 ids and their pin 298ae5e1 are unchanged; `lists` is never rerun."
+
+W4. Cost amendment (O-4). Keep it as DEV_RULE §8, and add as the first line of §8:
+"**This section is MT4 PREREG §8 l.145's one cost-only amendment for Branch K1+K6.** It is committed with DEV_RULE.md before any K1 training, after the one-judge diff read CC-189. It changes no H, threshold, SESOI, matcher, gold, test set, freeze rule (it sets D_K under §5 l.96), binding branch or H-system seed count. AMENDMENT_1 is not a cost-only amendment (AMENDMENT_1 l.3), so this is the first and only one."
+Also add one line to manuscript/prereg/2026-10-28_mt4_kv/: either a file AMENDMENT_COST_K1K6.md that reads
+"Cost-only amendment (PREREG §8 l.145), Branch K1+K6 = manuscript/prereg/2026-10-30_mt4_k1k6/DEV_RULE.md §8, sha256 <DEV_RULE sha>; one-judge read CC-189."
+or a matching line in that folder's SHA256SUMS. Either way the PREREG folder points at it.
+
+W5. Pins and gates.
+- Add a `DEV_RULE.md` line to manuscript/prereg/2026-10-30_mt4_k1k6/SHA256SUMS. The job requires it. Remove the PREREG_DRAFT.md file from the commit.
+- Create GATES.json:
+  {"W25K1": "", "COST": "<LOG id of the gatekeeper's commit line, e.g. OPS-1030xx>", "T1": "", "AMEND2": "", "T2": ""}
+  The values must match `(OPS|CC|PI)-\d{4}[A-Za-z0-9-]*` and must be LOG line ids, never CC-189.
+- Commit no kv4224.txt, kv_gold.json, t2_gold.json or caps.json in this commit (r2).
+- Run the 8-gram caption check and the host/IP scan as for every commit.
+
+Blocking before tier 1 (not before the commit):
+
+W6. W25-K1 (O-3): the laptop CPU run (venv-cenfeat clone, freeze 1a639a50, wall cap 5.4 h) writes w25k1_excluded_keys.txt and w25k1_decide.json. The gatekeeper commits them and fills GATES W25K1 with the LOG id.
+- Order: W1-W5 commit first, then W25-K1. W25-K1 features T2 images, and the T2 carve must be frozen at HEAD before any T2 byte is read.
+- Then O-8 and r6 (a)-(d).
+
+Before tier 2 (unchanged, restated):
+
+W7. The AMENDMENT_2 panel (irreversible, bar 92, + Codex) reads all of k1k6.py at its committed sha. The 738f5b96 -> 5b73fb81 delta is unread beyond the regions in "checked". The panel also covers R2-2 (N3, matcher v1 descriptive) and O-1 (kv4224 writer). If AMENDMENT_2 is missing, the branch is HELD -> TO-PI (CC-175 r3).
+
+Non-blocking:
+
+N1. prereg_int_ids: also collect integer scalars under id-like keys inside lists of dicts. This matters only for a future carve; T2 is frozen and must never be re-carved after W6.
+N2. Draft l.62: "0 overlap with every integer token" is true for ids. One non-id token (`"bytes": 15797`, g2b ladder json) equals a T2 id. Write "every id" or leave it.
+
+## For the PI (each with recommendation and default)
+Q1 (answer BEFORE the gatekeeper commit). Move the MT4 K1+K6 freeze date D_K from 2026-12-31 to 2027-02-28 (12:00 UTC)? Since CC-188, tier 2 starts only after A is submitted, and MT4 targets ~07/2027. Recommend YES. Default YES once W1-W5 are ready. After the commit the date is final (only one cost-only amendment is allowed).
+Q2. (FYI, from CC-188 Q3) MT4 K1+K6 is labelled a 2027 Q2 paper (~07/2027). Default YES stands until you answer.
