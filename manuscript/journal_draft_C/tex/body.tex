@@ -12,17 +12,19 @@ references' conventions rather than of content.
 \textbf{Why Vietnamese captioning is a low-resource problem.} Vietnamese has a large speaker
 community but, like most of the world's languages, few annotated resources compared with English
 \citep{Joshi2020StateFate}. For captioning, the gap is concrete. The public general-domain
-Vietnamese sets are few and small, and each was built for its own domain and reference style
-\citep{Lam2020UITViIC, Pham2024KTVIC, Bui2023OpenViIC}; other Vietnamese sets target a single
-domain, such as healthcare \citep{Nguyen2022VieCap4H} or scene text \citep{Nguyen2026ViTextCaps}.
-The memory this study builds from two of them holds 10,501 images (Table 3), against 112,255 for the
-English memory built from COCO alone (Section 8.1); no claim about memory size is made across
-languages. Multilingual systems that reach Vietnamese often rely on image-text data or retrieved
-captions translated from English, which brings translation artefacts into the output
-\citep{Vu2025VELVET, Ibrahim2025CONCAP}. Vietnamese text also has to be word-segmented before n-gram
-scoring, because spaces separate syllables rather than words \citep{Vu2018VnCoreNLP}. So a method
-that uses the little in-language data that exists, without training on it, is attractive, and its
-gains need careful attribution.
+Vietnamese sets are few and far smaller than English ones such as COCO, and each was built for its
+own domain and reference style
+\citep{Lam2020UITViIC, Pham2024KTVIC, Bui2023OpenViIC, Hoang2026HDUCap}; other Vietnamese sets
+target a single domain, such as healthcare \citep{Nguyen2022VieCap4H} or scene text
+\citep{Nguyen2026ViTextCaps}. The memory this study builds from two of them holds 10,501 images
+(Table 3), against 112,255 for the English memory built from COCO alone (Section 8.1); no claim
+about memory size is made across languages. Multilingual systems that reach Vietnamese often rely on
+image-text data or retrieved captions translated from English, which brings translation artefacts
+into the output \citep{Vu2025VELVET, Ibrahim2025CONCAP}; a recent benchmark of open VLMs for Urdu
+and Arabic captioning is likewise built on translated captions \citep{Hussain2026SciRepLVLM}.
+Vietnamese text also has to be word-segmented before n-gram scoring, because spaces separate
+syllables rather than words \citep{Vu2018VnCoreNLP}. So a method that uses the little in-language
+data that exists, without training on it, is attractive, and its gains need careful attribution.
 
 This matters in practice. Fine-tuning a captioner needs GPU time, training code and a licence to
 train on the captions; a retrieval prompt reuses an existing captioned training set as a memory, at
@@ -198,25 +200,28 @@ gain that comes from the example text alone, and not from its match to the image
 from model feedback. We train no retriever. Our examples are captions only, shown as text, and the
 configuration space (k, order, prompt tail, guard threshold) was searched only on development data.
 
-\textbf{Vietnamese image captioning.} The public Vietnamese benchmarks are UIT-ViIC
+\textbf{Vietnamese image captioning.} Public Vietnamese benchmarks include UIT-ViIC
 \citep{Lam2020UITViIC}, KTVIC \citep{Pham2024KTVIC}, UIT-OpenViIC
-\citep{Bui2023OpenViIC, Bui2026OpenViICJournal} and the Vietnamese references of XM3600
-\citep{Thapliyal2022XM3600}. ViG \citep{Vu2026ViG} adapts a frozen English-pretrained captioner to
-Vietnamese by training lightweight grounding branches on Vietnamese data. Our study trains nothing:
-it compares text-only in-context examples against a random-example control. VELVET
-\citep{Vu2025VELVET} is a multitask, multilingual prompting vision-language model for Vietnamese,
-pretrained on image-text data translated from English. \citet{Nguyen2026FAIR} reduce hallucination
-in detailed Vietnamese captions by fine-tuning on supervision from verified propositions; the
-present study instead changes only the prompt and measures object precision as a registered
-non-inferiority check. Single-domain Vietnamese sets also exist, for healthcare (VieCap4H, from the
-VLSP 2021 challenge \citep{Nguyen2022VieCap4H}) and for scene text (ViTextCaps
-\citep{Nguyen2026ViTextCaps}); our study uses only general-domain sets. Beyond Vietnamese,
-AfriCaption \citep{Oduwole2025AfriCaption} builds captioning data and a model for 20 African
-languages. In a shared task on captioning in Indigenous languages of the Americas,
-\citet{Dhawan2026Gators} use retrieval-augmented many-shot prompting in a text-only translation
-stage that follows a Spanish caption from an MLLM; they report that retrieval helped only with large
-in-domain corpora. Our literature search was partial (details in the supplement, ``Disclosure
-detail''). We make no priority claim and state only differences from the closest work.
+\citep{Bui2023OpenViIC, Bui2026OpenViICJournal}, HDUCap \citep{Hoang2026HDUCap}, whose 15,000
+natural-scene images carry five human-written captions each and which comes with a spatially-aware
+trained transformer, and the Vietnamese references of XM3600 \citep{Thapliyal2022XM3600}. ViG
+\citep{Vu2026ViG} adapts a frozen English-pretrained captioner to Vietnamese by training lightweight
+grounding branches on Vietnamese data. Our study trains nothing: it compares text-only in-context
+examples against a random-example control. VELVET \citep{Vu2025VELVET} is a multitask, multilingual
+prompting vision-language model for Vietnamese, pretrained on image-text data translated from
+English. \citet{Nguyen2026FAIR} reduce hallucination in detailed Vietnamese captions by fine-tuning
+on supervision from verified propositions; the present study instead changes only the prompt and
+measures object precision as a registered non-inferiority check. Single-domain Vietnamese sets also
+exist, for healthcare (VieCap4H, from the VLSP 2021 challenge \citep{Nguyen2022VieCap4H}) and for
+scene text (ViTextCaps \citep{Nguyen2026ViTextCaps}); our study uses only general-domain sets.
+HDUCap is not among our test sets: our test sets were fixed in the registration, and its release
+page states no licence (GitHub, checked 2026-10-30). Beyond Vietnamese, AfriCaption
+\citep{Oduwole2025AfriCaption} builds captioning data and a model for 20 African languages. In a
+shared task on captioning in Indigenous languages of the Americas, \citet{Dhawan2026Gators} use
+retrieval-augmented many-shot prompting in a text-only translation stage that follows a Spanish
+caption from an MLLM; they report that retrieval helped only with large in-domain corpora. Our
+literature search was partial (details in the supplement, ``Disclosure detail''). We make no
+priority claim and state only differences from the closest work.
 
 \textbf{Object hallucination and its measurement.} CHAIR \citep{Rohrbach2018CHAIR} counts mentioned
 objects that the gold does not support. The companion object-precision study shows that object
