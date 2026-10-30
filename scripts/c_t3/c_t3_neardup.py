@@ -93,6 +93,32 @@ def decide(names: list[str], test: dict, refs: dict[str, dict]) -> dict:
     return {"sets": out, "exclude": sorted({f for v in out.values() for f in v["excluded"]})}
 
 
+RULE_TEXT = "W25 RULE §3: C1 or C2 or C3 (PI-1030f test = full near-dup)"
+
+
+def check_record(rec: dict, folders: dict[str, Path]) -> None:
+    """Codex #5: an existing neardup.json is reused only if it is this pass's record for the staged sets: label, rule,
+    pinned inputs and every staged manifest sha equal; otherwise FAULT (never a silent reuse)."""
+    want = {"feats_memory": FEATS_MEMORY_SHA256, "sscd": w25.SSCD_SHA,
+            **{f"{n}_manifest": w25.K.sha_file(Path(d) / "manifest.json") for n, d in folders.items()}}
+    keys = {"sets", "exclude", "truncated", "parity", "inputs_sha256"}
+    if rec.get("label") != LABEL or rec.get("rule") != RULE_TEXT or not keys <= set(rec) or rec["inputs_sha256"] != want:
+        raise SystemExit("FAULT: neardup.json is not this pass's record for the staged test/val/carve (back to the judge)")
+
+
+def check_file(out: Path, folders: dict[str, Path]) -> None:
+    """Codex re-read #5: the file's sha must equal the neardup.json.sha256 written with it, then check_record."""
+    chk = Path(str(out) + ".sha256")
+    if not chk.is_file() or chk.read_text().split()[:1] != [w25.K.sha_file(out)]:
+        raise SystemExit("FAULT: neardup.json differs from its neardup.json.sha256 (back to the judge)")
+    check_record(json.loads(Path(out).read_text(encoding="utf-8")), folders)
+
+
+def cmd_check(a) -> None:
+    check_file(Path(a.out), {n: Path(getattr(a, n)) for n in ("test", "val", "carve")})
+    print("neardup.json ok: sha, label, rule, pinned inputs and staged manifests match")
+
+
 def cmd_run(a) -> None:
     try:
         mid = Path("/root/.vsps_machine_id").read_text().strip().lower()
@@ -115,8 +141,9 @@ def cmd_run(a) -> None:
     res["truncated"] = truncated_record({"test": test, "carve": refs["carve"], "val": refs["val"]})
     inputs = {"feats_memory": FEATS_MEMORY_SHA256, "sscd": w25.SSCD_SHA,
               **{f"{n}_manifest": w25.K.sha_file(Path(getattr(a, n)) / "manifest.json") for n in ("test", "val", "carve")}}
-    Path(a.out).write_text(json.dumps({"label": LABEL, "rule": "W25 RULE §3: C1 or C2 or C3 (PI-1030f test = full near-dup)",
+    Path(a.out).write_text(json.dumps({"label": LABEL, "rule": RULE_TEXT,
                                        "parity": par, "inputs_sha256": inputs, **res}, indent=1) + "\n")
+    Path(str(a.out) + ".sha256").write_text(f"{w25.K.sha_file(Path(a.out))}  {Path(a.out).name}\n")
     print(json.dumps({k: len(v["excluded"]) for k, v in res["sets"].items()} | {"exclude": len(res["exclude"])}))
 
 
@@ -153,7 +180,34 @@ def selftest() -> None:
         raise AssertionError("parity must FAULT")
     except SystemExit as e:
         assert "FAULT" in str(e)
-    print("selftest ok: W25 RULE §3 per set (C1, C3, union), within-test later file, parity FAULT, truncated record")
+    import tempfile
+    with tempfile.TemporaryDirectory() as tmp:  # Codex #5: reuse only a matching record
+        dirs = {n: Path(tmp) / n for n in ("test", "val", "carve")}
+        for n, d in dirs.items():
+            d.mkdir()
+            (d / "manifest.json").write_text(json.dumps({f"{n}.jpg": "0" * 64}))
+        good = {"label": LABEL, "rule": RULE_TEXT, "sets": {}, "exclude": [], "truncated": {}, "parity": {},
+                "inputs_sha256": {"feats_memory": FEATS_MEMORY_SHA256, "sscd": w25.SSCD_SHA,
+                                  **{f"{n}_manifest": w25.K.sha_file(d / "manifest.json") for n, d in dirs.items()}}}
+        check_record(good, dirs)
+        stale = {**good, "inputs_sha256": {**good["inputs_sha256"], "test_manifest": "0" * 64}}
+        for bad in (stale, {**good, "label": "x"}, {k: v for k, v in good.items() if k != "exclude"}):
+            try:
+                check_record(bad, dirs)
+                raise AssertionError("stale or substituted neardup.json")
+            except SystemExit as e:
+                assert "FAULT" in str(e)
+        nd = Path(tmp) / "neardup.json"  # re-read #5: an edited payload fails its sha even if the manifests match
+        nd.write_text(json.dumps(good))
+        Path(str(nd) + ".sha256").write_text(f"{w25.K.sha_file(nd)}  neardup.json\n")
+        check_file(nd, dirs)
+        nd.write_text(json.dumps({**good, "exclude": ["x.jpg"]}))
+        try:
+            check_file(nd, dirs)
+            raise AssertionError("edited neardup.json")
+        except SystemExit as e:
+            assert "differs from its neardup.json.sha256" in str(e)
+    print("selftest ok: neardup.json reuse check (sha, label, rule, inputs, manifests); W25 RULE §3 per set (C1, C3, union), within-test later file, parity FAULT, truncated record")
 
 
 def main() -> None:
@@ -164,11 +218,16 @@ def main() -> None:
     for k in ("test", "val", "carve", "mem_feats", "mem_files", "mem_root", "sscd", "out"):
         p.add_argument("--" + k.replace("_", "-"), type=Path, required=True)
     p.add_argument("--workers", type=int, default=4)
+    p = sp.add_parser("check")
+    for k in ("test", "val", "carve", "out"):
+        p.add_argument("--" + k, type=Path, required=True)
     a = ap.parse_args()
     if a.selftest:
         return selftest()
     if a.cmd == "run":
         return cmd_run(a)
+    if a.cmd == "check":
+        return cmd_check(a)
     ap.print_help()
 
 

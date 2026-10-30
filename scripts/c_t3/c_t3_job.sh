@@ -56,8 +56,11 @@ $PY $X guard --datasets $DS --roots $DS $NCS_DATA/models $NCS_DATA/vncorenlp $O 
 $PY $X memcheck --mem-files $MEM/memfiles_coco.json --root $DS/cen_memory/images >> $LOG/memcheck.log 2>&1 || stop "memcheck coco"
 for m in aya_vision_8b xglm_2_9b mclip_h14; do $PY $X pinsok --model $m --snapshot $(snap $m) >> $LOG/pins.log 2>&1 || stop "$m snapshot"; done
 HF_HUB_OFFLINE=1 $T1 $X t1check --mclip $MC >> $LOG/t1check.log 2>&1 || stop "venv-t1 open_clip offline"
-# PI-1030f test = full near-dup (W25 RULE §3), CPU, before any GPU step; once (it refuses an existing output)
-[ -s $O/neardup.json ] || timeout 3600 $FT $ND run --test $TEST --val $VAL --carve $DS/c_t1_f30k_carve \
+# PI-1030f test = full near-dup (W25 RULE §3), CPU, before any GPU step; once (it refuses an existing output).
+# Codex #5: an existing neardup.json is reused only if `check` matches it to the staged manifests, else FAULT
+if [ -e $O/neardup.json ]; then $FT $ND check --test $TEST --val $VAL --carve $DS/c_t1_f30k_carve --out $O/neardup.json \
+  >> $LOG/neardup.log 2>&1 || stop "neardup.json exists but does not match the staged sets (FAULT: back to the judge)"; fi
+[ -e $O/neardup.json ] || timeout 3600 $FT $ND run --test $TEST --val $VAL --carve $DS/c_t1_f30k_carve \
   --mem-feats $CEN/feats_memory.npz --mem-files $MEM/memfiles_coco.json --mem-root $DS/cen_memory/images \
   --sscd $NCS_DATA/models/sscd_disc_mixup.torchscript.pt --out $O/neardup.json >> $LOG/neardup.log 2>&1 \
   || stop "neardup (FAULT or 1 h wall: back to the judge, nothing decoded)"

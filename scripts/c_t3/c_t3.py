@@ -91,10 +91,15 @@ T2_DECISION_SHA256 = "e29bbe8a6f9e62ec566fb2d52f4519042294be0d515e5c385181b08479
 T3_CLAIMS = (("E3 aya_vision_8b: ret-lmcap_ri", "aya_vision_8b"), ("E3 internvl3_8b: ret-lmcap_ri", "internvl3_8b"),
              ("E3 qwen25vl_7b: ret-lmcap_ri", "qwen25vl_7b"))
 ALPHA = 0.05  # Holm over the family (C-T1 PREREG §8)
-#: the only runs that may exist on f30k_test: the frozen tier-1/2 configurations (C-T2 PREREG §4), no rand, no smoke
-T3_RUN_IDS = frozenset({"t3_lmcap-ri_f30k_test-mcoco", "t3_aya_vision_8b_f30k_test-ret-k4-last-T1-mcoco",
-                        "t3_qwen25vl_7b_f30k_test-ret-k8-first-T1-mcoco", "t3_internvl3_8b_f30k_test-ret-k4-last-T2-mcoco",
-                        "t3_aya_vision_8b_f30k_test-zs", "t3_qwen25vl_7b_f30k_test-zs", "t3_internvl3_8b_f30k_test-zs"})
+#: the only runs that may exist on f30k_test: the frozen tier-1/2 configurations (C-T2 PREREG §4), no rand, no smoke;
+#: run id -> (model, arm, k, order, template, memory) as written in the preds spec (Codex #4: id bound to config)
+T3_RUNS = {"t3_lmcap-ri_f30k_test-mcoco": ("lmcap_ri", "lmcap", 4, None, None, "coco"),
+           "t3_aya_vision_8b_f30k_test-ret-k4-last-T1-mcoco": ("aya_vision_8b", "ret", 4, "last", "T1", "coco"),
+           "t3_qwen25vl_7b_f30k_test-ret-k8-first-T1-mcoco": ("qwen25vl_7b", "ret", 8, "first", "T1", "coco"),
+           "t3_internvl3_8b_f30k_test-ret-k4-last-T2-mcoco": ("internvl3_8b", "ret", 4, "last", "T2", "coco"),
+           **{f"t3_{m}_f30k_test-zs": (m, "zs", 0, None, None, None) for m in ("aya_vision_8b", "qwen25vl_7b", "internvl3_8b")}}
+T3_RUN_IDS = frozenset(T3_RUNS)
+TEST_LEDGER_NAME = "test_coco.jsonl"  # PREREG §7: $LED/test_coco.jsonl, a fresh dir outside the repo
 
 
 def sha(p: Path) -> str:
@@ -348,9 +353,7 @@ def cmd_decode(a) -> None:
     t3_allowed(a.set, run_id)
     if a.limit:  # W-d smoke (N7): the first images only, timing; never scored
         items = items[:a.limit]
-    out = Path(a.out_dir) / f"{run_id}.preds.json"
-    if out.exists():
-        raise SystemExit(f"{out} exists; a run is decoded once")
+    out = fresh_out(a.out_dir, run_id)
     exids = {i: example_ids(a.arm, a.k, a.order, i, ex, a.draw) for i, _f, _h in items}
     zs_text = (lb.prompt_text(lb.load_prereg(C.pinned(C.B_N1)), "short") if lang == "vi" else D.zs_prompt())
     texts = {i: zs_text if a.arm == "zs" else text_prompt(lang, a.tpl, [shown(c) for c in exids[i]]) for i in exids}
@@ -452,6 +455,7 @@ def cmd_lmcap(a) -> None:
 
     run_id = f"t3_lmcap-{a.variant}_{a.set}-m{a.memory}" + ("-smoke" if a.limit else "")
     t3_allowed(a.set, run_id)  # before any model load or decode
+    out = fresh_out(a.out_dir, run_id)  # Codex #2: write-once, as decode
     reg, lang = registry(), SETS[a.set]
     for key, snap in (("xglm_2_9b", a.xglm), ("mclip_h14", a.mclip)):
         lb.check_snapshot(reg["models"][key], snap)
@@ -520,7 +524,6 @@ def cmd_lmcap(a) -> None:
         best = int(torch.argmax(enc_text(cands) @ v))
         preds[i] = cands[best]
         hitmax[i] = xt.eos_token_id not in gen[best] and len(gen[best]) >= LMCAP_NEW  # N4
-    out = Path(a.out_dir) / f"{run_id}.preds.json"
     rec = {"schema": SCHEMA, "label": LABEL, "run_id": run_id, "model": f"lmcap_{a.variant}", "dataset": a.set,
            "lang": lang, "spec": {"arm": "lmcap", "k": LMCAP_K, "n_shots": LMCAP_N, "beam": LMCAP_BEAM,
                                   "variant": a.variant, "memory": a.memory},
@@ -573,6 +576,38 @@ def laptop_only(what: str) -> None:
     """CC-196 Codex fix 1: references and scores are never handled on a GPU host."""
     if machine_id() in ("m3", "m4"):
         raise SystemExit(f"REFUSED: {what} runs on the laptop only")
+
+
+def fresh_out(out_dir, run_id: str) -> Path:
+    """The preds path of a run; refused if the preds file or its checksum exists (a run is decoded once)."""
+    out = Path(out_dir) / f"{run_id}.preds.json"
+    if out.exists() or Path(str(out) + ".sha256").exists():
+        raise SystemExit(f"REFUSED: {out} or its checksum exists; a run is decoded once")
+    return out
+
+
+def run_config(r: dict) -> tuple:
+    """(model, arm, k, order, template, memory) of a preds record or of a ledger row."""
+    sp = r.get("spec", r)
+    return (r["model"], sp["arm"], sp["k"], sp.get("order"), sp.get("tpl"), sp.get("memory"))
+
+
+def t3_score_gate(a) -> None:
+    """Codex #3/#4, before any import or read of references: on f30k_test the ledger is a new file named
+    test_coco.jsonl in a dir outside the repo that holds no other ledger; every run is a registered id whose spec is
+    exactly its frozen config, and its preds sha equals the job's checksum file."""
+    if a.set != "f30k_test":
+        return
+    led = Path(a.ledger).resolve()
+    if led.exists() or led.name != TEST_LEDGER_NAME or led.is_relative_to(ROOT) or not led.parent.is_dir() \
+            or any(led.parent.glob("*.jsonl")):
+        raise SystemExit(f"REFUSED: the test ledger must be a new {TEST_LEDGER_NAME} in a dir outside the repo "
+                         "with no other ledger (PREREG §7)")
+    for q in a.runs:
+        r = json.loads(Path(q).read_text(encoding="utf-8"))
+        chk = Path(str(q) + ".sha256")
+        if T3_RUNS.get(r.get("run_id")) != run_config(r) or not chk.is_file() or chk.read_text().split()[0] != sha(q):
+            raise SystemExit(f"REFUSED: {Path(q).name}: run id, config or job checksum does not match T3_RUNS")
 
 
 def t3_allowed(ds: str, run_id: str) -> None:
@@ -789,11 +824,12 @@ def cmd_score(a) -> None:
     """Vietnamese: C's stage-1 scorer (score_set, unchanged; kit B, RDRSegmenter, stripped CIDEr-D) for model runs, the
     stage-2 plain_row for LMCap and the X2 masked variants. English: C-EN's PTB CIDEr-D (pycocoevalcap 1.2) with df
     over the carve's own references. Rows hold ids and numbers only."""
+    laptop_only("score")
+    t3_score_gate(a)
     import guard as G
     import score as S
     import score2 as S2s
 
-    laptop_only("score")
     lang = SETS[a.set]
     runs = [json.loads(Path(p).read_text(encoding="utf-8")) | {"_sha256": sha(p)} for p in a.runs]
     if any(r["dataset"] != a.set or r.get("schema") != SCHEMA for r in runs):
@@ -857,7 +893,8 @@ def cmd_score(a) -> None:
                 rows.append({"dataset": a.set, "run_id": r["run_id"], "model": r["model"], "arm": r["spec"]["arm"],
                              "k": r["spec"]["k"], "tau": "-inf", "variant": v, "n": len(ids),
                              "cider_ptb": float(sc.mean()), "hit_max_rate": float(np.mean([r["hit_max"][i] for i in ids])),
-                             "per_image": {"ids": ids, "cider_ptb": sc.round(4).tolist()}, **tag(r)})
+                             "per_image": {"ids": ids, "cider_ptb": sc.round(4).tolist()}, **tag(r),
+                             "order": r["spec"].get("order"), "tpl": r["spec"].get("tpl"), "preds_sha256": r["_sha256"]})
     if c2:
         c2_parity(rows, Path(a.c2_ledger))
     stamp = {"label": LABEL, "c_t1_sha256": sha(Path(__file__)), "utc": lb.utc()}
@@ -1204,6 +1241,11 @@ def cmd_t3(a) -> None:
     bad = sorted({r.get("run_id") for r in rows if r.get("dataset") == "f30k_test"} - T3_RUN_IDS)
     if bad:
         raise SystemExit(f"t3: ledger rows of unregistered runs {bad[:3]}")
+    sums = {n.removeprefix("out/"): h for h, n in (x.split(maxsplit=1) for x in Path(a.run_sums).read_text().splitlines() if x.strip())}
+    wrong = sorted({r["run_id"] for r in rows if r.get("dataset") == "f30k_test" and (
+        run_config(r) != T3_RUNS[r["run_id"]] or r.get("preds_sha256") != sums.get(f"{r['run_id']}.preds.json"))})
+    if wrong:  # Codex #4: a row's run id must carry exactly its frozen config and the job's preds checksum
+        raise SystemExit(f"t3: rows whose config or preds sha does not match their run id {wrong[:3]}")
     test, _p, ids = set_columns(rows, "f30k_test", "en")
     if not ids or sorted(ids) != sorted(f30k_names("test", load_lists())):
         raise SystemExit("t3: the test ledger is not all 1,000 test images")
@@ -1590,14 +1632,16 @@ def selftest_t3(ok: list) -> None:
     lists = load_lists()
     ids = f30k_names("test", lists)
     with tempfile.TemporaryDirectory() as tmp:
-        def row(key: str, x: np.ndarray, rid: str) -> str:
+        def row(key: str, x: np.ndarray, rid: str, cfg: tuple | None = None) -> str:
             mdl, arm = key.split("|")
-            return json.dumps({"dataset": "f30k_test", "model": mdl, "arm": arm, "tau": "-inf", "variant": "plain",
-                               "run_id": rid, "per_image": {"ids": ids, "cider_ptb": list(x)}}) + "\n"
+            c = dict(zip(("model", "arm", "k", "order", "tpl", "memory"), cfg or T3_RUNS.get(rid, (mdl, arm, 0, None, None, None))))
+            return json.dumps({"dataset": "f30k_test", **c, "tau": "-inf", "variant": "plain", "run_id": rid,
+                               "preds_sha256": f"h-{rid}", "per_image": {"ids": ids, "cider_ptb": list(x)}}) + "\n"
         rid = {"lmcap_ri|lmcap": "t3_lmcap-ri_f30k_test-mcoco"} | {
             f"{m}|ret": next(i for i in T3_RUN_IDS if i.startswith(f"t3_{m}_") and "-ret-" in i) for _n, m in T3_CLAIMS} | {
             f"{m}|zs": f"t3_{m}_f30k_test-zs" for _n, m in T3_CLAIMS}
-        led, t2, ex, out = (Path(tmp) / x for x in ("t.jsonl", "t2.json", "nd.json", "t3.json"))
+        led, t2, ex, out, sums = (Path(tmp) / x for x in ("t.jsonl", "t2.json", "nd.json", "t3.json", "SUMS"))
+        sums.write_text("".join(f"h-{r}  out/{r}.preds.json\n" for r in T3_RUNS))
         led.write_text("".join(row(k, v, rid[k]) for k, v in test.items()))
         t2.write_text(json.dumps({"full": {"family": [n for n, _m in T3_CLAIMS], "m_holm": 3}}))
         ex.write_text(json.dumps({"exclude": ids[:10]}))
@@ -1605,34 +1649,41 @@ def selftest_t3(ok: list) -> None:
         try:  # the job runs this selftest on M1: the laptop-only check is tested separately below
             globals()["MACHINE_ID"] = Path(tmp) / "absent"
             globals()["T2_DECISION_SHA256"] = sha(t2)
-            cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, exclude=ex, out=out))
+            cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, run_sums=sums, exclude=ex, out=out))
             res = json.loads(out.read_text())
             assert res["dedup_beside"]["n_excluded"] == 10 and res["full"]["claims"][T3_CLAIMS[0][0]]["test"]["n"] == 1000
             assert res["dedup_beside"]["claims"][T3_CLAIMS[0][0]]["test"]["n"] == 990
             try:  # W2: an existing decision is never overwritten
-                cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, exclude=ex, out=out))
+                cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, run_sums=sums, exclude=ex, out=out))
                 raise AssertionError("existing --out")
             except SystemExit as e:
                 assert "exists" in str(e), e
             ex.write_text(json.dumps({"exclude": []}))
             out0 = Path(tmp) / "t3_0.json"
-            cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, exclude=ex, out=out0))
+            cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, run_sums=sums, exclude=ex, out=out0))
             r0 = json.loads(out0.read_text())
             assert r0["dedup_beside"]["n_excluded"] == 0 and r0["dedup_beside"]["claims"] == r0["full"]["claims"], "W2"
             out = Path(tmp) / "never.json"  # the refusal cases below must fail before any write
+            qret = "t3_qwen25vl_7b_f30k_test-ret-k8-first-T1-mcoco"  # Codex #4: a mislabeled row (Aya's config, Qwen's id)
+            mis = row("qwen25vl_7b|ret", base, qret, T3_RUNS["t3_aya_vision_8b_f30k_test-ret-k4-last-T1-mcoco"])
             for bad, why in ((row("aya_vision_8b|rand", base, "t3_aya_vision_8b_f30k_test-rand-k4--T1-d0-mcoco"), "unregistered"),
-                             (None, "not all 1,000")):
-                led2 = Path(tmp) / "b.jsonl"
-                led2.write_text(led.read_text() + bad if bad else led.read_text().replace(ids[0], "x.jpg"))
+                             (None, "not all 1,000"), ("mislabel", "does not match")):
+                if bad == "mislabel":
+                    led2 = Path(tmp) / "b.jsonl"
+                    led2.write_text("".join(x if qret not in x else mis for x in led.read_text().splitlines(True)))
+                    bad = None
+                elif bad or why == "not all 1,000":
+                    led2 = Path(tmp) / "b.jsonl"
+                    led2.write_text(led.read_text() + bad if bad else led.read_text().replace(ids[0], "x.jpg"))
                 try:
-                    cmd_t3(argparse.Namespace(ledger=[led2], t2_decision=t2, exclude=None, out=out))
+                    cmd_t3(argparse.Namespace(ledger=[led2], t2_decision=t2, run_sums=sums, exclude=None, out=out))
                     raise AssertionError(why)
                 except SystemExit as e:
                     assert why in str(e), e
             t2.write_text(json.dumps({"full": {"family": [T3_CLAIMS[0][0]], "m_holm": 1}}))
             globals()["T2_DECISION_SHA256"] = sha(t2)
             try:
-                cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, exclude=None, out=out))
+                cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, run_sums=sums, exclude=None, out=out))
                 raise AssertionError("family pin")
             except SystemExit as e:
                 assert "T3_CLAIMS" in str(e), e
@@ -1640,13 +1691,61 @@ def selftest_t3(ok: list) -> None:
             globals()["T2_DECISION_SHA256"] = saved
         try:
             globals()["MACHINE_ID"] = Path(tmp) / "absent"
-            cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, exclude=None, out=out))
+            cmd_t3(argparse.Namespace(ledger=[led], t2_decision=t2, run_sums=sums, exclude=None, out=out))
             raise AssertionError("T2_DECISION pin")
         except SystemExit as e:
             assert "e29bbe8a" in str(e), e
         finally:
             globals()["MACHINE_ID"] = saved_mid
         assert not out.exists(), "refusals wrote nothing"
+        # Codex #2: lmcap and decode are write-once (preds or checksum present -> refused), before any model load
+        po = Path(tmp) / "po"
+        po.mkdir()
+        assert fresh_out(po, "t3_lmcap-ri_f30k_test-mcoco") == po / "t3_lmcap-ri_f30k_test-mcoco.preds.json"
+        (po / "t3_lmcap-ri_f30k_test-mcoco.preds.json.sha256").write_text("x")
+        try:
+            fresh_out(po, "t3_lmcap-ri_f30k_test-mcoco")
+            raise AssertionError("lmcap checksum exists")
+        except SystemExit as e:
+            assert "decoded once" in str(e)
+        import inspect
+        src = inspect.getsource(cmd_lmcap)
+        assert src.index("fresh_out(") < src.index("from_pretrained") and "fresh_out(" in inspect.getsource(cmd_decode)
+        # Codex #3/#4: the score gate on f30k_test (ledger location, run id = config, job checksum)
+        rd, ld = Path(tmp) / "runs", Path(tmp) / "led"
+        rd.mkdir()
+        ld.mkdir()
+        aret = "t3_aya_vision_8b_f30k_test-ret-k4-last-T1-mcoco"
+
+        def preds(rid: str, spec: dict, model: str = "aya_vision_8b", good: bool = True) -> Path:
+            f = rd / f"{rid}.preds.json"
+            f.write_text(json.dumps({"run_id": rid, "model": model, "spec": spec}))
+            Path(str(f) + ".sha256").write_text(f"{sha(f) if good else '0' * 64}  {f.name}\n")
+            return f
+        ok_run = preds(aret, {"arm": "ret", "k": 4, "order": "last", "tpl": "T1", "memory": "coco"})
+        gate = lambda led, runs: t3_score_gate(argparse.Namespace(set="f30k_test", ledger=led, runs=runs))  # noqa: E731
+        gate(ld / TEST_LEDGER_NAME, [ok_run])
+        t3_score_gate(argparse.Namespace(set="f30k_val", ledger=ROOT / "x.jsonl", runs=[]))  # dev sets: unchanged
+        mislab = preds(aret.replace("aya", "aya2"), {"arm": "ret", "k": 4, "order": "last", "tpl": "T1", "memory": "coco"})
+        for led_p, runs, why in ((ROOT / TEST_LEDGER_NAME, [ok_run], "ledger"), (ld / "val_coco.jsonl", [ok_run], "ledger"),
+                                 (ld / TEST_LEDGER_NAME, [preds("t3_qwen25vl_7b_f30k_test-ret-k8-first-T1-mcoco",
+                                                                {"arm": "ret", "k": 4, "order": "last", "tpl": "T1",
+                                                                 "memory": "coco"}, "qwen25vl_7b")], "config"),
+                                 (ld / TEST_LEDGER_NAME, [mislab], "config"),
+                                 (ld / TEST_LEDGER_NAME, [preds("t3_aya_vision_8b_f30k_test-zs", {"arm": "zs", "k": 0},
+                                                                good=False)], "checksum")):
+            try:
+                gate(led_p, runs)
+                raise AssertionError(why)
+            except SystemExit as e:
+                assert "REFUSED" in str(e), (why, e)
+        (ld / "carve_coco.jsonl").write_text("")
+        for led_p in (ld / TEST_LEDGER_NAME, ld / "carve_coco.jsonl"):  # a dev dir, or an existing ledger
+            try:
+                gate(led_p, [ok_run])
+                raise AssertionError("dev dir / existing ledger")
+            except SystemExit as e:
+                assert "REFUSED" in str(e)
         mid = Path(tmp) / "mid"
         mid.write_text("m3\n")
         try:
@@ -1660,7 +1759,8 @@ def selftest_t3(ok: list) -> None:
         finally:
             globals()["MACHINE_ID"] = saved_mid
     ok.append("C-T3 decision (registered runs only, bootstrap p +1, Holm m = 3, PASS/FAIL/NOT RUN, dedup beside, "
-              "T2_DECISION and family pins, laptop-only store/score/t3, write-once out, dedup row always written)")
+              "T2_DECISION and family pins, laptop-only store/score/t3, write-once out, dedup row always written; Codex #2-#4: lmcap write-once, "
+              "test ledger location, run id bound to config and job checksum)")
 
 
 # ------------------------------------------------------------------------------------------------ CLI
@@ -1750,6 +1850,7 @@ def main() -> None:
     p = sub.add_parser("t3")
     p.add_argument("--ledger", type=Path, nargs="+", required=True)
     p.add_argument("--t2-decision", type=Path, required=True)
+    p.add_argument("--run-sums", type=Path, required=True, help="the job's SHA256SUMS (out/<run>.preds.json lines)")
     p.add_argument("--exclude", type=Path, help="neardup.json: PI-1030f row printed beside the full decision")
     p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("dupcheck")

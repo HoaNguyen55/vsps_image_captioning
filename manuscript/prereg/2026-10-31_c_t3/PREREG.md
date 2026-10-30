@@ -1,7 +1,7 @@
 # C-T3: tier-3 TEST prereg for Paper C (Flickr30K Karpathy test, 1,000 images, one look; the three E3 claims)
 
-Status: DRAFT v1, written 2026-10-31 after the tier-2 decision and before any test byte was extracted. Nothing here
-has run. Not committed. This is AI opinion, not expert-validated. Label on every output: `TIER 3 / TEST, ONE LOOK
+Status: Committed deee879; amended by <this commit> (Codex W5 read fixes #2-#6, wording for #1). Written 2026-10-31
+after the tier-2 decision and before any test byte was extracted. Nothing here has run. This is AI opinion, not expert-validated. Label on every output: `TIER 3 / TEST, ONE LOOK
 (C-T3)`. Launch read: irreversible tier (the run spends Flickr30K test's single look), bar ≥ 92 (band 92-98,
 PI-1029o), 3-judge panel + Codex (JUDGE_READ_REQUEST.md).
 Code: `scripts/c_t3/c_t3.py` (a copy of `scripts/c_t2/c_t2.py` sha256 `6113844a` with the smallest change; read it as
@@ -38,7 +38,8 @@ From `T2_DECISION.json` (`full.family`, `m_holm` 3; val n = 1,014; pooled = carv
 
 E1 and E2 are not tested and no `rand` arm is decoded on test. `c_t3.py` enforces this. On `f30k_test` only the seven
 run ids in `T3_RUN_IDS` can be decoded: LMCap `ri`, three `ret` arms with the frozen k/order/template, and three `zs`
-arms. `rand` runs, any other configuration and `-smoke` runs are refused. `t3` refuses a ledger row from any other run
+arms. `rand` runs, any other configuration and `-smoke` runs are refused. Every test decode, LMCap included, is write-once: it is refused before any
+model load if its preds file or checksum exists (Codex #2). `t3` refuses a ledger row from any other run
 id. `draws` still writes rand id lists for test because the shared function builds them, but they are never decoded.
 
 ## 3. Tier-3 rules (C-T1 PREREG §8, copied verbatim; C-T1 PREREG.md lines 239-250, sha256 `f1d06278`)
@@ -157,6 +158,9 @@ including staging (§8) and the pull. The schedule is in §12.
     union `exclude`, the parity record and the input shas. No caption, no score.
   - Its sha goes into `code_at_start.sha256` and the run `SHA256SUMS`.
   - It refuses to overwrite an existing output, so it runs once.
+  - On a job restart, an existing `neardup.json` is reused only if `c_t3_neardup.py check` matches it: label, rule,
+    pinned inputs, the sha of each staged test/val/carve manifest, and the file's own sha against the
+    `neardup.json.sha256` that `run` writes with it. Otherwise the job FAULTs (Codex #5).
 - **Use.** `t3 --exclude neardup.json` prints the beside row (D4). The exclusions never change the decision column.
   No one looks at any pair, because looking would be new labelling.
 - **Ceilings.** SSCD thresholds were calibrated on DISC (and Somepalli's 0.5 on generated images), not on Flickr or
@@ -165,7 +169,7 @@ including staging (§8) and the pull. The schedule is in §12.
 ## 7. Scoring and decision (laptop, after the pull; one call each, run once)
 
 `$R` = the pulled `/root/outputs/c_t3/out`. `$ST` = caption stores outside the repo. `$CSV` = the pinned Flickr30K
-annotation file (`395990db…ac137`). `$LED` = a ledger dir outside the repo. `$PCC` = the scoring interpreter with
+annotation file (`395990db…ac137`). `$LED` = a new, empty ledger dir outside the repo (it holds only `test_coco.jsonl`). `$PCC` = the scoring interpreter with
 pycocoevalcap 1.2 (wheel `083ed791…`), the same venv C-T2 recorded in `T2_ENV.txt`, recorded again in `T3_ENV.txt`.
 
 ```
@@ -175,17 +179,27 @@ $PCC scripts/c_t3/c_t3.py score --set f30k_test --memory coco --runs $R/t3_*_f30
     $R/t3_*_f30k_test-*-mcoco*.preds.json $R/t3_lmcap-ri_f30k_test-mcoco.preds.json \
     --refs $ST/test_refs.json --captions $ST/coco_captions.json --ledger $LED/test_coco.jsonl
 $PCC scripts/c_t3/c_t3.py t3 --ledger $LED/test_coco.jsonl --t2-decision .session_backup/2026-10-30/c_t2/T2_DECISION.json \
-    --exclude $R/../neardup.json --out .session_backup/2026-10-31/c_t3/T3_DECISION.json
+    --run-sums $R/../SHA256SUMS --exclude $R/../neardup.json --out .session_backup/2026-10-31/c_t3/T3_DECISION.json
 ```
 - `store`, `score` and `t3` refuse a GPU host (machine id m3/m4). This is CC-196 Codex fix 1: the laptop-only rule is
   now in code. The test references never go to M1.
 - `store` keeps only test rows.
+- `score` on `f30k_test` refuses, before any import or reference read (Codex #3/#4):
+  - a ledger that exists, that is not named `test_coco.jsonl`, that lies inside the repo, or whose dir holds any
+    other `*.jsonl` (a dev ledger dir). Scoring is therefore one call into the §7 location only;
+  - a preds file whose run id is not in `T3_RUNS`, or whose spec is not exactly that id's frozen (model, arm, k,
+    order, template, memory);
+  - a preds file whose sha differs from the job's `.sha256` checksum written beside it on M1.
+
+  Test rows also carry `order`, `tpl` and `preds_sha256`.
 - `t3` refuses, in each case before it writes anything:
   - an existing `--out`: the decision is written once (CC-202 W2);
   - a decision file other than `e29bbe8a`;
   - a family other than the three E3 claims;
   - a ledger row from an unregistered run id (CC-196 W5(b): config identity is now checked per row, not only through
     the job hash);
+  - a ledger row whose (model, arm, k, order, template, memory) is not its run id's frozen config, or whose
+    `preds_sha256` differs from the job's `SHA256SUMS` line for that run (`--run-sums`; Codex #4);
   - a ledger that is not all 1,000 test images.
 - The output holds ids and numbers only: per claim the test contrast and CI, the one-sided p, the Holm p and the status;
   `m_holm`; the W2 rows; and `dedup_beside`.
@@ -244,7 +258,11 @@ $PCC scripts/c_t3/c_t3.py t3 --ledger $LED/test_coco.jsonl --t2-decision .sessio
 - **E1/E2 (never tested).** Both stay dev rows from tier 2, labelled "rehearsal passed, no margin (pooled P 0.95 /
   0.70 < 0.98), not taken to test", per PI-1029m.
 - **Method disclosures (CC-202 W8; commitments, written in Paper C whatever the outcome):**
-  - The one-sided p is an uncentred percentile-bootstrap p with the +1 correction (D1).
+  - The registered quantity (D1) is an uncentred percentile-bootstrap tail statistic with the +1 correction. It is
+    "p-like": approximately the CI-inversion form of the one-sided percentile test, but it is neither an exact p-value
+    under the null nor an exact CI inversion. The interpolated percentile bound and the discrete +1 count can disagree
+    at the boundary. The decision uses this registered statistic only. The method (C-T1 §8 verbatim) is unchanged
+    (Codex #1).
   - The pooled P(PASS) of 1.000 is a planning value that includes the carve nomination data (CC-196 W6,
     winner's-curse label).
   - Only tier-3 rows are confirmatory.
