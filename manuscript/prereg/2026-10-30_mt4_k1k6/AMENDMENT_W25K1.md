@@ -187,3 +187,26 @@ record only, no T2 byte is fetched, and §4 needs a further amendment.
   a non-finite SSCD row. Each set's `truncated_decoded` record is written into its npz and the run LOG (CC-193 gate g).
 - **Determinism (CC-193).** With `LOAD_TRUNCATED_IMAGES`, the RGB pixel sha256 of each file is the same on repeat and
   across PIL 12.3.0 and 13.0.0: 768 15277c96ecd6, 1010 16479f6c87bc, 5095 455cfd604acd, 7169 73c900395281.
+
+## 7. Training-time drop of 7169 (CC-199)
+
+- **Rule (CC-199 ruling 1, option ii).** `openviic:00000007169` (file sha 4859dd1f…9d20, truncated by 1 byte, §6) is
+  removed from the K1 training pool. It is a disclosed, pre-registered drop, made before any K1 output existed. It is
+  the same drop C made for its memory (CC-082 T1). `w25k1_excluded_keys.txt` (1ca45849) and `w25k1_decide.json`
+  (b7dfe9d4) are unchanged, because this is a truncation drop, not a leakage exclusion.
+- **Code.** `k1k6.py` gets the pinned constant `K1_TRUNC_DROP` and `drop_trunc`, called in `pool_rows` before the W25-K1
+  filter. The rule is key-only (CC-200): it FAULTs unless the key is a pool row, and it drops exactly that row. The file
+  sha 4859dd1f…9d20 stays in the constant as provenance only and is never read from disk, because M1 does not hold the
+  file. `cmd_pool` prints `"dropped_truncated": 1`. The selftest covers three cases: key present → exactly 1 row
+  dropped; key present but file missing → exactly 1 row dropped, no error; key absent → FAULT. The new `k1k6.py` sha is
+  `f2273b905209cc311fe116703c71d0b2ad4d42b918ae4e547514df323a3d5c40`. It replaces 4b511444 (l.25, l.94) for
+  training. `cmd_train`, `POOL_PLAN`, `k1k6_job.sh`, `w25k1_decide` and `cmd_w25k1` are byte-identical, so decide
+  b7dfe9d4 stays reproducible under the new sha.
+- **Counts.**
+  - Screening n stays **15,249** (decide unchanged).
+  - Training pool = 15,249 − 1,144 − 1 = **14,104**: KTVIC 3,169, OpenViIC 8,544, UIT-ViIC 2,391. This was checked with
+    the amended `pool_rows` on the laptop data (7169 absent).
+- **Effect on the glue.** `w25k1_prep.py` (f465c2a6) takes its pool keys from `pool_rows`. Under the new `k1k6.py`, its
+  `lists`/`pool`/`check` steps would see 15,248 keys and FAULT against `POOL_N` = 15,249. The W25-K1 run is finished and
+  is not rerun. A rerun of the screen would need the glue to account for this drop.
+- **Paper sentence.** "One OpenViIC training image whose file is truncated (1 byte) was removed from the training pool."

@@ -295,9 +295,24 @@ def cmd_stage(a, get=None) -> None:
 
 
 # ------------------------------------------------------------------------------------------------ K1 pool (c)
+#: CC-199 r1 (ii): the one truncated OpenViIC training file (1 byte, AMENDMENT_W25K1 §6-§7) is dropped from training.
+#: Key-only (CC-200): the file sha is provenance and is never read from disk (M1 does not hold the file).
+K1_TRUNC_DROP = {"openviic:00000007169": "4859dd1fc17d928fed15035b69c9964401cf327b33d4ca04b161b3d252fb9d20"}
+
+
+def drop_trunc(rows: list[tuple[str, str, int]]) -> list[tuple[str, str, int]]:
+    """CC-199/CC-200: FAULT unless every K1_TRUNC_DROP key is a pool row; return the rows without them."""
+    keys = {r[0] for r in rows}
+    for k in K1_TRUNC_DROP:
+        if k not in keys:
+            raise SystemExit(f"FAULT: {k} is not a pool row (CC-199)")
+    return [r for r in rows if r[0] not in K1_TRUNC_DROP]
+
+
 def pool_rows(data: Path, w25_ut: set[int], w25_k1: set[str]) -> list[tuple[str, str, int]]:
     """(key, image path relative to data, n refs). KTVIC train + UT-2,402 minus the K2 W25 ids + OpenViIC train, minus
-    the W25-K1 exclusions (keys). One example per image per epoch; the reference cycles with the epoch (§2 (c))."""
+    the W25-K1 exclusions (keys), minus K1_TRUNC_DROP (CC-199). One example per image per epoch; the reference cycles
+    with the epoch (§2 (c))."""
     rows = []
     kt = json.loads((data / "ktvic/train_data.json").read_text(encoding="utf-8"))
     n = {}
@@ -312,7 +327,7 @@ def pool_rows(data: Path, w25_ut: set[int], w25_k1: set[str]) -> list[tuple[str,
     rows += [(f"uitviic:{i}", f"uitviic/images/{i:012d}.jpg", n.get(i, 0)) for i in sorted(ut)]
     ov = json.loads((data / "openviic/uit-openviic-annotation-train.json").read_text(encoding="utf-8"))
     rows += [(f"openviic:{Path(f).stem}", f"openviic/images/{f}", len(v["captions"])) for f, v in sorted(ov.items())]
-    rows = [r for r in rows if r[0] not in w25_k1]
+    rows = [r for r in drop_trunc(rows) if r[0] not in w25_k1]
     if any(r[2] == 0 for r in rows):
         raise SystemExit("FAULT: a pool image has no reference")
     return rows
@@ -345,7 +360,8 @@ def cmd_pool(a) -> None:
     by = {}
     for k, _, n in rows:
         by[k.split(":")[0]] = by.get(k.split(":")[0], 0) + 1
-    print(json.dumps({"n": len(rows), "by_dataset": by, "sha256": sha(Path(a.out))}))
+    print(json.dumps({"n": len(rows), "by_dataset": by, "dropped_truncated": len(K1_TRUNC_DROP),
+                      "sha256": sha(Path(a.out))}))
 
 
 def pool_manifest(p: Path) -> list[tuple[str, str, str, int]]:
@@ -1226,6 +1242,17 @@ def selftest() -> None:
         except SystemExit:
             pass
         assert scan_k1([t], {42}, set(), allow, t / "pool", {42}, t / "kv") == 2
+        # CC-199/CC-200: key present -> exactly 1 row dropped, with or without the file on disk; key absent -> FAULT
+        rows3 = [("ktvic:1", "k.jpg", 1), ("openviic:00000007169", "openviic/images/00000007169.jpg", 1)]
+        assert not (t / rows3[1][1]).exists() and drop_trunc(rows3) == rows3[:1]  # file missing: no error
+        (t / "openviic/images").mkdir(parents=True)
+        (t / rows3[1][1]).write_bytes(b"trunc")
+        assert drop_trunc(rows3) == rows3[:1]
+        try:
+            drop_trunc(rows3[:1])
+            raise AssertionError("drop_trunc passed without the key")
+        except SystemExit:
+            pass
         # W6: C1 by sha against an exclusion list (XM3600), no feature needed
         pool_f = {"ids": ["ktvic:1", "openviic:2"], "sha": ["aa", "bb"]}
         keys, rec = w25k1_decide(pool_f, {}, None, {"xm3600_all_images": {"bb"}})
