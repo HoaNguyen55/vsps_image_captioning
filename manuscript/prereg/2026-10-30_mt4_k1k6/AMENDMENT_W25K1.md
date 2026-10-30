@@ -23,7 +23,7 @@ commit, with `scripts/mt4_k1k6/w25k1_prep.py` added to `scripts/mt4_k1k6/SHA256S
 - the XM3600 narrowing (J-3);
 - the outputs, the O_EXCL writer and the HOLD;
 - `k1k6.py`. It stays frozen at c9a9054, sha 4b511444 (`scripts/mt4_k1k6/SHA256SUMS`; 5b73fb81 was the pre-commit
-  file and is superseded, CC-190 W1). Every new feature row comes from its `w25k1 feats`.
+  file and is superseded, CC-190 W1). Every new feature row comes from the glue `feats` (CC-193).
 
 ## 1. The gaps (found by the operator at HEAD c9a9054)
 
@@ -43,7 +43,7 @@ commit, with `scripts/mt4_k1k6/w25k1_prep.py` added to `scripts/mt4_k1k6/SHA256S
 
 ## 2. The glue: `scripts/mt4_k1k6/w25k1_prep.py`
 
-- **sha256:** `bcd5182a745bae50b4cc1da0931cf9e58d20fda381dd8181e6ebcb95c18f2160`.
+- **sha256:** `f465c2a651acdea22aeadb8ce64a502402a245146b9f0e5a35fa8ae8e7cc87b5`.
 - **Selftest:** `python3 w25k1_prep.py --selftest` fails under `-I` with system python; it passes under `-I` in a venv that has numpy (CC-192 ran c_stage1_lists).
   It needs no torch and uses synthetic data. It checks:
   - re-keying, the drop of the K2-W25 ids and row alignment;
@@ -66,11 +66,11 @@ commit, with `scripts/mt4_k1k6/w25k1_prep.py` added to `scripts/mt4_k1k6/SHA256S
 | Subcommand | Does | Checks |
 |---|---|---|
 | `lists` | `pool_new.tsv`: the KTVIC train and OpenViIC train rows of the frozen `k1k6.pool_rows(data, w25_ut, ∅)` (12,857 = 3,769 + 9,088; keys never re-implemented); `ktvic_test.tsv` (558); `openviic_test.tsv` (2,001) | KTVIC test: every file sha = `data/lb/sets/ktvic_test.tsv` (pin 456243c0, the exclusion.json source). OpenViIC test: every file sha = `2026-10-25_c_test/ov_test_files.tsv` (pin 99d4fc49, C test PREREG l.15). `w25_excluded_ids.txt` pin f6151d28 |
-| `fetch --set uitviic_test` | each image's release `coco_url` (`uitviic/test_data.json`, pin 54abc0fb) goes to `/dev/shm/k1k6_w25k1/uitviic_test`; frozen `w25k1 feats`; unlink and a `deletions.log` line, also on failure | every body's sha256 must be in exclusion.json `image_sha256.uitviic_test` (exclusion.json c52a96d1), else FAULT and not written; 231 images; a lost image is a FAULT |
+| `fetch --set uitviic_test` | each image's release `coco_url` (`uitviic/test_data.json`, pin 54abc0fb) goes to `/dev/shm/k1k6_w25k1/uitviic_test`; glue `feats` (CC-193); unlink and a `deletions.log` line, also on failure | every body's sha256 must be in exclusion.json `image_sha256.uitviic_test` (exclusion.json c52a96d1), else FAULT and not written; 231 images; a lost image is a FAULT |
 | `fetch --set t2` | the same, with the `coco_url` of the 2,000 `t2_ids.txt` ids (via `k1k6.set_ids("t2")`, pin 298ae5e1) from the pinned `instances_val2014.json` `images[]` (e1b4d1bc), as `cmd_stage` does; no host is written in the code | **positive pin:** every body's sha256 must equal its row of C-EN `fetch/memory.sha256.tsv` (pin 553fb604; 2,000 of 2,000 T2 ids present), else FAULT and not written. **Also** no body may be a refused image: any exclusion.json `image_sha256` list, or the C-EN test-side records (`coco_test`, `coco_kval`, `nocaps_val` sha tsv; a missing record is REFUSED). A lost image is a FAULT |
 | `pool` | `pool.npz` = `feats_ut.npz` (pin 17d3ebf0) re-keyed to `uitviic:<id>`, minus the 10 K2-W25 ids, then the new `pool_new.npz` | key set = the frozen `pool_rows` keys exactly, no duplicate, no unreadable; n = 15,249 (§2 (c)) |
 | `against` | `kv5000.npz` and `oiv7_val.npz` from W25's own `w25.inputs()` (C-EN features at their pins, KV ids = kv5000, the 43 XM3600 NoCaps rows dropped by id) plus the 72 parts | every part sha = the W25 `SHA256SUMS` line; OIV7 rows = 41,164 exactly (W25's lost count was 0) |
-| `parity` (CC-190 W7) | the first 50 sorted UT-2,402 ids, fetched by their release `coco_url` (`uitviic/train_data.json`, pin 441d22d2) to tmpfs, featured by the frozen `feats` in the laptop venv, unlinked; the parity file is deleted after the comparison | every body's sha = its `feats_ut.npz` row; pHash, dHash and both mirrored hashes exactly equal and SSCD cosine ≥ 0.999 on all 50 rows, else FAULT and back to the judge. Reported as a reproducibility check |
+| `parity` (CC-190 W7) | the first 50 sorted UT-2,402 ids, fetched by their release `coco_url` (`uitviic/train_data.json`, pin 441d22d2) to tmpfs, featured by the glue `feats` (CC-193) in the laptop venv, unlinked; the parity file is deleted after the comparison | every body's sha = its `feats_ut.npz` row; pHash, dHash and both mirrored hashes exactly equal and SSCD cosine ≥ 0.999 on all 50 rows, else FAULT and back to the judge. Reported as a reproducibility check |
 | `check` (CC-190 W4) | run immediately before `decide`; prints the input shas and the exact `decide` command | WORK holds exactly `pool.npz` + the six stems (`pool_new.npz` may stay): kv5000 5,000, oiv7_val 41,164, ktvic_test 558, uitviic_test 231, openviic_test 2,001, t2 2,000; `pool.npz` n = 15,249 with keys = the `pool_rows` keys; no duplicate id and 0 unreadable in any file |
 
 **T2 sha (CC-190 W3).** The first, positive pin of the T2 bytes is C-EN's `fetch/memory.sha256.tsv` (sha 553fb604,
@@ -102,7 +102,7 @@ rerunnable.
    `pip check` passes; SSCD weights = 9f26bd4c. All of them go in the run LOG line, otherwise FAULT before any `feats`.
 1. `lists`
 2. `parity` (W7). On a FAULT, stop and go back to the judge.
-3. `k1k6.py w25k1 feats` for pool_new, ktvic_test and openviic_test (`--images data/datasets`)
+3. glue `feats` (CC-193) for pool_new, ktvic_test and openviic_test (images = `data/datasets`)
 4. `fetch` for uitviic_test and t2
 5. `pool`
 6. `against`
@@ -160,3 +160,30 @@ record only, no T2 byte is fetched, and §4 needs a further amendment.
   steps are reversible (≥ 90). CC-190 confirmed this split (ruling 6). The panel's 90.7 does not reach 92, so `decide`
   waits for the re-score after the diff read, the W6 environment gates, W7 parity on 50 of 50 rows, the W3 pin on 2,000
   of 2,000, the W4 check, and the PI's Q2 answer or its default.
+
+## 6. Truncated files (CC-193)
+
+- **The files.** Four OpenViIC files fail a strict PIL decode with "image file is truncated":
+
+  | Set | Id | Bytes not processed | File sha256 |
+  |---|---|---|---|
+  | openviic_test | 00000000768 | 18 | 404866ae511c2bfaa52339a40814316b916fb9d031c60d78f0da6d94d2ce733d |
+  | openviic_test | 00000001010 | 155 | 96f9a3ab12df1c9be676dfd82b015559cf10073d49448db7c0cd073f00c264e7 |
+  | openviic_test | 00000005095 | 76 | 7f00285e59dc0bac1278060d02a9d39d5d9113b1fc73dc5525b49f3d822d6569 |
+  | pool_new | openviic:00000007169 | 1 | 4859dd1fc17d928fed15035b69c9964401cf327b33d4ca04b161b3d252fb9d20 |
+
+  The frozen `k1k6.py w25k1 feats` cannot decode them and FAULTed on the first run (OPS-1030w25k1c).
+- **The decode.** The glue `feats` calls `build_memory.features(..., retry_truncated=True)`. This is the CC-082 retry:
+  a strict decode first; only on a "truncated (N bytes not processed)" failure, a decode with PIL
+  `LOAD_TRUNCATED_IMAGES`, set and reset around that one call. Readable images take the frozen path unchanged. The 3
+  test files get the same decode as C's lists, C test PREREG l.77/366 and B-2 Amendment 2.
+- **7169 is screened, not dropped.** C's memory dropped it (CC-082 T1). Here it is decoded for the screen only, because
+  that is the conservative direction: with finite features it can match a test image and be excluded, and with NaN
+  features it would stay in the pool unscreened. The pool stays at 15,249. Its training-time handling is a separate
+  rule before the first tier-1 training step (CC-193 W5).
+- **FAULT rule.** The glue pins the table above (`TRUNC`). Any of these FAULTs and goes back to the judge, never to a
+  retry: an image still unreadable after the retry; a pinned set (openviic_test, pool_new, ktvic_test = none) whose
+  truncated record differs from the table; more than 3 truncated files in an unpinned set (uitviic_test, t2, parity);
+  a non-finite SSCD row. Each set's `truncated_decoded` record is written into its npz and the run LOG (CC-193 gate g).
+- **Determinism (CC-193).** With `LOAD_TRUNCATED_IMAGES`, the RGB pixel sha256 of each file is the same on repeat and
+  across PIL 12.3.0 and 13.0.0: 768 15277c96ecd6, 1010 16479f6c87bc, 5095 455cfd604acd, 7169 73c900395281.

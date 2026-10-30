@@ -2,11 +2,12 @@
 """W25-K1 glue (DEV_RULE §4, AMENDMENT_W25K1, CC-190): the inputs `k1k6.py w25k1 feats|decide` (frozen at c9a9054,
 sha 4b511444, scripts/mt4_k1k6/SHA256SUMS) needs and does not build. Writes ids, file names, image sha256s and features
 only; caption text is never printed or written (pool_rows tests caption presence only); never reads KV-4,224 or a gold
-file. Feature code is the frozen `k1k6.py w25k1 feats` for every new set. WORK must be outside the repository.
+file. Feature code = build_memory.features with the CC-082 truncated retry (CC-193); readable rows identical to frozen
+`k1k6.py w25k1 feats`. Every new set goes through the glue `feats`. WORK must be outside the repository.
 
-    python3 w25k1_prep.py --selftest                                  system python with user-site numpy (not -I), no torch
+    python3 w25k1_prep.py --selftest                                  no torch: synthetic; with torch + W25K1_SSCD: + JPEG
     $FT w25k1_prep.py lists --work W                                  pool_new.tsv, ktvic_test.tsv, openviic_test.tsv
-    $FT k1k6.py w25k1 feats --list W/<x>.tsv --images data/datasets --name <x> --sscd PT --out W/<x>.npz
+    $FT w25k1_prep.py feats --list W/<x>.tsv --name <x> --sscd PT --work W   CC-193: W/<x>.npz (images = data/datasets)
     $FT w25k1_prep.py fetch --set uitviic_test|t2 --ann DIR --cen C_EN_DIR --sscd PT --work W   tmpfs fetch, feats, unlink
     $FT w25k1_prep.py pool --ut FEATS_UT --work W                     W/pool.npz = re-keyed UT-2,392 + W/pool_new.npz
     $FT w25k1_prep.py against --cen C_EN_DIR --parts W25_PARTS --work W   W/kv5000.npz, W/oiv7_val.npz (XM rows dropped)
@@ -18,7 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
-import subprocess
+import os
 import sys
 from pathlib import Path
 
@@ -50,6 +51,16 @@ UV_TRAIN = "441d22d29eb7aa12d32d49e330778a4a918c3a9413c23294a9daec92a238d110"  #
 OIV7_PARTS = 72
 SETS = {"kv5000": 5000, "oiv7_val": 41164, "ktvic_test": 558, "uitviic_test": 231, "openviic_test": 2001, "t2": 2000}
 PARITY_N = 50  # CC-190 W7
+#: CC-193 r3a: the truncated files each set must decode with the CC-082 retry, {id: (file sha256, bytes not processed)}
+TRUNC = {
+    "openviic_test": {
+        "00000000768": ("404866ae511c2bfaa52339a40814316b916fb9d031c60d78f0da6d94d2ce733d", 18),
+        "00000001010": ("96f9a3ab12df1c9be676dfd82b015559cf10073d49448db7c0cd073f00c264e7", 155),
+        "00000005095": ("7f00285e59dc0bac1278060d02a9d39d5d9113b1fc73dc5525b49f3d822d6569", 76)},
+    "pool_new": {"openviic:00000007169": ("4859dd1fc17d928fed15035b69c9964401cf327b33d4ca04b161b3d252fb9d20", 1)},
+    "ktvic_test": {},
+}
+TRUNC_NEW_MAX = 3  # CC-193 r3b: a set without a TRUNC entry (uitviic_test, t2, parity) may log at most 3
 
 
 def pinned(rel: str) -> Path:
@@ -154,14 +165,42 @@ def fetch_rows(name: str, ann: Path, cen: Path) -> tuple[list[tuple[str, str, st
     return [(str(i), f"{i:012d}.jpg", url[i]) for i in ids], check
 
 
-def frozen_feats(lst: Path, images: Path, name: str, sscd: str, out: Path) -> None:
-    subprocess.run([sys.executable, str(HERE / "k1k6.py"), "w25k1", "feats", "--list", str(lst), "--images",
-                    str(images), "--name", name, "--sscd", sscd, "--out", str(out)], check=True)
+def trunc_check(name: str, ids: list[str], f: dict) -> dict[str, tuple[str, int]]:
+    """CC-193 r3b: {id: (sha, bytes)} of the files decoded with the truncated retry. FAULT if an image is still
+    unreadable, a pinned set's record differs from TRUNC, an unpinned set has more than 3, or an SSCD row is
+    non-finite."""
+    got = {ids[i]: (f["sha"][i], b) for i, b in f["truncated"]}
+    if f["unreadable"]:
+        raise SystemExit(f"FAULT: {name}: {len(f['unreadable'])} image(s) unreadable after the CC-082 retry")
+    if name in TRUNC and got != TRUNC[name]:
+        raise SystemExit(f"FAULT: {name}: truncated files {got} differ from the pinned {TRUNC[name]}")
+    if name not in TRUNC and len(got) > TRUNC_NEW_MAX:
+        raise SystemExit(f"FAULT: {name}: {len(got)} truncated files (> {TRUNC_NEW_MAX})")
+    if not np.isfinite(f["sscd"]).all():
+        raise SystemExit(f"FAULT: {name}: a non-finite SSCD row")
+    return got
 
 
-def tmpfs_feats(name: str, rows, check, out: Path, sscd: str, get=F.get, feats=frozen_feats, shm: Path = SHM) -> None:
-    """Fetch every body to tmpfs, sha-check it in memory (FAULT: not written), feature the folder with the frozen code,
-    then unlink the folder and log it, also on any failure. A lost image is a FAULT (a test set is never partial)."""
+def glue_feats(lst: Path, images: Path, name: str, sscd: str, out: Path) -> None:
+    """CC-193 (a'): build_memory.features with retry_truncated=True on the whole set (readable rows take the frozen
+    path unchanged); the truncated record goes into the npz meta and stdout."""
+    rows = [x.split("\t") for x in Path(lst).read_text().splitlines() if x]
+    ids = [r[0] for r in rows]
+    f = w25.bm().features([Path(images) / r[1] for r in rows], sscd, workers=8, retry_truncated=True)
+    got = trunc_check(name, ids, f)
+    w25.save(out, ids, f, set=name, utc=KK.utc(), truncated_decoded=got)
+    print(json.dumps({"set": name, "n": len(ids), "truncated_decoded": got}))
+
+
+def cmd_feats(a) -> None:
+    w = outside_repo(Path(a.work))
+    glue_feats(Path(a.list), DATA, a.name, str(w25.ok_sscd(Path(a.sscd))), w / f"{a.name}.npz")
+
+
+def tmpfs_feats(name: str, rows, check, out: Path, sscd: str, get=F.get, feats=None, shm: Path = SHM) -> None:
+    """Fetch every body to tmpfs, sha-check it in memory (FAULT: not written), feature the folder with glue_feats
+    (CC-193), then unlink the folder and log it, also on any failure. A lost image is a FAULT (never partial)."""
+    feats = feats or glue_feats
     folder = shm / name
     folder.mkdir(parents=True, exist_ok=False)
     try:
@@ -399,7 +438,74 @@ def selftest() -> None:
             raise AssertionError("work dir inside the repo passed")
         except SystemExit:
             pass
+    selftest_trunc()
+    if os.environ.get("W25K1_SSCD"):
+        with tempfile.TemporaryDirectory() as t:
+            jpeg_selftest(Path(t), Path(os.environ["W25K1_SSCD"]))
     print("w25k1_prep selftest ok")
+
+
+def selftest_trunc() -> None:
+    """CC-193 r3b without torch: the truncated record and its FAULT conditions."""
+    def fr(n, trunc=(), unread=()):
+        return {"sha": [f"h{i}" for i in range(n)], "truncated": list(trunc), "unreadable": list(unread),
+                "sscd": np.zeros((n, 2), np.float32)}
+
+    keep = dict(TRUNC)
+    try:
+        TRUNC["pinned"] = {"b": ("h1", 7)}
+        assert trunc_check("pinned", ["a", "b"], fr(2, [(1, 7)])) == {"b": ("h1", 7)}
+        assert trunc_check("free", ["a", "b"], fr(2, [(1, 7)])) == {"b": ("h1", 7)}
+        bad = [("pinned", fr(2)), ("pinned", fr(2, [(0, 7)])), ("pinned", fr(2, [(1, 7)], [0])),
+               ("free", fr(4, [(0, 1), (1, 1), (2, 1), (3, 1)])),
+               ("free", {**fr(2), "sscd": np.full((2, 2), np.nan, np.float32)})]
+        for name, f in bad:
+            try:
+                trunc_check(name, ["a", "b", "c", "d"][:len(f["sha"])], f)
+                raise AssertionError(f"trunc_check passed {name}")
+            except SystemExit:
+                pass
+    finally:
+        TRUNC.clear()
+        TRUNC.update(keep)
+
+
+def jpeg_selftest(t: Path, sscd: Path) -> None:
+    """CC-193 r3d (torch venv): a JPEG cut by a few bytes gets finite features and a truncated record; pinned passes,
+    unpinned or pinned-but-whole FAULTs; readable rows equal the strict path bit for bit; the PIL flag is reset."""
+    from PIL import Image, ImageFile
+
+    d = t / "jpg"
+    d.mkdir()
+    rng = np.random.default_rng(0)
+    for n in range(3):
+        Image.fromarray(rng.integers(0, 255, (64, 64, 3), np.uint8)).save(d / f"{n}.jpg", quality=90)
+    (d / "2.jpg").write_bytes((d / "2.jpg").read_bytes()[:-40])
+    (d / "l.tsv").write_text("a\t0.jpg\nb\t1.jpg\nc\t2.jpg\n")
+    bm = w25.bm()
+    f = bm.features([d / "0.jpg", d / "1.jpg", d / "2.jpg"], str(sscd), workers=2, retry_truncated=True)
+    strict = bm.features([d / "0.jpg", d / "1.jpg"], str(sscd), workers=2)
+    assert ImageFile.LOAD_TRUNCATED_IMAGES is False
+    assert [i for i, _ in f["truncated"]] == [2] and np.isfinite(f["sscd"]).all() and not f["unreadable"]
+    assert all(np.array_equal(f[k][:2], strict[k]) for k in w25.KEYS)
+    pin = {"c": (KK.sha(d / "2.jpg"), f["truncated"][0][1])}
+    keep = dict(TRUNC)
+    try:
+        TRUNC["syn"] = pin
+        glue_feats(d / "l.tsv", d, "syn", str(sscd), d / "syn.npz")
+        assert (d / "syn.npz").exists() and ImageFile.LOAD_TRUNCATED_IMAGES is False
+        for tr in ({}, {**pin, "b": (KK.sha(d / "1.jpg"), 1)}):  # unpinned; pinned but not truncated
+            TRUNC["syn"] = tr
+            try:
+                glue_feats(d / "l.tsv", d, "syn", str(sscd), d / "syn2.npz")
+                raise AssertionError("glue_feats passed a wrong truncated pin")
+            except SystemExit:
+                pass
+            assert not (d / "syn2.npz").exists()
+    finally:
+        TRUNC.clear()
+        TRUNC.update(keep)
+    print("w25k1_prep jpeg selftest ok")
 
 
 def main() -> None:
@@ -419,12 +525,15 @@ def main() -> None:
     g = sp.add_parser("against")
     for k in ("--cen", "--parts", "--work"):
         g.add_argument(k, required=True)
+    fe = sp.add_parser("feats")
+    for k in ("--list", "--name", "--sscd", "--work"):
+        fe.add_argument(k, required=True)
     for name in ("parity", "check"):
         q = sp.add_parser(name)
         for k in ("--work",) + (("--cen", "--sscd") if name == "parity" else ()):
             q.add_argument(k, required=True)
     a = ap.parse_args()
-    {"lists": cmd_lists, "fetch": cmd_fetch, "pool": cmd_pool, "against": cmd_against, "parity": cmd_parity,
+    {"lists": cmd_lists, "fetch": cmd_fetch, "pool": cmd_pool, "against": cmd_against, "parity": cmd_parity, "feats": cmd_feats,
      "check": cmd_check}[a.cmd](a)
 
 
