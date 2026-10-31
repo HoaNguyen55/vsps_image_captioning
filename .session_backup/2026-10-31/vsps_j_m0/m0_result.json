@@ -1,0 +1,97 @@
+{
+ "selection_set": {
+  "images": 663,
+  "segments": 13813,
+  "inaccurate": 3993
+ },
+ "point": {
+  "R_A": 0.7089907337841223,
+  "P_A": 0.59637665894249,
+  "AUROC_A": 0.8435444691142289,
+  "tau_B": 0.2975822360941495,
+  "R_B": 0.4227397946406211,
+  "P_B": 0.5966772711205373,
+  "AUROC_B": 0.7719757666547823,
+  "dR_pts": -28.625093914350114
+ },
+ "ci95": {
+  "R_A": [
+   0.6857280834916971,
+   0.7307053954594329
+  ],
+  "AUROC_A": [
+   0.8327378947377388,
+   0.8540119992152053
+  ],
+  "R_B": [
+   0.3652537469295707,
+   0.4910310019378712
+  ],
+  "AUROC_B": [
+   0.7591793510657971,
+   0.7842370139527982
+  ],
+  "dR_pts": [
+   -34.278986689286185,
+   -21.495229107035666
+  ]
+ },
+ "decision": {
+  "few_shot": "DROP",
+  "detector": "CONTINUE"
+ },
+ "prec_at_R80": {
+  "A": 0.549974195768106,
+  "B": 0.4477298206278027
+ },
+ "per_type_recall_selection": {
+  "A": {
+   "count": {
+    "n_inaccurate": 1322,
+    "recall": 0.7534039334341907
+   },
+   "attribute": {
+    "n_inaccurate": 368,
+    "recall": 0.6603260869565217
+   },
+   "relation": {
+    "n_inaccurate": 879,
+    "recall": 0.6655290102389079
+   },
+   "object": {
+    "n_inaccurate": 1424,
+    "recall": 0.7071629213483146
+   }
+  },
+  "B": {
+   "count": {
+    "n_inaccurate": 1322,
+    "recall": 0.3577912254160363
+   },
+   "attribute": {
+    "n_inaccurate": 368,
+    "recall": 0.48641304347826086
+   },
+   "relation": {
+    "n_inaccurate": 879,
+    "recall": 0.3856655290102389
+   },
+   "object": {
+    "n_inaccurate": 1424,
+    "recall": 0.48946629213483145
+   }
+  }
+ },
+ "full_split_same_thresholds": {
+  "images": 769,
+  "segments": 16027,
+  "inaccurate": 4605,
+  "R_A": 0.7166123778501629,
+  "P_A": 0.5912918831750582,
+  "R_B": 0.4256243213897937,
+  "P_B": 0.5903614457831325,
+  "AUROC_A": 0.8459534346255612,
+  "AUROC_B": 0.7734044496866914
+ },
+ "note": "Recall is against human-marked Inaccurate spans; unmarked text defaults to Accurate (bias: PREREG section 2)."
+}
