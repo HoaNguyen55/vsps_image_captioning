@@ -1,0 +1,426 @@
+--- a/scripts/mt4_k1k6/k1k6.py
++++ b/scripts/mt4_k1k6/k1k6.py
+@@ -87,6 +87,14 @@
+ KV_DESC = "kv_detailed_k1_s1"  # descriptive K1 detailed row: no H, scheduled last from what is left (CC-175 W2)
+ HB1_NEEDS = ("short:base8_s",)  # plus every kept short:k1_s* (W1); H-B2 needs the three below
+ HB2_NEEDS = ("short:k6_s1", "detailed:k6_s1", "detailed:base8_s")
++#: CC-205 W5: the scorer closure = every repo file the scorer loads (this file, the matcher modules, the lexicon data).
++#: t2decide records it; kvscore FAULTs before reading any prediction or gold unless it equals the anchored record.
++SCORER_CLOSURE = ("scripts/mt4_k1k6/k1k6.py", "scripts/grl/common.py", "scripts/grl/k2_gate0.py", "scripts/grl/reward.py",
++                  "scripts/score_coco_probe.py", "scripts/clean_supervision.py", "scripts/rl_reward.py",
++                  "scripts/person_uncap.py", "rescap/__init__.py", "rescap/chair.py", "rescap/metrics.py",
++                  "rescap/repro.py", "rescap/svp/__init__.py", "rescap/svp/entailment.py", "rescap/svp/matching.py",
++                  "rescap/vi/__init__.py", "rescap/vi/classifier.py", "rescap/vi/color.py", "rescap/vi/lexicon.py",
++                  "rescap/vocab.py", "data/coco_probe/coco80_vi.json")
+ 
+ 
+ def sha(p: Path) -> str:
+@@ -255,17 +263,41 @@
+ 
+ 
+ VAL2014_PIN = "e1b4d1bc54906827b1a029981b1c77f2088bd4462569b7615db7929070c3ab47"
++#: AMENDMENT_2 B4: positive pins of the staged bytes = C-EN's fetch records on M1 (AMENDMENT_W25K1 l.78, CC-190 W3):
++#: T2 = memory (restval), KV = coco_kval (Karpathy val). Every KV body is a refused sha by design (common.refused_sets
++#: holds coco_kval), so in tier 3 it passes only as its own record row, and the guard only under k1k6_kv.
++CEN_RECORDS = {"t2": ("memory", "553fb604c21b54e37cd980297d78fe388d5751561b495d61f13f1fc52eb1e852"),
++               "kv": ("coco_kval", "8c93f306f24588fb6e66eed0a8ba2ba97e61adf901ddf5ab614b37d5b677ee1c")}
++
++
++def cen_record(name: str, rec: Path = K.CEN_REC) -> dict[int, str]:
++    """{coco id: sha256} of a C-EN fetch record (id, file, sha256, bytes) at its pin, else REFUSED."""
++    stem, pin = CEN_RECORDS[name]
++    p = rec / f"{stem}.sha256.tsv"
++    if not p.is_file() or sha(p) != pin:
++        raise SystemExit(f"REFUSED: {p} missing or not its pin {pin[:8]}")
++    return {int(r[0]): r[2] for r in (x.split("\t") for x in p.read_text().splitlines())}
++
++
++def stage_check(name: str, i: int, h: str, bad_sha: set[str], rec: dict[int, str]) -> None:
++    """A refused sha is a FAULT, except a KV body equal to its own Karpathy-val record row; then every body must equal
++    its own record row (a missing row is a FAULT too). Called before any byte is written."""
++    if h in bad_sha and not (name == "kv" and rec.get(i) == h):
++        raise SystemExit(f"FAULT: {i} is a refused image by sha256; not written")
++    if rec.get(i) != h:
++        raise SystemExit(f"FAULT: {i} differs from its C-EN record row (AMENDMENT_2 B4); not written")
+ 
+ 
+-def cmd_stage(a, get=None) -> None:
++def cmd_stage(a, get=None, rec=None) -> None:
+     """Stage T2 (tier 2) or KV-4,224 (tier 3, after kvready) from each image's own `coco_url` in the pinned
+     instances_val2014.json (as common.stage does; no host is written in this code) into their own folder (k1k6_t2 /
+-    k1k6_kv), every body hashed in memory and refused if its sha256 is an exclusion.json or C-EN test-side image,
++    k1k6_kv), every body hashed in memory and checked by stage_check (refused shas; its own C-EN record row),
+     written by tmp + rename; then the manifest TSV (id, file, sha256). Idempotent."""
+     import concurrent.futures as cf
+ 
+     get = get or K.fetch
+     ids = set_ids(a.set)
++    rec = rec or cen_record(a.set)
+     f = Path(a.ann) / "instances_val2014.json"
+     if sha(f) != VAL2014_PIN:
+         raise SystemExit("REFUSED: instances_val2014.json differs from its pin")
+@@ -277,13 +309,11 @@
+     def one(i):
+         f = folder / f"COCO_val2014_{i:012d}.jpg"
+         if f.exists():
+-            if (h := K.sha_file(f)) in bad_sha:
+-                raise SystemExit(f"FAULT: staged {f.name} is a refused image by sha256")
++            stage_check(a.set, i, h := K.sha_file(f), bad_sha, rec)
+             return i, f.name, h
+         b = get(url[i])
+         h = hashlib.sha256(b).hexdigest()
+-        if h in bad_sha:
+-            raise SystemExit(f"FAULT: {i} is a refused image by sha256; not written")
++        stage_check(a.set, i, h, bad_sha, rec)
+         tmp = f.with_name("." + f.name)
+         tmp.write_bytes(b)
+         os.replace(tmp, f)
+@@ -432,9 +462,10 @@
+ 
+ # ------------------------------------------------------------------------------------------------ guard (M1)
+ def scan_k1(roots, bad_ids: set[int], bad_sha: set[str], allow_sha: set[str], allow_root: Path,
+-            kv_ok: set[int] = frozenset(), kv_root: Path | None = None, skip=("/root/vsps/.venv",)) -> int:
++            kv_ok: dict[int, str] | None = None, kv_root: Path | None = None, skip=("/root/vsps/.venv",)) -> int:
+     """common.scan with two amendments (§6): a non-COCO file name (KTVIC, OpenViIC) passes only under allow_root and
+-    only if its sha256 is in the pool manifest; in tier 3 a KV-4,224 id passes only under kv_root. Everything else is
++    only if its sha256 is in the pool manifest; in tier 3 a KV-4,224 file passes only under kv_root and only if its
++    sha256 is its own C-EN Karpathy-val record row (kv_ok, AMENDMENT_2 B4), although that sha is a refused one. Everything else is
+     common.scan unchanged (refused COCO ids, exclusion.json and C-EN test-side shas)."""
+     seen = 0
+     for root in roots:
+@@ -445,12 +476,13 @@
+                     continue
+                 p, m = Path(dirpath) / f, K.COCO_RE.search(f)
+                 h = K.sha_file(p)
+-                if h in bad_sha:
++                kv_here = bool(kv_root and kv_ok) and kv_root in p.parents and m is not None and kv_ok.get(int(m.group(1))) == h
++                if h in bad_sha and not kv_here:
+                     raise SystemExit(f"REFUSED: test image {p} (refused sha256)")
+                 if m is None:
+                     if allow_root not in p.parents or h not in allow_sha:
+                         raise SystemExit(f"REFUSED: unidentifiable image {p} (not a COCO name, not a pool image)")
+-                elif int(m.group(1)) in bad_ids and not (kv_root and kv_root in p.parents and int(m.group(1)) in kv_ok):
++                elif int(m.group(1)) in bad_ids and not kv_here:
+                     raise SystemExit(f"REFUSED: test image {p} (refused COCO id)")
+                 seen += 1
+     return seen
+@@ -467,12 +499,16 @@
+     if a.tier == 1:
+         bad_ids = bad_ids | set(t2_ids())  # T2 bytes may not exist while anything is selected (tier 1)
+     allow = {r[2] for r in pool_manifest(Path(a.pool))}
+-    kv_ok = set()
++    kv_ok = {}
+     if a.tier == 3:
+         f = K.ROOT / KV4224
+         if not f.is_file() or sha(f) != KV4224_SHA:
+             raise SystemExit("REFUSED: kv4224.txt missing or not the PREREG §1 pin")
+-        kv_ok = {int(x) for x in f.read_text().split()}
++        kv = cen_record("kv")  # a KV-4,224 file passes only under k1k6_kv and only as its own record row (B4)
++        kv_ids = [int(x) for x in f.read_text().split()]
++        if miss := [i for i in kv_ids if i not in kv]:  # CC-205 W8: a FAULT, never a KeyError
++            raise SystemExit(f"FAULT: {len(miss)} kv4224 id(s) have no row in the C-EN Karpathy-val record")
++        kv_ok = {i: kv[i] for i in kv_ids}
+     n = scan_k1(K.SCAN_ROOTS, bad_ids, bad_sha, allow, K.NCS_DATA / "datasets/k1k6_pool", kv_ok,
+                 K.NCS_DATA / "datasets/k1k6_kv" if a.tier == 3 else None)
+     print(json.dumps({"machine_id": mid, "tier": a.tier, "images_scanned": n, **iso}))
+@@ -543,7 +579,12 @@
+         G1.ledger_append(led, f"{o[0]} {int(float(o[3]))}")
+         print(f"FAULT: open start of {o[0]} closed at its full logged timeout")
+         sys.exit(6)
+-    c = json.loads(Path(a.caps).read_text())["cap_h"]
++    rec = json.loads(Path(a.caps).read_text())
++    if "cut K1 seed 2" in rec.get("ladder_applied", []):  # CC-205 r3 (Codex 1): H-B1 not confirmatory -> branch stop
++        print("NOT-RUN (cost): caps.json cuts K1 seed 2 (CC-205 r3); no confirmatory training", file=sys.stderr)
++        print(0)  # the job's `[ "$t" -gt 0 ] || cost` closes the branch (K1K6_COST.txt) before the first stage runs
++        sys.exit(0)
++    c = rec["cap_h"]
+     if a.stage not in c:
+         print(f"CUT: {a.stage} is not in caps.json (ladder or descriptive remainder); skipped")
+         sys.exit(5)
+@@ -706,23 +747,33 @@
+             {str(k): bool(hit.get(k, False)) for k in pr})
+ 
+ 
+-def short_counts(caps: dict[str, str], hit: dict[str, bool], gold: dict, ids: list[str]) -> np.ndarray:
++def row_v1(c: str, g: set) -> dict:
++    """k2_gate0.row's tp/hal/men/g with matcher v1 in place of v2 (same negation and hedge split). Descriptive only:
++    MT4 PREREG §1 l.31 "v1 is reported beside it" (CC-175 N3, R2-2)."""
++    said, hedged = KG.RW.unasserted(c)
++    a = set(KG.RW.ordered(said, "v1")[0])
++    u = set(KG.RW.ordered(hedged, "v1")[0]) - a
++    return {"tp": len(a & g), "hal": len((a - g) | u), "men": len(a | u), "g": len(g)}
++
++
++def short_counts(caps: dict[str, str], hit: dict[str, bool], gold: dict, ids: list[str], ver: str = "v2") -> np.ndarray:
+     """Per image (tp, men, recall, has_gold, lang_fail, cap_hit). Mentions = k2_gate0.row (matcher v2; a negated or
+     hedged class is a mention and never a TP, MT4 PREREG §1); P = sum tp / sum men, R = mean per-image recall over
+-    images with gold, F1 harmonic (object_prf.prf). Every caption passes untruncate first."""
++    images with gold, F1 harmonic (object_prf.prf). Every caption passes untruncate first. ver="v1": row_v1."""
+     out = []
+     for i in ids:
+         g = set(gold[i])
+         c = KG.untruncate(caps[i], hit[i])
+-        r = KG.row(c, g, g)
++        r = KG.row(c, g, g) if ver == "v2" else row_v1(c, g)
+         out.append((r["tp"], r["men"], r["tp"] / r["g"] if r["g"] else 0.0, float(r["g"] > 0),
+                     float(not KG.language_ok(c)), float(hit[i])))
+     return np.array(out, float)
+ 
+ 
+-def detailed_counts(caps: dict[str, str], hit: dict[str, bool], gold: dict, ids: list[str]) -> np.ndarray:
++def detailed_counts(caps: dict[str, str], hit: dict[str, bool], gold: dict, ids: list[str], ver: str = "v2") -> np.ndarray:
+     """Per image (hal, men, tp, g): k2_gate0.row after untruncate; CHAIR_i = sum hal / sum men x 100 (§1)."""
+-    rows = [KG.row(KG.untruncate(caps[i], hit[i]), set(gold[i]), set(gold[i])) for i in ids]
++    rows = [(KG.row(c, set(gold[i]), set(gold[i])) if ver == "v2" else row_v1(c, set(gold[i])))
++            for i, c in ((i, KG.untruncate(caps[i], hit[i])) for i in ids)]
+     return np.array([(r["hal"], r["men"], r["tp"], r["g"]) for r in rows], float)
+ 
+ 
+@@ -831,13 +882,47 @@
+     return {m: [s for s in ss if f"{tag}_{m}_{s}" in caps["cap_h"]] for m, ss in base.items()}
+ 
+ 
+-def load_set(d: Path, tag: str, systems: dict, gold: dict, ids: list[str]) -> tuple[dict, dict]:
+-    sh = {s: short_counts(*preds_of(d / f"k1k6_{tag}_{s}-short.preds.json"), gold, ids) for s in systems["short"]}
+-    de = {s: detailed_counts(*preds_of(d / f"k1k6_{tag}_{s}-detailed.preds.json"), gold, ids)
++def load_set(d: Path, tag: str, systems: dict, gold: dict, ids: list[str], ver: str = "v2") -> tuple[dict, dict]:
++    sh = {s: short_counts(*preds_of(d / f"k1k6_{tag}_{s}-short.preds.json"), gold, ids, ver) for s in systems["short"]}
++    de = {s: detailed_counts(*preds_of(d / f"k1k6_{tag}_{s}-detailed.preds.json"), gold, ids, ver)
+           for s in systems["detailed"]}
+     return sh, de
+ 
+ 
++def v1_desc(sh: dict[str, np.ndarray], de: dict[str, np.ndarray], **kw) -> dict:
++    """hyp() on matcher-v1 rows, descriptive only (CC-175 N3, R2-2): no gating role, so 'holds'/'tested' are removed.
++    It is written inside the same one-shot record as the v2 analysis, because nothing is rescored after a look."""
++    h = hyp(sh, de, **kw)
++    for k in ("H-B1", "H-B2"):
++        h[k] = {x: y for x, y in h[k].items() if x not in ("holds", "tested")}
++    return h | {"label": V1_LABEL}
++
++
++V1_LABEL = ("v1 class lexicon with the section-1 negation/hedge rule (not score_dev.py's negation-blind v1); fixed after "
++            "the val-924 planning numbers were seen (CC-205 W9); descriptive only, never gates")
++
++
++def v1_safe(rows) -> dict:
++    """CC-205 W9: a v1 failure never blocks the v2 record; it is written as the exception type only (no text)."""
++    try:
++        return v1_desc(*rows[:2], **rows[2])
++    except Exception as e:  # noqa: BLE001 - recorded in the one-shot record, not swallowed
++        return {"error": type(e).__name__, "label": V1_LABEL}
++
++
++def closure(files=SCORER_CLOSURE, root: Path = ROOT) -> dict[str, str]:
++    if miss := [r for r in files if not (root / r).is_file()]:  # Codex 3: a FAULT, never a FileNotFoundError
++        raise SystemExit(f"FAULT: scorer closure file(s) missing {miss} (TO-PI)")
++    return {r: sha(root / r) for r in files}
++
++
++def closure_check(anchored: dict | None, now: dict[str, str]) -> None:
++    """CC-205 W5: the scorer that reads KV must be byte-identical to the one that wrote the anchored tier-2 record."""
++    if anchored != now:
++        bad = sorted(k for k in set(anchored or {}) | set(now) if (anchored or {}).get(k) != now.get(k))
++        raise SystemExit(f"FAULT: scorer closure differs from the anchored t2_decide closure {bad}; nothing read (TO-PI)")
++
++
+ # ------------------------------------------------------------------------------------------------ tier rules
+ def t1_rule(sh: dict[str, np.ndarray]) -> dict:
+     """(a) N_SHORT 160, or 256 if any tier-1 short decode has > 1% cap hits. (c) E* = the epoch checkpoint (e1..e3,
+@@ -900,7 +985,9 @@
+     sh, de = load_set(d, "t2", sys2, gold, ids)
+     h = hyp(sh, de, k6_why="not tested (cost: K6 cut by the ladder)")
+     pp = p_pass(sh, de)
+-    rec = t2_rule(h, pp, systems_of(caps, "kv")) | {"systems": sys2, "scorer_sha256": sha(Path(__file__)), "tier2": h, "p_pass": pp, "utc": utc(),
++    v1 = v1_safe((*load_set(d, "t2", sys2, gold, ids, "v1"), {"k6_why": "not tested (cost: K6 cut by the ladder)"}))
++    rec = t2_rule(h, pp, systems_of(caps, "kv")) | {"systems": sys2, "scorer_sha256": sha(Path(__file__)), "scorer_closure": closure(), "tier2": h, "p_pass": pp,
++                                                     "tier2_matcher_v1": v1, "utc": utc(),
+                             "label": "DEV-CONFIRM rehearsal (T2-2000): licenses the KV look, never a result",
+                             "inputs_sha256": {p.name: sha(p) for p in sorted(d.glob("k1k6_t2_*.preds.json"))}}
+     excl_write(d / "t2_decide.json", json.dumps(rec, indent=1) + "\n")
+@@ -924,9 +1011,23 @@
+         raise SystemExit("REFUSED: tier 2 did not pass; no KV look (PI-1029n)")
+     if (d / "mt4_k1k6_decide.json").exists():
+         raise SystemExit("REFUSED: the KV look already happened")
++    if (d / KV_ATTEMPT).exists():  # Codex 2: a started scoring attempt is terminal, also after a crash
++        raise SystemExit("REFUSED: a KV scoring attempt already started; terminal (TO-PI, new irreversible ruling)")
+     return rec["kv_kept"]
+ 
+ 
++KV_ATTEMPT = "kvscore_attempt.json"
++
++
++def kv_attempt(d: Path, rec: dict) -> None:
++    """Codex 2: the one-look marker, created O_EXCL and fsynced before any KV gold or prediction is read. Any later
++    failure is terminal: kv_ready refuses every later scoring (and decoding) call."""
++    try:
++        excl_write(d / KV_ATTEMPT, json.dumps(rec | {"utc": utc()}, indent=1) + "\n")
++    except FileExistsError:
++        raise SystemExit("REFUSED: a KV scoring attempt already started; terminal (TO-PI)") from None
++
++
+ def cmd_kvready(a) -> None:
+     print(json.dumps(kv_ready(Path(a.dir))))
+ 
+@@ -981,9 +1082,13 @@
+     names = [f"{m}:{s}" for m, ss in kept.items() for s in ss]  # H systems only; the descriptive row is outside
+     import calendar
+ 
+-    t2_utc = json.loads((d / "t2_decide.json").read_text())["utc"]  # anchored by kv_ready (CC-175 R2-1)
++    t2 = json.loads((d / "t2_decide.json").read_text())  # anchored by kv_ready
++    closure_check(t2.get("scorer_closure"), closure())  # CC-205 W5: before any KV prediction, gold or freeze read
++    t2_utc = t2["utc"]  # CC-175 R2-1
+     fr = freeze_set(KV_SUMS.read_text().splitlines(), names, time.time(),
+-                    calendar.timegm(time.strptime(t2_utc, "%Y-%m-%dT%H:%M:%SZ")))
++                    calendar.timegm(time.strptime(t2_utc, "%Y-%m-%dT%H:%M:%SZ")))  # shas + times only; HELD writes nothing
++    kv_attempt(d, {"closure_sha256": hashlib.sha256(json.dumps(closure(), sort_keys=True).encode()).hexdigest(),
++                   "freeze": fr})  # Codex 2: before any KV gold or prediction read
+     gold = json.loads(committed_file(PDIR / "kv_gold.json").read_text())["gold"]
+     ids = [str(i) for i in set_ids("kv")]  # checks the 86d93863 pin
+     miss = set(fr["missing"])
+@@ -995,12 +1100,13 @@
+         for s, (h, f) in fr["frozen"].items():
+             if sha(d / f) != h:
+                 raise SystemExit(f"FAULT: {f} differs from KV_PRED_SUMS")
+-        sh = {s.split(":")[1]: short_counts(*preds_of(d / fr["frozen"][s][1]), gold, ids) for s in names
+-              if s.startswith("short:")}
+-        de = {s.split(":")[1]: detailed_counts(*preds_of(d / fr["frozen"][s][1]), gold, ids) for s in names
+-              if s.startswith("detailed:")}
+-        rec = {"verdict": "SCORED", "kv": hyp(sh, de, k6_why="NOT-RUN (an H-B2 row is missing)" if drop else
+-                                             "not tested (K6 not kept by tier 2)")}
++        def rows(ver: str) -> tuple[dict, dict]:
++            return ({s.split(":")[1]: short_counts(*preds_of(d / fr["frozen"][s][1]), gold, ids, ver) for s in names
++                     if s.startswith("short:")},
++                    {s.split(":")[1]: detailed_counts(*preds_of(d / fr["frozen"][s][1]), gold, ids, ver) for s in names
++                     if s.startswith("detailed:")})
++        why = "NOT-RUN (an H-B2 row is missing)" if drop else "not tested (K6 not kept by tier 2)"
++        rec = {"verdict": "SCORED", "kv": hyp(*rows("v2"), k6_why=why), "kv_matcher_v1": v1_safe((*rows("v1"), {"k6_why": why}))}
+     rec |= {"scorer_sha256": sha(Path(__file__)), "freeze": fr, "utc": utc(), "label": "MT4 Branch K1+K6, CONFIRMATORY, one look (KV-4,224)"}
+     excl_write(d / "mt4_k1k6_decide.json", json.dumps(rec, indent=1) + "\n")
+     print(json.dumps({"verdict": rec["verdict"]}))
+@@ -1157,6 +1263,59 @@
+     rk = t2_rule(hk, p_pass({"base8_s": base, "k1_s1": strong, "k1_s2": strong}, {"base8_s": det_b}, 4224, 200), kv2)
+     assert rk["verdict"] == "T2_PASS" and not rk["k6_kept"] and rk["h_b2_status"] == "not tested (cost)"
+     assert hk["H-B2"]["holds"] is None
++    # AMENDMENT_2 B5 (CC-175 N3): matcher v1 beside v2 is descriptive; the v2 analysis and rule are unchanged
++    v1 = v1_desc({"base8_s": base, "k1_s1": strong, "k1_s2": strong, "k6_s1": strong}, {"base8_s": det_b, "k6_s1": det_k6}, b=300)
++    assert v1["H-B1"]["dF1"] == h["H-B1"]["dF1"] and v1["H-B1"]["dF1_ci"] == h["H-B1"]["dF1_ci"]
++    assert not {"holds", "tested"} & (set(v1["H-B1"]) | set(v1["H-B2"])) and h["H-B1"]["holds"] and h["H-B2"]["tested"]
++    assert v1_safe((None, None, {}))["error"] == "TypeError"  # CC-205 W9: a v1 failure is recorded, never raised
++    # CC-205 W5: scorer closure; a changed or missing file FAULTs before anything is read
++    c0 = closure()
++    assert set(c0) == set(SCORER_CLOSURE) and all(len(v) == 64 for v in c0.values())
++    closure_check(dict(c0), c0)
++    for bad_c in (None, {}, c0 | {"scripts/grl/reward.py": "0" * 64}, {k: v for k, v in c0.items() if k != "rescap/vocab.py"}):
++        try:
++            closure_check(bad_c, c0)
++            raise AssertionError("a differing scorer closure was accepted")
++        except SystemExit as e:
++            assert "closure" in str(e)
++    term, cls = next((t.strip(), c) for t, c in KG.RW.terms() if c == "dog")
++    orig, seen = KG.RW.ordered, []
++    KG.RW.ordered = lambda c, v: seen.append(v) or orig(c, v)
++    try:
++        r1 = row_v1(term + ".", {cls})
++    finally:
++        KG.RW.ordered = orig
++    assert set(seen) == {"v1"} and r1 == {"tp": 1, "hal": 0, "men": 1, "g": 1} and row_v1(term + ".", set())["hal"] == 1
++    cp, hp, gd = {"1": term + "."}, {"1": False}, {"1": [cls]}
++    assert (short_counts(cp, hp, gd, ["1"], "v1") == short_counts(cp, hp, gd, ["1"])).all()
++    assert (detailed_counts(cp, hp, gd, ["1"], "v1") == detailed_counts(cp, hp, gd, ["1"])).all()
++    import subprocess  # CC-205 W5: a fresh process that only imports this file and scores v1 and v2 loads nothing else
++    probe = ("import sys; sys.path.insert(0, sys.argv[1]); import k1k6 as k; c = {'1': sys.argv[2]}; h = {'1': False}; "
++             "g = {'1': [sys.argv[3]]}; [f(c, h, g, ['1'], v) for f in (k.short_counts, k.detailed_counts) for v in ('v1', 'v2')]; "
++             "print('\\n'.join(m.__file__ for m in list(sys.modules.values()) if getattr(m, '__file__', None)))")
++    out = subprocess.run([sys.executable, "-c", probe, str(HERE), term + ".", cls], capture_output=True, text=True, check=True)
++    side = {Path(f).resolve() for f in out.stdout.split()}
++    side = {f.relative_to(ROOT).as_posix() for f in side if ROOT in f.parents} - {"scripts/mt4_k1k6/k1k6.py"}
++    assert side <= set(SCORER_CLOSURE), side - set(SCORER_CLOSURE)
++    # AMENDMENT_2 B4: a staged T2/KV body must equal its own C-EN record row; a refused sha passes only as a KV row
++    stage_check("t2", 7, "aa", {"zz"}, {7: "aa"})
++    stage_check("kv", 7, "zz", {"zz"}, {7: "zz"})  # a Karpathy-val body is a refused sha by design
++    for name, h, bad_sha, rec, why in (("t2", "aa", set(), {7: "bb"}, "record row"), ("t2", "aa", set(), {}, "record row"),
++                                       ("t2", "zz", {"zz"}, {7: "zz"}, "refused"), ("kv", "zz", {"zz"}, {7: "yy"}, "refused"),
++                                       ("kv", "aa", set(), {8: "aa"}, "record row")):
++        try:
++            stage_check(name, 7, h, bad_sha, rec)
++            raise AssertionError(f"stage_check accepted {name} {h}")
++        except SystemExit as e:
++            assert why in str(e), e
++    with tempfile.TemporaryDirectory() as t:
++        (Path(t) / "memory.sha256.tsv").write_text("7\tCOCO_val2014_000000000007.jpg\taa\t1\n")
++        for name in ("t2", "kv"):  # unpinned or missing record
++            try:
++                cen_record(name, Path(t))
++                raise AssertionError("an unpinned C-EN record was accepted")
++            except SystemExit as e:
++                assert "not its pin" in str(e)
+     # W1: what makes H-B1 NOT-RUN at KV
+     nm = ["short:base8_s", "short:k1_s1", "short:k1_s2", "short:k6_s1", "detailed:base8_s", "detailed:k6_s1"]
+     assert set(hb1_needs(nm)) == {"short:base8_s", "short:k1_s1", "short:k1_s2"}
+@@ -1193,12 +1352,44 @@
+             except SystemExit as e:
+                 assert why in str(e), e
+         assert kv_ready(t, mid, good.get) == {"short": ["base8_s"]}  # the positive case
++        try:  # Codex 2: a crash after the attempt marker is terminal
++            kv_attempt(t, {"closure_sha256": "0" * 64})
++            raise RuntimeError("simulated crash after the marker, before the decision write")
++        except RuntimeError:
++            pass
++        for call in (lambda: kv_ready(t, mid, good.get), lambda: kv_attempt(t, {})):
++            try:
++                call()
++                raise AssertionError("a second KV scoring attempt was licensed")
++            except SystemExit as e:
++                assert "attempt already started" in str(e)
++        (t / KV_ATTEMPT).unlink()
+         (t / "mt4_k1k6_decide.json").write_text("{}")
+         try:
+             kv_ready(t, mid, good.get)
+             raise AssertionError("a second KV look was licensed")
+         except SystemExit:
+             pass
++        # Codex 3: a missing closure file is a FAULT
++        try:
++            closure(("no/such/file.py",), t)
++            raise AssertionError("a missing closure file was accepted")
++        except SystemExit as e:
++            assert "closure file(s) missing" in str(e)
++        # Codex 1 (CC-205 r3): caps.json that cuts K1 seed 2 makes `left` print 0 (the job's cost stop) for every stage
++        import contextlib
++        import io
++        led = t / "led.tsv"
++        led.touch()
++        for ladder, want in ((["cut K6", "cut K1 seed 2"], "0"), (["cut K6"], None)):
++            (t / "caps.json").write_text(json.dumps({"cap_h": {"train_k1_s1": 1.0}, "ladder_applied": ladder}))
++            out = io.StringIO()
++            with contextlib.redirect_stdout(out), contextlib.redirect_stderr(io.StringIO()):
++                try:
++                    cmd_left(argparse.Namespace(ledger=str(led), caps=str(t / "caps.json"), stage="train_k1_s1"))
++                except SystemExit as e:
++                    assert e.code == 0
++            assert (out.getvalue().strip() == want) if want else int(out.getvalue()) > 0, (ladder, out.getvalue())
+         now = D_K - 10 * 86400
+         ln = [f"h1  a.json  short:base8_s  {utc(now - 3 * 86400)}", f"h2  b.json  short:k1_s1  {utc(now - 2 * 86400)}"]
+         fr = freeze_set(ln, ["short:base8_s", "short:k1_s1"], now)
+@@ -1241,7 +1432,19 @@
+             raise AssertionError("KV image passed outside tier 3")
+         except SystemExit:
+             pass
+-        assert scan_k1([t], {42}, set(), allow, t / "pool", {42}, t / "kv") == 2
++        h42 = K.sha_file(t / "kv/000000000042.jpg")
++        assert scan_k1([t], {42}, {h42}, allow, t / "pool", {42: h42}, t / "kv") == 2  # its own row, under kv only
++        for kv_ok in ({42: "0" * 64}, {}):  # another sha; no row
++            try:
++                scan_k1([t], {42}, {h42}, allow, t / "pool", kv_ok, t / "kv")
++                raise AssertionError("a KV file passed without its own record row")
++            except SystemExit:
++                pass
++        try:
++            scan_k1([t], {42}, {h42}, allow, t / "pool", {42: h42}, t / "pool")  # its row, but outside k1k6_kv
++            raise AssertionError("a KV file passed outside the KV root")
++        except SystemExit:
++            pass
+         # CC-199/CC-200: key present -> exactly 1 row dropped, with or without the file on disk; key absent -> FAULT
+         rows3 = [("ktvic:1", "k.jpg", 1), ("openviic:00000007169", "openviic/images/00000007169.jpg", 1)]
+         assert not (t / rows3[1][1]).exists() and drop_trunc(rows3) == rows3[:1]  # file missing: no error

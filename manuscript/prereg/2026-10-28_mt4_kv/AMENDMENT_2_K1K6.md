@@ -1,0 +1,1 @@
+PREREG AMENDMENT_2 (three-tier gate), Branch K1+K6 = manuscript/prereg/2026-10-30_mt4_k1k6/AMENDMENT_2.md, sha256 161288f3ce68a18eecdc0453624185e5ea1ddb73a634d3f34edb703176d9c64d; panel CC-205, one-judge read CC-205a; PI-1031e.
