@@ -1,5 +1,8 @@
 # VSPS-J E1+E2 PREREG: fresh logit records (E1b KTVIC train, E1a UIT-ViIC test) and a type-routed single-probe verifier (E2), dev-explore
 
+**Amended by `AMENDMENT_1.md` (CC-209 W1/W2, path ii): E1b on one rented 4090, E1a on M1 with its own smoke, one OUT
+folder per host, exact accelerate / qwen-vl-utils pins, staged scoring. Where they differ, AMENDMENT_1 governs.**
+
 Status: DRAFT for a one-judge read (tier REVERSIBLE, dev-explore, bar >= 90), 2026-10-31. Not committed.
 Licence for drafting: CC-207 rulings 3-4 (each later VSPS-J prereg goes to a one-judge read). Nothing here licenses a
 GPU rental or any test-set use. The rental needs this read's GO, a gatekeeper commit and PI block funding (PI-1031i:

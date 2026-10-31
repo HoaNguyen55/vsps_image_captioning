@@ -136,10 +136,24 @@ def test_score_isolation():
         (out / "e1b").mkdir()
         m0.halt(out / "e1b", 4, "CAP_STOP test", 1)
         res_f = out / "res.json"
-        e1e2.cmd_score(argparse.Namespace(out=out, res=res_f))
+        ns = lambda **k: argparse.Namespace(**{"out": out, "res": res_f, "stage": "all", "frozen": None,  # noqa: E731
+                                               "frozen_sha": None, **k})
+        e1e2.cmd_score(ns())
         res = json.loads(res_f.read_text())
         assert "REFUSED" in res["e1b_e2_kt"]["not_scored"]
         assert "INCOMPLETE" in res["e1a_tcoco"]["not_scored"], "E1a is still scored (here: no records yet)"
+        for bad in (ns(), ns(res=out / "a.json", stage="e1a", frozen=res_f, frozen_sha="0" * 64)):
+            try:
+                e1e2.cmd_score(bad)
+                raise AssertionError("a repeated score or an unfrozen E1a stage must be refused")
+            except SystemExit as e:
+                assert "REFUSED" in str(e)
+        e1e2.cmd_score(ns(res=out / "b.json", stage="e1b"))  # staged form (AMENDMENT_1, CC-209 W2)
+        frozen = out / "b.json"
+        assert "e1a_tcoco" not in json.loads(frozen.read_text())
+        e1e2.cmd_score(ns(res=out / "c.json", stage="e1a", frozen=frozen, frozen_sha=m0.sha_file(frozen)))
+        c = json.loads((out / "c.json").read_text())
+        assert c["frozen_e1b_result_sha256"] == m0.sha_file(frozen) and "e1b_e2_kt" not in c
 
 
 def _stage(d: Path) -> Path:
@@ -177,7 +191,7 @@ def test_sidelog_stage1():
         assert rc == 4 and (out2 / m0.STOP).exists() and not e1e2.record_files(out2 / "records")
 
 
-        def broken(self, image, q):
+        def broken(self, *args, **kwargs):
             raise RuntimeError("load error")  # caught per image by main(); the 2nd image open must FAULT
         orig = MockVLM.describe
         MockVLM.describe = broken

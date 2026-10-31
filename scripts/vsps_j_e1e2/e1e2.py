@@ -3,8 +3,9 @@
 
     python3 -I scripts/vsps_j_e1e2/e1e2.py plan                       laptop: pins, custody, counts
     python3 -I scripts/vsps_j_e1e2/e1e2.py fetchlist > <file>         host: E1a fetch list, checked against the plan
+    python3 -I scripts/vsps_j_e1e2/e1e2.py smokelist > <file>         laptop: the 20 KTVIC-train images of E1a's smoke
     PY -I e1e2.py e1b --images <KTVIC images> --model <Vintern snap> --out <OUT>              GPU, sub-job 1
-    NCS_DATA=<stage> PY -I e1e2.py e1a --model <Vintern snap> --qwen <Qwen snap> --out <OUT>  GPU, sub-job 2
+    NCS_DATA=<stage> PY -I e1e2.py e1a --model <V snap> --qwen <Q snap> --smoke-images <dir> --out <OUT>  M1 only
     PY_H1 -I e1e2.py detect --records <OUT>/e1a/records --images <UIT images> --out <OUT>    laptop CPU, H1 env
     PY -I e1e2.py score --out <OUT> --res <OUT>/e1e2_result.json                            laptop, once
     python3 -I e1e2.py selftest
@@ -196,6 +197,15 @@ def fetch_text(uit: list) -> str:
     """E1a fetch list, "file_name coco_url" per image in test_data.json order. Built on the host from the pinned file,
     never committed (the n-gram scan counts UIT-ViIC JSON fields)."""
     return "".join(f"{i['file_name']} {i['coco_url']}\n" for i in uit)
+
+
+def cmd_smokelist(_a) -> int:
+    """AMENDMENT_1: the 20 KTVIC-train smoke image names (first 20 of the seeded E1b order) for E1a's own smoke."""
+    order = shuffled([r["file_name"] for r in tar_records()], SEED + 6)
+    if sha_lines(order) != json.loads(PLAN.read_text(encoding="utf-8"))["e1b"]["order_sha256"]:
+        raise SystemExit("FAULT E1b order differs from the plan")
+    sys.stdout.write("".join(f"{n}\n" for n in order[:SMOKE_IMG]))
+    return 0
 
 
 def cmd_fetchlist(_a) -> int:
@@ -430,9 +440,6 @@ def cmd_e1a(a) -> int:
     from rescap.vlm.vintern import VinternAdapter
 
     out = prep_out(a.out / "e1a")
-    smoke = a.out / "e1b" / "smoke.json"
-    if not smoke.is_file() or json.loads(smoke.read_text())["fault"]:
-        raise SystemExit("REFUSED E1a needs the E1b smoke with fault false (same Vintern, same block)")
     if os.environ.get("QWEN_MAX_PIXELS"):
         raise SystemExit("FAULT QWEN_MAX_PIXELS must be unset (adapter default 1280*28*28, as stage 1)")
     plan = json.loads(PLAN.read_text(encoding="utf-8"))
@@ -447,8 +454,33 @@ def cmd_e1a(a) -> int:
     check_images(order, stage / "images", set(), must_be_in=set(ex["image_sha256"]["uitviic_test"]))
     m0.check_model(a.model)
     check_qwen(a.qwen)
+    if e1a_smoke(out, a, ex) != 0:
+        return 2
     return run_stage1(out, src.name, VinternAdapter, cached_probe(), order, CAP_H["e1a"], N_PROJ["e1a"],
                       "qwen2.5-vl-7b", "vintern-1b")
+
+
+def e1a_smoke(out: Path, a, ex: dict) -> int:
+    """AMENDMENT_1 (CC-209 W1b): E1a runs on its own host, so it runs its own Vintern smoke there, with the section 6
+    rules unchanged: the E1b smoke items (first 20 images of the seeded KTVIC-train order, 5 questions each)."""
+    from PIL import Image
+
+    smoke_f = out / "smoke.json"
+    if not smoke_f.exists():
+        recs = {r["file_name"]: r for r in tar_records(a.records_tar)}
+        order = shuffled(recs, SEED + 6)
+        if sha_lines(order) != json.loads(PLAN.read_text(encoding="utf-8"))["e1b"]["order_sha256"]:
+            raise SystemExit("FAULT E1b order differs from the plan")
+        names = order[:SMOKE_IMG]
+        check_images(names, a.smoke_images, set(ex["image_sha256"]["ktvic_test"]))
+        work = [(n, [(k, q["question_vi"]) for k, q in vintern_questions(recs[n]).items()]) for n in names]
+        ad = load_vintern(a.model, "cuda")
+        smoke_f.write_text(json.dumps(run_smoke(ad, work, lambda n: Image.open(a.smoke_images / n).convert("RGB")),
+                                      indent=1, ensure_ascii=False))
+        ad.unload()
+    if json.loads(smoke_f.read_text())["fault"]:
+        return m0.halt(out, 2, "FAULT E1a smoke (tokens / mass / text / equivalence); see smoke.json")
+    return 0
 
 
 # ------------------------------------------------------------------------------------------------ detectors (laptop CPU)
@@ -728,14 +760,26 @@ def isolated(fn, *args) -> dict:
 
 
 def cmd_score(a) -> int:
-    res = {"tier": "TIER 1 / DEV-EXPLORE (VSPS-J E1+E2)", "e1b_e2_kt": isolated(score_e1b, a.out)}
-    kt = res["e1b_e2_kt"]
-    res["e1a_tcoco"] = isolated(score_e1a, a.out, kt.get("s_hi") if kt.get("e2_kt") == "CONTINUE" else None)
+    """--stage all: both sub-jobs once. AMENDMENT_1 (CC-209 W2) staged form: --stage e1b scores E1b and freezes the
+    S_hi vector in its result file; --stage e1a reads that frozen file (sha given, logged in an OPS line before the
+    E1a launch). A result file is never overwritten, so no partial score is repeated."""
+    if a.res.exists():
+        raise SystemExit(f"REFUSED {a.res} exists; a score is never repeated")
+    res: dict = {"tier": "TIER 1 / DEV-EXPLORE (VSPS-J E1+E2)", "stage": a.stage}
+    if a.stage == "e1a":
+        if not a.frozen or m0.sha_file(a.frozen) != a.frozen_sha:
+            raise SystemExit("REFUSED --stage e1a needs --frozen <e1b result> with --frozen-sha equal to its sha256")
+        kt = json.loads(a.frozen.read_text(encoding="utf-8"))["e1b_e2_kt"]
+        res["frozen_e1b_result_sha256"] = a.frozen_sha
+    else:
+        kt = res["e1b_e2_kt"] = isolated(score_e1b, a.out)
+    if a.stage != "e1b":
+        res["e1a_tcoco"] = isolated(score_e1a, a.out, kt.get("s_hi") if kt.get("e2_kt") == "CONTINUE" else None)
     res["note"] = ("T-KT is in-sample dev on caption-derived KTVIC train gold (CC-207 W6): never registered, never a "
                    "headline. T-COCO is COCO-80 entity existence on 231 sports images (UIT-ViIC test, spent, dev role).")
     a.res.write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(json.dumps({k: res[k] for k in ("tier",)} | {"e2_kt": kt.get("e2_kt"), "s_hi": kt.get("s_hi"),
-                                                       "e2_tcoco": res["e1a_tcoco"].get("e2_tcoco")}, indent=1))
+                                                       "e2_tcoco": res.get("e1a_tcoco", {}).get("e2_tcoco")}, indent=1))
     return 0
 
 
@@ -745,6 +789,7 @@ def main() -> int:
     sp.add_parser("selftest")
     sp.add_parser("plan")
     sp.add_parser("fetchlist")
+    sp.add_parser("smokelist")
     b = sp.add_parser("e1b")
     b.add_argument("--records-tar", type=Path, default=ROOT / PATHS["records_tar"])
     b.add_argument("--images", type=Path, required=True, help="KTVIC images (the 3,700 train records' files)")
@@ -754,6 +799,8 @@ def main() -> int:
     e = sp.add_parser("e1a")
     e.add_argument("--model", type=Path, required=True)
     e.add_argument("--qwen", type=Path, required=True, help="Qwen snapshot dir named by the pinned revision")
+    e.add_argument("--records-tar", type=Path, default=ROOT / PATHS["records_tar"])
+    e.add_argument("--smoke-images", type=Path, required=True, help="the 20 KTVIC-train smoke images (AMENDMENT_1)")
     e.add_argument("--out", type=Path, required=True)
     d = sp.add_parser("detect")
     d.add_argument("--records", type=Path, required=True)
@@ -762,13 +809,16 @@ def main() -> int:
     s = sp.add_parser("score")
     s.add_argument("--out", type=Path, required=True)
     s.add_argument("--res", type=Path, required=True)
+    s.add_argument("--stage", choices=("all", "e1b", "e1a"), default="all")
+    s.add_argument("--frozen", type=Path, help="--stage e1a: the --stage e1b result file")
+    s.add_argument("--frozen-sha", help="--stage e1a: its sha256, as logged before the E1a launch")
     a = ap.parse_args()
     if a.cmd == "selftest":
         import test_e1e2
 
         test_e1e2.main()
         return 0
-    return {"plan": cmd_plan, "fetchlist": cmd_fetchlist, "e1b": cmd_e1b, "e1a": cmd_e1a, "detect": cmd_detect, "score": cmd_score}[a.cmd](a)
+    return {"plan": cmd_plan, "fetchlist": cmd_fetchlist, "smokelist": cmd_smokelist, "e1b": cmd_e1b, "e1a": cmd_e1a, "detect": cmd_detect, "score": cmd_score}[a.cmd](a)
 
 
 if __name__ == "__main__":

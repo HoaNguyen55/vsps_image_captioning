@@ -1,0 +1,466 @@
+diff --git a/manuscript/prereg/2026-10-31_vsps_j_e1e2/PREREG.md b/manuscript/prereg/2026-10-31_vsps_j_e1e2/PREREG.md
+index 04881b3..719faf0 100644
+--- a/manuscript/prereg/2026-10-31_vsps_j_e1e2/PREREG.md
++++ b/manuscript/prereg/2026-10-31_vsps_j_e1e2/PREREG.md
+@@ -1,5 +1,8 @@
+ # VSPS-J E1+E2 PREREG: fresh logit records (E1b KTVIC train, E1a UIT-ViIC test) and a type-routed single-probe verifier (E2), dev-explore
+ 
++**Amended by `AMENDMENT_1.md` (CC-209 W1/W2, path ii): E1b on one rented 4090, E1a on M1 with its own smoke, one OUT
++folder per host, exact accelerate / qwen-vl-utils pins, staged scoring. Where they differ, AMENDMENT_1 governs.**
++
+ Status: DRAFT for a one-judge read (tier REVERSIBLE, dev-explore, bar >= 90), 2026-10-31. Not committed.
+ Licence for drafting: CC-207 rulings 3-4 (each later VSPS-J prereg goes to a one-judge read). Nothing here licenses a
+ GPU rental or any test-set use. The rental needs this read's GO, a gatekeeper commit and PI block funding (PI-1031i:
+diff --git a/manuscript/prereg/2026-10-31_vsps_j_e1e2/SHA256SUMS b/manuscript/prereg/2026-10-31_vsps_j_e1e2/SHA256SUMS
+index 189e727..0ca1f24 100644
+--- a/manuscript/prereg/2026-10-31_vsps_j_e1e2/SHA256SUMS
++++ b/manuscript/prereg/2026-10-31_vsps_j_e1e2/SHA256SUMS
+@@ -1,2 +1,3 @@
+-555a832f5ff46e51d1a1cbbef5d33b6946cb65b7cf29aa89a9d5dc61b8fa5bc4  PREREG.md
++0fdc1c7bcc76b6fd7769ee6043bab3ba218e1c647267eea37409d7ac7ed81985  PREREG.md
+ 0aafd39234305ff7e1a40a23969be9c44bb2e31cb96ffe3fb78565a2e55aa656  e1e2_plan.json
++5f67e70997802201ad8f5228111370e52092ce9fea3afa6ed125d4c6e19f0615  AMENDMENT_1.md
+diff --git a/scripts/vsps_j_e1e2/SHA256SUMS b/scripts/vsps_j_e1e2/SHA256SUMS
+index 060802b..c35ce21 100644
+--- a/scripts/vsps_j_e1e2/SHA256SUMS
++++ b/scripts/vsps_j_e1e2/SHA256SUMS
+@@ -1,4 +1,4 @@
+-8694206ee773214924f1435deb1ecce704ad9d29bc5e3c4a0cd6bb3aade50b05  e1e2.py
+-aedaf47f816201fde3b21f59c56544b4d6ab5ed3eedc483f5e74ba8d00ff9597  e1e2_job.sh
++c659691a9b790d2de5989dc0f87e1649f19040bbf4046b96f58e437f361b4ce4  e1e2.py
++d7cc6a2b81c3f3f41e077e4098e9e8d3153d3aadb6f88a58ef31b2143ac36522  e1e2_job.sh
+ bf0c169621b9821a89068d66d4993b4a97258855c7332a0fc4a4dafb31a42941  ret.py
+-63fc3abf78a157a74d328a8c28d2d075cf47138106d7d083864a6f0304cac19f  test_e1e2.py
++43f6c36fc0c2b6c1c6fa880ea8e2b05ca1ebbb83d1704a2b500f48d5ff1487d7  test_e1e2.py
+diff --git a/scripts/vsps_j_e1e2/e1e2.py b/scripts/vsps_j_e1e2/e1e2.py
+index bb1136c..9fe3638 100644
+--- a/scripts/vsps_j_e1e2/e1e2.py
++++ b/scripts/vsps_j_e1e2/e1e2.py
+@@ -3,8 +3,9 @@
+ 
+     python3 -I scripts/vsps_j_e1e2/e1e2.py plan                       laptop: pins, custody, counts
+     python3 -I scripts/vsps_j_e1e2/e1e2.py fetchlist > <file>         host: E1a fetch list, checked against the plan
++    python3 -I scripts/vsps_j_e1e2/e1e2.py smokelist > <file>         laptop: the 20 KTVIC-train images of E1a's smoke
+     PY -I e1e2.py e1b --images <KTVIC images> --model <Vintern snap> --out <OUT>              GPU, sub-job 1
+-    NCS_DATA=<stage> PY -I e1e2.py e1a --model <Vintern snap> --qwen <Qwen snap> --out <OUT>  GPU, sub-job 2
++    NCS_DATA=<stage> PY -I e1e2.py e1a --model <V snap> --qwen <Q snap> --smoke-images <dir> --out <OUT>  M1 only
+     PY_H1 -I e1e2.py detect --records <OUT>/e1a/records --images <UIT images> --out <OUT>    laptop CPU, H1 env
+     PY -I e1e2.py score --out <OUT> --res <OUT>/e1e2_result.json                            laptop, once
+     python3 -I e1e2.py selftest
+@@ -198,6 +199,15 @@ def fetch_text(uit: list) -> str:
+     return "".join(f"{i['file_name']} {i['coco_url']}\n" for i in uit)
+ 
+ 
++def cmd_smokelist(_a) -> int:
++    """AMENDMENT_1: the 20 KTVIC-train smoke image names (first 20 of the seeded E1b order) for E1a's own smoke."""
++    order = shuffled([r["file_name"] for r in tar_records()], SEED + 6)
++    if sha_lines(order) != json.loads(PLAN.read_text(encoding="utf-8"))["e1b"]["order_sha256"]:
++        raise SystemExit("FAULT E1b order differs from the plan")
++    sys.stdout.write("".join(f"{n}\n" for n in order[:SMOKE_IMG]))
++    return 0
++
++
+ def cmd_fetchlist(_a) -> int:
+     text = fetch_text(json.loads(pinned("uit_test").read_text(encoding="utf-8"))["images"])
+     if m0.sha_text(text) != json.loads(PLAN.read_text(encoding="utf-8"))["e1a"]["fetch_sha256"]:
+@@ -430,9 +440,6 @@ def cmd_e1a(a) -> int:
+     from rescap.vlm.vintern import VinternAdapter
+ 
+     out = prep_out(a.out / "e1a")
+-    smoke = a.out / "e1b" / "smoke.json"
+-    if not smoke.is_file() or json.loads(smoke.read_text())["fault"]:
+-        raise SystemExit("REFUSED E1a needs the E1b smoke with fault false (same Vintern, same block)")
+     if os.environ.get("QWEN_MAX_PIXELS"):
+         raise SystemExit("FAULT QWEN_MAX_PIXELS must be unset (adapter default 1280*28*28, as stage 1)")
+     plan = json.loads(PLAN.read_text(encoding="utf-8"))
+@@ -447,10 +454,35 @@ def cmd_e1a(a) -> int:
+     check_images(order, stage / "images", set(), must_be_in=set(ex["image_sha256"]["uitviic_test"]))
+     m0.check_model(a.model)
+     check_qwen(a.qwen)
++    if e1a_smoke(out, a, ex) != 0:
++        return 2
+     return run_stage1(out, src.name, VinternAdapter, cached_probe(), order, CAP_H["e1a"], N_PROJ["e1a"],
+                       "qwen2.5-vl-7b", "vintern-1b")
+ 
+ 
++def e1a_smoke(out: Path, a, ex: dict) -> int:
++    """AMENDMENT_1 (CC-209 W1b): E1a runs on its own host, so it runs its own Vintern smoke there, with the section 6
++    rules unchanged: the E1b smoke items (first 20 images of the seeded KTVIC-train order, 5 questions each)."""
++    from PIL import Image
++
++    smoke_f = out / "smoke.json"
++    if not smoke_f.exists():
++        recs = {r["file_name"]: r for r in tar_records(a.records_tar)}
++        order = shuffled(recs, SEED + 6)
++        if sha_lines(order) != json.loads(PLAN.read_text(encoding="utf-8"))["e1b"]["order_sha256"]:
++            raise SystemExit("FAULT E1b order differs from the plan")
++        names = order[:SMOKE_IMG]
++        check_images(names, a.smoke_images, set(ex["image_sha256"]["ktvic_test"]))
++        work = [(n, [(k, q["question_vi"]) for k, q in vintern_questions(recs[n]).items()]) for n in names]
++        ad = load_vintern(a.model, "cuda")
++        smoke_f.write_text(json.dumps(run_smoke(ad, work, lambda n: Image.open(a.smoke_images / n).convert("RGB")),
++                                      indent=1, ensure_ascii=False))
++        ad.unload()
++    if json.loads(smoke_f.read_text())["fault"]:
++        return m0.halt(out, 2, "FAULT E1a smoke (tokens / mass / text / equivalence); see smoke.json")
++    return 0
++
++
+ # ------------------------------------------------------------------------------------------------ detectors (laptop CPU)
+ def cmd_detect(a) -> int:
+     """H1 detectors (scripts/vsps_h1 config/map pins, Detectors class unchanged) on the 231 E1a images, CPU."""
+@@ -728,14 +760,26 @@ def isolated(fn, *args) -> dict:
+ 
+ 
+ def cmd_score(a) -> int:
+-    res = {"tier": "TIER 1 / DEV-EXPLORE (VSPS-J E1+E2)", "e1b_e2_kt": isolated(score_e1b, a.out)}
+-    kt = res["e1b_e2_kt"]
+-    res["e1a_tcoco"] = isolated(score_e1a, a.out, kt.get("s_hi") if kt.get("e2_kt") == "CONTINUE" else None)
++    """--stage all: both sub-jobs once. AMENDMENT_1 (CC-209 W2) staged form: --stage e1b scores E1b and freezes the
++    S_hi vector in its result file; --stage e1a reads that frozen file (sha given, logged in an OPS line before the
++    E1a launch). A result file is never overwritten, so no partial score is repeated."""
++    if a.res.exists():
++        raise SystemExit(f"REFUSED {a.res} exists; a score is never repeated")
++    res: dict = {"tier": "TIER 1 / DEV-EXPLORE (VSPS-J E1+E2)", "stage": a.stage}
++    if a.stage == "e1a":
++        if not a.frozen or m0.sha_file(a.frozen) != a.frozen_sha:
++            raise SystemExit("REFUSED --stage e1a needs --frozen <e1b result> with --frozen-sha equal to its sha256")
++        kt = json.loads(a.frozen.read_text(encoding="utf-8"))["e1b_e2_kt"]
++        res["frozen_e1b_result_sha256"] = a.frozen_sha
++    else:
++        kt = res["e1b_e2_kt"] = isolated(score_e1b, a.out)
++    if a.stage != "e1b":
++        res["e1a_tcoco"] = isolated(score_e1a, a.out, kt.get("s_hi") if kt.get("e2_kt") == "CONTINUE" else None)
+     res["note"] = ("T-KT is in-sample dev on caption-derived KTVIC train gold (CC-207 W6): never registered, never a "
+                    "headline. T-COCO is COCO-80 entity existence on 231 sports images (UIT-ViIC test, spent, dev role).")
+     a.res.write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+     print(json.dumps({k: res[k] for k in ("tier",)} | {"e2_kt": kt.get("e2_kt"), "s_hi": kt.get("s_hi"),
+-                                                       "e2_tcoco": res["e1a_tcoco"].get("e2_tcoco")}, indent=1))
++                                                       "e2_tcoco": res.get("e1a_tcoco", {}).get("e2_tcoco")}, indent=1))
+     return 0
+ 
+ 
+@@ -745,6 +789,7 @@ def main() -> int:
+     sp.add_parser("selftest")
+     sp.add_parser("plan")
+     sp.add_parser("fetchlist")
++    sp.add_parser("smokelist")
+     b = sp.add_parser("e1b")
+     b.add_argument("--records-tar", type=Path, default=ROOT / PATHS["records_tar"])
+     b.add_argument("--images", type=Path, required=True, help="KTVIC images (the 3,700 train records' files)")
+@@ -754,6 +799,8 @@ def main() -> int:
+     e = sp.add_parser("e1a")
+     e.add_argument("--model", type=Path, required=True)
+     e.add_argument("--qwen", type=Path, required=True, help="Qwen snapshot dir named by the pinned revision")
++    e.add_argument("--records-tar", type=Path, default=ROOT / PATHS["records_tar"])
++    e.add_argument("--smoke-images", type=Path, required=True, help="the 20 KTVIC-train smoke images (AMENDMENT_1)")
+     e.add_argument("--out", type=Path, required=True)
+     d = sp.add_parser("detect")
+     d.add_argument("--records", type=Path, required=True)
+@@ -762,13 +809,16 @@ def main() -> int:
+     s = sp.add_parser("score")
+     s.add_argument("--out", type=Path, required=True)
+     s.add_argument("--res", type=Path, required=True)
++    s.add_argument("--stage", choices=("all", "e1b", "e1a"), default="all")
++    s.add_argument("--frozen", type=Path, help="--stage e1a: the --stage e1b result file")
++    s.add_argument("--frozen-sha", help="--stage e1a: its sha256, as logged before the E1a launch")
+     a = ap.parse_args()
+     if a.cmd == "selftest":
+         import test_e1e2
+ 
+         test_e1e2.main()
+         return 0
+-    return {"plan": cmd_plan, "fetchlist": cmd_fetchlist, "e1b": cmd_e1b, "e1a": cmd_e1a, "detect": cmd_detect, "score": cmd_score}[a.cmd](a)
++    return {"plan": cmd_plan, "fetchlist": cmd_fetchlist, "smokelist": cmd_smokelist, "e1b": cmd_e1b, "e1a": cmd_e1a, "detect": cmd_detect, "score": cmd_score}[a.cmd](a)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/scripts/vsps_j_e1e2/e1e2_job.sh b/scripts/vsps_j_e1e2/e1e2_job.sh
+index d68716d..ab4b657 100644
+--- a/scripts/vsps_j_e1e2/e1e2_job.sh
++++ b/scripts/vsps_j_e1e2/e1e2_job.sh
+@@ -1,59 +1,74 @@
+ #!/usr/bin/env bash
+-# VSPS-J E1+E2 GPU block (manuscript/prereg/2026-10-31_vsps_j_e1e2/PREREG.md section 7). Run from the staged repo copy.
+-#   PY=<venv python> bash scripts/vsps_j_e1e2/e1e2_job.sh --selftest         pins + CPU selftest only
+-#   PY=<venv python> KT_IMAGES=<KTVIC images of the 3,700 records> UIT_IMAGES=<empty dir> STAGE=<empty dir> \
+-#       OUT=<the ONE OUT folder of this block, outside the repo> bash scripts/vsps_j_e1e2/e1e2_job.sh
+-# Sub-job exit codes are e1e2.py's: 0 DONE, 2 FAULT, 3 PROJECTION_STOP, 4 CAP_STOP, 5 FAILURES (E1a, no marker).
++# VSPS-J E1+E2 GPU sub-jobs (PREREG.md section 7 as amended by AMENDMENT_1: one host block per sub-job, one OUT each).
++#   PY=<venv python> bash scripts/vsps_j_e1e2/e1e2_job.sh --selftest        pins + CPU selftest only
++#   E1b, rented RTX 4090 (KTVIC train only; never fetches or stages any UIT-ViIC file, never fetches Qwen):
++#     PY=... KT_IMAGES=<KTVIC images of the 3,700 records> OUT=<the E1b OUT folder> bash e1e2_job.sh e1b
++#   E1a, M1 only (holds the 231 UIT-ViIC test images; own HF cache, own folders):
++#     PY=... HF_HOME=<E1a's own HF cache> KT_SMOKE=<the 20 KTVIC-train smoke images> UIT_IMAGES=<empty dir> \
++#       STAGE=<empty dir> OUT=<the E1a OUT folder> bash e1e2_job.sh e1a
++# Exit codes are e1e2.py's: 0 DONE, 2 FAULT, 3 PROJECTION_STOP, 4 CAP_STOP, 5 FAILURES (E1a, no marker).
+ set -euo pipefail
+ cd "$(dirname "$0")/../.."
+ VREV=b98f263eab246eb5269ade64edbdca8a887dc44d
+ QREV=cc594898137f460bfe9f0759e9844b3ce807cfb5
+ PDIR=manuscript/prereg/2026-10-31_vsps_j_e1e2
++SUB=${1:?usage: e1e2_job.sh --selftest | e1b | e1a}
++case "$SUB" in --selftest|e1b|e1a) ;; *) echo "unknown sub-job $SUB"; exit 2 ;; esac
+ : "${PY:?set PY to the venv python}"
+ (cd scripts/vsps_j_e1e2 && sha256sum -c --quiet SHA256SUMS)
+ (cd scripts/vsps_j_m0 && sha256sum -c --quiet SHA256SUMS)
+ (cd scripts/vsps_h1 && sha256sum -c --quiet SHA256SUMS)
+ (cd "$PDIR" && sha256sum -c --quiet SHA256SUMS)
+-"$PY" -I - <<'EOF_PIN'
++"$PY" -I - "$SUB" <<'EOF_PIN'
++import sys
++from importlib.metadata import version
+ import einops, numpy, PIL, timm, torch, torchvision, transformers
+-import accelerate, qwen_vl_utils  # noqa: F401  Qwen2.5-VL generator (device_map, vision input); versions in pip_freeze
+ want = {transformers: "4.51.3", torch: "2.15.0", torchvision: "0.29.2", numpy: "2.5.4", PIL: "13.0.0",
+         timm: "1.0.30", einops: "0.8.2"}  # M0 env; +cuXXX / +cpu build suffixes allowed on torch and torchvision
+ bad = {m.__name__: m.__version__ for m, v in want.items() if m.__version__.split("+")[0] != v}
+-assert not bad, f"environment differs from PREREG section 7: {bad}"
++if sys.argv[1] == "e1a":  # Qwen2.5-VL generator; the pins used with transformers 4.51.3 on M2 (2026-10-18)
++    bad.update({p: version(p) for p, v in {"accelerate": "1.15.0", "qwen-vl-utils": "0.0.14"}.items() if version(p) != v})
++assert not bad, f"environment differs from PREREG section 7 / AMENDMENT_1: {bad}"
+ EOF_PIN
+ "$PY" -I scripts/vsps_j_e1e2/e1e2.py selftest
+-[ "${1:-}" = "--selftest" ] && exit 0
+-: "${KT_IMAGES:?}" "${UIT_IMAGES:?}" "${STAGE:?}" "${OUT:?}"
++[ "$SUB" = "--selftest" ] && exit 0
++: "${OUT:?}"
+ [ -z "${QWEN_MAX_PIXELS:-}" ] || { echo "QWEN_MAX_PIXELS must be unset"; exit 2; }
+-mkdir -p "$OUT" "$UIT_IMAGES" "$STAGE/datasets/ktvic"
++mkdir -p "$OUT"
+ OUT=$(cd "$OUT" && pwd)
+-"$PY" -m pip freeze > "$OUT/pip_freeze.txt"
++"$PY" -m pip freeze > "$OUT/pip_freeze_$SUB.txt"
+ HUB=${HF_HOME:-$HOME/.cache/huggingface}/hub
+-for spec in "5CD-AI/Vintern-1B-v3_5 $VREV" "Qwen/Qwen2.5-VL-7B-Instruct $QREV"; do
+-    set -- $spec
+-    dir="$HUB/models--${1/\//--}"
++fetch() {  # repo revision
++    local dir="$HUB/models--${1/\//--}"
+     [ -d "$dir/snapshots/$2" ] || HF_HUB_DISABLE_TELEMETRY=1 "$PY" -I -c \
+         "from huggingface_hub import snapshot_download as s; s('$1', revision='$2')"
+     mkdir -p "$dir/refs" && printf %s "$2" > "$dir/refs/main"   # remote code and offline loads resolve refs/main
+-done
+-"$PY" -I scripts/vsps_j_e1e2/e1e2.py fetchlist > "$OUT/fetch_e1a.txt"   # from the pinned test_data.json
+-while read -r n u; do
+-    [ -s "$UIT_IMAGES/$n" ] || curl -sfL --retry 3 -o "$UIT_IMAGES/$n" "$u"
+-done < "$OUT/fetch_e1a.txt"
+-(cd "$UIT_IMAGES" && cut -d' ' -f1 "$OUT/fetch_e1a.txt" | xargs sha256sum) > "$OUT/uit_images.sha256"
+-[ "$(wc -l < "$OUT/uit_images.sha256")" = 231 ]
+-cp data/datasets/uitviic/test_data.json "$STAGE/datasets/ktvic/uitviic_test.json"
+-ln -sfn "$(cd "$UIT_IMAGES" && pwd)" "$STAGE/datasets/ktvic/images"
+-export HF_HUB_OFFLINE=1 HF_HUB_DISABLE_TELEMETRY=1
+-rc_b=0
+-"$PY" -I scripts/vsps_j_e1e2/e1e2.py e1b --images "$KT_IMAGES" \
+-    --model "$HUB/models--5CD-AI--Vintern-1B-v3_5/snapshots/$VREV" --out "$OUT" || rc_b=$?
+-[ -f "$OUT/e1b/probes.jsonl" ] && (cd "$OUT/e1b" && sha256sum probes.jsonl > probes.jsonl.sha256)
+-echo "e1b exit $rc_b"
+-rc_a=0
+-NCS_DATA="$STAGE" "$PY" -I scripts/vsps_j_e1e2/e1e2.py e1a --model "$HUB/models--5CD-AI--Vintern-1B-v3_5/snapshots/$VREV" \
+-    --qwen "$HUB/models--Qwen--Qwen2.5-VL-7B-Instruct/snapshots/$QREV" --out "$OUT" || rc_a=$?
+-[ -f "$OUT/e1a/probes.jsonl" ] && (cd "$OUT/e1a" && sha256sum probes.jsonl > probes.jsonl.sha256)
+-echo "e1a exit $rc_a"
+-exit $(( rc_b > rc_a ? rc_b : rc_a ))
++}
++VSNAP="$HUB/models--5CD-AI--Vintern-1B-v3_5/snapshots/$VREV"
++rc=0
++if [ "$SUB" = e1b ]; then
++    : "${KT_IMAGES:?}"
++    fetch 5CD-AI/Vintern-1B-v3_5 "$VREV"
++    HF_HUB_OFFLINE=1 HF_HUB_DISABLE_TELEMETRY=1 "$PY" -I scripts/vsps_j_e1e2/e1e2.py e1b --images "$KT_IMAGES" \
++        --model "$VSNAP" --out "$OUT" || rc=$?
++else
++    : "${HF_HOME:?E1a uses its own HF cache (never the host default: refs/main is rewritten)}" "${KT_SMOKE:?}" \
++      "${UIT_IMAGES:?}" "${STAGE:?}"
++    mkdir -p "$UIT_IMAGES" "$STAGE/datasets/ktvic"
++    fetch 5CD-AI/Vintern-1B-v3_5 "$VREV"
++    fetch Qwen/Qwen2.5-VL-7B-Instruct "$QREV"
++    "$PY" -I scripts/vsps_j_e1e2/e1e2.py fetchlist > "$OUT/fetch_e1a.txt"   # from the pinned test_data.json
++    while read -r n u; do
++        [ -s "$UIT_IMAGES/$n" ] || curl -sfL --retry 3 -o "$UIT_IMAGES/$n" "$u"
++    done < "$OUT/fetch_e1a.txt"
++    (cd "$UIT_IMAGES" && cut -d' ' -f1 "$OUT/fetch_e1a.txt" | xargs sha256sum) > "$OUT/uit_images.sha256"
++    [ "$(wc -l < "$OUT/uit_images.sha256")" = 231 ]
++    cp data/datasets/uitviic/test_data.json "$STAGE/datasets/ktvic/uitviic_test.json"
++    ln -sfn "$(cd "$UIT_IMAGES" && pwd)" "$STAGE/datasets/ktvic/images"
++    NCS_DATA="$STAGE" HF_HUB_OFFLINE=1 HF_HUB_DISABLE_TELEMETRY=1 "$PY" -I scripts/vsps_j_e1e2/e1e2.py e1a \
++        --model "$VSNAP" --qwen "$HUB/models--Qwen--Qwen2.5-VL-7B-Instruct/snapshots/$QREV" \
++        --smoke-images "$KT_SMOKE" --out "$OUT" || rc=$?
++fi
++[ -f "$OUT/$SUB/probes.jsonl" ] && (cd "$OUT/$SUB" && sha256sum probes.jsonl > probes.jsonl.sha256)
++echo "$SUB exit $rc"
++exit "$rc"
+diff --git a/scripts/vsps_j_e1e2/test_e1e2.py b/scripts/vsps_j_e1e2/test_e1e2.py
+index 23ad544..5501dbf 100644
+--- a/scripts/vsps_j_e1e2/test_e1e2.py
++++ b/scripts/vsps_j_e1e2/test_e1e2.py
+@@ -136,10 +136,24 @@ def test_score_isolation():
+         (out / "e1b").mkdir()
+         m0.halt(out / "e1b", 4, "CAP_STOP test", 1)
+         res_f = out / "res.json"
+-        e1e2.cmd_score(argparse.Namespace(out=out, res=res_f))
++        ns = lambda **k: argparse.Namespace(**{"out": out, "res": res_f, "stage": "all", "frozen": None,  # noqa: E731
++                                               "frozen_sha": None, **k})
++        e1e2.cmd_score(ns())
+         res = json.loads(res_f.read_text())
+         assert "REFUSED" in res["e1b_e2_kt"]["not_scored"]
+         assert "INCOMPLETE" in res["e1a_tcoco"]["not_scored"], "E1a is still scored (here: no records yet)"
++        for bad in (ns(), ns(res=out / "a.json", stage="e1a", frozen=res_f, frozen_sha="0" * 64)):
++            try:
++                e1e2.cmd_score(bad)
++                raise AssertionError("a repeated score or an unfrozen E1a stage must be refused")
++            except SystemExit as e:
++                assert "REFUSED" in str(e)
++        e1e2.cmd_score(ns(res=out / "b.json", stage="e1b"))  # staged form (AMENDMENT_1, CC-209 W2)
++        frozen = out / "b.json"
++        assert "e1a_tcoco" not in json.loads(frozen.read_text())
++        e1e2.cmd_score(ns(res=out / "c.json", stage="e1a", frozen=frozen, frozen_sha=m0.sha_file(frozen)))
++        c = json.loads((out / "c.json").read_text())
++        assert c["frozen_e1b_result_sha256"] == m0.sha_file(frozen) and "e1b_e2_kt" not in c
+ 
+ 
+ def _stage(d: Path) -> Path:
+@@ -177,7 +191,7 @@ def test_sidelog_stage1():
+         assert rc == 4 and (out2 / m0.STOP).exists() and not e1e2.record_files(out2 / "records")
+ 
+ 
+-        def broken(self, image, q):
++        def broken(self, *args, **kwargs):
+             raise RuntimeError("load error")  # caught per image by main(); the 2nd image open must FAULT
+         orig = MockVLM.describe
+         MockVLM.describe = broken
+diff --git a/manuscript/prereg/2026-10-31_vsps_j_e1e2/AMENDMENT_1.md b/manuscript/prereg/2026-10-31_vsps_j_e1e2/AMENDMENT_1.md
+new file mode 100755
+index 0000000..b143032
+--- /dev/null
++++ b/manuscript/prereg/2026-10-31_vsps_j_e1e2/AMENDMENT_1.md
+@@ -0,0 +1,129 @@
++# VSPS-J E1+E2 AMENDMENT_1: split hosts (E1b rented 4090, E1a M1 only), E1a's own smoke, staged scoring
++
++Status: DRAFT for the CC-209a one-judge diff read (REVERSIBLE, bar >= 90), 2026-10-31. Not committed.
++Parent: PREREG.md as committed in 43423d9 (CC-209 W5; PREREG 555a832f). Licence: CC-209 path (ii), W1 and W2.
++Funding: **PI-1031k** (LOG 2026-10-31T12:33Z, standing PI approval to rent once a judge-approved job needs it; tell the
++PI what was rented at rent time). PREREG l.5-6 cites PI-1031i for funding; that line is about year-1 scope and says
++nothing about renting. This is disclosed here, not edited in the PREREG (CC-209 r14).
++Nothing below changes a rule, threshold, grid, seed, SESOI, cap, statistic or the plan (section A9).
++
++## A1. Hosts (CC-209 r1, W1a)
++- **E1b: one rented RTX 4090.**
++  - It holds only KTVIC train images (the 3,700 records' files), the pinned records tarball and Vintern.
++  - It never fetches, stages or holds any UIT-ViIC file. It never fetches Qwen.
++  - `e1e2_job.sh e1b` has no UIT-ViIC or Qwen step.
++  - The host is deleted after the pull (PI-1031c).
++- **E1a: M1 only,** the only host that may hold test images, spent ones included.
++  - Queue: behind A-T3 tier 3 and MT4 K1+K6 tier 1 (CC-207 r8). It moves earlier only if the PI opens an idle M1 window
++    (CC-209 Q3). VSPS-J slips; A, B and C never do.
++  - Cost: about 6-7 M1 GPU-h: cap 7.5, the 3090 anchor of 85.7 s per image is native there, plus the Qwen download.
++    M1 is already rented, so there is no new rental.
++- **E1a stays in its own folders (W6):**
++  - its own `HF_HOME`. The job refuses without one, because `refs/main` is rewritten to the pins and other owners'
++    jobs must never see that;
++  - its own venv, OUT, STAGE, UIT_IMAGES and KT_SMOKE folders.
++  - It never touches `/root/a_t3_m3`, MT4 or C staging, or other owners' datasets.
++  - It is excluded from the 30-min backup pull, as `a_t3_m3` is.
++
++## A2. E1a runs its own smoke (W1b; replaces PREREG section 6 "refuses unless the E1b smoke passed, same block")
++- Before Qwen loads, `e1a` runs the section 6 smoke with the rules unchanged:
++  - the same 100 items: the first 20 images of the seeded KTVIC-train order, 5 questions each (`e1e2.py smokelist`);
++  - the same thresholds: tokens, finite, median mass >= 0.5, text >= 90 %, `yes_no_logit` equivalence |dP| <= 1e-3.
++- It writes `OUT/e1a/smoke.json`. A fault writes the STOP marker (rc 2), and `m0.refuse_if_stopped` refuses any resume.
++- Only those 20 KTVIC **train** images are staged on M1 for it (`KT_SMOKE`). Their bytes are checked against
++  exclusion.json `ktvic_test` (FAULT on a match, as in E1b).
++- The smoke is inside E1a's cap clock: `launch.json` t0 is written before it.
++
++## A3. One OUT folder per host block (W1c; amends CC-208a G2 for this block)
++- `OUT_E1b` on the rental and `OUT_E1a` on M1. Each is named in its own launch OPS line, and only those two folders may
++  ever be scored.
++- A second folder for the same sub-job, or a relaunch after any STOP, is a breach that needs an amendment.
++- **Pull:**
++  - a sha256 manifest of every file in the folder, written on the host;
++  - scp to a new laptop folder; `sha256sum -c` against that manifest.
++  - The pull OPS line lists every file with its sha, including `pip_freeze_<sub>.txt` and the presence or absence of
++    STOP and of the projection records.
++- **Score root on the laptop:** a new folder holding `e1b/` copied from the E1b pull and `e1a/` copied from the E1a pull.
++  Each copy is re-checked against its host manifest before `score`.
++
++## A4. Environment (W1d, CC-209 r11)
++- **Both sub-jobs:** the M0 pins, unchanged (torch 2.15.0, torchvision 0.29.2, transformers 4.51.3, numpy 2.5.4,
++  pillow 13.0.0, timm 1.0.30, einops 0.8.2).
++- **E1a also:** `accelerate==1.15.0` and `qwen-vl-utils==0.0.14`, asserted exactly by the job.
++  - These are the versions used with transformers 4.51.3 in the M2 venv of 2026-10-18 (`.session_backup/2026-10-18/
++    gpu_jobs/M2_STATUS.md` and the M2 venv freeze).
++  - The E1b assertion does not require them.
++- **Attention is sdpa.** flash-attn is not installed.
++- **Qwen at the B-N1 pin cc594898,** disclosed: the FAIR revision is unknown, and E1a is never compared with the 3,700.
++
++## A5. Scoring (W2): staged, with the S_hi vector frozen before E1a
++- **Staged form (primary, fixed now), used when E1b is pulled before E1a launches:**
++  - `e1e2.py score --stage e1b --out <score root> --res <root>/e1b_result.json`, once, as soon as E1b is pulled.
++  - That result holds the fidelity gate, the full sweep trace and the chosen S_hi vector, or E2-KT STOP.
++  - Its sha goes into an OPS line **before** the E1a launch.
++  - After the E1a pull: `score --stage e1a --frozen <root>/e1b_result.json --frozen-sha <logged sha> --res
++    <root>/e1a_result.json`, once. The E1a read uses only that frozen vector, so S_hi is fixed before any E1a datum
++    exists.
++- **Fallback, only if E1a launches before E1b is pulled:** `score --stage all`, once, after both pulls.
++- **Never:**
++  - `score` refuses to overwrite an existing result file;
++  - `--stage e1a` refuses a frozen file whose sha differs from the one given;
++  - no partial score is repeated, and the form is not switched once one result file exists.
++
++## A6. Operator rules (CC-209 W6, r5, r15)
++- An E1a FAILURES exit (rc 5, no marker) may resume once, with an OPS line. A second resume is a breach.
++- A deleted and recreated sub-job folder would reset its own cap clock, so recreating one is a breach.
++- **Laptop detect step (CC-209 r13 / W4 form):**
++  - the 231 images are re-fetched into a dedicated directory used only for `detect`;
++  - they are deleted right after `detect`;
++  - the deletion is logged with the count and the sha of the sha list.
++- **PI notice at rent time:** rental id and price in the next report (PI-1031k).
++
++## A7. Cost (replaces PREREG section 5 block totals)
++
++| sub-job | host | estimate | cap | money |
++|---|---|---|---|---|
++| E1b | rented 4090 | about 0.7 h setup + 2.95-3.86 h (345,768 × 0.0307 s median / 0.0402 s mean) | 5.0 h | about 3.7-4.6 h ≈ **60-80k VND**; worst case (5 + 1 h) ≈ 105k VND |
++| E1a | M1 | 5.3-5.7 h + Qwen and Vintern download | 7.5 h | none new (M1 already rented) |
++| detect, score | laptop CPU | about 1.7 h + about 1 h | none | 0 |
++
++## A8. Disclosures carried from CC-209 (no PREREG edit)
++- **Selection rule:** the two-pass rule is "a design revision on in-sample dev, before any real logit" (r10).
++- **Retention gain:** most of any retention gain comes from the change of answer source (`logit_base` vs
++  `replay_v1_k5`), not from the S_hi knob. Every write-up says so (r16).
++- **W25:** not run for E1a (r6), the M0 exception extended, read-only. The 231 stay in exclusion.json for every later
++  W25 pass.
++- **M0:** the M0 block held 91 spent Karpathy-test images on a rental without a custody ruling. Disclosed, not a
++  precedent (r1).
++
++## A9. Unchanged, byte-equal to 43423d9
++- **`e1e2_plan.json` 0aafd392**, and with it:
++  - the seeds;
++  - the E1b order (e2a3bcaa);
++  - the E1a order (b3dee1a8);
++  - the fetch-list sha (993fa66e).
++- **`ret.py`.**
++- **Every e1e2.py function the E1b pass, E2 replay or T-COCO read uses:** `run_pass`, `run_smoke`, `replay`,
++  `kt_metrics`, `select_s_hi`, `tcoco_*`, `cluster_ci`, `fidelity`, `score_e1b`, `score_e1a`, `install_sidelog`,
++  `run_stage1`.
++- **Every constant:** caps, projections, grid, passes, P floor, retention stop, DR margin, n_absent, kappa, B.
++- **Imported code, unchanged since dba7685:** `scripts/vsps_j_m0`, `scripts/vsps_h1`, `generate_stage1.py`,
++  `verify.py`.
++
++## A10. The diff (`CC209a_W1.diff`, against 43423d9)
++- **`e1e2.py`:**
++  - `cmd_e1a`: the E1b-smoke dependency is replaced by `e1a_smoke()` (A2), and `m0.check_model` is kept;
++  - new `cmd_smokelist`;
++  - `cmd_score` gets `--stage {all,e1b,e1a}`, `--frozen`, `--frozen-sha` and a no-overwrite refusal (A5);
++  - argparse additions; docstring lines.
++- **`e1e2_job.sh`:**
++  - a sub-job selector (`--selftest | e1b | e1a`), with E1b free of UIT-ViIC and Qwen (A1);
++  - E1a requires `HF_HOME` and `KT_SMOKE`, and asserts the A4 pins;
++  - `pip_freeze_<sub>.txt`.
++- **`test_e1e2.py`:**
++  - staged scoring: refused repeat, refused wrong sha, frozen e1a stage;
++  - `broken()` now fails by RuntimeError as intended (CC-209 W1e).
++- **SUMS:**
++  - scripts SUMS: the e1e2.py, e1e2_job.sh and test_e1e2.py lines;
++  - prereg SUMS: the PREREG.md line, plus the new AMENDMENT_1.md line.
++- **`PREREG.md`:** only a 3-line amendment pointer under the title.
