@@ -60,7 +60,7 @@ PIN = {"records_tar": "b312de68180a2f9bf31602bae917ed170b2630174c30c11e9ea59c64a
        "mhal_touched": "91db7e2fbb3d479f79ed19fca4aa100399730910cd7511f832576350f26f9b63"}
 QWEN = {"repo": "Qwen/Qwen2.5-VL-7B-Instruct", "key": "qwen25vl_7b", "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5"}
 SEED = m0.SEED
-CAP_H = {"e1b": 5.0, "e1a": 7.5}
+CAP_H = {"e1b": 6.0, "e1a": 7.5}  # e1b 5.0 -> 6.0: AMENDMENT_3 (CC-209c)
 N_PROJ = {"e1b": 200, "e1a": 20}
 SMOKE_IMG, SMOKE_Q = 20, 5
 N_E1B, N_E1A = 3700, 231
