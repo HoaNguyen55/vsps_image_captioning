@@ -187,6 +187,7 @@ VSPS-J M0 dev-touched: every M-HalDetect image, 786 val + 2,695 train = 3,454 CO
 
 **Dev-only (spent):** XM3600 (all), UIT-ViIC test and val, KTVIC test, OV-test, COCO Karpathy test, nocaps val, LongCap/Polaris/DOCCI/THumB/Composite/VaPR. UIT-ViIC val 924 is K2 dev, and sharing it needs a PI and judge line.
 VSPS-J M0 probes 91 Karpathy-test images (M-HalDetect val ∩ Karpathy test) at dev only; held out of every operating-point choice; `karpathy_test_val_ids.txt` sha 88e40e3c.
+VSPS-J E1+E2 (dev-explore): E1a decodes all 231 UIT-ViIC test images (already spent; dev only; ids sha 96e6ffe9 in manuscript/prereg/2026-10-31_vsps_j_e1e2/e1e2_plan.json); E1b re-probes the 3,700 KTVIC train stage-1 images (in-sample). No new owner displaced; T-COCO from E1a is never a tier-3 claim. W25 not run for E1a (CC-209 r6, read-only); the 231 stay in exclusion.json for every later W25 pass.
 
 ### 2.4 Expected Q1 count, and what would raise it
 
