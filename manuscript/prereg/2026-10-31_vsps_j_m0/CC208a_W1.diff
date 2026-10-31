@@ -1,0 +1,253 @@
+--- a/scripts/vsps_j_m0/m0.py
++++ b/scripts/vsps_j_m0/m0.py
+@@ -405,6 +405,45 @@
+     return sorted(i for i, h in shas.items() if h in refused_sha and i not in held)
+ 
+ 
++STOP = "STOP"  # marker file in --out; written by every non-zero probe exit (CC-208 W1)
++
++
++def stop_reasons(out: Path) -> list:
++    """Recorded stops that make a run final: the STOP marker, a smoke FAULT, a projection with "stop": true."""
++    why = [f"marker {STOP}"] if (out / STOP).exists() else []
++    for name, key in (("smoke.json", "fault"), ("projection_pre_val.json", "stop"), ("projection.json", "stop")):
++        f = out / name
++        if f.is_file() and json.loads(f.read_text(encoding="utf-8")).get(key):
++            why.append(f"{name} {key}: true")
++    return why
++
++
++def refuse_if_stopped(out: Path) -> None:
++    """A stopped run is never resumed (PREREG 7.2). A crash with no marker and no stop record may resume."""
++    why = stop_reasons(out)
++    if why:
++        raise SystemExit(f"REFUSED: run stopped ({'; '.join(why)}); amend, never resume")
++
++
++def halt(out: Path, rc: int, reason: str, n_img: int | None = None) -> int:
++    (out / STOP).write_text(json.dumps({"rc": rc, "reason": reason, "time": time.time(), "n_img": n_img}) + "\n")
++    print(reason)
++    return rc
++
++
++def check_scorable(out: Path) -> list:
++    """Score only a run with no stop record, a probes file equal to its .sha256 and only finite P(yes)."""
++    refuse_if_stopped(out)
++    pf, sf = out / "probes.jsonl", out / "probes.jsonl.sha256"
++    if not sf.is_file() or sf.read_text().split()[0] != sha_file(pf):
++        raise SystemExit("REFUSED: probes.jsonl does not match probes.jsonl.sha256")
++    rows = [json.loads(x) for x in pf.read_text(encoding="utf-8").splitlines()]
++    bad = sum(not math.isfinite(r["p_yes"]) for r in rows)
++    if bad:
++        raise SystemExit(f"REFUSED: {bad} non-finite P(yes) rows")
++    return rows
++
++
+ def cmd_probe(args) -> int:
+     from PIL import Image
+     from rescap.vlm.registry import get_vlm
+@@ -416,6 +455,7 @@
+     if out.resolve().is_relative_to(ROOT):
+         raise SystemExit("REFUSED --out inside the repo")
+     out.mkdir(parents=True, exist_ok=True)
++    refuse_if_stopped(out)  # before the model loads
+     launch = out / "launch.json"
+     if not launch.exists():
+         launch.write_text(json.dumps({"t0": time.time(), "device": args.device}))
+@@ -443,8 +483,7 @@
+                                       indent=1, ensure_ascii=False))
+     v = json.loads(smoke_f.read_text())
+     if v["fault"]:
+-        print("FAULT smoke (arm A / tokens / equivalence); see smoke.json")
+-        return 2
++        return halt(out, 2, "FAULT smoke (arm A / tokens / equivalence); see smoke.json")
+     if args.smoke_only:
+         print(json.dumps(v, ensure_ascii=False))
+         return 0
+@@ -476,6 +515,7 @@
+ 
+ def run_val(ad, val: list, img, demos: tuple, smoke: dict, out: Path) -> int:
+     """Section 8: interleaved arms per image in the fixed order, the two projection rules and the cap."""
++    refuse_if_stopped(out)
+     plan = json.loads(PLAN.read_text(encoding="utf-8"))
+     t0 = json.loads((out / "launch.json").read_text())["t0"]
+     elapsed_h = lambda: (time.time() - t0) / 3600  # noqa: E731
+@@ -500,11 +540,12 @@
+         pj = projection_h(elapsed_h(), total, {a: smoke["sec_median"][a] for a in arms})
+         pre_f.write_text(json.dumps({"elapsed_h": elapsed_h(), "projected_h": pj, "cap_h": CAP_H, "stop": pj > CAP_H}))
+         if pj > CAP_H:
+-            print(f"PROJECTION_STOP before val: projected {pj:.2f} GPU-h > cap {CAP_H}")
+-            return 3
++            return halt(out, 3, f"PROJECTION_STOP before val: projected {pj:.2f} GPU-h > cap {CAP_H}", 0)
+     proj_f = out / "projection.json"
+     with open(pf, "a", encoding="utf-8") as fh:
+         for n, iid in enumerate(order, 1):
++            if elapsed_h() > CAP_H:  # checked before each image is decoded
++                return halt(out, 4, f"CAP_STOP before image {n}: {elapsed_h():.2f} GPU-h", n)
+             todo = [(s, a) for s in by_img.get(iid, []) for a in arms if (s["rec"], s["seg"], a) not in done]
+             if todo:
+                 pv = ad._pixel_values(img(iid))
+@@ -515,8 +556,8 @@
+                            "mass": m, "text": text, "sec": time.perf_counter() - t}
+                     if not math.isfinite(p):
+                         append(fh, row)
+-                        print(f"FAULT non-finite P(yes) at rec {s['rec']} seg {s['seg']} arm {a}")
+-                        return 2
++                        fh.flush()
++                        return halt(out, 2, f"FAULT non-finite P(yes) at rec {s['rec']} seg {s['seg']} arm {a}", n)
+                     append(fh, row)
+                     done.add((s["rec"], s["seg"], a))
+                 fh.flush()
+@@ -530,11 +571,7 @@
+                 proj_f.write_text(json.dumps({"elapsed_h": elapsed_h(), "median_s": med, "remaining": rem,
+                                               "projected_h": pj, "cap_h": CAP_H, "stop": pj > CAP_H}))
+                 if pj > CAP_H:
+-                    print(f"PROJECTION_STOP projected {pj:.2f} GPU-h > cap {CAP_H}")
+-                    return 3
+-            if elapsed_h() > CAP_H:
+-                print(f"CAP_STOP at image {n}: {elapsed_h():.2f} GPU-h")
+-                return 4
++                    return halt(out, 3, f"PROJECTION_STOP projected {pj:.2f} GPU-h > cap {CAP_H}", n)
+     print(json.dumps({"status": "DONE", "elapsed_h": elapsed_h(), "probes": len(done)}))
+     return 0
+ 
+@@ -550,10 +587,7 @@
+     drop = {int(x) for x in (PDIR / "dropped_ids.txt").read_text().split()}
+     held = {int(x) for x in (PDIR / "selection_excluded_ids.txt").read_text().split()}
+     segs = [s for s in segments(val)[0] if s["image"] not in drop]
+-    P = {}
+-    for line in (args.out / "probes.jsonl").read_text(encoding="utf-8").splitlines():
+-        r = json.loads(line)
+-        P[(r["rec"], r["seg"], r["arm"])] = r["p_yes"]
++    P = {(r["rec"], r["seg"], r["arm"]): r["p_yes"] for r in check_scorable(args.out)}
+     missing = [(s["rec"], s["seg"], a) for s in segs for a in arms if (s["rec"], s["seg"], a) not in P]
+     if missing or len(segs) != plan["custody"]["probe_segments"]:
+         raise SystemExit(f"INCOMPLETE: {len(missing)} probes missing; no score on a partial run")
+--- a/scripts/vsps_j_m0/test_m0.py
++++ b/scripts/vsps_j_m0/test_m0.py
+@@ -127,8 +127,88 @@
+         {"few_shot": "DROP", "detector": "STOP_PIVOT"}
+     assert decide({"dR_pts": 5.0, "AUROC_A": 0.7, "AUROC_B": 0.7}, {"dR_pts": [-0.1, 9]})["few_shot"] == "DROP"
+     assert decide({"AUROC_A": 0.6}, {})["few_shot"] == "N/A_ARM_B_DROPPED"
++    stop_cases()
+     print("selftest ok")
+ 
+ 
++def refused(fn) -> bool:
++    try:
++        fn()
++    except SystemExit as e:
++        return str(e).startswith("REFUSED")
++    return False
++
++
++def stop_cases() -> None:
++    """CC-208 W1: a stopped run is never resumed or scored; a crash with no marker resumes."""
++    import hashlib
++    import json
++    import tempfile
++    import time
++
++    import m0
++
++    ids = lambda n: {int(x) for x in (m0.PDIR / n).read_text().split()}  # noqa: E731
++    order = m0.image_order(ids("val_ids.txt") - ids("dropped_ids.txt"))
++    val = [{"image": f"COCO_val2014_{i:012d}.jpg", "annotations": [{"label": "INACCURATE", "text": "two dogs"}]}
++           for i in order]
++    ad, img = types_ns(_pixel_values=lambda im: None), (lambda i: None)
++    calls = []
++    m0.probe = lambda *a, **k: calls.append(1) or ("có", 0.7, 0.99)  # fake model, no weights
++
++    def fresh(t0_shift: float = 0.0) -> Path:
++        out = Path(tempfile.mkdtemp())
++        (out / "launch.json").write_text(json.dumps({"t0": time.time() - t0_shift}))
++        return out
++
++    slow, fast = {"arm_b_dropped": False, "sec_median": {"A": 1e6, "B": 1e6}}, \
++        {"arm_b_dropped": False, "sec_median": {"A": 0.0, "B": 0.0}}
++    # the CC-208 simulation: pre-val PROJECTION_STOP, then the same call again -> refused, nothing decoded
++    out = fresh()
++    assert m0.run_val(ad, val, img, (), slow, out) == 3 and (out / m0.STOP).exists() and not calls
++    assert refused(lambda: m0.run_val(ad, val, img, (), fast, out)) and not calls
++    # a stop record without a marker also refuses
++    (out / m0.STOP).unlink()
++    assert refused(lambda: m0.run_val(ad, val, img, (), fast, out)) and not calls
++    # cap checked before an image (a resumed run past the pre-val check): rc 4, no decode
++    s0 = m0.segments(val)[0][0]
++    row0 = json.dumps({"rec": s0["rec"], "seg": s0["seg"], "image": s0["image"], "arm": "A", "n_img": 1,
++                       "p_yes": 0.7, "mass": 0.99, "text": "có", "sec": 0.1}) + "\n"
++    out = fresh(t0_shift=6 * 3600)
++    (out / "probes.jsonl").write_text(row0)
++    assert m0.run_val(ad, val, img, (), fast, out) == 4 and not calls
++    assert json.loads((out / m0.STOP).read_text())["n_img"] == 1
++    # smoke fault record refuses
++    out = fresh()
++    (out / "smoke.json").write_text(json.dumps({"fault": True}))
++    assert refused(lambda: m0.refuse_if_stopped(out))
++    # crash with no marker: resume allowed, completes
++    out = fresh()
++    (out / "probes.jsonl").write_text(row0)
++    assert m0.run_val(ad, val, img, (), fast, out) == 0 and len(calls) == 2 * len(order) - 1
++    pf = out / "probes.jsonl"
++    seal = lambda: (out / "probes.jsonl.sha256").write_text(  # noqa: E731
++        hashlib.sha256(pf.read_bytes()).hexdigest() + "  probes.jsonl\n")
++    seal()
++    assert len(m0.check_scorable(out)) == 2 * len(order)
++    # score refusals: sha mismatch, NaN row, marker
++    pf.write_text(pf.read_text() + json.dumps({"rec": 0, "seg": 9, "arm": "A", "p_yes": float("nan")}) + "\n")
++    assert refused(lambda: m0.check_scorable(out))
++    seal()
++    assert refused(lambda: m0.check_scorable(out))
++    pf.write_text("".join(pf.read_text().splitlines(keepends=True)[:-1]))
++    seal()
++    m0.check_scorable(out)
++    m0.halt(out, 4, "CAP_STOP test", 7)
++    assert refused(lambda: m0.check_scorable(out))
++    m0.probe = probe
++
++
++def types_ns(**k):
++    import types
++
++    return types.SimpleNamespace(**k)
++
++
+ if __name__ == "__main__":
+     main()
+--- a/scripts/vsps_j_m0/SHA256SUMS
++++ b/scripts/vsps_j_m0/SHA256SUMS
+@@ -1,4 +1,4 @@
+-9f81f899a658ee2e42a0fba73876a610ba28c5953487aaa531b53f9149577181  m0.py
++5d3c02f414bd5743d437ec399e07431b4d38d970b16b901c52a9a657505ef7b2  m0.py
+ 600428061f2ff1743e017fc521ea2394b532ca52882591d239d2dcad84cadb89  m0_stats.py
+-1e40ac16922f0085404b31c3be5864e4ee42b99ec4e42ec8110a79e8d9aefc16  test_m0.py
++3a80acc3d194d21e3f67c7a4d9bd27f2f52193f5ec0fbb4ed20abf347cfc1d93  test_m0.py
+ be5c6fce1fc8217acbb4c261e7a83204f7fa24b25de3fdd551288c8a291414e6  m0_job.sh
+--- a/manuscript/prereg/2026-10-31_vsps_j_m0/PREREG.md
++++ b/manuscript/prereg/2026-10-31_vsps_j_m0/PREREG.md
+@@ -207,7 +207,7 @@
+ 
+ ### 7.2 During the run
+ 
+-A non-finite P(yes) is a FAULT and stops the run. A run stopped by FAULT, PROJECTION_STOP or CAP_STOP is never scored.
++A non-finite P(yes) is a FAULT and stops the run. A run stopped by FAULT, PROJECTION_STOP or CAP_STOP is never scored. Every such exit writes a STOP marker in the run folder, the cap is checked before each image, and `m0.py` then refuses to resume or score that run (as it does on any recorded stop, any non-finite P(yes) or a `probes.jsonl` that differs from its `.sha256`), while a crash with no marker may resume (CC-208 W1).
+ 
+ ### 7.3 CPU smoke already run on the laptop (compatibility only, not evidence)
+ 
+@@ -222,7 +222,7 @@
+   (ratio 3.4).
+ - Output: scratchpad `m0_cpusmoke2/smoke.json` (sha 894718a5), outside the repo; not used for any decision.
+ 
+-It also found the two load problems fixed in section 1 (`refs/main`, and transformers 5.22.1 incompatibility).
++It also found the two load problems fixed in section 1 (`refs/main`, and transformers 5.22.1 incompatibility). This smoke ran on `m0.py` 9f81f899; the CC-208 W1 stop guard changed `m0.py` after it, with the probe path (`probe`, `run_smoke`) unchanged.
+ 
+ ## 8. Cost, cap and the projection rules (W2)
+ 
+--- a/manuscript/prereg/2026-10-31_vsps_j_m0/SHA256SUMS
++++ b/manuscript/prereg/2026-10-31_vsps_j_m0/SHA256SUMS
+@@ -1,4 +1,4 @@
+-53af5f6bc52977824655eba8a74cf2eff4d2b00d14f7f9f52b3ad38d645b33f4  PREREG.md
++f0895bbf566daee59290a02533aeb9ce40f51daa7076b1614047fe30f90e4fac  PREREG.md
+ c422efd1d1efa71c6c728637cf86a6fb40ea725fc556b586bd3af9fcf6870af4  m0_plan.json
+ 91db7e2fbb3d479f79ed19fca4aa100399730910cd7511f832576350f26f9b63  dev_touched_ids.txt
+ b4d4f35ab7b951fbd4658b670ebf6aecf00cb910fa73753514c104b29ba0f412  val_ids.txt

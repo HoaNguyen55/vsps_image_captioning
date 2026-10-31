@@ -183,8 +183,10 @@ That is 14 rows plus the thesis. Over three years this gives four Q2–Q3 journa
 | UIT-ViIC train pool | VI + EN human captions | used only for training adapters | L1-P3 evaluation pool, **needs ruling** |
 
 **Image-level rule.** KV-4,224, COCO restval, the UIT-ViIC train pool and UT-2,402 all come from COCO. Before any decode, run the W25 near-duplicate filter across **all** ledger owners, so that each image has exactly one owner. Overlaps are dropped from the later-registered set, under a rule fixed in advance.
+VSPS-J M0 dev-touched: every M-HalDetect image, 786 val + 2,695 train = 3,454 COCO ids (27 in both; 73 never decoded), `manuscript/prereg/2026-10-31_vsps_j_m0/dev_touched_ids.txt` sha 91db7e2f. B4 drops them from restval (599 val + 2,027 train in restval). W25 not run for M0 (CC-208 r8); later W25 passes include these 3,454 ids.
 
 **Dev-only (spent):** XM3600 (all), UIT-ViIC test and val, KTVIC test, OV-test, COCO Karpathy test, nocaps val, LongCap/Polaris/DOCCI/THumB/Composite/VaPR. UIT-ViIC val 924 is K2 dev, and sharing it needs a PI and judge line.
+VSPS-J M0 probes 91 Karpathy-test images (M-HalDetect val ∩ Karpathy test) at dev only; held out of every operating-point choice; `karpathy_test_val_ids.txt` sha 88e40e3c.
 
 ### 2.4 Expected Q1 count, and what would raise it
 

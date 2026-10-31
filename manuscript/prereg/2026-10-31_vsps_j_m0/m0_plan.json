@@ -1,0 +1,664 @@
+{
+ "_what": "VSPS-J M0 plan: ids, labels, counts and text sha256 only; no M-HalDetect text",
+ "seed": 20261031,
+ "pins": {
+  "val_raw.json": "2cbc7942f2ceafb0312f4f41b79390fe600605ffda9a9591fd2346213d0389af",
+  "train_raw.json": "03b088d113d94e6f7ebd939fe2040d9fb968f26878b088da77ed8d885ae17624",
+  "overlap": "fd97a3b0259b8f1463afa180eebdc93ab5fce7373e58fd51c1eb0fa33a157a32",
+  "karpathy": "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d",
+  "at3_list": "5aaa479fa57f9749ecd1258ae7a9f91d8b0e9b322ea1fd4418a5f91b1354db26",
+  "at3_ids": "b0aefdb4a61c8099369d7f42a5625ab5aa83ec310a9f28f04bc2f00102727215",
+  "kv4224_ids": "86d9386324e8cb34c4c7216e494b21da0cbcfe458702952b9ce261a9f608f8f9",
+  "exclusion": "c52a96d18925b974878ae1a970c3f9133fb3482216676fd41871eeabb68cc77f",
+  "ut2532": "288340b8ff7a3ca675f78c7e88bafad09c68f37a182b6c9ec0f4b786f5cb3a88"
+ },
+ "model": {
+  "name": "vintern-1b",
+  "repo": "5CD-AI/Vintern-1B-v3_5",
+  "revision": "b98f263eab246eb5269ade64edbdca8a887dc44d",
+  "files": {
+   "model.safetensors": "296a16a6bf28e6d3f0fb9298deba70b3cfa1d7519f4aa326e2f862bf2e63be05",
+   "modeling_internvl_chat.py": "4935c1f1d205167150d4449cbaf4bf340d8d5d0fd96ca97be5d15b26d489ead1",
+   "conversation.py": "7e457a0fc08304deeb386ed1932e9db88dfbca888e0649ff76d488ae6c8aebfe",
+   "config.json": "1c9ddcbef42ce4c672fefeb6c217be0ba05429f91ef1e3401cdb78eda17533fb"
+  },
+  "max_tiles": 4
+ },
+ "val": {
+  "records": 3164,
+  "images": 786,
+  "segments_by_label": {
+   "ACCURATE": 11770,
+   "INACCURATE": 4680,
+   "ANALYSIS": 5207,
+   "UNSURE": 435
+  },
+  "label_eligible": 16450,
+  "probe_eligible": 16449,
+  "excluded": {
+   "ANALYSIS": 5207,
+   "UNSURE": 435,
+   "record_without_spans": 2,
+   "no_word_character_ACCURATE": 1
+  },
+  "karpathy_split": {
+   "restval": 599,
+   "test": 91,
+   "val": 96
+  }
+ },
+ "train": {
+  "records": 10979,
+  "images": 2695,
+  "karpathy_split": {
+   "val": 339,
+   "restval": 2027,
+   "test": 329
+  }
+ },
+ "custody": {
+  "train_val_image_overlap": 27,
+  "owned_never_decoded": {
+   "a_t3_3232": {
+    "val": 0,
+    "train": 0
+   },
+   "kv4224": {
+    "val": 0,
+    "train": 0
+   },
+   "uitviic_train_pool_ut2532": {
+    "val": 17,
+    "train": 56
+   }
+  },
+  "exclusion_json_ids": {
+   "uitviic_test": {
+    "val": 0,
+    "train": 0
+   },
+   "cv295": {
+    "val": 5,
+    "train": 21
+   },
+   "coco2500": {
+    "val": 44,
+    "train": 173
+   },
+   "coco_karpathy_test": {
+    "val": 91,
+    "train": 329
+   },
+   "chair500": {
+    "val": 10,
+    "train": 30
+   },
+   "pope500": {
+    "val": 7,
+    "train": 33
+   }
+  },
+  "dropped_val_images": 17,
+  "dropped_train_images": 56,
+  "probe_images": 769,
+  "probe_segments": 16027,
+  "karpathy_test_in_probe": 91,
+  "held_out_of_selection": 106,
+  "op_images": 663,
+  "op_segments": 13813,
+  "op_inaccurate": 3993,
+  "probe_inaccurate": 4605,
+  "demo_pool_images": 2228
+ },
+ "claim_types_probe": {
+  "count": {
+   "ACCURATE": 2096,
+   "INACCURATE": 1560
+  },
+  "attribute": {
+   "ACCURATE": 3125,
+   "INACCURATE": 424
+  },
+  "relation": {
+   "ACCURATE": 2322,
+   "INACCURATE": 992
+  },
+  "object": {
+   "INACCURATE": 1629,
+   "ACCURATE": 3879
+  }
+ },
+ "demos": [
+  {
+   "rec": 4680,
+   "seg": 9,
+   "image": 168248,
+   "label": "INACCURATE",
+   "answer": "Không.",
+   "words": 18,
+   "text_sha256": "a3710279bd40ef4a76d53a5166f72532890f907b9d79cd38cc4a4c70df43c520"
+  },
+  {
+   "rec": 9230,
+   "seg": 1,
+   "image": 296224,
+   "label": "ACCURATE",
+   "answer": "Có.",
+   "words": 12,
+   "text_sha256": "02bf9436d5a7d59aac3a9be81d27a49a144500482ef7b247885c5d4eb9cb5cfb"
+  }
+ ],
+ "smoke": [
+  {
+   "rec": 10171,
+   "seg": 1,
+   "image": 50638
+  },
+  {
+   "rec": 10173,
+   "seg": 2,
+   "image": 50638
+  },
+  {
+   "rec": 3806,
+   "seg": 1,
+   "image": 53569
+  },
+  {
+   "rec": 3808,
+   "seg": 5,
+   "image": 53569
+  },
+  {
+   "rec": 4410,
+   "seg": 6,
+   "image": 79011
+  },
+  {
+   "rec": 4410,
+   "seg": 2,
+   "image": 79011
+  },
+  {
+   "rec": 6972,
+   "seg": 3,
+   "image": 85944
+  },
+  {
+   "rec": 6972,
+   "seg": 6,
+   "image": 85944
+  },
+  {
+   "rec": 8756,
+   "seg": 8,
+   "image": 101145
+  },
+  {
+   "rec": 8757,
+   "seg": 3,
+   "image": 101145
+  },
+  {
+   "rec": 2551,
+   "seg": 2,
+   "image": 107304
+  },
+  {
+   "rec": 2549,
+   "seg": 0,
+   "image": 107304
+  },
+  {
+   "rec": 10074,
+   "seg": 0,
+   "image": 116819
+  },
+  {
+   "rec": 10072,
+   "seg": 1,
+   "image": 116819
+  },
+  {
+   "rec": 2554,
+   "seg": 5,
+   "image": 128598
+  },
+  {
+   "rec": 2555,
+   "seg": 1,
+   "image": 128598
+  },
+  {
+   "rec": 7606,
+   "seg": 3,
+   "image": 131108
+  },
+  {
+   "rec": 7604,
+   "seg": 1,
+   "image": 131108
+  },
+  {
+   "rec": 2090,
+   "seg": 4,
+   "image": 137370
+  },
+  {
+   "rec": 2091,
+   "seg": 0,
+   "image": 137370
+  },
+  {
+   "rec": 2642,
+   "seg": 2,
+   "image": 150616
+  },
+  {
+   "rec": 2642,
+   "seg": 5,
+   "image": 150616
+  },
+  {
+   "rec": 1798,
+   "seg": 0,
+   "image": 153207
+  },
+  {
+   "rec": 1799,
+   "seg": 4,
+   "image": 153207
+  },
+  {
+   "rec": 2084,
+   "seg": 6,
+   "image": 166565
+  },
+  {
+   "rec": 2084,
+   "seg": 1,
+   "image": 166565
+  },
+  {
+   "rec": 9721,
+   "seg": 2,
+   "image": 191169
+  },
+  {
+   "rec": 9721,
+   "seg": 1,
+   "image": 191169
+  },
+  {
+   "rec": 2694,
+   "seg": 0,
+   "image": 195408
+  },
+  {
+   "rec": 2696,
+   "seg": 3,
+   "image": 195408
+  },
+  {
+   "rec": 1888,
+   "seg": 7,
+   "image": 203641
+  },
+  {
+   "rec": 1891,
+   "seg": 5,
+   "image": 203641
+  },
+  {
+   "rec": 1881,
+   "seg": 5,
+   "image": 215914
+  },
+  {
+   "rec": 1882,
+   "seg": 4,
+   "image": 215914
+  },
+  {
+   "rec": 8345,
+   "seg": 2,
+   "image": 241238
+  },
+  {
+   "rec": 8345,
+   "seg": 1,
+   "image": 241238
+  },
+  {
+   "rec": 7156,
+   "seg": 1,
+   "image": 245006
+  },
+  {
+   "rec": 7157,
+   "seg": 0,
+   "image": 245006
+  },
+  {
+   "rec": 8955,
+   "seg": 1,
+   "image": 288313
+  },
+  {
+   "rec": 8957,
+   "seg": 2,
+   "image": 288313
+  },
+  {
+   "rec": 4489,
+   "seg": 5,
+   "image": 319487
+  },
+  {
+   "rec": 4491,
+   "seg": 5,
+   "image": 319487
+  },
+  {
+   "rec": 39,
+   "seg": 7,
+   "image": 349525
+  },
+  {
+   "rec": 36,
+   "seg": 12,
+   "image": 349525
+  },
+  {
+   "rec": 3750,
+   "seg": 1,
+   "image": 353624
+  },
+  {
+   "rec": 3750,
+   "seg": 0,
+   "image": 353624
+  },
+  {
+   "rec": 111,
+   "seg": 1,
+   "image": 358086
+  },
+  {
+   "rec": 110,
+   "seg": 2,
+   "image": 358086
+  },
+  {
+   "rec": 914,
+   "seg": 0,
+   "image": 358884
+  },
+  {
+   "rec": 913,
+   "seg": 1,
+   "image": 358884
+  },
+  {
+   "rec": 6798,
+   "seg": 2,
+   "image": 365273
+  },
+  {
+   "rec": 6798,
+   "seg": 6,
+   "image": 365273
+  },
+  {
+   "rec": 10209,
+   "seg": 0,
+   "image": 374333
+  },
+  {
+   "rec": 10208,
+   "seg": 2,
+   "image": 374333
+  },
+  {
+   "rec": 1010,
+   "seg": 2,
+   "image": 397377
+  },
+  {
+   "rec": 1010,
+   "seg": 0,
+   "image": 397377
+  },
+  {
+   "rec": 580,
+   "seg": 3,
+   "image": 398237
+  },
+  {
+   "rec": 583,
+   "seg": 2,
+   "image": 398237
+  },
+  {
+   "rec": 8428,
+   "seg": 5,
+   "image": 398489
+  },
+  {
+   "rec": 8430,
+   "seg": 0,
+   "image": 398489
+  },
+  {
+   "rec": 1198,
+   "seg": 1,
+   "image": 404738
+  },
+  {
+   "rec": 1199,
+   "seg": 0,
+   "image": 404738
+  },
+  {
+   "rec": 1062,
+   "seg": 0,
+   "image": 413404
+  },
+  {
+   "rec": 1063,
+   "seg": 3,
+   "image": 413404
+  },
+  {
+   "rec": 8997,
+   "seg": 5,
+   "image": 424002
+  },
+  {
+   "rec": 8998,
+   "seg": 1,
+   "image": 424002
+  },
+  {
+   "rec": 1102,
+   "seg": 0,
+   "image": 425591
+  },
+  {
+   "rec": 1101,
+   "seg": 0,
+   "image": 425591
+  },
+  {
+   "rec": 860,
+   "seg": 1,
+   "image": 430302
+  },
+  {
+   "rec": 860,
+   "seg": 0,
+   "image": 430302
+  },
+  {
+   "rec": 298,
+   "seg": 3,
+   "image": 443963
+  },
+  {
+   "rec": 296,
+   "seg": 1,
+   "image": 443963
+  },
+  {
+   "rec": 761,
+   "seg": 8,
+   "image": 451679
+  },
+  {
+   "rec": 760,
+   "seg": 7,
+   "image": 451679
+  },
+  {
+   "rec": 667,
+   "seg": 3,
+   "image": 456303
+  },
+  {
+   "rec": 666,
+   "seg": 1,
+   "image": 456303
+  },
+  {
+   "rec": 4957,
+   "seg": 1,
+   "image": 469088
+  },
+  {
+   "rec": 4958,
+   "seg": 5,
+   "image": 469088
+  },
+  {
+   "rec": 6897,
+   "seg": 2,
+   "image": 487418
+  },
+  {
+   "rec": 6897,
+   "seg": 4,
+   "image": 487418
+  },
+  {
+   "rec": 3124,
+   "seg": 3,
+   "image": 495973
+  },
+  {
+   "rec": 3122,
+   "seg": 6,
+   "image": 495973
+  },
+  {
+   "rec": 4931,
+   "seg": 1,
+   "image": 500884
+  },
+  {
+   "rec": 4932,
+   "seg": 4,
+   "image": 500884
+  },
+  {
+   "rec": 3125,
+   "seg": 9,
+   "image": 503467
+  },
+  {
+   "rec": 3126,
+   "seg": 13,
+   "image": 503467
+  },
+  {
+   "rec": 5863,
+   "seg": 4,
+   "image": 525988
+  },
+  {
+   "rec": 5864,
+   "seg": 2,
+   "image": 525988
+  },
+  {
+   "rec": 8103,
+   "seg": 1,
+   "image": 526359
+  },
+  {
+   "rec": 8103,
+   "seg": 2,
+   "image": 526359
+  },
+  {
+   "rec": 5583,
+   "seg": 1,
+   "image": 553061
+  },
+  {
+   "rec": 3475,
+   "seg": 0,
+   "image": 553061
+  },
+  {
+   "rec": 5665,
+   "seg": 0,
+   "image": 554340
+  },
+  {
+   "rec": 5668,
+   "seg": 0,
+   "image": 554340
+  },
+  {
+   "rec": 5415,
+   "seg": 0,
+   "image": 567683
+  },
+  {
+   "rec": 5414,
+   "seg": 0,
+   "image": 567683
+  },
+  {
+   "rec": 7222,
+   "seg": 5,
+   "image": 572090
+  },
+  {
+   "rec": 7220,
+   "seg": 0,
+   "image": 572090
+  },
+  {
+   "rec": 4454,
+   "seg": 5,
+   "image": 578591
+  },
+  {
+   "rec": 4454,
+   "seg": 13,
+   "image": 578591
+  }
+ ],
+ "image_order_sha256": "4ed15aa81644e88ddc4a7c66d298f86bd8bb3372ef524e8b1a529de1170d5c37",
+ "fetch_images": 821,
+ "id_lists": {
+  "dev_touched_ids.txt": "91db7e2fbb3d479f79ed19fca4aa100399730910cd7511f832576350f26f9b63",
+  "val_ids.txt": "b4d4f35ab7b951fbd4658b670ebf6aecf00cb910fa73753514c104b29ba0f412",
+  "train_ids.txt": "4a4033a518859b2c0aa8525a8db069e905148374419b9acc2864a0c70164be1a",
+  "karpathy_test_val_ids.txt": "88e40e3cd2ae6dd3bf3c1f514a085cb61a36b503abde298d57a1bb2bc8acd7fb",
+  "selection_excluded_ids.txt": "57195c49c601fe850ce7e06d2d58291076163c8c382399aca3e0eae516bfaef7",
+  "dropped_ids.txt": "41306bdbcc672c8104ec4366b137f5f9cce9ecea28f2f59e8c5fd09dc10168bf",
+  "fetch_images.txt": "7f148c8e515bf567f811da84a1e327a6e05d20a85e2939f5088fa1a45a359a3c"
+ }
+}
