@@ -288,6 +288,13 @@ def run_pass(probe, out: Path, work: list, img, cap_h: float, n_proj: int, smoke
     return 0
 
 
+# AMENDMENT_2 (PI-1031l): the two KTVIC train/test byte twins known since CC-130 stay in E1b by name and sha.
+KTVIC_TWINS = {
+    "bd5ea1bc723cbe731d0049d1e42a48055fbcff53f44157c701a8c4d690906261",  # train 00000003589.jpg = test 00000001335.jpg
+    "dc1cd6988daf5ece6fdcacc0535e442387b0244512b7fbf288d75880e1738f9d",  # train 00000007511.jpg = test 00000000507.jpg
+}
+
+
 def check_images(names, folder: Path, refused_sha: set, must_be_in: set | None = None) -> None:
     """Every image present; none whose bytes exclusion.json lists (E1b), or every one listed there (E1a pin)."""
     shas = {n: m0.sha_file(folder / n) for n in names}
@@ -308,7 +315,7 @@ def cmd_e1b(a) -> int:
     if sha_lines(order) != plan["e1b"]["order_sha256"]:
         raise SystemExit("FAULT E1b order differs from the plan")
     ex = json.loads(m0.EXCLUSION.read_text(encoding="utf-8"))
-    check_images(order, a.images, set(ex["image_sha256"]["ktvic_test"]))
+    check_images(order, a.images, set(ex["image_sha256"]["ktvic_test"]) - KTVIC_TWINS)
     work = [(n, [(k, q["question_vi"]) for k, q in vintern_questions(recs[n]).items()]) for n in order]
     ad = load_vintern(a.model, a.device)
     img = lambda n: Image.open(a.images / n).convert("RGB")  # noqa: E731

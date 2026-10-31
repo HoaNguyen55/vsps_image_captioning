@@ -204,9 +204,32 @@ def test_sidelog_stage1():
         sys.modules.pop("generate_stage1", None)
 
 
+def test_twin_exemption():
+    """Only the two named KTVIC twins pass the E1b byte check; any other test-identical image still faults."""
+    assert len(e1e2.KTVIC_TWINS) == 2
+    with tempfile.TemporaryDirectory() as d:
+        f = Path(d)
+        (f / "a.jpg").write_bytes(b"twin")
+        (f / "b.jpg").write_bytes(b"other")
+        twin, other = m0.sha_file(f / "a.jpg"), m0.sha_file(f / "b.jpg")
+        saved = set(e1e2.KTVIC_TWINS)
+        e1e2.KTVIC_TWINS.clear()
+        e1e2.KTVIC_TWINS.add(twin)
+        try:
+            e1e2.check_images(["a.jpg"], f, {twin, other} - e1e2.KTVIC_TWINS)
+            try:
+                e1e2.check_images(["a.jpg", "b.jpg"], f, {twin, other} - e1e2.KTVIC_TWINS)
+                raise AssertionError("non-twin test image must fault")
+            except SystemExit as e:
+                assert "FAULT" in str(e)
+        finally:
+            e1e2.KTVIC_TWINS.clear()
+            e1e2.KTVIC_TWINS.update(saved)
+
+
 def main() -> int:
     for t in (test_keys_and_prompt, test_replay_and_metrics, test_select_rule, test_tcoco_and_kappa,
-              test_run_pass_guards, test_score_isolation, test_sidelog_stage1):
+              test_run_pass_guards, test_score_isolation, test_sidelog_stage1, test_twin_exemption):
         t()
     print("selftest ok")
     return 0

@@ -1,0 +1,61 @@
+--- a/scripts/vsps_j_e1e2/e1e2.py
++++ b/scripts/vsps_j_e1e2/e1e2.py
+@@ -288,6 +288,13 @@
+     return 0
+ 
+ 
++# AMENDMENT_2 (PI-1031l): the two KTVIC train/test byte twins known since CC-130 stay in E1b by name and sha.
++KTVIC_TWINS = {
++    "bd5ea1bc723cbe731d0049d1e42a48055fbcff53f44157c701a8c4d690906261",  # train 00000003589.jpg = test 00000001335.jpg
++    "dc1cd6988daf5ece6fdcacc0535e442387b0244512b7fbf288d75880e1738f9d",  # train 00000007511.jpg = test 00000000507.jpg
++}
++
++
+ def check_images(names, folder: Path, refused_sha: set, must_be_in: set | None = None) -> None:
+     """Every image present; none whose bytes exclusion.json lists (E1b), or every one listed there (E1a pin)."""
+     shas = {n: m0.sha_file(folder / n) for n in names}
+@@ -308,7 +315,7 @@
+     if sha_lines(order) != plan["e1b"]["order_sha256"]:
+         raise SystemExit("FAULT E1b order differs from the plan")
+     ex = json.loads(m0.EXCLUSION.read_text(encoding="utf-8"))
+-    check_images(order, a.images, set(ex["image_sha256"]["ktvic_test"]))
++    check_images(order, a.images, set(ex["image_sha256"]["ktvic_test"]) - KTVIC_TWINS)
+     work = [(n, [(k, q["question_vi"]) for k, q in vintern_questions(recs[n]).items()]) for n in order]
+     ad = load_vintern(a.model, a.device)
+     img = lambda n: Image.open(a.images / n).convert("RGB")  # noqa: E731
+--- a/scripts/vsps_j_e1e2/test_e1e2.py
++++ b/scripts/vsps_j_e1e2/test_e1e2.py
+@@ -204,9 +204,32 @@
+         sys.modules.pop("generate_stage1", None)
+ 
+ 
++def test_twin_exemption():
++    """Only the two named KTVIC twins pass the E1b byte check; any other test-identical image still faults."""
++    assert len(e1e2.KTVIC_TWINS) == 2
++    with tempfile.TemporaryDirectory() as d:
++        f = Path(d)
++        (f / "a.jpg").write_bytes(b"twin")
++        (f / "b.jpg").write_bytes(b"other")
++        twin, other = m0.sha_file(f / "a.jpg"), m0.sha_file(f / "b.jpg")
++        saved = set(e1e2.KTVIC_TWINS)
++        e1e2.KTVIC_TWINS.clear()
++        e1e2.KTVIC_TWINS.add(twin)
++        try:
++            e1e2.check_images(["a.jpg"], f, {twin, other} - e1e2.KTVIC_TWINS)
++            try:
++                e1e2.check_images(["a.jpg", "b.jpg"], f, {twin, other} - e1e2.KTVIC_TWINS)
++                raise AssertionError("non-twin test image must fault")
++            except SystemExit as e:
++                assert "FAULT" in str(e)
++        finally:
++            e1e2.KTVIC_TWINS.clear()
++            e1e2.KTVIC_TWINS.update(saved)
++
++
+ def main() -> int:
+     for t in (test_keys_and_prompt, test_replay_and_metrics, test_select_rule, test_tcoco_and_kappa,
+-              test_run_pass_guards, test_score_isolation, test_sidelog_stage1):
++              test_run_pass_guards, test_score_isolation, test_sidelog_stage1, test_twin_exemption):
+         t()
+     print("selftest ok")
+     return 0
