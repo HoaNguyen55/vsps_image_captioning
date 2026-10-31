@@ -1,0 +1,230 @@
+{
+ "version": "b_alpha rule v3 (RULE_v3.md; CC-156 W1-W14 + CC-210 W1-W8 + CC-210a W1-W9)",
+ "regex_flags": [
+  "IGNORECASE",
+  "MULTILINE"
+ ],
+ "dataset": "UIT\\s?[-‐]?\\s?ViIC|KTVIC|Open\\s?[-‐]?\\s?ViIC|VieCap\\s?[-‐]?\\s?4H",
+ "metric": "\\b(CIDEr|BLEU|METEOR|ROUGE|SPICE)\\b",
+ "ref_heading": "^\\s*(?:(?:\\d+|[ivxlc]+)\\.?\\s+)?(references|bibliography|tài liệu tham khảo)\\s*:?\\s*$",
+ "cells": {
+  "C1": "VnCore\\s?[-‐]?\\s?NLP|RDR\\s?Segmenter|\\bpyvi\\b|underthesea|vitokenizer|word[-‐\\s]?segment\\w*|syllable[-‐\\s]?(level|based)|word[-‐\\s]?level",
+  "C1t": "VnCore\\s?[-‐]?\\s?NLP|RDR\\s?Segmenter|\\bpyvi\\b|underthesea|vitokenizer",
+  "C2": "CIDEr\\s?[-‐–]?\\s?D\\b|CIDEr\\s?[-‐–]?\\s?R\\b|CIDEr\\s?\\(D\\)",
+  "C2t": "pycocoevalcap|coco[-‐\\s]?caption(?:ing)?(?!s)\\s*(evaluation|toolkit|code|repo\\w*)|tylin/coco[-‐\\s]?caption|COCO (caption(?:ing)? )?evaluation (toolkit|code|API)",
+  "C3": "(×|\\bx|times|multipl\\w* by|scaled? by)\\s*100\\b",
+  "C4": "punctuation",
+  "C5": "github\\.com/|gitlab\\.com/|huggingface\\.co/|zenodo\\.org/"
+ },
+ "cell_roles": {
+  "C1": "primary",
+  "C1t": "descriptive",
+  "C2": "primary",
+  "C2t": "primary (with C2)",
+  "C3": "descriptive",
+  "C4": "descriptive",
+  "C5": "descriptive"
+ },
+ "primary_composite": "S = C1 and (C2 or C2t)",
+ "years": [
+  2020,
+  2026
+ ],
+ "openalex": {
+  "base": "https://api.openalex.org",
+  "title_abstract_filter": "title_and_abstract.search",
+  "per_page": 200,
+  "accepted_types": [
+   "article",
+   "preprint",
+   "book-chapter",
+   "review",
+   "conference-paper",
+   "data-paper",
+   "software-paper"
+  ],
+  "excluded_types": [
+   "book",
+   "book-review",
+   "conference-abstract",
+   "dataset",
+   "dissertation",
+   "editorial",
+   "erratum",
+   "letter",
+   "libguides",
+   "other",
+   "paratext",
+   "peer-review",
+   "reference-entry",
+   "report",
+   "retraction",
+   "software",
+   "standard",
+   "supplementary-materials"
+  ],
+  "unlisted_type_rule": "accept and count as type_unlisted",
+  "queries": [
+   "\"Vietnamese image captioning\"",
+   "UIT-ViIC",
+   "\"UIT ViIC\"",
+   "KTVIC",
+   "OpenViIC",
+   "VieCap4H"
+  ]
+ },
+ "semantic_scholar": {
+  "base": "https://api.semanticscholar.org/graph/v1",
+  "search_endpoint": "/paper/search/bulk",
+  "fields": "paperId,externalIds,title,abstract,year,publicationTypes,openAccessPdf",
+  "accepted_publication_types": [
+   "JournalArticle",
+   "Conference",
+   "BookSection",
+   "Review",
+   "Study"
+  ],
+  "excluded_publication_types": [
+   "Dataset",
+   "Book",
+   "Editorial",
+   "LettersAndComments",
+   "News",
+   "CaseReport",
+   "ClinicalTrial",
+   "MetaAnalysis"
+  ],
+  "null_types_rule": "accept only if externalIds has ArXiv or DOI",
+  "unlisted_type_rule": "accept and count as type_unlisted",
+  "queries": [
+   "\"Vietnamese image captioning\"",
+   "\"UIT ViIC\"",
+   "KTVIC",
+   "OpenViIC",
+   "VieCap4H"
+  ],
+  "min_spacing_s": 3
+ },
+ "dataset_records": [
+  {
+   "name": "UIT-ViIC",
+   "doi": "10.1007/978-3-030-63007-2_57",
+   "arxiv": null
+  },
+  {
+   "name": "KTVIC",
+   "doi": "10.48550/arXiv.2401.08100",
+   "arxiv": "2401.08100"
+  },
+  {
+   "name": "UIT-OpenViIC",
+   "doi": "10.1016/j.image.2025.117430",
+   "arxiv": null
+  },
+  {
+   "name": "UIT-OpenViIC preprint",
+   "doi": "10.48550/arXiv.2305.04166",
+   "arxiv": "2305.04166"
+  },
+  {
+   "name": "VieCap4H",
+   "doi": "10.25073/2588-1086/vnucsce.341",
+   "arxiv": null
+  }
+ ],
+ "predeclared_merges": [
+  [
+   "arxiv:2305.04166",
+   "doi:10.1016/j.image.2025.117430"
+  ],
+  [
+   "arxiv:2401.08100",
+   "doi:10.48550/arxiv.2401.08100"
+  ]
+ ],
+ "e3_titles": [
+  "A Method for Reducing Hallucinations in Detailed Vietnamese Image Captioning Using Supervision from Verified Propositions",
+  "What Training-Data Gains Measure on a Vietnamese Captioning Benchmark: A Development Study with Two Reference Panels, a Validity Audit of KTVIC and an Open Evaluation Kit",
+  "What Training-Data Gains Measure on a Vietnamese Captioning Benchmark: Two Reference Panels, a Validity Audit of KTVIC and an Open Evaluation Kit",
+  "What Does a Vietnamese Captioning Score Measure? Reference Panels, Training-Data Gains and a Validity Audit of KTVIC",
+  "What a Vietnamese Captioning Benchmark Measures: A Validity Audit of KTVIC and an Open Evaluation Kit",
+  "What a Vietnamese Captioning Benchmark Measures: A Controlled Fine-Tuned VLM and a Validity Audit of KTVIC",
+  "Benchmark validity in Vietnamese image captioning: a KTVIC audit, protocol card and evaluation kit"
+ ],
+ "e3_ids": [],
+ "preread_set": [
+  [
+   "arxiv:2401.08100",
+   "doi:10.48550/arxiv.2401.08100"
+  ],
+  [
+   "arxiv:2305.04166",
+   "doi:10.1016/j.image.2025.117430"
+  ],
+  [
+   "arxiv:2602.22678",
+   "doi:10.48550/arxiv.2602.22678"
+  ]
+ ],
+ "thresholds": {
+  "T": 0.5,
+  "N_acc_min": 10,
+  "e5_min_share": 0.15,
+  "scanned_min_chars_per_page": 500,
+  "scanned_min_chars_total": 2000,
+  "pdftotext_timeout_s": 60,
+  "quote_max_words": 40
+ },
+ "caps": {
+  "api_requests": 400,
+  "pdfs": 300,
+  "wall_h": 6,
+  "arxiv_min_spacing_s": 3
+ },
+ "pins": {
+  "scanner": {
+   "path": ".session_backup/2026-10-28/snapshots/C_pass3/checks/ngram_scan_cen.py",
+   "sha256": "926076353d0393fc49b04f82382a6ee4ecb416b62a8436987212abb402f7adf3"
+  },
+  "t1_slice": {
+   "path": "manuscript/journal_draft_B/sec4_system.md",
+   "first_line": 29,
+   "last_line": 49,
+   "sha256": "78300f9fac34d90d2af1f3d01a0840dfc8e46d4624a322d1e6b2c910f5ecd255"
+  },
+  "t2_pdf": {
+   "path": "manuscript/FAIR_28.08.26_v10_EN_IEEE.pdf",
+   "sha256": "449c2ad0a4c16ac939d91ad5740bbaf51e8114d2f23e9b439dac2f3f626e7bc6"
+  },
+  "tools": {
+   "pdftotext": "24.02.0",
+   "pandoc": "3.5",
+   "tlmgr_revision": "80687",
+   "pdf_engine": "xelatex",
+   "mainfont": "DejaVu Serif"
+  }
+ },
+ "toolcheck_expected": {
+  "T1": {
+   "C1": true,
+   "C1t": true,
+   "C2": true,
+   "C2t": true,
+   "C3": true,
+   "C4": true,
+   "C5": false,
+   "S": true
+  },
+  "T2": {
+   "C1": true,
+   "C1t": true,
+   "C2": false,
+   "C2t": false,
+   "C3": false,
+   "C4": false,
+   "C5": true,
+   "S": false
+  }
+ },
+ "contact": "vsps-research@example.org"
+}
