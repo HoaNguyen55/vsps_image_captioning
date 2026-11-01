@@ -1,0 +1,103 @@
+{
+ "tier": "TIER 1 / DEV-EXPLORE (VSPS-J E1+E2)",
+ "stage": "e1a",
+ "frozen_e1b_result_sha256": "97d2553bba66e027c6a0d9df96a2da54add2bf9f429cda8e610f3f5157da957c",
+ "e1a_tcoco": {
+  "records": 231,
+  "failed_images": [],
+  "fidelity": {
+   "n": 18424,
+   "kappa": 0.8974826092245844,
+   "agreement": 0.9515848892748588,
+   "by_margin": {
+    "3/5": [
+     2072,
+     0.6891891891891891
+    ],
+    "4/5": [
+     2558,
+     0.9155590304925724
+    ],
+    "5/5": [
+     13794,
+     0.9976801507901987
+    ]
+   },
+   "pass": true
+  },
+  "tcoco": {
+   "recorded_v1": {
+    "n_absent": 48,
+    "n_present": 940,
+    "DR": 66.66666666666667,
+    "DR_strict": 52.083333333333336,
+    "RT": 36.59574468085106
+   },
+   "replay_v1_k5": {
+    "n_absent": 48,
+    "n_present": 940,
+    "DR": 66.66666666666667,
+    "DR_strict": 54.166666666666664,
+    "RT": 36.702127659574465
+   },
+   "logit_base": {
+    "n_absent": 48,
+    "n_present": 940,
+    "DR": 60.416666666666664,
+    "DR_strict": 60.416666666666664,
+    "RT": 42.5531914893617
+   }
+  },
+  "tcoco_ci95": {
+   "recorded_v1.DR": [
+    51.851851851851855,
+    81.08108108108108
+   ],
+   "recorded_v1.RT": [
+    31.995987963891675,
+    41.02564102564103
+   ],
+   "recorded_v1.dDR": [
+    0.0,
+    0.0
+   ],
+   "recorded_v1.dRT": [
+    -1.1879049676025915,
+    0.8743169398907114
+   ],
+   "replay_v1_k5.DR": [
+    51.851851851851855,
+    81.08108108108108
+   ],
+   "replay_v1_k5.RT": [
+    32.06967213114754,
+    41.227125941872984
+   ],
+   "replay_v1_k5.dDR": [
+    0.0,
+    0.0
+   ],
+   "replay_v1_k5.dRT": [
+    0.0,
+    0.0
+   ],
+   "logit_base.DR": [
+    45.833333333333336,
+    75.0
+   ],
+   "logit_base.RT": [
+    37.44855967078189,
+    47.57804090419806
+   ],
+   "logit_base.dDR": [
+    -14.0,
+    0.0
+   ],
+   "logit_base.dRT": [
+    3.9236479321314945,
+    7.869884575026234
+   ]
+  }
+ },
+ "note": "T-KT is in-sample dev on caption-derived KTVIC train gold (CC-207 W6): never registered, never a headline. T-COCO is COCO-80 entity existence on 231 sports images (UIT-ViIC test, spent, dev role)."
+}
