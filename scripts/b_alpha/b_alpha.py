@@ -36,6 +36,12 @@ def load_amendment(path=os.path.join(HERE, "amendment_1.json")):
         return json.load(f)
 
 
+def load_amendment_2(path=os.path.join(HERE, "amendment_2.json")):
+    """AMENDMENT_2: OpenAlex key handling and the OpenAlex query list (supersedes patterns.json openalex.queries)."""
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
 def load_words(path=os.path.join(HERE, "english_words.txt")):
     with open(path, encoding="utf-8") as f:
         return [w.strip() for w in f if w.strip() and not w.startswith("#")]
@@ -342,6 +348,9 @@ class Fetcher:
         self.s2 = load_amendment()["semantic_scholar"]  # AMENDMENT_1
         self.s2_key = s2_api_key()
         self.s2_key_used = self.s2_key is not None
+        self.oa = load_amendment_2()["openalex"]  # AMENDMENT_2
+        self.oa_key = oa_api_key()
+        self.oa_key_used = self.oa_key is not None
         self.t0 = clock()  # the wall cap is per start (CC-210c W2)
         # caps count live requests over the start and the resume together (CC-210b W2)
         self.n_api = sum(1 for e in log if not e["cached"] and e.get("kind") == "api")
@@ -386,9 +395,28 @@ class Fetcher:
         attempts = self.s2["max_attempts"] if is_s2 else 6
         waited = 0.0
         extra = {"x-api-key": self.s2_key} if self.s2_key and host == S2_KEY_HOST else None
+        oa_keyed = self.oa_key is not None and host == self.oa["key_host"]
+        # AMENDMENT_2: the OpenAlex key is added only to the URL actually sent; the logged URL, the cache name and
+        # every message use the unkeyed URL
+        send_url = (url + ("&" if "?" in url else "?") + self.oa["key_param"] + "="
+                    + urllib.parse.quote(self.oa_key, safe="")) if oa_keyed else url
+        kw = {}
+        if extra:
+            kw["headers"] = extra
+        if oa_keyed and self.oa["refuse_cross_host_redirect"]:
+            kw["same_host_only"] = True
         for attempt in range(attempts):
             try:
-                body = self.transport(url, headers=extra) if extra else self.transport(url)
+                try:
+                    body = self.transport(send_url, **kw) if kw else self.transport(send_url)
+                except urllib.error.HTTPError as e:
+                    if oa_keyed:  # re-raise without the keyed URL attached
+                        raise urllib.error.HTTPError(url, e.code, redact(str(e.msg)), e.hdrs, None) from None
+                    raise
+                except Exception as e:
+                    if oa_keyed and not isinstance(e, KeyboardInterrupt):
+                        raise type(e)(redact(str(e))) if type(e) in (RuntimeError, ValueError, OSError) else e
+                    raise
                 break
             except urllib.error.HTTPError as e:
                 if is_s2:  # AMENDMENT_1: retries on 429/5xx, Retry-After honoured, capped back-off and total wait per URL
@@ -448,10 +476,23 @@ class FetchFail(Exception):
 
 
 
-def http_get(url, headers=None):
+class SameHostRedirect(urllib.request.HTTPRedirectHandler):
+    """AMENDMENT_2: a keyed OpenAlex URL carries the key as a query parameter, so a redirect to another host is refused
+    (the error names no URL); a same-host redirect is followed."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if urllib.parse.urlparse(newurl).netloc != urllib.parse.urlparse(req.full_url).netloc:
+            raise urllib.error.HTTPError("redirect", code, "cross-host redirect refused (AMENDMENT_2)", headers, fp)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def http_get(url, headers=None, same_host_only=False):
     req = urllib.request.Request(url, headers={"User-Agent": "b_alpha/3 (vsps-research@example.org)"})
     for k, v in (headers or {}).items():
         req.add_unredirected_header(k, v)  # CC-210f W1: an HTTP redirect never carries the key to the next URL
+    if same_host_only:
+        with urllib.request.build_opener(SameHostRedirect()).open(req, timeout=60) as r:
+            return r.read()
     with urllib.request.urlopen(req, timeout=60) as r:
         return r.read()
 
@@ -464,10 +505,17 @@ def s2_api_key():
     return os.environ.get("S2_API_KEY", "").strip() or None
 
 
+def oa_api_key():
+    """The optional OpenAlex key from the environment (never written anywhere; AMENDMENT_2 §2)."""
+    return os.environ.get(load_amendment_2()["openalex"]["key_env"], "").strip() or None
+
+
 def redact(text):
-    """Remove the key from any text that may be printed or written (FAULT.json, SystemExit message)."""
-    key = s2_api_key()
-    return text.replace(key, "[REDACTED]") if key else text
+    """Remove both keys (raw and URL-encoded) from any text that may be printed or written."""
+    for key in (s2_api_key(), oa_api_key()):
+        if key:
+            text = text.replace(key, "[REDACTED]").replace(urllib.parse.quote(key, safe=""), "[REDACTED]")
+    return text
 
 
 def oa_record(w):
@@ -533,7 +581,7 @@ def s1_search(F, P):
                     break
                 off = j["next"]
     # Q2: keyword arms
-    for q in oa["queries"]:
+    for q in load_amendment_2()["openalex"]["queries"]:  # AMENDMENT_2 supersedes patterns.json openalex.queries
         recs += oa_pages(F, oa, "%s:%s,publication_year:%d-%d" % (oa["title_abstract_filter"], q, y0, y1))
     for q in s2["queries"]:
         token = None
@@ -732,6 +780,7 @@ def run(args, P, words, transport=None, sleep=time.sleep, toolcheck_fn=None, sum
         raise SystemExit("FAULT: tool check failed; no third-party text processed")
     F = Fetcher(P, os.path.join(out, "cache"), slog["requests"], transport=transport, sleep=sleep, clock=clock)
     slog.setdefault("s2_key_used", {})[slog["run_dates"][-1]] = F.s2_key_used  # true/false only, per start
+    slog.setdefault("oa_key_used", {})[slog["run_dates"][-1]] = F.oa_key_used  # AMENDMENT_2, true/false only
     stage("S1")
     try:
         recs, resolution = s1_search(F, P)
@@ -863,13 +912,16 @@ def make_pdf(text, path):
 
 def selftest():
     block_network()
-    saved_key = os.environ.pop("S2_API_KEY", None)  # the mocks below assume no key; the key tests set their own
+    oa_env = load_amendment_2()["openalex"]["key_env"]
+    saved = {k: os.environ.pop(k, None) for k in ("S2_API_KEY", oa_env)}  # the mocks assume no key; key tests set their own
     try:
         selftest_body()
         selftest_s2_key()
+        selftest_oa_key()
     finally:
-        if saved_key is not None:
-            os.environ["S2_API_KEY"] = saved_key
+        for k, v in saved.items():
+            if v is not None:
+                os.environ[k] = v
     print("selftest ok")
 
 
@@ -943,6 +995,92 @@ def selftest_s2_key():
         F = Fetcher(P, tmp, [], transport=t_old, sleep=lambda x: None)
         F.json("https://api.semanticscholar.org/graph/v1/paper/X")
         assert F.s2_key_used is False and len(calls) == 1
+    finally:
+        shutil.rmtree(tmp)
+
+
+def selftest_oa_key():
+    """AMENDMENT_2: the OpenAlex key goes into the URL sent to api.openalex.org only, never into any log, cache name, file,
+    message or redirect to another host; unset = the unkeyed URL; the hyphenated OpenAlex query is an exact phrase."""
+    P = load_patterns()
+    A2 = load_amendment_2()["openalex"]
+    assert all("-" not in q or (q.startswith('"') and q.endswith('"')) for q in A2["queries"]), A2["queries"]
+    assert '"UIT-ViIC"' in A2["queries"] and "UIT-ViIC" not in A2["queries"]
+    assert [q for q in A2["queries"] if q != '"UIT-ViIC"'] == [q for q in P["openalex"]["queries"] if q != "UIT-ViIC"]
+    key = "OAKEY-t3st/+=Zq9"
+    qkey = urllib.parse.quote(key, safe="")
+    hashes = [hashlib.sha256(key.encode()).hexdigest(), hashlib.sha1(key.encode()).hexdigest()]
+    sent = []
+
+    def t(url, **kw):
+        sent.append((urllib.parse.urlparse(url).netloc, url, kw))
+        u = urllib.parse.unquote(url)
+        if "/works?" in u and "UIT-ViIC" in u:
+            raise RuntimeError("synthetic failure echoing the sent URL " + url)
+        if "/works?" in u:
+            return json.dumps({"results": [], "meta": {"next_cursor": None}}).encode()
+        if "/search/bulk" in u:
+            return json.dumps({"data": [], "token": None}).encode()
+        raise urllib.error.HTTPError(url, 404, "nf " + url, None, None)
+    tmp = tempfile.mkdtemp()
+    os.environ[A2["key_env"]] = key
+    try:
+        F = Fetcher(P, os.path.join(tmp, "c"), [], transport=t, sleep=lambda x: None)
+        oa_url = "https://api.openalex.org/works?filter=x"
+        F.json(oa_url)
+        F.json("https://api.semanticscholar.org/graph/v1/paper/search/bulk?query=x")
+        try:
+            F.pdf("https://arxiv.org/pdf/2401.08100")
+        except (FetchFail, urllib.error.HTTPError):
+            pass
+        assert sent[0][1] == oa_url + "&api_key=" + qkey and sent[0][2] == {"same_host_only": True}
+        assert "api_key" not in sent[1][1] and "api_key" not in sent[2][1]
+        assert F.log[0]["url"] == oa_url
+        assert os.path.exists(os.path.join(tmp, "c", hashlib.sha1(oa_url.encode()).hexdigest()))
+        try:
+            F.json("https://api.openalex.org/works/doi:10.9/none")
+            raise AssertionError("expected 404")
+        except urllib.error.HTTPError as e:
+            assert e.code == 404 and key not in str(e.msg) and qkey not in str(e.msg) and key not in str(e.url)
+        o = os.path.join(tmp, "out")
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(buf):
+            try:
+                guarded_run(argparse.Namespace(run=True, out=o, resume=False), P, load_words(), transport=t,
+                            sleep=lambda x: None, toolcheck_fn=lambda *a: {"pass": True}, sums_fn=lambda: None,
+                            quotes_fn=lambda *a: None, extract=lambda p: ("", 1, 0))
+                raise AssertionError("expected FAULT")
+            except SystemExit as e:
+                exit_msg = str(e)
+        assert "FAULT at S1" in exit_msg
+        texts = [exit_msg, buf.getvalue()]
+        for root, dirs, files in os.walk(tmp):
+            texts += dirs + files
+            for f in files:
+                texts.append(open(os.path.join(root, f), "rb").read().decode("utf-8", "replace"))
+        for txt in texts:
+            assert key not in txt and qkey not in txt and key[:6] not in txt and not any(h in txt for h in hashes), txt[:200]
+        slog = json.load(open(os.path.join(o, "search_log.json")))
+        assert list(slog["oa_key_used"].values()) == [True] and all("api_key" not in e["url"] for e in slog["requests"])
+    finally:
+        os.environ.pop(A2["key_env"], None)
+        shutil.rmtree(tmp)
+    # redirects of a keyed OpenAlex request: another host refused, the same host followed
+    h = SameHostRedirect()
+    req = urllib.request.Request("https://api.openalex.org/works?filter=x&api_key=" + qkey)
+    try:
+        h.redirect_request(req, None, 302, "Found", {}, "https://other.example.org/w?api_key=" + qkey)
+        raise AssertionError("cross-host redirect followed")
+    except urllib.error.HTTPError as e:
+        assert key not in str(e) and qkey not in str(e) and e.code == 302
+    assert h.redirect_request(req, None, 302, "Found", {}, "https://api.openalex.org/works?filter=y") is not None
+    # unset: the URL is sent unchanged, no redirect restriction, oa_key_used false
+    calls = []
+    tmp = tempfile.mkdtemp()
+    try:
+        F = Fetcher(P, tmp, [], transport=lambda url: calls.append(url) or b"{}", sleep=lambda x: None)
+        F.json("https://api.openalex.org/works?filter=x")
+        assert calls == ["https://api.openalex.org/works?filter=x"] and F.oa_key_used is False
     finally:
         shutil.rmtree(tmp)
 
