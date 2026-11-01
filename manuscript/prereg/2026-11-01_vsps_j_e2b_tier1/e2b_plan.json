@@ -1,0 +1,2185 @@
+{
+ "_what": "VSPS-J E2b tier-1 plan: ids, counts and shas only; no M-HalDetect text",
+ "label": "TIER 1 / DEV-EXPLORE (VSPS-J E2b)",
+ "seed": 20261101,
+ "pins": {
+  "m0_lists": {
+   "val_ids.txt": "b4d4f35ab7b951fbd4658b670ebf6aecf00cb910fa73753514c104b29ba0f412",
+   "dropped_ids.txt": "41306bdbcc672c8104ec4366b137f5f9cce9ecea28f2f59e8c5fd09dc10168bf",
+   "selection_excluded_ids.txt": "57195c49c601fe850ce7e06d2d58291076163c8c382399aca3e0eae516bfaef7",
+   "karpathy_test_val_ids.txt": "88e40e3cd2ae6dd3bf3c1f514a085cb61a36b503abde298d57a1bb2bc8acd7fb"
+  },
+  "val_raw.json": "2cbc7942f2ceafb0312f4f41b79390fe600605ffda9a9591fd2346213d0389af",
+  "m0_probes": "cccd5e0e09ffc40698e82e915f1401882a1e922a98bc8fc9b4f6452eae4c35ce",
+  "m0_images": "7a3f3468edea8c385034ed5819b4866bb6699daea9c1d38ad19a8c1532e7c9cf",
+  "registries": {
+   "bn1": "9ff02dc259258de1add426abd02131f2122e3476a81f9a076066ed6d74906134",
+   "ct1": "09e6f90a09735125fed09620b6a1323ef12dafc6bf0a4a4bdf1a4af1087eba3c"
+  },
+  "venv_lb_freeze": "685ffe2a0100ce2489cccd77313d366fb1dce4455871a9d82f65aa139fa85784"
+ },
+ "split_rule": "half(id): sha256(UTF-8 of str(int(id)) + 'e2b'); last hex char even -> tune, odd -> select",
+ "split_examples": {
+  "139": "tune",
+  "285": "tune",
+  "632": "select",
+  "724": "tune",
+  "776": "select"
+ },
+ "counts": {
+  "probe": {
+   "images": 769,
+   "segments": 16027,
+   "inaccurate": 4605
+  },
+  "selection": {
+   "images": 663,
+   "segments": 13813,
+   "inaccurate": 3993
+  },
+  "held_out": {
+   "images": 106,
+   "segments": 2214,
+   "inaccurate": 612
+  },
+  "tune": {
+   "images": 325,
+   "segments": 6731,
+   "inaccurate": 1964
+  },
+  "select": {
+   "images": 338,
+   "segments": 7082,
+   "inaccurate": 2029
+  }
+ },
+ "types": {
+  "selection": {
+   "object": {
+    "n": 4736,
+    "inaccurate": 1424
+   },
+   "number": {
+    "n": 3100,
+    "inaccurate": 1322
+   },
+   "colour": {
+    "n": 2154,
+    "inaccurate": 262
+   },
+   "attribute": {
+    "n": 919,
+    "inaccurate": 106
+   },
+   "action": {
+    "n": 1441,
+    "inaccurate": 344
+   },
+   "relation": {
+    "n": 1463,
+    "inaccurate": 535
+   }
+  },
+  "tune": {
+   "object": {
+    "n": 2343,
+    "inaccurate": 726
+   },
+   "number": {
+    "n": 1427,
+    "inaccurate": 619
+   },
+   "colour": {
+    "n": 1137,
+    "inaccurate": 129
+   },
+   "attribute": {
+    "n": 427,
+    "inaccurate": 56
+   },
+   "action": {
+    "n": 702,
+    "inaccurate": 186
+   },
+   "relation": {
+    "n": 695,
+    "inaccurate": 248
+   }
+  },
+  "select": {
+   "object": {
+    "n": 2393,
+    "inaccurate": 698
+   },
+   "number": {
+    "n": 1673,
+    "inaccurate": 703
+   },
+   "colour": {
+    "n": 1017,
+    "inaccurate": 133
+   },
+   "attribute": {
+    "n": 492,
+    "inaccurate": 50
+   },
+   "action": {
+    "n": 739,
+    "inaccurate": 158
+   },
+   "relation": {
+    "n": 768,
+    "inaccurate": 287
+   }
+  },
+  "probe": {
+   "object": {
+    "n": 5508,
+    "inaccurate": 1629
+   },
+   "number": {
+    "n": 3656,
+    "inaccurate": 1560
+   },
+   "colour": {
+    "n": 2496,
+    "inaccurate": 305
+   },
+   "attribute": {
+    "n": 1053,
+    "inaccurate": 119
+   },
+   "action": {
+    "n": 1620,
+    "inaccurate": 386
+   },
+   "relation": {
+    "n": 1694,
+    "inaccurate": 606
+   }
+  }
+ },
+ "type_rule_sha256": "30cfc3fa4596a4ba7f9e9d33fa7c2368f88859c144a5acd56a22f64e0f5c0398",
+ "prompts_sha256": {
+  "FA_vi": "892734fee70c7196cbe452c415fee19bbaf5a047ea358aafdaa0f842a7be3d94",
+  "FA_en": "4e230f7bd699e39676757ac17118fba3050ba2d47ba13255eae8f6035ed8c211",
+  "FB_vi": "f720f7a6250d95b197b5b0f2f721fd4440bf47d0b2eb23a4393f4487133aa7cf",
+  "FB_en": "25d67b2ec2dd86ac939fe52255952c7df8e58a81a22af012121a540d7b233c1a"
+ },
+ "label_words": {
+  "FA_vi": {
+   "yes": [
+    "Có",
+    "có"
+   ],
+   "no": [
+    "Không",
+    "không"
+   ]
+  },
+  "FA_en": {
+   "yes": [
+    "Yes",
+    "yes"
+   ],
+   "no": [
+    "No",
+    "no"
+   ]
+  },
+  "FB_vi": {
+   "S": [
+    "ĐÚNG"
+   ],
+   "U": [
+    "KHÔNG RÕ"
+   ],
+   "R": [
+    "SAI"
+   ]
+  },
+  "FB_en": {
+   "S": [
+    "SUPPORTED"
+   ],
+   "U": [
+    "UNCERTAIN"
+   ],
+   "R": [
+    "REJECTED"
+   ]
+  }
+ },
+ "candidates": {
+  "qwen25vl_7b": {
+   "registry": "bn1",
+   "hub_id": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5"
+  },
+  "internvl3_8b": {
+   "registry": "bn1",
+   "hub_id": "OpenGVLab/InternVL3-8B-hf",
+   "revision": "259a3b64a14623c0ec91a045cb43f7c5af5fa6af"
+  },
+  "aya_vision_8b": {
+   "registry": "ct1",
+   "hub_id": "CohereLabs/aya-vision-8b",
+   "revision": "d7601ac8fd3baf6f59c5fc9514c618ef0f24268f"
+  },
+  "qwen3vl_8b": {
+   "registry": "bn1",
+   "hub_id": "Qwen/Qwen3-VL-8B-Instruct",
+   "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b"
+  }
+ },
+ "rate": {
+  "n": 200,
+  "probes": [
+   [
+    4,
+    8,
+    86848
+   ],
+   [
+    7,
+    10,
+    86848
+   ],
+   [
+    9,
+    0,
+    68036
+   ],
+   [
+    15,
+    3,
+    222195
+   ],
+   [
+    29,
+    1,
+    68291
+   ],
+   [
+    60,
+    1,
+    272610
+   ],
+   [
+    66,
+    0,
+    291696
+   ],
+   [
+    88,
+    3,
+    191425
+   ],
+   [
+    88,
+    16,
+    191425
+   ],
+   [
+    91,
+    8,
+    191425
+   ],
+   [
+    94,
+    9,
+    314812
+   ],
+   [
+    109,
+    0,
+    416837
+   ],
+   [
+    114,
+    15,
+    263393
+   ],
+   [
+    124,
+    1,
+    49258
+   ],
+   [
+    128,
+    7,
+    324614
+   ],
+   [
+    148,
+    10,
+    300324
+   ],
+   [
+    150,
+    2,
+    300324
+   ],
+   [
+    156,
+    5,
+    246066
+   ],
+   [
+    167,
+    4,
+    306127
+   ],
+   [
+    177,
+    5,
+    465545
+   ],
+   [
+    229,
+    3,
+    143931
+   ],
+   [
+    247,
+    5,
+    530500
+   ],
+   [
+    247,
+    6,
+    530500
+   ],
+   [
+    284,
+    2,
+    533805
+   ],
+   [
+    293,
+    5,
+    410533
+   ],
+   [
+    296,
+    0,
+    487002
+   ],
+   [
+    309,
+    8,
+    571764
+   ],
+   [
+    311,
+    8,
+    571764
+   ],
+   [
+    317,
+    3,
+    528821
+   ],
+   [
+    343,
+    5,
+    444496
+   ],
+   [
+    343,
+    8,
+    444496
+   ],
+   [
+    351,
+    4,
+    25997
+   ],
+   [
+    351,
+    5,
+    25997
+   ],
+   [
+    390,
+    0,
+    497032
+   ],
+   [
+    403,
+    5,
+    161161
+   ],
+   [
+    404,
+    2,
+    57390
+   ],
+   [
+    404,
+    7,
+    57390
+   ],
+   [
+    420,
+    6,
+    55013
+   ],
+   [
+    421,
+    2,
+    55013
+   ],
+   [
+    435,
+    5,
+    140122
+   ],
+   [
+    440,
+    0,
+    220176
+   ],
+   [
+    440,
+    3,
+    220176
+   ],
+   [
+    448,
+    2,
+    62109
+   ],
+   [
+    467,
+    9,
+    234679
+   ],
+   [
+    474,
+    7,
+    43435
+   ],
+   [
+    480,
+    4,
+    175633
+   ],
+   [
+    485,
+    5,
+    89781
+   ],
+   [
+    513,
+    8,
+    262617
+   ],
+   [
+    518,
+    10,
+    210832
+   ],
+   [
+    522,
+    7,
+    292365
+   ],
+   [
+    523,
+    0,
+    292365
+   ],
+   [
+    525,
+    3,
+    198625
+   ],
+   [
+    527,
+    1,
+    198625
+   ],
+   [
+    532,
+    13,
+    310998
+   ],
+   [
+    557,
+    3,
+    182025
+   ],
+   [
+    570,
+    2,
+    413235
+   ],
+   [
+    596,
+    0,
+    328286
+   ],
+   [
+    605,
+    19,
+    411642
+   ],
+   [
+    620,
+    4,
+    418816
+   ],
+   [
+    655,
+    3,
+    242679
+   ],
+   [
+    675,
+    4,
+    432626
+   ],
+   [
+    679,
+    3,
+    321223
+   ],
+   [
+    689,
+    6,
+    456197
+   ],
+   [
+    711,
+    3,
+    445298
+   ],
+   [
+    746,
+    5,
+    534275
+   ],
+   [
+    756,
+    3,
+    561366
+   ],
+   [
+    792,
+    4,
+    535519
+   ],
+   [
+    808,
+    1,
+    338044
+   ],
+   [
+    832,
+    5,
+    318330
+   ],
+   [
+    840,
+    6,
+    290076
+   ],
+   [
+    856,
+    7,
+    321935
+   ],
+   [
+    864,
+    3,
+    296014
+   ],
+   [
+    901,
+    3,
+    301926
+   ],
+   [
+    945,
+    3,
+    330098
+   ],
+   [
+    954,
+    2,
+    301506
+   ],
+   [
+    965,
+    3,
+    306099
+   ],
+   [
+    966,
+    11,
+    306099
+   ],
+   [
+    983,
+    3,
+    306582
+   ],
+   [
+    1006,
+    3,
+    340934
+   ],
+   [
+    1031,
+    0,
+    315923
+   ],
+   [
+    1035,
+    0,
+    286556
+   ],
+   [
+    1046,
+    5,
+    316882
+   ],
+   [
+    1053,
+    1,
+    317062
+   ],
+   [
+    1083,
+    0,
+    314108
+   ],
+   [
+    1100,
+    11,
+    315178
+   ],
+   [
+    1165,
+    6,
+    346089
+   ],
+   [
+    1173,
+    0,
+    337653
+   ],
+   [
+    1206,
+    4,
+    315338
+   ],
+   [
+    1216,
+    0,
+    317898
+   ],
+   [
+    1246,
+    0,
+    292158
+   ],
+   [
+    1248,
+    0,
+    329614
+   ],
+   [
+    1270,
+    4,
+    295194
+   ],
+   [
+    1316,
+    0,
+    298738
+   ],
+   [
+    1340,
+    7,
+    300413
+   ],
+   [
+    1363,
+    1,
+    303566
+   ],
+   [
+    1384,
+    3,
+    338159
+   ],
+   [
+    1435,
+    3,
+    299039
+   ],
+   [
+    1444,
+    10,
+    315824
+   ],
+   [
+    1465,
+    2,
+    302643
+   ],
+   [
+    1471,
+    1,
+    324436
+   ],
+   [
+    1483,
+    3,
+    305526
+   ],
+   [
+    1485,
+    3,
+    331250
+   ],
+   [
+    1536,
+    0,
+    343642
+   ],
+   [
+    1539,
+    13,
+    343642
+   ],
+   [
+    1543,
+    5,
+    338191
+   ],
+   [
+    1573,
+    1,
+    340218
+   ],
+   [
+    1585,
+    1,
+    288824
+   ],
+   [
+    1596,
+    0,
+    75434
+   ],
+   [
+    1597,
+    0,
+    75434
+   ],
+   [
+    1604,
+    6,
+    143737
+   ],
+   [
+    1630,
+    1,
+    288685
+   ],
+   [
+    1640,
+    2,
+    156651
+   ],
+   [
+    1651,
+    1,
+    56872
+   ],
+   [
+    1651,
+    7,
+    56872
+   ],
+   [
+    1656,
+    7,
+    125076
+   ],
+   [
+    1659,
+    7,
+    125076
+   ],
+   [
+    1669,
+    6,
+    324584
+   ],
+   [
+    1689,
+    1,
+    186240
+   ],
+   [
+    1690,
+    2,
+    186240
+   ],
+   [
+    1711,
+    3,
+    132161
+   ],
+   [
+    1718,
+    1,
+    194208
+   ],
+   [
+    1746,
+    0,
+    393928
+   ],
+   [
+    1758,
+    4,
+    188766
+   ],
+   [
+    1764,
+    2,
+    28246
+   ],
+   [
+    1771,
+    4,
+    165035
+   ],
+   [
+    1780,
+    0,
+    335579
+   ],
+   [
+    1782,
+    0,
+    335579
+   ],
+   [
+    1793,
+    1,
+    395978
+   ],
+   [
+    1796,
+    7,
+    39106
+   ],
+   [
+    1813,
+    2,
+    120826
+   ],
+   [
+    1821,
+    1,
+    40497
+   ],
+   [
+    1832,
+    2,
+    382333
+   ],
+   [
+    1884,
+    3,
+    163132
+   ],
+   [
+    1917,
+    3,
+    180296
+   ],
+   [
+    1929,
+    0,
+    397133
+   ],
+   [
+    1953,
+    1,
+    203697
+   ],
+   [
+    1972,
+    1,
+    362716
+   ],
+   [
+    1991,
+    3,
+    267946
+   ],
+   [
+    2005,
+    9,
+    208050
+   ],
+   [
+    2016,
+    3,
+    263292
+   ],
+   [
+    2098,
+    2,
+    423058
+   ],
+   [
+    2101,
+    2,
+    475779
+   ],
+   [
+    2127,
+    0,
+    230031
+   ],
+   [
+    2134,
+    0,
+    261036
+   ],
+   [
+    2190,
+    1,
+    398604
+   ],
+   [
+    2205,
+    0,
+    18534
+   ],
+   [
+    2240,
+    0,
+    240718
+   ],
+   [
+    2240,
+    2,
+    240718
+   ],
+   [
+    2289,
+    0,
+    467978
+   ],
+   [
+    2307,
+    0,
+    243777
+   ],
+   [
+    2313,
+    1,
+    561009
+   ],
+   [
+    2321,
+    5,
+    262738
+   ],
+   [
+    2337,
+    0,
+    1064
+   ],
+   [
+    2344,
+    1,
+    245232
+   ],
+   [
+    2376,
+    3,
+    232511
+   ],
+   [
+    2385,
+    1,
+    270303
+   ],
+   [
+    2395,
+    3,
+    255135
+   ],
+   [
+    2397,
+    0,
+    247206
+   ],
+   [
+    2397,
+    2,
+    247206
+   ],
+   [
+    2401,
+    1,
+    261082
+   ],
+   [
+    2467,
+    1,
+    236189
+   ],
+   [
+    2477,
+    15,
+    245971
+   ],
+   [
+    2506,
+    4,
+    263793
+   ],
+   [
+    2520,
+    0,
+    279809
+   ],
+   [
+    2535,
+    1,
+    260182
+   ],
+   [
+    2553,
+    2,
+    275744
+   ],
+   [
+    2570,
+    2,
+    232085
+   ],
+   [
+    2576,
+    0,
+    242972
+   ],
+   [
+    2585,
+    2,
+    247624
+   ],
+   [
+    2588,
+    0,
+    244754
+   ],
+   [
+    2596,
+    4,
+    229020
+   ],
+   [
+    2659,
+    3,
+    228558
+   ],
+   [
+    2673,
+    7,
+    265243
+   ],
+   [
+    2676,
+    0,
+    262030
+   ],
+   [
+    2680,
+    14,
+    231952
+   ],
+   [
+    2683,
+    18,
+    231952
+   ],
+   [
+    2687,
+    6,
+    276151
+   ],
+   [
+    2739,
+    3,
+    274109
+   ],
+   [
+    2760,
+    2,
+    240775
+   ],
+   [
+    2806,
+    1,
+    267946
+   ],
+   [
+    2828,
+    2,
+    279692
+   ],
+   [
+    2829,
+    2,
+    279692
+   ],
+   [
+    2856,
+    2,
+    246883
+   ],
+   [
+    2863,
+    1,
+    248163
+   ],
+   [
+    2886,
+    4,
+    249482
+   ],
+   [
+    2898,
+    2,
+    277227
+   ],
+   [
+    2913,
+    1,
+    257137
+   ],
+   [
+    2914,
+    5,
+    257137
+   ],
+   [
+    2915,
+    0,
+    257137
+   ],
+   [
+    2955,
+    2,
+    266768
+   ],
+   [
+    2978,
+    5,
+    267127
+   ],
+   [
+    2979,
+    2,
+    267127
+   ],
+   [
+    3034,
+    5,
+    227187
+   ],
+   [
+    3051,
+    5,
+    253415
+   ],
+   [
+    3089,
+    3,
+    284296
+   ],
+   [
+    3090,
+    3,
+    284296
+   ],
+   [
+    3128,
+    8,
+    226119
+   ],
+   [
+    3142,
+    7,
+    252342
+   ],
+   [
+    3155,
+    4,
+    281387
+   ],
+   [
+    3156,
+    1,
+    253749
+   ]
+  ],
+  "images": {
+   "COCO_val2014_000000001064.jpg": "c4405350f705052d374129ec53c9c4cdfc82e20b0bb1c0077b8571ae0063983d",
+   "COCO_val2014_000000018534.jpg": "e6fb0bd3b0e7e7f09cf1e2992e0cc0138258e8c060f729b815f40b5e8da10d06",
+   "COCO_val2014_000000025997.jpg": "3cb1826fe43817a2068877ffbe95348f0dab88dd056ca8ff66d1b45237650376",
+   "COCO_val2014_000000028246.jpg": "f321d5ed0eb260cd16d078372651bfd7f0b8450b4384750f94b169e378929728",
+   "COCO_val2014_000000039106.jpg": "7d05120555964e54eb4bdd235f69cb6b03e4f1c3563daeaf3525ad67a3fe0987",
+   "COCO_val2014_000000040497.jpg": "9a13f7a9142d9fae414c3b481368ab1940a758fd73c4853ea635cdca66f6b673",
+   "COCO_val2014_000000043435.jpg": "c3b039effaf2412a450faff11d2dd0c5f5ed0090d12d550ce7a0eab9cec51974",
+   "COCO_val2014_000000049258.jpg": "69b9638b7b83a4dc37f118178055edb2ed08e7df72c55075bf77535f266733be",
+   "COCO_val2014_000000055013.jpg": "fbfc16827092c36176b1fa756d677f12cced88b3cdd1abf37090fbcb840b48ab",
+   "COCO_val2014_000000056872.jpg": "2871956011a44d7dd0c02f62a49185ec47038050b8d8f8d98f0e67a655d3d52b",
+   "COCO_val2014_000000057390.jpg": "ef911ed6a8dcde19c779fd263a9f4c782ffa0c0d9e63101530bc7a9ee3a83fcf",
+   "COCO_val2014_000000062109.jpg": "031306ea3acec79a6b15e16591edaded410ef6cec1a3e7e33dc08fb4cd344d32",
+   "COCO_val2014_000000068036.jpg": "22d1ccdda9756a1f9b7afbd60ed90e190f4f048d65062da818e5d850aa139b48",
+   "COCO_val2014_000000068291.jpg": "eaa0b30b7fa0cfddc5bc88ecd4dacd06c6dd676e34b763e571e9c031ab560d63",
+   "COCO_val2014_000000075434.jpg": "beea0c40ee58a22e007a377a66253d6b3556c2dfa4b3f72098c8712c9bf7a62f",
+   "COCO_val2014_000000086848.jpg": "05da37a466b0d846b48487440ddd49c605cbc09a997fe6db947633fa7e0bb56d",
+   "COCO_val2014_000000089781.jpg": "0cf96bab901a1170d790b4eecd0314b143f188346106c6a8023b3bdc4d5d9a20",
+   "COCO_val2014_000000120826.jpg": "c32d893a508c4942113d1e5864413aa2ff0dded522c1fea02e4c13824d0fd0ed",
+   "COCO_val2014_000000125076.jpg": "cdbc467436bfc543032a46fc96975fa3c9211c288721f4b06c36e97088d5d277",
+   "COCO_val2014_000000132161.jpg": "d76a5ec300788a872bada4cdc41e89fddb5e8f521775536c74f3027c504f9ac4",
+   "COCO_val2014_000000140122.jpg": "35724c3acf584796fc1773d373a611455cfd9bdcb77abde7f3431cee95c61de1",
+   "COCO_val2014_000000143737.jpg": "9ffa538ae8b289adfd0b37cd77db79e25c1c27ae3cced5e0c4a1d997ba116a78",
+   "COCO_val2014_000000143931.jpg": "45cf81830e1b95dc25a9be1ebdf2798238b9bda4dc3e34e589442c5c9ad98aad",
+   "COCO_val2014_000000156651.jpg": "aa75ddc94390ffaae0ec7075e41c2e61402214fa34b6b3b9daa8b0ffd44d84c0",
+   "COCO_val2014_000000161161.jpg": "9217c7d650447e97488ccde568cb2ab95a11f2226e07823d6cac292dd7e62c04",
+   "COCO_val2014_000000163132.jpg": "ab94dbc40cbbafe8fd8f19004911bfdd15870f4ff7d5676959e37557b0b8c06e",
+   "COCO_val2014_000000165035.jpg": "1378bcd3197029250d0f9c1c5339ca6e2f9525a685263d07d8774836a60b6157",
+   "COCO_val2014_000000175633.jpg": "9915cafa57c844880a70c4813e20479f53c1ea6fefeb4da591aa8976202bec6a",
+   "COCO_val2014_000000180296.jpg": "710e27f9d7fa23dacb875244bab3f619dbb4a67d6c21744adae1cd47b23c4f96",
+   "COCO_val2014_000000182025.jpg": "64f943a58b4b1ec1ad8ba3f007381d7ef980451cd388d38ae69425a8655166b7",
+   "COCO_val2014_000000186240.jpg": "50988395f747b7731aa4bc2697c04314f6878883b5ecda3bec3a2c769abf796f",
+   "COCO_val2014_000000188766.jpg": "c1f5f5cf342884c3299d53ea06ea009c35ae3ba4f9f6c48ce27e382b0c17376b",
+   "COCO_val2014_000000191425.jpg": "3afa69966eda4394bfe7af4028b6a70266f647324928316adb15a53896da1b36",
+   "COCO_val2014_000000194208.jpg": "f2839c98fae435289fc42b2387aebbde1fa500e2fce80be89222e5c633c29c9f",
+   "COCO_val2014_000000198625.jpg": "36d5e07aade0c71ff622386eacf80e492be7816f99e6679bb203732deed665d1",
+   "COCO_val2014_000000203697.jpg": "455a42a6af30160e0373b745e5652c1c45b5e2e34c818cd93aae536bc9581ccb",
+   "COCO_val2014_000000208050.jpg": "b21efe095ead55812a349d9eed385076ecd1e033eca04fea27eda9a0e35ad17a",
+   "COCO_val2014_000000210832.jpg": "3f31064a62cd2a1f53fde8e24214c812e0cbaac6d1898625855bc82662e409ba",
+   "COCO_val2014_000000220176.jpg": "b6e30dad90d64dbf6e579e996944578d3d02b4c6e5b19839e89f13d165359dd2",
+   "COCO_val2014_000000222195.jpg": "ee763fd85c69c40191d6c672a18ed480b30baba275748ed60cc3a32cbc627ad5",
+   "COCO_val2014_000000226119.jpg": "4a9c78cf51eec9d27caa18583ec46a86bbd30709653f5bac58a09d8d71eca3d8",
+   "COCO_val2014_000000227187.jpg": "3f99b1de07362d40264170cea285e33162c661c27ae9b16a11415fe172b5bbe9",
+   "COCO_val2014_000000228558.jpg": "4f05137a50d0a4ff5782772fed11cab0efd00121620e460b1932c67a59e1f0df",
+   "COCO_val2014_000000229020.jpg": "3b6b07136532949ae39739fff8edd7f7f70ac95db5ef09fa836f7ba576ab8b0b",
+   "COCO_val2014_000000230031.jpg": "bf9a20cc47256777d28b91456a98e8fde4b5a71b369b2d5f12c782c233c5d1b6",
+   "COCO_val2014_000000231952.jpg": "353d3cf75f9af72ec0fcd7b21c909b9c990f298310d07528273a26b8b1ab6379",
+   "COCO_val2014_000000232085.jpg": "753fe85c36de14174da675d098dc556d4504952577b2b670cc4de7154034898f",
+   "COCO_val2014_000000232511.jpg": "e6fc39b54b14de558251d7eb2888ce486d2e23744ce36b3a5988dbc854938147",
+   "COCO_val2014_000000234679.jpg": "ca9befb26934f3863ee0d1fb4676528655c112ec476277e2de86dca00f7e82a5",
+   "COCO_val2014_000000236189.jpg": "97225dcd1734353f754cc69c881416d77577edbfb47c6af0b4388dd91437b902",
+   "COCO_val2014_000000240718.jpg": "816fc63a4cda657b0feba1088ba565e5e6d4e9741233f2412ccaebd85b22fd97",
+   "COCO_val2014_000000240775.jpg": "b33e493dbd67adf96eef5cd692d4109edbfe8e38bb15fbb904342ea8a33815e4",
+   "COCO_val2014_000000242679.jpg": "fed684a2b71a379fcc7233932bbe2cb853d7a5bcd4355907890e1eff292a6522",
+   "COCO_val2014_000000242972.jpg": "89875dbd77c1486bd0a7b121c319011f17406a8ce73c0faa6f2251849670949d",
+   "COCO_val2014_000000243777.jpg": "72f272f8e5d809061f19253486ce802c0be16071bab9d73df3053fdc08c786fe",
+   "COCO_val2014_000000244754.jpg": "28d2b99b57704f3b6cc71c1fe35f826ca8175b92217b3d781cae52cf1c831f22",
+   "COCO_val2014_000000245232.jpg": "df971c8ff6b3a572d1425ce19964305a3e840ec3ed3b5ce8fe1d8ef7213f8d41",
+   "COCO_val2014_000000245971.jpg": "aed6090bef22d82548dddd71aa107802335a012ab9b2f167da6729ab2688e7ac",
+   "COCO_val2014_000000246066.jpg": "01a032628955a47356f6b12d0d980698a5006184c857cbc0109796179dfa2623",
+   "COCO_val2014_000000246883.jpg": "079e92b5a07937c8fe29e6b4688d4e5b426c7df80b0f15ca638eb2d367d4d01f",
+   "COCO_val2014_000000247206.jpg": "0a393ac63bf86a152bb04f46873e44270fe4e34939861c4a2a78f4ec44b80416",
+   "COCO_val2014_000000247624.jpg": "9af2cd68dba5113de5b732ea249060e307297921197d4edfcf33f2c923089786",
+   "COCO_val2014_000000248163.jpg": "7a0de4cef870f409e995e488af9d68ea5064c8daec99ebc5820e051c551b2ff4",
+   "COCO_val2014_000000249482.jpg": "6edac85c8d95646bd08e182e840233f6ae17887d309e8441b019746868e69898",
+   "COCO_val2014_000000252342.jpg": "832924cc977d4ceaace2f840320340e836a9e83e6a9cb2c4805e9e0ce677acad",
+   "COCO_val2014_000000253415.jpg": "ae3d097f6499edcd07b8fc4f9bb91b5c35725568f2432c797c85251bca074139",
+   "COCO_val2014_000000253749.jpg": "77492a4728f63ebaec8f18d7aa6514164d9736f773e28f28e4640333ada4fd72",
+   "COCO_val2014_000000255135.jpg": "793e9df4fa1dd06766043383479dbedbd262f7271d368d8e50c46181a2552aa7",
+   "COCO_val2014_000000257137.jpg": "67243e7c4ca1a28c5eed5ca328cbad53346f031460cd31231ce7e0b540930425",
+   "COCO_val2014_000000260182.jpg": "8676e994081ed0382202482c40e35872de67b2bb21d07058ee322e2b13938714",
+   "COCO_val2014_000000261036.jpg": "33123675af9257888d466d4333ba28bdaf1d7cecdf5be325d3182cc854d100b0",
+   "COCO_val2014_000000261082.jpg": "000ca72b438cf3c38334223c3de23ff2cf395f7b4f409743697100841983c0dc",
+   "COCO_val2014_000000262030.jpg": "b30ac5a6af277c9f7cdb59eb55231fc009004a1909a3e0e20d9c883d33baa6c4",
+   "COCO_val2014_000000262617.jpg": "8c45b5dd573548a5ea9863f014d588d96ba89e467c71a01f26f73bba782b0072",
+   "COCO_val2014_000000262738.jpg": "d3182a0ad084c58388d9f2418564ab2dc04573fafd4956e1ee110044f9ce45c6",
+   "COCO_val2014_000000263292.jpg": "63ff25b577644baeb742d41891ef728192b677a46feb5b2623390453b23fadb1",
+   "COCO_val2014_000000263393.jpg": "191077bf4a9224a02e9883964f2b1f0981940e132d5a6330b6e0e11f579a4f8b",
+   "COCO_val2014_000000263793.jpg": "baadc4abd5f8b47495b6210dd718714e87e43b4603af99dfc62be024c2a14e23",
+   "COCO_val2014_000000265243.jpg": "04750e3cceabf52403dba297931067d722a0460daa9e3eb1464079b13591882c",
+   "COCO_val2014_000000266768.jpg": "9bf52870172cba87d8917809be3ddd2432862adfd5c8aff310fb4851f50c1ac4",
+   "COCO_val2014_000000267127.jpg": "53935b5f0932c75218b564486be7a9161b1ca87858fccbf5f79a39713623ec45",
+   "COCO_val2014_000000267946.jpg": "5a03177ecf13ef0c7e7205f74f527b297b0e33d7cb915a0be3d897c7b7f50d59",
+   "COCO_val2014_000000270303.jpg": "6c5792a0f1af13858315db0f74ac8f4d77507c205e6f74d51c26e26b653884f9",
+   "COCO_val2014_000000272610.jpg": "79284c374b915aca7ba888ac93bfac579a83a0738b9ad8a73351360dd25e9cd4",
+   "COCO_val2014_000000274109.jpg": "4e23ac5e62432eda84d6d1c8dfaa66501858242256de1fc20b4099ad803bcc6a",
+   "COCO_val2014_000000275744.jpg": "3f3f611850a323ee184e2b1803fcd56887192af0f6bda874385a95c560b9fced",
+   "COCO_val2014_000000276151.jpg": "b5a6fee08eeffaf6aa5f40e3dbea10cd14216fe2b1c27eb39a8a3db67debbe8a",
+   "COCO_val2014_000000277227.jpg": "7463d3c30b4cb9f6679b384b6499aff29589a219765228cd15997184cfe0615f",
+   "COCO_val2014_000000279692.jpg": "16ce200f24d1eb47edbf5cdf36e90037c02816f8fd460d87fb11ea500fca39e0",
+   "COCO_val2014_000000279809.jpg": "69cec105e8ea9cac2d229e76384b8bb2ac26a6b4cfbd322d44b5a2458f88111c",
+   "COCO_val2014_000000281387.jpg": "2c1e1a094c7306764ceb677fbff745c0cb1fc7b1d342baadff95296927a00850",
+   "COCO_val2014_000000284296.jpg": "6e5d4c31a199ce6b8c82d54c2f53d5e132f6e3e1911a82be497b3c56c7975363",
+   "COCO_val2014_000000286556.jpg": "14ba8471ef01d1be58327d20b3314b8faa6ae3390c993caa6608cbbb240a6b96",
+   "COCO_val2014_000000288685.jpg": "cd33f1aae3ea110b6de7b35f2225bce018cf30248a78652955678d67b4c19a21",
+   "COCO_val2014_000000288824.jpg": "0930554d0bcf04195ab48eb6d45e40cef8cf42c07b2e9d65e17ca25ceb80a198",
+   "COCO_val2014_000000290076.jpg": "91772331fd2fe8dbbc0c5a78778d726f21e470a8e46d3894e0dd8f49c2156a5d",
+   "COCO_val2014_000000291696.jpg": "d2108152fc216c4c6fa19bc28fc50becf0f9303a03b7e153b4a407157ea9acb1",
+   "COCO_val2014_000000292158.jpg": "f338863b49c94bc9c89e0aa6d7061fee1629b4e8a576ec74a13fd5a19968eaec",
+   "COCO_val2014_000000292365.jpg": "94f6db96dd72bac1909f9227c731e592d2e313f09071a42c2ddca0d7a31942b9",
+   "COCO_val2014_000000295194.jpg": "360e0c8b4e19b2e72b0b027704ca07af03b43a56ba070e006e5c14f3a821660e",
+   "COCO_val2014_000000296014.jpg": "b39e7390f71cd53ab3db732a91515d0d9bc93dce50884176a9fe2a5f320b3b3a",
+   "COCO_val2014_000000298738.jpg": "40d18e68193a82eecf07bb677405ae4e01bb2cb6e3fa065e953f3a0c00912f0c",
+   "COCO_val2014_000000299039.jpg": "333a3dcaceeb3b2c3e326e8f33b2589fd7ead6d5a02ef300f644bcf45c3dc841",
+   "COCO_val2014_000000300324.jpg": "c8f20d961b444b16eacd9808d648e7a9531145776dc15495ab070adccba53ee5",
+   "COCO_val2014_000000300413.jpg": "015c2a718aa69ded0ccfba516b6be1456f9c154c8ef27affc3e2fbc8a0a76b97",
+   "COCO_val2014_000000301506.jpg": "1e8e3a112dbaf445491c316c42656562bf57aad77121b08b56f0f1c511dfd393",
+   "COCO_val2014_000000301926.jpg": "996d6b07e11d03ec91e1f347edbef30fb2f2f8de230f39e253881e4ab098daa1",
+   "COCO_val2014_000000302643.jpg": "984cc48bb4b04c95712f0a97ce1b94fdc83064a5863fa871b97a581c9cda83e6",
+   "COCO_val2014_000000303566.jpg": "ca7de33d4784740725c0c5831d1ebe5d602d49442f8a0eb38c83d76360c34172",
+   "COCO_val2014_000000305526.jpg": "a7155800991216da99312a6804206b53ee7daca1e6f306d42ef5cd1264b03c34",
+   "COCO_val2014_000000306099.jpg": "44a0a6fb25adb7088b308cc85b2964dea57f1d301dcbc682240755bb4136f1db",
+   "COCO_val2014_000000306127.jpg": "ee904f7e7367e47e60d966aafd75ede5c6673fb5a3c44c99fdc370c75497c833",
+   "COCO_val2014_000000306582.jpg": "41d9a42ac94af761807a7d097b08c9445f995d8e561c7a821701c9d4523cb8e2",
+   "COCO_val2014_000000310998.jpg": "79a5401059aa7b347d0cd69e74d303dcbf1cdf781160e759d6c833e14a6bd1ec",
+   "COCO_val2014_000000314108.jpg": "aef4f88350ff16e701de4ac11db7731b6d49d685f02a93f96e80adc02a044f16",
+   "COCO_val2014_000000314812.jpg": "1e1bd55525b2d59d3d3b8ef4e10fc12c9703dae116cc8aac702cc52ef029d0dc",
+   "COCO_val2014_000000315178.jpg": "2862da25303334fc0fc0ad78fdd2597727c6304c0d1223722c3c93da13b6f521",
+   "COCO_val2014_000000315338.jpg": "d57b6fe5335444a8e8de8b9576fdce632e5c4f30cf7a1fa07bb5212fb5cee825",
+   "COCO_val2014_000000315824.jpg": "c92dd538e1b67690e807e6298f24cc6ff7a3480916671e6b3c69f7dfe62f79bc",
+   "COCO_val2014_000000315923.jpg": "aa1ab3eb07268a60fa6a859281ed34627fd4825b605dacdcb47f3bf9bce5defc",
+   "COCO_val2014_000000316882.jpg": "40f28004ac55e9033a921d106c045c5803ab10576e861f4a89b96317fa08eb99",
+   "COCO_val2014_000000317062.jpg": "b3824a03d5c26c7dc1a57fa8aa397416d2770759fef652182ff746142f8d730f",
+   "COCO_val2014_000000317898.jpg": "e7f1b57ec4857f9916ed993605569185f8355386287532c9dfb1bcd3624fe792",
+   "COCO_val2014_000000318330.jpg": "0962513ca8f3b901d2ef395fdb77d67e403c3dee9f95de3cafe88de56674c085",
+   "COCO_val2014_000000321223.jpg": "aa7ff8451d260eb4bc2b6a5bff3f08e1e61afd0a152f9ed04bde03458e04f30f",
+   "COCO_val2014_000000321935.jpg": "1368e53286b1d6ed027c754c4b3df133d97caa962bffe92438821a61c6c088d9",
+   "COCO_val2014_000000324436.jpg": "3f797ad7ccc66b830f2216300cb27d0f78bba034a75bd95d7a3c6abea099e467",
+   "COCO_val2014_000000324584.jpg": "05a2474b0771cc1ca860e0936abdd16b0aed001f24dfff933d54e206003a5d08",
+   "COCO_val2014_000000324614.jpg": "349e8a6b5af5f7455e1ede69e260e7a664dcf12a9af328df058d5cfb260d631f",
+   "COCO_val2014_000000328286.jpg": "08bb71100d6ae11c07207e9a308ec351c4f1865ee6afc533e820cdb779b10ac8",
+   "COCO_val2014_000000329614.jpg": "d7f489d1ac157f059251353c9fd3c0063cb13ef72c4ee6ff08343b4b0ac24e38",
+   "COCO_val2014_000000330098.jpg": "f369fd13ef75776bca4999cbe40672c3030b6f959241f78753431ed454447a5d",
+   "COCO_val2014_000000331250.jpg": "4af113ebf35933f906fbe547989b575cb47e04d57b72a0d4dd036e9547fa502b",
+   "COCO_val2014_000000335579.jpg": "576417e4b3a61f4b5e4949e062ea1d1670aa04a1528398edccb230cfa7d9e3d8",
+   "COCO_val2014_000000337653.jpg": "dfd30ce4d438b03f0039c91d2a426df0732a8ba3fb0851432cf50fc77b611b7c",
+   "COCO_val2014_000000338044.jpg": "e37910ea8a66e120c8dfc8bbe58491da00e2d7c355fa53070bacfda2747006c9",
+   "COCO_val2014_000000338159.jpg": "5828435e67ac3f6fadc969aff8fe67bcf2267d7d07f2cd3f6d1ae31db6a82bf6",
+   "COCO_val2014_000000338191.jpg": "57f49389cbbac9ac6ad99364dfae63c11276468bd13c457bd2f94de2c6c90f7a",
+   "COCO_val2014_000000340218.jpg": "570701fe20c01fa6b1893025267ff25fdcacaa03695187b1e05999c416756854",
+   "COCO_val2014_000000340934.jpg": "84f63c2857a8a98f5231afd0ec7369ba8d84e1f26260c39b23ce437902aa66a6",
+   "COCO_val2014_000000343642.jpg": "df8ef1493154ebaa527d656236d5b6d6db672da02c3481d4c106275cb3faebf6",
+   "COCO_val2014_000000346089.jpg": "758277bbe7da0a6e3e025505f718bae9d2965f3e31aa2f1b68e1165f25758e5c",
+   "COCO_val2014_000000362716.jpg": "a535d5a73d971b18b9729279feea26659f6781cccdacf20e08d5dab8cde7a12d",
+   "COCO_val2014_000000382333.jpg": "bcd08917f0e831a7f83c46d320ed364504d54e6f5585998f181d2e26d0610bb2",
+   "COCO_val2014_000000393928.jpg": "cb20d056e2068b8bc81510669b1468cdf6b6d9143d79baf0f3dd7f6370dce3d5",
+   "COCO_val2014_000000395978.jpg": "67be5de5f13ec8faf952fc5ecef5ce3518e74c2a0fedc37651785b02d52b8f77",
+   "COCO_val2014_000000397133.jpg": "09e1d25c75f7879bdaa69c327fece5cabacd53939c8c2ef9e87f1c97a2e478c4",
+   "COCO_val2014_000000398604.jpg": "eccfbab2008b40b48e754ad99745973e726da408c3d0bdcdc2c1306503e15de6",
+   "COCO_val2014_000000410533.jpg": "acdd35e72d08cd848fc48b103da9b96199dca58e6d4f73a35d0c9c6c1b60a061",
+   "COCO_val2014_000000411642.jpg": "2efb64fcd28914b98989d6cbc07feda1f7a63229d50edb85d5ca7ed4913816a0",
+   "COCO_val2014_000000413235.jpg": "d6f68620dd31a977eeb33dfc9963702d6daf58d69e4cf85abff13bc63e0c7ad7",
+   "COCO_val2014_000000416837.jpg": "3f86b8f0da89b3cbd163eaae02cdd1523c95f6c427901d58c9308ef9f97dbd7b",
+   "COCO_val2014_000000418816.jpg": "50397d0e4e9b99f01c83095a972758533d4b619971e1f847f615427d370d56ef",
+   "COCO_val2014_000000423058.jpg": "2a208f5fbda91d9b25da542f3dbe1a1e772fcf6ee9194a38b5b9d58fb531a92e",
+   "COCO_val2014_000000432626.jpg": "b75d8c57ecc967a0c27fc5504bee43577be429ca4e62fb20759d58190db11ab7",
+   "COCO_val2014_000000444496.jpg": "ff06f68a0a7609ce0b9f06325a998080dea81435fc2467c063ee02c03d97b83b",
+   "COCO_val2014_000000445298.jpg": "1894835c57f2d0c705e6351fa0e5d8b7799c8840383455d86ff064b187ca0292",
+   "COCO_val2014_000000456197.jpg": "509e33e523670b56cb10813128d51382d7e844e65a4fa9f3fa76268b286a5ef4",
+   "COCO_val2014_000000465545.jpg": "cf9e14c1fdcfb145d33085e755d1bc727eeaff06bebbdc42f518342661d0c1ac",
+   "COCO_val2014_000000467978.jpg": "5f3d78da45ea4e3756c0e61d8280a490c0ef7ebc4b4530131ff87f10d2b1aad3",
+   "COCO_val2014_000000475779.jpg": "b8aba7fdf9b84905e8e09146c6ed262eb91f55b38abf6b6df8c4c59a75885a8a",
+   "COCO_val2014_000000487002.jpg": "7503241eeb7a621e81b22907b2b11ce631a37c60a6cde21b8be3a578280c662b",
+   "COCO_val2014_000000497032.jpg": "c744462940efdb467a01ca95b9ef05de1e6ab1aa86148565e0f50bb7d22675b2",
+   "COCO_val2014_000000528821.jpg": "352236e3d17268fd82d57d7c90f79a9f7fc96f5a3f66fe36c4848e20bc42f458",
+   "COCO_val2014_000000530500.jpg": "d0001995caf94434b220bf430439ad602e73e7b5a42e71c208930bc46dba55bb",
+   "COCO_val2014_000000533805.jpg": "98d6daa0f24e7dad6c616d21d516197d6fffc4b7501bd695b9d97c0be9c29cfc",
+   "COCO_val2014_000000534275.jpg": "f9810c57fd915009d4426f7288a501e7493930176369e087e8acbe436d8dfab9",
+   "COCO_val2014_000000535519.jpg": "c36b606133f116f9837783806a71fef03fadfcedf8fed125bd6022e61177d01f",
+   "COCO_val2014_000000561009.jpg": "3022d69235206da97e4b36ed46475845ee65065c2029e277ced764d16330bf4c",
+   "COCO_val2014_000000561366.jpg": "33ac2fba03d5242761676658dce8d0b0a68ea508bfdf17258e643221834f445a",
+   "COCO_val2014_000000571764.jpg": "ce7786329484e9013a37d86c068426d95050bc3b7a986af0338b2786d20ead03"
+  },
+  "probes_sha256": "dbd4a685325ef13cc750c3bac4a2ff678cbf82debc81aab2fdeb4a6cf51ba016"
+ },
+ "probe_images": {
+  "COCO_val2014_000000000338.jpg": "e1ab2ec78f9f84c5971ac6021213a9ec6a9360b6fb1d3216f09850c8d053144f",
+  "COCO_val2014_000000000939.jpg": "bccfc78c8f57f51dc1a7cb5dc29fa476fba92204640d7624bed009a588a168f2",
+  "COCO_val2014_000000001064.jpg": "c4405350f705052d374129ec53c9c4cdfc82e20b0bb1c0077b8571ae0063983d",
+  "COCO_val2014_000000001089.jpg": "ddb0b5087851848fe6914000e76cef78799e2040bcb57e9dabdaff8b085c395e",
+  "COCO_val2014_000000001369.jpg": "4fa8b5e58e0a9c2677b4e21edf057d5f90dd984ca417af271f413ef43d57a3cf",
+  "COCO_val2014_000000001799.jpg": "a5c533eccdd22c8ea6be3fc19674b60b42bb5647452344d9a541a0053eb59a33",
+  "COCO_val2014_000000004620.jpg": "ec3640497733f77858c97f20c75a6fcba59ae4d1faab9d70f566b28fa2f90a82",
+  "COCO_val2014_000000007288.jpg": "873e9668f223bb57f19101537d2d31784fa6e4a48cebc23d8e26ad972c8c6e2a",
+  "COCO_val2014_000000007784.jpg": "2b472f58ae604977c3c288320aed7fa8823043758e1b40b9cede91921d7154eb",
+  "COCO_val2014_000000009286.jpg": "a9cfa396ca5a325ca0e6246ff03a7e84badd8eb3d58bb849a11f83d41c235006",
+  "COCO_val2014_000000012570.jpg": "45de94129367dc8508a4a9be9f8398321c0bddf383450431596aab9fa968395e",
+  "COCO_val2014_000000013991.jpg": "7d33a301fba9f4abcba62a0bd5caff804432885fe480b385d4461ac21e5ee01e",
+  "COCO_val2014_000000014306.jpg": "7288456b34df83e29a7dd4dd5b79145d4053b27d973cd0eace2aa2abaf6746e7",
+  "COCO_val2014_000000014504.jpg": "633dac831d2372ff6177ea7aa6166a8501a654ca623739b4e0ae27327d1a62bf",
+  "COCO_val2014_000000018098.jpg": "f712b0e164e4368a96a269b6adabe3d98259267032177e57c683e648d154be58",
+  "COCO_val2014_000000018534.jpg": "e6fb0bd3b0e7e7f09cf1e2992e0cc0138258e8c060f729b815f40b5e8da10d06",
+  "COCO_val2014_000000021217.jpg": "a41a4887bff026ec26430ae4d683214bd2db2c51c07e1da106e8924a95ee3b82",
+  "COCO_val2014_000000022690.jpg": "392cbd0654d2bc9171418fb34caff5a5dbc8085015e7be2209b5d39c4c661a64",
+  "COCO_val2014_000000022892.jpg": "feafcf6539422208c296d7e15151a9bb0a19fb14db57d93a3ebf733a21fb7843",
+  "COCO_val2014_000000024776.jpg": "2c0541fea631cb5e8679d4387a88180936ab4b78de4795bbca426c35c823f927",
+  "COCO_val2014_000000025191.jpg": "30ff06435857f616cb06baf0feab0e1c63698d1251535414225ddcdc3c980417",
+  "COCO_val2014_000000025457.jpg": "74c5e017105727075689d13bf0f5f4fe6e35b8c0d5cc2c30c2be1b1f5d9e28e4",
+  "COCO_val2014_000000025997.jpg": "3cb1826fe43817a2068877ffbe95348f0dab88dd056ca8ff66d1b45237650376",
+  "COCO_val2014_000000027946.jpg": "96e193baf7909a299812eef65f800fdb3c63a8c8947becf8e8fc484dcf158adc",
+  "COCO_val2014_000000028246.jpg": "f321d5ed0eb260cd16d078372651bfd7f0b8450b4384750f94b169e378929728",
+  "COCO_val2014_000000032907.jpg": "48a74498cfde00bf149e4c9576542a941fabf8123e3ed80d77980c864205dc08",
+  "COCO_val2014_000000033683.jpg": "0495f31cd4ce5f9b85b75ce496a38ac1cf61765bc569c75c50636d7404deae72",
+  "COCO_val2014_000000035767.jpg": "59586dcf8803cdde0eeacd7ee4dfb4b84faace50a5287f75c93364fe9817f946",
+  "COCO_val2014_000000038816.jpg": "28e0b0ceaa4c3d8477eec8534a187fcddeab0cfa82d9c4633c677161373cd939",
+  "COCO_val2014_000000039106.jpg": "7d05120555964e54eb4bdd235f69cb6b03e4f1c3563daeaf3525ad67a3fe0987",
+  "COCO_val2014_000000039484.jpg": "dd5ee58026d819fb399dff4339efd842c936746c404abda74ad42cc2a499bc5b",
+  "COCO_val2014_000000040361.jpg": "6dd9a51a193777c8219cc8d0659b6ee94fa68a8a1f938c0e38e77a1d2df64683",
+  "COCO_val2014_000000040497.jpg": "9a13f7a9142d9fae414c3b481368ab1940a758fd73c4853ea635cdca66f6b673",
+  "COCO_val2014_000000041119.jpg": "c1127020b9d93152fd96c7ae15f4381755b2428aa758dac4cc1951490bd1531e",
+  "COCO_val2014_000000041128.jpg": "d2404c4260363c6488d4c711b234cbf9300550b5aba49465b5a78b00533cd544",
+  "COCO_val2014_000000043435.jpg": "c3b039effaf2412a450faff11d2dd0c5f5ed0090d12d550ce7a0eab9cec51974",
+  "COCO_val2014_000000043611.jpg": "43d5262d3615d1394fe00a91143111f0f92db8212dc1d8ad8ddd69c083c95273",
+  "COCO_val2014_000000047775.jpg": "cfca428ad02d5a32fc372d4a64f913ab02f663638f6e41a4af1b2cda08a79aa4",
+  "COCO_val2014_000000049258.jpg": "69b9638b7b83a4dc37f118178055edb2ed08e7df72c55075bf77535f266733be",
+  "COCO_val2014_000000055013.jpg": "fbfc16827092c36176b1fa756d677f12cced88b3cdd1abf37090fbcb840b48ab",
+  "COCO_val2014_000000056872.jpg": "2871956011a44d7dd0c02f62a49185ec47038050b8d8f8d98f0e67a655d3d52b",
+  "COCO_val2014_000000057390.jpg": "ef911ed6a8dcde19c779fd263a9f4c782ffa0c0d9e63101530bc7a9ee3a83fcf",
+  "COCO_val2014_000000058304.jpg": "6a0c64128e74705abf31d1a8a4e2568485b532c8163a99d17fd29cf9d36b97a7",
+  "COCO_val2014_000000058655.jpg": "9784ea090eeba09ca328705b68552f091e4f2dc950119d0bdb1fdbe0d5032e31",
+  "COCO_val2014_000000062109.jpg": "031306ea3acec79a6b15e16591edaded410ef6cec1a3e7e33dc08fb4cd344d32",
+  "COCO_val2014_000000064842.jpg": "c85926a3ff83e796be78972fd5d1f32b3d86e6195ade98e884f17abba3cf8b4e",
+  "COCO_val2014_000000065267.jpg": "e599d2c0b47c8e47217becd0ed0a486afeb2f201c3c7fda6f0ed1caad550b689",
+  "COCO_val2014_000000067419.jpg": "6f167d9a473d751f01def216e7ea59ec2f319471e2d3e114ea0a2fb67ceb3b4f",
+  "COCO_val2014_000000068036.jpg": "22d1ccdda9756a1f9b7afbd60ed90e190f4f048d65062da818e5d850aa139b48",
+  "COCO_val2014_000000068205.jpg": "0f01e73618d390445915e6bd6f6bd92e9d713537539bb9257f5ac1a365107d30",
+  "COCO_val2014_000000068291.jpg": "eaa0b30b7fa0cfddc5bc88ecd4dacd06c6dd676e34b763e571e9c031ab560d63",
+  "COCO_val2014_000000069946.jpg": "b77f9ad4933e0dfc6c33c9928abad6b361b5e70a7cee208d28b1dee1733375d5",
+  "COCO_val2014_000000072873.jpg": "2322ef615413b0b75e4d892a35149bfcd96110ab0860e58be15367ef3e29ede5",
+  "COCO_val2014_000000075434.jpg": "beea0c40ee58a22e007a377a66253d6b3556c2dfa4b3f72098c8712c9bf7a62f",
+  "COCO_val2014_000000075479.jpg": "ef179d30d6bd5715f0764f9f388717e44df80ebcf98fabbd2fe0ae76b5980c0e",
+  "COCO_val2014_000000078429.jpg": "394617fcbe96229d0a78aad6c156ef1013964f51859232acee86307f531478d0",
+  "COCO_val2014_000000080213.jpg": "54907f75ca2401a90ab54b9da8dc0a17f3f3a4819a8df57c5bc0bd99b3ef618b",
+  "COCO_val2014_000000080462.jpg": "ad84e8b00831e2ab518db4848e4eac08e14bf8e1fae97368ce2321280174b33e",
+  "COCO_val2014_000000083214.jpg": "b18d7b42e80bb4bfb309597f43c70f6747e25f0454bbfae793c48abd5c4fb601",
+  "COCO_val2014_000000083736.jpg": "21e4f6f3d56d883cd98881bab2a114e7360388333b04f70eb569b6ce85120b19",
+  "COCO_val2014_000000084000.jpg": "f3d67a1c065962a376ec90903e79a973e1c9457db40b7736c7aa3430613d0d75",
+  "COCO_val2014_000000084567.jpg": "d03a47fd573ff095af813193492cb4386fe0c0b1300ce21bf84e67787229f3a3",
+  "COCO_val2014_000000086848.jpg": "05da37a466b0d846b48487440ddd49c605cbc09a997fe6db947633fa7e0bb56d",
+  "COCO_val2014_000000087811.jpg": "a1cfb285b38d45a632e7bb900cdc0887889a14abee4f7e32807c1fababc65a89",
+  "COCO_val2014_000000089589.jpg": "59e3d19233932c4afeb7912c74ac8aa8fc3976cc0aa5101d6cd7c15197dc178c",
+  "COCO_val2014_000000089761.jpg": "77578f52ee4644ec8ff4d8ffd712116b2ce0a498ae7ed5bd5430dec7b784cdc5",
+  "COCO_val2014_000000089781.jpg": "0cf96bab901a1170d790b4eecd0314b143f188346106c6a8023b3bdc4d5d9a20",
+  "COCO_val2014_000000090349.jpg": "2d458d372b26e96880daa38b502e211892bf2c5b019b0eadb8f253612e06e24e",
+  "COCO_val2014_000000091372.jpg": "a07c7d738dca0367c73c97485d7f0c9cbe7affc2fac8de3d3a65156d56c5c9e1",
+  "COCO_val2014_000000091545.jpg": "428499683982f5ac1cc73af1283d0be7ad2d8c48903d02507b9483942c0e8556",
+  "COCO_val2014_000000091715.jpg": "28a5ec4bd0dce786ad7e395d4dbeb4686bc7deedf115014443a64547fe0ce9ec",
+  "COCO_val2014_000000092488.jpg": "a6555cc26070e897de0378d7edc433e93622240d17cf76ef3adc508c80611986",
+  "COCO_val2014_000000094271.jpg": "c8e6ab0a00a29840839c456db4924ecacf90e3ef63aa9a6c466a5568458e7a4a",
+  "COCO_val2014_000000095383.jpg": "13d1beca2eaf0e128039a346df63f8034a1e3195431b1108f7174960ae935735",
+  "COCO_val2014_000000095417.jpg": "44be89e52f37c0f456dce4a9a96eb728939b8b841658d111531eceb4aa0ec463",
+  "COCO_val2014_000000100098.jpg": "30218f521795de9b91402a45aba3c97bdd90d0548b42ab106318678fd4d1f4e6",
+  "COCO_val2014_000000100850.jpg": "12b434d88c728444868cee831565519c18e1ffab99fd2586bbe2a80dac88ff69",
+  "COCO_val2014_000000104758.jpg": "3bb3598e2b2d6e1952576415fa6cb183b5da2be9d4b5fed32b5725a0ba8bb476",
+  "COCO_val2014_000000106053.jpg": "a606171bc2f17c33a947ffc74b1f5366f605646ab5979e34d0966408d86724f8",
+  "COCO_val2014_000000115379.jpg": "35bb3eb54e575bd86a1340629e4193d65495e4e2e14ef86631d06599e2907a3e",
+  "COCO_val2014_000000120826.jpg": "c32d893a508c4942113d1e5864413aa2ff0dded522c1fea02e4c13824d0fd0ed",
+  "COCO_val2014_000000121414.jpg": "64dc15d35a8e95d246b52f97dbbcc47fc2fbc0c301a75e80f538a24a62791e52",
+  "COCO_val2014_000000121417.jpg": "eb484991351ad43a527aa9fea24f56216deacfe5cf8df2a49dc35bcd46e9490f",
+  "COCO_val2014_000000121839.jpg": "0011597bcc4503aa594362f09c187122966554dfba5c7461534e668ad725d2a2",
+  "COCO_val2014_000000123663.jpg": "77c474e92b03e46847633b97c9c02f34f0882ed9cb49bb10b25ee00d98290111",
+  "COCO_val2014_000000125076.jpg": "cdbc467436bfc543032a46fc96975fa3c9211c288721f4b06c36e97088d5d277",
+  "COCO_val2014_000000125412.jpg": "88c00d3a2131a58b134685cb3f9cf240095480c675de4ec2842aba7559237cd2",
+  "COCO_val2014_000000129632.jpg": "e53cb49635de15b9c27dc0695d8c439a7d5710ec6caa6ec61e519f3bffe7da37",
+  "COCO_val2014_000000132161.jpg": "d76a5ec300788a872bada4cdc41e89fddb5e8f521775536c74f3027c504f9ac4",
+  "COCO_val2014_000000138589.jpg": "dc4c6e0c7ade488ef2b2f5fdb76130707bcfabb272d3e0d4e34a7232a3400290",
+  "COCO_val2014_000000139472.jpg": "3f7acc50570911baf761447de96f713edc166da4d7ac817991a222d53bf6a787",
+  "COCO_val2014_000000140122.jpg": "35724c3acf584796fc1773d373a611455cfd9bdcb77abde7f3431cee95c61de1",
+  "COCO_val2014_000000141709.jpg": "76a56a08daeb30c78c8816467f1c109ed213563558a0b8bf8d438ab0d6bcf4ee",
+  "COCO_val2014_000000142487.jpg": "4845e5cb6237debb5e147dc2896abf0a2e4390ed4584cf0b952283a1be5492eb",
+  "COCO_val2014_000000143516.jpg": "2f0d642ae4b879a9449a43dc02339241936d022d553fa53b6442aec6ba6ec53e",
+  "COCO_val2014_000000143737.jpg": "9ffa538ae8b289adfd0b37cd77db79e25c1c27ae3cced5e0c4a1d997ba116a78",
+  "COCO_val2014_000000143931.jpg": "45cf81830e1b95dc25a9be1ebdf2798238b9bda4dc3e34e589442c5c9ad98aad",
+  "COCO_val2014_000000152214.jpg": "1700fa77568abde6949c40d79b6551bf099fc094a60e4b6953b8852abaa94a36",
+  "COCO_val2014_000000155488.jpg": "e55d3e898128fbba19a76853ed6a9f9fa99a10429aa35f3876c085199cced34a",
+  "COCO_val2014_000000156651.jpg": "aa75ddc94390ffaae0ec7075e41c2e61402214fa34b6b3b9daa8b0ffd44d84c0",
+  "COCO_val2014_000000157726.jpg": "a78ec0104a86d8a7dbe9e647828e5d5261a4330217928b5b4614a6367f39d31e",
+  "COCO_val2014_000000157891.jpg": "4fac763124408877ebaffd0c86a4d1cedf572d27935d556a5d3fec9570b89d82",
+  "COCO_val2014_000000158254.jpg": "4cfc3fe84ed6006b6dbcccf199bbcae16506142807f8d3dccf7956df566c3f46",
+  "COCO_val2014_000000161161.jpg": "9217c7d650447e97488ccde568cb2ab95a11f2226e07823d6cac292dd7e62c04",
+  "COCO_val2014_000000162711.jpg": "507f4034409a4b042182c2e9f13ef6ef78c9a90f19baf8e9f8d845f3cc58ca83",
+  "COCO_val2014_000000162998.jpg": "74bde3161d48a463e29cf1f66944098dd4ccf0cda50ed44b92581d610a45fb5d",
+  "COCO_val2014_000000163132.jpg": "ab94dbc40cbbafe8fd8f19004911bfdd15870f4ff7d5676959e37557b0b8c06e",
+  "COCO_val2014_000000165035.jpg": "1378bcd3197029250d0f9c1c5339ca6e2f9525a685263d07d8774836a60b6157",
+  "COCO_val2014_000000165172.jpg": "021596cfa1c18fdcacc2e2b67649629f36f3096539b5b2679210c049ca949b8e",
+  "COCO_val2014_000000167920.jpg": "ec544dc4b851b23ff1cf67cc95e9abf693c9e0e787358bba1e6bce2677cc8700",
+  "COCO_val2014_000000171603.jpg": "7edb1bdd6d1a4538ded06f6edead8ff73a64c26070860100a0587e38e49ba041",
+  "COCO_val2014_000000172649.jpg": "cab16032364caf6808cde47a8be432d3efb71c2c8c114285443fbccf108692e1",
+  "COCO_val2014_000000175633.jpg": "9915cafa57c844880a70c4813e20479f53c1ea6fefeb4da591aa8976202bec6a",
+  "COCO_val2014_000000177167.jpg": "fc293508f3c3d75d01f213a907fd12d91a4bfeccbd4c956365c807f9f5d82ed6",
+  "COCO_val2014_000000178616.jpg": "c2d6c6eec4fceea3c25e222ac587ec77110af52dc3a4f8bb3158d4b0ae2c1a55",
+  "COCO_val2014_000000179584.jpg": "6402dd1f5e4ea9b07d3959c6d3b22d36f85daaf3bc96bb2d4e216fe54c900353",
+  "COCO_val2014_000000180296.jpg": "710e27f9d7fa23dacb875244bab3f619dbb4a67d6c21744adae1cd47b23c4f96",
+  "COCO_val2014_000000182025.jpg": "64f943a58b4b1ec1ad8ba3f007381d7ef980451cd388d38ae69425a8655166b7",
+  "COCO_val2014_000000183359.jpg": "6567e8c6490c0c6d6f83ea5ada4a46781e8bb84b0ea6ed279960b9413e7aa1af",
+  "COCO_val2014_000000183657.jpg": "91b9de25a36d98563086bb9ddfc3211c404adb76f24e5e8c3a8b08d4cb3066a5",
+  "COCO_val2014_000000186240.jpg": "50988395f747b7731aa4bc2697c04314f6878883b5ecda3bec3a2c769abf796f",
+  "COCO_val2014_000000188766.jpg": "c1f5f5cf342884c3299d53ea06ea009c35ae3ba4f9f6c48ce27e382b0c17376b",
+  "COCO_val2014_000000190907.jpg": "f0f00c298312db022083844d282f3d94baf6094c314ad6ad1d0d7f2c5b83dc36",
+  "COCO_val2014_000000191425.jpg": "3afa69966eda4394bfe7af4028b6a70266f647324928316adb15a53896da1b36",
+  "COCO_val2014_000000193245.jpg": "3e5e80ed875f946de9fc771a7ecc5ebf03248513b210ba0bbffa868884b9a051",
+  "COCO_val2014_000000194208.jpg": "f2839c98fae435289fc42b2387aebbde1fa500e2fce80be89222e5c633c29c9f",
+  "COCO_val2014_000000194297.jpg": "259c1d807b09adc787c4c6dda2665074db361bd4627e700ac954ce323f92e1ed",
+  "COCO_val2014_000000195815.jpg": "b22a9b3ea2c53733c19cf97d08910734ceba57a058f48780cefbab5215b2c447",
+  "COCO_val2014_000000196371.jpg": "903e229045868af12474edba62a2d90c43a35916a4afbc668bf9e9ff7414f433",
+  "COCO_val2014_000000197609.jpg": "ac321e0651cc3185e4a8ddbe2c6f822181b44d19a36bbba8478a258699649d73",
+  "COCO_val2014_000000198625.jpg": "36d5e07aade0c71ff622386eacf80e492be7816f99e6679bb203732deed665d1",
+  "COCO_val2014_000000199158.jpg": "f658ae597674ad4c24f5429005445a98f3b369293b77fa6277f92744c428267b",
+  "COCO_val2014_000000203697.jpg": "455a42a6af30160e0373b745e5652c1c45b5e2e34c818cd93aae536bc9581ccb",
+  "COCO_val2014_000000205720.jpg": "f7560a29a7ce1b317c99e73008285115b59d96f165455df39066bd2c55c4061d",
+  "COCO_val2014_000000206958.jpg": "b5680da0a8b36321536619bb2a5243cda4cf48f92577276a329bfad337781a47",
+  "COCO_val2014_000000207041.jpg": "3c97b24658e5e0c0e360c80fd6e41908a58eb837a6fb46a13058e9e688860cac",
+  "COCO_val2014_000000208050.jpg": "b21efe095ead55812a349d9eed385076ecd1e033eca04fea27eda9a0e35ad17a",
+  "COCO_val2014_000000210832.jpg": "3f31064a62cd2a1f53fde8e24214c812e0cbaac6d1898625855bc82662e409ba",
+  "COCO_val2014_000000211107.jpg": "55447104e124eab07259f5087a3a2fd4e4643c5da01272eebc2733c91096721a",
+  "COCO_val2014_000000211260.jpg": "1855f132dc32b28dcef2b858a713b783c2a0a2a654be28a339b3a36706c9612e",
+  "COCO_val2014_000000212558.jpg": "5a37c4e75c1a4a5ffa4efa527e76daf62e0bd34b0266fd5b336e1af483b487a4",
+  "COCO_val2014_000000213739.jpg": "11b75e7fea6e6fe1818d7d743defbba1e860d2fc17542e30d79af6f23b5d9f05",
+  "COCO_val2014_000000214295.jpg": "a98dac3edf0fc4f9af3d04409b7c84186bdeb908e41d1a2fbf0f3a0a354cca9e",
+  "COCO_val2014_000000215708.jpg": "16d162c6d68569aadb2480b68a90dff70aefeab6ac341838e96bbec7618f8f6f",
+  "COCO_val2014_000000217654.jpg": "bfdaa1bf8a64c45591ad37466370796848bca818a94492c3d07385917c1d1ce5",
+  "COCO_val2014_000000220176.jpg": "b6e30dad90d64dbf6e579e996944578d3d02b4c6e5b19839e89f13d165359dd2",
+  "COCO_val2014_000000222195.jpg": "ee763fd85c69c40191d6c672a18ed480b30baba275748ed60cc3a32cbc627ad5",
+  "COCO_val2014_000000223032.jpg": "aa1e84e32af00c1a3dfa4a469a6314b756b69fbfea893a7ba5297bc7434431d1",
+  "COCO_val2014_000000224426.jpg": "d8045cdd79bbf626dcba24b55a0cea19613fdce1f38317caf0f53f0e3105c35a",
+  "COCO_val2014_000000224807.jpg": "469e5374fcf43466d3ba8167126cdfa2833f1b8c8ed1e2248b29dd9feec20733",
+  "COCO_val2014_000000225571.jpg": "7da80f9b4a7e887323bcde6b7d1c6f06d16e83a38604e1f4933bc35efb70ea1c",
+  "COCO_val2014_000000225730.jpg": "8111ccb3e193c744c469f9a55492ccf87366e8bb8d4104bcec870ec2ad0875d6",
+  "COCO_val2014_000000225751.jpg": "eca421e7b038eeed3df0c6ee5b14109d1a118a0f07eb81ac26c935629dfd0ea3",
+  "COCO_val2014_000000226020.jpg": "cb171b07a41adbd302a1da7e5158b5d64c492cdeb761fb18dff132d8be656a5d",
+  "COCO_val2014_000000226119.jpg": "4a9c78cf51eec9d27caa18583ec46a86bbd30709653f5bac58a09d8d71eca3d8",
+  "COCO_val2014_000000226380.jpg": "90d1fada37993f5e4f42846c9c5ebbba258d205e5f7004f075d8873a48f1c84e",
+  "COCO_val2014_000000226903.jpg": "24c4fbe63fc6255b8a471b5c839a51a7f3351144b363e6e17060080f8b10ae1a",
+  "COCO_val2014_000000227187.jpg": "3f99b1de07362d40264170cea285e33162c661c27ae9b16a11415fe172b5bbe9",
+  "COCO_val2014_000000227433.jpg": "7571c0f23cf2d7d7647d700e3db3e475aebac36ffaf8f951339417062c9ac314",
+  "COCO_val2014_000000227463.jpg": "477ef7361e70cc8d5f487ccd89a8a9a09fad8fb70a075c1eaf2d7f869b74a900",
+  "COCO_val2014_000000227657.jpg": "3c553fc2844b367c74abbb1cb912f4331ba7adc150de8e25d15a5f1d58e39450",
+  "COCO_val2014_000000228350.jpg": "eeffcfb04900d9be59947306e756d80c2e51742434ef9a5a8172aef7025b3f6d",
+  "COCO_val2014_000000228558.jpg": "4f05137a50d0a4ff5782772fed11cab0efd00121620e460b1932c67a59e1f0df",
+  "COCO_val2014_000000228910.jpg": "c88b456b9ea7085c79afa843d5661f833e174fd841276b174bff878a70d53e1d",
+  "COCO_val2014_000000229020.jpg": "3b6b07136532949ae39739fff8edd7f7f70ac95db5ef09fa836f7ba576ab8b0b",
+  "COCO_val2014_000000229139.jpg": "d1aa8abdb1f8e64ceea1416d4ff70b8c12c92c7494519775b387253936a2404d",
+  "COCO_val2014_000000229350.jpg": "fadcdd3da36ddbf988e6b8be9895a0a5a957d620201e4ca45a9f9d4121615d4c",
+  "COCO_val2014_000000229688.jpg": "089f3aac7fe5d7937e043cad24a7024fbf1be3ede1c266aba49d8b1918a23803",
+  "COCO_val2014_000000229740.jpg": "1a4772cc90fc3249703904a6575a1f6bbd6852f4e58160ed75cb229db2d49b53",
+  "COCO_val2014_000000229997.jpg": "9c62105390761ac4adf9cb96e80652b55f64866c897cb5d6b3de405fe92db5f8",
+  "COCO_val2014_000000230031.jpg": "bf9a20cc47256777d28b91456a98e8fde4b5a71b369b2d5f12c782c233c5d1b6",
+  "COCO_val2014_000000230040.jpg": "7aa16a9ff56809ed2aab6a0c11f7aff15f744b5548c038d85a6f33ade93ef9f2",
+  "COCO_val2014_000000230166.jpg": "7ea597cbad14789435e8df0ab919bd0ec43715dec13c1b44ec0fd174637967ab",
+  "COCO_val2014_000000230593.jpg": "9dcd7f3a7b03916e850b0bb6e19ce284bd6634774e50c50fbba75d9ff9f31105",
+  "COCO_val2014_000000231408.jpg": "4267d09c9dbfccdf50bcccb1415a1f81c9fa8cdd145d8c99e482d5c5c934bfd5",
+  "COCO_val2014_000000231476.jpg": "354e6eb0049e2b9514122688dda68ceecbe2257029514e0c45d79d66666744fb",
+  "COCO_val2014_000000231952.jpg": "353d3cf75f9af72ec0fcd7b21c909b9c990f298310d07528273a26b8b1ab6379",
+  "COCO_val2014_000000232085.jpg": "753fe85c36de14174da675d098dc556d4504952577b2b670cc4de7154034898f",
+  "COCO_val2014_000000232121.jpg": "bcaec171266292e234668c643ecaf6614549e1554e20707b27823524ab6165f9",
+  "COCO_val2014_000000232511.jpg": "e6fc39b54b14de558251d7eb2888ce486d2e23744ce36b3a5988dbc854938147",
+  "COCO_val2014_000000232692.jpg": "b22868f61d01d16d4b6820d2b8b592e27e66ab2c988fd053fea5e71042681d62",
+  "COCO_val2014_000000233376.jpg": "cb405e0eff2167b0bd1e7d0da9f04a304497c1cd84948a09ab1ef5bbb3d9ecf1",
+  "COCO_val2014_000000233968.jpg": "86052b4a89d65d65bc70927dcbd6c49ea14e4a308cf27b9fae033d08d01ef549",
+  "COCO_val2014_000000234341.jpg": "d0da95ca4931b6f4d0cd7b415548284efbeab3eacadfa6a54adfdafd05265f6a",
+  "COCO_val2014_000000234633.jpg": "31fa204c902815e6c7a001a28e52b49e001cbc3664665264046eea2f56389e9c",
+  "COCO_val2014_000000234679.jpg": "ca9befb26934f3863ee0d1fb4676528655c112ec476277e2de86dca00f7e82a5",
+  "COCO_val2014_000000235319.jpg": "e3d948704c626bed11229572c81daf6b8aa3666cfb027a162c01fb59e7e2648f",
+  "COCO_val2014_000000235790.jpg": "07b07f23fbd668894eedcbf8024440d5184dcbe2804cd535b325904dbf3aab00",
+  "COCO_val2014_000000235791.jpg": "a7020d6e7db17d61c4a6dfd9bb4b0ca7c732a4e133190ef1130af70c4b757773",
+  "COCO_val2014_000000235964.jpg": "20be10d1ad06ecb13df0adbb51f90415cbf2c7b4ea7dbb9411ac6e5a2806bc2e",
+  "COCO_val2014_000000235984.jpg": "3a62a3e9555c6f3aacfc0035f3a047767da4d985f99c0adfac14f8411fba88f5",
+  "COCO_val2014_000000236189.jpg": "97225dcd1734353f754cc69c881416d77577edbfb47c6af0b4388dd91437b902",
+  "COCO_val2014_000000236308.jpg": "d23d2d9abf2b356fa57fbedc886c462be5bbef2a93f3ebc5b37af1bc0437bb5d",
+  "COCO_val2014_000000236370.jpg": "7144fdb9dca6a20a91b1acffb7a59f6a1bc3491665604c32d12d8f4190f50d0c",
+  "COCO_val2014_000000236542.jpg": "b7d2e959ff8f140e399eb83decc7975d1271a77e982d4a498b2a5308516dabab",
+  "COCO_val2014_000000237501.jpg": "491220cbaf9de1e69972a60f807521a912f1bcf5f290985b7035fdc33968225e",
+  "COCO_val2014_000000237669.jpg": "34a057d9e2748c93ac0ec01f90514454596b190aece8c26e3b947262c48d30a4",
+  "COCO_val2014_000000237723.jpg": "d9225503221836e0a98a6774c8a78152ff0b7bc5e14c898b92050842baeb3b81",
+  "COCO_val2014_000000237814.jpg": "235f608bf69f09fd599c824bf1d4cb9254bcb7882d1b8302e2535b8e49431aad",
+  "COCO_val2014_000000238013.jpg": "b2a4b57c6fc00d190303b29b893d175e47fd9b30cc0c1ae623877ed3660f7be8",
+  "COCO_val2014_000000238598.jpg": "a00b795a9a6fe07066a937e79487ef490406cda0a15793ab14e82739b2b3181d",
+  "COCO_val2014_000000238890.jpg": "c2dcbc1c00407b0185ac681d987adf05d2e580fe04919bba9ad495fbd600f52d",
+  "COCO_val2014_000000239618.jpg": "a87e67b0a7667a184ac4b7c6ea7dc73b6e8a85efb81018d63c56b2ab8f0c1096",
+  "COCO_val2014_000000239943.jpg": "aadc6b6c5bec10e9d4980654d0308ed366feca4ca941369c91277be6014a31cf",
+  "COCO_val2014_000000240403.jpg": "5e56cebcf10a0f1d8f32ec4970921832a3df3ee37384241c70e495ad14ea7cbf",
+  "COCO_val2014_000000240495.jpg": "ccaf2111a4bfe28f73017ecca1684ac66e231325840d97810b7852bb6330ee4b",
+  "COCO_val2014_000000240718.jpg": "816fc63a4cda657b0feba1088ba565e5e6d4e9741233f2412ccaebd85b22fd97",
+  "COCO_val2014_000000240775.jpg": "b33e493dbd67adf96eef5cd692d4109edbfe8e38bb15fbb904342ea8a33815e4",
+  "COCO_val2014_000000240950.jpg": "76c4a8fa5f5ec77b22018c0fdcf4ff302f3e3f039f592cb946a10d6d0c19307b",
+  "COCO_val2014_000000241599.jpg": "b8aa96546cd17a9ff89bd3d4c7f1a810040f917b444204866c1b4697ad88acd1",
+  "COCO_val2014_000000242208.jpg": "71aec51a8b7b1fbbecea953e1f8412e07e1e576d81d8482a605cbb74ec88bfc2",
+  "COCO_val2014_000000242301.jpg": "8826f743f4c6248f4d7a9139c4b78bd3018779cf7dc08c98272f9147fdf1df41",
+  "COCO_val2014_000000242345.jpg": "f0680293c65a4377c23a83780c068eb15236ccf885fbbbe44f12dc8259561627",
+  "COCO_val2014_000000242423.jpg": "b8c510fcf48b2a78d0b0ef950df6dc669265b3470c26a2bb4bfc916fab8f6f85",
+  "COCO_val2014_000000242679.jpg": "fed684a2b71a379fcc7233932bbe2cb853d7a5bcd4355907890e1eff292a6522",
+  "COCO_val2014_000000242972.jpg": "89875dbd77c1486bd0a7b121c319011f17406a8ce73c0faa6f2251849670949d",
+  "COCO_val2014_000000243148.jpg": "ed67c563c6203932c7d9c024b950b1347f79700324a2a187452f5cad62cff7e0",
+  "COCO_val2014_000000243418.jpg": "1ed8a54e8bf5616c64373d2c0451ddb501ca38a7688bf24641368c240d9b72b7",
+  "COCO_val2014_000000243456.jpg": "d7c22fcd7a5b5135ff82b156f19f84e2d8d0f751f77f062cb6a7e8807a33e442",
+  "COCO_val2014_000000243773.jpg": "e5991f0cd02ce5d38b18470452395b420bb8d297c9e2f869acec7092b49dc0e0",
+  "COCO_val2014_000000243777.jpg": "72f272f8e5d809061f19253486ce802c0be16071bab9d73df3053fdc08c786fe",
+  "COCO_val2014_000000244317.jpg": "a3311f072a9c1cb7996bc502c48c7027659f5717abbee57887b32146d1b23f5a",
+  "COCO_val2014_000000244421.jpg": "8f9841bc8867e478d7f9c3b5d2b87338dbf41742dccd49a4f4999e2aee20a0bd",
+  "COCO_val2014_000000244754.jpg": "28d2b99b57704f3b6cc71c1fe35f826ca8175b92217b3d781cae52cf1c831f22",
+  "COCO_val2014_000000245232.jpg": "df971c8ff6b3a572d1425ce19964305a3e840ec3ed3b5ce8fe1d8ef7213f8d41",
+  "COCO_val2014_000000245576.jpg": "06a29c981a65c55c1ec621ca326937f7207890f2d062806c2d093b0e9e5a66be",
+  "COCO_val2014_000000245818.jpg": "1250573c4f7713de372a2da83d0bfde13cab84e5cd684c1c5a0b0f0ff792898e",
+  "COCO_val2014_000000245971.jpg": "aed6090bef22d82548dddd71aa107802335a012ab9b2f167da6729ab2688e7ac",
+  "COCO_val2014_000000246053.jpg": "b72cc1ad56b80e169436afcf92cb48667b4708f7eba70431a24bfdc8bdeac63f",
+  "COCO_val2014_000000246066.jpg": "01a032628955a47356f6b12d0d980698a5006184c857cbc0109796179dfa2623",
+  "COCO_val2014_000000246233.jpg": "6914119169c7b95535084742b701e8c489e456e37cbf0a3e067f3a17fcc192ee",
+  "COCO_val2014_000000246248.jpg": "20020bfce6fca3183de9b86f7f77cf5a5fe40e51388e25e56db5fab4709837cf",
+  "COCO_val2014_000000246454.jpg": "b3f955e290bd58ccd622aad1a75465f74b1c382eb3c8641901b4d49213dbf5ec",
+  "COCO_val2014_000000246532.jpg": "042d27ae72d867195f3055f1dae52f762fb487e704a2477e7a4253349bde1547",
+  "COCO_val2014_000000246590.jpg": "afb48dcafd6ee3b4a3b7457291c13d20ffe7f3ba967fc1284afa8d581df5d1d4",
+  "COCO_val2014_000000246883.jpg": "079e92b5a07937c8fe29e6b4688d4e5b426c7df80b0f15ca638eb2d367d4d01f",
+  "COCO_val2014_000000247037.jpg": "59eefeccf0dcb070df8026b9893936796742cdf52486689589895fec5aef30e9",
+  "COCO_val2014_000000247206.jpg": "0a393ac63bf86a152bb04f46873e44270fe4e34939861c4a2a78f4ec44b80416",
+  "COCO_val2014_000000247369.jpg": "ef1f86aa35e07b797dd5aa73b352a01e65ce9e01735009274d4c13b5ac3e5b96",
+  "COCO_val2014_000000247624.jpg": "9af2cd68dba5113de5b732ea249060e307297921197d4edfcf33f2c923089786",
+  "COCO_val2014_000000247625.jpg": "d44aab894c6805e2e3b17ba12e9b6cc91a3b27905d6528e47ef2ac1114185916",
+  "COCO_val2014_000000247917.jpg": "3d19e31ae4de033abffb9586dffd9663e646f040d1ac5293bc4c7c467150c1c1",
+  "COCO_val2014_000000248007.jpg": "b21ea4afda9f21ad79f5547b2cc940ea2bfa6db4cece85dfa98549a650109766",
+  "COCO_val2014_000000248163.jpg": "7a0de4cef870f409e995e488af9d68ea5064c8daec99ebc5820e051c551b2ff4",
+  "COCO_val2014_000000248206.jpg": "14e84f64e576391012f563ed066b1e0defb3c0b45a0fd82293fb7e6730735d0a",
+  "COCO_val2014_000000249482.jpg": "6edac85c8d95646bd08e182e840233f6ae17887d309e8441b019746868e69898",
+  "COCO_val2014_000000249599.jpg": "e79096444e4f9759ede7c0a78b85bc5a67c761ea57e53751cac2f92abbf2309b",
+  "COCO_val2014_000000250227.jpg": "b49fa6be152bcc7315ea713756f51795d1400a0cbbee9d52b43ece49b9d430de",
+  "COCO_val2014_000000250383.jpg": "1c0bbf61ed272057f2416287b2eaf86fa68746e5a7b788b9a713d6b96275e02c",
+  "COCO_val2014_000000250924.jpg": "746e9e80d70a7fa3b735051952e18513c3c48bac4bdcf58edc9f4ac6d8914af7",
+  "COCO_val2014_000000251064.jpg": "97a44bf6ad940b01753cb3cf3450ae034baafcc18f9da14b719d1dae94865762",
+  "COCO_val2014_000000251752.jpg": "0182974aa2374201c197a7f9e4cce891c641c3ef4b03e6a101ab61d39488183b",
+  "COCO_val2014_000000252342.jpg": "832924cc977d4ceaace2f840320340e836a9e83e6a9cb2c4805e9e0ce677acad",
+  "COCO_val2014_000000253415.jpg": "ae3d097f6499edcd07b8fc4f9bb91b5c35725568f2432c797c85251bca074139",
+  "COCO_val2014_000000253421.jpg": "9eff31c5079afa2e3de43bc8aa3747a69c1d08dd87e9aad3a6705316fa1653df",
+  "COCO_val2014_000000253485.jpg": "3735a13faaade4b3f40676e6833b73298287bba6a1d55d95f748087e08e1b26b",
+  "COCO_val2014_000000253749.jpg": "77492a4728f63ebaec8f18d7aa6514164d9736f773e28f28e4640333ada4fd72",
+  "COCO_val2014_000000253770.jpg": "ab808f233441971bffab35480d17c0a2922f75a8869581219420687c1629f4fc",
+  "COCO_val2014_000000254644.jpg": "1d3f5728e3400460e40a02ab989fa77e3f21a6a1bf754f393220bf3fbe80f16f",
+  "COCO_val2014_000000254983.jpg": "a580097c6d463cf17ce77336bcd2f25b54d7182fea348ef163e6281e51137ee2",
+  "COCO_val2014_000000255004.jpg": "bd425e4c4ec264cf23d3eae575c591edc00b96ddbd9ad5ffb0234f0724a83a8a",
+  "COCO_val2014_000000255135.jpg": "793e9df4fa1dd06766043383479dbedbd262f7271d368d8e50c46181a2552aa7",
+  "COCO_val2014_000000255649.jpg": "4068cf366ecd9a164f96d8795774287f878fea835626e6a35ff7ca194fc1f273",
+  "COCO_val2014_000000255950.jpg": "7b723b121ed9e0a243317869b6d2888258b9bfd07dfbb795a7d9cf5c055eaedb",
+  "COCO_val2014_000000255965.jpg": "c0b097a4efe69c75afd2e8e9552c0c112b17dfded7c8dfa314876790fc1ee8e8",
+  "COCO_val2014_000000255966.jpg": "5e0d3a8d9f3bc7e5cbf2a47ad5fef0493024fc9c5673cf2e8745ff1460ca46a2",
+  "COCO_val2014_000000256367.jpg": "5cdf3e25bf242efdd7095957821e97f26d5d05f41e5111029e50cb2b1ce233b5",
+  "COCO_val2014_000000256505.jpg": "c5a16cc5120d26b0abf262ad992c75e3b5d56fcbd17483d8a6e829d0c591040f",
+  "COCO_val2014_000000256657.jpg": "24e077dacc7c82fa09d4af158f396fabd05464e9d8492baa651a7593861a3bba",
+  "COCO_val2014_000000257137.jpg": "67243e7c4ca1a28c5eed5ca328cbad53346f031460cd31231ce7e0b540930425",
+  "COCO_val2014_000000258132.jpg": "08befeb4cae4ff7c16c17679710bd1747f4d0eccc2a8cff271337dd2644f5200",
+  "COCO_val2014_000000258330.jpg": "9834db33e16f91a7950666bae3ea5e1a76f69155db238425ef48b60ba7a6b036",
+  "COCO_val2014_000000258399.jpg": "bc0e25344ea55e71f1e2876fc20c52a3dd9370e1c054e496292d9ed28d3d46c0",
+  "COCO_val2014_000000258523.jpg": "45503a3be119e5c7fee19fd77841067a1ff8a7f93c02956f47b1dee6e4bc8290",
+  "COCO_val2014_000000258954.jpg": "364426de48d66c94b3e1a58b142acfebb4ac824c880f43a3ee8948f2245cd5d1",
+  "COCO_val2014_000000260182.jpg": "8676e994081ed0382202482c40e35872de67b2bb21d07058ee322e2b13938714",
+  "COCO_val2014_000000260409.jpg": "93022973d1dde2c0af1f6011ce436259a24b743ea3b948f3afda4c2c2a31d6de",
+  "COCO_val2014_000000260627.jpg": "acbc0cd5fd6a139dcd689b6d2e960a0a5d9e0fe786b315380596497c50a03821",
+  "COCO_val2014_000000260808.jpg": "bf83403ec2c8842a941c4956f931c365b78d252e3e445ef0cbe985a64f5a449c",
+  "COCO_val2014_000000260818.jpg": "fe5c24f45835423c0ffffbb02554765e467995eb34c95964d37b6ec8471348d4",
+  "COCO_val2014_000000260967.jpg": "7f2a8bfcf9b070dd9fea966da6906f483b8a32e8a838dd8bc4bb16a41e887f59",
+  "COCO_val2014_000000261036.jpg": "33123675af9257888d466d4333ba28bdaf1d7cecdf5be325d3182cc854d100b0",
+  "COCO_val2014_000000261073.jpg": "555cdcc754233a1f78d4fc62db40a268fa67873ddc63cb9b04ca44a8e34dcf45",
+  "COCO_val2014_000000261082.jpg": "000ca72b438cf3c38334223c3de23ff2cf395f7b4f409743697100841983c0dc",
+  "COCO_val2014_000000261783.jpg": "b76c443111e7f61e31511c9b96edb574b79f855ffac364f95a9ab84eee48ccb4",
+  "COCO_val2014_000000262030.jpg": "b30ac5a6af277c9f7cdb59eb55231fc009004a1909a3e0e20d9c883d33baa6c4",
+  "COCO_val2014_000000262048.jpg": "31a33556f0282038e0f9a5295743ae31335c66c6f90a0bfe69e17bd3e2ac3b96",
+  "COCO_val2014_000000262353.jpg": "e1698490209787b5b21fbe888434a1a767b6c3d2f5bd6eade2c199222126b070",
+  "COCO_val2014_000000262617.jpg": "8c45b5dd573548a5ea9863f014d588d96ba89e467c71a01f26f73bba782b0072",
+  "COCO_val2014_000000262738.jpg": "d3182a0ad084c58388d9f2418564ab2dc04573fafd4956e1ee110044f9ce45c6",
+  "COCO_val2014_000000262758.jpg": "37dfb8a443b9d6d6e1733de75554545877ae16060fec8ec0b234c5991c745fa8",
+  "COCO_val2014_000000263068.jpg": "ba0843cb3822d41d6e1ef6264e215a39015fb246b71f8b830c9100d98ab01b5b",
+  "COCO_val2014_000000263292.jpg": "63ff25b577644baeb742d41891ef728192b677a46feb5b2623390453b23fadb1",
+  "COCO_val2014_000000263393.jpg": "191077bf4a9224a02e9883964f2b1f0981940e132d5a6330b6e0e11f579a4f8b",
+  "COCO_val2014_000000263664.jpg": "c9dffa332771658af55ed93fb281650ae76bcd8ec8db3274e9c328b8b817017d",
+  "COCO_val2014_000000263793.jpg": "baadc4abd5f8b47495b6210dd718714e87e43b4603af99dfc62be024c2a14e23",
+  "COCO_val2014_000000265050.jpg": "d93c972b8b64db506ce5ec97875ed7468ef21749796a222d6f7449bea46609fe",
+  "COCO_val2014_000000265243.jpg": "04750e3cceabf52403dba297931067d722a0460daa9e3eb1464079b13591882c",
+  "COCO_val2014_000000265464.jpg": "efef76bec67924846b2a1180659e1dab540a407b71b100fd74e269898ed0381c",
+  "COCO_val2014_000000265552.jpg": "997cb5881e4aa7134a6aab1c0e1580ac713a297c423180f5ad0ad523da8e1ff0",
+  "COCO_val2014_000000265579.jpg": "30f8e7ecdc8f9dfedf510975c74ff8807b3f770faa6be5d95418facaccfe454c",
+  "COCO_val2014_000000265851.jpg": "96710dc05eed20a8fa6872f1ae7356837bb40d2fcfa087e1388223ec3b30b7a7",
+  "COCO_val2014_000000266768.jpg": "9bf52870172cba87d8917809be3ddd2432862adfd5c8aff310fb4851f50c1ac4",
+  "COCO_val2014_000000266892.jpg": "052c7783ba2888db3b77716bdc25fc94fb30781fb6184835e66a11c827fd3122",
+  "COCO_val2014_000000266951.jpg": "64dacf6a9e77b8706a3339a71f453ff50dc795b5864c09c6ac7711a0e67579c5",
+  "COCO_val2014_000000267127.jpg": "53935b5f0932c75218b564486be7a9161b1ca87858fccbf5f79a39713623ec45",
+  "COCO_val2014_000000267314.jpg": "7c182f8b744c24735bfb43f084bf9e65afefea08121fab20f223241e54fc4ff9",
+  "COCO_val2014_000000267725.jpg": "c95ea224a9937f0d94826de1e5e9bc5f2cc0376ff461b5dce6c61059010fbdde",
+  "COCO_val2014_000000267837.jpg": "5969f9feb237312f6ca3c494c8d02dbe6627720e1996b441a75a6039b4aac279",
+  "COCO_val2014_000000267932.jpg": "b74a69b26d5274934995795bd12ff6d8076b889137013f0f3e1a2cdb8aa6cd04",
+  "COCO_val2014_000000267946.jpg": "5a03177ecf13ef0c7e7205f74f527b297b0e33d7cb915a0be3d897c7b7f50d59",
+  "COCO_val2014_000000268340.jpg": "bd374593ca9795ef7ac10e16a9cd2c30436db2f37cd35a29ebea4afc05d8911f",
+  "COCO_val2014_000000268484.jpg": "71c6ecda5dee34a0c098a84bab33758a75e45778a887318d32edaafb27ba09aa",
+  "COCO_val2014_000000268734.jpg": "125601e538a9fd25a1fb43115ce44c8be035c69b33a2aba45d9dcd8b31759001",
+  "COCO_val2014_000000269015.jpg": "3b784f23ad81102b8105ef87f4b008307615142e642872dc9faa05c15698fead",
+  "COCO_val2014_000000269358.jpg": "66d3f1d39204796123aef415f9ae4afaba4a4aed715a1449da4e08ee026909d8",
+  "COCO_val2014_000000269606.jpg": "c6d54918ad7d8b001a2c0e6705a8459ded57c64b42f79fbe6c388b9908e92aea",
+  "COCO_val2014_000000269678.jpg": "a88f48dc2de667cebc51a3f5e2a6168ffc9ea10972a8e449438a14e7d7aa7776",
+  "COCO_val2014_000000269682.jpg": "c2198ff1b869a69eb7a41fa81ca66e251771eab91822cb262a2dd682fa375275",
+  "COCO_val2014_000000269886.jpg": "2dd715a94815c325a2730887c8b005de3ed646f52d2858a726b308f8558e5f4c",
+  "COCO_val2014_000000269975.jpg": "4ec3a5036d25c5a33f2f86a7f95767d5dc552fac0de23b037407424f3770113e",
+  "COCO_val2014_000000270096.jpg": "38e1c8777dda427466df9f1e69655c455294c7b08e55e0be8fb712f82b401f75",
+  "COCO_val2014_000000270303.jpg": "6c5792a0f1af13858315db0f74ac8f4d77507c205e6f74d51c26e26b653884f9",
+  "COCO_val2014_000000270381.jpg": "34e8e18e7f427db90aa56583e28fcad7077d7676c5bf7d27c4ea15fe21a0650c",
+  "COCO_val2014_000000271138.jpg": "5a456ae7b46dff21e30cd8e8cc820205111f9e7a93b331b17e8df524f8482780",
+  "COCO_val2014_000000271402.jpg": "b13b6ba1b399210e9cfd2aa3f14e7a4c209e543ee33cdca18d482bef4ff8dab4",
+  "COCO_val2014_000000271929.jpg": "460fcacf0240af09be168482020beba6b82c03d42e0f16e583036dbb93109e75",
+  "COCO_val2014_000000272610.jpg": "79284c374b915aca7ba888ac93bfac579a83a0738b9ad8a73351360dd25e9cd4",
+  "COCO_val2014_000000272694.jpg": "231de026ad90a5b734abb3b6bcacfc7c8a0461965bc17e13fa269fa289cef271",
+  "COCO_val2014_000000273052.jpg": "9341ddb4ee68d136b7a4c0ca4792fc77f5b9876e3d7e0980ecef20ad7d5a6f6d",
+  "COCO_val2014_000000273059.jpg": "9dded358ace65dc26ed68e73b8aa6085c81c52216961afc54d574c04ceafb2ed",
+  "COCO_val2014_000000273083.jpg": "1eb920c44604c9e16d1c62229ac828e36343df58238a50f74c1c5aedb7481656",
+  "COCO_val2014_000000273188.jpg": "0586059bbee0da176108d59b4fc5f06185ee100a309cf45116e73ec4e7dbf9b4",
+  "COCO_val2014_000000273316.jpg": "9a2ce643fc17a190cf7169f09f92bd8fd2d05544eb27639ed3d0de74d131534d",
+  "COCO_val2014_000000273420.jpg": "0ffe8967a9050226882557ab0ded3a4349b254d9ce6b3517f72580e791a7aae4",
+  "COCO_val2014_000000273715.jpg": "d67892fbc83b2d8eb38b740fe2804c902b44d7fcc03d76d0952d38be08cc553a",
+  "COCO_val2014_000000274109.jpg": "4e23ac5e62432eda84d6d1c8dfaa66501858242256de1fc20b4099ad803bcc6a",
+  "COCO_val2014_000000274599.jpg": "add033ab437fa2f58a321586436e1af7f372701bad62b4348beb043cde1f2c02",
+  "COCO_val2014_000000275374.jpg": "e2a0fd268f6de8f199b28690e9d33c6a139b4e86a04748e318048b6a2a5694e9",
+  "COCO_val2014_000000275744.jpg": "3f3f611850a323ee184e2b1803fcd56887192af0f6bda874385a95c560b9fced",
+  "COCO_val2014_000000276018.jpg": "b05647286f7a433409bae4c890117b372a107202541bd62f12af2ed225afb124",
+  "COCO_val2014_000000276066.jpg": "11e581c6555ee29cff5f0cdf8145d9cd8a012a94481edf139fa9419f96106f94",
+  "COCO_val2014_000000276151.jpg": "b5a6fee08eeffaf6aa5f40e3dbea10cd14216fe2b1c27eb39a8a3db67debbe8a",
+  "COCO_val2014_000000276192.jpg": "a87deaf2020625e82e2363143c0aefc25d06b8b9c1b8658ca259e4e1d17cc0aa",
+  "COCO_val2014_000000276631.jpg": "84e45d4307802b2407e64249c2e83348f50520db720e8be7b9890512e6aef644",
+  "COCO_val2014_000000277227.jpg": "7463d3c30b4cb9f6679b384b6499aff29589a219765228cd15997184cfe0615f",
+  "COCO_val2014_000000277326.jpg": "e918bb7dfe206d3892b3dbb596cac6acbc6f431af8544b2ef0b50c04f53903d7",
+  "COCO_val2014_000000277390.jpg": "80ad96026200795f373ff97f97a9d7117f387a14acdceaf1f26ebe55e6d833da",
+  "COCO_val2014_000000277479.jpg": "819047f2b1dae0e316346ba10cd73f112c2444ced8c1350a8cbb49809dbf9161",
+  "COCO_val2014_000000277793.jpg": "4f189f698638599a02267bf02b1c53cbdbf091a64f22ffa52881b0da7f1cae5e",
+  "COCO_val2014_000000277932.jpg": "08e2de4aa32680f55acb0048bf43c1b8d821206ca6c084cc4fbe6fda6d2b844a",
+  "COCO_val2014_000000278203.jpg": "e2e13e1e81788b9ea8aaae563a2c4369714d58ecc28a08959d6f9345cac9cbd6",
+  "COCO_val2014_000000278771.jpg": "9a67d8463db7f0c9b591e8b78eb344572aa0da9d64eb5b3504e9883730ed350f",
+  "COCO_val2014_000000278890.jpg": "75f92befa598dc3abf6ce9849902d220004996cdd7c98a2eea8e476a2713d501",
+  "COCO_val2014_000000278977.jpg": "5916fc1a281b633a5eeed5cc0a1523b05b7db229f2bcbbcad45fdc5b4463bac3",
+  "COCO_val2014_000000279081.jpg": "7dce19787f5e889487cdbb1a0a13b57b4ec68fe990f6cf62d2e71740ac396341",
+  "COCO_val2014_000000279203.jpg": "2b21fd932b513a563800015134aa91f4a03f98473cfd224a03456bc218a1cd06",
+  "COCO_val2014_000000279209.jpg": "fa3834e0ec2bb32ff223047a33048549d3f97d223ba4f683a517b457cd6254b4",
+  "COCO_val2014_000000279692.jpg": "16ce200f24d1eb47edbf5cdf36e90037c02816f8fd460d87fb11ea500fca39e0",
+  "COCO_val2014_000000279723.jpg": "843ef07f937849c4d7335ee49ba1ad7d3cc0aa3b2f7f3a0ee1b507e8571ecc92",
+  "COCO_val2014_000000279809.jpg": "69cec105e8ea9cac2d229e76384b8bb2ac26a6b4cfbd322d44b5a2458f88111c",
+  "COCO_val2014_000000280022.jpg": "a017f0cc5c1b0455dfd15878a5236b13d683be3c376e09a7431491032fe1bce9",
+  "COCO_val2014_000000280271.jpg": "a5b477e78e19b5b2d85d0466efe31b9dbcd492878bf4f090420202aea6ffe5f9",
+  "COCO_val2014_000000280619.jpg": "0bd9f6498a196b770b4a5c5328bb4bb8f36dd16787203f863add79e2712b78cc",
+  "COCO_val2014_000000281387.jpg": "2c1e1a094c7306764ceb677fbff745c0cb1fc7b1d342baadff95296927a00850",
+  "COCO_val2014_000000281414.jpg": "642feaee715a26cb9d4ddc8d3e5dc1bcfadb9ddb3cbfe282f021b8fff830ea53",
+  "COCO_val2014_000000281500.jpg": "5ad820301d0afd561b7632edfae6c20ce7a76b6ab5d42998d3c4143406374547",
+  "COCO_val2014_000000281508.jpg": "7f20c09f2e3207df29e8689ca3d3d8ce9609212d4884161d0324d5be35f5b89a",
+  "COCO_val2014_000000281687.jpg": "520f95c841e3f5bd7137dc21448bae0609fbe2003a94d7bf0a6bf851d2570118",
+  "COCO_val2014_000000281782.jpg": "fe9225b5c9430ea2417956579caad054c503eba61a3b9937c5816a199a26bf15",
+  "COCO_val2014_000000281809.jpg": "13f4a181b14fb72644c4ed97e69e857fe44b2b3f0ff4581de30640489616ea06",
+  "COCO_val2014_000000282037.jpg": "cfe8b81aa217160b21d49e1d3b3e2a058ad45cd726a75aac64904db2c82e7966",
+  "COCO_val2014_000000282365.jpg": "6292a77ce5b2c5ded7f9a7514061fa39e3cb693ab4cb115a174d1a0973d4f309",
+  "COCO_val2014_000000282711.jpg": "7edd7a079941814d2cb2ac7629596f32a38ee401e45c7836bda4f6a71d67a3ec",
+  "COCO_val2014_000000282790.jpg": "6a611d5a950ab909f985a36e0f0f939ccb6363d9cca6abc8bf0286cfe490a1ad",
+  "COCO_val2014_000000283012.jpg": "7e680f13fc0ec52ca0884cbf4b83695aa86ea8f971fffb335379e5daf8e9bcb9",
+  "COCO_val2014_000000283064.jpg": "127c5d2e9f599c0d5ab8b5daf0d6511fec8628d4984d648ddfc19b9f05a06613",
+  "COCO_val2014_000000283168.jpg": "23dba871248301bb3794334349c3ea089ff001fbd36e3dbae1cb8f0e154f7053",
+  "COCO_val2014_000000284064.jpg": "afd642be8196b7931cc18af97837d4796760c196a7f4ff62ddb71720f0a4bfdd",
+  "COCO_val2014_000000284296.jpg": "6e5d4c31a199ce6b8c82d54c2f53d5e132f6e3e1911a82be497b3c56c7975363",
+  "COCO_val2014_000000284762.jpg": "9b6fbb641587c76dce561a05d715bbb078175d4a2f93131f2b90ef297b9226b7",
+  "COCO_val2014_000000285234.jpg": "79d3e9cbf8c6fa7efeb4e58a44e19b2fcded1252638fb2cf76366c5d784bd3de",
+  "COCO_val2014_000000285558.jpg": "106e635bd22c7d80f62b4f7d3865ad82ae319ea12f86d084af52bea4e62a898c",
+  "COCO_val2014_000000285992.jpg": "e5ebabfc0de8f7f1bff66ba20f5bb19fb7b00239edaa7b8cd07cfac320c55f4b",
+  "COCO_val2014_000000286303.jpg": "d3ad251a8fe18f1377d1f367740336a8f3cdb5dbb3a35ca548eb88b9306957aa",
+  "COCO_val2014_000000286556.jpg": "14ba8471ef01d1be58327d20b3314b8faa6ae3390c993caa6608cbbb240a6b96",
+  "COCO_val2014_000000286770.jpg": "5217982b9f26c26e89fcedcaa30c0ec1e4be850d6d5322090aab574fcacbb7d3",
+  "COCO_val2014_000000286994.jpg": "8688f9b42ebc4843c3e7c4562a95394abc9940b17d923505b83e5d821059fef0",
+  "COCO_val2014_000000287033.jpg": "a18c5485460080d3ea2c62d42ae69bb212fd8066528137fa16c7259908726513",
+  "COCO_val2014_000000288685.jpg": "cd33f1aae3ea110b6de7b35f2225bce018cf30248a78652955678d67b4c19a21",
+  "COCO_val2014_000000288824.jpg": "0930554d0bcf04195ab48eb6d45e40cef8cf42c07b2e9d65e17ca25ceb80a198",
+  "COCO_val2014_000000289073.jpg": "1b9b3b6125f1fd0a6018b90b602fd5193cc93cda37f583cb754be249c568fc01",
+  "COCO_val2014_000000289392.jpg": "cef91a31c7d1fb3c6c081fc62ae2bf3a1ced609ffab136191325170ed7a70413",
+  "COCO_val2014_000000289633.jpg": "8d70f8a9ffdadd9ba87ce7ee6bfe18933e6bde7362960304c290f57ff80bec14",
+  "COCO_val2014_000000290076.jpg": "91772331fd2fe8dbbc0c5a78778d726f21e470a8e46d3894e0dd8f49c2156a5d",
+  "COCO_val2014_000000290081.jpg": "5800d9c4af6f1cc1d03013d438f9bec32333a4b9c492e9e34fc4c76c7c29b54d",
+  "COCO_val2014_000000290093.jpg": "6e4f1cb27dabcdb52f208e44cb7b87564236a65feca1f4d70350a636dfdce211",
+  "COCO_val2014_000000290875.jpg": "5ca7e52dbbe183d767c46dbae07b2e8d2fc6cece303482ceb65c4d1dd10a4d2b",
+  "COCO_val2014_000000290896.jpg": "1104d21e948eaf51d0809ad3002946e8e18aff462187c029fc29591d4f06964c",
+  "COCO_val2014_000000290951.jpg": "fe5b3c9b490fdaac4e33ced3d1d93525be92c5b34d20f69ebb5a987da224f302",
+  "COCO_val2014_000000291404.jpg": "5b1c943ba91dc7e1935381dfc293137e3a961a853678a29bf38455448f0ba455",
+  "COCO_val2014_000000291541.jpg": "e6c3a579c29b730f5dd4d3a450e2a9ded1f553949128c52d62ebbc73510bb614",
+  "COCO_val2014_000000291572.jpg": "db494357b88bc76401f1005c66c6063e12da728caeae37b269c4576e9238d693",
+  "COCO_val2014_000000291696.jpg": "d2108152fc216c4c6fa19bc28fc50becf0f9303a03b7e153b4a407157ea9acb1",
+  "COCO_val2014_000000291830.jpg": "0743a15524175ecd55d4ed46cb28c014dae1be46b3637aaddee63f95b1b688a6",
+  "COCO_val2014_000000291962.jpg": "573bbfc1131149de89cd1025af42d203835337740fb492b0f49d763a9ca981e4",
+  "COCO_val2014_000000292123.jpg": "50b8c9561e2d27e49ab2f43a0f79f10e140856b9b1db92b4e67f5bcacb758415",
+  "COCO_val2014_000000292158.jpg": "f338863b49c94bc9c89e0aa6d7061fee1629b4e8a576ec74a13fd5a19968eaec",
+  "COCO_val2014_000000292365.jpg": "94f6db96dd72bac1909f9227c731e592d2e313f09071a42c2ddca0d7a31942b9",
+  "COCO_val2014_000000292419.jpg": "961c95623279573b60552907a7fbfa9735bc9709fe64a00e487cd3ab1a69281f",
+  "COCO_val2014_000000292428.jpg": "d9fad63cebadd26e0efa8d43dec4ca33e49e9003713c6a461203171ae8a0635b",
+  "COCO_val2014_000000292464.jpg": "56145edc3e3d706e3dce79470f0f0e8d6b11d3f3df1f69e93da761d74b0afcf1",
+  "COCO_val2014_000000292529.jpg": "790a0251730a37cb19d7c4fa8b1368bab8fa421425404b6f86caf94f5939fdfc",
+  "COCO_val2014_000000293044.jpg": "b0f6a381bc1e8b741787a129946dff2524bb530eda3f15b6af1bbfd3061c217a",
+  "COCO_val2014_000000293071.jpg": "20f701233b0235e3f6e31e11c8b4364c1aedd954a5fc7d2d5610aaa8318d0528",
+  "COCO_val2014_000000293124.jpg": "d42d39214c8b4de2cf0aff0f96782dfad56abcf5612f2123167ff00bafde4440",
+  "COCO_val2014_000000293666.jpg": "65c6e3622930c656f3e0bc833257f005efb4df48444b7d11e6561f0c756e5a82",
+  "COCO_val2014_000000294585.jpg": "3ca27fbe8ca8178abf0bf27c20dfb1bf66fc1f7b513c1468ac92898f36a4bcbb",
+  "COCO_val2014_000000294875.jpg": "ec1578702da24511d0757f4cd16eed776ca1aeddfe05bb06acf65adc39b9dfc5",
+  "COCO_val2014_000000295194.jpg": "360e0c8b4e19b2e72b0b027704ca07af03b43a56ba070e006e5c14f3a821660e",
+  "COCO_val2014_000000295440.jpg": "b8d9a067200fe0861168484406d91c061e9a7a380182d7530fdc385de9c5a120",
+  "COCO_val2014_000000295769.jpg": "5fcbb24a01e39dfee1104d584964a19dc159436586aa8605c9496c6ff0450b17",
+  "COCO_val2014_000000296014.jpg": "b39e7390f71cd53ab3db732a91515d0d9bc93dce50884176a9fe2a5f320b3b3a",
+  "COCO_val2014_000000296231.jpg": "d12578761560a8d7317210b5f5223da39d1f4be8ebd6caa0871f852242f6f9f7",
+  "COCO_val2014_000000296404.jpg": "b956791194a66fdb06e613021b3563eae2fe8baf89e89f09312371c27eacfa3d",
+  "COCO_val2014_000000296657.jpg": "ac48b0d2c8a9dd00737b3ad1aadc59e96f2721a6d64719b881a6f6acdb46d3c8",
+  "COCO_val2014_000000297078.jpg": "a3a696a67d50a9b6afcb3b5f552e951c6e75b2c1eabd12ee386a8e8a03aff6f8",
+  "COCO_val2014_000000297233.jpg": "f40f2fde0a740047b7d7f220ddede166aaf87adb062e22c05a663655f392b9c9",
+  "COCO_val2014_000000297299.jpg": "999769fc1f60a6aba8249c2720a6798eac36bcd5e152583d7ec058a74002e834",
+  "COCO_val2014_000000298252.jpg": "a3aaf0c37a4b7420e585d457234e03a47f135db3de5ce2cdc103bc54ee4c2138",
+  "COCO_val2014_000000298633.jpg": "e82286d4bde8668e9a7c2ac8b55818ffa3bdc6f57409488e601af218560af2a2",
+  "COCO_val2014_000000298738.jpg": "40d18e68193a82eecf07bb677405ae4e01bb2cb6e3fa065e953f3a0c00912f0c",
+  "COCO_val2014_000000298994.jpg": "c107dea74d7019734fd0738ded9e86797f30ce0aa754f7c410490d719c2d37ef",
+  "COCO_val2014_000000299039.jpg": "333a3dcaceeb3b2c3e326e8f33b2589fd7ead6d5a02ef300f644bcf45c3dc841",
+  "COCO_val2014_000000300023.jpg": "f3b92ff139e2fdbb5e86bfae299e431b853e931c07697ae342cb56a2eba38c28",
+  "COCO_val2014_000000300214.jpg": "8f4d97e2d61c7fd4e05fc6204c727a405d55392b335d4ef43bb71b5831cf7b03",
+  "COCO_val2014_000000300246.jpg": "a2929748b82add28bd70f8cfe4d2c1a3ec02761aa831a85c47e2af068fa12a43",
+  "COCO_val2014_000000300324.jpg": "c8f20d961b444b16eacd9808d648e7a9531145776dc15495ab070adccba53ee5",
+  "COCO_val2014_000000300413.jpg": "015c2a718aa69ded0ccfba516b6be1456f9c154c8ef27affc3e2fbc8a0a76b97",
+  "COCO_val2014_000000300479.jpg": "c14227f4051b2d2862dc8090631bf6672c5b04477131f9c935c9b3c58fa65954",
+  "COCO_val2014_000000301506.jpg": "1e8e3a112dbaf445491c316c42656562bf57aad77121b08b56f0f1c511dfd393",
+  "COCO_val2014_000000301746.jpg": "15c0a521343fd57c56ee7c66e79757cc5a151c160e9f35835b8f3fad48546d32",
+  "COCO_val2014_000000301926.jpg": "996d6b07e11d03ec91e1f347edbef30fb2f2f8de230f39e253881e4ab098daa1",
+  "COCO_val2014_000000301950.jpg": "48e30f57470e4eeb73788694f8e01e12aa5e6bd41fa11932a8f37e331acdeb59",
+  "COCO_val2014_000000302200.jpg": "bda90df9a54d60ec989cb47831738e8e6fd3564c98bd50d9f55789302cf1c81c",
+  "COCO_val2014_000000302242.jpg": "91472c0a6b6b226f0ed2f18e52dd6a6f34a3e26a60460ee765a42d4b8219b694",
+  "COCO_val2014_000000302531.jpg": "c5bcec8cbc85616b05e823493106f74df7ba964ecc7bbfcc9de7de57c2dbe8ec",
+  "COCO_val2014_000000302643.jpg": "984cc48bb4b04c95712f0a97ce1b94fdc83064a5863fa871b97a581c9cda83e6",
+  "COCO_val2014_000000303197.jpg": "326fce2b1dd966506618d69c1b3cf42e1e9ce93b4063c337098e31b050e30fb7",
+  "COCO_val2014_000000303215.jpg": "6385062a4a0e7cea106068f7a0207a699598a4dd36146b6d29d43cbc371ee61e",
+  "COCO_val2014_000000303566.jpg": "ca7de33d4784740725c0c5831d1ebe5d602d49442f8a0eb38c83d76360c34172",
+  "COCO_val2014_000000304044.jpg": "26946a6230f39f91c3802e3ef11f779013a67d3fa741fddbe6f9c482cab51d85",
+  "COCO_val2014_000000304342.jpg": "2493169249692e70be76558587f3ba32c1024f3c7edf8aa4b2135320ef953825",
+  "COCO_val2014_000000304875.jpg": "2952329c1171597f480c6ee4367156e43d8712588efd986b7fbe4d9ccaa64fa9",
+  "COCO_val2014_000000305526.jpg": "a7155800991216da99312a6804206b53ee7daca1e6f306d42ef5cd1264b03c34",
+  "COCO_val2014_000000305540.jpg": "f89d576cd2b4e6f2f4d841d2b479e1fa740594b72d73a881d2b7b4be6f2d1569",
+  "COCO_val2014_000000305738.jpg": "1d893856dd1f211ae0a8de9e518a2033cff9b257169f94a4d35c9df7d816a2f8",
+  "COCO_val2014_000000306061.jpg": "1e44a88abe4eb920c1fe010d92cfdf8af9b07b5b8d34abc25920a9c3535903f2",
+  "COCO_val2014_000000306099.jpg": "44a0a6fb25adb7088b308cc85b2964dea57f1d301dcbc682240755bb4136f1db",
+  "COCO_val2014_000000306127.jpg": "ee904f7e7367e47e60d966aafd75ede5c6673fb5a3c44c99fdc370c75497c833",
+  "COCO_val2014_000000306154.jpg": "e56fdb42d1c42629916eb65eec82e250c01effbec4f3ccfcf3e2823c1b7384af",
+  "COCO_val2014_000000306303.jpg": "dae8251050bb068a78860748d1e1965c174e8282ed9e46823c7e32407974b366",
+  "COCO_val2014_000000306582.jpg": "41d9a42ac94af761807a7d097b08c9445f995d8e561c7a821701c9d4523cb8e2",
+  "COCO_val2014_000000306611.jpg": "efdf33d20653d06882da5b8727dfb46db66c8ad986876aaa4075cec6f8ae91ec",
+  "COCO_val2014_000000306989.jpg": "82f66b090d70d51665e2e28e13dfa83b4572514e185bd29b2c6a355c2a217d99",
+  "COCO_val2014_000000307073.jpg": "1eaed499235c516813555f5f770627fe7de52203e716a8de2fd9c729da73eef3",
+  "COCO_val2014_000000307442.jpg": "146ab8f62b863b1cca38c35d52826f665517c0b7da591dec94ab8c776dd3274c",
+  "COCO_val2014_000000307569.jpg": "227860804a540da9757134a96fe65b39b9881dddbfed3c37357242a54f413d02",
+  "COCO_val2014_000000307873.jpg": "98b8227f6798da245d4a3aee230cc65651dc6751d8929d6e75d66412b3d3525e",
+  "COCO_val2014_000000308235.jpg": "a79a86bb3a79fdb6f2dda16f8499733f0287c711d499e26c6c5a4ef029ae7c4c",
+  "COCO_val2014_000000308295.jpg": "3dbf824ee03dc21150ccc9dfb7980474199250f20531407697cd5bf69bc4c969",
+  "COCO_val2014_000000308894.jpg": "b7e54e6269ad6893d4f5353449d0f75c28f00c59e4a38fea5387f2eef8b0fc84",
+  "COCO_val2014_000000308947.jpg": "fb7d247c5ffc546b306e71bbbd514140c5a4aeb7ce308a943ceb2f619f5b100c",
+  "COCO_val2014_000000309452.jpg": "1d859c4fc86ee75a33bb8c95ea3776d6cbbe5714e2b670947e1753512e31cc7c",
+  "COCO_val2014_000000309495.jpg": "b6de50137bfff94e4cdffcb2bd8e80b092577f9ff4e5cb2db0608b5ccc224452",
+  "COCO_val2014_000000309528.jpg": "cbb531a1b90f7c5dbadf8f351b76c9aeb9aa1821bbf32be5b4b2454188bd9113",
+  "COCO_val2014_000000310560.jpg": "60fd313fcb2cef3e038c1a04ea0529d7de8ca054f09268f832b43a526457b6e1",
+  "COCO_val2014_000000310788.jpg": "2e6dcf901fb2b732947b87ced9b12f39f5bd1830d10ae796454cea9c137c8e60",
+  "COCO_val2014_000000310998.jpg": "79a5401059aa7b347d0cd69e74d303dcbf1cdf781160e759d6c833e14a6bd1ec",
+  "COCO_val2014_000000311471.jpg": "fb980abadd202cba8fdea66758072e88fac44abecc8ad32f93ca0a59de87cd6f",
+  "COCO_val2014_000000311928.jpg": "a6d2111d919c66f142459554a58697446623b2b109b32a70ee03ed4a86730dd1",
+  "COCO_val2014_000000312278.jpg": "60d58df335eb6b124044f7bce1cd7cc583a47cff1a60e2ce773b16c1106ff6e9",
+  "COCO_val2014_000000312341.jpg": "c9d0a331549a4814e2c2769444b2de964a11bb391f48391921a1af96cdcf4d43",
+  "COCO_val2014_000000312421.jpg": "9ee3cfd727144aa212dcc5826f4f721600c65223ac47af1c4107613913c359ba",
+  "COCO_val2014_000000312509.jpg": "c82849864360e62cfb82b58a6f79310e57410a01138433307d6b2929f39a00ba",
+  "COCO_val2014_000000312544.jpg": "d50ffd94ca11e69812ba737d0b7e6d8b2e7539ad8c52bd039ce51d9f83d5b5cc",
+  "COCO_val2014_000000312724.jpg": "d8d2774a19ac8a8876a43855dd882a1c71e53c4d749040962b9ee37084704b3a",
+  "COCO_val2014_000000313246.jpg": "4625168b39f01b0a2fc2dac8c0627e48ce966561f08801b384868b8486949f8f",
+  "COCO_val2014_000000313341.jpg": "0eaceab34c534824b614ecfa622eae1bdf8dfb3c1bf26c5c629a47d8d561c57c",
+  "COCO_val2014_000000314108.jpg": "aef4f88350ff16e701de4ac11db7731b6d49d685f02a93f96e80adc02a044f16",
+  "COCO_val2014_000000314685.jpg": "8201801055cff359f7fa81c35230d407eb4c027e78b55cefc6c01a0f6fa18a93",
+  "COCO_val2014_000000314812.jpg": "1e1bd55525b2d59d3d3b8ef4e10fc12c9703dae116cc8aac702cc52ef029d0dc",
+  "COCO_val2014_000000314880.jpg": "1447090536798e39c1d328a407499fb45e166f35863dd91e8a53f917589a9e2e",
+  "COCO_val2014_000000315136.jpg": "6e2c8dd698c5dbec1473331b2837f24a05b3163a3866fff5f836a056510adbc3",
+  "COCO_val2014_000000315178.jpg": "2862da25303334fc0fc0ad78fdd2597727c6304c0d1223722c3c93da13b6f521",
+  "COCO_val2014_000000315338.jpg": "d57b6fe5335444a8e8de8b9576fdce632e5c4f30cf7a1fa07bb5212fb5cee825",
+  "COCO_val2014_000000315434.jpg": "d53c73486c37f53cb3c2e5b07c36257e9ad8b3f7fabeaab886f97ae18daf8156",
+  "COCO_val2014_000000315467.jpg": "c54d1f39068ae3142b8511cdda496bfde607df7303fcede29c3a12be86a00b94",
+  "COCO_val2014_000000315705.jpg": "3854abe27bc8c9ddcce20ede8a163e816ce4d5779a35f427e1fa67d9c17c67fa",
+  "COCO_val2014_000000315740.jpg": "728cffad72c26c40fdc18407a4c7d081f50bb4710db1a9bc66a855f48511514f",
+  "COCO_val2014_000000315742.jpg": "a7c2c09fb47beb688f7fceaf738241afafff06454feb626c034d3d7cc5ac902a",
+  "COCO_val2014_000000315824.jpg": "c92dd538e1b67690e807e6298f24cc6ff7a3480916671e6b3c69f7dfe62f79bc",
+  "COCO_val2014_000000315923.jpg": "aa1ab3eb07268a60fa6a859281ed34627fd4825b605dacdcb47f3bf9bce5defc",
+  "COCO_val2014_000000316503.jpg": "1fbc16debc3b17a812a5851ef48eb1b8f12a0d0ec5fa9f917c4d5163ab2b773e",
+  "COCO_val2014_000000316526.jpg": "42ae06a2bb770eed88ab6cc7f21c58326ce7661a3be23bf36ebcb477e361186a",
+  "COCO_val2014_000000316658.jpg": "e040cd2715097927bd1284cc43f0a2b002e6c6d4e15d98675f50df44300e074b",
+  "COCO_val2014_000000316882.jpg": "40f28004ac55e9033a921d106c045c5803ab10576e861f4a89b96317fa08eb99",
+  "COCO_val2014_000000317033.jpg": "e4548c1df81ad6e4212a83e5c79365c693f6d13134fed0f00c4b8da1543f4c17",
+  "COCO_val2014_000000317062.jpg": "b3824a03d5c26c7dc1a57fa8aa397416d2770759fef652182ff746142f8d730f",
+  "COCO_val2014_000000317070.jpg": "9599f2e2f79f08bd10bc0477dcae720b68986720723b306a1226ff09a7519038",
+  "COCO_val2014_000000317120.jpg": "b5223b7bb8d41232aac4a2e806e73c07736f27cf87bfa7521ea51e4e337bcc9a",
+  "COCO_val2014_000000317173.jpg": "17313c92d5947ff86a5ded8e89703088a54be74c51a7c6db912021f5208c352b",
+  "COCO_val2014_000000317244.jpg": "56e780a6fdfa26f7efbb9c51ea45b31b8cd6d3c2bb77ea1f5f2304831c63df00",
+  "COCO_val2014_000000317310.jpg": "8a01cf725f6462b6ce7981094dc0276dec19424a43e647de6fa59e2d624a03ef",
+  "COCO_val2014_000000317560.jpg": "a1014ac08ae0d127ed819cca0aa23b6af30ba452e8aff368f79b8e1f55414b25",
+  "COCO_val2014_000000317565.jpg": "4d3699338527480b766158d493083c6dc6f6d1782dda935a9a26b98015e872a9",
+  "COCO_val2014_000000317639.jpg": "7aa864dc00f447c5766b9451ce1d1bbc4ecc8add6666a0a798a795c0af67ff6c",
+  "COCO_val2014_000000317798.jpg": "f56fe7e00ed6e587114ddc5648887a9fa6f558fc0061c400b87a8c50eab6e15d",
+  "COCO_val2014_000000317898.jpg": "e7f1b57ec4857f9916ed993605569185f8355386287532c9dfb1bcd3624fe792",
+  "COCO_val2014_000000318330.jpg": "0962513ca8f3b901d2ef395fdb77d67e403c3dee9f95de3cafe88de56674c085",
+  "COCO_val2014_000000318388.jpg": "47b40868fcc7e9f7bcf925895260711ac2108079c9d7584e81f0da221030377e",
+  "COCO_val2014_000000318754.jpg": "d9cd7f45760da8d74f186e6b94f02c47b776bae801c7702d76d480f6e2174925",
+  "COCO_val2014_000000318814.jpg": "d54ea7eed7cb044e21d891fb8754afd9d7a4111863ad14dd7df78188bdf7edc9",
+  "COCO_val2014_000000319275.jpg": "cc0e717fd26a588cb4d09d316788e8cf65c69a181878d6656caafb1926853269",
+  "COCO_val2014_000000319469.jpg": "fa11e19a6f82f5dca9f02e9a5e8e19c5fd4d6edeeb604f823e14d2af1fd5f7f9",
+  "COCO_val2014_000000320171.jpg": "292110d734bf12fe6a4637afe201d0271c2eb3e54e8a6c4cbf6d82a8d98bc614",
+  "COCO_val2014_000000321195.jpg": "27957747d091e5833c92047f53fe8e61a461df2feee97728e6a68feb57eca46c",
+  "COCO_val2014_000000321223.jpg": "aa7ff8451d260eb4bc2b6a5bff3f08e1e61afd0a152f9ed04bde03458e04f30f",
+  "COCO_val2014_000000321390.jpg": "2296d989343861818962c5970f3cfcb11153831241ed4944c5dbf818fbf91e9f",
+  "COCO_val2014_000000321395.jpg": "751bf8cfa74acbabe2a2856503907e3304c89dade403966d997c358834b811fe",
+  "COCO_val2014_000000321437.jpg": "fb0adf26ee226783741487959863fc846f5e0121c479cc719d9f2ba1afdc701a",
+  "COCO_val2014_000000321865.jpg": "65915200557ca24cce45481f3d6c9d611678deb8d091612bc6858cbf642da50e",
+  "COCO_val2014_000000321877.jpg": "70fc9473f8e7a1e82dc3621e0563714804e9bfdd278d24026662279efc664ce4",
+  "COCO_val2014_000000321935.jpg": "1368e53286b1d6ed027c754c4b3df133d97caa962bffe92438821a61c6c088d9",
+  "COCO_val2014_000000322353.jpg": "24eb63540a82a421d4c2db40268668605ee82f9745428e815b296781b62c4245",
+  "COCO_val2014_000000322796.jpg": "7a5bf488f0d7d9d1d694bd3525f86daa0ab767932281264bc0f44fe09563da3f",
+  "COCO_val2014_000000322844.jpg": "ed66e04795ad9b134edfc18ef77963494d9ecf47ffbdfd37c8fe1334e3df727e",
+  "COCO_val2014_000000323048.jpg": "7419e0670f7f37298f1e7371bd1af05b0bbdc3392381a1aaeef263ceec2c4556",
+  "COCO_val2014_000000323668.jpg": "f91312a9da62764729835adb5d070b0a685cc95efd6bdc82709e2f64147478f4",
+  "COCO_val2014_000000323959.jpg": "d15cd5f1c31604f8de4c7491b7628085247122fdb9786bf39dcd30c2067c17f5",
+  "COCO_val2014_000000324051.jpg": "7c37602654e4e64dc4669b06ce377a8465dd543a1896e51cd14a12ee73687c4c",
+  "COCO_val2014_000000324203.jpg": "9476ab0ac7e24b54092f27e8179bb000185918a46ff4cbfc1b4d081b69e095e5",
+  "COCO_val2014_000000324291.jpg": "5d0b6ba4b47c2116af9d8484ef61a4cc8badc84f44bad7e5ec6b68faacf8595d",
+  "COCO_val2014_000000324436.jpg": "3f797ad7ccc66b830f2216300cb27d0f78bba034a75bd95d7a3c6abea099e467",
+  "COCO_val2014_000000324584.jpg": "05a2474b0771cc1ca860e0936abdd16b0aed001f24dfff933d54e206003a5d08",
+  "COCO_val2014_000000324614.jpg": "349e8a6b5af5f7455e1ede69e260e7a664dcf12a9af328df058d5cfb260d631f",
+  "COCO_val2014_000000325055.jpg": "24a70e5d0f473cfc0956b6452735c5844135d8d86bd15c614698336287b977cb",
+  "COCO_val2014_000000325836.jpg": "001a66502bb1736ca4f7051ceb9b3c8d18af5c2aae5d31ea0a3f677e1ff08535",
+  "COCO_val2014_000000325919.jpg": "9f4279be0c939c12eb04c009b218174360c5ecae392205a8d9c9bdb483763fc9",
+  "COCO_val2014_000000326312.jpg": "3e75f57b18cc8e3dfc875a9596e4c44156c886337d485cd25a3c7970714c939a",
+  "COCO_val2014_000000326344.jpg": "71d8283b85b44a710ae469eb2fb3457a6eb8e29f16200f2f088c0b56f4326149",
+  "COCO_val2014_000000326627.jpg": "1f0f26e8cae3167d096d454942cdcad12e40ce796d9d8850833313feeae0149f",
+  "COCO_val2014_000000326863.jpg": "5613a0346279ec8d449e9b677367924a943dd579b25388986e38b9e492b836ec",
+  "COCO_val2014_000000326995.jpg": "ff4a81ad06663c4dad1e3a36ab1171a61b5a520b494101940e8c03e10902be95",
+  "COCO_val2014_000000327466.jpg": "07bbbcc73a26da7ee385960769a83147c1f8d0700f7054320c4221fc43fc3966",
+  "COCO_val2014_000000328286.jpg": "08bb71100d6ae11c07207e9a308ec351c4f1865ee6afc533e820cdb779b10ac8",
+  "COCO_val2014_000000328596.jpg": "06df1b0132f415860af16cc5b07359f87cfdbb9fda6a3dc103261cdf8014e918",
+  "COCO_val2014_000000328785.jpg": "caac2f959cba578d3a093a504cccab693e55772b5af6b0874b0f967bf8ab9058",
+  "COCO_val2014_000000328814.jpg": "de389f8b8e5df903b788ce0754738ef4e01a4b098cfb967c8763c94372182829",
+  "COCO_val2014_000000329456.jpg": "07b0642433a6de72e38f49a94337d11b9b34f0345c866c1563fc74fef36f923b",
+  "COCO_val2014_000000329614.jpg": "d7f489d1ac157f059251353c9fd3c0063cb13ef72c4ee6ff08343b4b0ac24e38",
+  "COCO_val2014_000000329939.jpg": "16f297691b954e1d88bd0ae92c0416b5f014f58c01a71a9baddcb1eb06b76a45",
+  "COCO_val2014_000000329957.jpg": "e1554f6383e4229de66c509ef86a98850c66634431c018dcb397e09e53cbf838",
+  "COCO_val2014_000000330098.jpg": "f369fd13ef75776bca4999cbe40672c3030b6f959241f78753431ed454447a5d",
+  "COCO_val2014_000000330500.jpg": "78e6bbf49f79b2ca3209303fb384274b4d5d1292b83ac774a745604e10cc815d",
+  "COCO_val2014_000000331084.jpg": "732776e85400b995d488ec0d38dcb8d71462e4ed77aed9f040d00d41b12502e0",
+  "COCO_val2014_000000331250.jpg": "4af113ebf35933f906fbe547989b575cb47e04d57b72a0d4dd036e9547fa502b",
+  "COCO_val2014_000000331372.jpg": "9bd226cbed7bfefb28a60d83f92a43a075fcee0b0731914f5aa79f905c8ced80",
+  "COCO_val2014_000000331405.jpg": "3ac564093a3295715e2dfee13238b72e1e1aa28da9fc2541e8d771393f60ecef",
+  "COCO_val2014_000000331937.jpg": "9dd32c675c20cc8a9e0a2be7f8779473ff8f135a53f7a24ae5a3ea54a7d29da8",
+  "COCO_val2014_000000332074.jpg": "0e6a94c2612a5c3bc3b65c7b3a8e08c1f3196b4017664637da413d74bd5da4ce",
+  "COCO_val2014_000000332432.jpg": "cd59ae43265a78d402e5acbd2d81bd23b16f0f751c9f65c7a159e8302d3c723f",
+  "COCO_val2014_000000332461.jpg": "8841e5fdab4bceeda5071b61c44c7a14fab927f7b07ffaf94f446a9ea3d0a5ac",
+  "COCO_val2014_000000332845.jpg": "73c74c21de560b7f3c109b1e0c237f72bec10bab32dcf9bdfc69ea308f8c942d",
+  "COCO_val2014_000000332987.jpg": "1ed8dd6ca441d3e9485a8f4e9337056c55257b6cf55a844d9402cfacb518ba6a",
+  "COCO_val2014_000000333018.jpg": "e65b667005e02f544cc22445bf416d67216110c430deb2d7899eb709769c8337",
+  "COCO_val2014_000000333712.jpg": "d4fe28127721bf4b53e020e9f76f8dd9f8832504f12b39cf494b2adb69cf971e",
+  "COCO_val2014_000000334658.jpg": "b35a2f70ebab35511b7a7c3dd27754c53fd8f4c8b79163650845eb9f859d98fc",
+  "COCO_val2014_000000335045.jpg": "23c9f3808a0743b5513036cfad9ece8d50fcf96a9c6a07a3e01846518db0b026",
+  "COCO_val2014_000000335233.jpg": "142e8506105636ae1dbfa906dec7c85b696b860512ef56b3dc544d161a96b4b7",
+  "COCO_val2014_000000335374.jpg": "88d5b5fb081ff918796e35524f7dad639ecf8cbf91ad5a80ba5763f02909691a",
+  "COCO_val2014_000000335529.jpg": "b5a6a8051941611cb4a05f5917e2c792b1b3f49ff63b35b5324a7e4a82fdf034",
+  "COCO_val2014_000000335579.jpg": "576417e4b3a61f4b5e4949e062ea1d1670aa04a1528398edccb230cfa7d9e3d8",
+  "COCO_val2014_000000335976.jpg": "b4734131e2d80d08e52b7706790f7f417c7a4dba2be6c75aef150039c1c70613",
+  "COCO_val2014_000000336113.jpg": "8a9f74abcf464305b0648f6ed617bb8999af4a3ed2f0d9322e610bbdfcdffba7",
+  "COCO_val2014_000000336629.jpg": "10be8ceec9ad5b43144d00fe87726f12fc49369ff139bcda9a26b2cf5146fa99",
+  "COCO_val2014_000000336777.jpg": "7a943170a7d620eb2499643b388f3d240286ceedc6b28594fe7456afac5387db",
+  "COCO_val2014_000000337065.jpg": "a30ac6b877d0ff1d29e72ce3749f70193df91af3d2563705e68045692aa0f502",
+  "COCO_val2014_000000337439.jpg": "c4a2f7f64ae1086abd6a4e2690f0aa74c8d851501e04849c1e120de14c012c8a",
+  "COCO_val2014_000000337653.jpg": "dfd30ce4d438b03f0039c91d2a426df0732a8ba3fb0851432cf50fc77b611b7c",
+  "COCO_val2014_000000337667.jpg": "b4d1c78394f1e1c91dc0ecd6e0ae6be734a239c5aa1837acc9788897255ff5cd",
+  "COCO_val2014_000000337815.jpg": "7c7b1a2e41d80f18c60544d9c5299948928127ddf8b9ad172ad07f23a84bb99d",
+  "COCO_val2014_000000338044.jpg": "e37910ea8a66e120c8dfc8bbe58491da00e2d7c355fa53070bacfda2747006c9",
+  "COCO_val2014_000000338159.jpg": "5828435e67ac3f6fadc969aff8fe67bcf2267d7d07f2cd3f6d1ae31db6a82bf6",
+  "COCO_val2014_000000338191.jpg": "57f49389cbbac9ac6ad99364dfae63c11276468bd13c457bd2f94de2c6c90f7a",
+  "COCO_val2014_000000339266.jpg": "ee9252e7be5fd79cf08b78444cda77b42d1eb16a0284f21ac2117cbf3a4d366f",
+  "COCO_val2014_000000339336.jpg": "b8f2614ee7f2fe292a291761ea37e5ec747c2bb25a6a82b90c435716f7ce44df",
+  "COCO_val2014_000000340218.jpg": "570701fe20c01fa6b1893025267ff25fdcacaa03695187b1e05999c416756854",
+  "COCO_val2014_000000340654.jpg": "e7ff8e85de455da80934a9219bd3d50c1dcdbecda6b72e6796012e32cf11b8bb",
+  "COCO_val2014_000000340934.jpg": "84f63c2857a8a98f5231afd0ec7369ba8d84e1f26260c39b23ce437902aa66a6",
+  "COCO_val2014_000000341006.jpg": "d2d1cf337ad575ced568eb68a79c19d3a8a2e29f2a69a38efb2cfe6395524517",
+  "COCO_val2014_000000341164.jpg": "f381fa4991d7ccad128dd2a07a6cafc1ca5e50d13ff63e623a5a2502d8e8c0d9",
+  "COCO_val2014_000000341659.jpg": "0ef99b31fe420a415c98198193f76213fe1beb90e7d111574a17ca6afc175420",
+  "COCO_val2014_000000341712.jpg": "4215d23a25cd9d07430db4635a7ce76595da52fd1f67d579df5f06ed7c6207e7",
+  "COCO_val2014_000000341719.jpg": "8556cac9bfb0f8cd5ddd65f50b63a21b27c069ad7e5ccfa4e4799a805ade7154",
+  "COCO_val2014_000000341957.jpg": "456afb242a56866dd56d41074b9ad7ef6b308384eb3ac8ada48dfa9857953294",
+  "COCO_val2014_000000342448.jpg": "9c1670b41cbc6eb664608075b27e760372a2c706df40ac421571ea2ac6e34723",
+  "COCO_val2014_000000342849.jpg": "de1dc639a8b66e49a77cc375bbcbee13c27509803c411608b90e9078588a4617",
+  "COCO_val2014_000000343187.jpg": "72cec06d0f22ee50e36f00db96ef32f8fdfb9f61881a477103d86af9282a8002",
+  "COCO_val2014_000000343496.jpg": "3e0a2faab9577bfb047aa66947f160ca681737e8b3ad8ef392e0ceeb96ae96bf",
+  "COCO_val2014_000000343642.jpg": "df8ef1493154ebaa527d656236d5b6d6db672da02c3481d4c106275cb3faebf6",
+  "COCO_val2014_000000343706.jpg": "4207680ffcb21507f686d815a1119b4f7d1d70b1a766addbd0d0f15cc31cc493",
+  "COCO_val2014_000000343852.jpg": "0389ecf28c1ae90444f01592144277df7cabaad5a386864fe607c7ad1b987f32",
+  "COCO_val2014_000000344314.jpg": "693f2990bbe83b4a6f0123d79fb7778d478056ce03c70b220ef8c3ac5db6a508",
+  "COCO_val2014_000000344909.jpg": "963758fe1359544f537414afa68230ac2a6043ceb37347f157d95416beef18d4",
+  "COCO_val2014_000000344928.jpg": "8d4fe6d856bcc7529439ba4b79ed34baf9dd6164a3c66e3e455da2bf3ab7ffe7",
+  "COCO_val2014_000000345068.jpg": "2c7bf44a2b2c81aceb46d510c919d55c055cf0e4f64f39e5cea034f6866c069a",
+  "COCO_val2014_000000345520.jpg": "290157d38a9b8b45cf5039039bded06460beb33d7a25c662474e24038d4e9171",
+  "COCO_val2014_000000346089.jpg": "758277bbe7da0a6e3e025505f718bae9d2965f3e31aa2f1b68e1165f25758e5c",
+  "COCO_val2014_000000346621.jpg": "e96e6419dda78cc869d19b51c200f6a79b51eefc865d9a43a3ac74fadbd206c7",
+  "COCO_val2014_000000347389.jpg": "691f2b4a5a4ac8438f1c9c57242694675129253fd26a1eaea5a791703cac1cfa",
+  "COCO_val2014_000000354657.jpg": "47fae81acb95b17222b99761574c2a59a36b76354652995b591a006285562ae4",
+  "COCO_val2014_000000357957.jpg": "f12291357f963c9e6615a93d18e0f39402a0125cbe81cebf5dee55d2a430be03",
+  "COCO_val2014_000000358039.jpg": "906e96b53aea56aa7b885ac27229c2f40360d57fd6487ef57053bbfd96f23e2d",
+  "COCO_val2014_000000360512.jpg": "612d8ce684ca4bced8aae124c82b865211ea75164f55f6c8b58ec9d1a27b6d17",
+  "COCO_val2014_000000362716.jpg": "a535d5a73d971b18b9729279feea26659f6781cccdacf20e08d5dab8cde7a12d",
+  "COCO_val2014_000000364188.jpg": "0816c1abe7301f35449f340cb264da1c1c7442bb751aaf2051868a49cf0c341f",
+  "COCO_val2014_000000366264.jpg": "f6b96cecaa442eaa8ea08594c5372365c4760e810b1cd6cf74f1200df6fca0a7",
+  "COCO_val2014_000000368456.jpg": "9981043c3967347d39d5c42934d5b498d41f1285110e2ea6efb8614e1eaa8d52",
+  "COCO_val2014_000000368752.jpg": "cb2e40ddcd4963cd72eb12af33e3eb161beb6904acdcac69b9156158f59faed8",
+  "COCO_val2014_000000375769.jpg": "fd2178e11c39af545f11968e8e46d7689a3cd4480d9c5895dc9b610d3a24c608",
+  "COCO_val2014_000000376209.jpg": "7d214e0763b686fc27533a226d518e72fdd27bcc596ebedafe654d0c18ac7573",
+  "COCO_val2014_000000376549.jpg": "e46feeecffa092f92ef3a7bf16b117c1a05868c84d5ff9b44ebd780a3bdbb3c2",
+  "COCO_val2014_000000376937.jpg": "b13c6e8436a741aeeebda6a3d6ddb2fecc7f9cfa1f9d2ec9c66d7b2e13d028d3",
+  "COCO_val2014_000000378482.jpg": "c7eeda08270bb1d7a9985f5d722cf47214c2808140e78f5aad7777a318eaae28",
+  "COCO_val2014_000000382333.jpg": "bcd08917f0e831a7f83c46d320ed364504d54e6f5585998f181d2e26d0610bb2",
+  "COCO_val2014_000000382530.jpg": "f9a13230b0a7fadd72a10005445f8b54665e4e04ec717d360f4d46bb75df0fbc",
+  "COCO_val2014_000000384401.jpg": "99cd83b6332062b6534daf42475dec4d8b3ccfbf19203967f84d31a6a37dd53e",
+  "COCO_val2014_000000384594.jpg": "a055a0969661a9eb525f7271993e9daa18cbfd6e8b423b69de028833a712d532",
+  "COCO_val2014_000000385514.jpg": "0f887a4198b81dde268ed52779ce483cf7e9595bd0112556c98b74a530795d07",
+  "COCO_val2014_000000386089.jpg": "74f7c6fc3dea6821fb1f17fbead895603d5f60d782e4000542af32d678dc5c9c",
+  "COCO_val2014_000000389116.jpg": "152310ea0347d7ed29925dcf447f3404694c69653350ddbbf3fadeb9f6d6f3a2",
+  "COCO_val2014_000000389554.jpg": "475a7e7e9b4578e49b00a1ba22243aa77a8236092c260f15914ee245f4e2035f",
+  "COCO_val2014_000000392985.jpg": "c4d2150b66e81660742d2203088b4e5372465e6b56f9488349b25e858a1de7b8",
+  "COCO_val2014_000000393804.jpg": "2abd3b3f5c75a2d8f5c5889a7dbbbfebd3e1eaeeb93fca91c6fd5cea6a751ed5",
+  "COCO_val2014_000000393928.jpg": "cb20d056e2068b8bc81510669b1468cdf6b6d9143d79baf0f3dd7f6370dce3d5",
+  "COCO_val2014_000000395978.jpg": "67be5de5f13ec8faf952fc5ecef5ce3518e74c2a0fedc37651785b02d52b8f77",
+  "COCO_val2014_000000396608.jpg": "ced7ffb9fefc83b43305bdb6af2c4ff975f2cad79d3f90cecc2c75de1ededef2",
+  "COCO_val2014_000000397133.jpg": "09e1d25c75f7879bdaa69c327fece5cabacd53939c8c2ef9e87f1c97a2e478c4",
+  "COCO_val2014_000000398604.jpg": "eccfbab2008b40b48e754ad99745973e726da408c3d0bdcdc2c1306503e15de6",
+  "COCO_val2014_000000405632.jpg": "69cef93165c496639b55a69bcd3fa41ccd1a2b0ff99b678025e0c16b2c49433b",
+  "COCO_val2014_000000406340.jpg": "08845e550b723070745ba53dba3803abf58f41ecf269222686f7654c82b30950",
+  "COCO_val2014_000000406848.jpg": "0d6de52b8c4003d5748dfae4c2bdb3c8af51b12bf507b4769b78e12b68a896e3",
+  "COCO_val2014_000000409251.jpg": "66ea8b47b8187f739ab455611c93cc6cf89a369bffd407c471bc6b3e98a21757",
+  "COCO_val2014_000000410533.jpg": "acdd35e72d08cd848fc48b103da9b96199dca58e6d4f73a35d0c9c6c1b60a061",
+  "COCO_val2014_000000411642.jpg": "2efb64fcd28914b98989d6cbc07feda1f7a63229d50edb85d5ca7ed4913816a0",
+  "COCO_val2014_000000412842.jpg": "22b8e208714fefb0bdfa4ee823f751b6f56e5d9d64921ba0e7a9d7b1802275d3",
+  "COCO_val2014_000000412899.jpg": "1cf14090894515cf703a915381725f377eaeb225b2417be3a7440f6a0a14809b",
+  "COCO_val2014_000000413235.jpg": "d6f68620dd31a977eeb33dfc9963702d6daf58d69e4cf85abff13bc63e0c7ad7",
+  "COCO_val2014_000000415967.jpg": "a44078cd04c59d4b816a075b7ceb10c41c2379b018a51ecd89476a861d8a712c",
+  "COCO_val2014_000000416837.jpg": "3f86b8f0da89b3cbd163eaae02cdd1523c95f6c427901d58c9308ef9f97dbd7b",
+  "COCO_val2014_000000418816.jpg": "50397d0e4e9b99f01c83095a972758533d4b619971e1f847f615427d370d56ef",
+  "COCO_val2014_000000418949.jpg": "2d3c73788fd0f8d58e9cb8554c535ef81ec57ba7a08f17ea6fd76cd6bc565b4f",
+  "COCO_val2014_000000422670.jpg": "544fd8e0ef8eb4278b9f1708a584790780e936f88d8efb7b81a8c43d7ba63ccb",
+  "COCO_val2014_000000423058.jpg": "2a208f5fbda91d9b25da542f3dbe1a1e772fcf6ee9194a38b5b9d58fb531a92e",
+  "COCO_val2014_000000423731.jpg": "47c21b8b93583810ec30c6f888f598bb0e32e6170653c1f1505dbb9acdafd47c",
+  "COCO_val2014_000000427111.jpg": "40863073cc2eaf47bd295d8fd6d4fbc8c419c556e856739755767f3ab5502c8a",
+  "COCO_val2014_000000428769.jpg": "72531ffa2d21777954fc78ae6ea15601f1dc825cff2e4d82487eb8fa74ddaa98",
+  "COCO_val2014_000000429717.jpg": "e0077e27839694109830d14b1693407e041956b21598907b5017cc29d2f520d9",
+  "COCO_val2014_000000431952.jpg": "1e8d451448ae56b7138d2ff53fd30237749fcad9391a0b68d2fdc76d2a948f7d",
+  "COCO_val2014_000000432626.jpg": "b75d8c57ecc967a0c27fc5504bee43577be429ca4e62fb20759d58190db11ab7",
+  "COCO_val2014_000000432818.jpg": "161ddd680492b356e418bae58a0364c4eb14453ecb5e0318e96b2506f4578b9f",
+  "COCO_val2014_000000436127.jpg": "09c8f08c56aa4d48f6b4949521e121c64a10e93ac7b2c526e8d47de7b3a92814",
+  "COCO_val2014_000000437412.jpg": "a00ac162719cb4cef68dcec828179908b44940772c90909784ecb673159faf70",
+  "COCO_val2014_000000442929.jpg": "9566b04dc827d239cf661c20a25ab2ebbd9de63041b29edb930b7cbc5f05924c",
+  "COCO_val2014_000000444496.jpg": "ff06f68a0a7609ce0b9f06325a998080dea81435fc2467c063ee02c03d97b83b",
+  "COCO_val2014_000000445298.jpg": "1894835c57f2d0c705e6351fa0e5d8b7799c8840383455d86ff064b187ca0292",
+  "COCO_val2014_000000447948.jpg": "1b94acefd99b7eb6b2b3a65b393acc4390e363c666e7856f5634d4b1dea3f6fb",
+  "COCO_val2014_000000448779.jpg": "b3bfdb1fee352433419a2fe7834fb16d0d2849db08f826b7225b59c4f16641dc",
+  "COCO_val2014_000000450182.jpg": "cb011ffb59614318a90678386a191a511bed285f1abe477bbccd30828cb7fa1c",
+  "COCO_val2014_000000452179.jpg": "3b1ad1bf99b39e2e8b765f8b94067e64f4e4958d02c3efe6720ba20962b92b78",
+  "COCO_val2014_000000454661.jpg": "e2867af244564b4dc6a549d12bfacf294fb524d9e10f8b1e32da40169af734f8",
+  "COCO_val2014_000000455633.jpg": "98ceada136e23cad90fe8b465df6173a8ff0590b417dbc7dd7cafd5d459102bc",
+  "COCO_val2014_000000455946.jpg": "b9cc352a1588c417d59c486c44e392aad6c2e41fcbe139f9632bce8995e98bca",
+  "COCO_val2014_000000456197.jpg": "509e33e523670b56cb10813128d51382d7e844e65a4fa9f3fa76268b286a5ef4",
+  "COCO_val2014_000000456917.jpg": "a47add868212d2c93848552cfcede616bad5339d529b0db45eab0b718397170e",
+  "COCO_val2014_000000457226.jpg": "7ac9e0d135ef1c5b69ffc792e531079c40eee535fae0e627798d5399a6523196",
+  "COCO_val2014_000000459382.jpg": "6e5f9f5821cab8aa770cb216b72dac1efff7978a9e7c46a000cc4716148bd692",
+  "COCO_val2014_000000463970.jpg": "0e2274dba1cc697d113d2f99f73cdd425f9828abccdd5c32d6b1ed1c52acd041",
+  "COCO_val2014_000000465545.jpg": "cf9e14c1fdcfb145d33085e755d1bc727eeaff06bebbdc42f518342661d0c1ac",
+  "COCO_val2014_000000466921.jpg": "82270935dd0c752ea99d2fc93e5739bb43acd4e830631b5a3d4562dee0e73015",
+  "COCO_val2014_000000467978.jpg": "5f3d78da45ea4e3756c0e61d8280a490c0ef7ebc4b4530131ff87f10d2b1aad3",
+  "COCO_val2014_000000468115.jpg": "5026b2efd75c9c2cbdbe10e0b0bdea122cc3c8133ccc7b0f04cd6aed3c18cfe5",
+  "COCO_val2014_000000469002.jpg": "288dd54d8cf0ff3c518035ff30977b07716f68777a2d9a9f936852145ef532c9",
+  "COCO_val2014_000000470882.jpg": "ab66a7c31e1971ff07bf69921c41a38c7b180593bb6f8f924eb9df70a607f7d0",
+  "COCO_val2014_000000472054.jpg": "5e1d3c2051e18f03c3b3745d4bb00beebb0c52c4621394618c8bdfcf91f504b7",
+  "COCO_val2014_000000472828.jpg": "50d0bdfd314f3bcde0f4ce972fb20b96c0af5ecfc2c061206ec5c21b0615fff4",
+  "COCO_val2014_000000473994.jpg": "55f78bd19816c49e0d86623f0e044224502eca4aea84aa944a97771756c130a6",
+  "COCO_val2014_000000475779.jpg": "b8aba7fdf9b84905e8e09146c6ed262eb91f55b38abf6b6df8c4c59a75885a8a",
+  "COCO_val2014_000000476731.jpg": "b0b82e7e6f1ebc8a142c351679c18f78b359da049fbc274ccae3307282df16ae",
+  "COCO_val2014_000000476872.jpg": "af43f1e2d45b3e40dafdbd0a6118e75663afeb152b12ddbed651872048f808ad",
+  "COCO_val2014_000000477483.jpg": "b9e428dedaf79d9c7eba42412a9a308fa2110fcffe8bed098c3cc76d87a7523d",
+  "COCO_val2014_000000480205.jpg": "80fdb1aa93b8ef30f367506a341bd10c6c338cb39226e74bed406d139d1dfc06",
+  "COCO_val2014_000000481628.jpg": "714c2fe1b12987fecefd85db513a38351323d4af9111e85675f791120c7c2ebb",
+  "COCO_val2014_000000482514.jpg": "84749401ce17d5401c67ec608072697b55e81b11953749de4129e8a2fe17be38",
+  "COCO_val2014_000000483767.jpg": "9dbba25780af847ca8409dda5f92df76a3267a1c2ea7bec10d114c5cedfd538e",
+  "COCO_val2014_000000484457.jpg": "5672ec831b2ff7df138ba12bb70f7df577532120e6e343d20213d6e8c0e42f7d",
+  "COCO_val2014_000000484570.jpg": "4b9aeab2791e91159ca5e057d7899754f1c9665ee1be7bb833ccdeaf7f35e15e",
+  "COCO_val2014_000000487002.jpg": "7503241eeb7a621e81b22907b2b11ce631a37c60a6cde21b8be3a578280c662b",
+  "COCO_val2014_000000488270.jpg": "8eb4f49f47cb599d5ee6fc2ae12919eed7347267a6799dd442f479e761bf96f0",
+  "COCO_val2014_000000488539.jpg": "b70041bc7eb84f039b2b113bbdaaf1402f972d80f4726601c743b8a8eb7df80d",
+  "COCO_val2014_000000489313.jpg": "2f8ad8200fd39408c09684a8ba61179843e9a829f47b6ed39c220a2a8a5656f7",
+  "COCO_val2014_000000490629.jpg": "3bf9fec704db57b765bcc2cbadedcedfda423272a8bd14380fdd6031ddb7478b",
+  "COCO_val2014_000000490683.jpg": "788dd5e75f66cca19cb81edb8ea2c02c70a627ee531ea19a9328879e2eb1b390",
+  "COCO_val2014_000000491223.jpg": "e11a4bb212b571c18433b7d975996435fb4eea9b8a735310e3c8f489b321bd7c",
+  "COCO_val2014_000000491757.jpg": "cd9b58a985c3646885ea8bf9a0debb9d3bd5b175b7316ec584763b6efa321ed1",
+  "COCO_val2014_000000493206.jpg": "1976e8359bc0ae5eb5438cdf4cd749abb975c847bb3f446f7c149488cff53374",
+  "COCO_val2014_000000497032.jpg": "c744462940efdb467a01ca95b9ef05de1e6ab1aa86148565e0f50bb7d22675b2",
+  "COCO_val2014_000000499095.jpg": "9db08ea78b7b42b6da0ee48d72cab024e0b65d76427a5e87b96da74fb3e3c69c",
+  "COCO_val2014_000000499249.jpg": "006659d09e5200b2eb5c85d2406893b769e05c96e2272bd820c975202344666c",
+  "COCO_val2014_000000499672.jpg": "735aba0d206f37f9c07f9e90a531ebc7fb9ddf397ed0eb61d40ca7fa77086c1f",
+  "COCO_val2014_000000499779.jpg": "6ce66ab4892973611c08438c8a1969bb63fbe7e58a98de30d944d86ceb5e3271",
+  "COCO_val2014_000000499983.jpg": "2ae2ca0bc6fabe6e612b86a20fc24356e676d5b15e833188189a7d58b6cfe894",
+  "COCO_val2014_000000502752.jpg": "e8b3a1d6d0791761d2a49100add44d7416b06ca2c92b0a8fdfb3ee7c1da509ab",
+  "COCO_val2014_000000503277.jpg": "ce7c1acf9ee94ec61209c192b15897a784df1f616adc546dff1142eeb1470045",
+  "COCO_val2014_000000505133.jpg": "21f25c22c7c35edc2e474c59355e7cf6823d13f6a7767adb2cb670a3c6de37fb",
+  "COCO_val2014_000000505845.jpg": "089abd96424fce6bc997ca94c1828582a2ac389f6f93543f8de0ec6bbce98222",
+  "COCO_val2014_000000507065.jpg": "3b52c1ce9d175938798b477819f8cdbfacf5bcdb7f932cf1a274a538d43d4f47",
+  "COCO_val2014_000000511690.jpg": "28c4f08a447279215014980e0afbe527b06c63f56f3f708125a550d5ebca0262",
+  "COCO_val2014_000000515025.jpg": "842bf70b9f111af1b4ad64b8451d74a2032737e6a68d224665e441413dcd7b02",
+  "COCO_val2014_000000516856.jpg": "36975a93f2d48ffe26637c64012901359cb6190a467151c6b3345f317d6c3bd2",
+  "COCO_val2014_000000516871.jpg": "de4d6f740d74f23bef152dd557a808bb2c3540102ed9af5b59a5a4bde2299df6",
+  "COCO_val2014_000000517061.jpg": "d667d0e91027be0820ddebdf73365604ca2a3dba32536ba066364e4640191cce",
+  "COCO_val2014_000000518182.jpg": "5acc3bacbb3aa4718ee09742455494f1a107d210d6f18f8a3796d0849cfb9426",
+  "COCO_val2014_000000520232.jpg": "f4c29a83b5ec1b7520e8b35446c6db29317b601ed24e421e92d83d3090ca4cd0",
+  "COCO_val2014_000000524822.jpg": "1013fff975d539b0bf81ea6cb4620bfbb91b6e073a890753da624b914b2efd8e",
+  "COCO_val2014_000000525702.jpg": "273e4775af4ad6da267df311fa0636ecd494d054e97aa1f59a6dda00b687966f",
+  "COCO_val2014_000000526721.jpg": "c64f9cef73ea5578241fc62d4e541ec32d317c48efc29a0ceffcb84021580472",
+  "COCO_val2014_000000528318.jpg": "10592bd6cde6191792d86aa33411e6a24ac638eb52ccef8e36af0ddbde662bad",
+  "COCO_val2014_000000528821.jpg": "352236e3d17268fd82d57d7c90f79a9f7fc96f5a3f66fe36c4848e20bc42f458",
+  "COCO_val2014_000000528956.jpg": "7a42aa3c29f484f05f9ffbbca17cda7b6b4ecb30302c4ca55a4d47862537ffc0",
+  "COCO_val2014_000000529528.jpg": "31ce1e5fddd2baed32b0ebc998c074b703305eae3e9c2ffef41d3796ab4dfa2c",
+  "COCO_val2014_000000529698.jpg": "3abcc5cd23ba31655492b06df71678ef22c87854f7a6cb029d1e6615f5f48fa2",
+  "COCO_val2014_000000530500.jpg": "d0001995caf94434b220bf430439ad602e73e7b5a42e71c208930bc46dba55bb",
+  "COCO_val2014_000000533805.jpg": "98d6daa0f24e7dad6c616d21d516197d6fffc4b7501bd695b9d97c0be9c29cfc",
+  "COCO_val2014_000000534275.jpg": "f9810c57fd915009d4426f7288a501e7493930176369e087e8acbe436d8dfab9",
+  "COCO_val2014_000000535519.jpg": "c36b606133f116f9837783806a71fef03fadfcedf8fed125bd6022e61177d01f",
+  "COCO_val2014_000000538828.jpg": "5009e5549452475e93782b5f37058cd0519385ffabc309abb7b168b4d03c47c8",
+  "COCO_val2014_000000540187.jpg": "88bd56d397d3936a94f7aea95b51b136debce2214131547399b29a57fa0d96ca",
+  "COCO_val2014_000000540697.jpg": "8638b8c4cdb6e3b4a16827e0ad8917c2f46e53b195810fbb56958dcc0c5b8479",
+  "COCO_val2014_000000540807.jpg": "eedc9592bf1cb3530bc68f98726e81224a05a58b78720cae33829a8a69e7e461",
+  "COCO_val2014_000000546342.jpg": "3c5fbb841e493481f3bcdf23a69ff0bbddfbb9904d7e825ff16adb7717defe5e",
+  "COCO_val2014_000000550707.jpg": "e842c9a4691d68a6d5b70ad0454bd8430a897afd6a7d2a50ee9d6d641774908f",
+  "COCO_val2014_000000551959.jpg": "b783a2318e913e33f51439eab4df1fc4767150174eff6e606e70179f1d7cc014",
+  "COCO_val2014_000000553931.jpg": "196e94cd709d9c000db60821ae5f6638934ffe8940b5212f7d5a282466abc7af",
+  "COCO_val2014_000000555005.jpg": "fafc9091969e90cbabdb665d34d7df7ecd68847076900f82413c5c4014965962",
+  "COCO_val2014_000000558457.jpg": "50129c6255979a954b3e6723522119db68f4f3085df2cca1674dbbfb7c4b0396",
+  "COCO_val2014_000000559778.jpg": "4e394262604d7ffbcfdb771561d07d44f4a2dd7367835ed1c1f07f0098506308",
+  "COCO_val2014_000000560427.jpg": "669ac32db8afe4312f32d50ee4a1c80d3b1f0efeee66c69e8dec455f0ce4ef0b",
+  "COCO_val2014_000000561009.jpg": "3022d69235206da97e4b36ed46475845ee65065c2029e277ced764d16330bf4c",
+  "COCO_val2014_000000561366.jpg": "33ac2fba03d5242761676658dce8d0b0a68ea508bfdf17258e643221834f445a",
+  "COCO_val2014_000000563083.jpg": "6a68bc19551dece9865e18de85a1b3de5734c5593f24023524e788d41304f9bc",
+  "COCO_val2014_000000569289.jpg": "44645982d4a1a96e3fc7ab760541923cf0d3fa4dcae3edb1606cf9331a13c5c0",
+  "COCO_val2014_000000569599.jpg": "1c35b2c91c3750651a872edeb9630011295cc0868e1558005a9ece9060e7915e",
+  "COCO_val2014_000000571764.jpg": "ce7786329484e9013a37d86c068426d95050bc3b7a986af0338b2786d20ead03",
+  "COCO_val2014_000000572899.jpg": "cbf01809b8906020a1e8fd3f132e6909cd154ae0ad2ebb7b4aada4d710d40f36",
+  "COCO_val2014_000000579325.jpg": "c302dcc3d9971442d05ebb0015445f60600d99ad7cd1b46ac0bf329aa342fe26",
+  "COCO_val2014_000000579457.jpg": "078505ebbe8a55065217bc6529481ab568ebca1529361333f17dc4ff3b426708",
+  "COCO_val2014_000000580931.jpg": "6425075f65ac913a5dd5579208691e1a4e12254a23b86de29279b296bb1a82fa"
+ }
+}
