@@ -7,7 +7,7 @@ Commands:
   run --run --out DIR              the one live run (S1 search ... decide); refuses without --run
 Laptop CPU only. No dataset file, image or caption is opened, except by the pinned n-gram scanner on quotes.tsv.
 """
-import argparse, hashlib, http.client, json, os, re, shutil, signal, socket, subprocess, sys, tempfile, time, unicodedata
+import argparse, contextlib, hashlib, http.client, io, json, os, re, shutil, signal, socket, subprocess, sys, tempfile, time, unicodedata
 import urllib.parse, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -26,6 +26,12 @@ def sha256_file(p):
 
 
 def load_patterns(path=os.path.join(HERE, "patterns.json")):
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def load_amendment(path=os.path.join(HERE, "amendment_1.json")):
+    """AMENDMENT_1: Semantic Scholar request behaviour (spacing, retries, back-off). Frozen in SHA256SUMS."""
     with open(path, encoding="utf-8") as f:
         return json.load(f)
 
@@ -333,6 +339,9 @@ class Fetcher:
     def __init__(self, P, cache_dir, log, transport=None, sleep=time.sleep, clock=time.time):
         self.P, self.cache, self.log = P, cache_dir, log
         self.transport, self.sleep, self.clock = transport or http_get, sleep, clock
+        self.s2 = load_amendment()["semantic_scholar"]  # AMENDMENT_1
+        self.s2_key = s2_api_key()
+        self.s2_key_used = self.s2_key is not None
         self.t0 = clock()  # the wall cap is per start (CC-210c W2)
         # caps count live requests over the start and the resume together (CC-210b W2)
         self.n_api = sum(1 for e in log if not e["cached"] and e.get("kind") == "api")
@@ -366,22 +375,34 @@ class Fetcher:
             if self.n_pdf > self.P["caps"]["pdfs"]:
                 raise CapHit("pdf")
         host = urllib.parse.urlparse(url).netloc
-        if "semanticscholar" in host:
-            wait = self.P["semantic_scholar"]["min_spacing_s"]
+        is_s2 = host == self.s2["host_suffix"] or host.endswith("." + self.s2["host_suffix"])
+        if is_s2:
+            wait = self.s2["min_spacing_s"]  # AMENDMENT_1: 5 s (RULE l.543 "at least 3 s" still holds)
         elif host == "arxiv.org" or host.endswith(".arxiv.org"):
             wait = self.P["caps"]["arxiv_min_spacing_s"]  # CC-210a W6
         else:
             wait = 1
         self.sleep(max(0, self.last.get(host, 0) + wait - time.time()))
-        for attempt in range(6):
+        attempts = self.s2["max_attempts"] if is_s2 else 6
+        waited = 0.0
+        extra = {"x-api-key": self.s2_key} if self.s2_key and host == S2_KEY_HOST else None
+        for attempt in range(attempts):
             try:
-                body = self.transport(url)
+                body = self.transport(url, headers=extra) if extra else self.transport(url)
                 break
             except urllib.error.HTTPError as e:
-                if e.code == 429 and attempt < 5:
+                if is_s2:  # AMENDMENT_1: retries on 429/5xx, Retry-After honoured, capped back-off and total wait per URL
+                    w = self.s2_wait(e, attempt)
+                    if (e.code in self.s2["retry_on_http"] and attempt < attempts - 1
+                            and waited + w <= self.s2["max_total_wait_s_per_url"]):
+                        waited += w
+                        self.sleep(w)
+                        continue
+                elif e.code == 429 and attempt < 5:
                     self.sleep(2 ** (attempt + 2))
                     continue
-                self.log.append({"url": url, "kind": kind, "http": e.code, "cached": False})  # non-2xx logged (CC-210b W3)
+                self.log.append({"url": url, "kind": kind, "http": e.code, "cached": False,
+                                 "attempts": attempt + 1, "waited_s": waited})  # non-2xx logged (CC-210b W3)
                 if kind == "pdf":
                     raise FetchFail(e.code)
                 raise
@@ -393,8 +414,23 @@ class Fetcher:
         self.last[host] = time.time()
         with open(key, "wb") as f:
             f.write(body)
-        self.log.append({"url": url, "kind": kind, "http": 200, "sha256": sha256_bytes(body), "cached": False})
+        self.log.append({"url": url, "kind": kind, "http": 200, "sha256": sha256_bytes(body), "cached": False,
+                         "attempts": attempt + 1, "waited_s": waited})
         return body
+
+    def s2_wait(self, e, attempt):
+        """AMENDMENT_1 wait before the next attempt: max(Retry-After in whole seconds, capped at retry_after_max_s;
+        base x factor^attempt, capped at backoff_max_per_wait_s). A non-integer Retry-After (HTTP-date) is ignored."""
+        a = self.s2
+        backoff = min(a["backoff_base_s"] * a["backoff_factor"] ** attempt, a["backoff_max_per_wait_s"])
+        ra = 0
+        headers = getattr(e, "headers", None)
+        if a["honour_retry_after"] and headers is not None:
+            try:
+                ra = min(int(str(headers.get("Retry-After", "0")).strip()), a["retry_after_max_s"])
+            except ValueError:
+                ra = 0
+        return max(ra, backoff)
 
     def json(self, url):
         return json.loads(self._get(url, "api"))
@@ -412,10 +448,26 @@ class FetchFail(Exception):
 
 
 
-def http_get(url):
+def http_get(url, headers=None):
     req = urllib.request.Request(url, headers={"User-Agent": "b_alpha/3 (vsps-research@example.org)"})
+    for k, v in (headers or {}).items():
+        req.add_unredirected_header(k, v)  # CC-210f W1: an HTTP redirect never carries the key to the next URL
     with urllib.request.urlopen(req, timeout=60) as r:
         return r.read()
+
+
+S2_KEY_HOST = "api.semanticscholar.org"  # AMENDMENT_1 (PI-1101d): the optional key goes to this host only
+
+
+def s2_api_key():
+    """The optional Semantic Scholar key from the environment (never written anywhere; AMENDMENT_1 §2a)."""
+    return os.environ.get("S2_API_KEY", "").strip() or None
+
+
+def redact(text):
+    """Remove the key from any text that may be printed or written (FAULT.json, SystemExit message)."""
+    key = s2_api_key()
+    return text.replace(key, "[REDACTED]") if key else text
 
 
 def oa_record(w):
@@ -599,11 +651,12 @@ def fault(out, slog, step, err):
     """Write search_log.json and FAULT.json, then exit FAULT (CC-210a W3)."""
     write_json(out, "search_log.json", slog)
     tc = os.path.join(out, "toolcheck.json")
-    write_json(out, "FAULT.json", {"step": step, "error": "%s: %s" % (type(err).__name__, err), "time": now_utc(),
+    msg = redact("%s" % (err,))
+    write_json(out, "FAULT.json", {"step": step, "error": "%s: %s" % (type(err).__name__, msg), "time": now_utc(),
                                    "resumable": not (os.path.exists(os.path.join(out, "RESUMED"))
                                                      or os.path.exists(os.path.join(out, "cells.json"))),
                                    "toolcheck_sha256": sha256_file(tc) if os.path.exists(tc) else None})
-    raise SystemExit("FAULT at %s: %s" % (step, err))
+    raise SystemExit("FAULT at %s: %s" % (step, msg))
 
 
 def open_out(args):
@@ -678,6 +731,7 @@ def run(args, P, words, transport=None, sleep=time.sleep, toolcheck_fn=None, sum
         write_json(out, "decide.json", decide([], P, toolcheck_ok=False))
         raise SystemExit("FAULT: tool check failed; no third-party text processed")
     F = Fetcher(P, os.path.join(out, "cache"), slog["requests"], transport=transport, sleep=sleep, clock=clock)
+    slog.setdefault("s2_key_used", {})[slog["run_dates"][-1]] = F.s2_key_used  # true/false only, per start
     stage("S1")
     try:
         recs, resolution = s1_search(F, P)
@@ -809,6 +863,91 @@ def make_pdf(text, path):
 
 def selftest():
     block_network()
+    saved_key = os.environ.pop("S2_API_KEY", None)  # the mocks below assume no key; the key tests set their own
+    try:
+        selftest_body()
+        selftest_s2_key()
+    finally:
+        if saved_key is not None:
+            os.environ["S2_API_KEY"] = saved_key
+    print("selftest ok")
+
+
+def selftest_s2_key():
+    """AMENDMENT_1 §2a: the key goes to api.semanticscholar.org only and never into any file, log or message."""
+    P = load_patterns()
+    key = "TESTKEY-b4lph4-Zq9x"
+    hashes = [hashlib.sha256(key.encode()).hexdigest(), hashlib.sha1(key.encode()).hexdigest(), hashlib.md5(key.encode()).hexdigest()]
+    seen = []
+
+    def t(url, headers=None):
+        seen.append((urllib.parse.urlparse(url).netloc, dict(headers or {})))
+        u = urllib.parse.unquote(url)
+        if "/paper/ARXIV:2401.08100" in u:
+            raise RuntimeError("synthetic failure echoing the request headers %r" % (headers,))
+        if "/works?" in u:
+            return json.dumps({"results": [], "meta": {"next_cursor": None}}).encode()
+        if "/search/bulk" in u:
+            return json.dumps({"data": [], "token": None}).encode()
+        raise urllib.error.HTTPError(url, 404, "nf", None, None)
+    tmp = tempfile.mkdtemp()
+    os.environ["S2_API_KEY"] = key
+    try:
+        F = Fetcher(P, os.path.join(tmp, "c"), [], transport=t, sleep=lambda x: None)
+        F.json("https://api.openalex.org/works?filter=x")
+        F.json("https://api.semanticscholar.org/graph/v1/paper/search/bulk?query=x")
+        try:
+            F.pdf("https://pdfs.semanticscholar.org/x.pdf")
+        except (FetchFail, urllib.error.HTTPError):
+            pass
+        assert seen[0] == ("api.openalex.org", {}) and seen[1] == ("api.semanticscholar.org", {"x-api-key": key})
+        assert seen[2] == ("pdfs.semanticscholar.org", {}), seen
+        o = os.path.join(tmp, "out")
+        out_buf = io.StringIO()
+        with contextlib.redirect_stdout(out_buf), contextlib.redirect_stderr(out_buf):
+            try:
+                guarded_run(argparse.Namespace(run=True, out=o, resume=False), P, load_words(), transport=t,
+                            sleep=lambda x: None, toolcheck_fn=lambda *a: {"pass": True}, sums_fn=lambda: None,
+                            quotes_fn=lambda *a: None, extract=lambda p: ("", 1, 0))
+                raise AssertionError("expected FAULT")
+            except SystemExit as e:
+                exit_msg = str(e)
+        assert "FAULT at S1" in exit_msg and "[REDACTED]" in exit_msg
+        texts = [exit_msg, out_buf.getvalue()]
+        for root, _, files in os.walk(tmp):
+            for f in files:
+                texts.append(open(os.path.join(root, f), "rb").read().decode("utf-8", "replace"))
+        for txt in texts:
+            assert key not in txt and key[:8] not in txt and key[-6:] not in txt and not any(h in txt for h in hashes)
+        slog = json.load(open(os.path.join(o, "search_log.json")))
+        assert list(slog["s2_key_used"].values()) == [True]
+    finally:
+        os.environ.pop("S2_API_KEY", None)
+        shutil.rmtree(tmp)
+    # CC-210f W1: a redirect of a keyed request does not carry the key (urllib copies only normal headers)
+    sent, real_urlopen = [], urllib.request.urlopen
+    urllib.request.urlopen = lambda req, timeout=None: (sent.append(req), io.BytesIO(b"{}"))[1]
+    try:
+        http_get("https://api.semanticscholar.org/graph/v1/paper/X", headers={"x-api-key": key})
+    finally:
+        urllib.request.urlopen = real_urlopen
+    new = urllib.request.HTTPRedirectHandler().redirect_request(sent[0], None, 302, "Found", {}, "https://example.org/x")
+    assert sent[0].get_header("X-api-key") == key and new.get_header("X-api-key") is None
+    # unset: no header to any host, s2_key_used false, transport called with the url only (the old call shape)
+    calls = []
+    def t_old(url):
+        calls.append(url)
+        return b"{}"
+    tmp = tempfile.mkdtemp()
+    try:
+        F = Fetcher(P, tmp, [], transport=t_old, sleep=lambda x: None)
+        F.json("https://api.semanticscholar.org/graph/v1/paper/X")
+        assert F.s2_key_used is False and len(calls) == 1
+    finally:
+        shutil.rmtree(tmp)
+
+
+def selftest_body():
     P, words = load_patterns(), load_words()
     assert len(words) == 50 and len(set(words)) == 50
     assert P["caps"]["arxiv_min_spacing_s"] == 3 and P["semantic_scholar"]["min_spacing_s"] == 3  # CC-210a W6
@@ -984,6 +1123,7 @@ def selftest():
     assert d["verdict"] == "NO-GO" and d["primary"]["k"] is None and d["primary"]["L"] is None and d["primary"]["N_all"] == 6
     assert not d["template_licensed"]
     assert body_relevant("Chúng tôi dùng KTVIC.\nReferences\n[1] x", P) and not body_relevant("x\nReferences\n[1] KTVIC", P)
+    selftest_amendment_1(P)
     selftest_run(P, words)
     # SIGTERM -> KeyboardInterrupt (always); SIGHUP left alone when ignored (nohup) (CC-210c W1)
     old = signal.getsignal(signal.SIGTERM), signal.getsignal(signal.SIGHUP)
@@ -1006,7 +1146,6 @@ def selftest():
     # rule <-> patterns.json byte equality (CC-210 W9), when the rule exists
     if os.path.exists(RULE):
         assert rule_strings_match(P), "RULE_v3 patterns block != patterns.json"
-    print("selftest ok")
 
 
 def selftest_run(P, words):
@@ -1040,6 +1179,9 @@ def selftest_run(P, words):
                     state["s2fault_done"] = True
                     raise ValueError("synthetic extraction-stage error")
                 return ("%PDF-fake " + key).encode()
+            if mode == "s2burst" and "/paper/ARXIV:2401.08100" in u and state.get("burst", 0) > 0:
+                state["burst"] -= 1
+                raise urllib.error.HTTPError(url, 429, "rate", {"Retry-After": "3"}, None)
             if mode == "s1incomplete" and "/works/doi:" in u and not state.get("s1incomplete_done"):
                 state["s1incomplete_done"] = True
                 raise http.client.IncompleteRead(b'{"id": ')
@@ -1247,6 +1389,29 @@ def selftest_run(P, words):
         assert covered == ["sums", "rule_strings", "toolcheck", "S1", "S2:merge_records", "S2:classify", "S3", "decide", "quotes",
                            "resume_cache_check"], covered
         print("guard stages covered:", ", ".join(covered))
+        # 9. AMENDMENT_1 resume: first start FAULTs on a persistent S2 429; the one resume on the amended code replays the
+        #    logged 200s from the cache, re-queries the logged 429 live, and completes after a 429 burst; a persistent 429 on
+        #    the resume is a final FAULT
+        for name, burst_on_resume, expect in (("o12", 2, "complete"), ("o13", 10 ** 6, "final")):
+            o = os.path.join(tmp, name)
+            try:
+                run(A(o), P, words, transport=make_transport("s2burst", {"calls": [], "burst": 10 ** 6, "s1fault_done": True}), **kw)
+                raise AssertionError("expected S2 429 FAULT")
+            except SystemExit as e:
+                assert "FAULT at S1" in str(e) and "429" in str(e), e
+            reqs = json.load(open(os.path.join(o, "search_log.json")))["requests"]
+            ok200 = {e["url"] for e in reqs if e["http"] == 200}
+            r429 = [e for e in reqs if e["http"] == 429]
+            assert ok200 and len(r429) == 1 and r429[0]["attempts"] == 10 and r429[0]["waited_s"] == 1215
+            st = {"calls": [], "burst": burst_on_resume, "s1fault_done": True}
+            try:
+                d = run(A(o, True), P, words, transport=make_transport("s2burst", st), **kw)
+                assert expect == "complete" and d["verdict"] == "NO-GO", (name, d)
+            except SystemExit as e:
+                assert expect == "final" and "FAULT at S1" in str(e), (name, e)
+                assert json.load(open(os.path.join(o, "FAULT.json")))["resumable"] is False
+            assert not ok200 & set(st["calls"]), "logged 200s are replayed from the cache"
+            assert r429[0]["url"] in st["calls"], "the logged 429 is re-queried live"
         # 4. a fresh run refuses an existing OUT
         try:
             run(A(o1), P, words, transport=make_transport("full", {"calls": []}), **kw)
@@ -1255,6 +1420,66 @@ def selftest_run(P, words):
             assert "--out exists" in str(e)
     finally:
         shutil.rmtree(tmp)
+
+
+def selftest_amendment_1(P):
+    """AMENDMENT_1 unit checks: S2 spacing 5 s, Retry-After, capped back-off, total wait cap, 5xx; other hosts unchanged."""
+    A1 = load_amendment()["semantic_scholar"]
+    assert (A1["min_spacing_s"], A1["max_attempts"], A1["max_total_wait_s_per_url"]) == (5, 10, 1800)
+    s2url, oaurl = "https://api.semanticscholar.org/graph/v1/paper/X", "https://api.openalex.org/works/doi:10.9/x"
+
+    def fetcher(script):
+        sleeps, calls = [], []
+        def t(url):
+            calls.append(url)
+            item = script.pop(0) if script else 200
+            if item == 200:
+                return b"{}"
+            code, ra = item
+            raise urllib.error.HTTPError(url, code, "x", {"Retry-After": ra} if ra is not None else {}, None)
+        tmp = tempfile.mkdtemp()
+        return Fetcher(P, tmp, [], transport=t, sleep=sleeps.append), sleeps, calls, tmp
+    # a 429 burst then 200: Retry-After honoured when larger than the back-off, one counted request
+    F, sl, calls, tmp = fetcher([(429, "7"), (429, None), (503, "1")])
+    assert F.json(s2url) == {} and sl[1:] == [7, 10, 20] and len(calls) == 4 and F.n_api == 1
+    assert F.log[-1]["attempts"] == 4 and F.log[-1]["waited_s"] == 37
+    shutil.rmtree(tmp)
+    # spacing: the second S2 request waits about 5 s
+    F, sl, calls, tmp = fetcher([])
+    F.json(s2url)
+    F.json(s2url + "2")
+    assert 4.9 < sl[-1] <= 5.0, sl
+    shutil.rmtree(tmp)
+    # persistent 429: 10 attempts, waits 5..300 capped, total 1215 s, then HTTPError (a FAULT in run)
+    F, sl, calls, tmp = fetcher([(429, None)] * 50)
+    try:
+        F.json(s2url)
+        raise AssertionError("persistent 429")
+    except urllib.error.HTTPError as e:
+        assert e.code == 429
+    assert len(calls) == 10 and sl[1:] == [5, 10, 20, 40, 80, 160, 300, 300, 300] and F.log[-1]["waited_s"] == 1215
+    shutil.rmtree(tmp)
+    # Retry-After 600 each: stops once the next wait would pass 1800 s in total
+    F, sl, calls, tmp = fetcher([(429, "600")] * 50)
+    try:
+        F.json(s2url)
+        raise AssertionError("total wait cap")
+    except urllib.error.HTTPError:
+        pass
+    assert len(calls) == 4 and sl[1:] == [600, 600, 600]
+    shutil.rmtree(tmp)
+    # other hosts unchanged: OpenAlex 503 is not retried; OpenAlex 429 keeps the 4..64 s schedule
+    F, sl, calls, tmp = fetcher([(503, None)])
+    try:
+        F.json(oaurl)
+        raise AssertionError("OpenAlex 503")
+    except urllib.error.HTTPError:
+        pass
+    assert len(calls) == 1
+    shutil.rmtree(tmp)
+    F, sl, calls, tmp = fetcher([(429, "100")] * 2)
+    assert F.json(oaurl) == {} and sl[1:] == [4, 8]
+    shutil.rmtree(tmp)
 
 
 def selftest_guard(P, words, tmp, A, kw, make_transport):

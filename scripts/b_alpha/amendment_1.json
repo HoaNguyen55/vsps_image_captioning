@@ -1,0 +1,21 @@
+{
+ "amendment": "AMENDMENT_1 (2026-11-01): Semantic Scholar request behaviour only (RULE_v3 + manuscript/prereg/2026-10-29_b_alpha_audit/AMENDMENT_1.md)",
+ "semantic_scholar": {
+  "host_suffix": "semanticscholar.org",
+  "min_spacing_s": 5,
+  "max_attempts": 10,
+  "retry_on_http": [
+   429,
+   500,
+   502,
+   503,
+   504
+  ],
+  "backoff_base_s": 5,
+  "backoff_factor": 2,
+  "backoff_max_per_wait_s": 300,
+  "honour_retry_after": true,
+  "retry_after_max_s": 600,
+  "max_total_wait_s_per_url": 1800
+ }
+}
