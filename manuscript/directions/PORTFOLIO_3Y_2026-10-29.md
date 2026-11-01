@@ -164,7 +164,10 @@ That is 14 rows plus the thesis. Over three years this gives four Q2–Q3 journa
 |---|---|---|---|
 | PASCAL-50S | 50 refs + V20 labels | unspent, PREREG uncommitted | A |
 | KV-4,224 (COCO Karpathy val) | COCO instances | committed unspent | L3-P1 |
-| ViTextCaps test | human captions | release unverified | C only (scout 3 Q3) |
+| ViTextCaps test | human captions | not released (C_PUBLIC_DATA_CHECK 2026-11-01); weekly recheck until the C tier-3 prereg freeze | C only (scout 3 Q3; PI-1101u: added if publicly released; C_DIRECTION_v4 §10) |
+| NoCaps test (10,600; EvalAI) | OIV7 human-verified labels (primary: Vietnamese P_obj via A's matcher, vi_oiv7_map 27f2b1ca) + server-side English captions (benchmark) | unspent; one look; ≤ 5 named English EvalAI submissions; images shared with earlier owners, including the spent sets C uses as dev (e.g. the XM3600 OI-test overlap, about 118 by chance; l.193), leave C's local P_obj/R_obj and the scene-text proxy (count only), EvalAI CIDEr stays on the full split | C (PI-1101u; C_DIRECTION_v4 §3, §8, §9.3; effective at the gatekeeper commit) |
+| OpenViVQA dev (1,070 images / 3,545 QA) | human QA | unspent; only 3 json files read, for counts | C, Vietnamese scene-text proxy (PI-1101u; C_DIRECTION_v4 §3.2, §7; effective at the gatekeeper commit) |
+| VieCap4H private test | human captions (about 1.05 refs/image) | references never published (C_PUBLIC_DATA_CHECK 2026-11-01) | C, secondary "noisy" test, only if its references are publicly released before the C tier-3 prereg freeze (PI-1101s/u; C_DIRECTION_v4 §10) |
 | Flickr30K Karpathy test | human captions | unscored; A read its references (disclose) | C (CC-158 r4, needs PI line) |
 | H = 500 KTVIC-train ∩ OV-train-only | two human panels | carve-out | B (needs PI line, W5) |
 | ADE20K SceneParsing val (2,000) + LN-ADE val | pixel labels + narratives | unused (A-T1 tier 3, CC-170) | A |
@@ -174,7 +177,7 @@ That is 14 rows plus the thesis. Over three years this gives four Q2–Q3 journa
 | Objects365 v2 val | instances | size and licence to verify | B5 |
 | ViTextVQA test (about 10k QA) | human transcriptions | unused | L1-P1 |
 | MTVQA test vi/fr/de/it | native annotators | unused (tier3_S5 checked) | L1-P1 |
-| TextVQA val / TextCaps val | human | unused | L1-P1 / L1-P2 English null |
+| TextVQA val / TextCaps val | human | unused | L1-P1 / L1-P2 English null (TextCaps val struck from C; transfer only by a PI line plus an irreversible ledger ruling ≥ 92; CC-214r2 B4, CC-214r3 W10) |
 | VinText test | human transcriptions | unused | L1-P2 |
 | ViOCRVQA test | metadata gold | flagged | L1-P1 secondary pre-fixed subset, or dropped (judge) |
 | ViSignVQA test | human QA | licence to check | reserve (L1 replication) |
@@ -187,6 +190,7 @@ VSPS-J M0 dev-touched: every M-HalDetect image, 786 val + 2,695 train = 3,454 CO
 
 **Dev-only (spent):** XM3600 (all), UIT-ViIC test and val, KTVIC test, OV-test, COCO Karpathy test, nocaps val, LongCap/Polaris/DOCCI/THumB/Composite/VaPR. UIT-ViIC val 924 is K2 dev, and sharing it needs a PI and judge line.
 VSPS-J M0 probes 91 Karpathy-test images (M-HalDetect val ∩ Karpathy test) at dev only; held out of every operating-point choice; `karpathy_test_val_ids.txt` sha 88e40e3c.
+C (PVR) dev and datastore roles (PI-1101u; C_DIRECTION_v4_1 §3.3, §9.2, §9.3; effective at the gatekeeper commit): Vietnamese dev = XM3600-vi (SESOI, headroom, UNCERTAIN choice); COCO dev for the English benchmark arm only = KT-C, Karpathy test 5,000 minus 1,093 ids of other owners (UIT-ViIC train 133, M0 dev-touched 419, A-T3 val2017 593; union) = 3,907; D-EN = `cen_memory_allowed.tsv` (175907e2) minus restval (B4, incl. T2-2000) and UIT-ViIC ids = 80,083. C excludes all 5,000 Karpathy val ids (`kv5000.txt` b7a7a89d, superset of KV-4,224) and T2-2000. C dev, rehearsal and datastore images yield to every other owner, except sets spent before that owner registered. Spent sets that C uses as dev (XM3600 all 3,600, nocaps val, KT-C/Karpathy test, KTVIC test, OV-test) are earlier owners, not C's own dev: NoCaps-test images that overlap them leave C's local Vietnamese metrics (P_obj^VI, R_obj^VI, scene-text proxy) and are reported as a count only; EvalAI CIDEr-EN keeps the full split. Only C's non-spent splits (T_A, O_B) yield to C's test (CC-219 W1; C_DIRECTION_v4_1 §9.3). Note: nocaps val (4,457 of its 4,500 images) sits inside L2-P1's 41,164 although it is spent (above); ledger ruling pending (C_DIRECTION_v4 §14 Q11; precondition of the C tier-2 prereg); until then C holds nocaps val and decodes none of it.
 VSPS-J E1+E2 (dev-explore): E1a decodes all 231 UIT-ViIC test images (already spent; dev only; ids sha 96e6ffe9 in manuscript/prereg/2026-10-31_vsps_j_e1e2/e1e2_plan.json); E1b re-probes the 3,700 KTVIC train stage-1 images (in-sample). No new owner displaced; T-COCO from E1a is never a tier-3 claim. W25 not run for E1a (CC-209 r6, read-only); the 231 stay in exclusion.json for every later W25 pass.
 
 ### 2.4 Expected Q1 count, and what would raise it
