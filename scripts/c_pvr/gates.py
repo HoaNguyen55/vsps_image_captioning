@@ -7,6 +7,7 @@ no network code: every download is a curl line of the amendment; this file reads
                                                                pinned real files; schema of the registered provenance
     python3 -I scripts/c_pvr/gates.py gate-a step0             real pinned id files, after GO, before any download
     python3 -I scripts/c_pvr/gates.py gate-a pin               step-3 size/first-byte/md5/header check, prints shas
+    python3 -I scripts/c_pvr/gates.py gate-a schema --info-sha H   CC-227: key names/types/lengths only, writes nothing
     python3 -I scripts/c_pvr/gates.py gate-a join --info-sha H --oi-sha H   ids only; counts first, ids last, once
     python3 -I scripts/c_pvr/gates.py gate-a verify            offline rerun; must reproduce ga_remaining_ids.txt
     curl ... | python3 -I scripts/c_pvr/gates.py gate-c2 scan --file KEY    one pinned SFT list from stdin
@@ -64,6 +65,7 @@ OI_HEADER = ["ImageID", "Subset", "OriginalURL", "OriginalLandingURL", "License"
              "Title", "OriginalSize", "OriginalMD5", "Thumbnail300KURL", "Rotation"]
 OI_TEST_URL = "https://open-images-dataset.s3.amazonaws.com/test/{file}"  # CC-220 B3; c_pvr.py w25 must equal it
 INFO_TOP = {"images", "licenses", "info"}
+INFO_TOP_STR = {"type"}  # CC-227: COCO caption toolkit key (tylin/coco-caption loadRes copies it); short str only
 INFO_IMG = {"id", "open_images_id", "height", "width", "coco_url", "file_name", "license", "date_captured"}
 VAL_HEADER = "#id\tfile\turl\tdomain"
 VAL_LINE = re.compile(r"^[0-9]+\t[0-9a-f]{16}\.jpg\thttps?://[a-zA-Z0-9./_-]+\.jpg\t[a-z0-9-]+$")
@@ -205,8 +207,11 @@ def info_ids(p: Path, strict: bool = True) -> list[str]:
     if strict and len(b) != INFO["size"]:
         fault(f"{p}: {len(b)} B, not {INFO['size']}")
     d = json.loads(b)
-    if not isinstance(d, dict) or not set(d) <= INFO_TOP or "images" not in d:
-        fault(f"{p}: top-level keys {sorted(d) if isinstance(d, dict) else type(d)} outside {sorted(INFO_TOP)}")
+    extra = set(d) - INFO_TOP if isinstance(d, dict) else None
+    if (extra is None or "images" not in d or not extra <= INFO_TOP_STR
+            or any(not isinstance(d[k], str) or len(d[k]) > 64 for k in extra)):
+        fault(f"{p}: top-level keys {sorted(d) if isinstance(d, dict) else type(d)} outside {sorted(INFO_TOP)}"
+              f" + str-valued {sorted(INFO_TOP_STR)}")
     ims = d["images"]
     if any(not set(im) <= INFO_IMG for im in ims):
         fault(f"{p}: an image record has a key outside {sorted(INFO_IMG)}")
@@ -216,6 +221,23 @@ def info_ids(p: Path, strict: bool = True) -> list[str]:
             or any(not HEX16.fullmatch(o) or im["file_name"] != o + ".jpg" for o, im in zip(oid, ims))):
         fault(f"{p}: not {n} unique 16-hex open_images_id with file_name = id + .jpg")
     return oid
+
+
+def info_schema(p: Path, info_sha: str) -> dict:
+    """CC-227 dry check: key names, value type names and lengths only. No value is printed; nothing is written."""
+    b = refuse(p).read_bytes()
+    if sha_bytes(b) != info_sha:
+        fault(f"{p.name}: sha256 differs from the one logged at download ({info_sha[:8]})")
+    d = json.loads(b)
+
+    def shape(v):
+        return {"type": type(v).__name__, **({"len": len(v)} if isinstance(v, (str, list, dict)) else {})}
+
+    ims = d.get("images") if isinstance(d, dict) else None
+    recs = ims if isinstance(ims, list) and all(isinstance(im, dict) for im in ims) else []
+    return {"top": {k: shape(v) for k, v in d.items()} if isinstance(d, dict) else {"<root>": shape(d)},
+            "image_keys": sorted({k for im in recs for k in im}),
+            "n_images": len(ims) if isinstance(ims, list) else None}
 
 
 def oi_rows(p: Path, strict: bool = True):
@@ -812,6 +834,20 @@ def _st_ga(root: Path, ga: Path, pins: dict, expected: list, oi_test: list, info
                     "outside")):
         ip.write_text(json.dumps(d))
         _must(tag, info_ids, ip, False)
+    # CC-227: a short str 'type' (COCO caption toolkit) passes; any other shape or extra key FAULTs
+    ip.write_text(json.dumps({**info, "type": "captions"}))
+    assert info_ids(ip, False) == [im["open_images_id"] for im in info["images"]]
+    sch = info_schema(ip, sha_file(ip))
+    assert sch == {"top": {"images": {"type": "list", "len": len(info["images"])}, "licenses": {"type": "list", "len": 0},
+                           "info": {"type": "dict", "len": 0}, "type": {"type": "str", "len": 8}},
+                   "image_keys": sorted(INFO_IMG), "n_images": len(info["images"])}
+    assert "captions" not in json.dumps(sch), "schema prints no value"
+    _must("sha256 differs", info_schema, ip, "0" * 64)
+    ip.write_text(json.dumps({**info, "type": "x" * 64}))  # boundary: 64 characters pass
+    assert len(info_ids(ip, False)) == len(info["images"])
+    for bad in ({"type": {"x": 1}}, {"type": ["captions"]}, {"type": "x" * 65}, {"type": 1}, {"foo": "x"}):
+        ip.write_text(json.dumps({**info, **bad}))
+        _must("top-level keys", info_ids, ip, False)
     ip.write_bytes(good_info)
     _must("md5/size", oi_rows(op).__next__)
     op.write_text(good_oi.decode().replace("ImageID,Subset", "ImageID,LabelName", 1))
@@ -1111,7 +1147,7 @@ def main() -> None:
     sp = ap.add_subparsers(dest="cmd", required=True)
     sp.add_parser("selftest")
     a = sp.add_parser("gate-a")
-    a.add_argument("phase", choices=("step0", "pin", "join", "verify"))
+    a.add_argument("phase", choices=("step0", "pin", "schema", "join", "verify"))
     a.add_argument("--info-sha")
     a.add_argument("--oi-sha")
     c = sp.add_parser("gate-c2")
@@ -1128,6 +1164,10 @@ def main() -> None:
         print(json.dumps({k: len(v) for k, v in s0.items()}, sort_keys=True))
     elif x.cmd == "gate-a" and x.phase == "pin":  # N5: step-3 check, then the shas for the LOG line
         print(json.dumps(gate_a_pin(GA), indent=1, sort_keys=True))
+    elif x.cmd == "gate-a" and x.phase == "schema":  # CC-227: names/types/lengths only, writes nothing
+        if not x.info_sha:
+            ap.error("schema needs --info-sha (the sha logged at download)")
+        print(json.dumps(info_schema(GA / INFO["name"], x.info_sha), indent=1, sort_keys=True))
     elif x.cmd == "gate-a" and x.phase == "join":
         if not (x.info_sha and x.oi_sha):
             ap.error("join needs --info-sha and --oi-sha (the shas logged at download)")
