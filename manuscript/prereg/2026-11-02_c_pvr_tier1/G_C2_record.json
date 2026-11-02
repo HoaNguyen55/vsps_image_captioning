@@ -1,0 +1,119 @@
+{
+ "capfilt_rule": "image",
+ "flickr_image_exclusions": [
+  "513d6796c322ced5",
+  "821f75f1f4061c79",
+  "bfdd3df591001b36",
+  "c32ddd2ae971e5b5"
+ ],
+ "gates_sha256": "bf4d5f64485efbce07f254a6a7e5c79f4e8384c4448e9662ec9fe987fbca3468",
+ "inputs": {
+  "G_C1_record.json": "1f65b2aea02583aecf4891193ded375951da6c28d3dce61391dc37578924e33b",
+  "g_c2_provenance.json": "e242623fdcd984a5ddcb21732f2ff5adeb65cc23c50e64af9ae1b28cd4c7819b",
+  "ga_remaining_ids.txt": "3feccabc6da972396482faf0d2ae81296277e665ce094368019a3913c2fcbd24",
+  "llava_mix665k.scan.json": "e5110bc6f5a9e134aee66d55ab14d6497905028f9ebce5def5f1ad3e0d9a799a",
+  "mblip_capfilt_raw.scan.json": "d37f63121dd2ba48dd806ef0f4fda9ef2899354534505062e8b63034c95cb06c",
+  "mblip_mix_v1.scan.json": "8e6d34299eeff2ba3d6128a238a84bed2c06ab03df0ba0bd4bc316b6b331fe97",
+  "mblip_mix_v2.scan.json": "5ff8bf282dd41e8a99f5491082f86f55c59c07da349112c4fb6e12ad5fc0c1c1"
+ },
+ "label": "TIER 1 / DEV-EXPLORE (C-PVR-T1)",
+ "models": {
+  "Gregor/mblip-bloomz-7b": {
+   "flickr_matched_ids": [
+    "513d6796c322ced5",
+    "821f75f1f4061c79",
+    "bfdd3df591001b36",
+    "c32ddd2ae971e5b5"
+   ],
+   "hex16_hits": [],
+   "status": {
+    "nocaps_test": "CLEAN",
+    "openvivqa_dev": "CLEAN",
+    "viecap4h_private_test": "DEFERRED",
+    "vitextcaps_test": "DEFERRED"
+   },
+   "unchecked_reasons": [],
+   "vi_tokens": {},
+   "web_scale_components": [
+    "Web CapFilt"
+   ],
+   "web_scale_pretraining": "unknown (disclosed)"
+  },
+  "Gregor/mblip-mt0-xl": {
+   "flickr_matched_ids": [
+    "513d6796c322ced5",
+    "821f75f1f4061c79",
+    "bfdd3df591001b36",
+    "c32ddd2ae971e5b5"
+   ],
+   "hex16_hits": [],
+   "status": {
+    "nocaps_test": "CLEAN",
+    "openvivqa_dev": "CLEAN",
+    "viecap4h_private_test": "DEFERRED",
+    "vitextcaps_test": "DEFERRED"
+   },
+   "unchecked_reasons": [],
+   "vi_tokens": {},
+   "web_scale_components": [
+    "Web CapFilt"
+   ],
+   "web_scale_pretraining": "unknown (disclosed)"
+  },
+  "liuhaotian/llava-v1.5-7b": {
+   "flickr_matched_ids": [],
+   "hex16_hits": [],
+   "status": {
+    "nocaps_test": "CLEAN",
+    "openvivqa_dev": "N/A",
+    "viecap4h_private_test": "N/A",
+    "vitextcaps_test": "N/A"
+   },
+   "unchecked_reasons": [],
+   "vi_tokens": {},
+   "web_scale_components": [],
+   "web_scale_pretraining": "unknown (disclosed)"
+  },
+  "neulab/Pangea-7B": {
+   "flickr_matched_ids": [],
+   "hex16_hits": [],
+   "status": {
+    "nocaps_test": "UNCHECKABLE",
+    "openvivqa_dev": "UNCHECKABLE",
+    "viecap4h_private_test": "DEFERRED",
+    "vitextcaps_test": "DEFERRED"
+   },
+   "unchecked_reasons": [
+    "pangeains/ALLAVA-4V: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/ChartQA: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/GQA-ru: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/LLaVA-NeXt: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/LVIS-Instruct4V: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/Llava-JP-Instruct-108K: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/MTVQA: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/STAIR-Captions: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/ShareGPT-4o: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/ShareGPT4V: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/Viet-DOC-VQA-II: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/Viet-Doc-VQA: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/Viet-OCR-VQA: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/Viet-ShareGPT-4o-Text-VQA: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/allava_vflan: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/doc-vqa: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/gpt4v-dataset: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/llava-en-zh-300k: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/llava-med-zh-instruct-60K: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/nvlr2-llava: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/palo_multilingual_dataset: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/table-vqa: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/translation: image-bearing component of undetermined origin (decided by documentation)",
+    "pangeains/webui_multilingual_ocr: image-bearing component of undetermined origin (decided by documentation)"
+   ],
+   "vi_tokens": {},
+   "web_scale_components": [],
+   "web_scale_pretraining": "unknown (disclosed)"
+  }
+ },
+ "notes": [],
+ "utc": "2026-11-02T13:20:55Z"
+}
