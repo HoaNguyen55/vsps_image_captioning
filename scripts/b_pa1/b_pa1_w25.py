@@ -51,7 +51,8 @@ EXPECT = {"build_memory_sha256": "e771b92df9096e286e8d5de207d3adafe49c8e5e59eab2
           "match_openviic_sha256": "c0d9dd30e3222ab6542a7e1acfbb9bd3899e4b6db5c896b0adc4d805c1005a8b",
           "sscd_sha256": w25.SSCD_SHA,
           "freeze_sha256": "1a639a50adf550c50c6dfe284146e279b2a2bf2a716ade743e9eb357ccbf0778"}
-COCO_DIRS = {"coco2014": ("train2014", "val2014"), "val2017": ("val2017",)}  # R5 E-13: public COCO archive, per file
+COCO_DIRS = {"coco2014": ("train2014", "val2014"), "train2014": ("train2014",), "val2014": ("val2014",),
+             "val2017": ("val2017",)}  # R5 E-13: public COCO archive, per file
 SHM = Path("/dev/shm/b_pa1_c7")  # C7 --fetch: the only place fetched bytes exist (W25 RULE §5 pattern)
 MID = Path("/root/.vsps_machine_id")  # host id file; "m3" on M1
 JUDGED = re.compile(r"truncated-judged=CC-[0-9A-Za-z-]+")  # a C7 pin token when truncated > 0 (CC-226r2 Ruling 3(b))
@@ -328,7 +329,7 @@ def read_list(b: bytes) -> list[tuple[str, str]]:
 def coco_urls(i: str, space: str) -> list[str]:
     """E-13: the public COCO archive file URLs of one COCO id, in the order tried (no zip, CC-224r3 NB-13)."""
     if space not in COCO_DIRS or not i.isdigit():
-        raise SystemExit("REFUSED: a --fetch row is not a COCO id with space coco2014 or val2017")
+        raise SystemExit("REFUSED: a --fetch row is not a COCO id with space coco2014, train2014, val2014 or val2017")
     return [F.COCO_URL.format(filepath=d, file=f"COCO_{d}_{int(i):012d}.jpg" if d.endswith("2014") else
                               f"{int(i):012d}.jpg") for d in COCO_DIRS[space]]
 
@@ -650,6 +651,8 @@ def selftest() -> None:
         assert "(2 files)" in (d / "deletions.log").read_text() and not (d / "shm" / "r2").exists()
         refuse(lambda: coco_urls("abc", "coco2014"), "COCO id")
         refuse(lambda: coco_urls("5", "train2017"), "COCO id")
+        assert [u.rsplit("/", 2)[1:] for u in coco_urls("5", "val2014")] == [["val2014", "COCO_val2014_000000000005.jpg"]]
+        assert [u.rsplit("/", 2)[1:] for u in coco_urls("5", "train2014")] == [["train2014", "COCO_train2014_000000000005.jpg"]]
 
         # caches: K1 holds frame image a (C1 byte copy); K2 an SSCD-only copy of b (C3); K3 a far row, 1 unreadable
         fa = BM.features([imgs / "patch0/a.jpg"], pt, workers=1)
@@ -892,7 +895,7 @@ def main() -> None:
     rc.add_argument("--workers", type=int, default=4)
     src = rc.add_mutually_exclusive_group(required=True)
     src.add_argument("--images", help="laptop: list rows are id TAB path under this folder")
-    src.add_argument("--fetch", action="store_true", help="M1 slot: list rows are id TAB coco2014|val2017 (E-13)")
+    src.add_argument("--fetch", action="store_true", help="M1 slot: list rows are id TAB coco2014|train2014|val2014|val2017 (E-13)")
     a = ap.parse_args()
     if a.cmd == "selftest":
         return selftest()
