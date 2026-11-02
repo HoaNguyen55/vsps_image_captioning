@@ -1,0 +1,502 @@
+{
+ "census_key_rule": "full directory path with every digit masked to '#'; a bare file name is keyed '~' + its digit-masked stem (amendment v1.1 \u00a75.2)",
+ "files": {
+  "llava_mix665k": {
+   "components": {
+    "COCO train2017": {
+     "cites": [
+      "S24 l.338",
+      "S24 l.347-348"
+     ],
+     "image_bearing": true,
+     "origin": "non-OI"
+    },
+    "GQA (Visual Genome images from COCO and Flickr)": {
+     "cites": [
+      "S24 l.339",
+      "S24 l.349-350",
+      "D1 l.208-209 ('Visual Genome Scene Graph annotations that cover 113k images from COCO and Flickr')"
+     ],
+     "image_bearing": true,
+     "origin": "non-OI"
+    },
+    "OCR-VQA (book covers)": {
+     "cites": [
+      "S24 l.340",
+      "S24 l.351-352",
+      "D3 l.186-188 (cover images of books, Iwana et al.)"
+     ],
+     "image_bearing": true,
+     "origin": "non-OI"
+    },
+    "TextVQA train/val (Open Images train)": {
+     "cites": [
+      "S24 l.341",
+      "S24 l.353-354",
+      "S26 l.633-634 (training and validation set from Open Images' training set)"
+     ],
+     "image_bearing": true,
+     "origin": "OI"
+    },
+    "Visual Genome (YFCC100M and MS-COCO)": {
+     "cites": [
+      "S24 l.342",
+      "S24 l.355-357",
+      "D2 l.131-134 (108,249 images from the intersection of YFCC100M and MS-COCO)"
+     ],
+     "image_bearing": true,
+     "origin": "non-OI"
+    }
+   },
+   "prefixes": {
+    "coco/train####": "COCO train2017",
+    "gqa/images": "GQA (Visual Genome images from COCO and Flickr)",
+    "ocr_vqa/images": "OCR-VQA (book covers)",
+    "textvqa/train_images": "TextVQA train/val (Open Images train)",
+    "vg/VG_###K": "Visual Genome (YFCC100M and MS-COCO)",
+    "vg/VG_###K_#": "Visual Genome (YFCC100M and MS-COCO)"
+   }
+  },
+  "mblip_capfilt_raw": {
+   "components": {
+    "Web CapFilt": {
+     "cites": [
+      "S15 l.1958 (Table 6 row 'Web CapFilt')",
+      "S15 l.2034-2035 ('Subset of the CC3M+CC12M+SBU Web CapFilt dataset')",
+      "S14 l.47 (URLs and filenames provided for the BLIP captions)"
+     ],
+     "crawl": "CC3M + CC12M + SBU (Web CapFilt subset)",
+     "image_bearing": true,
+     "origin": "web"
+    }
+   },
+   "prefixes": {
+    "~########": "Web CapFilt"
+   }
+  },
+  "mblip_mix_v1": {
+   "components": {
+    "ImageNet": {
+     "cites": [
+      "S15 l.2013 (Table 6 row ImageNet and BabelImageNet)",
+      "S15 l.2077-2082"
+     ],
+     "image_bearing": true,
+     "origin": "non-OI"
+    },
+    "MSCOCO images": {
+     "cites": [
+      "S15 l.1972, l.1980, l.1988, l.1997, l.2005 (Table 6 rows MSCOCO, VQAv2, A-OKVQA, LLaVA detail, LLaVA conversations)",
+      "S15 l.2050-2051 (Karpathy training split of MSCOCO)",
+      "S15 l.2066-2069 (A-OKVQA: subset overlapping the MSCOCO training split)"
+     ],
+     "image_bearing": true,
+     "note": "the dagger footnote of Table 6 is not in the extracted text; the COCO_<split>2014_<12 digits> file-name convention and the per-row details carry the reading",
+     "origin": "non-OI"
+    },
+    "Web CapFilt": {
+     "cites": [
+      "S15 l.1958 (Table 6 row 'Web CapFilt')",
+      "S15 l.2034-2035 ('Subset of the CC3M+CC12M+SBU Web CapFilt dataset')",
+      "S14 l.47 (URLs and filenames provided for the BLIP captions)"
+     ],
+     "crawl": "CC3M + CC12M + SBU (Web CapFilt subset)",
+     "image_bearing": true,
+     "origin": "web"
+    }
+   },
+   "prefixes": {
+    "n########": "ImageNet",
+    "~########": "Web CapFilt",
+    "~COCO_train####_############": "MSCOCO images",
+    "~COCO_val####_############": "MSCOCO images"
+   }
+  },
+  "mblip_mix_v2": {
+   "components": {
+    "ImageNet": {
+     "cites": [
+      "S15 l.2013 (Table 6 row ImageNet and BabelImageNet)",
+      "S15 l.2077-2082"
+     ],
+     "image_bearing": true,
+     "origin": "non-OI"
+    },
+    "MSCOCO images": {
+     "cites": [
+      "S15 l.1972, l.1980, l.1988, l.1997, l.2005 (Table 6 rows MSCOCO, VQAv2, A-OKVQA, LLaVA detail, LLaVA conversations)",
+      "S15 l.2050-2051 (Karpathy training split of MSCOCO)",
+      "S15 l.2066-2069 (A-OKVQA: subset overlapping the MSCOCO training split)"
+     ],
+     "image_bearing": true,
+     "note": "the dagger footnote of Table 6 is not in the extracted text; the COCO_<split>2014_<12 digits> file-name convention and the per-row details carry the reading",
+     "origin": "non-OI"
+    },
+    "Web CapFilt": {
+     "cites": [
+      "S15 l.1958 (Table 6 row 'Web CapFilt')",
+      "S15 l.2034-2035 ('Subset of the CC3M+CC12M+SBU Web CapFilt dataset')",
+      "S14 l.47 (URLs and filenames provided for the BLIP captions)"
+     ],
+     "crawl": "CC3M + CC12M + SBU (Web CapFilt subset)",
+     "image_bearing": true,
+     "origin": "web"
+    }
+   },
+   "prefixes": {
+    "n########": "ImageNet",
+    "~########": "Web CapFilt",
+    "~COCO_train####_############": "MSCOCO images",
+    "~COCO_val####_############": "MSCOCO images"
+   }
+  },
+  "pangeains": {
+   "components": {
+    "ALLAVA-4V": {
+     "cites": [
+      "S18 l.76"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "Cambrian737k": {
+     "cites": [
+      "S18 l.78",
+      "T1 path general/cambrian/images/textvqa.tar.gz",
+      "S26 l.633-634"
+     ],
+     "image_bearing": true,
+     "note": "contains a TextVQA (Open Images) part; other parts (ai2d, chartqa, coco, docvqa, dvqa, gqa, ocr_vqa, vg archives in T1) not traced",
+     "origin": "OI"
+    },
+    "ChartQA": {
+     "cites": [
+      "S18 l.79"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "Code-Feedback": {
+     "cites": [
+      "S18 l.80 (text-only/ path)"
+     ],
+     "image_bearing": false,
+     "note": "text-only, no image",
+     "origin": "non-OI"
+    },
+    "GQA-ru": {
+     "cites": [
+      "S18 l.83"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "LLaVA-Finetune": {
+     "cites": [
+      "S18 l.87 (cultural/laion-* path)",
+      "S19 l.115 ('we source images from LAION-Multi')",
+      "S19 l.263 (sampling 10 million images from LAION-Multi)"
+     ],
+     "crawl": "LAION-Multi",
+     "image_bearing": true,
+     "origin": "web"
+    },
+    "LLaVA-NeXt": {
+     "cites": [
+      "S18 l.90"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "LVIS-Instruct4V": {
+     "cites": [
+      "S18 l.91"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "Llava-JP-Instruct-108K": {
+     "cites": [
+      "S18 l.88"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "MTVQA": {
+     "cites": [
+      "S18 l.92"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "NuminaMath-CoT": {
+     "cites": [
+      "S18 l.94 (text-only/ path)"
+     ],
+     "image_bearing": false,
+     "note": "text-only, no image",
+     "origin": "non-OI"
+    },
+    "OpenHermes-2.5": {
+     "cites": [
+      "S18 l.95 (text-only/ path)"
+     ],
+     "image_bearing": false,
+     "note": "text-only, no image",
+     "origin": "non-OI"
+    },
+    "STAIR-Captions": {
+     "cites": [
+      "S18 l.99"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "ShareGPT-4o": {
+     "cites": [
+      "S18 l.97"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "ShareGPT4V": {
+     "cites": [
+      "S18 l.98"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "Viet-DOC-VQA-II": {
+     "cites": [
+      "S18 l.102"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "Viet-Doc-VQA": {
+     "cites": [
+      "S18 l.101"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "Viet-OCR-VQA": {
+     "cites": [
+      "S18 l.103"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "Viet-ShareGPT-4o-Text-VQA": {
+     "cites": [
+      "S18 l.104"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "allava_vflan": {
+     "cites": [
+      "S18 l.77"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "doc-vqa": {
+     "cites": [
+      "S18 l.81"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "gpt4v-dataset": {
+     "cites": [
+      "S18 l.82"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "laion-1M-qa": {
+     "cites": [
+      "S18 l.84 (cultural/laion-* path)",
+      "S19 l.115 ('we source images from LAION-Multi')",
+      "S19 l.263 (sampling 10 million images from LAION-Multi)"
+     ],
+     "crawl": "LAION-Multi",
+     "image_bearing": true,
+     "origin": "web"
+    },
+    "laion-300K-caption": {
+     "cites": [
+      "S18 l.85 (cultural/laion-* path)",
+      "S19 l.115 ('we source images from LAION-Multi')",
+      "S19 l.263 (sampling 10 million images from LAION-Multi)"
+     ],
+     "crawl": "LAION-Multi",
+     "image_bearing": true,
+     "origin": "web"
+    },
+    "llava-en-zh-300k": {
+     "cites": [
+      "S18 l.86"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "llava-med-zh-instruct-60K": {
+     "cites": [
+      "S18 l.89"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "nvlr2-llava": {
+     "cites": [
+      "S18 l.93"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "palo_multilingual_dataset": {
+     "cites": [
+      "S18 l.96"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "table-vqa": {
+     "cites": [
+      "S18 l.100"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    },
+    "translation": {
+     "cites": [
+      "S18 l.106",
+      "S19 l.2691 (multimodal translated example, ALLaVa-LAION)"
+     ],
+     "image_bearing": true,
+     "note": "treated as image-bearing (S19 shows a multimodal translated task); origin not traced",
+     "origin": "undetermined"
+    },
+    "webui_multilingual_ocr": {
+     "cites": [
+      "S18 l.105"
+     ],
+     "image_bearing": true,
+     "note": "image origin not traced in documentation (N13 default: undetermined)",
+     "origin": "undetermined"
+    }
+   },
+   "prefixes": {}
+  }
+ },
+ "label": "TIER 1 / DEV-EXPLORE (C-PVR-T1)",
+ "post_census_rule": "a one-judge read may only add prefixes onto components registered here (g_c2_prefix_map.json); never a new component, never a new origin, never a re-mapped prefix",
+ "registered_utc": "2026-11-02T02:58:42Z",
+ "sources": {
+  "D1": {
+   "copy": ".session_backup/2026-11-02/cc222_net/327aae4222748426a66c145a9b396dc0b8e7eb63cead13d6d6917046a5470d49.pdf",
+   "lines": "pdftotext (no options)",
+   "sha256": "327aae4222748426a66c145a9b396dc0b8e7eb63cead13d6d6917046a5470d49",
+   "url": "https://arxiv.org/pdf/1902.09506",
+   "utc": "2026-11-02T02:54:08Z",
+   "what": "GQA paper"
+  },
+  "D2": {
+   "copy": ".session_backup/2026-11-02/cc222_net/e5a0c3cb0b240c2a3089305fe2e9f3382414710b2f14f573d3298fef15fa20d4.pdf",
+   "lines": "pdftotext (no options)",
+   "sha256": "e5a0c3cb0b240c2a3089305fe2e9f3382414710b2f14f573d3298fef15fa20d4",
+   "url": "https://arxiv.org/pdf/1602.07332v1",
+   "utc": "2026-11-02T02:47:47Z",
+   "what": "Visual Genome paper"
+  },
+  "D3": {
+   "copy": ".session_backup/2026-11-02/cc222_net/b630d44a7ce35be42c6b30ecc69b2e69ee3e7b4f82f2aebc7dcac4f7e57c2cc2.pdf",
+   "lines": "pdftotext (no options)",
+   "sha256": "b630d44a7ce35be42c6b30ecc69b2e69ee3e7b4f82f2aebc7dcac4f7e57c2cc2",
+   "url": "https://anandmishra22.github.io/files/mishra-OCR-VQA.pdf",
+   "utc": "2026-11-02T02:47:54Z",
+   "what": "OCR-VQA paper"
+  },
+  "S14": {
+   "copy": ".session_backup/2026-11-02/g_c1_pages/d723f120f7ede082789a66f60b1fe1fb64e56afaacfed1568201f06b3420ac0a.md",
+   "lines": "file lines",
+   "sha256": "d723f120f7ede082789a66f60b1fe1fb64e56afaacfed1568201f06b3420ac0a",
+   "url": "https://huggingface.co/datasets/Gregor/mblip-train/raw/123e944ed13e5108285e70b58983def207301754/README.md",
+   "utc": "2026-11-02T00:28:01Z",
+   "what": "mBLIP instruction-mix dataset card"
+  },
+  "S15": {
+   "copy": ".session_backup/2026-11-02/g_c1_pages/de00352542cc165509e3a32ad0687d2b1d881c2aa4aded051343390bf1a8a532.pdf",
+   "lines": "pdftotext (no options)",
+   "sha256": "de00352542cc165509e3a32ad0687d2b1d881c2aa4aded051343390bf1a8a532",
+   "url": "https://arxiv.org/pdf/2307.06930v3",
+   "utc": "2026-11-02T00:32:10Z",
+   "what": "mBLIP paper"
+  },
+  "S18": {
+   "copy": ".session_backup/2026-11-02/g_c1_pages/2b00019d0153f729757031b1eef8ee0a2cd889e68c72a0121625ff98b2da12cc.md",
+   "lines": "file lines",
+   "sha256": "2b00019d0153f729757031b1eef8ee0a2cd889e68c72a0121625ff98b2da12cc",
+   "url": "https://huggingface.co/datasets/neulab/PangeaInstruct/raw/d0819917abe1cae38c008de0ca172f885f1f26a4/README.md",
+   "utc": "2026-11-02T00:28:01Z",
+   "what": "PangeaInstruct dataset card"
+  },
+  "S19": {
+   "copy": ".session_backup/2026-11-02/g_c1_pages/edc4c7edb868ff021ea16d9def8793d32da0e1440249621bffe3ad032c59af67.pdf",
+   "lines": "pdftotext -layout",
+   "sha256": "edc4c7edb868ff021ea16d9def8793d32da0e1440249621bffe3ad032c59af67",
+   "url": "https://arxiv.org/pdf/2410.16153v3",
+   "utc": "2026-11-02T00:32:11Z",
+   "what": "Pangea paper"
+  },
+  "S24": {
+   "copy": ".session_backup/2026-11-02/g_c1_pages/bf7fbd57f27198308d9ed8fb2813267a9d18cf79198c5ac534fba1ad757a287b.md",
+   "lines": "file lines",
+   "sha256": "bf7fbd57f27198308d9ed8fb2813267a9d18cf79198c5ac534fba1ad757a287b",
+   "url": "https://raw.githubusercontent.com/haotian-liu/LLaVA/c121f0432da27facab705978f83c4ada465e46fd/README.md",
+   "utc": "2026-11-02T00:32:12Z",
+   "what": "LLaVA README"
+  },
+  "S26": {
+   "copy": ".session_backup/2026-11-02/g_c1_pages/966ce91dfb10d27ebe5110b84a66a61cfff92902b9ee5c1fa73b72dfbbb122e0.pdf",
+   "lines": "pdftotext (no options)",
+   "sha256": "966ce91dfb10d27ebe5110b84a66a61cfff92902b9ee5c1fa73b72dfbbb122e0",
+   "url": "https://arxiv.org/pdf/1904.08920v2",
+   "utc": "2026-11-02T00:32:11Z",
+   "what": "TextVQA paper"
+  },
+  "T1": {
+   "copy": ".session_backup/2026-11-02/cc222_net/5eea0e60e98a98192d14834cdbc826c31488795bfb559b3e203bc54c6610a74d.json",
+   "lines": "JSON path entries",
+   "sha256": "5eea0e60e98a98192d14834cdbc826c31488795bfb559b3e203bc54c6610a74d",
+   "url": "https://huggingface.co/api/datasets/neulab/PangeaInstruct/tree/d0819917abe1cae38c008de0ca172f885f1f26a4?recursive=true",
+   "utc": "2026-11-02T01:16:29Z",
+   "what": "PangeaInstruct file listing (HF API tree)"
+  }
+ },
+ "what": "G-C2 provenance table (CC-222 W3): component -> origin, from documentation only; registered before any gate-c2 scan record exists; origins frozen by the sha pin in gates.py"
+}
