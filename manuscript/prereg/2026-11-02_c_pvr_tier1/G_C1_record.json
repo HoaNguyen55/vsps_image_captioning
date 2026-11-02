@@ -1,0 +1,1902 @@
+{
+ "record": "G_C1_record",
+ "paper": "C (PVR, target ACM TALLIP)",
+ "gate": "G-C1 desk read (documentation pages only; no data, no SFT id list, no image, no label read)",
+ "created_utc": "2026-11-02T00:14:54Z",
+ "repo_head_at_creation": "5ff00c97f5c7d4d9af5e96071d4df1c9577ba03c",
+ "licence": [
+  "PI-1102a (Q-a YES, Q-R10 YES, Q5 YES)",
+  ".session_backup/2026-11-02/C_GC1_GD_licence_scope_r3.md L2.1-L2.6",
+  "CC-221r3 GO (93); W3/NB-6: pre-status byte copy saved to .session_backup/2026-11-02/g_c1_pages/G_C1_record_prestatus.json"
+ ],
+ "prereg": "manuscript/prereg/2026-11-02_c_pvr_tier1/PREREG_DRAFT_v1_2.md (commit 8282874) section 6.2 l.454-466, section 9.1-9.2, section 4.4",
+ "statements": {
+  "q5_default_applied": "The Q5 default classification of CC-219 Ruling 6 (prereg l.462-466) was applied to every status: published SFT data joinable by OI id is checkable (CLEAN-candidate, pending G-C2); an Open-Images-based SFT part whose split membership cannot be determined is UNCHECKABLE and treated as contaminated; web-scale pretraining is recorded as 'unknown' and disclosed; no CLEAN VI captioner or no CLEAN VI verifier on NoCaps test -> STOP.",
+  "q5_redo_rule": "If the PI's Q5 answer differs from CC-219 R6, this record is redone within the closed candidate list. The PI answered Q5 YES (= R6) in PI-1102a, so the default stands.",
+  "validator": "c_pvr.py gate-c1 does not exist yet (prereg l.747). This record must later pass `python3 scripts/c_pvr/c_pvr.py gate-c1 --record G_C1_record.json` byte-unchanged, or it gets a new read.",
+  "status_basis": "Every status follows only from the cited text. Unclear text -> UNCHECKABLE with the reason stated. Precedence when several facts apply: HIT > UNCHECKABLE > CLEAN-candidate. Fail-closed wording ('in part', 'such as', 'including', internal or unpublished data) -> UNCHECKABLE.",
+  "quotes": "Quotes are short provenance sentences in English only; no example caption, question or answer from any dataset is quoted.",
+  "page_hashing": "sha256 is computed with sha256sum on the exact bytes fetched by curl (no auth, no HF token, no e-mail in any request). Hub pages are fetched as raw README at a pinned commit (huggingface.co/<id>/raw/<commit>/README.md); the human-readable blob URL at the same commit is recorded. Copies saved as .session_backup/2026-11-02/g_c1_pages/<sha256>.<ext>. Live-page drift is non-fatal on its own; the status follows the access-stamped version (L2.2)."
+ },
+ "key_schema": {
+  "top_level": [
+   "record",
+   "paper",
+   "gate",
+   "created_utc",
+   "repo_head_at_creation",
+   "licence",
+   "prereg",
+   "statements",
+   "key_schema",
+   "inclusion_criterion",
+   "named_candidates",
+   "further_candidate_screen",
+   "further_candidates",
+   "candidate_order",
+   "sets",
+   "llava_handling",
+   "sources",
+   "entries",
+   "stop_check",
+   "ambiguities",
+   "completed_utc"
+  ],
+  "sources[]": {
+   "id": "short source id, e.g. S01",
+   "what": "page description",
+   "url": "human-readable pinned URL (hub blob/<commit>, GitHub blob/<commit>, arXiv abs/<id>vN)",
+   "fetched_url": "exact URL whose bytes were hashed",
+   "revision": "hub/GitHub commit or arXiv version, or null",
+   "accessed_utc": "date -u stamp of the fetch",
+   "sha256": "sha256 of the fetched bytes",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/<sha256>.<ext>",
+   "archive_url": "web.archive.org snapshot URL or 'unavailable'"
+  },
+  "entries[]": {
+   "model": "hub id",
+   "role": "VI captioner / VI verifier | EN benchmark",
+   "set": "set id from sets[]",
+   "status": "CLEAN-candidate | HIT | UNCHECKABLE | N/A (LLaVA VI sets only)",
+   "source_ids": "list of sources[].id",
+   "quote": "short provenance quote from the decisive source",
+   "reason": "one-line reason",
+   "web_scale_pretraining": "unknown (disclosed) | not applicable",
+   "g_c2_note": "what the later id join must check, or null"
+  },
+  "stop_check": {
+   "vi_models_still_clean_candidate_on_nocaps_test": "list",
+   "provisional_stop": "true|false",
+   "note": "string"
+  }
+ },
+ "inclusion_criterion": {
+  "written_utc": "2026-11-02T00:14:54Z",
+  "written_before": "any screening fetch and any status",
+  "rule": "A further VI captioner / VI verifier candidate is included iff ALL of: IC1 its weights are published on the Hugging Face hub; IC2 its own model card or technical report states Vietnamese as a supported or trained language; IC3 it is an instruction-following image+text -> free-text model (can caption and answer the FAIR 3-label prompt); IC4 its model card or technical report names its training/SFT data (dataset names or a released data mixture); IC5 total parameters <= 10B per its card or report (bf16 weights fit one 24 GB GPU); IC6 it is not one of the five named candidates or LLaVA-1.5-7B.",
+  "enumeration": "Pool fixed before screening = (E1) the 50 most-downloaded hub models from the no-auth query https://huggingface.co/api/models?pipeline_tag=image-text-to-text&language=vi&sort=downloads&direction=-1&limit=50 (response bytes saved and hashed); (E2) models named in the C direction documents v3/v4/v4.1 and not among the named candidates (InstructBLIP, set aside in v3 section 5.2 l.256); (E3) open multilingual VLMs with released instruction data known from the literature, listed before screening: neulab/Pangea-7B, WueNLP/centurio_qwen, WueNLP/centurio_aya, Gregor/mblip-mt0-xl, Gregor/mblip-bloomz-7b, google/paligemma2-10b-mix-448, allenai/Molmo-7B-D-0924, lmms-lab/llava-onevision-qwen2-7b-ov, HuggingFaceM4/Idefics3-8B-Llama3. Screening reads only model cards / reports for IC1-IC6, not SFT contents.",
+  "order": "Included further candidates follow the five named candidates in case-insensitive alphabetical order of hub id; this is 'the record's listed order' (prereg l.457). The list closes when G-C1 is committed; no candidate is added afterwards (L2.4)."
+ },
+ "named_candidates": [
+  {
+   "order": 1,
+   "model": "5CD-AI/Vintern-1B-v3_5",
+   "role": "VI captioner / VI verifier"
+  },
+  {
+   "order": 2,
+   "model": "5CD-AI/Vintern-1B-v2",
+   "role": "VI captioner / VI verifier"
+  },
+  {
+   "order": 3,
+   "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "role": "VI captioner / VI verifier"
+  },
+  {
+   "order": 4,
+   "model": "OpenGVLab/InternVL3-8B",
+   "role": "VI captioner / VI verifier"
+  },
+  {
+   "order": 5,
+   "model": "CohereLabs/aya-vision-8b",
+   "role": "VI captioner / VI verifier"
+  }
+ ],
+ "sets": [
+  {
+   "id": "nocaps_test",
+   "name": "NoCaps test",
+   "definition": "10,600 images, Open Images test only (prereg l.374; v4.1 l.179, l.196)",
+   "status_in_prereg": "tier-3 primary test set; the STOP rule of prereg l.466 is evaluated on this column only",
+   "join_key": "OI image id (G-C2 as registered, prereg l.632-633)"
+  },
+  {
+   "id": "openvivqa_dev",
+   "name": "OpenViVQA dev",
+   "definition": "1,070 images / 3,545 QA (prereg l.374, section 4.3; C_TEST l.28); Vietnamese scene images, not Open Images",
+   "status_in_prereg": "tier-3 Vietnamese scene-text proxy one-look set",
+   "join_key": "OpenViVQA native image id; NOTE: G-C2 as registered is an OI-id join only, so a CLEAN-candidate on this set needs a native-id join that G-C2's registered scope does not cover (flagged for the coordinator; no rule invented here)"
+  },
+  {
+   "id": "vitextcaps_test",
+   "name": "ViTextCaps test",
+   "definition": "only if publicly released before the tier-3 freeze; secondary, frozen config, passing ViTextCaps-dev rehearsal (prereg l.374-376; CC-219 R7)",
+   "status_in_prereg": "conditional tier-3 secondary set",
+   "join_key": "ViTextCaps native image id (same G-C2 scope note as openvivqa_dev)"
+  },
+  {
+   "id": "viecap4h_private_test",
+   "name": "VieCap4H private test",
+   "definition": "only if its references are published (prereg l.376; PI-1101s)",
+   "status_in_prereg": "conditional tier-3 secondary set",
+   "join_key": "VieCap4H native image id (same G-C2 scope note as openvivqa_dev)"
+  }
+ ],
+ "sets_out_of_scope": "Tier-1 dev and tier-2 rehearsal sets (XM3600-vi, KT-C, T_A, ViTextVQA dev, KTVIC test, OpenViIC test, NoCaps val, O_B) are not G-C1 sets. Remark carried from v4.1 l.192 / v3 l.251: if any Vintern model is chosen, O_B (OpenViVQA train slice) counts as contaminated for it and is not a rehearsal set.",
+ "llava_handling": {
+  "model": "liuhaotian/llava-v1.5-7b",
+  "role": "EN benchmark only (prereg l.457; EvalAI CIDEr-EN arm, section 9.5); not a VI candidate (v3 section 5.2 l.252: weak Vietnamese, 'not a candidate for OpenViVQA'; v4.1 l.270)",
+  "sets_checked": [
+   "nocaps_test"
+  ],
+  "vi_sets": "openvivqa_dev, vitextcaps_test, viecap4h_private_test recorded as N/A (not a VI candidate)",
+  "stop_computation": "excluded from the STOP check (STOP concerns VI captioner / VI verifier only)"
+ },
+ "further_candidate_screen": {
+  "screened_utc": "2026-11-02T00:24:50Z..2026-11-02T00:27:14Z",
+  "enumeration_E1_response": {
+   "url": "https://huggingface.co/api/models?pipeline_tag=image-text-to-text&language=vi&sort=downloads&direction=-1&limit=50",
+   "accessed_utc": "2026-11-02T00:24:50Z",
+   "sha256": "17484a6357604e3ea853e4264a073f1c6ced57b61deef173845c586c08176c44",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/17484a6357604e3ea853e4264a073f1c6ced57b61deef173845c586c08176c44.json",
+   "n_models": 50
+  },
+  "method": "Raw README at the hub commit returned by huggingface.co/api/models/<id> (field sha); grep of the card for Vietnamese and training-data statements; for <=10B models whose card fails IC2, the linked arXiv report (latest version at access) was grepped for 'Vietnam'. Reports used for screening, saved under g_c1_pages/screen/<sha>.pdf: arXiv 2305.06500 sha256 31c03f3ee54016e6da875593ed9d98419899d4164af638dc8cca76a4871beb35; arXiv 2307.06930 sha256 de00352542cc165509e3a32ad0687d2b1d881c2aa4aded051343390bf1a8a532; arXiv 2311.06242 sha256 403d820e5ea7a1d7e2f95d4b2facef3ea37e2a5f12354a8a50164b10a057708a; arXiv 2404.16821 sha256 540e8c6cf387d88203573c97fa5e5c8028a17e2964eaa53d60894c8065c8a81d; arXiv 2407.07726 sha256 aec6edd6b712597647d5e6e10850039d6415620163f45bb64f71d89718e6bb2f; arXiv 2408.03326 sha256 5322de2d2185bd6c215efe8a5e5e692dd2ed9df5de4f3e476ca45675e9ffd6d1; arXiv 2408.12480 sha256 7c990359986833375ec9cfcc2988655f7e32d16b9e06c4b00059d82d778ee858; arXiv 2408.12637 sha256 16af48cfb488c35f871789dc17d17c97dfa8fe3a2da9fa102fc8d6100bb72ac7; arXiv 2409.17146 sha256 54c5e78b4066eef960af1c108d758311b479879b6ba4215570e1c23f5f55510d; arXiv 2410.16153 sha256 edc4c7edb868ff021ea16d9def8793d32da0e1440249621bffe3ad032c59af67; arXiv 2412.03555 sha256 4edfa3741ad3f6be5bfec1c495dfdc82efc362809384697ebd7c6a20bcbde6b4; arXiv 2412.05271 sha256 361dae69850c1bb15397fd673738ff187fc342ac990b6d0c966ab477caad01b6; arXiv 2501.05122 sha256 f7d26f6e96c993e36d0f31989dc658dbc760a9a7f7186cd2019aadc68a50c517; arXiv 2502.13923 sha256 399a28f6ed79f4ece29cca93993fceb56fc304b1d779e49392aec05aff45aba5; arXiv 2504.10479 sha256 5da94f2a229808a490e15c247b4321e1ef14a6272e992b07e236bc18f6553bc9; arXiv 2505.08751 sha256 d42974ddc7916f9b3d8ed061ed31ce5ef43f4b07fce0b36642a6b6b25e30fe8b; arXiv 2505.09388 sha256 84a5e2b1fa04bb774bf12ae606d1e6d9dd2147ed2ebe78a4cfeb91ba380ffdd5; arXiv 2510.18234 sha256 a7297788968f8ad9ed21bcd273110814e4889efbbc99bfea86dca12205797a90; arXiv 2606.23050 sha256 b2d623ccefe5e13b8aa61ccbcd052a91ae77d129d92aa2e9ff5e2380d80e3f91",
+  "pool": [
+   {
+    "model": "allenai/Molmo-7B-D-0924",
+    "revision": "cab33fb7f1a40091911f81165f8481920621948f",
+    "params_hub": "8021025280",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:12Z",
+    "readme_sha256": "eee9ba24ff6f1611084626db39041c771a32d97bdf61f4851da29119c45245ed",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/eee9ba24ff6f1611084626db39041c771a32d97bdf61f4851da29119c45245ed.md",
+    "result": "IC2 fail: card has no Vietnamese; report arXiv 2409.17146 0 'Vietnam' hits"
+   },
+   {
+    "model": "autotrust/JEV-27B-VL",
+    "revision": "9e53b8a809d2ab98e3e6a55b2b2dbf94b4c1e84a",
+    "params_hub": "27781427952",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:09Z",
+    "readme_sha256": "383a5432d39804ce451ab6b1edf0033f2d305e5cbbd1a6f757f543192a5cc819",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/383a5432d39804ce451ab6b1edf0033f2d305e5cbbd1a6f757f543192a5cc819.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "baidu/Unlimited-OCR",
+    "revision": "8249d20b2822a7d8a4c22c8d8c9069b5ac36bda3",
+    "params_hub": "3336106240",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "4f573db255db5262bfe2ea92e459bfc11635a456f210e3a96289bb9605077a55",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/4f573db255db5262bfe2ea92e459bfc11635a456f210e3a96289bb9605077a55.md",
+    "result": "IC2 fail: card and report arXiv 2606.23050 0 'Vietnam' hits; OCR model"
+   },
+   {
+    "model": "byteshape/Qwen3.8-27B-GGUF",
+    "revision": "3fdfbd9b4a618303ad36edb151e95d134ece8c18",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:10Z",
+    "readme_sha256": "ae2ed1958a63acea300ae9052f89410989b2a2726f9a003a1bd22295a37e2587",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/ae2ed1958a63acea300ae9052f89410989b2a2726f9a003a1bd22295a37e2587.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "cdiamond/Qwen3.8-27B-iMatrix-NVFP4-MTP-GGUF",
+    "revision": "ac343e8f44caef0896f79d372ecc07ef7ab34ec8",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "979d7074720813c11b2b4a140dbacb6491d1b377d80d0827c907680c0fe76880",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/979d7074720813c11b2b4a140dbacb6491d1b377d80d0827c907680c0fe76880.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "datalab-to/chandra-ocr-2",
+    "revision": "af93b47dba1b47b6640c86ccf487ed2260ab9a09",
+    "params_hub": "5295564288",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "5eedfd77eb548b023400175628f98146414d2551aedfe3060c09d3e499f7368f",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/5eedfd77eb548b023400175628f98146414d2551aedfe3060c09d3e499f7368f.md",
+    "result": "IC4 fail: card names no training dataset (Vietnamese appears only as an OCR benchmark row); IC3 doubtful (OCR model)"
+   },
+   {
+    "model": "DavidAU/Qwen3.5-9B-The-Defiant-Fable-Uncensored-Heretic-NEO-IMATRIX-MAX-MTP-GGUF",
+    "revision": "d5f3139249b7ee2535c20ab81125c9a6ab0c4915",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:10Z",
+    "readme_sha256": "32138a6d7b6be67f0a1d0b7b346cf62a2fcc635d4e901afb7d455b4dccf49f09",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/32138a6d7b6be67f0a1d0b7b346cf62a2fcc635d4e901afb7d455b4dccf49f09.md",
+    "result": "IC4 fail: third-party GGUF derivative of Qwen/Qwen3.5-9B; card names no training dataset of the base"
+   },
+   {
+    "model": "DavidAU/Qwen3.8-27B-TURBO-Fable-Cold-Fusion-735-882-Heretic-Uncensored-NEO-CODER-MAX-MTP-GGUF",
+    "revision": "b9bce7e859c9b5047aca884e5bff76f8a0443de1",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "38311910b8b7627454a2c50d1761f9cdc111a8f3aa0f0231a857cb95ae6efb9d",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/38311910b8b7627454a2c50d1761f9cdc111a8f3aa0f0231a857cb95ae6efb9d.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "deepseek-ai/DeepSeek-OCR",
+    "revision": "9f30c71f441d010e5429c532364a86705536c53a",
+    "params_hub": "3336106240",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:10Z",
+    "readme_sha256": "4f5e1d9e3b0c65c442f9c57c708e15d06ba9e277bb58db49bc9ba833f62f8f76",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/4f5e1d9e3b0c65c442f9c57c708e15d06ba9e277bb58db49bc9ba833f62f8f76.md",
+    "result": "IC2 fail: card and report arXiv 2510.18234 0 'Vietnam' hits; OCR model"
+   },
+   {
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash",
+    "revision": "314113f8a7dadb388215396ba5fbee2c610a04d6",
+    "params_hub": "763205315794",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:10Z",
+    "readme_sha256": "347c9db4e5506acb531cbc3b724407ab88e9af8781679152f0823d7bac16d251",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/347c9db4e5506acb531cbc3b724407ab88e9af8781679152f0823d7bac16d251.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "ggml-org/Qwen3.8-27B-GGUF",
+    "revision": "a316ea527fde32c12487be7574e2db5ac2ad2a7e",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:09Z",
+    "readme_sha256": "7ea038c050ddf1d40bbff2b74de4e58cd480616ec9c6db1e3a0e07a0feb631d5",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/7ea038c050ddf1d40bbff2b74de4e58cd480616ec9c6db1e3a0e07a0feb631d5.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "google/gemma-4-26B-A4B-it",
+    "revision": "4d7ae4984b7db7de8f8457170b3f1a419ee76d52",
+    "params_hub": "25805936206",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:07Z",
+    "readme_sha256": "4f463225c4fe49ec120115b0f9bb6713ff1556293a909903ffdae3df7bf974da",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/4f463225c4fe49ec120115b0f9bb6713ff1556293a909903ffdae3df7bf974da.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "google/gemma-4-31B-it",
+    "revision": "842da3794eaa0b77d5f08bae87a17459d91ff475",
+    "params_hub": "31273088876",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:07Z",
+    "readme_sha256": "e209f5c435b1e66055bd6d7c29185103ae8d2027a03a96b359335154f206b82b",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/e209f5c435b1e66055bd6d7c29185103ae8d2027a03a96b359335154f206b82b.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "google/paligemma2-10b-mix-448",
+    "revision": "b26d16fb4251090ba4a4aa5af9fca1f8248ed5b6",
+    "params_hub": "9663523568",
+    "readme_http": "401",
+    "accessed_utc": "2026-11-02T00:25:12Z",
+    "readme_sha256": "0d9226e9957cc35d2d825e6d1a91365675cecbead01ff4e9216917be3431ec56",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/0d9226e9957cc35d2d825e6d1a91365675cecbead01ff4e9216917be3431ec56.md",
+    "result": "IC2 fail: card gated (raw README returns 401 without auth; no token used); report arXiv 2412.03555v1 0 'Vietnam'/'vi' hits"
+   },
+   {
+    "model": "Gregor/mblip-bloomz-7b",
+    "revision": "4d95b91d56fcdce86504c951a28f016b15e219a1",
+    "params_hub": "8163280384",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:12Z",
+    "readme_sha256": "a0c72672db12651943995d32727efd49b301e960df63220aab3e3344d38b7c1f",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/a0c72672db12651943995d32727efd49b301e960df63220aab3e3344d38b7c1f.md",
+    "result": "INCLUDED: IC1 hub weights; IC2 card 'mBLIP was trained on the following 96 languages' incl. vi; IC3 instruction-tuned image+text->text; IC4 card names the released 'multilingual task mixture' Gregor/mblip-train; IC5 8.16B"
+   },
+   {
+    "model": "Gregor/mblip-mt0-xl",
+    "revision": "5e3ca094d5de4c53ed5548b20fd21a7787cafd1a",
+    "params_hub": "4835309056",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:12Z",
+    "readme_sha256": "d195cfbdf077604b87600e93d20776cd4968a55218ddd1dbf7d27fbf7e05939a",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/d195cfbdf077604b87600e93d20776cd4968a55218ddd1dbf7d27fbf7e05939a.md",
+    "result": "INCLUDED: as mblip-bloomz-7b (same 96-language list incl. vi; Gregor/mblip-train); IC5 4.84B"
+   },
+   {
+    "model": "HauhauCS/Qwen3.8-27B-Uncensored-HauhauCS-Aggressive-MTP-GGUF",
+    "revision": "993a5971fda8f30dd1b7eb2654792ba4415c7460",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:09Z",
+    "readme_sha256": "482d5909625c06402ac758540298103b8ff087d7d014a3fc1101390591f5824b",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/482d5909625c06402ac758540298103b8ff087d7d014a3fc1101390591f5824b.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "HuggingFaceM4/Idefics3-8B-Llama3",
+    "revision": "fddb4ff79181e55a994674777e06cd5456ce3dc3",
+    "params_hub": "8462086384",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:12Z",
+    "readme_sha256": "41e3438ac36ccbaf1babf20e14b565303e3dd51a2c1116e716b03241a09d616f",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/41e3438ac36ccbaf1babf20e14b565303e3dd51a2c1116e716b03241a09d616f.md",
+    "result": "IC2 fail: card 'Language(s) (NLP): en'; report arXiv 2408.12637 0 'Vietnam' hits"
+   },
+   {
+    "model": "HuggingFaceTB/SmolVLM2-500M-Video-Instruct",
+    "revision": "7b375e1b73b11138ff12fe22c8f2822d8fe03467",
+    "params_hub": "507482304",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "afc4bf5f519438b221a84292979a9eac3de4b9726e5baaa82033c55f59f9f7a5",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/afc4bf5f519438b221a84292979a9eac3de4b9726e5baaa82033c55f59f9f7a5.md",
+    "result": "IC2 fail: card 'Language(s) (NLP): English'"
+   },
+   {
+    "model": "huihui-ai/Huihui-Qwen3.6-35B-A3B-abliterated-MTP-GGUF",
+    "revision": "acd5abe0c5ebd064f3863ca7d4bba2d924ec6544",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:09Z",
+    "readme_sha256": "09d4c2297f9c069913ffec4277a87849247d005459b4e359fbc84dc5a6ff9918",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/09d4c2297f9c069913ffec4277a87849247d005459b4e359fbc84dc5a6ff9918.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "huihui-ai/Huihui-Qwen3.8-27B-abliterated-GGUF",
+    "revision": "1c69098e9c32db6dc06fc48f1d6cc75ad07da89e",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:09Z",
+    "readme_sha256": "22c5496db68ce3fc90c148ea707b5492e523e43e845e5d0997bd778a35bfc6d5",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/22c5496db68ce3fc90c148ea707b5492e523e43e845e5d0997bd778a35bfc6d5.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "ISTA-DASLab/Qwen3.8-Flash-Next-GSQ-RCO-GGUF",
+    "revision": "ed59f92082b1e93c0e96d60a8b11aab089b52f09",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:07Z",
+    "readme_sha256": "71496aac3c9126085519dbe3aa82e46eb9f5749ee122b089a66182a94b0db6a3",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/71496aac3c9126085519dbe3aa82e46eb9f5749ee122b089a66182a94b0db6a3.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "lmms-lab/llava-onevision-qwen2-7b-ov",
+    "revision": "0b07bf7565e244cf4f39982249eafe8cd799d6dd",
+    "params_hub": "8030348832",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:12Z",
+    "readme_sha256": "4ecb5de20f2e550e2dad9b027ec59ec8164754bc4f3fc7488bf2f08fe0c5bb6d",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/4ecb5de20f2e550e2dad9b027ec59ec8164754bc4f3fc7488bf2f08fe0c5bb6d.md",
+    "result": "IC2 fail: card has no Vietnamese; report arXiv 2408.03326v3 0 'Vietnam' hits"
+   },
+   {
+    "model": "lmstudio-community/Qwen3.8-27B-MLX-4bit",
+    "revision": "6067b15cf581666a4aecf6af3afaba4bb5efc20c",
+    "params_hub": "27356728560",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "1293a0709e8f78096e695344eaa722d21a246325dbeb89f741529a206d67439e",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/1293a0709e8f78096e695344eaa722d21a246325dbeb89f741529a206d67439e.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "lmstudio-community/Qwen3.8-27B-MLX-5bit",
+    "revision": "b9ad7b92aa2fd07b041f4b8b3aa459941f8abbf7",
+    "params_hub": "27356728560",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "5a2f0ac0ca3bd71f5e76baebd803440f6ffc143591d9eae44e157f3f762b9356",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/5a2f0ac0ca3bd71f5e76baebd803440f6ffc143591d9eae44e157f3f762b9356.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "lmstudio-community/Qwen3.8-27B-MLX-6bit",
+    "revision": "05f38c1f39e2f39619653616fe8e96a5d676358e",
+    "params_hub": "27356728560",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "4716cde8a3be84577fffb6aa15ce04498920fa516ab186e1281b0689b7ccd70a",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/4716cde8a3be84577fffb6aa15ce04498920fa516ab186e1281b0689b7ccd70a.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "lmstudio-community/Qwen3.8-27B-MLX-8bit",
+    "revision": "241ebb5f1d60b122fd653da658836a55feb9e2b0",
+    "params_hub": "27356728560",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "d0be06349900fedad98552d94b26f1e632f05a2692cc42ae9d1383396f121cdf",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/d0be06349900fedad98552d94b26f1e632f05a2692cc42ae9d1383396f121cdf.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "microsoft/Florence-2-base",
+    "revision": "5ca5edf5bd017b9919c05d08aebef5e4c7ac3bac",
+    "params_hub": "231567705",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "e49de5527bd39688745ce20388bf3f31fdb891abc0e6950a3f64630114769d17",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/e49de5527bd39688745ce20388bf3f31fdb891abc0e6950a3f64630114769d17.md",
+    "result": "IC2 fail: card has no Vietnamese; report arXiv 2311.06242 0 'Vietnam' hits; IC3 doubtful (task-prompt model)"
+   },
+   {
+    "model": "neulab/Pangea-7B",
+    "revision": "085034d5560c2b27a409e3b99f41a03257d74b09",
+    "params_hub": "7935649792",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "9328fd54b42099cdb7df93ac7358e2cda22176a319011f2c6f407750153e099d",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/9328fd54b42099cdb7df93ac7358e2cda22176a319011f2c6f407750153e099d.md",
+    "result": "INCLUDED: IC2 card YAML language list incl. vi, title 'Fully Open Multilingual Multimodal LLM for 39 Languages'; IC4 card 'Training Dataset: 6M PangeaIns' (neulab/PangeaInstruct); IC5 7.94B"
+   },
+   {
+    "model": "peculiar-ragdoll/Tiel-Coder-35B-A3B-GGUF-MTP",
+    "revision": "bb5f3f441849fc24c2d9037c310bc995404bfa0c",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:09Z",
+    "readme_sha256": "139316920ac05b5018cc0f4591618386245a55d06324181272f731b0ba403fd4",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/139316920ac05b5018cc0f4591618386245a55d06324181272f731b0ba403fd4.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Qwen/Qwen2.5-VL-3B-Instruct",
+    "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+    "params_hub": "3754622976",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "0b6da5a154b923da4dc66e416140c9b7f235f9b08fbbcc27fd9df7b586e3150d",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/0b6da5a154b923da4dc66e416140c9b7f235f9b08fbbcc27fd9df7b586e3150d.md",
+    "result": "IC4 fail: card names no training dataset (cites only YaRN arXiv 2309.00071); IC2 not met on the card"
+   },
+   {
+    "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+    "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+    "params_hub": "8292166656",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:07Z",
+    "readme_sha256": "1fa65dbb08bc9ffe0b020409c8686f08b23008c5a68554353305fd2de6f2b81e",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/1fa65dbb08bc9ffe0b020409c8686f08b23008c5a68554353305fd2de6f2b81e.md",
+    "result": "IC6: named candidate (order 3)"
+   },
+   {
+    "model": "Qwen/Qwen2.5-VL-7B-Instruct-AWQ",
+    "revision": "536a35794df8831aa814970ee8f89eff577e7718",
+    "params_hub": "8292166656",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "e674a38d66374a0b7f9053dbe15d496586820f66eb6ae016dc5d837e9f627941",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/e674a38d66374a0b7f9053dbe15d496586820f66eb6ae016dc5d837e9f627941.md",
+    "result": "IC6/IC4: quantization of named candidate 3; card names no training dataset"
+   },
+   {
+    "model": "Qwen/Qwen3-VL-2B-Instruct",
+    "revision": "89644892e4d85e24eaac8bacfd4f463576704203",
+    "params_hub": "2127532032",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "5fc5be1ca9a3910399bd6239ee5086ab5d82a2a59c5d2b00e887a8835cc110e4",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/5fc5be1ca9a3910399bd6239ee5086ab5d82a2a59c5d2b00e887a8835cc110e4.md",
+    "result": "IC4 fail: card names no training dataset (Qwen3-VL cards cite only the Qwen3 LLM report arXiv 2505.09388, which names no VL SFT data); IC2 also not met on the card"
+   },
+   {
+    "model": "Qwen/Qwen3-VL-4B-Instruct",
+    "revision": "ebb281ec70b05090aa6165b016eac8ec08e71b17",
+    "params_hub": "4437815808",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "a884e5e78f7d6f7bfe237f909dbc41a126542e259dc79d8ab33cc8980580ff79",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/a884e5e78f7d6f7bfe237f909dbc41a126542e259dc79d8ab33cc8980580ff79.md",
+    "result": "IC4 fail: card names no training dataset (Qwen3-VL cards cite only the Qwen3 LLM report arXiv 2505.09388, which names no VL SFT data); IC2 also not met on the card"
+   },
+   {
+    "model": "Qwen/Qwen3-VL-8B-Instruct",
+    "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+    "params_hub": "8767123696",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:07Z",
+    "readme_sha256": "6d5d06e0c3f069097002445d30dce9ee107db3afaf15563f09e6df49b8dcb4d7",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/6d5d06e0c3f069097002445d30dce9ee107db3afaf15563f09e6df49b8dcb4d7.md",
+    "result": "IC4 fail: card names no training dataset (Qwen3-VL cards cite only the Qwen3 LLM report arXiv 2505.09388, which names no VL SFT data); IC2 also not met on the card"
+   },
+   {
+    "model": "Qwen/Qwen3-VL-8B-Instruct-FP8",
+    "revision": "9cdc6310a8cb770ce18efaf4e9935334512aee45",
+    "params_hub": "8767547632",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "d2813c67aa5db818f160d9dd5fb23f4e1c93aedc48fa1a48e5d0dffb8a748b4c",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/d2813c67aa5db818f160d9dd5fb23f4e1c93aedc48fa1a48e5d0dffb8a748b4c.md",
+    "result": "IC4 fail: card names no training dataset (Qwen3-VL cards cite only the Qwen3 LLM report arXiv 2505.09388, which names no VL SFT data); IC2 also not met on the card"
+   },
+   {
+    "model": "Qwen/Qwen3.5-0.8B",
+    "revision": "2fc06364715b967f1860aea9cf38778875588b17",
+    "params_hub": "873438784",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "87a163af54f32fa608a0f8d3ac67945c53dd2b4a7c96740b3d7fdc28e8458864",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/87a163af54f32fa608a0f8d3ac67945c53dd2b4a7c96740b3d7fdc28e8458864.md",
+    "result": "IC4 fail: card names no training dataset and links no report; IC2 not met on the card"
+   },
+   {
+    "model": "Qwen/Qwen3.5-27B",
+    "revision": "fc05daec18b0a78c049392ed2e771dde82bdf654",
+    "params_hub": "27781427952",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:10Z",
+    "readme_sha256": "8c6303cd5e89dc378d11fb4b70a0ff9c3cccb55a031133c69d9cbde9481f1a8c",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/8c6303cd5e89dc378d11fb4b70a0ff9c3cccb55a031133c69d9cbde9481f1a8c.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Qwen/Qwen3.5-2B",
+    "revision": "15852e8c16360a2fea060d615a32b45270f8a8fc",
+    "params_hub": "2274069824",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "c0e83a849c776e6fa843d011f023132d942a0f0140d903205bf1c363adad2275",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/c0e83a849c776e6fa843d011f023132d942a0f0140d903205bf1c363adad2275.md",
+    "result": "IC4 fail: card names no training dataset and links no report; IC2 not met on the card"
+   },
+   {
+    "model": "Qwen/Qwen3.5-35B-A3B",
+    "revision": "59d61f3ce65a6d9863b86d2e96597125219dc754",
+    "params_hub": "35951822704",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:10Z",
+    "readme_sha256": "71c3bbc2eadadd5980bbdbb15df958c27d42ede24821015602a021109aacf492",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/71c3bbc2eadadd5980bbdbb15df958c27d42ede24821015602a021109aacf492.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Qwen/Qwen3.5-4B",
+    "revision": "851bf6e806efd8d0a36b00ddf55e13ccb7b8cd0a",
+    "params_hub": "4659865088",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:07Z",
+    "readme_sha256": "1406be1b6b8fd8a6545870da516912804756593628a1d0fb0a7965211e82a7bb",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/1406be1b6b8fd8a6545870da516912804756593628a1d0fb0a7965211e82a7bb.md",
+    "result": "IC4 fail: card names no training dataset and links no report; IC2 not met on the card"
+   },
+   {
+    "model": "Qwen/Qwen3.5-9B",
+    "revision": "c202236235762e1c871ad0ccb60c8ee5ba337b9a",
+    "params_hub": "9653104368",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:07Z",
+    "readme_sha256": "c5f5a8c2dddab69cfbf05279235aa5fddb137939a06539c4c7637aa900fef6d0",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/c5f5a8c2dddab69cfbf05279235aa5fddb137939a06539c4c7637aa900fef6d0.md",
+    "result": "IC4 fail: card names no training dataset and links no report; IC2 not met on the card"
+   },
+   {
+    "model": "Qwen/Qwen3.6-27B",
+    "revision": "6a9e13bd6fc8f0983b9b99948120bc37f49c13e9",
+    "params_hub": "27781427952",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:09Z",
+    "readme_sha256": "bb936d6da51014f1edc9aa4cf9abf28d98695b7616ad56adfeeebfa752051d3d",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/bb936d6da51014f1edc9aa4cf9abf28d98695b7616ad56adfeeebfa752051d3d.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Qwen/Qwen3.6-27B-FP8",
+    "revision": "e89b16ebf1988b3d6befa7de50abc2d76f26eb09",
+    "params_hub": "27782935472",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "1d812aa4505b65e4893130b61d8e60498f15f751ed180e60dab0650823f2dced",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/1d812aa4505b65e4893130b61d8e60498f15f751ed180e60dab0650823f2dced.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Qwen/Qwen3.6-35B-A3B",
+    "revision": "995ad96eacd98c81ed38be0c5b274b04031597b0",
+    "params_hub": "35951822704",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "c4ddaa065649ff6352648f64747a16eda31726f3e34add94ce04abb461c77b75",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/c4ddaa065649ff6352648f64747a16eda31726f3e34add94ce04abb461c77b75.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+    "revision": "95a723d08a9490559dae23d0cff1d9466213d989",
+    "params_hub": "35953925552",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "24c5494fb559cdfda44abe396f71c18975fec69745aae4a94679316e6e80dbdb",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/24c5494fb559cdfda44abe396f71c18975fec69745aae4a94679316e6e80dbdb.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Qwen/Qwen3.8-27B",
+    "revision": "1d4bf0f2ff6012fd82039f2fa52739d0dd7c60c0",
+    "params_hub": "27781427952",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:07Z",
+    "readme_sha256": "57e4bdb258ee1a7d2635c5174ebd4e56abe392505cdb5f8bbb356b0dc4293641",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/57e4bdb258ee1a7d2635c5174ebd4e56abe392505cdb5f8bbb356b0dc4293641.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Qwen/Qwen3.8-27B-FP8",
+    "revision": "017b9c7af6b5689d5dd426a76e0bc077eb5ca20a",
+    "params_hub": "27781427952",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "a247d876f5398eed9ae898f32a984083552de57237b5e20714657e1675e26d2e",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/a247d876f5398eed9ae898f32a984083552de57237b5e20714657e1675e26d2e.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Qwen/Qwen3.8-Flash-Next",
+    "revision": "de4b8e4d43b917e7706784d8bb445c9af86a3540",
+    "params_hub": "179999981459",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "35ca37ccc366f1ba478dab33841a2c0c18ce53fd62f291ca05341f7728b225b2",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/35ca37ccc366f1ba478dab33841a2c0c18ce53fd62f291ca05341f7728b225b2.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "Salesforce/instructblip-vicuna-7b",
+    "revision": "19103d0c5b5263c8a7891012e08573439fb6607f",
+    "params_hub": "7913726720",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "f24dae5d2e5e8ce5219d9461de7755c89edcbe5fbf2f9b6e81574e4dbbafc1ba",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/f24dae5d2e5e8ce5219d9461de7755c89edcbe5fbf2f9b6e81574e4dbbafc1ba.md",
+    "result": "IC2 fail: card 'language: en'; report arXiv 2305.06500 has 0 'Vietnam' hits (E2: set aside in v3 l.256)"
+   },
+   {
+    "model": "SC117/Qwen3.8-Flash-Next-GSQ-RCO-abliterated-GGUF",
+    "revision": "90a3350cd800ec1fe0d1660a38414ad9e985782f",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:08Z",
+    "readme_sha256": "8402da1a70b32075f7d3fcb21d01b7d510d3c2ed1290f3d479f89c9657cd8e1e",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/8402da1a70b32075f7d3fcb21d01b7d510d3c2ed1290f3d479f89c9657cd8e1e.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "thinkingmachines/Inkling",
+    "revision": "828496eeae4c243ff1a22f7f28ff83694f2f7bc9",
+    "params_hub": "952377623626",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:10Z",
+    "readme_sha256": "8c976e47c2a9faa71436c0668a5daf8bc5d9a8bd5ecbca51c669d3b8ce98fe9a",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/8c976e47c2a9faa71436c0668a5daf8bc5d9a8bd5ecbca51c669d3b8ce98fe9a.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "unsloth/gemma-4-12b-it-GGUF",
+    "revision": "fc034cfff751157913579611efad8462ac1be606",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:10Z",
+    "readme_sha256": "9106afa0a21951c099f4ca9851ab7efa31fd27f57feee63d70026c3b9b7cdf1c",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/9106afa0a21951c099f4ca9851ab7efa31fd27f57feee63d70026c3b9b7cdf1c.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "unsloth/Qwen3.5-9B-GGUF",
+    "revision": "3885219b6810b007914f3a7950a8d1b469d598a5",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "e50f8066e39c38cbc2da5dd94b9a9a2712b64c4921f107a5adb4b3ca5b6bbac0",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/e50f8066e39c38cbc2da5dd94b9a9a2712b64c4921f107a5adb4b3ca5b6bbac0.md",
+    "result": "IC4 fail: third-party GGUF derivative of Qwen/Qwen3.5-9B; card names no training dataset of the base"
+   },
+   {
+    "model": "unsloth/Qwen3.6-35B-A3B-MTP-GGUF",
+    "revision": "5bc3e238d916f48a861bac2f8a1990a0e9b7e98d",
+    "params_hub": "NA",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "03b88d9a26d2c06644e8620f0ee0a3fbb98749321344a4e7e40805ffdaf49e6e",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/03b88d9a26d2c06644e8620f0ee0a3fbb98749321344a4e7e40805ffdaf49e6e.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   },
+   {
+    "model": "vikhyatk/moondream2",
+    "revision": "5d6c926f44e26b07957b0dd315bbedcb4c17a5fe",
+    "params_hub": "1927237104",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:09Z",
+    "readme_sha256": "24cb16e1accd51e91302836bf87388740f0c78d1a29fc2895b68b4b2ed452bbc",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/24cb16e1accd51e91302836bf87388740f0c78d1a29fc2895b68b4b2ed452bbc.md",
+    "result": "IC2 fail: card has no Vietnamese; no report linked"
+   },
+   {
+    "model": "WueNLP/centurio_aya",
+    "revision": "bc31c23e472c846c3f686e6ea3cd0ad525e22684",
+    "params_hub": "8482481216",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:12Z",
+    "readme_sha256": "a5bfe415f9f1254484b25d0512a8ae1bbd60e9261ff633ecc4b953fc9473ac07",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/a5bfe415f9f1254484b25d0512a8ae1bbd60e9261ff633ecc4b953fc9473ac07.md",
+    "result": "INCLUDED: IC2 card 'trained with the following 100 languages' incl. vi; IC4 card says 'Training Data: COMING SOON' but report arXiv 2501.05122v1 Table 8 'List of datasets included in the instruct tuning'; IC5 8.48B"
+   },
+   {
+    "model": "WueNLP/centurio_qwen",
+    "revision": "bf6617eb01171dba83391e0ff57bf03420721ba5",
+    "params_hub": "8064951872",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:11Z",
+    "readme_sha256": "68beedb581a38f576fc3da4824f91ff18dc247035527be31bca2f48f99bb4e5d",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/68beedb581a38f576fc3da4824f91ff18dc247035527be31bca2f48f99bb4e5d.md",
+    "result": "INCLUDED: as centurio_aya; IC5 8.06B"
+   },
+   {
+    "model": "zai-org/GLM-5.3-Flash",
+    "revision": "46a050bec13002ad29ee795c16e61cf4fa3c4a9c",
+    "params_hub": "321323031390",
+    "readme_http": "200",
+    "accessed_utc": "2026-11-02T00:25:07Z",
+    "readme_sha256": "e6c5d41400e28f5a89418a0d15b09b9c113314a7553d40d7d4a8a72fcdb87d02",
+    "readme_copy": ".session_backup/2026-11-02/g_c1_pages/screen/e6c5d41400e28f5a89418a0d15b09b9c113314a7553d40d7d4a8a72fcdb87d02.md",
+    "result": "IC5 fail: >10B parameters (hub safetensors total or base size in the repo name)"
+   }
+  ]
+ },
+ "further_candidates": [
+  {
+   "order": 6,
+   "model": "Gregor/mblip-bloomz-7b",
+   "role": "VI captioner / VI verifier"
+  },
+  {
+   "order": 7,
+   "model": "Gregor/mblip-mt0-xl",
+   "role": "VI captioner / VI verifier"
+  },
+  {
+   "order": 8,
+   "model": "neulab/Pangea-7B",
+   "role": "VI captioner / VI verifier"
+  },
+  {
+   "order": 9,
+   "model": "WueNLP/centurio_aya",
+   "role": "VI captioner / VI verifier"
+  },
+  {
+   "order": 10,
+   "model": "WueNLP/centurio_qwen",
+   "role": "VI captioner / VI verifier"
+  }
+ ],
+ "candidate_order": [
+  "5CD-AI/Vintern-1B-v3_5",
+  "5CD-AI/Vintern-1B-v2",
+  "Qwen/Qwen2.5-VL-7B-Instruct",
+  "OpenGVLab/InternVL3-8B",
+  "CohereLabs/aya-vision-8b",
+  "Gregor/mblip-bloomz-7b",
+  "Gregor/mblip-mt0-xl",
+  "neulab/Pangea-7B",
+  "WueNLP/centurio_aya",
+  "WueNLP/centurio_qwen"
+ ],
+ "candidate_list_closed_note": "Closed list for prereg l.457: the five named candidates in prereg order, then the further candidates in the record's listed order (case-insensitive alphabetical hub id). EN benchmark: liuhaotian/llava-v1.5-7b (llava_handling). Fixed at 2026-11-02T00:27:14Z, before any status.",
+ "sources": [
+  {
+   "id": "S01",
+   "what": "Vintern-1B-v3_5 model card",
+   "url": "https://huggingface.co/5CD-AI/Vintern-1B-v3_5/blob/b98f263eab246eb5269ade64edbdca8a887dc44d/README.md",
+   "fetched_url": "https://huggingface.co/5CD-AI/Vintern-1B-v3_5/raw/b98f263eab246eb5269ade64edbdca8a887dc44d/README.md",
+   "revision": "b98f263eab246eb5269ade64edbdca8a887dc44d",
+   "accessed_utc": "2026-11-02T00:28:00Z",
+   "http": 200,
+   "sha256": "c59db6862287e5fed8ef9f86f3d769fd12befdffcea38104b7844d6b436ee600",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/c59db6862287e5fed8ef9f86f3d769fd12befdffcea38104b7844d6b436ee600.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S02",
+   "what": "Vintern-1B-v2 model card",
+   "url": "https://huggingface.co/5CD-AI/Vintern-1B-v2/blob/c3f01cf5b55816c092fb493babc672b0dc33c8bc/README.md",
+   "fetched_url": "https://huggingface.co/5CD-AI/Vintern-1B-v2/raw/c3f01cf5b55816c092fb493babc672b0dc33c8bc/README.md",
+   "revision": "c3f01cf5b55816c092fb493babc672b0dc33c8bc",
+   "accessed_utc": "2026-11-02T00:28:00Z",
+   "http": 200,
+   "sha256": "5264ecb6dcf3dc4d0722a8a029abd2bbebc669f1ae108dc8597e3d22e169424b",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/5264ecb6dcf3dc4d0722a8a029abd2bbebc669f1ae108dc8597e3d22e169424b.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S03",
+   "what": "InternVL2_5-1B model card (base of Vintern-1B-v3_5)",
+   "url": "https://huggingface.co/OpenGVLab/InternVL2_5-1B/blob/9d423ea1ae9f893897ee3f7493141073f5afcf22/README.md",
+   "fetched_url": "https://huggingface.co/OpenGVLab/InternVL2_5-1B/raw/9d423ea1ae9f893897ee3f7493141073f5afcf22/README.md",
+   "revision": "9d423ea1ae9f893897ee3f7493141073f5afcf22",
+   "accessed_utc": "2026-11-02T00:28:01Z",
+   "http": 200,
+   "sha256": "75cc821e6e802f3821e7840f5c80ba59d942cab2cd780a22d34308f6ce170886",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/75cc821e6e802f3821e7840f5c80ba59d942cab2cd780a22d34308f6ce170886.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S04",
+   "what": "InternVL2-1B model card (base of Vintern-1B-v2)",
+   "url": "https://huggingface.co/OpenGVLab/InternVL2-1B/blob/0d75ccd166b1d0b79446ae6c5d1a4a667f1e6187/README.md",
+   "fetched_url": "https://huggingface.co/OpenGVLab/InternVL2-1B/raw/0d75ccd166b1d0b79446ae6c5d1a4a667f1e6187/README.md",
+   "revision": "0d75ccd166b1d0b79446ae6c5d1a4a667f1e6187",
+   "accessed_utc": "2026-11-02T00:28:01Z",
+   "http": 200,
+   "sha256": "fb9dd43b220b11d5c381cfa99ec88c9111a2d7ba196ae2b7ba5600528dfa46ff",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/fb9dd43b220b11d5c381cfa99ec88c9111a2d7ba196ae2b7ba5600528dfa46ff.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S05",
+   "what": "InternVL 2.5 technical report",
+   "url": "https://arxiv.org/pdf/2412.05271v5",
+   "fetched_url": "https://arxiv.org/pdf/2412.05271v5",
+   "revision": "arXiv 2412.05271v5",
+   "accessed_utc": "2026-11-02T00:32:10Z",
+   "http": 200,
+   "sha256": "361dae69850c1bb15397fd673738ff187fc342ac990b6d0c966ab477caad01b6",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/361dae69850c1bb15397fd673738ff187fc342ac990b6d0c966ab477caad01b6.pdf",
+   "archive_url": "http://web.archive.org/web/20251107071601/https://arxiv.org/pdf/2412.05271v5",
+   "note": null
+  },
+  {
+   "id": "S06",
+   "what": "Qwen2.5-VL-7B-Instruct model card",
+   "url": "https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct/blob/cc594898137f460bfe9f0759e9844b3ce807cfb5/README.md",
+   "fetched_url": "https://huggingface.co/Qwen/Qwen2.5-VL-7B-Instruct/raw/cc594898137f460bfe9f0759e9844b3ce807cfb5/README.md",
+   "revision": "cc594898137f460bfe9f0759e9844b3ce807cfb5",
+   "accessed_utc": "2026-11-02T00:28:00Z",
+   "http": 200,
+   "sha256": "1fa65dbb08bc9ffe0b020409c8686f08b23008c5a68554353305fd2de6f2b81e",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/1fa65dbb08bc9ffe0b020409c8686f08b23008c5a68554353305fd2de6f2b81e.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S07",
+   "what": "Qwen2.5-VL technical report",
+   "url": "https://arxiv.org/pdf/2502.13923v1",
+   "fetched_url": "https://arxiv.org/pdf/2502.13923v1",
+   "revision": "arXiv 2502.13923v1",
+   "accessed_utc": "2026-11-02T00:32:10Z",
+   "http": 200,
+   "sha256": "399a28f6ed79f4ece29cca93993fceb56fc304b1d779e49392aec05aff45aba5",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/399a28f6ed79f4ece29cca93993fceb56fc304b1d779e49392aec05aff45aba5.pdf",
+   "archive_url": "http://web.archive.org/web/20250527041739/http://arxiv.org/pdf/2502.13923v1",
+   "note": null
+  },
+  {
+   "id": "S08",
+   "what": "InternVL3-8B model card",
+   "url": "https://huggingface.co/OpenGVLab/InternVL3-8B/blob/853e3a797a661694b1b8ece0cb72dc2b23e3dac9/README.md",
+   "fetched_url": "https://huggingface.co/OpenGVLab/InternVL3-8B/raw/853e3a797a661694b1b8ece0cb72dc2b23e3dac9/README.md",
+   "revision": "853e3a797a661694b1b8ece0cb72dc2b23e3dac9",
+   "accessed_utc": "2026-11-02T00:28:00Z",
+   "http": 200,
+   "sha256": "dc7223faa8943185581d44b584d5ce15afeeff0f43155fc2dee291402caa16f7",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/dc7223faa8943185581d44b584d5ce15afeeff0f43155fc2dee291402caa16f7.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S09",
+   "what": "InternVL3 technical report",
+   "url": "https://arxiv.org/pdf/2504.10479v3",
+   "fetched_url": "https://arxiv.org/pdf/2504.10479v3",
+   "revision": "arXiv 2504.10479v3",
+   "accessed_utc": "2026-11-02T00:32:10Z",
+   "http": 200,
+   "sha256": "5da94f2a229808a490e15c247b4321e1ef14a6272e992b07e236bc18f6553bc9",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/5da94f2a229808a490e15c247b4321e1ef14a6272e992b07e236bc18f6553bc9.pdf",
+   "archive_url": "http://web.archive.org/web/20250719180231/https://arxiv.org/pdf/2504.10479v3",
+   "note": null
+  },
+  {
+   "id": "S10",
+   "what": "aya-vision-8b model card",
+   "url": "https://huggingface.co/CohereLabs/aya-vision-8b/blob/d7601ac8fd3baf6f59c5fc9514c618ef0f24268f/README.md",
+   "fetched_url": "https://huggingface.co/CohereLabs/aya-vision-8b/raw/d7601ac8fd3baf6f59c5fc9514c618ef0f24268f/README.md",
+   "revision": "d7601ac8fd3baf6f59c5fc9514c618ef0f24268f",
+   "accessed_utc": "2026-11-02T00:28:00Z",
+   "http": 401,
+   "sha256": "9e6a57517ac042b98670cdd2a8085333f5297ba485bbf5fb781e6b94271098a1",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/9e6a57517ac042b98670cdd2a8085333f5297ba485bbf5fb781e6b94271098a1.md",
+   "archive_url": "unavailable",
+   "note": "HTTP 401: card is gated and not readable without authentication (no token used); the hashed bytes are the error body"
+  },
+  {
+   "id": "S11",
+   "what": "Aya Vision technical report",
+   "url": "https://arxiv.org/pdf/2505.08751v1",
+   "fetched_url": "https://arxiv.org/pdf/2505.08751v1",
+   "revision": "arXiv 2505.08751v1",
+   "accessed_utc": "2026-11-02T00:32:10Z",
+   "http": 200,
+   "sha256": "d42974ddc7916f9b3d8ed061ed31ce5ef43f4b07fce0b36642a6b6b25e30fe8b",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/d42974ddc7916f9b3d8ed061ed31ce5ef43f4b07fce0b36642a6b6b25e30fe8b.pdf",
+   "archive_url": "http://web.archive.org/web/20260211160801/https://arxiv.org/pdf/2505.08751v1",
+   "note": null
+  },
+  {
+   "id": "S12",
+   "what": "mblip-bloomz-7b model card",
+   "url": "https://huggingface.co/Gregor/mblip-bloomz-7b/blob/4d95b91d56fcdce86504c951a28f016b15e219a1/README.md",
+   "fetched_url": "https://huggingface.co/Gregor/mblip-bloomz-7b/raw/4d95b91d56fcdce86504c951a28f016b15e219a1/README.md",
+   "revision": "4d95b91d56fcdce86504c951a28f016b15e219a1",
+   "accessed_utc": "2026-11-02T00:28:00Z",
+   "http": 200,
+   "sha256": "a0c72672db12651943995d32727efd49b301e960df63220aab3e3344d38b7c1f",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/a0c72672db12651943995d32727efd49b301e960df63220aab3e3344d38b7c1f.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S13",
+   "what": "mblip-mt0-xl model card",
+   "url": "https://huggingface.co/Gregor/mblip-mt0-xl/blob/5e3ca094d5de4c53ed5548b20fd21a7787cafd1a/README.md",
+   "fetched_url": "https://huggingface.co/Gregor/mblip-mt0-xl/raw/5e3ca094d5de4c53ed5548b20fd21a7787cafd1a/README.md",
+   "revision": "5e3ca094d5de4c53ed5548b20fd21a7787cafd1a",
+   "accessed_utc": "2026-11-02T00:28:00Z",
+   "http": 200,
+   "sha256": "d195cfbdf077604b87600e93d20776cd4968a55218ddd1dbf7d27fbf7e05939a",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/d195cfbdf077604b87600e93d20776cd4968a55218ddd1dbf7d27fbf7e05939a.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S14",
+   "what": "mBLIP instruction mix dataset card (README only)",
+   "url": "https://huggingface.co/datasets/Gregor/mblip-train/blob/123e944ed13e5108285e70b58983def207301754/README.md",
+   "fetched_url": "https://huggingface.co/datasets/Gregor/mblip-train/raw/123e944ed13e5108285e70b58983def207301754/README.md",
+   "revision": "123e944ed13e5108285e70b58983def207301754",
+   "accessed_utc": "2026-11-02T00:28:01Z",
+   "http": 200,
+   "sha256": "d723f120f7ede082789a66f60b1fe1fb64e56afaacfed1568201f06b3420ac0a",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/d723f120f7ede082789a66f60b1fe1fb64e56afaacfed1568201f06b3420ac0a.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S15",
+   "what": "mBLIP paper",
+   "url": "https://arxiv.org/pdf/2307.06930v3",
+   "fetched_url": "https://arxiv.org/pdf/2307.06930v3",
+   "revision": "arXiv 2307.06930v3",
+   "accessed_utc": "2026-11-02T00:32:10Z",
+   "http": 200,
+   "sha256": "de00352542cc165509e3a32ad0687d2b1d881c2aa4aded051343390bf1a8a532",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/de00352542cc165509e3a32ad0687d2b1d881c2aa4aded051343390bf1a8a532.pdf",
+   "archive_url": "http://web.archive.org/web/20240707214736/https://arxiv.org/pdf/2307.06930v3",
+   "note": null
+  },
+  {
+   "id": "S16",
+   "what": "BLIP-2 paper (mBLIP ViT and Q-Former initialisation)",
+   "url": "https://arxiv.org/pdf/2301.12597v3",
+   "fetched_url": "https://arxiv.org/pdf/2301.12597v3",
+   "revision": "arXiv 2301.12597v3",
+   "accessed_utc": "2026-11-02T00:32:11Z",
+   "http": 200,
+   "sha256": "6bc5d399d6127a64ace5167a2f0c00112a49725d2475d80322dbf0083f139e80",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/6bc5d399d6127a64ace5167a2f0c00112a49725d2475d80322dbf0083f139e80.pdf",
+   "archive_url": "http://web.archive.org/web/20260510094119/https://arxiv.org/pdf/2301.12597v3",
+   "note": null
+  },
+  {
+   "id": "S17",
+   "what": "Pangea-7B model card",
+   "url": "https://huggingface.co/neulab/Pangea-7B/blob/085034d5560c2b27a409e3b99f41a03257d74b09/README.md",
+   "fetched_url": "https://huggingface.co/neulab/Pangea-7B/raw/085034d5560c2b27a409e3b99f41a03257d74b09/README.md",
+   "revision": "085034d5560c2b27a409e3b99f41a03257d74b09",
+   "accessed_utc": "2026-11-02T00:28:01Z",
+   "http": 200,
+   "sha256": "9328fd54b42099cdb7df93ac7358e2cda22176a319011f2c6f407750153e099d",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/9328fd54b42099cdb7df93ac7358e2cda22176a319011f2c6f407750153e099d.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S18",
+   "what": "PangeaInstruct dataset card (README only)",
+   "url": "https://huggingface.co/datasets/neulab/PangeaInstruct/blob/d0819917abe1cae38c008de0ca172f885f1f26a4/README.md",
+   "fetched_url": "https://huggingface.co/datasets/neulab/PangeaInstruct/raw/d0819917abe1cae38c008de0ca172f885f1f26a4/README.md",
+   "revision": "d0819917abe1cae38c008de0ca172f885f1f26a4",
+   "accessed_utc": "2026-11-02T00:28:01Z",
+   "http": 200,
+   "sha256": "2b00019d0153f729757031b1eef8ee0a2cd889e68c72a0121625ff98b2da12cc",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/2b00019d0153f729757031b1eef8ee0a2cd889e68c72a0121625ff98b2da12cc.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S19",
+   "what": "Pangea paper",
+   "url": "https://arxiv.org/pdf/2410.16153v3",
+   "fetched_url": "https://arxiv.org/pdf/2410.16153v3",
+   "revision": "arXiv 2410.16153v3",
+   "accessed_utc": "2026-11-02T00:32:11Z",
+   "http": 200,
+   "sha256": "edc4c7edb868ff021ea16d9def8793d32da0e1440249621bffe3ad032c59af67",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/edc4c7edb868ff021ea16d9def8793d32da0e1440249621bffe3ad032c59af67.pdf",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S20",
+   "what": "centurio_aya model card",
+   "url": "https://huggingface.co/WueNLP/centurio_aya/blob/bc31c23e472c846c3f686e6ea3cd0ad525e22684/README.md",
+   "fetched_url": "https://huggingface.co/WueNLP/centurio_aya/raw/bc31c23e472c846c3f686e6ea3cd0ad525e22684/README.md",
+   "revision": "bc31c23e472c846c3f686e6ea3cd0ad525e22684",
+   "accessed_utc": "2026-11-02T00:28:01Z",
+   "http": 200,
+   "sha256": "a5bfe415f9f1254484b25d0512a8ae1bbd60e9261ff633ecc4b953fc9473ac07",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/a5bfe415f9f1254484b25d0512a8ae1bbd60e9261ff633ecc4b953fc9473ac07.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S21",
+   "what": "centurio_qwen model card",
+   "url": "https://huggingface.co/WueNLP/centurio_qwen/blob/bf6617eb01171dba83391e0ff57bf03420721ba5/README.md",
+   "fetched_url": "https://huggingface.co/WueNLP/centurio_qwen/raw/bf6617eb01171dba83391e0ff57bf03420721ba5/README.md",
+   "revision": "bf6617eb01171dba83391e0ff57bf03420721ba5",
+   "accessed_utc": "2026-11-02T00:28:01Z",
+   "http": 200,
+   "sha256": "68beedb581a38f576fc3da4824f91ff18dc247035527be31bca2f48f99bb4e5d",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/68beedb581a38f576fc3da4824f91ff18dc247035527be31bca2f48f99bb4e5d.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S22",
+   "what": "Centurio paper",
+   "url": "https://arxiv.org/pdf/2501.05122v1",
+   "fetched_url": "https://arxiv.org/pdf/2501.05122v1",
+   "revision": "arXiv 2501.05122v1",
+   "accessed_utc": "2026-11-02T00:32:11Z",
+   "http": 200,
+   "sha256": "f7d26f6e96c993e36d0f31989dc658dbc760a9a7f7186cd2019aadc68a50c517",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/f7d26f6e96c993e36d0f31989dc658dbc760a9a7f7186cd2019aadc68a50c517.pdf",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S23",
+   "what": "llava-v1.5-7b model card",
+   "url": "https://huggingface.co/liuhaotian/llava-v1.5-7b/blob/4481d270cc22fd5c4d1bb5df129622006ccd9234/README.md",
+   "fetched_url": "https://huggingface.co/liuhaotian/llava-v1.5-7b/raw/4481d270cc22fd5c4d1bb5df129622006ccd9234/README.md",
+   "revision": "4481d270cc22fd5c4d1bb5df129622006ccd9234",
+   "accessed_utc": "2026-11-02T00:28:00Z",
+   "http": 200,
+   "sha256": "a3101de0395b4517cee96f040d4feae45a99bde2fcfb2af54060bf54f3353b47",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/a3101de0395b4517cee96f040d4feae45a99bde2fcfb2af54060bf54f3353b47.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S24",
+   "what": "LLaVA GitHub README",
+   "url": "https://github.com/haotian-liu/LLaVA/blob/c121f0432da27facab705978f83c4ada465e46fd/README.md",
+   "fetched_url": "https://raw.githubusercontent.com/haotian-liu/LLaVA/c121f0432da27facab705978f83c4ada465e46fd/README.md",
+   "revision": "git c121f0432da27facab705978f83c4ada465e46fd",
+   "accessed_utc": "2026-11-02T00:32:12Z",
+   "http": 200,
+   "sha256": "bf7fbd57f27198308d9ed8fb2813267a9d18cf79198c5ac534fba1ad757a287b",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/bf7fbd57f27198308d9ed8fb2813267a9d18cf79198c5ac534fba1ad757a287b.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S25",
+   "what": "LLaVA GitHub docs/Data.md",
+   "url": "https://github.com/haotian-liu/LLaVA/blob/c121f0432da27facab705978f83c4ada465e46fd/docs/Data.md",
+   "fetched_url": "https://raw.githubusercontent.com/haotian-liu/LLaVA/c121f0432da27facab705978f83c4ada465e46fd/docs/Data.md",
+   "revision": "git c121f0432da27facab705978f83c4ada465e46fd",
+   "accessed_utc": "2026-11-02T00:32:12Z",
+   "http": 200,
+   "sha256": "179d706bf7cd136004caf73f7de8aa6c5bd27ceae7ea2bf9e3cdce33268ba6bd",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/179d706bf7cd136004caf73f7de8aa6c5bd27ceae7ea2bf9e3cdce33268ba6bd.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S26",
+   "what": "TextVQA paper",
+   "url": "https://arxiv.org/pdf/1904.08920v2",
+   "fetched_url": "https://arxiv.org/pdf/1904.08920v2",
+   "revision": "arXiv 1904.08920v2",
+   "accessed_utc": "2026-11-02T00:32:11Z",
+   "http": 200,
+   "sha256": "966ce91dfb10d27ebe5110b84a66a61cfff92902b9ee5c1fa73b72dfbbb122e0",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/966ce91dfb10d27ebe5110b84a66a61cfff92902b9ee5c1fa73b72dfbbb122e0.pdf",
+   "archive_url": "http://web.archive.org/web/20250723035609/https://arxiv.org/pdf/1904.08920v2",
+   "note": null
+  },
+  {
+   "id": "S27",
+   "what": "Viet-OpenViVQA-gemini-VQA dataset card",
+   "url": "https://huggingface.co/datasets/5CD-AI/Viet-OpenViVQA-gemini-VQA/blob/1eeea72ab014b65e8e2a21e4fed1541720bcd716/README.md",
+   "fetched_url": "https://huggingface.co/datasets/5CD-AI/Viet-OpenViVQA-gemini-VQA/raw/1eeea72ab014b65e8e2a21e4fed1541720bcd716/README.md",
+   "revision": "1eeea72ab014b65e8e2a21e4fed1541720bcd716",
+   "accessed_utc": "2026-11-02T00:30:54Z",
+   "http": 401,
+   "sha256": "7b43fedc7c5605e6e9638967b2af254088cf72105cae494c34b0057fa5731840",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/7b43fedc7c5605e6e9638967b2af254088cf72105cae494c34b0057fa5731840.md",
+   "archive_url": "unavailable",
+   "note": "HTTP 401: card is gated and not readable without authentication (no token used); the hashed bytes are the error body"
+  },
+  {
+   "id": "S28",
+   "what": "Viet-ShareGPT-4o-Text-VQA dataset card",
+   "url": "https://huggingface.co/datasets/5CD-AI/Viet-ShareGPT-4o-Text-VQA/blob/7c8550d55f50191964e4b907624b9a553378b9e1/README.md",
+   "fetched_url": "https://huggingface.co/datasets/5CD-AI/Viet-ShareGPT-4o-Text-VQA/raw/7c8550d55f50191964e4b907624b9a553378b9e1/README.md",
+   "revision": "7c8550d55f50191964e4b907624b9a553378b9e1",
+   "accessed_utc": "2026-11-02T00:30:54Z",
+   "http": 401,
+   "sha256": "4cf628501a1e7898d3cb52a2ca8a6f25f10dbd1101296447ecda898487e00ada",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/4cf628501a1e7898d3cb52a2ca8a6f25f10dbd1101296447ecda898487e00ada.md",
+   "archive_url": "unavailable",
+   "note": "HTTP 401: card is gated and not readable without authentication (no token used); the hashed bytes are the error body"
+  },
+  {
+   "id": "S29",
+   "what": "MTVQA dataset card (README only)",
+   "url": "https://huggingface.co/datasets/ByteDance/MTVQA/blob/7cdca63ec6cd71cdd0b52f79fc3176bb9ce36a9c/README.md",
+   "fetched_url": "https://huggingface.co/datasets/ByteDance/MTVQA/raw/7cdca63ec6cd71cdd0b52f79fc3176bb9ce36a9c/README.md",
+   "revision": "7cdca63ec6cd71cdd0b52f79fc3176bb9ce36a9c",
+   "accessed_utc": "2026-11-02T00:30:54Z",
+   "http": 200,
+   "sha256": "4fe0b51902a2f7195178cab969cd8c5160579662738c26efdfa18af742477c7e",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/4fe0b51902a2f7195178cab969cd8c5160579662738c26efdfa18af742477c7e.md",
+   "archive_url": "unavailable",
+   "note": null
+  },
+  {
+   "id": "S30",
+   "what": "Vintern-1B technical report (cited by the Vintern cards)",
+   "url": "https://arxiv.org/pdf/2408.12480v2",
+   "fetched_url": "https://arxiv.org/pdf/2408.12480v2",
+   "revision": "arXiv 2408.12480v2",
+   "accessed_utc": "2026-11-02T00:32:10Z",
+   "http": 200,
+   "sha256": "7c990359986833375ec9cfcc2988655f7e32d16b9e06c4b00059d82d778ee858",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/7c990359986833375ec9cfcc2988655f7e32d16b9e06c4b00059d82d778ee858.pdf",
+   "archive_url": "http://web.archive.org/web/20240827001412/https://arxiv.org/pdf/2408.12480v2",
+   "note": null
+  },
+  {
+   "id": "S31",
+   "what": "Viet-ViTextVQA-gemini-VQA dataset card",
+   "url": "https://huggingface.co/datasets/5CD-AI/Viet-ViTextVQA-gemini-VQA/blob/b87fba87d31f3541a421af7d4bca216302282c0e/README.md",
+   "fetched_url": "https://huggingface.co/datasets/5CD-AI/Viet-ViTextVQA-gemini-VQA/raw/b87fba87d31f3541a421af7d4bca216302282c0e/README.md",
+   "revision": "b87fba87d31f3541a421af7d4bca216302282c0e",
+   "accessed_utc": "2026-11-02T00:30:54Z",
+   "http": 401,
+   "sha256": "4aaea5fb56f8b7d04f28ba512ce0e08d59cbef5a17cc8c3c4aa589a1c2adef5f",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/4aaea5fb56f8b7d04f28ba512ce0e08d59cbef5a17cc8c3c4aa589a1c2adef5f.md",
+   "archive_url": "unavailable",
+   "note": "HTTP 401: card is gated and not readable without authentication (no token used); the hashed bytes are the error body"
+  },
+  {
+   "id": "S32",
+   "what": "LLaVA-1.5 paper",
+   "url": "https://arxiv.org/pdf/2310.03744v2",
+   "fetched_url": "https://arxiv.org/pdf/2310.03744v2",
+   "revision": "arXiv 2310.03744v2",
+   "accessed_utc": "2026-11-02T00:32:12Z",
+   "http": 200,
+   "sha256": "b7074a6dad218e0dd109f2a80311548d447e1cf4b9e31c002696985784cc05b9",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/b7074a6dad218e0dd109f2a80311548d447e1cf4b9e31c002696985784cc05b9.pdf",
+   "archive_url": "http://web.archive.org/web/20250612024846/http://arxiv.org/pdf/2310.03744v2",
+   "note": null
+  },
+  {
+   "id": "S33",
+   "what": "InternVL-Data dataset card (README only; OpenGVLab data-release notice)",
+   "url": "https://huggingface.co/datasets/OpenGVLab/InternVL-Data/blob/2b1e0716fbf9746d08d858b93f7fcad6fe26a741/README.md",
+   "fetched_url": "https://huggingface.co/datasets/OpenGVLab/InternVL-Data/raw/2b1e0716fbf9746d08d858b93f7fcad6fe26a741/README.md",
+   "revision": "2b1e0716fbf9746d08d858b93f7fcad6fe26a741",
+   "accessed_utc": "2026-11-02T00:43:58Z",
+   "http": 200,
+   "sha256": "2be6f5f5152528f0c623f91f3cc6c2af9e25c0603951c5f017bfd3db2b240483",
+   "copy_path": ".session_backup/2026-11-02/g_c1_pages/2be6f5f5152528f0c623f91f3cc6c2af9e25c0603951c5f017bfd3db2b240483.md",
+   "archive_url": "unavailable",
+   "note": null
+  }
+ ],
+ "entries": [
+  {
+   "model": "5CD-AI/Vintern-1B-v3_5",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S01",
+    "S03",
+    "S05"
+   ],
+   "quote": "has been fine-tuned using a vast amount of Vietnamese-specific data (S01); base InternVL2.5 mixture lists \"OpenImages-Caption [116]\" (S05 Table 4)",
+   "reason": "Own SFT data is not listed; the InternVL2.5 base mixture has an OI-based captioning part (OpenImages-Caption, cites the OI v4 paper) with no split stated, plus \"self-synthesized data\" (S05 Table 5); split membership undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): InternViT / Qwen2.5 pretraining",
+   "g_c2_note": null
+  },
+  {
+   "model": "5CD-AI/Vintern-1B-v3_5",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S01",
+    "S30"
+   ],
+   "quote": "has been fine-tuned using a vast amount of Vietnamese-specific data (S01); the Vintern line trains on \"Viet-OpenViVQA-gemini-VQA: based on OpenViVQA\" (S30)",
+   "reason": "Own Vietnamese SFT data is not listed; the predecessor data include an OpenViVQA-derived set whose split is not stated; membership of OpenViVQA dev images undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): InternViT / Qwen2.5 pretraining",
+   "g_c2_note": null
+  },
+  {
+   "model": "5CD-AI/Vintern-1B-v3_5",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S01"
+   ],
+   "quote": "has been fine-tuned using a vast amount of Vietnamese-specific data (S01)",
+   "reason": "Own Vietnamese SFT data (card stresses text recognition/OCR) is not listed; membership undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): InternViT / Qwen2.5 pretraining",
+   "g_c2_note": null
+  },
+  {
+   "model": "5CD-AI/Vintern-1B-v3_5",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S01"
+   ],
+   "quote": "has been fine-tuned using a vast amount of Vietnamese-specific data (S01)",
+   "reason": "Own Vietnamese SFT data is not listed; membership undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): InternViT / Qwen2.5 pretraining",
+   "g_c2_note": null
+  },
+  {
+   "model": "5CD-AI/Vintern-1B-v2",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S02",
+    "S04"
+   ],
+   "quote": "The fine-tuning dataset was meticulously sampled in part from the following datasets: (S02); base card: \"For more details, please refer to our\" blog and GitHub links, no dataset named (S04)",
+   "reason": "\"in part\" (fail-closed) and the InternVL2-1B base card names no SFT dataset; OI content and split undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): InternViT / Qwen2 pretraining",
+   "g_c2_note": null
+  },
+  {
+   "model": "5CD-AI/Vintern-1B-v2",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S02",
+    "S30",
+    "S27"
+   ],
+   "quote": "\"Viet-OpenViVQA-gemini-VQA: based on OpenViVQA [3]\" (S30); The fine-tuning dataset was meticulously sampled in part from the following datasets: (S02)",
+   "reason": "Trains on an OpenViVQA-derived set; the report gives no split and the dataset card is gated (S27, 401); not HIT because no text says dev; split membership undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): InternViT / Qwen2 pretraining",
+   "g_c2_note": null
+  },
+  {
+   "model": "5CD-AI/Vintern-1B-v2",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S02",
+    "S31"
+   ],
+   "quote": "The fine-tuning dataset was meticulously sampled in part from the following datasets: (S02), list includes Viet-ViTextVQA-gemini-VQA and Viet-Vintext-gemini-VQA",
+   "reason": "Vietnamese scene-text SFT sets (gated card S31, 401) with image sources not stated relative to ViTextCaps; \"in part\"; undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): InternViT / Qwen2 pretraining",
+   "g_c2_note": null
+  },
+  {
+   "model": "5CD-AI/Vintern-1B-v2",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S02"
+   ],
+   "quote": "The fine-tuning dataset was meticulously sampled in part from the following datasets: (S02)",
+   "reason": "\"in part\" plus unlisted base SFT; undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): InternViT / Qwen2 pretraining",
+   "g_c2_note": null
+  },
+  {
+   "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S06",
+    "S07"
+   ],
+   "quote": "\"including synthetic data, open-sourced data and in-house collected data\" (S07); \"publicly available datasets and proprietary data\" (S07)",
+   "reason": "No training-data list in the card (S06); the report states in-house and proprietary data; no published SFT id list exists; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S06",
+    "S07"
+   ],
+   "quote": "\"including synthetic data, open-sourced data and in-house collected data\" (S07); \"publicly available datasets and proprietary data\" (S07)",
+   "reason": "No training-data list in the card (S06); the report states in-house and proprietary data; no published SFT id list exists; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S06",
+    "S07"
+   ],
+   "quote": "\"including synthetic data, open-sourced data and in-house collected data\" (S07); \"publicly available datasets and proprietary data\" (S07)",
+   "reason": "No training-data list in the card (S06); the report states in-house and proprietary data; no published SFT id list exists; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "Qwen/Qwen2.5-VL-7B-Instruct",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S06",
+    "S07"
+   ],
+   "quote": "\"including synthetic data, open-sourced data and in-house collected data\" (S07); \"publicly available datasets and proprietary data\" (S07)",
+   "reason": "No training-data list in the card (S06); the report states in-house and proprietary data; no published SFT id list exists; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "OpenGVLab/InternVL3-8B",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S08",
+    "S09",
+    "S05",
+    "S33"
+   ],
+   "quote": "\"For SFT data, we construct the training corpora based on those used in InternVL2.5\" (S09); InternVL2.5 lists \"OpenImages-Caption [116]\" (S05 Table 4) and \"self-synthesized data\" (S05 Table 5); \"we have withdrawn the dataset from public access\" (S33)",
+   "reason": "Inherits the InternVL2.5 corpora, which include an OI-based part with no split stated and self-synthesized data; S09 \"we will release the training data\" was not kept: the no-auth listing huggingface.co/api/datasets?author=OpenGVLab&search=InternVL (2026-11-02) shows OpenGVLab/InternVL-Data, whose card says the training dataset was withdrawn (S33); card lists only MMPR-v1.2 preference data (S08).",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "OpenGVLab/InternVL3-8B",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S08",
+    "S09",
+    "S05",
+    "S33"
+   ],
+   "quote": "\"For SFT data, we construct the training corpora based on those used in InternVL2.5\" (S09); InternVL2.5 lists \"OpenImages-Caption [116]\" (S05 Table 4) and \"self-synthesized data\" (S05 Table 5); \"we have withdrawn the dataset from public access\" (S33)",
+   "reason": "Inherits the InternVL2.5 corpora, which include an OI-based part with no split stated and self-synthesized data; S09 \"we will release the training data\" was not kept: the no-auth listing huggingface.co/api/datasets?author=OpenGVLab&search=InternVL (2026-11-02) shows OpenGVLab/InternVL-Data, whose card says the training dataset was withdrawn (S33); card lists only MMPR-v1.2 preference data (S08).",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "OpenGVLab/InternVL3-8B",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S08",
+    "S09",
+    "S05",
+    "S33"
+   ],
+   "quote": "\"For SFT data, we construct the training corpora based on those used in InternVL2.5\" (S09); InternVL2.5 lists \"OpenImages-Caption [116]\" (S05 Table 4) and \"self-synthesized data\" (S05 Table 5); \"we have withdrawn the dataset from public access\" (S33)",
+   "reason": "Inherits the InternVL2.5 corpora, which include an OI-based part with no split stated and self-synthesized data; S09 \"we will release the training data\" was not kept: the no-auth listing huggingface.co/api/datasets?author=OpenGVLab&search=InternVL (2026-11-02) shows OpenGVLab/InternVL-Data, whose card says the training dataset was withdrawn (S33); card lists only MMPR-v1.2 preference data (S08).",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "OpenGVLab/InternVL3-8B",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S08",
+    "S09",
+    "S05",
+    "S33"
+   ],
+   "quote": "\"For SFT data, we construct the training corpora based on those used in InternVL2.5\" (S09); InternVL2.5 lists \"OpenImages-Caption [116]\" (S05 Table 4) and \"self-synthesized data\" (S05 Table 5); \"we have withdrawn the dataset from public access\" (S33)",
+   "reason": "Inherits the InternVL2.5 corpora, which include an OI-based part with no split stated and self-synthesized data; S09 \"we will release the training data\" was not kept: the no-auth listing huggingface.co/api/datasets?author=OpenGVLab&search=InternVL (2026-11-02) shows OpenGVLab/InternVL-Data, whose card says the training dataset was withdrawn (S33); card lists only MMPR-v1.2 preference data (S08).",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "CohereLabs/aya-vision-8b",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S10",
+    "S11"
+   ],
+   "quote": "\"Much of the data originates from a narrow set of sources such as MS-COCO [...], Visual Genome [...], and Open Images\" (S11)",
+   "reason": "OI-based training data with no split stated and no published id list; the model card is gated (S10, 401) so the report governs; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "CohereLabs/aya-vision-8b",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S10",
+    "S11"
+   ],
+   "quote": "\"Much of the data originates from a narrow set of sources such as MS-COCO [...], Visual Genome [...], and Open Images\" (S11)",
+   "reason": "OI-based training data with no split stated and no published id list; the model card is gated (S10, 401) so the report governs; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "CohereLabs/aya-vision-8b",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S10",
+    "S11"
+   ],
+   "quote": "\"Much of the data originates from a narrow set of sources such as MS-COCO [...], Visual Genome [...], and Open Images\" (S11)",
+   "reason": "OI-based training data with no split stated and no published id list; the model card is gated (S10, 401) so the report governs; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "CohereLabs/aya-vision-8b",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S10",
+    "S11"
+   ],
+   "quote": "\"Much of the data originates from a narrow set of sources such as MS-COCO [...], Visual Genome [...], and Open Images\" (S11)",
+   "reason": "OI-based training data with no split stated and no published id list; the model card is gated (S10, 401) so the report governs; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed)",
+   "g_c2_note": null
+  },
+  {
+   "model": "Gregor/mblip-bloomz-7b",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S12",
+    "S14",
+    "S15",
+    "S16"
+   ],
+   "quote": "task mix: \"We use MSCOCO [...] along with 2.3 million examples sampled from the synthetic CapFilt dataset\" plus LLaVA-Instruct, VQAv2, A-OKVQA, ImageNet (S15); init: \"BLIP-2 Flan-T5-XL checkpoint\" (S15), BLIP-2: \"We use the same pre-training dataset as BLIP with 129M images in total\", listed as COCO, Visual Genome, CC3M, CC12M, SBU and \"115M images from the LAION400M dataset\" (S16)",
+   "reason": "Released instruction mix (S14) and every curated stage named (COCO, VG, VQAv2, A-OKVQA, ImageNet, LLaVA-Instruct); no OI-based component named; CapFilt/LAION/CC/SBU are web-scale (unknown).",
+   "web_scale_pretraining": "unknown (disclosed): EVA-CLIP ViT-g and BLIP-2 web data (CC3M, CC12M, SBU, LAION) and Web CapFilt captions",
+   "g_c2_note": "Join the released mix image ids (COCO/VG/ImageNet; CapFilt URLs as web) against NoCaps-test OI ids; no OI id is expected."
+  },
+  {
+   "model": "Gregor/mblip-bloomz-7b",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S12",
+    "S14",
+    "S15",
+    "S16"
+   ],
+   "quote": "\"The original English examples were machine translated to the following 95 languages\" (S14); \"Images from the public datasets (MSCOCO for instruction training, and others for evaluation) can be downloaded\" (S14)",
+   "reason": "All curated image sources are English-origin (COCO-based, VG, ImageNet); Vietnamese appears only as machine-translated text; no Vietnamese-sourced image set named.",
+   "web_scale_pretraining": "unknown (disclosed): EVA-CLIP ViT-g and BLIP-2 web data (CC3M, CC12M, SBU, LAION) and Web CapFilt captions",
+   "g_c2_note": "G-C2 as registered is an OI-id join only; no registered join covers this set (sets[].join_key note)."
+  },
+  {
+   "model": "Gregor/mblip-bloomz-7b",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S12",
+    "S14",
+    "S15",
+    "S16"
+   ],
+   "quote": "\"The original English examples were machine translated to the following 95 languages\" (S14)",
+   "reason": "No Vietnamese-sourced image set named; Vietnamese only as machine-translated text.",
+   "web_scale_pretraining": "unknown (disclosed): EVA-CLIP ViT-g and BLIP-2 web data (CC3M, CC12M, SBU, LAION) and Web CapFilt captions",
+   "g_c2_note": "G-C2 as registered is an OI-id join only; no registered join covers this set (sets[].join_key note)."
+  },
+  {
+   "model": "Gregor/mblip-bloomz-7b",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S12",
+    "S14",
+    "S15",
+    "S16"
+   ],
+   "quote": "\"The original English examples were machine translated to the following 95 languages\" (S14)",
+   "reason": "No Vietnamese-sourced image set named; Vietnamese only as machine-translated text.",
+   "web_scale_pretraining": "unknown (disclosed): EVA-CLIP ViT-g and BLIP-2 web data (CC3M, CC12M, SBU, LAION) and Web CapFilt captions",
+   "g_c2_note": "G-C2 as registered is an OI-id join only; no registered join covers this set (sets[].join_key note)."
+  },
+  {
+   "model": "Gregor/mblip-mt0-xl",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S13",
+    "S14",
+    "S15",
+    "S16"
+   ],
+   "quote": "task mix: \"We use MSCOCO [...] along with 2.3 million examples sampled from the synthetic CapFilt dataset\" plus LLaVA-Instruct, VQAv2, A-OKVQA, ImageNet (S15); init: \"BLIP-2 Flan-T5-XL checkpoint\" (S15), BLIP-2: \"We use the same pre-training dataset as BLIP with 129M images in total\", listed as COCO, Visual Genome, CC3M, CC12M, SBU and \"115M images from the LAION400M dataset\" (S16)",
+   "reason": "Released instruction mix (S14) and every curated stage named (COCO, VG, VQAv2, A-OKVQA, ImageNet, LLaVA-Instruct); no OI-based component named; CapFilt/LAION/CC/SBU are web-scale (unknown).",
+   "web_scale_pretraining": "unknown (disclosed): EVA-CLIP ViT-g and BLIP-2 web data (CC3M, CC12M, SBU, LAION) and Web CapFilt captions",
+   "g_c2_note": "Join the released mix image ids (COCO/VG/ImageNet; CapFilt URLs as web) against NoCaps-test OI ids; no OI id is expected."
+  },
+  {
+   "model": "Gregor/mblip-mt0-xl",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S13",
+    "S14",
+    "S15",
+    "S16"
+   ],
+   "quote": "\"The original English examples were machine translated to the following 95 languages\" (S14); \"Images from the public datasets (MSCOCO for instruction training, and others for evaluation) can be downloaded\" (S14)",
+   "reason": "All curated image sources are English-origin (COCO-based, VG, ImageNet); Vietnamese appears only as machine-translated text; no Vietnamese-sourced image set named.",
+   "web_scale_pretraining": "unknown (disclosed): EVA-CLIP ViT-g and BLIP-2 web data (CC3M, CC12M, SBU, LAION) and Web CapFilt captions",
+   "g_c2_note": "G-C2 as registered is an OI-id join only; no registered join covers this set (sets[].join_key note)."
+  },
+  {
+   "model": "Gregor/mblip-mt0-xl",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S13",
+    "S14",
+    "S15",
+    "S16"
+   ],
+   "quote": "\"The original English examples were machine translated to the following 95 languages\" (S14)",
+   "reason": "No Vietnamese-sourced image set named; Vietnamese only as machine-translated text.",
+   "web_scale_pretraining": "unknown (disclosed): EVA-CLIP ViT-g and BLIP-2 web data (CC3M, CC12M, SBU, LAION) and Web CapFilt captions",
+   "g_c2_note": "G-C2 as registered is an OI-id join only; no registered join covers this set (sets[].join_key note)."
+  },
+  {
+   "model": "Gregor/mblip-mt0-xl",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S13",
+    "S14",
+    "S15",
+    "S16"
+   ],
+   "quote": "\"The original English examples were machine translated to the following 95 languages\" (S14)",
+   "reason": "No Vietnamese-sourced image set named; Vietnamese only as machine-translated text.",
+   "web_scale_pretraining": "unknown (disclosed): EVA-CLIP ViT-g and BLIP-2 web data (CC3M, CC12M, SBU, LAION) and Web CapFilt captions",
+   "g_c2_note": "G-C2 as registered is an OI-id join only; no registered join covers this set (sets[].join_key note)."
+  },
+  {
+   "model": "neulab/Pangea-7B",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S17",
+    "S18",
+    "S19"
+   ],
+   "quote": "card field \"Training Dataset:\" linking 6M PangeaIns (S17); \"Each subset within the PangeaIns dataset (e.g., ChartQA) contains a .json file for metadata and a corresponding .tar/.zip file for the images\" (S18); \"We fully open-source our data, code, and trained checkpoints\" (S19)",
+   "reason": "SFT data published with every component listed and its images released; no OI-based component is named in the read pages, so nothing is shown undeterminable; checkable by G-C2 (see ambiguities A4).",
+   "web_scale_pretraining": "unknown (disclosed): LLaVA-Pretrain (LAION/CC/SBU) connector stage and the vision encoder",
+   "g_c2_note": "G-C2 must establish, per PangeaIns component (e.g. ShareGPT4V, Cambrian737k, LLaVA-NeXt, ALLaVA-4V, allava_vflan, LVIS-Instruct4V), whether images come from OI and recover their OI ids; any OI-sourced subset without a recoverable OI id turns this row UNCHECKABLE."
+  },
+  {
+   "model": "neulab/Pangea-7B",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S18",
+    "S28",
+    "S29"
+   ],
+   "quote": "PangeaIns data source table rows Viet-ShareGPT-4o-Text-VQA, MTVQA, Viet-OCR-VQA, Viet-Doc-VQA (S18)",
+   "reason": "PangeaIns lists Vietnamese image components Viet-ShareGPT-4o-Text-VQA (card gated, S28, 401), MTVQA (card states no image source, S29), Viet-OCR-VQA, Viet-Doc-VQA, Viet-DOC-VQA-II; their image sources relative to this set are not stated; undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): LLaVA-Pretrain (LAION/CC/SBU) connector stage and the vision encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "neulab/Pangea-7B",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S18",
+    "S28",
+    "S29"
+   ],
+   "quote": "PangeaIns data source table rows Viet-ShareGPT-4o-Text-VQA, MTVQA, Viet-OCR-VQA (S18)",
+   "reason": "PangeaIns lists Vietnamese image components Viet-ShareGPT-4o-Text-VQA (card gated, S28, 401), MTVQA (card states no image source, S29), Viet-OCR-VQA, Viet-Doc-VQA, Viet-DOC-VQA-II; their image sources relative to this set are not stated; undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): LLaVA-Pretrain (LAION/CC/SBU) connector stage and the vision encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "neulab/Pangea-7B",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S18",
+    "S28",
+    "S29"
+   ],
+   "quote": "PangeaIns data source table rows Viet-ShareGPT-4o-Text-VQA, MTVQA, Viet-Doc-VQA (S18)",
+   "reason": "PangeaIns lists Vietnamese image components Viet-ShareGPT-4o-Text-VQA (card gated, S28, 401), MTVQA (card states no image source, S29), Viet-OCR-VQA, Viet-Doc-VQA, Viet-DOC-VQA-II; their image sources relative to this set are not stated; undeterminable.",
+   "web_scale_pretraining": "unknown (disclosed): LLaVA-Pretrain (LAION/CC/SBU) connector stage and the vision encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "WueNLP/centurio_aya",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S20",
+    "S22"
+   ],
+   "quote": "card field Training Data: \"COMING SOON\" (S20); \"we incorporate additional datasets from the Cambrian collection\" (S22)",
+   "reason": "Training data not published, so no id list exists for any join; the report names sources (ShareGPT-4V captions, LLaVA Instruct, VQAv2, VG, OCRVQA, Cambrian collection) without image ids or splits; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed): SigLIP encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "WueNLP/centurio_aya",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S20",
+    "S22"
+   ],
+   "quote": "card field Training Data: \"COMING SOON\" (S20); \"we incorporate additional datasets from the Cambrian collection\" (S22)",
+   "reason": "Training data not published, so no id list exists for any join; the report names sources (ShareGPT-4V captions, LLaVA Instruct, VQAv2, VG, OCRVQA, Cambrian collection) without image ids or splits; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed): SigLIP encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "WueNLP/centurio_aya",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S20",
+    "S22"
+   ],
+   "quote": "card field Training Data: \"COMING SOON\" (S20); \"we incorporate additional datasets from the Cambrian collection\" (S22)",
+   "reason": "Training data not published, so no id list exists for any join; the report names sources (ShareGPT-4V captions, LLaVA Instruct, VQAv2, VG, OCRVQA, Cambrian collection) without image ids or splits; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed): SigLIP encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "WueNLP/centurio_aya",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S20",
+    "S22"
+   ],
+   "quote": "card field Training Data: \"COMING SOON\" (S20); \"we incorporate additional datasets from the Cambrian collection\" (S22)",
+   "reason": "Training data not published, so no id list exists for any join; the report names sources (ShareGPT-4V captions, LLaVA Instruct, VQAv2, VG, OCRVQA, Cambrian collection) without image ids or splits; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed): SigLIP encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "WueNLP/centurio_qwen",
+   "role": "VI captioner / VI verifier",
+   "set": "nocaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S21",
+    "S22"
+   ],
+   "quote": "card field Training Data: \"COMING SOON\" (S21); \"we incorporate additional datasets from the Cambrian collection\" (S22)",
+   "reason": "Training data not published, so no id list exists for any join; the report names sources (ShareGPT-4V captions, LLaVA Instruct, VQAv2, VG, OCRVQA, Cambrian collection) without image ids or splits; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed): SigLIP encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "WueNLP/centurio_qwen",
+   "role": "VI captioner / VI verifier",
+   "set": "openvivqa_dev",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S21",
+    "S22"
+   ],
+   "quote": "card field Training Data: \"COMING SOON\" (S21); \"we incorporate additional datasets from the Cambrian collection\" (S22)",
+   "reason": "Training data not published, so no id list exists for any join; the report names sources (ShareGPT-4V captions, LLaVA Instruct, VQAv2, VG, OCRVQA, Cambrian collection) without image ids or splits; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed): SigLIP encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "WueNLP/centurio_qwen",
+   "role": "VI captioner / VI verifier",
+   "set": "vitextcaps_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S21",
+    "S22"
+   ],
+   "quote": "card field Training Data: \"COMING SOON\" (S21); \"we incorporate additional datasets from the Cambrian collection\" (S22)",
+   "reason": "Training data not published, so no id list exists for any join; the report names sources (ShareGPT-4V captions, LLaVA Instruct, VQAv2, VG, OCRVQA, Cambrian collection) without image ids or splits; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed): SigLIP encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "WueNLP/centurio_qwen",
+   "role": "VI captioner / VI verifier",
+   "set": "viecap4h_private_test",
+   "status": "UNCHECKABLE",
+   "source_ids": [
+    "S21",
+    "S22"
+   ],
+   "quote": "card field Training Data: \"COMING SOON\" (S21); \"we incorporate additional datasets from the Cambrian collection\" (S22)",
+   "reason": "Training data not published, so no id list exists for any join; the report names sources (ShareGPT-4V captions, LLaVA Instruct, VQAv2, VG, OCRVQA, Cambrian collection) without image ids or splits; components not individually traced.",
+   "web_scale_pretraining": "unknown (disclosed): SigLIP encoder",
+   "g_c2_note": null
+  },
+  {
+   "model": "liuhaotian/llava-v1.5-7b",
+   "role": "EN benchmark",
+   "set": "nocaps_test",
+   "status": "CLEAN-candidate",
+   "source_ids": [
+    "S23",
+    "S24",
+    "S25",
+    "S26",
+    "S32"
+   ],
+   "quote": "image sources of llava_v1_5_mix665k.json: COCO train2017, GQA, OCR-VQA, \"TextVQA:\" train_val_images link, VisualGenome (S24); \"We collect TextVQA's training and validation set from Open Images' training set while test set is collected from Open Images' test set\" (S26)",
+   "reason": "SFT mixture published and its image sources listed; the only OI-based part is TextVQA train/val images, documented as OI train, joinable by OI id; LCS-558K alignment stage is web-scale (unknown).",
+   "web_scale_pretraining": "unknown (disclosed): LAION/CC/SBU 558K (S23, S25) and CLIP ViT-L",
+   "g_c2_note": "Join TextVQA train_val image OI ids (TextVQA/TextCaps id lists) against NoCaps-test OI ids; expected 0 by S26."
+  },
+  {
+   "model": "liuhaotian/llava-v1.5-7b",
+   "role": "EN benchmark",
+   "set": "openvivqa_dev",
+   "status": "N/A",
+   "source_ids": [],
+   "quote": null,
+   "reason": "Not a VI candidate (llava_handling; v3 section 5.2 l.252); not run on Vietnamese sets.",
+   "web_scale_pretraining": "not applicable",
+   "g_c2_note": null
+  },
+  {
+   "model": "liuhaotian/llava-v1.5-7b",
+   "role": "EN benchmark",
+   "set": "vitextcaps_test",
+   "status": "N/A",
+   "source_ids": [],
+   "quote": null,
+   "reason": "Not a VI candidate (llava_handling; v3 section 5.2 l.252); not run on Vietnamese sets.",
+   "web_scale_pretraining": "not applicable",
+   "g_c2_note": null
+  },
+  {
+   "model": "liuhaotian/llava-v1.5-7b",
+   "role": "EN benchmark",
+   "set": "viecap4h_private_test",
+   "status": "N/A",
+   "source_ids": [],
+   "quote": null,
+   "reason": "Not a VI candidate (llava_handling; v3 section 5.2 l.252); not run on Vietnamese sets.",
+   "web_scale_pretraining": "not applicable",
+   "g_c2_note": null
+  }
+ ],
+ "archive_note": "web.archive.org/save requests from this host failed (connection timeout); archive_url gives an existing Wayback snapshot of the same pinned URL where the availability API returned one, else \"unavailable\". The saved page copy (copy_path) is the primary record.",
+ "stop_check": {
+  "rule": "prereg l.466 / section 9.1 step 1: STOP if no VI captioner or no VI verifier can still be CLEAN on NoCaps test; captioner and verifier may be the same model (v4.1 l.264).",
+  "vi_models_still_clean_candidate_on_nocaps_test": [
+   "Gregor/mblip-bloomz-7b",
+   "Gregor/mblip-mt0-xl",
+   "neulab/Pangea-7B"
+  ],
+  "vi_models_clean_candidate_on_every_listed_set": [
+   "Gregor/mblip-bloomz-7b",
+   "Gregor/mblip-mt0-xl"
+  ],
+  "provisional_stop": false,
+  "note": "No STOP at G-C1: 3 VI models remain CLEAN-candidate on NoCaps test, each pending G-C2 (not licensed; CC-222). Each can serve as VI captioner and VI verifier. The v4.1 l.276 verifier rule (\"first model passing B10 for every registered test set\") is met at G-C1 level only by Gregor/mblip-bloomz-7b, Gregor/mblip-mt0-xl."
+ },
+ "ambiguities": [
+  "A1 InternVL2.5 Table 4 (S05) is captioned \"pre-training data mixture\" but is curated conversation-format data, not web-scale; it was treated as a curated stage, so its OpenImages-Caption part counts as an OI-based part (affects Vintern-1B-v3_5 and InternVL3-8B; both are UNCHECKABLE on other grounds too).",
+  "A2 \"OpenImages-Caption [116]\" (S05) cites the OI v4 paper and names no split.",
+  "A3 Vintern: the Viet-OpenViVQA-gemini-VQA card (S27) is gated (401 without auth). The C direction v3 l.251 note of 2026-11-01 says it uses \"8024 Vietnamese images in train split\", but that page could not be re-read without auth, so it was not used. The report (S30) gives no split and calls its OpenViVQA-dev evaluation \"zero-shot\"; that is an assertion, not a data list. Status UNCHECKABLE, not HIT.",
+  "A4 Pangea NoCaps CLEAN-candidate: the read pages name no OI-based PangeaIns component, but they also do not state, per component, the image origin or whether OI ids are kept (ShareGPT4V, Cambrian737k, LLaVA-NeXt, ALLaVA/Vision-FLAN and others not traced). G-C2 must resolve this; an untraceable OI subset makes the row UNCHECKABLE.",
+  "A5 Pangea VI sets: Vietnamese image components of unstated origin (S28 gated; S29 gives no image source) -> UNCHECKABLE, read as the non-OI analogue of the Q5 undeterminable-split rule. A native-id join could resolve it, but none is registered.",
+  "A6 G-C2 is registered as an OI-id join only (prereg l.632-633). The mBLIP CLEAN-candidate rows on openvivqa_dev, vitextcaps_test and viecap4h_private_test rest on the documentation naming no Vietnamese-sourced image set; no registered join confirms them. For the coordinator/CC-222.",
+  "A7 Centurio: S22 Table 8 is captioned \"in our analysis experiments\"; the released checkpoints add \"datasets from the Cambrian collection\" (Appendix B.2 list not traced). The cards (S20, S21) say \"Training Data: COMING SOON\" at the pinned revisions.",
+  "A8 Aya-Vision-8B card (S10) and the 5CD-AI dataset cards (S27, S28, S31) return 401 without authentication; statuses rest on the reports and are fail-closed. The 401 bodies are hashed as fetched.",
+  "A9 mBLIP: the BLIP-2 Flan-T5-XL checkpoint used for initialisation (S15) is taken to carry the BLIP-2 pre-training data stated in S16 (COCO, VG + web). S16 does not separately document any fine-tuning of that exact checkpoint.",
+  "A10 LLaVA: the S24 README is pinned at GitHub main c121f04 (2024-05-11), which postdates the v1.5 checkpoint. S32 also lists TextCaps in the mixture; the README names only TextVQA train_val_images as the matching image download.",
+  "A11 Screening: the Qwen3.5 / Qwen3-VL cards were screened on the card for IC4 (no report naming VL training data is linked). IC5 for third-party GGUF/MLX repackagings used the base size in the repo name.",
+  "A13 mBLIP: S15 Appendix D.1 Table 6 confirms that the full training mix is Web CapFilt (CC3M+CC12M+SBU subset), MSCOCO, VQAv2, A-OKVQA, LLaVA detail/conversations and ImageNet/BabelImageNet. S14 says its folders also hold \"the files of the tasks used to evaluate the model\"; S15 evaluates on XM3600 (Open Images images). These are evaluation files, not training data, so they are not counted against the NoCaps row.",
+  "A14 InternVL3-8B: S33 (OpenGVLab/InternVL-Data) says the InternVL training dataset was withdrawn from public access. No released InternVL3 SFT id list was found. Only dataset cards were read; no data file was opened.",
+  "A12 \"Web-scale\" was read as uncurated web crawls (LAION, CC, SBU, CapFilt, encoder pretraining). Curated academic sets were never filed as \"unknown\"."
+ ],
+ "completed_utc": "2026-11-02T00:44:21Z"
+}
