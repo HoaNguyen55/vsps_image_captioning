@@ -5,8 +5,12 @@
     <m0 venv> -I scripts/vsps_j_e2b/e2b.py plan                                         laptop: ids, counts, shas
     <venv-lb> -I e2b.py rate --data D --images I --out /root/e2b_rate [--with-qwen3]      M8 4090, alone, unscored
     <venv-lb> -I e2b.py probe --cand C --form FA|FB --lang vi|en --data D --images I --out O --cap-h H --rate R
-    <m0 venv> -I e2b.py score --data D --runs O --m0-probes P --res R.json              laptop, once
+                          [--res R.json (EN only)] [--rerun-of <archived faulted folder of this cell>]
+                          [--lost-run <OPS id of the run lost with its host>]
+    <m0 venv> -I e2b.py score --data D --runs O --m0-probes P --rate R --res R.json      laptop, once
+    <m0 venv> -I e2b.py score-en --data D --runs O --m0-probes P --res R.json --res-en E  laptop, once, winner only
     <any venv with numpy> -I e2b.py selftest                                             CPU, network blocked
+Tier 1b-i follows AMENDMENT_1_DRAFT_v1_2.md (348b088, CC-223r3): D1-D11 are marked in the code by their D-number.
 
 Guards are M0's (scripts/vsps_j_m0/m0.py, imported unchanged): pinned inputs, one OUT, a STOP marker on every
 FAULT / PROJECTION_STOP / CAP_STOP, refusal to resume or score a stopped run. Models load through
@@ -25,6 +29,7 @@ import re
 import subprocess
 import sys
 import time
+import traceback
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -59,6 +64,12 @@ MALFORMED_MASS = 0.5
 CAP_RATE_H, QWEN3_MARK_H, N_RATE, N_SMOKE, KEEP_S = 3.0, 2.0, 200, 10, 0.50
 B_BOOT, MAX_DROP = 10_000, 0.01
 RATE_KEYS = {"cand", "form", "i", "sec", "n_tok", "phase"}  # the only per-probe fields the rate run may write
+RATE_SHA = "a57179187068127522d09d1e98cd7b651220fe5417e69c87d1d58495b844ae91"  # D1: the pulled rate.json (OPS-1102e2b-done)
+W25_LISTS = PDIR / "e2b_w25_lists.json"  # D11: committed by the gatekeeper with its line in PDIR/SHA256SUMS
+# m0.halt return codes (STOP marker "rc"): registered drops vs operator FAULTs (D1, D5b, D6, D7)
+RC_FAULT, RC_PROJ, RC_CAP, RC_ENV, RC_PIN, RC_TOKEN, RC_EN_SMOKE = 2, 3, 4, 5, 6, 7, 8
+DROP_RC = {RC_FAULT, RC_PROJ, RC_CAP}  # non-finite mass, PROJECTION_STOP, CAP_STOP: registered drop of the cell
+ENV_NAMES = {"BackendCompilerFailed", "InductorError", "CompilationError"}  # ponytail: torch compile error names; extend if a new one appears
 
 # ------------------------------------------------------------------------------------------------ frozen rules
 COLOUR = re.compile(r"\b(red|blue|green|yellow|white|black|brown|gray|grey|orange|pink|purple|silver|gold|golden"
@@ -152,15 +163,38 @@ def lists() -> dict:
     return out
 
 
-def sets_and_segments(data: Path) -> tuple[dict, list]:
+def w25_lists(sums: Path = PDIR / "SHA256SUMS", path: Path = W25_LISTS) -> tuple[set, set]:
+    """D11: the W25 drop / hold ids of the 663 (AMENDMENT_1 §D.3). The pin is the file's line in the prereg
+    SHA256SUMS, added by the gatekeeper commit after the pass (no code change after the pass); refused until then."""
+    pin = {n: h for h, n in (ln.split() for ln in sums.read_text().splitlines() if ln.strip())}.get(path.name)
+    if not pin or not path.is_file() or m0.sha_file(path) != pin:
+        raise SystemExit("REFUSED: e2b_w25_lists.json is not the pinned W25 outcome (G-L3: W25 pass first)")
+    d = json.loads(path.read_text(encoding="utf-8"))
+    return {int(i) for i in d["drop"]}, {int(i) for i in d["hold"]}
+
+
+def apply_w25(probe: set, sel: set, held: set, drop: set, hold: set) -> tuple[set, set, set]:
+    """D11: drops leave probe, selection and held; holds move from the selection into held. Only the selection (the
+    663) can be dropped or held (§D.3 scope), and an id is never both: the count asserts hold only then."""
+    out = probe - drop, sel - drop - hold, held | hold
+    if len(out[0]) != len(probe) - len(drop) or len(out[1]) != len(sel) - len(drop) - len(hold):
+        raise SystemExit("FAULT W25 lists: an id outside the selection set or in both lists (counts do not follow)")
+    return out
+
+
+def sets_and_segments(data: Path, w25: tuple | None = None) -> tuple[dict, list]:
     """M0's probe set (val - dropped, 769), selection set (minus the 106 held, 663) and eligible segments with v2 type
-    and half. Text stays in memory only."""
+    and half, after the W25 drop / hold lists when given (D11; empty lists change nothing). Text stays in memory only."""
     L = lists()
-    probe = L["val_ids.txt"] - L["dropped_ids.txt"]
-    sel = probe - L["selection_excluded_ids.txt"]
+    probe = probe769 = L["val_ids.txt"] - L["dropped_ids.txt"]
+    sel, held = probe - L["selection_excluded_ids.txt"], L["selection_excluded_ids.txt"]
+    if w25 is not None:
+        probe, sel, held = apply_w25(probe, sel, held, *w25)
     segs = [dict(s, t2=e2b_type(s["text"]), half=half(s["image"]))
             for s in m0.segments(m0.load(data, "val_raw.json"))[0] if s["image"] in probe]
-    return {"probe": probe, "sel": sel, "held": L["selection_excluded_ids.txt"]}, segs
+    if w25 is not None:
+        print(json.dumps({"after_w25": {"probe": count(segs), "selection": count([s for s in segs if s["image"] in sel])}}))
+    return {"probe": probe, "sel": sel, "held": held, "probe769": probe769}, segs
 
 
 def count(segs: list) -> dict:
@@ -219,14 +253,74 @@ def model_entry(key: str) -> dict:
 
 
 # ------------------------------------------------------------------------------------------------ GPU guards
-def prep_out(out: Path) -> Path:
-    """One OUT; launch.json t0 is written before any fetch, so the cap clock includes downloads; one resume."""
+def env_info() -> dict:
+    """D7: interpreter and library versions for launch.json, read from package metadata (no import); cuda = the
+    torch wheel's local tag (e.g. cu121). None when a package is not installed."""
+    from importlib.metadata import PackageNotFoundError, version
+
+    out = {"python": sys.version}
+    for pkg in ("torch", "transformers"):
+        try:
+            out[pkg] = version(pkg)
+        except PackageNotFoundError:
+            out[pkg] = None  # recorded; a real load then fails as ENV_FAULT (rc 5)
+    out["cuda"] = out["torch"].partition("+")[2] or None if out["torch"] else None
+    return out
+
+
+def rerun_record(prev: Path, out: Path) -> dict:
+    """W1 (AMENDMENT_1 §F protocol): an operator-FAULT re-run names the archived faulted folder of the same cell. Its
+    STOP rc and shas go into launch.json. Refused if the folder is missing, anywhere under the runs folder (NB-1), of
+    another cell, not stopped, itself a re-run (one re-run per cell), or a registered stop (W4: only rc 5 ENV_FAULT,
+    rc 6 PIN_FAULT and a vi rc 7 TOKEN_FAULT are operator FAULTs; a registered stop is final, never re-run)."""
+    stop, lj = prev / m0.STOP, prev / "launch.json"
+    if prev.resolve().is_relative_to(out.resolve().parent) or not (prev.name == out.name or prev.name.startswith(out.name + ".")):
+        raise SystemExit(f"REFUSED --rerun-of {prev}: not this cell's folder archived outside the runs folder")
+    if not stop.is_file() or not lj.is_file():
+        raise SystemExit(f"REFUSED --rerun-of {prev}: no stopped run there")
+    if json.loads(lj.read_text()).get("rerun_of"):
+        raise SystemExit(f"REFUSED --rerun-of {prev}: it is a re-run itself (one re-run per cell; §F: to a judge)")
+    rc = json.loads(stop.read_text())["rc"]
+    if not (rc in (RC_ENV, RC_PIN) or (rc == RC_TOKEN and out.name.endswith("_vi"))):
+        raise SystemExit(f"REFUSED --rerun-of {prev}: rc {rc} is a registered stop, not an operator FAULT (§F)")
+    return {"path": str(prev), "rc": rc, "stop_sha256": m0.sha_file(stop), "launch_sha256": m0.sha_file(lj)}
+
+
+def stopped_marker(out: Path) -> Path:
+    """NB-6: written beside the cell folder whenever the cell stops; it outlives an archive of the folder."""
+    return out.parent / f".{out.name}.stopped"
+
+
+def prep_out(out: Path, rerun_of: Path | None = None, lists_sha: str | None = None, lost: str | None = None) -> Path:
+    """One OUT; launch.json t0 is written before any fetch, so the cap clock includes downloads; one resume.
+    rerun_of: the archived faulted folder of an operator-FAULT re-run (fresh OUT and t0; §F). lost: the OPS id of a
+    run lost with its host; this relaunch IS the cell's one §F re-run (CC-225r2 Ruling 4), so any rc 5/6/7 on it goes
+    to a judge and nothing may re-run it. lists_sha: the e2b_w25_lists.json sha the run is bound to (NB-4)."""
+    if rerun_of and lost:
+        raise SystemExit("REFUSED: --rerun-of and --lost-run together")
     if out.resolve().is_relative_to(ROOT):
         raise SystemExit("REFUSED --out inside the repo")
     out.mkdir(parents=True, exist_ok=True)
     m0.refuse_if_stopped(out)
     lf = out / "launch.json"
-    L = json.loads(lf.read_text()) if lf.exists() else {"t0": time.time(), "starts": 0}
+    rec = None
+    if rerun_of and not lf.exists():  # one re-run per cell: a marker beside the cell folder (the archive stays unchanged)
+        used = out.parent / f".{out.name}.rerun"
+        if used.exists():
+            raise SystemExit(f"REFUSED --rerun-of: {out.name} was re-run already (one re-run per cell; §F: to a judge)")
+        rec = rerun_record(rerun_of, out)
+    elif lost and not lf.exists():
+        rec = {"lost_run": lost, "rc": "LOST"}
+    mk = stopped_marker(out)
+    if mk.exists():  # NB-6: a stopped cell launches or resumes only as the declared re-run of that exact stop
+        declared = rec if not lf.exists() else (json.loads(lf.read_text()).get("rerun_of") or {})
+        if (declared or {}).get("stop_sha256") != json.loads(mk.read_text())["stop_sha256"]:
+            raise SystemExit(f"REFUSED: {out.name} stopped before; only --rerun-of its archived STOP may launch (§F)")
+    if rec:
+        (out.parent / f".{out.name}.rerun").write_text(json.dumps(rec) + "\n")
+    L = json.loads(lf.read_text()) if lf.exists() else {
+        "t0": time.time(), "starts": 0, "rerun_of": rec,
+        "w25_lists_sha256": lists_sha, **env_info()}
     if L["starts"] >= 2:
         raise SystemExit("REFUSED: already resumed once")
     L["starts"] += 1
@@ -258,6 +352,42 @@ def gpu_alone(where: str) -> None:
 def projected_h(used_h: float, remaining: int, mean_s: float) -> float:
     """v2 section 5.3: GPU-h used since the first t0 (resume included) + remaining probes x running MEAN s/probe."""
     return used_h + remaining * mean_s / 3600
+
+
+def proj_mean(rows: list, rate_mean: float) -> float:
+    """D5 = AMENDMENT_1 C.1 (CC-223 W1): the rate mean_s until the cell's TOTAL completed probes, across all starts,
+    reach N_RATE; then the mean of all completed probes excluding the first probe of each start; if that set is
+    empty, the rate mean_s. rows: [(start, sec)] in write order."""
+    if len(rows) < N_RATE:
+        return rate_mean
+    seen: set = set()
+    rest = []
+    for start, sec in rows:
+        if start in seen:
+            rest.append(sec)
+        seen.add(start)
+    return sum(rest) / len(rest) if rest else rate_mean
+
+
+def smoke_ok(m: dict) -> bool:
+    """Registered smoke rule (PREREG section 6): finite masses and label mass >= 0.5."""
+    return all(math.isfinite(v) for v in m.values()) and sum(m.values()) >= MALFORMED_MASS
+
+
+def redact(s: str) -> str:
+    """D7: no token in any record: the HF_TOKEN value and any hf_ token string are replaced; cut to 4 kB."""
+    tok = os.environ.get("HF_TOKEN")
+    s = s.replace(tok, "<redacted>") if tok else s
+    return re.sub(r"hf_[A-Za-z0-9]{30,}", "<redacted>", s)[:4096]
+
+
+def is_env_error(e: BaseException) -> bool:
+    """D7 / CC-218r2 W3: an import or compile error is an operator FAULT (rc 5), never a registered drop."""
+    return isinstance(e, ImportError) or type(e).__name__ in ENV_NAMES
+
+
+def error_record(e: BaseException) -> dict:
+    return {"type": type(e).__name__, "msg": redact(str(e)), "traceback": redact(traceback.format_exc())}
 
 
 def load_cand(key: str, hub: Path):
@@ -305,8 +435,9 @@ def image_loader(folder: Path):
 
 def check_images(folder: Path, want: dict) -> None:
     bad = [f for f, h in want.items() if not (folder / f).is_file() or m0.sha_file(folder / f) != h]
-    if bad:
-        raise SystemExit(f"FAULT {len(bad)} staged images missing or not the plan sha")
+    extra = {p.name for p in folder.iterdir()} - set(want)  # D8: the staged folder is exactly the wanted set
+    if bad or extra:
+        raise SystemExit(f"FAULT {len(bad)} staged images missing or not the plan sha, {len(extra)} extra files")
 
 
 def cuda_free() -> None:
@@ -346,7 +477,7 @@ def time_form(key, form, probe, out, items, spans, img, fh) -> dict:
             t = time.perf_counter()
             m, n_tok = probe(img(iid), prompt(form, "vi", spans[(r, s)]))
             sec = time.perf_counter() - t
-            ok += all(math.isfinite(v) for v in m.values()) and sum(m.values()) >= MALFORMED_MASS
+            ok += smoke_ok(m)
             rows.append(rate_row(cand=key, form=form, i=i, sec=sec, n_tok=n_tok, phase=phase))
             m0.append(fh, rows[-1])
         fh.flush()
@@ -415,9 +546,12 @@ def cmd_rate(a) -> int:
                     sf.write_text(json.dumps(summary, indent=1))
                     return m0.halt(out, 2, f"FAULT {e}")
                 except Exception as e:  # OOM or load error: one retry inside the cap, then the candidate is dropped
+                    if is_env_error(e):  # D7: an environment error is an operator FAULT, not a registered drop
+                        sf.write_text(json.dumps(summary, indent=1))
+                        return m0.halt(out, RC_ENV, f"ENV_FAULT {type(e).__name__}: {redact(str(e))}")
                     tries += 1
                     summary["cands"][key] = {"final": tries >= 2, "tries": tries, "status": "ERROR",
-                                             "error": type(e).__name__}
+                                             "error": type(e).__name__, **error_record(e)}
                     sf.write_text(json.dumps(summary, indent=1))
                     if tries >= 2:
                         break
@@ -430,49 +564,83 @@ def cmd_rate(a) -> int:
 
 # ------------------------------------------------------------------------------------------------ probe (GPU, tier 1b-i)
 def cmd_probe(a) -> int:
+    if m0.sha_file(a.rate) != RATE_SHA:
+        raise SystemExit("REFUSED: --rate is not the pulled rate.json (a5717918)")
     try:
         rate = json.loads(a.rate.read_text())["cands"][a.cand]["forms"][a.form]
     except KeyError:
         raise SystemExit(f"REFUSED: no rate record for {a.cand} {a.form}") from None
     if rate["status"] != "DONE" or not rate["keep"]:
         raise SystemExit(f"REFUSED: {a.cand} {a.form} is not kept by the rate run")
-    S, segs = sets_and_segments(a.data)
-    check_images(a.images, json.loads(PLAN.read_text(encoding="utf-8"))["probe_images"])
+    if a.lang == "en" and (not a.res or json.loads(a.res.read_text())["winner"] != f"{a.cand}|{a.form}"):
+        raise SystemExit("REFUSED: the EN frame runs for the vi winner only (--res names it)")
+    S, segs = sets_and_segments(a.data, w25_lists())
+    want = json.loads(PLAN.read_text(encoding="utf-8"))["probe_images"]
+    check_images(a.images, {f: h for f, h in want.items() if m0.image_id(f) in S["probe"]})  # D8 + D11
     model_entry(a.cand)
-    out = prep_out(a.out / f"{a.cand}_{a.form}_{a.lang}")
-    order = m0.image_order(S["probe"])  # M0's seeded image order over the 769
+    out = prep_out(a.out / f"{a.cand}_{a.form}_{a.lang}", a.rerun_of, m0.sha_file(W25_LISTS), a.lost_run)
+    return guarded(out, lambda: probe_cell(a, out, S, segs, rate["mean_s"]))
+
+
+def guarded(out: Path, fn) -> int:
+    """D7: an environment error -> operator FAULT (rc 5); anything else -> error.json (redacted), then a crash
+    (which keeps its one resume)."""
+    try:
+        rc = fn()
+    except Exception as e:
+        if not is_env_error(e):
+            (out / "error.json").write_text(json.dumps(error_record(e)))
+            raise
+        rc = m0.halt(out, RC_ENV, f"ENV_FAULT {type(e).__name__}: {redact(str(e))}")
+    if (out / m0.STOP).exists():  # NB-6: the stop outlives an archive of the folder
+        stopped_marker(out).write_text(json.dumps({"rc": rc, "stop_sha256": m0.sha_file(out / m0.STOP)}) + "\n")
+    return rc
+
+
+def probe_cell(a, out: Path, S: dict, segs: list, rate_mean: float) -> int:
+    order = [i for i in m0.image_order(S["probe769"]) if i in S["probe"]]  # W2: M0's order over the 769, minus drops
     by: dict = {}
     for s in segs:
         by.setdefault(s["image"], []).append(s)
     pf = out / "probes.jsonl"
-    done = {(r["rec"], r["seg"]) for r in map(json.loads, pf.read_text(encoding="utf-8").splitlines())} if pf.exists() else set()
-    secs = [json.loads(x)["sec"] for x in pf.read_text(encoding="utf-8").splitlines()] if pf.exists() else []
+    old = [json.loads(x) for x in pf.read_text(encoding="utf-8").splitlines()] if pf.exists() else []
+    done = {(r["rec"], r["seg"]) for r in old}
+    rows = [(r.get("start", 1), r["sec"]) for r in old]
+    start = json.loads((out / "launch.json").read_text())["starts"]
+    if elapsed_h(out) >= a.cap_h:  # D6: pre-load (pre-fetch) cap check
+        return m0.halt(out, RC_CAP, f"CAP_STOP before load: {elapsed_h(out):.2f} GPU-h >= cap {a.cap_h}")
     try:
         proc, net = load_cand(a.cand, a.hub)
+    except Fault as e:  # D1: snapshot pin mismatch = operator FAULT
+        return m0.halt(out, RC_PIN, f"PIN_FAULT {e}")
+    try:
         probe, sets = make_probe(proc, net, a.form, a.lang)
-    except Fault as e:
-        return m0.halt(out, 2, f"FAULT {e}")
+    except Fault as e:  # D1: token-set clash (vi: operator FAULT, second clash on a re-run = drop; EN: arm not run)
+        return m0.halt(out, RC_TOKEN, f"TOKEN_FAULT {e}")
     (out / "token_sets.json").write_text(json.dumps(sets))
     img = image_loader(a.images)
+    if a.lang == "en" and not done:  # D5b: registered 10-item EN smoke at load, booleans only
+        first = [s for iid in order for s in by.get(iid, [])][:N_SMOKE]
+        if not all(smoke_ok(probe(img(s["image"]), prompt(a.form, "en", s["text"]))[0]) for s in first):
+            return m0.halt(out, RC_EN_SMOKE, "EN_SMOKE_FAULT: label mass < 0.5 or non-finite on an EN smoke item")
     with open(pf, "a", encoding="utf-8") as fh:
         for n, iid in enumerate(order, 1):
             todo = [s for s in by.get(iid, []) if (s["rec"], s["seg"]) not in done]
             if not todo:
                 continue
-            rem = len(segs) - len(done)
-            pj = projected_h(elapsed_h(out), rem, sum(secs) / len(secs) if secs else rate["mean_s"])
+            pj = projected_h(elapsed_h(out), len(segs) - len(done), proj_mean(rows, rate_mean))  # D5
             if pj > a.cap_h:
-                return m0.halt(out, 3, f"PROJECTION_STOP before image {n}: {pj:.2f} GPU-h > cap {a.cap_h}", n)
+                return m0.halt(out, RC_PROJ, f"PROJECTION_STOP before image {n}: {pj:.2f} GPU-h > cap {a.cap_h}", n)
             for s in todo:
                 t = time.perf_counter()
                 m, n_tok = probe(img(iid), prompt(a.form, a.lang, s["text"]))
                 sec = time.perf_counter() - t
                 if not all(math.isfinite(v) for v in m.values()):
-                    return m0.halt(out, 2, f"FAULT non-finite mass at rec {s['rec']} seg {s['seg']}", n)
-                row = {"rec": s["rec"], "seg": s["seg"], "image": iid, "n_img": n, "mass": m, "n_tok": n_tok, "sec": sec}
-                m0.append(fh, row)
+                    return m0.halt(out, RC_FAULT, f"FAULT non-finite mass at rec {s['rec']} seg {s['seg']}", n)
+                m0.append(fh, {"rec": s["rec"], "seg": s["seg"], "image": iid, "n_img": n, "mass": m, "n_tok": n_tok,
+                               "sec": sec, "start": start})
                 done.add((s["rec"], s["seg"]))
-                secs.append(sec)
+                rows.append((start, sec))
             fh.flush()
             os.fsync(fh.fileno())
     (out / "probes.jsonl.sha256").write_text(f"{m0.sha_file(pf)}  probes.jsonl\n")
@@ -541,14 +709,22 @@ def macro(per: dict, k: str) -> float:
     return sum(v) / len(v) if v else float("nan")
 
 
+def macro_pair(E: dict, V: dict, k: str) -> tuple[float, list]:
+    """D3 (clarifies PREREG l.229): the config - Vintern macro difference over only the primary types where BOTH
+    systems have k defined. Returns (difference, types used)."""
+    ts = [t for t in PRIMARY if t in E and t in V and not math.isnan(E[t][k]) and not math.isnan(V[t][k])]
+    return (sum(E[t][k] - V[t][k] for t in ts) / len(ts) if ts else float("nan")), ts
+
+
 def vote(a: str, b: str) -> str:
     """PA2: REJECTED if either rejects, SUPPORTED if both support, else UNCERTAIN."""
     return "R" if "R" in (a, b) else "S" if a == b == "S" else "U"
 
 
 def pick(rows: dict) -> tuple:
-    """Selection rule on the select half. rows: {config: {"dprec", "U", "dret", "cand", "form", "vote"}}.
-    Feasible: U <= 12 and dret >= -2.0 (point estimates). Max dprec; within 0.5 points prefer F-B, then Aya, then
+    """Selection rule on the select half. rows: {config: {"dprec", "U", "dret", "cand", "form", "vote", "tune_recall"}}.
+    Feasible: U <= 12 and dret >= -2.0 (point estimates) and, D4 (amends PREREG l.226), tune strict recall >= R_DESIGN
+    on each primary type (undefined = NaN = infeasible). Max dprec; within 0.5 points prefer F-B, then Aya, then
     CANDS order. PA2 vote configs only if no single-model config is feasible. N9: if Qwen2.5-VL-7B wins, the
     verifier for VSPS-generated records is the best feasible non-Qwen2.5-VL single config.
     Returns (winner or None, vsps_record_verifier or None)."""
@@ -556,7 +732,7 @@ def pick(rows: dict) -> tuple:
 
     def best(keys):
         ok = [k for k in keys if rows[k]["U"] <= 100 * U_SEL and rows[k]["dret"] >= RET_MARGIN
-              and not math.isnan(rows[k]["dprec"])]
+              and not math.isnan(rows[k]["dprec"]) and all(rows[k]["tune_recall"][t] >= R_DESIGN for t in PRIMARY)]
         if not ok:
             return None
         top = max(rows[k]["dprec"] for k in ok)
@@ -632,8 +808,9 @@ def config_fn(mass: dict, form: str, op: list):
 
 
 def tune_recall(f, op: list) -> dict:
+    """Tune strict recall per type; NaN when the type has no gold-false tune probe (undefined; D4)."""
     return {t: (recall([f(s) == "R" for s in tune_of(op, t)], [s["y"] for s in tune_of(op, t)])
-                if sum(s["y"] for s in tune_of(op, t)) else 0.0) for t in TYPES}
+                if sum(s["y"] for s in tune_of(op, t)) else float("nan")) for t in TYPES}
 
 
 def vintern_fn(pv: dict, op: list, R: dict):
@@ -650,18 +827,41 @@ def table(f, segs: list) -> dict:
     return {t: metrics([f(s) for s in segs if s["t2"] == t], [s["y"] for s in segs if s["t2"] == t]) for t in TYPES}
 
 
-def load_runs(runs: Path, keys: set, lang: str) -> dict:
-    """{(cand, form): {(rec, seg): mass}} for every complete, unstopped run folder of one language."""
-    out = {}
+def classify(d: Path, keys: set, lang: str) -> tuple[str, dict | None]:
+    """D1: a run folder is DONE (sha + exact cover of keys) or holds a STOP marker read by its rc. A registered stop
+    is never opened (no probes.jsonl read): vi rc 2/3/4, and a vi TOKEN_FAULT on a re-run whose archived first
+    fault was also a TOKEN_FAULT (7 -> 7, W1), are DROPPED_STOP;
+    EN rc 2/3/4/7/8 is EN_NOT_RUN. rc 5 ENV_FAULT, rc 6 PIN_FAULT, a first vi TOKEN_FAULT and an incomplete folder
+    with no STOP are operator matters: REFUSED (re-run under the AMENDMENT_1 §F protocol; on a re-run: to a judge)."""
+    stop = d / m0.STOP
+    if stop.exists():
+        rc = json.loads(stop.read_text())["rc"]
+        if lang == "en" and rc in DROP_RC | {RC_TOKEN, RC_EN_SMOKE}:
+            return "EN_NOT_RUN", None
+        prior = (json.loads((d / "launch.json").read_text()).get("rerun_of") or {}).get("rc")
+        if lang == "vi" and (rc in DROP_RC or (rc == RC_TOKEN and prior == RC_TOKEN)):
+            return "DROPPED_STOP", None
+        if prior is not None:
+            raise SystemExit(f"REFUSED {d.name}: second operator FAULT (rc {prior} then rc {rc}); to a judge (§F)")
+        raise SystemExit(f"REFUSED {d.name}: operator FAULT (STOP rc {rc}); re-run under the operator-FAULT protocol")
+    pf, sf = d / "probes.jsonl", d / "probes.jsonl.sha256"
+    if not sf.is_file() or sf.read_text().split()[0] != m0.sha_file(pf):
+        raise SystemExit(f"REFUSED {d.name}: incomplete (no STOP, no matching probes.jsonl.sha256)")
+    rows = {(r["rec"], r["seg"]): r["mass"] for r in map(json.loads, pf.read_text(encoding="utf-8").splitlines())}
+    if set(rows) != keys:
+        raise SystemExit(f"REFUSED {d.name}: coverage differs from the probe keys")
+    return "DONE", rows
+
+
+def load_runs(runs: Path, keys: set, lang: str) -> tuple[dict, dict]:
+    """({(cand, form): {(rec, seg): mass}} for DONE folders, {(cand, form): status} for every folder) of one language."""
+    out, status = {}, {}
     for d in sorted(runs.glob(f"*_F?_{lang}")):
         cand, form, _l = d.name.rsplit("_", 2)
-        m0.refuse_if_stopped(d)
-        pf = d / "probes.jsonl"
-        rows = {(r["rec"], r["seg"]): r["mass"] for r in map(json.loads, pf.read_text(encoding="utf-8").splitlines())}
-        if (d / "probes.jsonl.sha256").read_text().split()[0] != m0.sha_file(pf) or set(rows) != keys:
-            raise SystemExit(f"REFUSED {d.name}: sha or coverage")
-        out[(cand, form)] = rows
-    return out
+        status[(cand, form)], rows = classify(d, keys, lang)
+        if rows is not None:
+            out[(cand, form)] = rows
+    return out, status
 
 
 def ablation(form: str, mass: dict, f3, R: dict, op: list, sel: list) -> dict:
@@ -679,49 +879,109 @@ def ablation(form: str, mass: dict, f3, R: dict, op: list, sel: list) -> dict:
     return {"three_label": table(f3, sel), "binary": table(lambda s: "R" if q(s) >= cut[s["t2"]] else "S", sel)}
 
 
-def cmd_score(a) -> int:
-    if m0.sha_file(a.m0_probes) != M0_PROBES:
+def kept_cells(rate: Path) -> set:
+    """D1: the keep=true candidate x form cells of the sha-pinned rate.json."""
+    if m0.sha_file(rate) != RATE_SHA:
+        raise SystemExit("REFUSED: --rate is not the pulled rate.json (a5717918)")
+    rj = json.loads(rate.read_text())
+    return {(c, f) for c, v in rj["cands"].items() for f, r in v.get("forms", {}).items() if r.get("keep")}
+
+
+def once(guard: Path) -> None:
+    """D2: a scoring step runs once; its guard file exists after the first run."""
+    if guard.exists():
+        raise SystemExit(f"REFUSED: {guard.name} exists (scored once)")
+
+
+def m0_pv(path: Path, keys: set) -> dict:
+    if m0.sha_file(path) != M0_PROBES:
         raise SystemExit("FAULT M0 probes.jsonl is not cccd5e0e")
-    S, segs = sets_and_segments(a.data)
-    pv = {(r["rec"], r["seg"]): r["p_yes"] for r in map(json.loads, a.m0_probes.read_text().splitlines()) if r["arm"] == "A"}
+    pv = {(r["rec"], r["seg"]): r["p_yes"] for r in map(json.loads, path.read_text().splitlines()) if r["arm"] == "A"}
+    if not keys <= set(pv):  # D11: M0 arm A covers the remaining keys (a superset is allowed)
+        raise SystemExit("FAULT M0 arm-A rows do not cover the probe segments")
+    return pv
+
+
+def cmd_score(a) -> int:
+    once(a.runs / "SCORED.json")
+    kept = kept_cells(a.rate)
+    cells = {tuple(d.name.rsplit("_", 2)[:2]) for d in a.runs.glob("*_F?_vi")}
+    if cells != kept:  # D1: the vi run folders are exactly the kept cells (checked before any data is read)
+        raise SystemExit(f"REFUSED: run folders {sorted(cells)} differ from the kept cells {sorted(kept)}")
+    S, segs = sets_and_segments(a.data, w25_lists())
     keys = {key(s) for s in segs}
-    if set(pv) != keys:
-        raise SystemExit("FAULT M0 arm-A rows do not cover the 16,027 segments")
-    runs = load_runs(a.runs, keys, "vi")
-    op = [s for s in segs if s["image"] in S["sel"]]  # the 663-image selection set; the 106 held never fit anything
+    pv = m0_pv(a.m0_probes, keys)
+    runs, status = load_runs(a.runs, keys, "vi")
+    op = [s for s in segs if s["image"] in S["sel"]]  # the selection set; the held images never fit anything
     sel = [s for s in op if s["half"] == "select"]
     cfg = {f"{c}|{f}": config_fn(m, f, op) for (c, f), m in runs.items()}
     vthr = fit_band(lambda s: pv[key(s)], op)
     vown = lambda s: band_label(pv[key(s)], *vthr[s["t2"]])  # noqa: E731  Vintern's own band (PA2 input only)
     for k in [k for k in cfg if k.startswith("aya_vision_8b|")]:
         cfg[f"PA2 vintern+{k}"] = ((lambda s, fa=cfg[k][0]: vote(vown(s), fa(s))), None)
-    res, rows, fns = {"label": LABEL, "configs": {}}, {}, {}
+    res = {"label": LABEL, "cells": {f"{c}|{f}": st for (c, f), st in status.items()}, "configs": {}}
+    rows, fns = {}, {}
     for name, (f, thr) in cfg.items():
         R = tune_recall(f, op)
         vf = vintern_fn(pv, op, R)
         E, V = table(f, sel), table(vf, sel)
+        (dprec, tp), (dret, tr), (drec, tc) = (macro_pair(E, V, k) for k in ("prec_R", "retention", "recall"))
         rows[name] = {"cand": name.split("|")[0].removeprefix("PA2 vintern+"), "form": name.split("|")[-1],
-                      "vote": name.startswith("PA2"), "dprec": macro(E, "prec_R") - macro(V, "prec_R"),
-                      "U": macro(E, "U"), "dret": macro(E, "retention") - macro(V, "retention"),
-                      "drecall": macro(E, "recall") - macro(V, "recall")}
-        res["configs"][name] = {**rows[name], "tune_recall": R, "thresholds": thr, "e2b": E, "vintern": V}
+                      "vote": name.startswith("PA2"), "dprec": dprec, "U": macro(E, "U"), "dret": dret,
+                      "drecall": drec, "tune_recall": R}
+        res["configs"][name] = {**rows[name], "types_used": {"dprec": tp, "dret": tr, "drecall": tc},
+                                "thresholds": thr, "e2b": E, "vintern": V}
         fns[name] = (f, vf, R)
     win, res["vsps_record_verifier"] = pick(rows)
     res["winner"] = win
     if win:
         f, vf, R = fns[win]
         res["winner_ci_select"] = paired_ci(per_image_counts(sel, f, vf))
+        res["winner_ci_select_note"] = ("selection-biased, descriptive; tier 2 confirms; Vintern select half not fresh "
+                                        "(M0 scored all 663)")  # D9
         res["full_split_same_thresholds"] = {"e2b": table(f, segs), "vintern": table(vf, segs),
-                                             "held_out_106": table(f, [s for s in segs if s["image"] in S["held"]])}
+                                             "held_out_106": table(f, [s for s in segs if s["image"] in S["held"]]),
+                                             "held_n_images": len(S["held"])}  # NB-6: 106 + W25 holds
         if not rows[win]["vote"]:
             c, fm = win.split("|")
             res["ablation_binary"] = ablation(fm, runs[(c, fm)], f, R, op, sel)
-            en = load_runs(a.runs, keys, "en").get((c, fm))
-            if en:  # descriptive English-frame arm of the winner, same rules on its own tune fit
-                fe = config_fn(en, fm, op)[0]
-                res["winner_en_descriptive"] = {"e2b": table(fe, sel), "vintern": table(vintern_fn(pv, op, tune_recall(fe, op)), sel)}
     a.res.write_text(json.dumps(res, indent=1, default=str) + "\n", encoding="utf-8")
-    print(json.dumps({k: res[k] for k in ("winner", "vsps_record_verifier")}))
+    guard = {"res_sha256": m0.sha_file(a.res), "rate_sha256": RATE_SHA, "w25_lists_sha256": m0.sha_file(W25_LISTS),
+             "cells": res["cells"], "utc": time.time()}
+    (a.runs / "SCORED.json").write_text(json.dumps(guard) + "\n")
+    print(json.dumps({k: res[k] for k in ("winner", "vsps_record_verifier")}
+                     | {"SCORED.json_sha256 (OPS line)": m0.sha_file(a.runs / "SCORED.json")}))
+    return 0
+
+
+def cmd_score_en(a) -> int:
+    """D2: the descriptive EN-frame arm of the vi winner, once, after the one vi score (never re-runs pick())."""
+    once(a.runs / "SCORED_EN.json")
+    gf = a.runs / "SCORED.json"
+    if not gf.is_file() or json.loads(gf.read_text())["res_sha256"] != m0.sha_file(a.res):
+        raise SystemExit("REFUSED: no SCORED.json for this res.json")
+    res = json.loads(a.res.read_text())
+    win = res["winner"]
+    if not win or res["configs"][win]["vote"]:
+        raise SystemExit("REFUSED: no single-model winner, so no EN arm")
+    c, fm = win.split("|")
+    if [d.name for d in sorted(a.runs.glob("*_F?_en"))] != [f"{c}_{fm}_en"]:
+        raise SystemExit(f"REFUSED: the only EN folder must be {c}_{fm}_en")
+    S, segs = sets_and_segments(a.data, w25_lists())
+    keys = {key(s) for s in segs}
+    pv = m0_pv(a.m0_probes, keys)
+    runs, status = load_runs(a.runs, keys, "en")
+    out = {"label": LABEL, "winner": win, "en_status": status[(c, fm)]}
+    if (c, fm) in runs:  # same rules on its own tune fit
+        mass = runs[(c, fm)]
+        op = [s for s in segs if s["image"] in S["sel"]]
+        sel = [s for s in op if s["half"] == "select"]
+        fe = config_fn(mass, fm, op)[0]
+        out["winner_en_descriptive"] = {"e2b": table(fe, sel), "vintern": table(vintern_fn(pv, op, tune_recall(fe, op)), sel)}
+        out["en_malformed_share"] = 100 * sum(sum(m.values()) < MALFORMED_MASS for m in mass.values()) / len(mass)
+    a.res_en.write_text(json.dumps(out, indent=1, default=str) + "\n", encoding="utf-8")
+    (a.runs / "SCORED_EN.json").write_text(json.dumps({"res_en_sha256": m0.sha_file(a.res_en), "utc": time.time()}) + "\n")
+    print(json.dumps({"en_status": out["en_status"], "SCORED_EN.json_sha256": m0.sha_file(a.runs / "SCORED_EN.json")}))
     return 0
 
 
@@ -745,18 +1005,24 @@ def main() -> int:
     pr.add_argument("--form", choices=FORMS, required=True)
     pr.add_argument("--lang", choices=LANGS, required=True)
     pr.add_argument("--cap-h", type=float, required=True, help="block cap, set by the post-rate amendment")
-    pr.add_argument("--rate", type=Path, required=True, help="the pulled rate.json")
-    s = sp.add_parser("score")
-    s.add_argument("--data", type=Path, default=ROOT / m0.MH)
-    s.add_argument("--runs", type=Path, required=True)
-    s.add_argument("--m0-probes", type=Path, required=True)
-    s.add_argument("--res", type=Path, required=True)
+    pr.add_argument("--rate", type=Path, required=True, help="the pulled rate.json (a5717918)")
+    pr.add_argument("--res", type=Path, help="EN only: the vi res.json whose winner is this cell")
+    pr.add_argument("--rerun-of", type=Path, help="operator-FAULT re-run: the archived faulted folder of this cell")
+    pr.add_argument("--lost-run", help="relaunch after a lost host: the OPS id of the lost run (its one §F re-run)")
+    for name in ("score", "score-en"):
+        s = sp.add_parser(name)
+        s.add_argument("--data", type=Path, default=ROOT / m0.MH)
+        s.add_argument("--runs", type=Path, required=True)
+        s.add_argument("--m0-probes", type=Path, required=True)
+        s.add_argument("--res", type=Path, required=True)
+    sp.choices["score"].add_argument("--rate", type=Path, required=True, help="the pulled rate.json (a5717918)")
+    sp.choices["score-en"].add_argument("--res-en", type=Path, required=True)
     a = ap.parse_args()
     if a.cmd == "selftest":
         import test_e2b
 
         return test_e2b.main()
-    return {"plan": cmd_plan, "rate": cmd_rate, "probe": cmd_probe, "score": cmd_score}[a.cmd](a)
+    return {"plan": cmd_plan, "rate": cmd_rate, "probe": cmd_probe, "score": cmd_score, "score-en": cmd_score_en}[a.cmd](a)
 
 
 if __name__ == "__main__":
