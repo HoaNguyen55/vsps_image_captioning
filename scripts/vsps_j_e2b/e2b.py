@@ -769,19 +769,28 @@ def per_image_counts(segs: list, fE, fV) -> list:
     return [sum((acc[i][t] for t in PRIMARY), []) for i in imgs]
 
 
-def paired_ci(rows: list, B: int = B_BOOT, seed: int = SEED) -> dict:
-    """Ratio estimators per type inside each replicate, then macro, then E - V; 95 % percentile intervals.
-    Replicates where a primary type has no REJECTED for either system are dropped and counted; > 1 % -> FAULT."""
+def ci_from_table(rows, B: int = B_BOOT, seed: int = SEED) -> tuple:
+    """K1 (TIER1C O1 §9): paired_ci's per-replicate statistics and its dropped mask, before the FAULT check, so the
+    O1 ppass can count an undefined inner run as not passing instead of aborting. No logic change."""
     import numpy as np
 
     T = boot(rows, len(rows), seed, B).reshape(B, len(PRIMARY), NCNT)
     RyE, RE, RyV, RV, StE, StV, nt, UE, n, nf = (T[:, :, j] for j in range(NCNT))
     bad = ((RE == 0) | (RV == 0) | (nt == 0) | (nf == 0)).any(axis=1)
-    if bad.mean() > MAX_DROP:
-        raise Fault(f"{bad.mean():.3%} bootstrap replicates undefined")
     with np.errstate(divide="ignore", invalid="ignore"):
         st = {"dprec": 100 * (RyE / RE - RyV / RV).mean(axis=1), "U": 100 * (UE / n).mean(axis=1),
               "dret": 100 * ((StE - StV) / nt).mean(axis=1), "drecall": 100 * ((RyE - RyV) / nf).mean(axis=1)}
+    return st, bad
+
+
+def paired_ci(rows: list, B: int = B_BOOT, seed: int = SEED) -> dict:
+    """Ratio estimators per type inside each replicate, then macro, then E - V; 95 % percentile intervals.
+    Replicates where a primary type has no REJECTED for either system are dropped and counted; > 1 % -> FAULT."""
+    import numpy as np
+
+    st, bad = ci_from_table(rows, B, seed)
+    if bad.mean() > MAX_DROP:
+        raise Fault(f"{bad.mean():.3%} bootstrap replicates undefined")
     return {"B": B, "seed": seed, "dropped": int(bad.sum()),
             **{k: [float(np.percentile(v[~bad], 2.5)), float(np.percentile(v[~bad], 97.5))] for k, v in st.items()}}
 
