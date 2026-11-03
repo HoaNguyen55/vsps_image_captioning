@@ -1,0 +1,180 @@
+{
+ "verdict": "T2_FAIL",
+ "k6_kept": false,
+ "kv_kept": {},
+ "h_b2_status": "sequence stopped at H-B1",
+ "systems": {
+  "short": [
+   "base8_s",
+   "k1_s1",
+   "k1_s2",
+   "k6_s1"
+  ],
+  "detailed": [
+   "base8_s",
+   "k6_s1"
+  ]
+ },
+ "scorer_sha256": "7dbca3c4d4bbe39f0e07bbb9b7f0d7de738f4d4d6875bb6dc0933e17e8569534",
+ "scorer_closure": {
+  "scripts/mt4_k1k6/k1k6.py": "7dbca3c4d4bbe39f0e07bbb9b7f0d7de738f4d4d6875bb6dc0933e17e8569534",
+  "scripts/grl/common.py": "bbe7ee61f659b1a7bfc3cab418d83ed779b76187107708fef2d8ab44df0ad23a",
+  "scripts/grl/k2_gate0.py": "daaa0132b83389ec6f51ec3771aa379347300a0071697808b84aaa22b7145d01",
+  "scripts/grl/reward.py": "44314769d728cc08264566f59319f6c979be1f5f1d6a6e5554be11e3c2939f41",
+  "scripts/score_coco_probe.py": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070",
+  "scripts/clean_supervision.py": "01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231",
+  "scripts/rl_reward.py": "3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b",
+  "scripts/person_uncap.py": "d16b19f6597f84597db7865dea4058f0bb1fecf914d71d34d6406d66283fa5bb",
+  "rescap/__init__.py": "b712bea4d66e5e2e0f0cec1624ab244a025560ecc5d86f96cada2e0160a4890f",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "rescap/metrics.py": "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960",
+  "rescap/repro.py": "723200190818cd61a56527e6a0a1596b95f9d1ed1ebc0cabe1b29135cf03b70d",
+  "rescap/svp/__init__.py": "5b7f52920de75cf59bde0ae657e292a876efc63292ca6db6a4d085bb9fec1424",
+  "rescap/svp/entailment.py": "4462f44df80faa0adc620d98aa5d8bbb307243d450e9aee4801bb17a3a06db23",
+  "rescap/svp/matching.py": "a9253060131aacfca8eaab9a4b2c473c487db96a7c1222f0b8e31f9f61b24003",
+  "rescap/vi/__init__.py": "f898963e95fec7d9fb236295649404815634a1d949bfd74cd7c3b90ed493bf6c",
+  "rescap/vi/classifier.py": "966cdab1fed8471ac57d225698e63f1e2a055435a5d669e9cca10eed703fed16",
+  "rescap/vi/color.py": "242fc46f68ecb06c8eefde23350481d99e60566b3da64ab90cfa79db38fd3875",
+  "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+  "rescap/vocab.py": "c9143b2d973fc48a2231335844cd91ab702329c0b1aabb802884225e155967ec",
+  "data/coco_probe/coco80_vi.json": "926e08571ef6e80a7f8aae8f2b73753d6c5c54c431a750ba2b67bfaae71b540b"
+ },
+ "tier2": {
+  "n_images": 2000,
+  "H-B1": {
+   "dF1": 0.9921606286147622,
+   "dF1_ci": [
+    -0.26006402412285606,
+    2.168002726555367
+   ],
+   "dP": 0.5230878171750248,
+   "dP_ci": [
+    -0.5566330795924334,
+    1.6228383376325772
+   ],
+   "dR": 1.009689867481093,
+   "F1": [
+    61.738983577305866,
+    62.73114420592063
+   ],
+   "holds": false
+  },
+  "H-B2": {
+   "dF1": 0.8832402703689439,
+   "dF1_ci": [
+    -0.3423955383257926,
+    2.1671677152902395
+   ],
+   "dP": 0.43843137572390845,
+   "dP_ci": [
+    -0.8888902022933589,
+    1.7176636840413124
+   ],
+   "dR": 0.9060673735409068,
+   "F1": [
+    61.738983577305866,
+    62.62222384767481
+   ],
+   "dCHAIR_i": -20.76482424296651,
+   "dCHAIR_i_ci": [
+    -22.258385509521915,
+    -19.27854724737036
+   ],
+   "holds": null,
+   "tested": false,
+   "why": "sequence stopped at H-B1"
+  },
+  "language_fail_share": {
+   "base8_s": 0.0125,
+   "k1_s1": 0.0,
+   "k1_s2": 0.0,
+   "k6_s1": 0.0
+  },
+  "cap_hit_share": {
+   "base8_s": 0.0,
+   "k1_s1": 0.009,
+   "k1_s2": 0.001,
+   "k6_s1": 0.0085
+  }
+ },
+ "p_pass": {
+  "P_HB1": 0.099,
+  "n_t2": 2000,
+  "n_test": 4224,
+  "replicates": 2000,
+  "se_kv": {
+   "HB1_dF1": 0.43381001587415585,
+   "HB1_dP": 0.3872982582461575,
+   "HB2_dF1": 0.4474806193330508,
+   "HB2_dCHAIR_i": 0.5184316034854203
+  },
+  "P_HB1_and_HB2": 0.094,
+  "P_HB2": 0.51
+ },
+ "tier2_matcher_v1": {
+  "n_images": 2000,
+  "H-B1": {
+   "dF1": 0.8416421246760848,
+   "dF1_ci": [
+    -0.42183589056543586,
+    2.044430835126065
+   ],
+   "dP": 0.5734283280073527,
+   "dP_ci": [
+    -0.5191816282588885,
+    1.654645243203737
+   ],
+   "dR": 0.8168403289432007,
+   "F1": [
+    61.289263900277035,
+    62.13090602495312
+   ]
+  },
+  "H-B2": {
+   "dF1": 0.5683603470373058,
+   "dF1_ci": [
+    -0.6717477998610085,
+    1.8831608608046109
+   ],
+   "dP": 0.39889332103690833,
+   "dP_ci": [
+    -0.9392944250068933,
+    1.6999671905861427
+   ],
+   "dR": 0.5480240049075107,
+   "F1": [
+    61.289263900277035,
+    61.85762424731434
+   ],
+   "dCHAIR_i": -20.720245394811787,
+   "dCHAIR_i_ci": [
+    -22.201455986007502,
+    -19.233730751677722
+   ],
+   "why": "sequence stopped at H-B1"
+  },
+  "language_fail_share": {
+   "base8_s": 0.0125,
+   "k1_s1": 0.0,
+   "k1_s2": 0.0,
+   "k6_s1": 0.0
+  },
+  "cap_hit_share": {
+   "base8_s": 0.0,
+   "k1_s1": 0.009,
+   "k1_s2": 0.001,
+   "k6_s1": 0.0085
+  },
+  "label": "v1 class lexicon with the section-1 negation/hedge rule (not score_dev.py's negation-blind v1); fixed after the val-924 planning numbers were seen (CC-205 W9); descriptive only, never gates"
+ },
+ "utc": "2026-11-02T17:04:51Z",
+ "label": "DEV-CONFIRM rehearsal (T2-2000): licenses the KV look, never a result",
+ "inputs_sha256": {
+  "k1k6_t2_base8_s-detailed.preds.json": "bbc111325863925b17248619faaad27b29eb67d360e6af3ab87d2c771f26f24f",
+  "k1k6_t2_base8_s-short.preds.json": "ef12aef18314d8821634203dde182f0a06590e4806bf53dd5ddf1cb99b566977",
+  "k1k6_t2_k1_s1-short.preds.json": "5a82d95c2d5d83fb7a1fcec531f8f7cd39edb777946a392befc0d25fba9e242a",
+  "k1k6_t2_k1_s2-short.preds.json": "e139334df525a02358786426881ce98a3de971c48abbc5e615f10c566a5a1181",
+  "k1k6_t2_k6_s1-detailed.preds.json": "25bffa6516b4f714badc9fc797736486725f5796e25fd8673eed796785ee2a04",
+  "k1k6_t2_k6_s1-short.preds.json": "da7c2097b7506b234fc2d3be0c9096ce264eae9ad0349da4f68d9fd9c62de0db"
+ }
+}
