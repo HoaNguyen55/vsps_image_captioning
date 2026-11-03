@@ -543,7 +543,8 @@ LISTS_IN = {  # pinned inputs; None = not on the laptop yet: `lists` FAULTs befo
     "openviic_train": ("data/datasets/openviic/uit-openviic-annotation-train.json",
                        "d757520e76b8490df6c7275c2beb8b3ecef0342635a436bea8c3cfd07eb49df0"),
     "copy_map": ("data/ktvic_openviic_refs.json", "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d"),
-    "textcaps_train": None,  # ids-only list: distinct image_id of the TextCaps train release json, sorted, one per line
+    "textcaps_train": ("data/splits/textcaps_train_ids.txt",  # TextCaps train ids, 21,953 (CC-247; LOG OPS-1104c-textcaps-pin)
+                       "2da2b395ef508be19098c2f558c27da3cb93e873528ba6bb82d94a549037e4b8"),
 }
 DVI_KT = ("h_bdt1_739", "ktvic_dev299", "refused_ktvic_dup")  # KTVIC-train owners leaving D-VI (B3; PI-1103aa)
 DVI_OV = ("openviic_dev_c1",)  # OpenViIC-file owners: a KTVIC image copied to one of them leaves D-VI too
@@ -1488,7 +1489,7 @@ def _st_lists(base: Path) -> None:
     assert (root / LISTS_FILE).stat().st_mode & 0o777 == 0o444 and json.loads((root / LISTS_FILE).read_text())["t_a_ids"]
     assert (base / "lsealed/ACCESS_LOG.tsv").read_text().split("\t")[2] == "lists write"
     _must("one write", cmd_lists, root, base / "lsealed", p, owners)
-    assert set(LISTS_IN) == set(p) and [k for k, v in LISTS_IN.items() if v is None] == ["textcaps_train"]
+    assert set(LISTS_IN) == set(p) and [k for k, v in LISTS_IN.items() if v is None] == []
     assert all(OWNERS[k]["status"] == "compute" for k in DVI_KT + DVI_OV)
 
 

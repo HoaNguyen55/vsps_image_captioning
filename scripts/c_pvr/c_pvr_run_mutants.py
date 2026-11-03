@@ -6,7 +6,10 @@ Each mutant replaces one exact string (it must occur once) and runs `selftest --
 which must not lie under /mnt or contain a BARRED word. The unmutated copy runs first and must print 'selftest ok'.
 KILLED = the selftest fails; TIMEOUT counts as killed. EQUIV lists mutants argued equivalent or untestable in writing;
 they are run and expected to survive."""
+import hashlib
+import os
 import re
+import signal
 import subprocess
 import sys
 from concurrent.futures import ThreadPoolExecutor
@@ -292,15 +295,20 @@ def run(name: str, a: str, b: str) -> str:
         return f"PATTERN({src.count(a)})"
     p = S / f"{name}.py"
     p.write_text(src.replace(a, b))
+    pr = subprocess.Popen(SANDBOX + [sys.executable, "-I", "-B", str(p), "selftest", "--root", root],
+                          stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, start_new_session=True)
     try:
-        r = subprocess.run(SANDBOX + [sys.executable, "-I", "-B", str(p), "selftest", "--root", root],
-                           capture_output=True, text=True, timeout=TIMEOUT)
-    except subprocess.TimeoutExpired:
+        out, err = pr.communicate(timeout=TIMEOUT)
+    except subprocess.TimeoutExpired:  # N23: the whole session goes (sandbox shell, selftest and its pool workers)
+        os.killpg(pr.pid, signal.SIGKILL)
+        pr.communicate()
         return "TIMEOUT"
-    (S / f"{name}.err").write_text(r.stderr[-4000:])
-    return "SURVIVED" if r.returncode == 0 and "selftest ok" in r.stdout else "KILLED"
+    (S / f"{name}.err").write_text(err[-4000:])
+    return "SURVIVED" if pr.returncode == 0 and "selftest ok" in out else "KILLED"
 
 
+print(f"subject {Path(sys.argv[1]).resolve()} sha256 {hashlib.sha256(Path(sys.argv[1]).read_bytes()).hexdigest()}; harness "
+      f"{Path(__file__).resolve()} sha256 {hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}", flush=True)  # N20
 base = run("_original", "#!/usr/bin/env python3\n", "#!/usr/bin/env python3\n")
 if base != "SURVIVED":
     (S / f"_original.{base.lower()}").write_text(base + "\n")  # N8: a TIMEOUT leaves its own marker
