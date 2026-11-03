@@ -810,8 +810,10 @@ def blob_hashes(p: Path) -> tuple[int, str, str]:
 
 
 def curl_argv(name: str, part: Path) -> list[str]:
-    return ["curl", "-sS", "--fail", "-A", "vsps-research", "-o", str(part),
-            OVQA_URL.format(rev=OVQA_REV, name=name)]
+    # The hub answers resolve/<rev>/<file> with a 307 to its own resolve-cache; follow it over https only. Size and
+    # git-blob SHA-1 checks still bind the bytes to the pinned revision.
+    return ["curl", "-sS", "--fail", "-L", "--proto-redir", "=https", "--max-redirs", "3", "-A", "vsps-research",
+            "-o", str(part), OVQA_URL.format(rev=OVQA_REV, name=name)]
 
 
 def custody(dest: Path) -> Path:
@@ -1224,7 +1226,9 @@ def _st_models(root: Path) -> None:
 
 
 def _st_ovqa() -> None:
-    assert blob_hashes.__doc__ and curl_argv("x.json", Path("/t/x.part"))[-1] == (
+    argv = curl_argv("x.json", Path("/t/x.part"))
+    assert argv[1:8] == ["-sS", "--fail", "-L", "--proto-redir", "=https", "--max-redirs", "3"], argv
+    assert blob_hashes.__doc__ and argv[-1] == (
         "https://huggingface.co/datasets/uitnlp/OpenViVQA-dataset/resolve/"
         "cc85c24c863afb05b5a52f68950f9ba6b69975cf/x.json")
     with tempfile.TemporaryDirectory() as td:
