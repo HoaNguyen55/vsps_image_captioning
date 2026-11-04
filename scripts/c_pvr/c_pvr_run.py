@@ -27,6 +27,7 @@ import fcntl
 import hashlib
 import io
 import json
+import multiprocessing
 import os
 import re
 import shutil
@@ -2040,6 +2041,7 @@ def selftest(root: Path) -> None:
     import urllib.request
 
     faulthandler.dump_traceback_later(300, exit=True)  # N8: a hang leaves a stack, never a silent 600 s timeout
+    assert multiprocessing.get_start_method(allow_none=True) == "spawn", "main() must set a non-fork start method"
 
     no_sockets()
     try:
@@ -2065,6 +2067,9 @@ def selftest(root: Path) -> None:
 
 # ---------------------------------------------------------------------------------------------- cli
 def main() -> None:
+    # PI-1104c PQ5 = C (CC-250 Ruling 5): build_memory.features' Pool starts its workers by fork+exec, never by a
+    # bare fork of this process after torch threads exist; workers stay children of this pid (W25_RUN_DOC §6A H4)
+    multiprocessing.set_start_method("spawn")
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--root", type=Path, default=ROOT, help="repo root (the mutant harness runs copies)")
     sp = ap.add_subparsers(dest="cmd", required=True)

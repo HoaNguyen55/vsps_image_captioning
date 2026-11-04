@@ -262,6 +262,7 @@ M = {
     "host_any": ('w.add_argument("--host", choices=("laptop",), required=True)', 'w.add_argument("--host", required=True)'),
     "cli_no_integrity": ("    integrity(root, x.run_sha)\n", ""),
     "curl_env_dropped": ("stdin=subprocess.DEVNULL, env=G.CURL_ENV)", "stdin=subprocess.DEVNULL)"),
+    "start_fork": ('multiprocessing.set_start_method("spawn")', 'multiprocessing.set_start_method("fork")'),
 }
 EQUIV = {
     # CP.BARRED (oidv7-*-annotations, /dev/shm/c_pvr_gb, nocaps_val_4500_captions.json) is a subset of gates.BARRED
@@ -286,7 +287,7 @@ S.mkdir(parents=True, exist_ok=True)
 for d in ("home", "tmp"):
     (S / d).mkdir(exist_ok=True)
 SANDBOX = ["env", "-i", "PATH=/usr/bin:/bin", f"HOME={S / 'home'}", f"TMPDIR={S / 'tmp'}", "OMP_NUM_THREADS=1",
-           "MKL_NUM_THREADS=1", "unshare", "-rnm",  # one BLAS thread, as W25-K1 run2.sh: features fork a worker pool
+           "MKL_NUM_THREADS=1", "unshare", "-rnm",  # one BLAS thread, as W25-K1 run2.sh: features start a worker pool
            "sh", "-c", 'mount -t tmpfs tmpfs /dev/shm && exec "$@"', "sh"]
 
 
