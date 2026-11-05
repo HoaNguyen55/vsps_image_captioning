@@ -1251,6 +1251,9 @@ DEV_Q = {"xm3600": "xm3600_all", "nocaps_val": "nocaps_val_4500", "coco_test": "
 STAGE = {"dvi_ktvic": ("ktvic", "ktvic"), "dvi_openviic": ("openviic", "file"),
          "vitextvqa_dev": ("vitextvqa_dev", "jpg"), "textcaps": ("textcaps", "jpg")}  # set -> (--stage sub-dir, name rule)
 LOST_CAP.update(dict.fromkeys(STAGE, 0))  # no cap is registered for these: one unreadable image is a FAULT (owner-feats)
+# CC-259 (PI-1105j): the OpenViIC train file truncated at source (no EOI; sha256 4859dd1f...9d20) leaves D-VI by key
+# only at dev_pre's stage step, as in C's stage-1 memory (CC-082 T1) and the CC-199 key-only form; never opened here
+K_TRUNC = frozenset({"00000007169.jpg"})
 O_B_NOTE = ("not computed: tier 2 only (prereg §4.1 'Not touched in tier 1: ... O_B'; §4.3 NB-OVQALOST keeps the train "
             "json to keys and lengths until the tier-2 prereg licenses the O_B read); O_B x D-VI and the O_B pool wait")
 
@@ -1323,13 +1326,14 @@ def dev_pre(env: dict) -> dict:
     q["openviic_test"] = renamed(q["openviic_test"], {Path(k).stem: k for k in sets["ov_test"]}.get,
                                  set(sets["ov_test"]), "OpenViIC test")  # cache rows carry the file stem
     q["kt_c"] = rows(q.pop("coco_test"), kt_c, "KT-C")[0]
-    stage = {"dvi_ktvic": sorted(sets["kept_kt"], key=int), "dvi_openviic": sorted(sets["kept_ov"]),
+    stage = {"dvi_ktvic": sorted(sets["kept_kt"], key=int), "dvi_openviic": sorted(sets["kept_ov"] - env["k_trunc"]),
              "vitextvqa_dev": sets["vt"], "textcaps": sorted(sets["tc"])}
     for k, ids in stage.items():
         d = env["stage"] / STAGE[k][0]
         if miss := [i for i in ids if not (d / fname(STAGE[k][1], i, d)).is_file()]:
             fault(f"{k}: {len(miss)} staged image files are missing")
-    return {"q": q, "stage": stage, "t_a": sets["t_a"], "d_tc": sorted(set(sets["tc"]) - set(sets["t_a"])),
+    return {"q": q, "stage": stage, "cut": {"dvi_openviic": len(sets["kept_ov"] & env["k_trunc"])},
+            "t_a": sets["t_a"], "d_tc": sorted(set(sets["tc"]) - set(sets["t_a"])),
             "d_en": d_en, "ncv_xm": {r[0] for r in tsv["nocaps_val"] if Path(r[1]).stem in xm}, "noc": query_ids(env),
             "w25_run": json.loads(env["w25_counts"][0].read_text())["run_sha256"],
             "mem": W.load(refuse(env["in"] / env["mem"][0]), env["mem"][1]), "sscd": env["sscd_ok"](refuse(env["sscd"]))}
@@ -1364,7 +1368,8 @@ def dev_decide(env: dict, pre: dict, names: list[str], run_sha: str) -> dict:
         "label": CP.LABEL, "utc": CP.utc(), "rule": RULE_TEXT, "run_sha256": run_sha, "code_sha256": CODE,
         "w25_counts_sha256": env["w25_counts"][1], "w25_run_sha256": pre["w25_run"], "lists_sha256": env["lists_sha"],
         "owners_sha256": env["owners_sha"], "feats_sha256": env.get("feats_sha"), "sscd_sha256": W.SSCD_SHA,
-        "featured": {k: len(v["ids"]) for k, v in f.items()}, "queries": {k: len(v["ids"]) for k, v in q.items()},
+        "featured": {k: len(v["ids"]) for k, v in f.items()}, "dropped_truncated": pre["cut"],
+        "queries": {k: len(v["ids"]) for k, v in q.items()},
         "datastore": {}, "t2pool": {}, "o_b": O_B_NOTE,
         "d_en_no_feature_row": len(no_row), "nocaps_val_xm3600_by_id": len(pre["ncv_xm"]),
         "t2pool_note": "images only; the >= 1 verified mapped label filter needs labels and is left to the tier-2 prereg"}
@@ -1392,7 +1397,7 @@ def dev_env(root: Path, x) -> dict:
             "lists": root / LISTS_FILE, "lists_sha": LISTS_SHA, "lists_reg": (LISTS_IN, OWNERS),
             "w25_counts": (root / W25_DONE[0], W25_DONE[1]), "cen": CEN_TSV, "b_own": B_OWN, "dev_q": DEV_Q,
             "dev_n": DEV_N, "xm_src": OWNERS["xm3600_all"]["source"],
-            "mem": ("feats_memory.npz", CEN["feats_memory.npz"])}
+            "mem": ("feats_memory.npz", CEN["feats_memory.npz"]), "k_trunc": K_TRUNC}
 
 
 # ---------------------------------------------------------------------------------------------- selftest
@@ -1443,6 +1448,7 @@ def _st_static(root: Path) -> None:
     assert d["lists_reg"] == (LISTS_IN, OWNERS) and d["cen"] is CEN_TSV and d["b_own"] == B_OWN and d["dev_q"] is DEV_Q
     assert d["w25_counts"] == (root / W25_DONE[0], W25_DONE[1]) and d["xm_src"] == OWNERS["xm3600_all"]["source"]
     assert d["mem"] == ("feats_memory.npz", CEN["feats_memory.npz"]) and d["dev_n"] == {"d_en": 80083, "kt_c": 3907}
+    assert d["k_trunc"] is K_TRUNC and K_TRUNC == {"00000007169.jpg"}  # CC-259 W1
     assert DEV_Q == {"xm3600": "xm3600_all", "nocaps_val": "nocaps_val_4500", "coco_test": "karpathy_test_5000",
                      "ktvic_test": "ktvic_test_558", "openviic_test": "openviic_test_2001"}
     assert D_EN_OUT == ("coco_restval_b4", "uitviic_train_pool", "uitviic_val_924", "uitviic_test_231")
@@ -2279,7 +2285,7 @@ def _dev_world(w: dict, base: Path, sscd: Path, env0: dict) -> tuple[dict, dict]
                    "nocaps_val": ("D/ncv.tsv", h["ncv.tsv"])},
            "dev_q": {"xm3600": "dxm", "nocaps_val": "dncv", "coco_test": "dkt5", "ktvic_test": "dktt",
                      "openviic_test": "dovt"}, "dev_n": {"d_en": 5, "kt_c": 3}, "xm_src": ["D/xm.txt", h["xm.txt"], None],
-           "mem": ("dmem.npz", sc["dmem"]), "batch": 8}
+           "mem": ("dmem.npz", sc["dmem"]), "batch": 8, "k_trunc": frozenset({ko[2]})}
     return env, {"kk": kk, "ko": ko, "ta": ta, "dtc": dtc, "kt": kt, "c": c}
 
 
@@ -2309,7 +2315,7 @@ def _st_dev(w: dict, imgs: dict) -> None:
                        "t2pool": {"nocaps_val": ["1", "2"], "ktvic_test_confirm": [x["c"]], "openviic_test_confirm": []}}, out
         ds, tp = rec["datastore"], rec["t2pool"]
         assert {k: (v["n"], v["flagged"], v["out"], v["kept"]) for k, v in ds.items()} == {
-            "d_vi": (6, 3, 3, 3), "d_en": (5, 1, 3, 2), "d_tc": (2, 1, 1, 1)}, ds
+            "d_vi": (5, 3, 3, 2), "d_en": (5, 1, 3, 2), "d_tc": (2, 1, 1, 1)}, ds
         fb = ds["d_vi"]["flagged_by_set"]
         assert (fb["nocaps_test"]["C1_C2_registered"], fb["ovqa_dev"]["excluded"], fb["xm3600"]["excluded"]) == (1, 1, 1)
         assert ds["d_en"]["flagged_by_set"]["kt_c"]["excluded"] == 1 and ds["d_tc"]["flagged_by_set"]["t_a"]["excluded"] == 1
@@ -2321,7 +2327,8 @@ def _st_dev(w: dict, imgs: dict) -> None:
         assert tp["ktvic_test_confirm"]["flagged_by_set"]["ktvic_test_explore"]["C1_C2_registered"] == 1
         assert rec["queries"] == {"xm3600": 2, "nocaps_val": 3, "ktvic_test": 558, "openviic_test": 2001, "kt_c": 3,
                                   "nocaps_test": 2, "ovqa_dev": 1, "vitextvqa_dev": 5, "t_a": 3}, rec["queries"]
-        assert rec["featured"] == {"dvi_ktvic": 3, "dvi_openviic": 3, "vitextvqa_dev": 5, "textcaps": 5}
+        assert rec["featured"] == {"dvi_ktvic": 3, "dvi_openviic": 2, "vitextvqa_dev": 5, "textcaps": 5}
+        assert rec["dropped_truncated"] == {"dvi_openviic": 1}  # CC-259: the fixture key ko[2] leaves before featuring
         assert (rec["d_en_no_feature_row"], rec["nocaps_val_xm3600_by_id"], rec["o_b"]) == (1, 1, O_B_NOTE)
         assert (rec["run_sha256"], rec["w25_run_sha256"], rec["lists_sha256"]) == (run, "f" * 64, env["lists_sha"])
         assert json.loads((env["out"] / DEV_OUTS[-1]).read_text()) == rec and calls == []
@@ -2355,6 +2362,8 @@ def _st_dev(w: dict, imgs: dict) -> None:
                         ({"work": Path("/mnt/c_pvr_st_never")}, "WSL ext4 home"),
                         ({"stage": base / "nostage"}, "0 files, not exactly one")):
             _must(msg, dev_w25, {**env, **ch, "work": ch.get("work", base / "dwork2")}, _tag(w), run)
+        p0 = dev_pre({**env, "k_trunc": K_TRUNC})  # key absent from the fixture: a no-op, 0 recorded
+        assert (p0["stage"]["dvi_openviic"], p0["cut"]) == (x["ko"], {"dvi_openviic": 0}), p0["cut"]
         tcf.rename(tcf.with_suffix(".x"))
         _must("textcaps: 1 staged image files are missing", dev_w25, {**env, "work": base / "dwork2"}, _tag(w), run)
         assert not os.path.lexists(base / "dwork2") and not (env["sealed"] / "ACCESS_LOG.tsv").exists()

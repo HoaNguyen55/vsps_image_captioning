@@ -322,6 +322,7 @@ M = {
                              'h = write_new(env["out"] / DEV_OUTS[-1], G.jdump(rec), 0o644)'),
     "dev_no_decide_row": ('    alog(env["sealed"], "dev-w25 decide", DEV_OUTS[-1], h)\n', "    pass\n"),
     "dev_tag_not_shared": ('["dev-w25 start", h])', '["dev-w25 startx", h])'),
+    "dev_k_trunc_kept": ('sorted(sets["kept_ov"] - env["k_trunc"])', 'sorted(sets["kept_ov"])'),  # CC-259 W1
 }
 EQUIV = {
     # CP.BARRED (oidv7-*-annotations, /dev/shm/c_pvr_gb, nocaps_val_4500_captions.json) is a subset of gates.BARRED
