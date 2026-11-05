@@ -15,6 +15,7 @@ only the stdlib at module level, so its constants import here without spaCy or r
                                          --sscd PT --in DIR
     $FT -I -B scripts/c_pvr/c_pvr_run.py dev-w25 --host laptop --run-sha H --pause-tag T --owners-sha O --feats-sha F
                                          --sscd PT --in DIR --stage DIR      §7.4 self-retrieval + NB-T2POOL, sockets off
+    $FT -I -B scripts/c_pvr/c_pvr_run.py dev-w25-den (same arguments)      CC-261 O1: D-EN decide supplement, once
 
 Every subcommand first checks the sha of each imported repo file (CODE), then imports c_pvr, gates, w25 and
 build_memory unchanged and uses their constants and functions; no shared constant has a second value here. `w25`
@@ -1171,7 +1172,7 @@ def window(env: dict, tag: str, run_sha: str, name: str, **st0):
         for s in G.GB_SIGS:
             signal.signal(s, on_sig)
         (env["work"] / "parts").mkdir(mode=0o700, parents=True, exist_ok=True)
-        st["deadline"] = deadline(env)
+        st["deadline"] = st.get("deadline") or deadline(env)  # dev-w25-den brings its own stop (CC-261 K4)
         alog(env["sealed"], f"{name} start", hashlib.sha256(tag.encode()).hexdigest(), run_sha)
         yield st
         done = "end"
@@ -1254,6 +1255,9 @@ LOST_CAP.update(dict.fromkeys(STAGE, 0))  # no cap is registered for these: one 
 # CC-259 (PI-1105j): the OpenViIC train file truncated at source (no EOI; sha256 4859dd1f...9d20) leaves D-VI by key
 # only at dev_pre's stage step, as in C's stage-1 memory (CC-082 T1) and the CC-199 key-only form; never opened here
 K_TRUNC = frozenset({"00000007169.jpg"})
+# CC-261 K3 (ii), PI-1105n: D-EN ids with a feats_memory.npz row (caf4a621) and the two without one (N88), checked
+# 2026-11-05T18:2xZ on the npz ids and the tsv id column only; pinned by value, any other split FAULTs before the window
+DEN_ROWS = (80081, frozenset({"388662", "397819"}))
 O_B_NOTE = ("not computed: tier 2 only (prereg §4.1 'Not touched in tier 1: ... O_B'; §4.3 NB-OVQALOST keeps the train "
             "json to keys and lengths until the tier-2 prereg licenses the O_B read); O_B x D-VI and the O_B pool wait")
 
@@ -1302,6 +1306,11 @@ def dev_pre(env: dict) -> dict:
     every staged image present; the NoCaps-test ids checked as in w25."""
     if any(os.path.lexists(env["out"] / x) for x in DEV_OUTS) or decided(env["sealed"], "dev-w25 decide"):
         fault("a dev-w25 output or 'dev-w25 decide' row exists; decide is one look")
+    return dev_inputs(env)
+
+
+def dev_inputs(env: dict) -> dict:
+    """dev_pre without its one-look refusal (dev-w25-den has its own, CC-261 K4)."""
     if any(str(env[k].resolve()).startswith("/mnt/") for k in ("in", "work", "stage")):
         fault("the staged caches, the staged images and the feature parts must sit on the WSL ext4 home")
     cmp, disk = owners_load(env)[0], disk_reader(env["root"])
@@ -1332,11 +1341,17 @@ def dev_pre(env: dict) -> dict:
         d = env["stage"] / STAGE[k][0]
         if miss := [i for i in ids if not (d / fname(STAGE[k][1], i, d)).is_file()]:
             fault(f"{k}: {len(miss)} staged image files are missing")
+    mem = W.load(refuse(env["in"] / env["mem"][0]), env["mem"][1])
+    mem["ids"] = [str(i) for i in mem["ids"]]  # CC-261 K3 (i): the npz holds int64 ids; D-EN ids are tsv strings
+    no_row = d_en - set(mem["ids"])
+    if (len(d_en) - len(no_row), no_row) != env["den_rows"]:
+        fault(f"D-EN: {len(d_en) - len(no_row)} ids with a feature row and {len(no_row)} without, not the pinned "
+              f"{env['den_rows'][0]} and {sorted(env['den_rows'][1])} (CC-261 K3 (ii))")
     return {"q": q, "stage": stage, "cut": {"dvi_openviic": len(sets["kept_ov"] & env["k_trunc"])},
             "t_a": sets["t_a"], "d_tc": sorted(set(sets["tc"]) - set(sets["t_a"])),
             "d_en": d_en, "ncv_xm": {r[0] for r in tsv["nocaps_val"] if Path(r[1]).stem in xm}, "noc": query_ids(env),
             "w25_run": json.loads(env["w25_counts"][0].read_text())["run_sha256"],
-            "mem": W.load(refuse(env["in"] / env["mem"][0]), env["mem"][1]), "sscd": env["sscd_ok"](refuse(env["sscd"]))}
+            "mem": mem, "sscd": env["sscd_ok"](refuse(env["sscd"]))}
 
 
 def drop_from(d: dict, by: dict, extra: set) -> tuple[list, dict]:
@@ -1346,7 +1361,7 @@ def drop_from(d: dict, by: dict, extra: set) -> tuple[list, dict]:
     return sorted(gone), {"n": n, "flagged": len(hit), "flagged_by_set": per, "out": len(gone), "kept": n - len(gone)}
 
 
-def dev_decide(env: dict, pre: dict, names: list[str], run_sha: str) -> dict:
+def dev_sets(env: dict, pre: dict, names: list[str], run_sha: str) -> tuple[dict, dict]:
     """prereg §7.4: each datastore minus every image of every held C query set and its RULE §3 near-duplicates
     (W.rule(datastore, query): the mask is over datastore rows). §4.4 NB-T2POOL: each tier-2 pool minus the tier-1
     dev images by id and by RULE §3. Ids and counts only."""
@@ -1376,6 +1391,11 @@ def dev_decide(env: dict, pre: dict, names: list[str], run_sha: str) -> dict:
     for part, todo, by in (("datastore", ds, q), ("t2pool", pools, t1)):
         for k, (d, extra) in todo.items():
             out[part][k], rec[part][k] = drop_from(d, by, extra)
+    return out, rec
+
+
+def dev_decide(env: dict, pre: dict, names: list[str], run_sha: str) -> dict:
+    out, rec = dev_sets(env, pre, names, run_sha)
     write_new(env["out"] / DEV_OUTS[0], G.jdump(out), 0o444)
     h = write_new(env["out"] / DEV_OUTS[-1], G.jdump(rec), 0o444)
     alog(env["sealed"], "dev-w25 decide", DEV_OUTS[-1], h)
@@ -1391,13 +1411,68 @@ def dev_w25(env: dict, tag: str, run_sha: str) -> dict:
         return dev_decide(env, pre, ovqa_names(env), run_sha)
 
 
+# ---------------------------------------------------------------------------------------------- dev-w25-den (CC-261 O1)
+DEN_OUTS = ("dev_w25_den_out_ids.json", "dev_w25_den_counts.json")  # counts last
+DEV_V1 = {"dev_w25_out_ids.json": "ffdcb6ba7e654f104b086cf487a47c8f2a746cb5b201d42d7f1d52ffbbe4e4af",
+          "dev_w25_counts.json": "b91b1336effa8132d91a822af46d0f2da42c6c68eb85beae599005bcf0ad6bb5"}  # LOG l.1606, CC-261
+# dev-w25-den's own stop, 4 h from its start, checked once after the in-memory compute; the dev-w25 deadline file is
+# never read (CC-261 K4). v1 decide took ~50 s (16:09:59Z-16:10:49Z) with D-EN empty; D-EN adds ~80k rows
+DEN_WALL = 4 * 3600
+
+
+def v1_check(env: dict) -> dict:
+    """The dev-w25 v1 outputs at their pinned shas (read, never rewritten)."""
+    for n, h in env["dev_v1"].items():
+        if not (env["out"] / n).is_file() or sha(env["out"] / n) != h:
+            fault(f"{n} is missing or differs from its v1 sha {h[:8]}")
+    return {n: json.loads((env["out"] / n).read_text()) for n in env["dev_v1"]}
+
+
+def v1_part(o: dict) -> dict:
+    """Everything of a v1 output except D-EN and the decide time (CC-261 N2 compares the rest)."""
+    o = json.loads(G.jdump(o))
+    o.get("datastore", {}).pop("d_en", None)
+    return {k: v for k, v in o.items() if k not in ("utc", "d_en_no_feature_row")}
+
+
+def dev_den(env: dict, tag: str, run_sha: str) -> dict:
+    """CC-261 O1 + N2, PI-1105n: D-EN's first evaluation, decide only, once. The dev parts are read under the v1 run
+    sha (dev_w25_counts.json) and the W25 parts under the W25 run sha; no image is opened. Every block is recomputed
+    in memory and must equal the v1 files except D-EN (else FAULT, nothing written); D-EN alone goes to new 0o444
+    files; the v1 files are sha-checked before and after."""
+    if any(os.path.lexists(env["out"] / x) for x in DEN_OUTS) or decided(env["sealed"], "dev-w25-den start"):
+        fault("a dev-w25-den output or 'dev-w25-den start' row exists; the supplement runs once")
+    v1 = v1_check(env)
+    ids1, cnt1 = v1[DEV_OUTS[0]], v1[DEV_OUTS[-1]]
+    pre = dev_inputs(env)
+    with window(env, tag, run_sha, "dev-w25-den", sscd=pre["sscd"], deadline=env["clock"]() + env["den_wall"]) as st:
+        out, rec = dev_sets(env, pre, ovqa_names(env), cnt1["run_sha256"])
+        if bad := [k for k, a, b in (("ids", out, ids1), ("counts", rec, cnt1)) if v1_part(a) != v1_part(b)]:
+            fault(f"N2: the recomputed {bad} differ from the v1 files outside D-EN; nothing is written -> PI")
+        if st["deadline"] <= env["clock"]():
+            raise Stop("STOP: the dev-w25-den stop is reached; nothing is written -> PI")
+        if why := tenancy(env, tag, st["lockfd"]):
+            fault(f"tenancy: {why}; dev-w25-den aborted")
+        den = {"label": CP.LABEL, "utc": CP.utc(), "rule": RULE_TEXT, "run_sha256": run_sha,
+               "dev_run_sha256": cnt1["run_sha256"], "w25_run_sha256": pre["w25_run"], "v1_sha256": env["dev_v1"],
+               "code_sha256": CODE, "n2_equal_outside_d_en": True, "featured": rec["featured"],
+               "queries": rec["queries"], "d_en": rec["datastore"]["d_en"],
+               "d_en_no_feature_row": rec["d_en_no_feature_row"]}
+        write_new(env["out"] / DEN_OUTS[0], G.jdump({"datastore": {"d_en": out["datastore"]["d_en"]}}), 0o444)
+        h = write_new(env["out"] / DEN_OUTS[-1], G.jdump(den), 0o444)
+        alog(env["sealed"], "dev-w25-den decide", DEN_OUTS[-1], h)
+        v1_check(env)
+        return den
+
+
 def dev_env(root: Path, x) -> dict:
     e = real_env(root, x)
     return {**e, "work": e["sealed"] / "dev_w25", "w25_work": e["work"], "stage": Path(x.stage),
             "lists": root / LISTS_FILE, "lists_sha": LISTS_SHA, "lists_reg": (LISTS_IN, OWNERS),
             "w25_counts": (root / W25_DONE[0], W25_DONE[1]), "cen": CEN_TSV, "b_own": B_OWN, "dev_q": DEV_Q,
             "dev_n": DEV_N, "xm_src": OWNERS["xm3600_all"]["source"],
-            "mem": ("feats_memory.npz", CEN["feats_memory.npz"]), "k_trunc": K_TRUNC}
+            "mem": ("feats_memory.npz", CEN["feats_memory.npz"]), "k_trunc": K_TRUNC, "den_rows": DEN_ROWS,
+            "dev_v1": DEV_V1, "den_wall": DEN_WALL}
 
 
 # ---------------------------------------------------------------------------------------------- selftest
@@ -1449,6 +1524,9 @@ def _st_static(root: Path) -> None:
     assert d["w25_counts"] == (root / W25_DONE[0], W25_DONE[1]) and d["xm_src"] == OWNERS["xm3600_all"]["source"]
     assert d["mem"] == ("feats_memory.npz", CEN["feats_memory.npz"]) and d["dev_n"] == {"d_en": 80083, "kt_c": 3907}
     assert d["k_trunc"] is K_TRUNC and K_TRUNC == {"00000007169.jpg"}  # CC-259 W1
+    assert d["den_rows"] is DEN_ROWS and DEN_ROWS == (80081, {"388662", "397819"})  # CC-261 K3 (ii)
+    assert d["dev_v1"] is DEV_V1 and [h[:8] for h in DEV_V1.values()] == ["ffdcb6ba", "b91b1336"] and DEN_WALL == 14400
+    assert set(DEV_V1) == set(DEV_OUTS) and not set(DEN_OUTS) & set(DEV_OUTS)
     assert DEV_Q == {"xm3600": "xm3600_all", "nocaps_val": "nocaps_val_4500", "coco_test": "karpathy_test_5000",
                      "ktvic_test": "ktvic_test_558", "openviic_test": "openviic_test_2001"}
     assert D_EN_OUT == ("coco_restval_b4", "uitviic_train_pool", "uitviic_val_924", "uitviic_test_231")
@@ -2259,8 +2337,9 @@ def _dev_world(w: dict, base: Path, sscd: Path, env0: dict) -> tuple[dict, dict]
     caches = {**fx, "dktt": W.concat([_fill([f"{int(i):011d}" for i in kt if i not in (e, c)], 7), fx["dktt"]]),
               "dovt": _fill([f"{i:011d}" for i in range(2001)], 8)}
     (base / "in").mkdir()
-    for k, f in caches.items():
-        W.save(base / "in" / f"{k}.npz", f["ids"], f, set=k)
+    for k, f in caches.items():  # dmem as feats_memory.npz holds it: int64 ids (CC-261 K3 (iii))
+        W.save(base / "in" / f"{k}.npz", np.array(f["ids"], np.int64) if k == "dmem" else f["ids"], f, set=k)
+    assert W.load(base / "in/dmem.npz")["ids"] == [9, 25, 30, 43, 77]
     sc = {k: CP.sha_file(base / "in" / f"{k}.npz") for k in caches}
     (root / "D").mkdir()
     for name, body in (("mem.tsv", "#id\tfile\n" + "".join(f"{i}\tc{i}.jpg\n" for i in (9, 25, 30, 43, 77, 88, 99))),
@@ -2285,7 +2364,8 @@ def _dev_world(w: dict, base: Path, sscd: Path, env0: dict) -> tuple[dict, dict]
                    "nocaps_val": ("D/ncv.tsv", h["ncv.tsv"])},
            "dev_q": {"xm3600": "dxm", "nocaps_val": "dncv", "coco_test": "dkt5", "ktvic_test": "dktt",
                      "openviic_test": "dovt"}, "dev_n": {"d_en": 5, "kt_c": 3}, "xm_src": ["D/xm.txt", h["xm.txt"], None],
-           "mem": ("dmem.npz", sc["dmem"]), "batch": 8, "k_trunc": frozenset({ko[2]})}
+           "mem": ("dmem.npz", sc["dmem"]), "batch": 8, "k_trunc": frozenset({ko[2]}),
+           "den_rows": (4, frozenset({"88"})), "den_wall": 3600}
     return env, {"kk": kk, "ko": ko, "ta": ta, "dtc": dtc, "kt": kt, "c": c}
 
 
@@ -2338,6 +2418,7 @@ def _st_dev(w: dict, imgs: dict) -> None:
         assert acts == ["dev-w25 start", "w25 projection", "dev-w25 decide", "dev-w25 end"], acts
         dl = env["dlog"].read_text().splitlines()
         assert len(dl) == 5 and "trap" in dl[-1] and not os.path.lexists(env["shm"]), dl  # 4 batches of 8, trap
+        _st_den(w, env, base, rec, run)
         _must("a dev-w25 output", dev_w25, env, _tag(w), run)
         for n in DEV_OUTS:
             (env["out"] / n).chmod(0o644)
@@ -2363,6 +2444,9 @@ def _st_dev(w: dict, imgs: dict) -> None:
                         ({"stage": base / "nostage"}, "0 files, not exactly one")):
             _must(msg, dev_w25, {**env, **ch, "work": ch.get("work", base / "dwork2")}, _tag(w), run)
         p0 = dev_pre({**env, "k_trunc": K_TRUNC})  # key absent from the fixture: a no-op, 0 recorded
+        assert p0["mem"]["ids"] == ["9", "25", "30", "43", "77"]  # str at load (CC-261 K3 (i))
+        for dr in ((4, frozenset({"77"})), (3, frozenset({"88"})), (5, frozenset())):
+            _must("not the pinned", dev_pre, {**env, "den_rows": dr})
         assert (p0["stage"]["dvi_openviic"], p0["cut"]) == (x["ko"], {"dvi_openviic": 0}), p0["cut"]
         tcf.rename(tcf.with_suffix(".x"))
         _must("textcaps: 1 staged image files are missing", dev_w25, {**env, "work": base / "dwork2"}, _tag(w), run)
@@ -2375,6 +2459,47 @@ def _st_dev(w: dict, imgs: dict) -> None:
         assert not any(os.path.lexists(env["out"] / n) for n in DEV_OUTS)
     finally:
         T_A_N = keep
+
+
+def _st_den(w: dict, env: dict, base: Path, rec: dict, run: str) -> None:
+    """dev-w25-den (CC-261 O1/N2) on the dev-w25 world just decided: D-EN only, parts under the v1 run sha, once."""
+    v1 = {n: (env["out"] / n).read_bytes() for n in DEV_OUTS}
+    de = {**env, "dev_v1": {n: G.sha_bytes(b) for n, b in v1.items()}}
+    new = "e" * 64  # the supplement's own code sha differs from the parts' run sha
+    _must("differs from its v1 sha", dev_den, {**de, "dev_v1": {**de["dev_v1"], DEV_OUTS[0]: "0" * 64}}, _tag(w), new)
+    dl = env["work"] / "deadline"
+    dl.chmod(0o600)
+    dl.write_text("0\n")  # the dev-w25 wall is long past: the supplement has its own stop
+    den = dev_den(de, _tag(w), new)
+    assert (den["d_en"], den["d_en_no_feature_row"]) == (rec["datastore"]["d_en"], 1) and den["n2_equal_outside_d_en"]
+    assert (den["run_sha256"], den["dev_run_sha256"], den["queries"]) == (new, run, rec["queries"])
+    assert json.loads((env["out"] / DEN_OUTS[0]).read_text()) == {"datastore": {"d_en": ["43", "88", "9"]}}
+    assert json.loads((env["out"] / DEN_OUTS[-1]).read_text()) == den
+    assert all((env["out"] / n).stat().st_mode & 0o777 == 0o444 for n in DEN_OUTS)
+    assert {n: (env["out"] / n).read_bytes() for n in DEV_OUTS} == v1
+    acts = [r.split("\t")[2] for r in (env["sealed"] / "ACCESS_LOG.tsv").read_text().splitlines()
+            if r.split("\t")[1] == "c_pvr_run.py"]
+    assert acts[-3:] == ["dev-w25-den start", "dev-w25-den decide", "dev-w25-den end"], acts
+    _must("the supplement runs once", dev_den, de, _tag(w), new)
+    for n in DEN_OUTS:
+        (env["out"] / n).chmod(0o644)
+        (env["out"] / n).unlink()
+    _must("the supplement runs once", dev_den, de, _tag(w), new)  # the start row alone blocks a second run
+    for k, (o, n) in {"st": (env["out"], 0), "n2": (base / "out_n2", 3600)}.items():
+        (base / f"sealed_{k}").mkdir(mode=0o700)
+        if k == "n2":  # a v1 counts file whose d_vi differs, at its own sha
+            o.mkdir()
+            c1 = json.loads(v1[DEV_OUTS[-1]])
+            c1["datastore"]["d_vi"]["kept"] += 1
+            (o / DEV_OUTS[0]).write_bytes(v1[DEV_OUTS[0]])
+            (o / DEV_OUTS[-1]).write_bytes(G.jdump(c1))
+        e = {**de, "sealed": base / f"sealed_{k}", "out": o, "den_wall": n,
+             "dev_v1": {x: CP.sha_file(o / x) for x in DEV_OUTS}}
+        _must("N2" if k == "n2" else "dev-w25-den stop", dev_den, e, _tag(w), new)
+        assert not any(os.path.lexists(o / x) for x in DEN_OUTS) and not os.path.lexists(env["shm"])
+        assert [r.split("\t")[2] for r in (e["sealed"] / "ACCESS_LOG.tsv").read_text().splitlines()
+                if r.split("\t")[1] == "c_pvr_run.py"] == ["dev-w25-den start", "dev-w25-den abort"]
+    assert {n: (env["out"] / n).read_bytes() for n in DEV_OUTS} == v1
 
 
 def _st_w25(base: Path) -> None:
@@ -2452,9 +2577,10 @@ def _st_load_cli(base: Path, root: Path) -> None:
     r = subprocess.run(me + ["w25", "--host", "m1", "--run-sha", "x", "--pause-tag", "x", "--owners-sha", "x",
                              "--sscd", "x", "--in", "x"], capture_output=True, text=True)
     assert r.returncode == 2 and "invalid choice" in r.stderr, r.stderr[-300:]
-    r = subprocess.run(me + ["dev-w25", "--host", "m1", "--run-sha", "x", "--pause-tag", "x", "--owners-sha", "x",
-                             "--feats-sha", "x", "--sscd", "x", "--in", "x", "--stage", "x"], capture_output=True, text=True)
-    assert r.returncode == 2 and "invalid choice" in r.stderr, r.stderr[-300:]
+    for c in ("dev-w25", "dev-w25-den"):
+        r = subprocess.run(me + [c, "--host", "m1", "--run-sha", "x", "--pause-tag", "x", "--owners-sha", "x",
+                                 "--feats-sha", "x", "--sscd", "x", "--in", "x", "--stage", "x"], capture_output=True, text=True)
+        assert r.returncode == 2 and "invalid choice" in r.stderr, r.stderr[-300:]
     r = subprocess.run(me + ["owners", "--run-sha", "0" * 64], capture_output=True, text=True)
     assert r.returncode == 1 and "--run-sha differs" in r.stderr, r.stderr[-300:]
 
@@ -2498,18 +2624,19 @@ def main() -> None:
     ap.add_argument("--root", type=Path, default=ROOT, help="repo root (the mutant harness runs copies)")
     sp = ap.add_subparsers(dest="cmd", required=True)
     sp.add_parser("selftest").add_argument("--root", type=Path, default=argparse.SUPPRESS)
-    for c in ("owners", "lists", "owner-feats", "w25", "dev-w25"):
+    for c in ("owners", "lists", "owner-feats", "w25", "dev-w25", "dev-w25-den"):
         sp.add_parser(c).add_argument("--run-sha", required=True)
-    for c in ("owner-feats", "w25", "dev-w25"):
+    for c in ("owner-feats", "w25", "dev-w25", "dev-w25-den"):
         for a in ("--owners-sha", "--sscd"):
             sp.choices[c].add_argument(a, required=True)
         sp.choices[c].add_argument("--in", dest="inp", required=True, help="ext4 dir of the owner caches")
     sp.choices["owner-feats"].add_argument("--owner", help="only this 'compute' owner (default: every one)")
-    for w in (sp.choices["w25"], sp.choices["dev-w25"]):
+    for w in (sp.choices["w25"], sp.choices["dev-w25"], sp.choices["dev-w25-den"]):
         w.add_argument("--host", choices=("laptop",), required=True)  # prereg §8: the named custody host
         for a in ("--pause-tag", "--feats-sha"):
             w.add_argument(a, required=True)
-    sp.choices["dev-w25"].add_argument("--stage", required=True, help="ext4 dir: ktvic/ openviic/ vitextvqa_dev/ textcaps/")
+    for c in ("dev-w25", "dev-w25-den"):
+        sp.choices[c].add_argument("--stage", required=True, help="ext4 dir: ktvic/ openviic/ vitextvqa_dev/ textcaps/")
     x = ap.parse_args()
     root = x.root.resolve()
     load(root)
@@ -2529,6 +2656,9 @@ def main() -> None:
     if x.cmd == "dev-w25":
         no_sockets()
         return print(json.dumps(dev_w25(dev_env(root, x), x.pause_tag, x.run_sha), indent=1, sort_keys=True))
+    if x.cmd == "dev-w25-den":
+        no_sockets()
+        return print(json.dumps(dev_den(dev_env(root, x), x.pause_tag, x.run_sha), indent=1, sort_keys=True))
     print(json.dumps(w25(real_env(root, x), x.pause_tag, x.run_sha), indent=1, sort_keys=True))
 
 

@@ -323,6 +323,17 @@ M = {
     "dev_no_decide_row": ('    alog(env["sealed"], "dev-w25 decide", DEV_OUTS[-1], h)\n', "    pass\n"),
     "dev_tag_not_shared": ('["dev-w25 start", h])', '["dev-w25 startx", h])'),
     "dev_k_trunc_kept": ('sorted(sets["kept_ov"] - env["k_trunc"])', 'sorted(sets["kept_ov"])'),  # CC-259 W1
+    # CC-261 K3 (iv), PI-1105n: the D-EN id-type fix and the dev-w25-den supplement
+    "den_no_str_ids": ('    mem["ids"] = [str(i) for i in mem["ids"]]  # CC-261', "    pass  # CC-261"),
+    "den_no_guard": ('    if (len(d_en) - len(no_row), no_row) != env["den_rows"]:\n', "    if False:\n"),
+    "den_parts_new_sha": ('dev_sets(env, pre, ovqa_names(env), cnt1["run_sha256"])', "dev_sets(env, pre, ovqa_names(env), run_sha)"),
+    "den_second_run_ok": ('    if any(os.path.lexists(env["out"] / x) for x in DEN_OUTS) or decided(env["sealed"], "dev-w25-den start"):\n',
+                          "    if False:\n"),
+    "den_start_row_ignored": (' for x in DEN_OUTS) or decided(env["sealed"], "dev-w25-den start"):', " for x in DEN_OUTS):"),
+    "den_dev_deadline": ('st["deadline"] = st.get("deadline") or deadline(env)', 'st["deadline"] = deadline(env)'),
+    "den_v1_unchecked": ('        if not (env["out"] / n).is_file() or sha(env["out"] / n) != h:\n', "        if False:\n"),
+    "den_n2_off": ("    if bad := [k for k, a, b in (", "    if bad := [] and [k for k, a, b in ("),
+    "den_own_stop_off": ('        if st["deadline"] <= env["clock"]():\n', "        if False:\n"),
 }
 EQUIV = {
     # CP.BARRED (oidv7-*-annotations, /dev/shm/c_pvr_gb, nocaps_val_4500_captions.json) is a subset of gates.BARRED
