@@ -13,16 +13,22 @@ only the stdlib at module level, so its constants import here without spaCy or r
                                                                     then the once-only c_pvr_owner_feats.json
     $FT -I -B scripts/c_pvr/c_pvr_run.py w25 --host laptop --run-sha H --pause-tag T --owners-sha O --feats-sha F
                                          --sscd PT --in DIR
+    $FT -I -B scripts/c_pvr/c_pvr_run.py dev-w25 --host laptop --run-sha H --pause-tag T --owners-sha O --feats-sha F
+                                         --sscd PT --in DIR --stage DIR      §7.4 self-retrieval + NB-T2POOL, sockets off
 
 Every subcommand first checks the sha of each imported repo file (CODE), then imports c_pvr, gates, w25 and
 build_memory unchanged and uses their constants and functions; no shared constant has a second value here. `w25`
 fingerprints (pHash, dHash, mirrored hashes, SSCD, sha256) the G-A remaining NoCaps-test ids and the OpenViVQA-dev
-images in tmpfs batches of at most 512 and compares them with the owners' cached fingerprints under RULE §3. No label,
-caption, question or answer is read: pixels, ids, keys and container lengths only. Label: TIER 1 / DEV-EXPLORE.
+images in tmpfs batches of at most 512 and compares them with the owners' cached fingerprints under RULE §3. `dev-w25`
+fingerprints the staged D-VI, TextCaps-train and ViTextVQA-dev images, re-opens the sealed W25 parts, and removes every
+held C query image and its RULE §3 near-duplicates from D-VI, D-EN and D-TC (prereg §7.4); it also counts the tier-2
+pools (§4.4 NB-T2POOL). No label, caption, question or answer is read: pixels, ids, keys and container lengths only.
+Label: TIER 1 / DEV-EXPLORE.
 """
 from __future__ import annotations
 
 import argparse
+import contextlib
 import fcntl
 import hashlib
 import io
@@ -629,8 +635,9 @@ def dvi(kr_ids: set, ovr: set, kt_test: set, ov_test: set, pairs: dict, kt_own: 
         "ktvic_owner_ids_distinct": len(set().union(*kt_own.values()))}}
 
 
-def build_lists(root: Path, pins: dict, owners: dict) -> dict:
-    """Counts from keys, ids and container lengths only; no caption, question or answer field is accessed."""
+def build_lists(root: Path, pins: dict, owners: dict, sets: dict | None = None) -> dict:
+    """Counts from keys, ids and container lengths only; no caption, question or answer field is accessed. `sets`, if
+    given, receives the id sets behind the counts (dev-w25)."""
     if miss := sorted(k for k, v in pins.items() if v is None):
         fault(f"lists: inputs not pinned {miss}; c_pvr_lists.json is not written")
 
@@ -654,6 +661,9 @@ def build_lists(root: Path, pins: dict, owners: dict) -> dict:
     if len(set(tc)) != len(tc) or len(t_a) != T_A_N:
         fault("TextCaps train ids are not distinct or fewer than T_A")
     keep_kt, keep_ov = d["kept_kt"], d["kept_ov"]
+    if sets is not None:
+        sets.update(kt_test=kt_test, ov_test=ov_keys(ov_test), kept_kt=keep_kt, kept_ov=keep_ov, tc=tc, t_a=t_a,
+                    vt=sorted({str(r["id"]) for r in json.loads(get("vitextvqa_dev"))["images"]}))
     return {"label": CP.LABEL, "utc": CP.utc(), "inputs": {k: v[1] for k, v in pins.items()},
             "halves": halves, "vitextvqa_dev_images": len({str(r["id"]) for r in json.loads(get("vitextvqa_dev"))["images"]}),
             "d_vi": {"ktvic_train_images": len(keep_kt), "openviic_train_images": len(keep_ov), **d["counts"],
@@ -709,10 +719,11 @@ def tenancy(env: dict, tag: str, lockfd: int | None = None) -> str | None:
 
 
 def tag_used(sealed: Path, tag: str) -> bool:
-    """A 'w25 start' row already carries sha256(tag): a resume needs a new pause line (prereg §8.3). Only the
-    action and path fields are read; the concrete tag itself is never written outside its LOG line."""
+    """A 'w25 start' or 'dev-w25 start' row already carries sha256(tag): a resume needs a new pause line (prereg
+    §8.3). Only the action and path fields are read; the concrete tag itself is never written outside its LOG line."""
     p, h = sealed / "ACCESS_LOG.tsv", hashlib.sha256(tag.encode()).hexdigest()
-    return p.exists() and any(x.split("\t")[2:4] == ["w25 start", h] for x in p.read_text().splitlines())
+    return p.exists() and any(x.split("\t")[2:4] in (["w25 start", h], ["dev-w25 start", h])
+                              for x in p.read_text().splitlines())
 
 
 # ---------------------------------------------------------------------------------------------- inputs
@@ -1111,10 +1122,10 @@ def sig_handler(me: int):
     return on_sig
 
 
-def decided(sealed: Path) -> bool:
-    """N2: an ACCESS_LOG 'w25 decide' row (the outputs sit on /mnt/d, where 0o444 is not enforced)."""
+def decided(sealed: Path, action: str = "w25 decide") -> bool:
+    """N2: an ACCESS_LOG decide row (the outputs sit on /mnt/d, where 0o444 is not enforced)."""
     p = sealed / "ACCESS_LOG.tsv"
-    return p.exists() and any(x.split("\t")[2:3] == ["w25 decide"] for x in p.read_text().splitlines())
+    return p.exists() and any(x.split("\t")[2:3] == [action] for x in p.read_text().splitlines())
 
 
 def w25_pre(env: dict) -> dict:
@@ -1131,11 +1142,13 @@ def w25_pre(env: dict) -> dict:
             "sscd": env["sscd_ok"](refuse(env["sscd"])), "xm": env["xm"]()}
 
 
-def w25(env: dict, tag: str, run_sha: str) -> dict:
-    pre = w25_pre(env)
-    q, sscd, xm = pre["q"], pre["sscd"], pre["xm"]
+@contextlib.contextmanager
+def window(env: dict, tag: str, run_sha: str, name: str, **st0):
+    """The prereg §8.2-§8.3 window around a body (w25, dev-w25): tenancy, one window per pause tag, the shared W25
+    lock, a fresh mode-0700 tmpfs dir, signals, the deadline fixed at first start, and the trap. ACCESS_LOG rows
+    '<name> start' (sha256 of the tag) and '<name> end' or '<name> abort'."""
     if why := tenancy(env, tag):
-        fault(f"tenancy: {why}; w25 does not start")
+        fault(f"tenancy: {why}; {name} does not start")
     if tag_used(env["sealed"], tag):
         fault("this pause tag already opened a window; a resume needs a new pause line (prereg §8.3)")
     lockfd = os.open(env["lock"], os.O_RDWR | os.O_CREAT, 0o600)
@@ -1147,24 +1160,49 @@ def w25(env: dict, tag: str, run_sha: str) -> dict:
         os.chmod(env["shm"], 0o700)
     except OSError:
         os.close(lockfd)
-        fault("tenancy: the W25 lock is held; w25 does not start")
+        fault(f"tenancy: the W25 lock is held; {name} does not start")
     except BaseException:
         os.close(lockfd)
         raise
     old, on_sig = {s: signal.getsignal(s) for s in G.GB_SIGS}, sig_handler(os.getpid())
-    st = {"tag": tag, "lockfd": lockfd, "run": run_sha, "shm": env["shm"], "xm": xm,
-          "sscd": sscd, "projected": False}
-    done, why = "w25 abort", "-"
+    st = {"tag": tag, "lockfd": lockfd, "run": run_sha, "shm": env["shm"], "projected": False, **st0}
+    done, why = "abort", "-"
     try:
         for s in G.GB_SIGS:
             signal.signal(s, on_sig)
         (env["work"] / "parts").mkdir(mode=0o700, parents=True, exist_ok=True)
         st["deadline"] = deadline(env)
-        alog(env["sealed"], "w25 start", hashlib.sha256(tag.encode()).hexdigest(), run_sha)
+        alog(env["sealed"], f"{name} start", hashlib.sha256(tag.encode()).hexdigest(), run_sha)
+        yield st
+        done = "end"
+    except BaseException as e:
+        why = str(e).split(":")[0][:16] if isinstance(e, SystemExit) else type(e).__name__
+        raise
+    finally:
+        for s in G.GB_SIGS:
+            signal.signal(s, signal.SIG_IGN)
+        try:
+            drop(env, env["shm"], "trap: window exit")
+        finally:
+            alog(env["sealed"], f"{name} {done}", why, run_sha)
+            for s in G.GB_SIGS:
+                signal.signal(s, old[s])
+            os.close(lockfd)
+
+
+def pending(env: dict, sets: dict) -> int:
+    """Images in batches whose part does not exist yet (the first-batch projection's denominator)."""
+    return sum(len(b) for k, v in sets.items() for n, b in enumerate(batches(v, env["batch"]))
+               if not (env["work"] / "parts" / f"{k}_{n:04d}.npz").exists())
+
+
+def w25(env: dict, tag: str, run_sha: str) -> dict:
+    pre = w25_pre(env)
+    q = pre["q"]
+    with window(env, tag, run_sha, "w25", xm=pre["xm"], sscd=pre["sscd"]) as st:
         names = ovqa_names(env)
         sets = {"nocaps_test": q, "ovqa_dev": names}
-        st["todo"] = sum(len(b) for k, v in sets.items() for n, b in enumerate(batches(v, env["batch"]))
-                         if not (env["work"] / "parts" / f"{k}_{n:04d}.npz").exists())
+        st["todo"] = pending(env, sets)
         run_set(env, st, "nocaps_test", q, stage_nocaps)
         ident_p = env["work"] / "ovqa_identity_c.json"
         if not all((env["work"] / "parts" / f"ovqa_dev_{n:04d}.npz").exists()
@@ -1176,22 +1214,7 @@ def w25(env: dict, tag: str, run_sha: str) -> dict:
             drop(env, st["shm"] / "ovqa", "after ovqa_dev (dev-images.zip and batches)")
         if not ident_p.exists():
             fault("the OpenViVQA identity record (c) is missing")
-        rec = decide(env, pre, sets, run_sha, json.loads(ident_p.read_text()))
-        done = "w25 end"
-        return rec
-    except BaseException as e:
-        why = str(e).split(":")[0][:16] if isinstance(e, SystemExit) else type(e).__name__
-        raise
-    finally:
-        for s in G.GB_SIGS:
-            signal.signal(s, signal.SIG_IGN)
-        try:
-            drop(env, env["shm"], "trap: window exit")
-        finally:
-            alog(env["sealed"], done, why, run_sha)
-            for s in G.GB_SIGS:
-                signal.signal(s, old[s])
-            os.close(lockfd)
+        return decide(env, pre, sets, run_sha, json.loads(ident_p.read_text()))
 
 
 def curl(argv) -> int:
@@ -1208,6 +1231,168 @@ def real_env(root: Path, x) -> dict:
             "get": W.F.get, "runner": curl, "features": BM.features, "workers": 4, "fetchers": 16,
             "rule": OVQA_RULE, "owners_sha": x.owners_sha, "feats": root / FEATS_FILE,
             "feats_sha": getattr(x, "feats_sha", None)}
+
+
+# ---------------------------------------------------------------------------------------------- dev-w25 (§7.4, §4.4)
+DEV_OUTS = ("dev_w25_out_ids.json", "dev_w25_counts.json")  # counts last
+W25_DONE = (f"{PDIR}/w25_counts.json", "72ae5ad34f1c118ce7aac31deea281336226ca4d1150b21da1226d57c9b7eae5")  # CC-252
+LISTS_SHA = "edb07fbbea45b69b246ec1e82e23103784b7c777c4e0ef6737e49151d1dc8e18"  # LOG l.1466, CC-249; commit cc90c96
+CEN_TSV = {"memory": (_P + "2026-10-27_c_en/cen_memory_allowed.tsv",
+                      "175907e23fc0f78e2d304e09a4b8bb5364943c9f2208cc24f8e59e215ad771af"),
+           "coco_test": (_P + "2026-10-27_c_en/cen_coco_test.tsv",
+                         "67555b281d87b01a0f742214da552be0f7c4f4977f543db98a9acd2901787eb1"),
+           "nocaps_val": (_P + "2026-10-27_c_en/cen_nocaps_val.tsv",
+                          "6add90eb421523cdd65f47a8f9789f9342421b2b28169dc013f863f1edd0dfac")}
+D_EN_OUT = ("coco_restval_b4", "uitviic_train_pool", "uitviic_val_924", "uitviic_test_231")  # PORTFOLIO l.193, B_OWN
+KT_C_OUT = ("uitviic_train_pool", "m0_dev_touched_3454", "a_t3_val2017")  # PORTFOLIO l.193 (the 1,093 union)
+DEV_N = {"d_en": 80083, "kt_c": 3907}  # PORTFOLIO l.193; prereg §4.1, §7.4
+DEV_Q = {"xm3600": "xm3600_all", "nocaps_val": "nocaps_val_4500", "coco_test": "karpathy_test_5000",
+         "ktvic_test": "ktvic_test_558", "openviic_test": "openviic_test_2001"}  # query sets held as frozen owner caches
+STAGE = {"dvi_ktvic": ("ktvic", "ktvic"), "dvi_openviic": ("openviic", "file"),
+         "vitextvqa_dev": ("vitextvqa_dev", "jpg"), "textcaps": ("textcaps", "jpg")}  # set -> (--stage sub-dir, name rule)
+LOST_CAP.update(dict.fromkeys(STAGE, 0))  # no cap is registered for these: one unreadable image is a FAULT (owner-feats)
+O_B_NOTE = ("not computed: tier 2 only (prereg §4.1 'Not touched in tier 1: ... O_B'; §4.3 NB-OVQALOST keeps the train "
+            "json to keys and lengths until the tier-2 prereg licenses the O_B read); O_B x D-VI and the O_B pool wait")
+
+
+def tsv_rows(read, src) -> list[list[str]]:
+    """Every column of a pinned tsv (pinned_ids reads column 1 only)."""
+    b = read(src[0])
+    if G.sha_bytes(b) != src[1]:
+        fault(f"{src[0]} differs from its pin {src[1][:8]}")
+    return [x.split("\t") for x in b.decode("utf-8").splitlines() if x.strip() and not x.startswith("#")]
+
+
+def rows(f: dict, ids, what: str, missing_ok: bool = False) -> tuple[dict, set]:
+    """The rows of f whose id is in ids, one row per id; ids without a row FAULT unless missing_ok (then returned)."""
+    want = set(ids)
+    idx = [i for i, x in enumerate(f["ids"]) if x in want]
+    if len({f["ids"][i] for i in idx}) != len(idx):
+        fault(f"{what}: an id has more than one feature row")
+    miss = want - {f["ids"][i] for i in idx}
+    if miss and not missing_ok:
+        fault(f"{what}: {len(miss)} ids have no feature row")
+    return {**BM.subset(f, idx), "ids": [f["ids"][i] for i in idx]}, miss
+
+
+def renamed(f: dict, to, want: set, what: str) -> dict:
+    """The cache with its row ids mapped onto the set's native ids (prereg §4.2: half() reads native ids); one row
+    per image of the set and no other row."""
+    ids = [to(x) for x in f["ids"]]
+    if len(set(ids)) != len(ids) or set(ids) != want:
+        fault(f"{what}: the cache rows are not exactly the set's images")
+    return {**f, "ids": ids}
+
+
+def stage_local(sub: str, rule: str):
+    """Staged ext4 files read in place: train and spent-dev images, none from a custody one-look set, so nothing is
+    copied into tmpfs (owner-feats precedent); run_set's drop of the never-made tmpfs folder logs 0 files."""
+    def stage(env: dict, st: dict, ids: list[str], folder: Path) -> tuple[list, dict]:
+        d = env["stage"] / sub
+        return [(i, refuse(d / fname(rule, i, d))) for i in ids], {}
+    return stage
+
+
+def dev_pre(env: dict) -> dict:
+    """Everything that can FAULT before the window: outputs absent; the frozen owners, owner caches, lists and W25
+    result re-hashed; the lists rebuilt and equal to the frozen json; D-EN and KT-C rebuilt at their registered sizes;
+    every staged image present; the NoCaps-test ids checked as in w25."""
+    if any(os.path.lexists(env["out"] / x) for x in DEV_OUTS) or decided(env["sealed"], "dev-w25 decide"):
+        fault("a dev-w25 output or 'dev-w25 decide' row exists; decide is one look")
+    if any(str(env[k].resolve()).startswith("/mnt/") for k in ("in", "work", "stage")):
+        fault("the staged caches, the staged images and the feature parts must sit on the WSL ext4 home")
+    cmp, disk = owners_load(env)[0], disk_reader(env["root"])
+    sets = {}
+    rec = build_lists(env["root"], *env["lists_reg"], sets)
+    if sha(env["lists"]) != env["lists_sha"] or {k: v for k, v in json.loads(env["lists"].read_text()).items()
+                                                 if k != "utc"} != {k: v for k, v in rec.items() if k != "utc"}:
+        fault("the rebuilt lists differ from the frozen c_pvr_lists.json")
+    if sha(env["w25_counts"][0]) != env["w25_counts"][1]:
+        fault("w25_counts.json differs from its committed sha")
+    b = {k: set(pinned_ids(disk, [*env["b_own"], f"owners/{k}/ids"])) for k in {*D_EN_OUT, *KT_C_OUT}}
+    tsv = {k: tsv_rows(disk, v) for k, v in env["cen"].items()}
+    d_en = {r[0] for r in tsv["memory"]} - set().union(*(b[k] for k in D_EN_OUT))
+    kt_c = {r[0] for r in tsv["coco_test"]} - set().union(*(b[k] for k in KT_C_OUT))
+    if {"d_en": len(d_en), "kt_c": len(kt_c)} != env["dev_n"]:
+        fault(f"D-EN {len(d_en)} / KT-C {len(kt_c)} images, not the registered {env['dev_n']}")
+    xm = set(pinned_ids(disk, env["xm_src"]))
+    q = {n: owner_feats(env, cmp[k]) for n, k in env["dev_q"].items()}
+    q["nocaps_val"] = renamed(q["nocaps_val"], str, {r[0] for r in tsv["nocaps_val"]}, "NoCaps val")
+    q["ktvic_test"] = renamed(q["ktvic_test"], lambda x: str(int(x)) if x.isdigit() else x, set(sets["kt_test"]),
+                              "KTVIC test")  # cache rows carry the 11-digit file stem
+    q["openviic_test"] = renamed(q["openviic_test"], {Path(k).stem: k for k in sets["ov_test"]}.get,
+                                 set(sets["ov_test"]), "OpenViIC test")  # cache rows carry the file stem
+    q["kt_c"] = rows(q.pop("coco_test"), kt_c, "KT-C")[0]
+    stage = {"dvi_ktvic": sorted(sets["kept_kt"], key=int), "dvi_openviic": sorted(sets["kept_ov"]),
+             "vitextvqa_dev": sets["vt"], "textcaps": sorted(sets["tc"])}
+    for k, ids in stage.items():
+        d = env["stage"] / STAGE[k][0]
+        if miss := [i for i in ids if not (d / fname(STAGE[k][1], i, d)).is_file()]:
+            fault(f"{k}: {len(miss)} staged image files are missing")
+    return {"q": q, "stage": stage, "t_a": sets["t_a"], "d_tc": sorted(set(sets["tc"]) - set(sets["t_a"])),
+            "d_en": d_en, "ncv_xm": {r[0] for r in tsv["nocaps_val"] if Path(r[1]).stem in xm}, "noc": query_ids(env),
+            "w25_run": json.loads(env["w25_counts"][0].read_text())["run_sha256"],
+            "mem": W.load(refuse(env["in"] / env["mem"][0]), env["mem"][1]), "sscd": env["sscd_ok"](refuse(env["sscd"]))}
+
+
+def drop_from(d: dict, by: dict, extra: set) -> tuple[list, dict]:
+    """flag() over every query set, plus the ids that leave without a pixel check; counts per set and criterion."""
+    hit, per = flag(d, by)
+    gone, n = hit | extra, len(set(d["ids"]) | extra)
+    return sorted(gone), {"n": n, "flagged": len(hit), "flagged_by_set": per, "out": len(gone), "kept": n - len(gone)}
+
+
+def dev_decide(env: dict, pre: dict, names: list[str], run_sha: str) -> dict:
+    """prereg §7.4: each datastore minus every image of every held C query set and its RULE §3 near-duplicates
+    (W.rule(datastore, query): the mask is over datastore rows). §4.4 NB-T2POOL: each tier-2 pool minus the tier-1
+    dev images by id and by RULE §3. Ids and counts only."""
+    f = {k: collect(env, k, v, run_sha)[0] for k, v in pre["stage"].items()}
+    w25w = {**env, "work": env["w25_work"]}  # the sealed W25 parts, read under the W25 run sha (W25_RUN_DOC §8)
+    q = {**pre["q"], "nocaps_test": collect(w25w, "nocaps_test", pre["noc"], pre["w25_run"])[0],
+         "ovqa_dev": collect(w25w, "ovqa_dev", names, pre["w25_run"])[0], "vitextvqa_dev": f["vitextvqa_dev"],
+         "t_a": rows(f["textcaps"], pre["t_a"], "T_A")[0]}
+    d_en, no_row = rows(pre["mem"], pre["d_en"], "D-EN", missing_ok=True)
+    ds = {"d_vi": (W.concat([f["dvi_ktvic"], f["dvi_openviic"]]), set()),
+          "d_en": (d_en, no_row | (pre["d_en"] & set(q["kt_c"]["ids"]))),
+          "d_tc": (rows(f["textcaps"], pre["d_tc"], "D-TC")[0], set())}
+    t1 = {k: q[k] for k in ("xm3600", "kt_c", "t_a", "vitextvqa_dev")}
+    pools = {"nocaps_val": (q["nocaps_val"], pre["ncv_xm"])}
+    for k in ("ktvic_test", "openviic_test"):
+        t1[f"{k}_explore"] = rows(q[k], [i for i in q[k]["ids"] if half(i)], k)[0]
+        pools[f"{k}_confirm"] = (rows(q[k], [i for i in q[k]["ids"] if not half(i)], k)[0], set())
+    out, rec = {"datastore": {}, "t2pool": {}}, {
+        "label": CP.LABEL, "utc": CP.utc(), "rule": RULE_TEXT, "run_sha256": run_sha, "code_sha256": CODE,
+        "w25_counts_sha256": env["w25_counts"][1], "w25_run_sha256": pre["w25_run"], "lists_sha256": env["lists_sha"],
+        "owners_sha256": env["owners_sha"], "feats_sha256": env.get("feats_sha"), "sscd_sha256": W.SSCD_SHA,
+        "featured": {k: len(v["ids"]) for k, v in f.items()}, "queries": {k: len(v["ids"]) for k, v in q.items()},
+        "datastore": {}, "t2pool": {}, "o_b": O_B_NOTE,
+        "d_en_no_feature_row": len(no_row), "nocaps_val_xm3600_by_id": len(pre["ncv_xm"]),
+        "t2pool_note": "images only; the >= 1 verified mapped label filter needs labels and is left to the tier-2 prereg"}
+    for part, todo, by in (("datastore", ds, q), ("t2pool", pools, t1)):
+        for k, (d, extra) in todo.items():
+            out[part][k], rec[part][k] = drop_from(d, by, extra)
+    write_new(env["out"] / DEV_OUTS[0], G.jdump(out), 0o444)
+    h = write_new(env["out"] / DEV_OUTS[-1], G.jdump(rec), 0o444)
+    alog(env["sealed"], "dev-w25 decide", DEV_OUTS[-1], h)
+    return rec
+
+
+def dev_w25(env: dict, tag: str, run_sha: str) -> dict:
+    pre = dev_pre(env)
+    with window(env, tag, run_sha, "dev-w25", sscd=pre["sscd"]) as st:
+        st["todo"] = pending(env, pre["stage"])
+        for k, items in pre["stage"].items():
+            run_set(env, st, k, items, stage_local(*STAGE[k]))
+        return dev_decide(env, pre, ovqa_names(env), run_sha)
+
+
+def dev_env(root: Path, x) -> dict:
+    e = real_env(root, x)
+    return {**e, "work": e["sealed"] / "dev_w25", "w25_work": e["work"], "stage": Path(x.stage),
+            "lists": root / LISTS_FILE, "lists_sha": LISTS_SHA, "lists_reg": (LISTS_IN, OWNERS),
+            "w25_counts": (root / W25_DONE[0], W25_DONE[1]), "cen": CEN_TSV, "b_own": B_OWN, "dev_q": DEV_Q,
+            "dev_n": DEV_N, "xm_src": OWNERS["xm3600_all"]["source"],
+            "mem": ("feats_memory.npz", CEN["feats_memory.npz"])}
 
 
 # ---------------------------------------------------------------------------------------------- selftest
@@ -1238,7 +1423,7 @@ def _st_static(root: Path) -> None:
               "a/nocaps_val_4500_captions.json", "a/nocaps_test_image_info.json", "a/labels.csv", "a/captions_x.json"):
         _must("REFUSED", refuse, p)
     assert code_bad(root) == []
-    assert LOST_CAP == {"nocaps_test": 10, "ovqa_dev": 1} and WALL == 86400
+    assert LOST_CAP == {"nocaps_test": 10, "ovqa_dev": 1, **dict.fromkeys(STAGE, 0)} and WALL == 86400
     ns = argparse.Namespace(inp="/i", sscd="/s.pt", owners_sha="o", feats_sha="f")
     e = real_env(root, ns)
     want = {"ga": G.GA, "sealed": CP.SEALED, "work": CP.SEALED / "w25", "dlog": CP.SEALED / "w25_deletions.log",
@@ -1251,6 +1436,21 @@ def _st_static(root: Path) -> None:
     assert all(e[k] == v for k, v in want.items()), [k for k, v in want.items() if e[k] != v]
     assert e["pins_b"] is G.PINS_B and e["get"] is W.F.get and e["features"] is BM.features
     assert e["xm"] is W.xm_shas and e["sscd_ok"] is W.ok_sscd and e["runner"] is curl and e["clock"] is time.time
+    d = dev_env(root, argparse.Namespace(**vars(ns), stage="/st"))
+    assert {k: d[k] for k in e if k != "work"} == {k: v for k, v in e.items() if k != "work"}
+    assert (d["work"], d["w25_work"], d["stage"], d["lists"]) == (CP.SEALED / "dev_w25", CP.SEALED / "w25", Path("/st"),
+                                                                  root / LISTS_FILE)
+    assert d["lists_reg"] == (LISTS_IN, OWNERS) and d["cen"] is CEN_TSV and d["b_own"] == B_OWN and d["dev_q"] is DEV_Q
+    assert d["w25_counts"] == (root / W25_DONE[0], W25_DONE[1]) and d["xm_src"] == OWNERS["xm3600_all"]["source"]
+    assert d["mem"] == ("feats_memory.npz", CEN["feats_memory.npz"]) and d["dev_n"] == {"d_en": 80083, "kt_c": 3907}
+    assert DEV_Q == {"xm3600": "xm3600_all", "nocaps_val": "nocaps_val_4500", "coco_test": "karpathy_test_5000",
+                     "ktvic_test": "ktvic_test_558", "openviic_test": "openviic_test_2001"}
+    assert D_EN_OUT == ("coco_restval_b4", "uitviic_train_pool", "uitviic_val_924", "uitviic_test_231")
+    assert KT_C_OUT == ("uitviic_train_pool", "m0_dev_touched_3454", "a_t3_val2017")
+    assert STAGE == {"dvi_ktvic": ("ktvic", "ktvic"), "dvi_openviic": ("openviic", "file"),
+                     "vitextvqa_dev": ("vitextvqa_dev", "jpg"), "textcaps": ("textcaps", "jpg")}
+    assert [sha(root / a) == h for a, h in (*CEN_TSV.values(), W25_DONE, (LISTS_FILE, LISTS_SHA))] == [True] * 5
+    assert json.loads((root / W25_DONE[0]).read_text())["run_sha256"].startswith("290a75dc")  # the W25 run (CC-252)
 
 
 def _st_classify() -> None:
@@ -1337,6 +1537,10 @@ def _st_tenancy(base: Path) -> None:
     os.close(fd)
     (base / "ACCESS_LOG.tsv").write_text(f"t\tc_pvr_run.py\tw25 start\t{hashlib.sha256(b'OPS-9').hexdigest()}\tr\n")
     assert tag_used(base, "OPS-9") and not tag_used(base, "OPS-1-w25pause")
+    with open(base / "ACCESS_LOG.tsv", "a") as f:
+        f.write(f"t\tc_pvr_run.py\tdev-w25 start\t{hashlib.sha256(b'OPS-10').hexdigest()}\tr\n"
+                f"t\tc_pvr_run.py\tdev-w25 decide\t{hashlib.sha256(b'OPS-11').hexdigest()}\tr\n")
+    assert tag_used(base, "OPS-10") and not tag_used(base, "OPS-11")  # a dev-w25 window spends its tag too
 
 
 def _st_owners() -> None:
@@ -1408,8 +1612,8 @@ def _st_owners() -> None:
     assert all(o["status"] in STATUSES for o in OWNERS.values())
 
 
-def _st_lists(base: Path) -> None:
-    root = base / "lroot"
+def _lists_root(root: Path) -> tuple[dict, dict, dict, list]:
+    """Synthetic `lists` inputs under root: (pins, DVI owners, the json bodies, the TextCaps ids)."""
     ovf = lambda i: f"{i:011d}.jpg"  # noqa: E731
     e5 = lambda f, sp="train": [f, sp, 0, 0, 0.0]  # noqa: E731  the real 5-field copy-map entry, synthetic values
     test_pairs = {str(i): [] for i in range(1001, 1559)}
@@ -1445,6 +1649,14 @@ def _st_lists(base: Path) -> None:
     p = {"ktvic_test": pins["kt.json"], "openviic_test": pins["ov.json"], "vitextvqa_dev": pins["vt.json"],
          "ktvic_train": pins["kr.json"], "openviic_train": pins["or.json"], "copy_map": pins["map.json"],
          "textcaps_train": pins["tc.txt"]}
+    return p, owners, files, tc
+
+
+def _st_lists(base: Path) -> None:
+    root = base / "lroot"
+    ovf = lambda i: f"{i:011d}.jpg"  # noqa: E731
+    e5 = lambda f, sp="train": [f, sp, 0, 0, 0.0]  # noqa: E731
+    p, owners, files, tc = _lists_root(root)
     rec = build_lists(root, p, owners)
     kt = [str(i) for i in range(1001, 1559)]
     assert rec["halves"]["ktvic_test"] == {"explore": sum(map(half, kt)), "confirm": 558 - sum(map(half, kt))}
@@ -1957,6 +2169,205 @@ def _st_owner_feats_faults(w: dict, env: dict, doc: dict, imgs: dict) -> None:
         _must("file-name rule", fname, rule, i, d)
 
 
+def _noise(seed: int) -> bytes:
+    """Blocky full-range noise: under the grid SSCD below, only a copy of the same image matches."""
+    from PIL import Image
+
+    px = np.kron(np.random.default_rng(1000 + seed).integers(0, 256, (8, 10, 3)), np.ones((8, 8, 1), int))
+    b = io.BytesIO()
+    Image.fromarray(px.astype(np.uint8)).save(b, "JPEG", quality=95)
+    return b.getvalue()
+
+
+def _sscd_grid(base: Path) -> Path:
+    import torch
+
+    class Net(torch.nn.Module):  # dummy SSCD for dev-w25: the centred 8x8 colour grid as a 512-d unit vector
+        def forward(self, x):
+            v = torch.nn.functional.adaptive_avg_pool2d(x, 8).flatten(1)
+            v = (v - v.mean(1, keepdim=True)).repeat(1, 3)[:, :512]
+            return v / (v * v).sum(1, keepdim=True).sqrt()
+
+    p = base / "grid_sscd.pt"
+    torch.jit.script(Net()).save(str(p))
+    return p
+
+
+def _fill(ids: list, seed: int) -> dict:
+    """Feature rows that match nothing: random unit SSCD vectors, random hashes, unique fake shas."""
+    rng = np.random.default_rng(seed)
+    v = rng.standard_normal((len(ids), 512)).astype(np.float32)
+    h = lambda: rng.integers(0, 2 ** 62, len(ids)).astype(np.uint64)  # noqa: E731
+    return {"ids": list(ids), "sha": [f"{seed:04x}{i:060x}" for i in range(len(ids))], "phash": h(), "dhash": h(),
+            "phash_m": h(), "dhash_m": h(), "sscd": v / np.linalg.norm(v, axis=1, keepdims=True), "unreadable": []}
+
+
+def _fx(base: Path, sscd: Path, groups: dict) -> dict:
+    """build_memory features of fixture images {group: {id: bytes}}, in one call (each call starts a worker pool)."""
+    (base / "fx").mkdir()
+    flat = [(g, i, b) for g, named in groups.items() for i, b in named.items()]
+    ps = [base / "fx" / f"{k}.jpg" for k in range(len(flat))]
+    for p, (_, _, b) in zip(ps, flat):
+        p.write_bytes(b)
+    f = BM.features(ps, str(sscd), workers=1)
+    assert not f["unreadable"]
+    out = {}
+    for g in groups:
+        idx = [k for k, x in enumerate(flat) if x[0] == g]
+        out[g] = {**BM.subset(f, idx), "ids": [flat[k][1] for k in idx], "unreadable": []}
+    return out
+
+
+def _dev_world(w: dict, base: Path, sscd: Path, env0: dict) -> tuple[dict, dict]:
+    """dev-w25 fixture on top of a fresh W25 env: lists inputs and their frozen json, staged images, query caches,
+    sealed W25 parts under a foreign run sha, C-EN tsvs, a B owners file, an owners file frozen in the LOG."""
+    N, root = _noise, w["root"]
+    lp, lo, _, _ = _lists_root(root / "L")
+    (root / "L/tc5.txt").write_text("".join(f"t{i}\n" for i in range(5)))
+    p = {**{k: (f"L/{a}", h) for k, (a, h) in lp.items()}, "textcaps_train": ("L/tc5.txt", CP.sha_file(root / "L/tc5.txt"))}
+    owners = {k: {"source": [f"L/{o['source'][0]}", *o["source"][1:]]} for k, o in lo.items()}
+    sets = {}
+    (root / "L/lists.json").write_bytes(G.jdump(build_lists(root, p, owners, sets)))
+    kk, ko, ta = sorted(sets["kept_kt"], key=int), sorted(sets["kept_ov"]), sets["t_a"]
+    dtc = sorted(set(sets["tc"]) - set(ta))
+    staged = {**{f"ktvic/{int(i):011d}.jpg": N(n) for i, n in zip(kk, (1, 2, 3))},
+              **{f"openviic/{k}": N(n) for k, n in zip(ko, (4, 5, 6))},
+              **{f"vitextvqa_dev/{i}.jpg": N(7 + int(i)) for i in sets["vt"]},
+              **{f"textcaps/{i}.jpg": N(n) for i, n in zip(ta + dtc, (12, 13, 14, 12, 15))}}  # dtc[0] = a T_A copy
+    for rel, b in staged.items():
+        (base / "stage" / rel).parent.mkdir(parents=True, exist_ok=True)
+        (base / "stage" / rel).write_bytes(b)
+    kt = [str(i) for i in range(1001, 1559)]
+    e, c = next(i for i in kt if half(i)), next(i for i in kt if not half(i))
+    fx = _fx(base, sscd, {"nocaps_test": {_hex(1): N(1), _hex(2): N(16)}, "ovqa_dev": {"y.jpg": N(5)},
+                          "dxm": {"x1": N(4), "x2": N(17)}, "dncv": {"0": N(18), "1": N(19), "2": N(9)},
+                          "dkt5": {"42": N(20), "43": N(21), "44": N(22), "45": N(23)},
+                          "dktt": {f"{int(e):011d}": N(28), f"{int(c):011d}": N(28)},
+                          "dmem": {"9": N(20), "25": N(25), "30": N(26), "43": N(24), "77": N(27)}})
+    (env0["work"] / "parts").mkdir(parents=True)
+    for kind in ("nocaps_test", "ovqa_dev"):
+        f = fx.pop(kind)
+        write_part(env0, env0["work"] / "parts" / f"{kind}_0000.npz", [(i, None) for i in f["ids"]], f,
+                   list(range(len(f["ids"]))), {"set": kind, "n": len(f["ids"]), "batch_sha256": ids_sha(f["ids"]),
+                                                "lost": {}, "truncated": [], "run_sha256": "f" * 64, "utc": "u"})
+    caches = {**fx, "dktt": W.concat([_fill([f"{int(i):011d}" for i in kt if i not in (e, c)], 7), fx["dktt"]]),
+              "dovt": _fill([f"{i:011d}" for i in range(2001)], 8)}
+    (base / "in").mkdir()
+    for k, f in caches.items():
+        W.save(base / "in" / f"{k}.npz", f["ids"], f, set=k)
+    sc = {k: CP.sha_file(base / "in" / f"{k}.npz") for k in caches}
+    (root / "D").mkdir()
+    for name, body in (("mem.tsv", "#id\tfile\n" + "".join(f"{i}\tc{i}.jpg\n" for i in (9, 25, 30, 43, 77, 88, 99))),
+                       ("coco.tsv", "#id\tfile\n" + "".join(f"{i}\tc{i}.jpg\n" for i in (42, 43, 44, 45))),
+                       ("ncv.tsv", "#id\tfile\n0\ta.jpg\n1\tx2.jpg\n2\tb.jpg\n"), ("xm.txt", "x1\nx2\n"),
+                       ("w25c.json", json.dumps({"run_sha256": "f" * 64})),
+                       ("bown.json", json.dumps({"owners": {"coco_restval_b4": {"ids": ["99"]},
+                                                            "uitviic_train_pool": {"ids": [77]},
+                                                            **{k: {"ids": []} for k in (
+                                                                "uitviic_val_924", "uitviic_test_231",
+                                                                "m0_dev_touched_3454")},
+                                                            "a_t3_val2017": {"ids": [45]}}}))):
+        (root / "D" / name).write_text(body)
+    h = {n: CP.sha_file(root / "D" / n) for n in ("mem.tsv", "coco.tsv", "ncv.tsv", "xm.txt", "w25c.json", "bown.json")}
+    doc = {"schema": SCHEMA, "owners": {k: cached(len(f["ids"]), {f"{k}.npz": sc[k]}) for k, f in caches.items()
+                                        if k != "dmem"}}
+    env = {**_frz(w, env0, "dev_owners.json", doc), "work": base / "dwork", "w25_work": env0["work"],
+           "stage": base / "stage", "in": base / "in", "sscd": sscd, "lists": root / "L/lists.json",
+           "lists_sha": CP.sha_file(root / "L/lists.json"), "lists_reg": (p, owners),
+           "w25_counts": (root / "D/w25c.json", h["w25c.json"]), "b_own": ("D/bown.json", h["bown.json"]),
+           "cen": {"memory": ("D/mem.tsv", h["mem.tsv"]), "coco_test": ("D/coco.tsv", h["coco.tsv"]),
+                   "nocaps_val": ("D/ncv.tsv", h["ncv.tsv"])},
+           "dev_q": {"xm3600": "dxm", "nocaps_val": "dncv", "coco_test": "dkt5", "ktvic_test": "dktt",
+                     "openviic_test": "dovt"}, "dev_n": {"d_en": 5, "kt_c": 3}, "xm_src": ["D/xm.txt", h["xm.txt"], None],
+           "mem": ("dmem.npz", sc["dmem"]), "batch": 8}
+    return env, {"kk": kk, "ko": ko, "ta": ta, "dtc": dtc, "kt": kt, "c": c}
+
+
+def _st_dev(w: dict, imgs: dict) -> None:
+    """dev-w25 (prereg §7.4, §4.4) end to end on a synthetic world, then its FAULTs."""
+    global T_A_N
+    base, run, keep = w["base"] / "dev", CP.sha_file(Path(__file__)), T_A_N
+    base.mkdir()
+    T_A_N = 3
+    try:
+        env0, calls = _fresh(w, {_hex(1): (None, "x"), _hex(2): (None, "x")}, {"y.jpg": b"x"})
+        env, x = _dev_world(w, base, _sscd_grid(base), env0)
+    finally:
+        T_A_N = keep
+    f = _fill(["a", "b", "b"], 3)
+    _must("more than one feature row", rows, f, ["b"], "x")
+    _must("1 ids have no feature row", rows, f, ["a", "z"], "x")
+    assert rows(f, ["a", "z"], "x", missing_ok=True)[1] == {"z"}
+    for ids, want in ((["01", "1"], {"1"}), (["01"], {"1", "2"}), (["01", "02"], {"1", "3"})):
+        _must("not exactly the set's images", renamed, _fill(ids, 3), lambda i: str(int(i)), want, "x")
+    T_A_N = 3
+    try:
+        rec = dev_w25(env, _tag(w), run)
+        out = json.loads((env["out"] / DEV_OUTS[0]).read_text())
+        assert out == {"datastore": {"d_vi": sorted([x["kk"][0], x["ko"][0], x["ko"][1]]), "d_en": ["43", "88", "9"],
+                                     "d_tc": [x["dtc"][0]]},
+                       "t2pool": {"nocaps_val": ["1", "2"], "ktvic_test_confirm": [x["c"]], "openviic_test_confirm": []}}, out
+        ds, tp = rec["datastore"], rec["t2pool"]
+        assert {k: (v["n"], v["flagged"], v["out"], v["kept"]) for k, v in ds.items()} == {
+            "d_vi": (6, 3, 3, 3), "d_en": (5, 1, 3, 2), "d_tc": (2, 1, 1, 1)}, ds
+        fb = ds["d_vi"]["flagged_by_set"]
+        assert (fb["nocaps_test"]["C1_C2_registered"], fb["ovqa_dev"]["excluded"], fb["xm3600"]["excluded"]) == (1, 1, 1)
+        assert ds["d_en"]["flagged_by_set"]["kt_c"]["excluded"] == 1 and ds["d_tc"]["flagged_by_set"]["t_a"]["excluded"] == 1
+        nc = sum(not half(i) for i in x["kt"])
+        assert {k: (v["n"], v["flagged"], v["out"]) for k, v in tp.items()} == {
+            "nocaps_val": (3, 1, 2), "ktvic_test_confirm": (nc, 1, 1),
+            "openviic_test_confirm": (sum(not half(f"{i:011d}.jpg") for i in range(2001)), 0, 0)}, tp
+        assert tp["nocaps_val"]["flagged_by_set"]["vitextvqa_dev"]["excluded"] == 1
+        assert tp["ktvic_test_confirm"]["flagged_by_set"]["ktvic_test_explore"]["C1_C2_registered"] == 1
+        assert rec["queries"] == {"xm3600": 2, "nocaps_val": 3, "ktvic_test": 558, "openviic_test": 2001, "kt_c": 3,
+                                  "nocaps_test": 2, "ovqa_dev": 1, "vitextvqa_dev": 5, "t_a": 3}, rec["queries"]
+        assert rec["featured"] == {"dvi_ktvic": 3, "dvi_openviic": 3, "vitextvqa_dev": 5, "textcaps": 5}
+        assert (rec["d_en_no_feature_row"], rec["nocaps_val_xm3600_by_id"], rec["o_b"]) == (1, 1, O_B_NOTE)
+        assert (rec["run_sha256"], rec["w25_run_sha256"], rec["lists_sha256"]) == (run, "f" * 64, env["lists_sha"])
+        assert json.loads((env["out"] / DEV_OUTS[-1]).read_text()) == rec and calls == []
+        assert all((env["out"] / n).stat().st_mode & 0o777 == 0o444 for n in DEV_OUTS)
+        acts = [r.split("\t")[2] for r in (env["sealed"] / "ACCESS_LOG.tsv").read_text().splitlines()
+                if r.split("\t")[1] == "c_pvr_run.py"]
+        assert acts == ["dev-w25 start", "w25 projection", "dev-w25 decide", "dev-w25 end"], acts
+        dl = env["dlog"].read_text().splitlines()
+        assert len(dl) == 5 and "trap" in dl[-1] and not os.path.lexists(env["shm"]), dl  # 4 batches of 8, trap
+        _must("a dev-w25 output", dev_w25, env, _tag(w), run)
+        for n in DEV_OUTS:
+            (env["out"] / n).chmod(0o644)
+            (env["out"] / n).unlink()
+        _must("'dev-w25 decide' row exists", dev_w25, env, _tag(w), run)
+        (env["sealed"] / "ACCESS_LOG.tsv").unlink()
+        (env["out"] / DEV_OUTS[0]).write_text("{}")  # an output without its decide row still blocks
+        _must("a dev-w25 output", dev_w25, env, _tag(w), run)
+        (env["out"] / DEV_OUTS[0]).unlink()
+        lj = json.loads(env["lists"].read_text())
+        (base / "lists_x.json").write_bytes(G.jdump({**lj, "vitextvqa_dev_images": 6}))
+        tcf = env["stage"] / "textcaps" / f"{x['dtc'][1]}.jpg"
+        for ch, msg in (({"lists_sha": "0" * 64}, "differ from the frozen"),
+                        ({"lists": base / "lists_x.json", "lists_sha": CP.sha_file(base / "lists_x.json")},
+                         "differ from the frozen"),
+                        ({"dev_n": {"d_en": 6, "kt_c": 3}}, "not the registered"),
+                        ({"dev_n": {"d_en": 5, "kt_c": 4}}, "not the registered"),
+                        ({"w25_counts": (env["w25_counts"][0], "0" * 64)}, "committed sha"),
+                        ({"cen": {**env["cen"], "nocaps_val": ("D/ncv.tsv", "0" * 64)}}, "ncv.tsv differs from its pin"),
+                        ({"mem": (env["mem"][0], "0" * 64)}, "dmem.npz differs from its pin"),
+                        ({"stage": Path("/mnt/c_pvr_st_never")}, "WSL ext4 home"),
+                        ({"work": Path("/mnt/c_pvr_st_never")}, "WSL ext4 home"),
+                        ({"stage": base / "nostage"}, "0 files, not exactly one")):
+            _must(msg, dev_w25, {**env, **ch, "work": ch.get("work", base / "dwork2")}, _tag(w), run)
+        tcf.rename(tcf.with_suffix(".x"))
+        _must("textcaps: 1 staged image files are missing", dev_w25, {**env, "work": base / "dwork2"}, _tag(w), run)
+        assert not os.path.lexists(base / "dwork2") and not (env["sealed"] / "ACCESS_LOG.tsv").exists()
+        tcf.with_suffix(".x").rename(tcf)
+        (env["stage"] / f"ktvic/{int(x['kk'][1]):011d}.jpg").write_bytes(imgs["T"])  # truncated: never retried (R1d)
+        _must("dvi_ktvic: 1 images lost", dev_w25, {**env, "work": base / "dwork2"}, _tag(w), run)  # no cap registered
+        rows_ = [r.split("\t") for r in (env["sealed"] / "ACCESS_LOG.tsv").read_text().splitlines()]
+        assert [r[2] for r in rows_ if r[1] == "c_pvr_run.py"][-1] == "dev-w25 abort" and not os.path.lexists(env["shm"])
+        assert not any(os.path.lexists(env["out"] / n) for n in DEV_OUTS)
+    finally:
+        T_A_N = keep
+
+
 def _st_w25(base: Path) -> None:
     keep = (CP.OVQA_COUNTS, CP.OVQA_DEV_ZIP)
     CACHE_SPACE.update({"own_a.npz": "fx", "own_b.npz": "fx", "own_c.npz": "fy"})
@@ -1971,6 +2382,7 @@ def _st_w25(base: Path) -> None:
         _st_w25_faults(w, imgs)
         _st_w25_window(w, imgs)
         _st_w25_owners(w, imgs)
+        _st_dev(w, imgs)
     finally:
         CP.OVQA_COUNTS, CP.OVQA_DEV_ZIP = keep
         for k in ("own_a.npz", "own_b.npz", "own_c.npz"):
@@ -2031,6 +2443,9 @@ def _st_load_cli(base: Path, root: Path) -> None:
     r = subprocess.run(me + ["w25", "--host", "m1", "--run-sha", "x", "--pause-tag", "x", "--owners-sha", "x",
                              "--sscd", "x", "--in", "x"], capture_output=True, text=True)
     assert r.returncode == 2 and "invalid choice" in r.stderr, r.stderr[-300:]
+    r = subprocess.run(me + ["dev-w25", "--host", "m1", "--run-sha", "x", "--pause-tag", "x", "--owners-sha", "x",
+                             "--feats-sha", "x", "--sscd", "x", "--in", "x", "--stage", "x"], capture_output=True, text=True)
+    assert r.returncode == 2 and "invalid choice" in r.stderr, r.stderr[-300:]
     r = subprocess.run(me + ["owners", "--run-sha", "0" * 64], capture_output=True, text=True)
     assert r.returncode == 1 and "--run-sha differs" in r.stderr, r.stderr[-300:]
 
@@ -2074,17 +2489,18 @@ def main() -> None:
     ap.add_argument("--root", type=Path, default=ROOT, help="repo root (the mutant harness runs copies)")
     sp = ap.add_subparsers(dest="cmd", required=True)
     sp.add_parser("selftest").add_argument("--root", type=Path, default=argparse.SUPPRESS)
-    for c in ("owners", "lists", "owner-feats", "w25"):
+    for c in ("owners", "lists", "owner-feats", "w25", "dev-w25"):
         sp.add_parser(c).add_argument("--run-sha", required=True)
-    for c in ("owner-feats", "w25"):
+    for c in ("owner-feats", "w25", "dev-w25"):
         for a in ("--owners-sha", "--sscd"):
             sp.choices[c].add_argument(a, required=True)
         sp.choices[c].add_argument("--in", dest="inp", required=True, help="ext4 dir of the owner caches")
     sp.choices["owner-feats"].add_argument("--owner", help="only this 'compute' owner (default: every one)")
-    w = sp.choices["w25"]
-    w.add_argument("--host", choices=("laptop",), required=True)  # prereg §8: the named custody host
-    for a in ("--pause-tag", "--feats-sha"):
-        w.add_argument(a, required=True)
+    for w in (sp.choices["w25"], sp.choices["dev-w25"]):
+        w.add_argument("--host", choices=("laptop",), required=True)  # prereg §8: the named custody host
+        for a in ("--pause-tag", "--feats-sha"):
+            w.add_argument(a, required=True)
+    sp.choices["dev-w25"].add_argument("--stage", required=True, help="ext4 dir: ktvic/ openviic/ vitextvqa_dev/ textcaps/")
     x = ap.parse_args()
     root = x.root.resolve()
     load(root)
@@ -2101,6 +2517,9 @@ def main() -> None:
     if x.cmd == "owner-feats":
         no_sockets()
         return print(json.dumps(owner_feats_cmd(real_env(root, x), x.run_sha, x.owner), indent=1, sort_keys=True))
+    if x.cmd == "dev-w25":
+        no_sockets()
+        return print(json.dumps(dev_w25(dev_env(root, x), x.pause_tag, x.run_sha), indent=1, sort_keys=True))
     print(json.dumps(w25(real_env(root, x), x.pause_tag, x.run_sha), indent=1, sort_keys=True))
 
 
