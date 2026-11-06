@@ -23,6 +23,7 @@ PY=$HOME/venvs/c_pvr_gpu_$LK/bin/python; X=scripts/c_pvr_gpu/c_pvr_gpu.py
 O=$HOME/c_pvr_out; LOG=$O/logs; P=$O/out; HC=/dev/shm/c_pvr_hc; CAP=$O/CAP.json; MARK=$O/CAP_STOP.json
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_HOME=$HOME/c_pvr_models/hf
 export C_PVR_MBLIP=$(cat $O/mblip_snapshot.path)
+export C_PVR_SNAPS=$O   # decode reads $O/<helper>_snapshot.path (S9 M-CLIP / XGLM), as hostcheck does
 mkdir -p $LOG $P
 ts() { date -u +%FT%TZ; }
 say() { echo "$(ts) $*" | tee -a $LOG/job.log; }

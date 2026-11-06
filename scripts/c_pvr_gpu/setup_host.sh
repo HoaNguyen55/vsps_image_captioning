@@ -66,7 +66,7 @@ sys.path.insert(0, "scripts/c_pvr_gpu")
 import c_pvr_gpu as G
 G.load()
 from huggingface_hub import snapshot_download
-for name, (repo, rev, files) in G.HELPERS.items():
+for name, (repo, rev, files) in G.CP.HELPERS.items():
     snap = snapshot_download(repo, revision=rev, allow_patterns=sorted(files))
     G.helper_check(G.Path(snap), name)
     open(G.Path.home() / "c_pvr_out" / f"{name}_snapshot.path", "w").write(snap + "\n")

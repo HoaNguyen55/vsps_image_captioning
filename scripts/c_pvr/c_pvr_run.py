@@ -56,7 +56,7 @@ PDIR = "manuscript/prereg/2026-11-02_c_pvr_tier1"
 PORTFOLIO = "manuscript/directions/PORTFOLIO_3Y_2026-10-29.md"
 SELF_REL = "scripts/c_pvr/c_pvr_run.py"
 CODE = {  # Q-SPLIT (ii) and the unchanged W25 code closure (draft §2.1); hashed before any of them is imported
-    "scripts/c_pvr/c_pvr.py": "623a0540916606f36a2c75e5b0103d7b7eb067353213734ac1bc77e19e35afdf",
+    "scripts/c_pvr/c_pvr.py": "50c29fae9408d2def21558bdaca15cdd599a4cbd142d6e433183897de0ac256b",
     "scripts/c_pvr/gates.py": "3bced05e7f718377b34837cfb3f6d6539fb8aafc28bc5f8818e5d7be4ccdf897",
     "scripts/w25/w25.py": "d6d127807929c0534e6140d77831b682e3a7202484fa074d56229e0d091316c0",
     "scripts/c_stage1/build_memory.py": "e771b92df9096e286e8d5de207d3adafe49c8e5e59eab276978b0236cc0eeab9",

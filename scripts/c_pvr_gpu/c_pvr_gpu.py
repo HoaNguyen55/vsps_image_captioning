@@ -32,49 +32,23 @@ from fractions import Fraction
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-CODE = {"scripts/c_pvr/c_pvr.py": "623a0540916606f36a2c75e5b0103d7b7eb067353213734ac1bc77e19e35afdf",
-        "scripts/c_pvr/c_pvr_run.py": "bdc543f44e3f3601a9bb418b628872077b37b1ce4ba35dd227b56caf8e385272"}
+CODE = {"scripts/c_pvr/c_pvr.py": "50c29fae9408d2def21558bdaca15cdd599a4cbd142d6e433183897de0ac256b",
+        "scripts/c_pvr/c_pvr_run.py": "ce93f8eaa3674522124e57dc92e3f8374e65fae0183e3cfebcb971ba78ef9de0"}
 CP = CR = None  # c_pvr, c_pvr_run (stdlib-only at import): bound by load() after their shas match
 
 PENDING = "PENDING"
-# S9 = PINS_A_ADDENDUM_S9_DRAFT_v2.md c3abb246 (cbb24e6; CC-269r2 GO 89; A5 = XGLM per PI-1106e). Its §8.4-8.5 put
-# the new constants (NES_TAU, A4_DEGEN, A9_POOL, SEEDS["A5"], LMCAP_N, MAX_NEW["rederive"]) and the 3 prompt files in
-# scripts/c_pvr (c_pvr.py PROMPTS), so the c_pvr.py pin above changes then; until that edit and the helper passes
-# exist, the four arms stay PENDING here and get no second value.
+S9 = "S9 c3abb246"  # PINS_A_ADDENDUM_S9_DRAFT_v2.md (cbb24e6; CC-269r2 GO 89; A5 = XGLM per PI-1106e); its §8.4-8.5
+# constants, prompts and helper pins live in c_pvr.py (CC-270 Ruling 8, P2), the passes here; D-VI only (S9 N10)
 PINS = {
-    "A4": PENDING,  # c_pvr.py NES_TAU, A4_DEGEN + the M-CLIP scoring pass (S9 §1, §8.5)
-    "A9": PENDING,  # c_pvr.py A9_POOL + the same M-CLIP pass (S9 §3)
-    "A5": PENDING,  # c_pvr.py LMCAP_N, SEEDS["A5"], lmcap_block_vi.txt + the XGLM pass (S9 §2)
-    "A10": PENDING,  # c_pvr.py MAX_NEW["rederive"], rederive_vi.txt, rederive_cap_vi.txt + the two-call pass (S9 §4)
+    "A4": S9,  # c_pvr.py NES_TAU, A4_DEGEN + the M-CLIP pass of the A4 step (S9 §1, §8.5)
+    "A9": S9,  # c_pvr.py A9_POOL + the M-CLIP pass of the A9 step (S9 §3)
+    "A5": S9,  # c_pvr.py LMCAP_N, SEEDS["A5"], lmcap_block_vi.txt + the XGLM step (S9 §2)
+    "A10": S9,  # c_pvr.py MAX_NEW["rederive"], rederive_vi.txt, rederive_cap_vi.txt + the two-call step (S9 §4)
     "EN": PENDING,  # LLaVA code commit, CLIP tower sha, LLaVA env (PINS-A §12 Q-LLAVA)
     "DEMOCAP_d_tc": PENDING,  # CC-269r2 W5: D-TC demonstration-caption rule, to be ruled at the S10 read
     "DEMOCAP_d_en": PENDING,  # CC-269r2 W5: D-EN rule, same
 }
-# S9 v2 §1-§2 helper files: (kind, value); kind "lfs" = sha256, "blob" = git-blob SHA-1 (c_pvr.blob_hashes)
-HELPERS = {
-    "mclip": ("laion/CLIP-ViT-H-14-frozen-xlm-roberta-large-laion5B-s13B-b90k",
-              "f9ab955287d06ac45c7654f26fecd29301c70a1f", {
-                  "open_clip_pytorch_model.bin": ("lfs", "ee81ce53c8591d48ee5e7b390b2f10d502c721df5920c3096c6bdb54d1459881"),
-                  "preprocessor_config.json": ("blob", "c13c679c06519325749d1eef242ff98e2a5d2165"),
-                  "tokenizer.json": ("blob", "463f3414782c1c9405828c9b31bfa36dda1f45c5")}),
-    "xlmr": ("xlm-roberta-large", "c23d21b0620b635a76227c604d44e43a9f0ee389", {  # = FacebookAI/xlm-roberta-large;
-        # legacy id so open_clip finds it BY NAME offline (S9 §8.2; C-T1 registry hub_id); config/tokenizer only
-        "config.json": ("blob", "8e5fb14e1352fd8fc678a7b293b63cfb5cf091f6"),
-        "sentencepiece.bpe.model": ("blob", "db9af13bf09fd3028ca32be90d3fb66d5e470399"),
-        "tokenizer.json": ("blob", "463f3414782c1c9405828c9b31bfa36dda1f45c5"),
-        "tokenizer_config.json": ("blob", "34ddbd64a4cd3f2d9d8a9120d3662d0bf91baead")}),
-    "xglm": ("facebook/xglm-2.9B", "33c659ae27de09c0a54123d3902dac48cbb8592a", {
-        "pytorch_model.bin": ("lfs", "9aa29d6635e7936bdd020bd8dab855ba8e7d3b507a1af78a98a7039648f66f23"),
-        "sentencepiece.bpe.model": ("lfs", "c49dc7e82c10227af764e518924cf2f9d50c00462750d184fa74697bba65eef8"),
-        "config.json": ("blob", "5259f0909bbb98005e355a94f0a9ad9902dc1810"),
-        "generation_config.json": ("blob", "b73e8f8fc85a983669324aeb7b0f9fc92e18f9f8"),
-        "special_tokens_map.json": ("blob", "169adeb038b8bde6ecf79666dbfa49fcbaf9a087"),
-        "tokenizer.json": ("blob", "98f7774e39cd7ce59acfe522852863101ccad1d8"),
-        "tokenizer_config.json": ("blob", "9a478583cf78963e92ee738bf7dababc1b376cb2")}),
-}
-S9_PROMPTS = {"lmcap_block_vi.txt": "a1fb17d9b73e85667a84c3ff0daee6ff3a3a5b79cc0963af9eb0bd69eb480213",
-              "rederive_vi.txt": "478c5fdde54423222384897653fb080c55b7c0a04c1b30cc850ca4becd87c312",
-              "rederive_cap_vi.txt": "93aa55e3bbaab95f4a5374f6df623d7d58d6b91aab184ecd2a69270b78c8b509"}  # -> c_pvr.py
+S9_ARMS = ("A4", "A5", "A9", "A10")  # S9 N10: pinned for D-VI only; no D-TC / D-EN version exists
 DEMO_SRC = {"ktvic_train": "train_data.json", "openviic_train": "uit-openviic-annotation-train.json"}  # in <hc>/src
 # OPS-1106c-datastores (LOG l.1655), CC-268 GO 93: decode against these kept-id files only, re-hashed before use
 KEPT = {
@@ -101,14 +75,16 @@ NEVER_CUT = {"A4", "A9"}  # T1-REP R-1: a PENDING pin here may not become a sile
 
 # money (host v3 §2-§3; T1-REP §9): integer VND and integer seconds only
 M_BASE, M_PQC2 = 350_000, 465_000
+R_HOST = (1_000, 100_000)  # [proposal] CC-270r2 N1': plausible rental-line VND/h; outside = FAULT
 CUT_ORDER = ("A10", "A5", "A3", "A2", "A11")  # T1-REP §9 rule 2 (R-1)
 T_DOWN_H = 1  # host v3 §3: T_down = 1.0 h x r_host
 CAP_STOP_RC = 4
 A8_WAIT_SEC = 1800  # [proposal, S11] CC-270 B2: longest phase-2 wait for the laptop's A1 decomposition; added to P1
 
 LOG_KEYS = {"utc", "set", "arm", "id", "demo_ids", "tpl", "n_demos", "emptied", "calls", "cap_hits", "parse_fail",
-            "yes", "maybe", "no", "finish", "sec", "kind", "event"}
-OUT_KEYS = LOG_KEYS | {"caption", "masks"}
+            "yes", "maybe", "no", "finish", "sec", "kind", "event", "n_keys", "trunc"}
+OUT_KEYS = LOG_KEYS | {"caption", "masks", "scores", "answers"}  # scores: A4/A9 floats (S9 §8.7)
+FREE = ("caption", "answers")  # the only free text: the query's own model outputs (A10 answers: outputs only, §8.7)
 SPEED_LOG = {"utc", "set", "arm", "id", "calls"}  # calls follows from the inputs (props, CAP), not from an answer  # caption = the query's own model output, the only free text
 ID_RX = re.compile(r"[A-Za-z0-9_.:+-]{1,80}")
 
@@ -213,11 +189,11 @@ def check_echo(gen, probe: dict, P: dict, image) -> dict:
 
 
 def rec_ok(rec: dict, keys: set = LOG_KEYS) -> dict:
-    """Ids only (meta item 17): whitelisted keys; every string except 'caption' is a single id token."""
+    """Ids only (meta item 17): whitelisted keys; every string outside FREE is a single id token."""
     for k, v in rec.items():
         if k not in keys:
             fault(f"log key {k!r} is not on the ids-only list")
-        if k == "caption":
+        if k in FREE:
             continue
         for x in v if isinstance(v, list) else [v]:
             if isinstance(x, str) and not ID_RX.fullmatch(x):
@@ -252,10 +228,84 @@ def norm_ids(a, universe: frozenset) -> list[str]:
 
 def helper_check(snap: Path, name: str) -> None:
     """S9 §8.1: every pinned helper file by LFS sha256 or git-blob SHA-1 before any load; a mismatch is a FAULT."""
-    for f, (kind, want) in HELPERS[name][2].items():
+    for f, (kind, want) in CP.HELPERS[name][2].items():
         _, s256, s1 = CP.blob_hashes(guard(snap / f))
         if (s256 if kind == "lfs" else s1) != want:
             fault(f"{name} {f} differs from its S9 pin {want[:8]}; nothing is loaded")
+
+
+def helper_snap(d: Path, name: str) -> Path:
+    """setup_host.sh writes <d>/<name>_snapshot.path for mBLIP and each S9 helper (d = ~/c_pvr_out)."""
+    return Path((d / f"{name}_snapshot.path").read_text().strip())
+
+
+def load_mclip(d: Path):
+    """S9 §1, §8.1-8.3: both repos pin-checked; open_clip finds XLM-R BY NAME, so the HF cache must resolve
+    'xlm-roberta-large' to the pinned snapshot; then the pinned checkpoint (a pickle, under weights_only_guard) in fp32."""
+    snap, xlmr = helper_snap(d, "mclip"), helper_snap(d, "xlmr")
+    helper_check(snap, "mclip")
+    helper_check(xlmr, "xlmr")
+    from huggingface_hub import try_to_load_from_cache
+    for f in CP.HELPERS["xlmr"][2]:
+        got = try_to_load_from_cache(CP.HELPERS["xlmr"][0], f)
+        if not isinstance(got, str) or Path(got).parent.resolve() != xlmr.resolve():
+            fault(f"{CP.HELPERS['xlmr'][0]} {f} does not resolve BY NAME to the pinned snapshot; nothing is scored")
+    import open_clip
+    model, _, pre = open_clip.create_model_and_transforms(
+        CP.MCLIP_NAME, pretrained=str(snap / "open_clip_pytorch_model.bin"), precision="fp32")
+    return model.eval().to("cuda"), pre, open_clip.get_tokenizer(CP.MCLIP_NAME)
+
+
+def load_xglm(d: Path):
+    """S9 §2: pin-checked snapshot, XGLMForCausalLM fp16 offline (pytorch_model.bin under weights_only_guard)."""
+    import torch
+    from transformers import AutoTokenizer, XGLMForCausalLM
+    snap = helper_snap(d, "xglm")
+    helper_check(snap, "xglm")
+    tok = AutoTokenizer.from_pretrained(snap, local_files_only=True)
+    model = XGLMForCausalLM.from_pretrained(snap, local_files_only=True, torch_dtype=getattr(torch, CP.XGLM_DTYPE))
+    return model.eval().to("cuda"), tok
+
+
+def mclip_cos(model, pre, tok, image, texts: list[str], torch) -> tuple[list[float], int]:
+    """S9 §1/§3: cos = dot of the L2-normalised encode_image / encode_text outputs in fp32; one image with all its
+    texts. Second value: how many texts the open_clip tokenizer truncates (S9 N6, descriptive)."""
+    if not texts:
+        return [], 0
+    dev = next(model.parameters()).device
+    with torch.inference_mode():
+        v = torch.nn.functional.normalize(model.encode_image(pre(image).unsqueeze(0).to(dev)).float(), dim=-1)
+        t = torch.nn.functional.normalize(model.encode_text(tok(texts).to(dev)).float(), dim=-1)
+    trunc = sum(len(tok.tokenizer(x)["input_ids"]) > tok.context_length for x in texts)
+    return (t @ v[0]).tolist(), trunc
+
+
+def mclip_scores(arm: str, q: dict, M: dict, kept: frozenset, img, score):
+    """The scores one query needs. A4: per demonstration of A1's top K, a float per object proposition (its mention,
+    S9 §1) and None per text proposition. A9: (A1's top A9_POOL full texts as A1 displays them, truncation count)."""
+    ranked = norm_ids(q["ranked"], kept)
+    if arm == "A4":
+        rows = CP.a4_texts([M["demos"][i] for i in ranked[:CP.K]])
+        cos = iter(score(img, [t for r in rows for t in r if t is not None])[0])
+        return [[None if t is None else next(cos) for t in r] for r in rows]
+    return score(img, [CP.clean(M["demos"][i]["text"]) for i in ranked[:CP.A9_POOL]])  # a short pool: a9_pick FAULTs
+
+
+def a5_shots(M: dict, kept: frozenset, qids: set) -> list[tuple[list[str], str]]:
+    """S9 §2: the manifest's shots must be the SEEDS['A5'] draw over D-VI and no query image; a shot's K captions =
+    its A1 retrieval (laptop) with itself excluded; its answer = its own N8 caption. All texts are manifest demos."""
+    want, got = CP.a5_shot_ids(kept), M.get("a5_shots", {})
+    if sorted(got) != sorted(want):
+        fault("manifest a5_shots differ from the SEEDS['A5'] draw over the kept D-VI ids")
+    if set(want) & qids:
+        fault("an A5 shot is a query image")
+    out = []
+    for s in want:
+        caps = [i for i in norm_ids(got[s], kept) if i != s][:CP.K]
+        if miss := [i for i in [s, *caps] if i not in M["demos"]]:
+            fault(f"A5 shot {s!r}: {len(miss)} ids have no manifest demonstration")
+        out.append(([M["demos"][i]["text"] for i in caps], M["demos"][s]["text"]))
+    return out
 
 
 def demo_captions(ids, src: Path) -> dict:
@@ -297,10 +347,13 @@ def ceil125(sec: int) -> int:
 
 
 def r_host_up(line: str) -> int:
-    """CC-270 N1: r_host = the rental-line VND/h rounded UP (10,053.38 -> 10,054); rounding down overstates H_M."""
+    """CC-270 N1: r_host = the rental-line VND/h rounded UP (10053.38 -> 10054); rounding down overstates H_M.
+    N1': plain ASCII digits with an optional decimal part only, then the R_HOST range ('10.054' -> 11 is a FAULT)."""
+    if not re.fullmatch(r"[0-9]+(\.[0-9]+)?", line):
+        fault(f"r_host {line!r} is not a plain rental-line number like 10053.38")
     r = math.ceil(Fraction(line))
-    if r <= 0:
-        fault(f"r_host {line!r} is not a positive rate")
+    if not R_HOST[0] <= r <= R_HOST[1]:
+        fault(f"r_host {line!r} -> {r} lies outside {R_HOST} VND/h")
     return r
 
 
@@ -363,6 +416,10 @@ def demos_for(arm: str, q: dict, M: dict, kept: frozenset, ask, prior: dict) -> 
     if arm in NEEDS:
         need(NEEDS[arm])
     ranked = norm_ids(q["ranked"], kept)  # CC-261 N6: json/npz ids may be int; matched as str only
+    if arm == "A9":  # S9 §3: A1's top A9_POOL re-ranked by this step's M-CLIP pass, the best K kept
+        sc, trunc = prior[q["id"]]
+        ids = CP.a9_pick(ranked[:CP.A9_POOL], sc)
+        return ids, [M["demos"][i]["text"] for i in ids], {"scores": sc, "trunc": trunc}
     ids = CP.pick(arm if arm in ("A0", "A2", "A3") else "A1", q["id"], ranked, sorted(kept))
     dcs = [M["demos"][i] for i in ids]
     st = {}
@@ -375,6 +432,9 @@ def demos_for(arm: str, q: dict, M: dict, kept: frozenset, ask, prior: dict) -> 
         st["masks"] = masks
     elif arm == "A7":
         masks = CP.a7_masks(q["id"], prior[q["id"]])  # Q-A7 (b): count-matched to PVR-drop at tier 1
+    elif arm == "A4":  # S9 §1: this step's M-CLIP cosines, < NES_TAU dropped, PVR-drop's deletion rule
+        masks = CP.a4_masks(dcs, prior[q["id"]])
+        st = {"scores": prior[q["id"]], "masks": masks}
     elif arm == "A12":
         absent = set(q["absent"])
         masks = CP.a12_masks(dcs, lambda c: "absent" if c in absent else "other")
@@ -413,12 +473,16 @@ def a1_decomp(f: Path, ids: set, clock, sleep) -> tuple[dict, int]:
     return dec, int(clock() - t0)
 
 
-def decode(x, gen, image_of, clock=time.time, sleep=time.sleep) -> int:
+def decode(x, load, image_of, clock=time.time, sleep=time.sleep) -> int:
     """One (set, arm). Tier 1: outputs to <out>/<set>.<arm>.jsonl (appended; a machine-loss resume skips done ids).
-    Speed: timing rows only, captions discarded (NB-SPEED)."""
+    Speed: timing rows only, captions discarded (NB-SPEED). load(name) -> (fn, close) for "mblip", "xglm", "mclip":
+    A4 / A9 run their M-CLIP pass first (scores in memory, closed before the generator loads: never co-resident,
+    S9 §5); A5 loads XGLM instead of mBLIP. Model loads are untimed (CC-270 Q3); the M-CLIP pass is timed."""
     ds, lang, arms = SETS[x.set]
     if x.arm not in arms:
         fault(f"{x.arm} does not run on {x.set}")
+    if x.arm in S9_ARMS and ds != "d_vi":
+        fault(f"{x.arm} on {x.set}: the S9 pins cover D-VI only (S9 N10); no {ds} version is pinned")
     if ds != "d_vi":
         need(f"DEMOCAP_{ds}")
     kept = kept_ids(x.kept, ds)
@@ -443,6 +507,7 @@ def decode(x, gen, image_of, clock=time.time, sleep=time.sleep) -> int:
             fault("A8 needs --a1-decomp")
         a1 = {r["id"]: r["caption"] for r in map(json.loads, (x.out / f"{x.set}.A1.jsonl").read_text().splitlines())}
         dec, waited = a1_decomp(x.a1_decomp, set(a1), clock, sleep)
+    shots = a5_shots(M, kept, {q["id"] for q in qs}) if x.arm == "A5" else None
     if x.speed:
         sp = set(speed_ids([q["id"] for q in qs], x.speed))  # CC-270 N4: once, not per query
         qs = [q for q in qs if q["id"] in sp]
@@ -456,10 +521,16 @@ def decode(x, gen, image_of, clock=time.time, sleep=time.sleep) -> int:
     out = None if x.speed else open(outp, "a")
     if waited is not None:
         write_rec(log, {"utc": utc(), "event": "A8_WAIT", "set": x.set, "arm": x.arm, "sec": waited})
-    t0, n = clock(), 0
-    for q in qs:
-        if q["id"] in done:
-            continue
+    todo, pass_sec = [q for q in qs if q["id"] not in done], 0.0
+    if x.arm in ("A4", "A9"):
+        score, close = load("mclip")
+        s0 = clock()
+        prior = {q["id"]: mclip_scores(x.arm, q, M, kept, image_of(q), score) for q in todo}
+        pass_sec = clock() - s0
+        close()
+    gen, _ = load("xglm" if x.arm == "A5" else "mblip")
+    t0, n = clock() - pass_sec, 0
+    for q in todo:
         if cap and left_sec(cap, clock()) <= 0:
             write_rec(log, {"utc": utc(), "event": "CAP_STOP", "set": x.set, "arm": x.arm, "id": q["id"]})
             return CAP_STOP_RC
@@ -468,6 +539,15 @@ def decode(x, gen, image_of, clock=time.time, sleep=time.sleep) -> int:
         if x.arm == "A8":
             text, st = CP.a8_caption({"A1": a1[q["id"]]}, lambda _c, i=q["id"]: dec[i], ask)
             ids, finish, tpl = [], "a8", "ver_3way.txt"
+        elif x.arm in ("A5", "A10"):  # S9 §2 / §4: A1's top K, D-VI, the §6 (N8) caption rule
+            ids = norm_ids(q["ranked"], kept)[:CP.K]
+            if x.arm == "A5":
+                prompt, tpl, st = CP.lmcap_prompt(P, shots, [M["demos"][i]["text"] for i in ids]), "lmcap_block_vi.txt", {}
+            else:
+                prompt, tpl, st, answers = CP.a10_prompt(P, CP.a10_keys([M["demos"][i] for i in ids]),
+                                                         lambda p, img=img: gen(img, p, "rederive")[0])
+                st["answers"] = answers
+            text, finish = gen(img, prompt, "caption")
         else:
             ids, demos, st = demos_for(x.arm, q, M, kept, ask, prior)
             text, finish = gen(img, CP.render(P, demos, lang), "caption")
@@ -556,20 +636,38 @@ def hostcheck(x) -> dict:
     model = model.to("cuda")
     probe = echo_probe(model)
     img = Image.new("RGB", (384, 384), (120, 160, 200))  # synthetic: no dataset image is opened
-    rep["echo"] = check_echo(lambda i, p, k: CP.generate(model, proc, i, p, k), probe, CP.prompts(x.root), img)
+    P = CP.prompts(x.root)
+    rep["echo"] = check_echo(lambda i, p, k: CP.generate(model, proc, i, p, k), probe, P, img)
     rep["kept"] = {k: len(kept_ids(x.kept, k)) for k in KEPT}
+    rep["vram_peak_bytes"] = torch.cuda.max_memory_allocated()  # mBLIP alone
     del model
     torch.cuda.empty_cache()
     rep["helpers"] = {}
-    for name in HELPERS:  # S9 §8.1 + §8.3: pins, then both pickles load under weights_only=True
-        snap = Path((x.out / f"{name}_snapshot.path").read_text().strip())
+    for name in CP.HELPERS:  # S9 §8.1 + §8.3: pins, then both pickles load under weights_only=True
+        snap = helper_snap(x.out, name)
         helper_check(snap, name)
-        pk = [f for f in HELPERS[name][2] if f.endswith(".bin")]
+        pk = [f for f in CP.HELPERS[name][2] if f.endswith(".bin")]
         for f in pk:
             torch.load(snap / f, map_location="cpu")
         rep["helpers"][name] = {"pins": "ok", "weights_only_loaded": pk}
+    # CC-270 N6, S9 U1/U4/U8: the real loader paths, one synthetic call each, peak VRAM per pass (never co-resident)
+    torch.cuda.reset_peak_memory_stats()
+    m = load_mclip(x.out)
+    cos, trunc = mclip_cos(*m, img, ["zq ấm", "zq " * 600], torch)
+    rep["mclip"] = {"cos": [round(c, 4) for c in cos], "trunc": trunc, "context_length": m[2].context_length,
+                    "vram_peak_bytes": torch.cuda.max_memory_allocated()}
+    if trunc != 1 or not all(math.isfinite(c) and -1 <= c <= 1 for c in cos):
+        fault(f"M-CLIP synthetic pass: {rep['mclip']}")
+    del m
+    torch.cuda.empty_cache()
+    torch.cuda.reset_peak_memory_stats()
+    xm, xt = load_xglm(x.out)
+    shots = [([f"zq {j}{i}" for i in range(CP.K)], f"zq {j}") for j in range(CP.LMCAP_N)]
+    text, finish = CP.generate_text(xm, xt, CP.lmcap_prompt(P, shots, [f"zq q{i}" for i in range(CP.K)]), "caption")
+    rep["xglm"] = {"finish": finish, "chars": len(text), "vram_peak_bytes": torch.cuda.max_memory_allocated()}
+    del xm
+    torch.cuda.empty_cache()
     common_checks(work, np)
-    rep["vram_peak_bytes"] = torch.cuda.max_memory_allocated()
     (x.out / "HOSTCHECK_OK.json").write_text(json.dumps(rep, indent=1, sort_keys=True) + "\n")
     return rep
 
@@ -617,7 +715,11 @@ def _st_money() -> None:
     assert cap_plan(edge, s, r, True)["cuts"] == [] and cap_plan({"A1": 14400 * 31 // 5 + 1}, s, r, False)["decision"] == "PI"
     assert cap_plan(edge, s, r, True, 1)["m"] == M_PQC2  # B2: the A8 wait bound counts in P1 like a never-cut arm
     assert r_host_up("10053.38") == 10054 and r_host_up("10054") == 10054 and h_m(M_BASE, 0, 10054) == 33  # N1
-    _must("not a positive rate", r_host_up, "0")
+    assert r_host_up("999.5") == 1000 and r_host_up("100000") == 100_000
+    for bad, msg in (("10.054", "outside"), ("0", "outside"), ("999", "outside"), ("100000.01", "outside"),
+                     ("1e4", "plain"), ("10,053.38", "plain"), (" 10054", "plain"), ("10054.", "plain"),
+                     ("\u0661\u0660\u0660\u0665\u0664", "plain")):  # N1': dot-thousands, exponent, comma, non-ASCII
+        _must(msg, r_host_up, bad)
     big = {a: 2 * 3600 for a in VI_ARMS} | {"S1": 14 * 3600}  # all 5 cut: 34 h -> 43 = H_465k, fits only at 465k
     p = cap_plan(big, s, r, True)
     assert (p["m"], p["cuts"], p["cap_h"]) == (M_PQC2, list(CUT_ORDER), ceil125(sum(big.values()) - 5 * 7200))
@@ -637,7 +739,8 @@ def _st_money() -> None:
 
 def _dc(t: str, words: list[str]) -> dict:
     sp = [{"start": t.index(w), "end": t.index(w) + len(w), "kind": "obj", "classes": [w.split()[-1]]} for w in words]
-    return {"text": t, "sents": [[0, len(t)]], "props": [{**p, "text": t[p["start"]:p["end"]]} for p in sp],
+    return {"text": t, "sents": [[0, len(t)]], "props": [{**p, "text": t[p["start"]:p["end"]], "mentions": [
+        [p["end"] - len(p["classes"][0]), p["end"]]]} for p in sp],  # mention = the last word (S9 §1 scored text)
             "nouns": [[p["start"], p["end"]] for p in sp]}
 
 
@@ -663,19 +766,34 @@ def _st_decode(work: Path) -> None:
     qs = [{"id": f"q{j}", "image": f"q{j}.jpg", "ranked": [str(10 + (j + i) % 10) for i in range(7)], "absent": ["mèo"]}
           for j in range(5)]
     man = work / "m.json"
+    shot = {s: [s, *[i for i in sorted(texts) if i != s][:5]] for s in CP.a5_shot_ids(texts)}  # laptop A1 of the shot
     man.write_text(json.dumps({"label": CP.LABEL, "set": "xm3600_vi", "datastore": "d_vi", "queries": qs,
-                               "demos": demos}, ensure_ascii=False))
+                               "demos": demos, "a5_shots": shot}, ensure_ascii=False))
     seen = []
 
     def gen(img, prompt, kind):
         seen.append((kind, prompt))
+        if kind == "rederive":  # A10: one key answered, the other empty (its key is dropped)
+            return ("  sáng   loáng " if '"đồng"' in prompt else " ", "eos")
         return ("no" if "mèo" in prompt else "yes", "eos") if kind == "verify" else ("Một bức ảnh.", "eos")
+
+    sc = {"đồng": 0.2, "mèo": 0.1999} | {texts[str(j)]: v for j, v in zip(range(10, 20), (
+        0.3, 0.5, 0.5, 0.1, 0.4, 0.2, 0.0, 0.05, 0.6, 0.7))}  # = NES_TAU kept, just under dropped; an A9 tie
+
+    def score(img, ts):
+        return [sc[t] for t in ts], sum("số16" in t for t in ts)
+
+    loads = []
+
+    def load(name):
+        loads.append(name)
+        return (score, lambda: loads.append("close")) if name == "mclip" else (gen, None)
 
     out = work / "out"
     out.mkdir()
     base = dict(set="xm3600_vi", manifest=man, kept=kdir, out=out, root=ROOT, speed=0, timing=None, cap=None,
                 a1_decomp=None, src=src)
-    run = lambda **k: decode(types.SimpleNamespace(**(base | k)), gen, lambda q: "IMG")  # noqa: E731
+    run = lambda **k: decode(types.SimpleNamespace(**(base | k)), load, lambda q: "IMG")  # noqa: E731
     for a in ("A0", "A1", "A2", "A3", "A6", "A11", "A12", "PVR-drop", "PVR-keep", "A7"):
         assert run(arm=a) == 0, a
     rows = lambda a: [json.loads(r) for r in (out / f"xm3600_vi.{a}.jsonl").read_text().splitlines()]  # noqa: E731
@@ -683,14 +801,21 @@ def _st_decode(work: Path) -> None:
     pd = rows("PVR-drop")[0]
     assert pd["masks"] == [[False, True]] * 4 and pd["no"] == 4 and pd["calls"] == 8
     assert [sum(map(sum, r["masks"])) for r in rows("PVR-drop")] == [4] * 5
+    _st_s9_decode(run, rows, seen, loads, texts, shot, out, man)
     assert run(arm="A1") == 0 and len(rows("A1")) == 5  # resume skips done ids
     blob = b"".join(f.read_bytes() for f in out.rglob("*.jsonl"))
     assert not any(t.encode() in blob for t in texts.values()) and b"Captions" not in blob  # no demo text, no prompt
     assert "Một bức ảnh." in (out / "xm3600_vi.A1.jsonl").read_text("utf-8")
     assert b"caption" not in b"".join(f.read_bytes() for f in (out / "logs").iterdir())
-    for a in ("A4", "A5", "A9", "A10"):
-        _must("PENDING", run, arm=a)
-    _must("PENDING", preflight, ["A1"])
+    preflight(["A1", *S9_ARMS])  # S9 pinned (P2); EN still PENDING, so speed and tier1 still refuse today
+    _must("EN pin is PENDING", preflight, sorted({a for _, a in steps("speed", None)}))
+    PINS["A4"] = PENDING
+    try:  # a PENDING never-cut pin refuses the block even when no A4 step is listed (T1-REP R-1)
+        _must("A4 pin is PENDING", preflight, ["A1"])
+    finally:
+        PINS["A4"] = S9
+    for a in S9_ARMS:  # S9 N10: D-VI only, refused before any d_tc file is read
+        _must("D-VI only", run, set="t_a", arm=a)
     sp = steps("speed", None)
     assert ("xm3600_vi", "A8") not in sp and ("kt_c", "S1") in sp and {s for s, _ in sp} == {"xm3600_vi", "kt_c"}
     _st_steps()
@@ -706,8 +831,13 @@ def _st_decode(work: Path) -> None:
     sl = [json.loads(r) for r in (work / "o2/logs/xm3600_vi.PVR-drop.ids.jsonl").read_text().splitlines()]
     assert len(sl) == 2 and all(set(r) <= SPEED_LOG for r in sl) and sl[0]["calls"] == 8
     assert run(arm="A7", speed=2, timing=tim, out=work / "o2") == 0
+    for a in ("A4", "A9", "A5", "A10"):  # timed, scores in memory only, no output file (NB-SPEED)
+        assert run(arm=a, speed=2, timing=tim, out=work / "o2") == 0 and not (work / f"o2/xm3600_vi.{a}.jsonl").exists()
+        sl = [json.loads(r) for r in (work / f"o2/logs/xm3600_vi.{a}.ids.jsonl").read_text().splitlines()]
+        assert len(sl) == 2 and all(set(r) <= SPEED_LOG for r in sl), a
+    assert [json.loads(r)["n"] for r in tim.read_text().splitlines()][-4:] == [2] * 4
     _must("not timed", run, arm="A8", speed=2, timing=tim)
-    _st_a8(work, rows, run, base, gen)
+    _st_a8(work, rows, run, base, load)
     capf = work / "cap.json"
     capf.write_text(json.dumps({"p1_epoch": 0, "cap_h": 1}))
     assert run(arm="A3", cap=capf, out=work / "o2") == CAP_STOP_RC  # wall clock long past the stamp
@@ -741,7 +871,67 @@ def _st_steps() -> None:
     assert [a for _, a in t1[-15:]] == ["A11"] * 5 + ["A2"] * 5 + ["A3"] * 5 and t1[-1] == ("t_a", "A3")
 
 
-def _st_a8(work: Path, rows, run, base: dict, gen) -> None:
+def _st_s9_decode(run, rows, seen, loads, texts: dict, shot: dict, out: Path, man: Path) -> None:
+    """CC-270 P2: the A4 / A9 M-CLIP pass, the A5 XGLM step and the A10 two-call step on mocks."""
+    P = CP.prompts(ROOT)
+    order = {"A4": ["mclip", "close", "mblip"], "A9": ["mclip", "close", "mblip"], "A5": ["xglm"], "A10": ["mblip"]}
+    caps = {}
+    for a, want in order.items():
+        loads.clear()
+        seen.clear()
+        assert run(arm=a) == 0 and loads == want, (a, loads)  # S9 §5: scorer closed before the generator loads
+        caps[a] = [p for k, p in seen if k == "caption"]
+        assert len(caps[a]) == 5 and not any(k == "verify" for k, _ in seen), a
+    r4 = rows("A4")[0]
+    assert r4["masks"] == [[False, True]] * 4 and r4["scores"] == [[0.2, 0.1999]] * 4
+    assert all("đồng số" in c and "mèo" not in c for c in caps["A4"])  # 'một con mèo' deleted, PVR-drop rule
+    r9 = rows("A9")[0]
+    assert r9["demo_ids"] == ["11", "12", "14", "10"] and r9["trunc"] == 1 and len(r9["scores"]) == 7  # tie: rank
+    assert caps["A9"][0].split("\n")[1] == "1. " + texts["11"]
+    r5 = rows("A5")[0]
+    sh = [([texts[i] for i in shot[s][1:5]], texts[s]) for s in CP.a5_shot_ids(texts)]
+    assert r5["tpl"] == "lmcap_block_vi.txt" and caps["A5"][0] == CP.lmcap_prompt(P, sh, [texts[str(j)] for j in
+                                                                                       range(10, 14)])
+    r10 = rows("A10")[0]
+    assert (r10["answers"], r10["n_keys"], r10["calls"], r10["tpl"]) == (["sáng loáng", ""], 2, 2, "rederive_cap_vi.txt")
+    assert caps["A10"][0] == "Facts about this image:\n1. đồng: sáng loáng\nCaption in Vietnamese:"
+    M = json.loads(man.read_text("utf-8"))
+    s0, other = next(iter(shot)), next(i for i in sorted(texts) if i not in shot)
+    M["a5_shots"] = {**{s: r for s, r in shot.items() if s != s0}, other: shot[s0]}  # one shot off the SEEDS draw
+    (out.parent / "m_shots.json").write_text(json.dumps(M, ensure_ascii=False))
+    _must("SEEDS['A5'] draw", run, arm="A5", manifest=out.parent / "m_shots.json")
+    logs = b"".join(f.read_bytes() for f in (out / "logs").iterdir())
+    assert "sáng".encode() not in logs and b"answers" not in logs and b"scores" not in logs  # outputs only (§8.7)
+
+
+def _st_mclip(torch) -> None:
+    """mclip_cos on a stand-in model with real torch: fp32 cosine of L2-normalised outputs, truncation count."""
+    class Tok:
+        context_length = 5
+        tokenizer = staticmethod(lambda x: {"input_ids": x.split()})
+
+        def __call__(self, texts):
+            return torch.tensor([[float(len(t)), 1.0] for t in texts])
+
+    class Net(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.w = torch.nn.Parameter(torch.zeros(1))
+
+        def encode_image(self, x):
+            return x.half()
+
+        def encode_text(self, t):
+            return t.half()
+
+    cos, trunc = mclip_cos(Net(), lambda im: torch.tensor([3.0, 4.0]), Tok(), "IMG", ["ab", "a b c d e f", "a b c d e"],
+                           torch)  # 6 tokens > context 5 truncates; exactly 5 does not
+    want = [(2 * 0.6 + 0.8) / math.sqrt(5), (11 * 0.6 + 0.8) / math.sqrt(122), (9 * 0.6 + 0.8) / math.sqrt(82)]
+    assert trunc == 1 and all(abs(a - b) < 1e-6 for a, b in zip(cos, want, strict=True)), (cos, want)
+    assert mclip_cos(Net(), None, Tok(), "IMG", [], torch) == ([], 0)
+
+
+def _st_a8(work: Path, rows, run, base: dict, load) -> None:
     """CC-270 B2: A8 waits (bounded) for the pushed decomposition, sha-checks it and binds it to the A1 ids."""
     import types
     a1 = {r["id"]: r["caption"] for r in rows("A1")}
@@ -762,7 +952,7 @@ def _st_a8(work: Path, rows, run, base: dict, gen) -> None:
 
     def run8(arrive_at=None):
         t.update(now=0.0, sleeps=0)
-        return decode(types.SimpleNamespace(**(base | {"arm": "A8", "a1_decomp": dec})), gen, lambda q: "IMG",
+        return decode(types.SimpleNamespace(**(base | {"arm": "A8", "a1_decomp": dec})), load, lambda q: "IMG",
                       clock=lambda: t["now"], sleep=lambda s: sleep(s, arrive_at))
 
     _must("STOP, PI", run8)  # never pushed: over A8_WAIT_SEC
@@ -796,22 +986,22 @@ def _st_democap(src: Path, texts: dict, man: Path, run, work: Path) -> None:
     M["demos"]["13"] = {**M["demos"]["13"], "text": "Chú thích thứ hai."}
     (work / "m2.json").write_text(json.dumps(M, ensure_ascii=False))
     _must("differ from the N8 rule", run, arm="A1", manifest=work / "m2.json")
-    assert {k: (v[0], len(v[2])) for k, v in HELPERS.items()} == {
+    assert {k: (v[0], len(v[2])) for k, v in CP.HELPERS.items()} == {
         "mclip": ("laion/CLIP-ViT-H-14-frozen-xlm-roberta-large-laion5B-s13B-b90k", 3),
         "xlmr": ("xlm-roberta-large", 3 + 1), "xglm": ("facebook/xglm-2.9B", 7)}
-    assert HELPERS["xglm"][2]["pytorch_model.bin"][1][:8] == "9aa29d66" and HELPERS["mclip"][1][:8] == "f9ab9552"
+    assert CP.HELPERS["xglm"][2]["pytorch_model.bin"][1][:8] == "9aa29d66" and CP.HELPERS["mclip"][1][:8] == "f9ab9552"
     snap = work / "snap"
     snap.mkdir()
     (snap / "w.bin").write_bytes(b"w")
     (snap / "c.json").write_bytes(b"{}")
-    HELPERS["t"] = ("t", "r", {"w.bin": ("lfs", hashlib.sha256(b"w").hexdigest()),
+    CP.HELPERS["t"] = ("t", "r", {"w.bin": ("lfs", hashlib.sha256(b"w").hexdigest()),
                                "c.json": ("blob", hashlib.sha1(b"blob 2\0{}").hexdigest())})
     try:
         helper_check(snap, "t")
         (snap / "c.json").write_bytes(b"[]")
         _must("differs from its S9 pin", helper_check, snap, "t")
     finally:
-        del HELPERS["t"]
+        del CP.HELPERS["t"]
 
 
 def _st_wipe(work: Path) -> None:
@@ -854,8 +1044,9 @@ def selftest() -> None:
     pend, kept0, lists0 = dict(PINS), dict(KEPT), dict(CR.LISTS_IN)
     with tempfile.TemporaryDirectory() as td:
         work = Path(td)
-        if torch is not None:  # real torch: the wrapper on the real loader
+        if torch is not None:  # real torch: the wrapper on the real loader, and the M-CLIP cosine
             check_weights_only(torch, work)
+            _st_mclip(torch)
         if GenerationConfig is not None:
             nk = check_genconfig(GenerationConfig)
             assert "temperature" in nk["caption"] and "top_p" in nk["verify"]
@@ -885,7 +1076,8 @@ def selftest() -> None:
         hc.write_text(json.dumps({"c_pvr_gpu_sha256": "0" * 64, "c_pvr_sha256": CODE["scripts/c_pvr/c_pvr.py"]}))
         _must("other code", hostcheck_fresh, hc)
         _must("REFUSED", guard, Path.home() / ".vsps_sealed" / "c_pvr")
-    assert PINS == pend and all(v == PENDING for v in PINS.values()) and KEPT == kept0 and CR.LISTS_IN == lists0
+    assert PINS == pend and [k for k, v in PINS.items() if v == PENDING] == ["EN", "DEMOCAP_d_tc", "DEMOCAP_d_en"]
+    assert KEPT == kept0 and CR.LISTS_IN == lists0
     print(f"selftest ok  {CP.LABEL}  c_pvr_gpu.py {hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}  "
           f"torch={'real' if torch else 'absent'} transformers={'real' if GenerationConfig else 'absent'}")
 
@@ -1018,15 +1210,31 @@ def main() -> int:
     from PIL import Image
     if x.arm in EN_ARMS:
         CP.load_llava()  # FAULTs until Q-LLAVA pins (PINS-A §12)
-    model, proc = CP.load_mblip(Path(os.environ["C_PVR_MBLIP"]))
-    model = model.to("cuda")
+    snaps = Path(os.environ["C_PVR_SNAPS"])  # ~/c_pvr_out: the <name>_snapshot.path files (c_pvr_job.sh)
+
+    def loader(name):  # one generator per step process; the M-CLIP pass is closed before it loads (S9 §5)
+        if name == "mblip":
+            model, proc = CP.load_mblip(Path(os.environ["C_PVR_MBLIP"]))
+            model = model.to("cuda")
+            return (lambda i, p, k: CP.generate(model, proc, i, p, k)), None
+        if name == "xglm":
+            xm, xt = load_xglm(snaps)
+            return (lambda i, p, k: CP.generate_text(xm, xt, p, k)), None
+        h = list(load_mclip(snaps))
+
+        def drop():
+            import gc
+            h.clear()
+            gc.collect()
+            torch.cuda.empty_cache()
+        return (lambda i, texts: mclip_cos(*h, i, texts, torch)), drop
 
     def image_of(q):
         p = guard(x.images / q["image"])
         if hashlib.sha256(p.read_bytes()).hexdigest() != q["image_sha256"]:
             fault(f"image of {q['id']} differs from the manifest sha")
         return Image.open(p).convert("RGB")
-    return decode(x, lambda i, p, k: CP.generate(model, proc, i, p, k), image_of)
+    return decode(x, loader, image_of)
 
 
 if __name__ == "__main__":

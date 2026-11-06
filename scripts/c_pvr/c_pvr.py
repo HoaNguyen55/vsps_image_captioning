@@ -48,6 +48,10 @@ PROMPT_SHAS = {  # PINS-A §2.1/§2.2 (VI, verifier) and W4 (EN = lmms-eval noca
     "cap_en_0.txt": "494392f0754c0f3adc0e644463073c8730ea4f39ed6ac640634195c3b76e84c2",
     "cap_en_k.txt": "7c4b0dfba310bafc1e21bfeab78856ead7e2d3591c2b2d674c4a6a1f8c2f1a7c",
     "ver_3way.txt": "bcb9230851622e5d9afa98f0765bf2bffd05b4b4ba37aa8bd0508d300881313d",
+    # S9 = PINS_A_ADDENDUM_S9_DRAFT_v2.md c3abb246 (cbb24e6; CC-269r2 GO 89): §2 A5 LMCap, §4 A10 re-derivation
+    "lmcap_block_vi.txt": "a1fb17d9b73e85667a84c3ff0daee6ff3a3a5b79cc0963af9eb0bd69eb480213",
+    "rederive_vi.txt": "478c5fdde54423222384897653fb080c55b7c0a04c1b30cc850ca4becd87c312",
+    "rederive_cap_vi.txt": "93aa55e3bbaab95f4a5374f6df623d7d58d6b91aab184ecd2a69270b78c8b509",
 }
 REPO_PINS = {  # prereg §2.3 (registered) and this file's own data files
     "vi_map": ("data/xm3600/vi_oiv7_map.json", "27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a"),
@@ -73,16 +77,44 @@ MBLIP = {"repo": "Gregor/mblip-bloomz-7b", "revision": "4d95b91d56fcdce86504c951
 LLAVA = {"repo": "liuhaotian/llava-v1.5-7b", "revision": "4481d270cc22fd5c4d1bb5df129622006ccd9234",
          "conv": "A chat between a curious human and an artificial intelligence assistant. The assistant gives "
                  "helpful, detailed, and polite answers to the human's questions. USER: <image>\n{prompt} ASSISTANT:"}
+# S9 §1-§2 helpers (A9 scorer = M-CLIP, CC-269 Ruling 3; A5 generator = XGLM, PI-1106e): name -> (repo, revision,
+# {file: (kind, value)}); kind "lfs" = sha256, "blob" = git-blob SHA-1 (blob_hashes). Checked by c_pvr_gpu.helper_check.
+HELPERS = {
+    "mclip": ("laion/CLIP-ViT-H-14-frozen-xlm-roberta-large-laion5B-s13B-b90k",
+              "f9ab955287d06ac45c7654f26fecd29301c70a1f", {
+                  "open_clip_pytorch_model.bin": ("lfs", "ee81ce53c8591d48ee5e7b390b2f10d502c721df5920c3096c6bdb54d1459881"),
+                  "preprocessor_config.json": ("blob", "c13c679c06519325749d1eef242ff98e2a5d2165"),
+                  "tokenizer.json": ("blob", "463f3414782c1c9405828c9b31bfa36dda1f45c5")}),
+    "xlmr": ("xlm-roberta-large", "c23d21b0620b635a76227c604d44e43a9f0ee389", {  # = FacebookAI/xlm-roberta-large;
+        # legacy id so open_clip finds it BY NAME offline (S9 §8.2; C-T1 registry hub_id); config/tokenizer only
+        "config.json": ("blob", "8e5fb14e1352fd8fc678a7b293b63cfb5cf091f6"),
+        "sentencepiece.bpe.model": ("blob", "db9af13bf09fd3028ca32be90d3fb66d5e470399"),
+        "tokenizer.json": ("blob", "463f3414782c1c9405828c9b31bfa36dda1f45c5"),
+        "tokenizer_config.json": ("blob", "34ddbd64a4cd3f2d9d8a9120d3662d0bf91baead")}),
+    "xglm": ("facebook/xglm-2.9B", "33c659ae27de09c0a54123d3902dac48cbb8592a", {
+        "pytorch_model.bin": ("lfs", "9aa29d6635e7936bdd020bd8dab855ba8e7d3b507a1af78a98a7039648f66f23"),
+        "sentencepiece.bpe.model": ("lfs", "c49dc7e82c10227af764e518924cf2f9d50c00462750d184fa74697bba65eef8"),
+        "config.json": ("blob", "5259f0909bbb98005e355a94f0a9ad9902dc1810"),
+        "generation_config.json": ("blob", "b73e8f8fc85a983669324aeb7b0f9fc92e18f9f8"),
+        "special_tokens_map.json": ("blob", "169adeb038b8bde6ecf79666dbfa49fcbaf9a087"),
+        "tokenizer.json": ("blob", "98f7774e39cd7ce59acfe522852863101ccad1d8"),
+        "tokenizer_config.json": ("blob", "9a478583cf78963e92ee738bf7dababc1b376cb2")}),
+}
+MCLIP_NAME, MCLIP_DTYPE, XGLM_DTYPE = "xlm-roberta-large-ViT-H-14", "float32", "float16"  # S9 §1 [proposal] fp32, §2
 
 # ---------------------------------------------------------------------------------------------- design (CC-234)
 K = 4  # prereg §5.1
 A3_TOP = 7  # A3: sample k in top-7
-CAP = 32  # J-C: verifier calls per image, one value for PVR, A8, S1, S2
-SEEDS = {"A2": 20262002, "A3": 20262003, "A7": 20262007}  # [proposal]; outside the bootstrap streams below
+CAP = 32  # J-C: verifier calls per image, one value for PVR, A8, S1, S2; S9 §4 extends it to the A10 calls
+SEEDS = {"A2": 20262002, "A3": 20262003, "A5": 20262005, "A7": 20262007}  # [proposal]; outside the bootstrap streams
 BOOT_SEEDS = range(20261102, 20261604)  # prereg §5.5-5.6: 20261102, 20261103, 20261104 + r (r < 500)
 A8_INPUT = "A1"  # v3 l.201 "Tạo caption bằng A1"
 A8_DELETE = "rejected"  # v3 l.201 (registered); "coupled" only if the PI answers Q-A8 so
-MAX_NEW = {"caption": 64, "verify": 8}  # J-T
+MAX_NEW = {"caption": 64, "verify": 8, "rederive": 16}  # J-T; "rederive" = S9 §4 [proposal]
+NES_TAU = 0.2  # prereg §5.1 A4 (registered): drop an object proposition when cos < 0.2; never tuned (S9 §1)
+A4_DEGEN = (0.05, 0.90)  # S9 §1 N4: XM3600-vi A4 drop share < 0.05 "near-null", > 0.90 "near-total"; descriptive
+A9_POOL = 7  # S9 §3 [proposal]: A1's top-7 re-ranked by M-CLIP cosine, the best K kept
+LMCAP_N = 3  # S9 §2 [proposal]: LMCap fixed shots
 DTYPE = "bfloat16"  # [proposal]; batch size 1 (padding changes greedy output)
 GEN_BASE = {"do_sample": False, "num_beams": 1, "num_beam_groups": 1, "num_return_sequences": 1,
             "temperature": None, "top_k": None, "top_p": None, "typical_p": None, "repetition_penalty": 1.0,
@@ -175,9 +207,12 @@ def render(P: dict, demos: list[str], lang: str) -> str:
         fault(f"{len(demos)} demonstrations > k = {K}")
     if not demos:
         return P[f"cap_{lang}_0.txt"]
-    block = "\n".join(P["demo_line.txt"].replace("{i}", str(i)).replace("{caption}", clean(d))
-                      for i, d in enumerate(demos, 1))
-    return P[f"cap_{lang}_k.txt"].replace("{demos}", block)
+    return P[f"cap_{lang}_k.txt"].replace("{demos}", demo_block(P, demos))
+
+
+def demo_block(P: dict, lines: list[str]) -> str:
+    return "\n".join(P["demo_line.txt"].replace("{i}", str(i)).replace("{caption}", clean(d))
+                     for i, d in enumerate(lines, 1))
 
 
 def proposition(text: str) -> str:
@@ -297,6 +332,73 @@ def a11_text(dc: dict) -> str | None:
     """A11: delete the extractor's spans (v3 §7.2), same reassembly; never 'emptied' by proposition count."""
     spans = [{"start": s, "end": e} for s, e, _ in extract(dc["text"])]
     return rebuild({**dc, "props": spans}, [True] * len(spans), emptied=False)
+
+
+# ---------------------------------------------------------------------------------------------- S9 arms (A4 A5 A9 A10)
+def mention_text(dc: dict, p: dict) -> str:
+    """S9 §1/§4: an object proposition's scored text and A10 key = its mention spans joined by one space, then
+    proposition() (clean + quote rule). No template (NES states none for its filter)."""
+    return proposition(" ".join(dc["text"][a:b] for a, b in p["mentions"]))
+
+
+def a4_texts(dcs: list[dict]) -> list[list[str | None]]:
+    """The A4 texts to score, mirroring dcs: the mention per object proposition, None per text proposition."""
+    return [[mention_text(dc, p) if p["kind"] == "obj" else None for p in dc["props"]] for dc in dcs]
+
+
+def a4_masks(dcs: list[dict], cos: list[list]) -> list[list[bool]]:
+    """A4 (prereg §5.1 '< 0.2', S9 §1): drop an object proposition whose cosine is < NES_TAU (= NES_TAU is kept);
+    text propositions stay (scene text is A11's). Deletion and reassembly are PVR-drop's (demos_after)."""
+    return [[p["kind"] == "obj" and c < NES_TAU for p, c in zip(dc["props"], row, strict=True)]
+            for dc, row in zip(dcs, cos, strict=True)]
+
+
+def a4_label(share: float) -> str | None:
+    """S9 §1 N4: the descriptive degeneracy label of the XM3600-vi A4 drop share; it changes no gate."""
+    lo, hi = A4_DEGEN
+    return "near-total filter" if share > hi else "near-null filter" if share < lo else None
+
+
+def a9_pick(pool: list, scores: list[float]) -> list:
+    """A9 (S9 §3): the K highest M-CLIP scores of A1's top A9_POOL; a tie goes to the better A1 rank; the K are shown
+    in descending score order."""
+    if len(pool) != A9_POOL or len(scores) != A9_POOL:
+        fault(f"A9 pool of {len(pool)} ids / {len(scores)} scores, not {A9_POOL}")
+    return [pool[j] for j in sorted(range(A9_POOL), key=lambda j: (-scores[j], j))[:K]]
+
+
+def a5_shot_ids(datastore) -> list:
+    """S9 §2 [proposal]: the LMCAP_N fixed shots, drawn once from sorted D-VI with SEEDS['A5'] (order-free)."""
+    return arm_rng("A5", "lmcap_shots").sample(sorted(datastore), LMCAP_N)
+
+
+def lmcap_block(P: dict, caps: list[str]) -> str:
+    return P["lmcap_block_vi.txt"].replace("{captions}", " ".join(c.strip() + "</s>" for c in caps))
+
+
+def lmcap_prompt(P: dict, shots: list[tuple[list[str], str]], query_caps: list[str]) -> str:
+    """S9 §2 = C-T1 lmcap_prompt (c_t1.py l.212-223, LANG_NAME vi): each shot's block + its own caption + '</s> ',
+    then the query block."""
+    if len(shots) != LMCAP_N or any(len(c) != K for c, _ in shots) or len(query_caps) != K:
+        fault(f"LMCap prompt: not N = {LMCAP_N} shots and K = {K} captions per block")
+    return "".join(f"{lmcap_block(P, c)} {y.strip()}</s> " for c, y in shots) + lmcap_block(P, query_caps)
+
+
+def a10_keys(dcs: list[dict]) -> list[str]:
+    """S9 §4: the object mentions of A1's demonstrations, demonstration then text order; a recurring key once."""
+    return list(dict.fromkeys(mention_text(dc, p) for dc in dcs for p in dc["props"] if p["kind"] == "obj"))
+
+
+def a10_prompt(P: dict, keys: list[str], ask) -> tuple[str, str, dict, list[str]]:
+    """S9 §4: one rederive_vi call per key, the first CAP asked (J-C extension), the rest counted in cap_hits and
+    never retried; answers clean()ed, an empty answer drops its key; facts through demo_line ('key: answer'); no key
+    left -> the A0 prompt. Returns (caption prompt, template, stats, answers in key order)."""
+    answers = [clean(ask(P["rederive_vi.txt"].replace("{key}", k))) for k in keys[:CAP]]
+    st = {"arm": "A10", "n_keys": len(keys), "calls": len(answers), "cap_hits": len(keys) - len(answers)}
+    facts = [f"{k}: {a}" for k, a in zip(keys, answers) if a]
+    if not facts:
+        return P["cap_vi_0.txt"], "cap_vi_0.txt", st, answers
+    return P["rederive_cap_vi.txt"].replace("{facts}", demo_block(P, facts)), "rederive_cap_vi.txt", st, answers
 
 
 # ---------------------------------------------------------------------------------------------- reassembly
@@ -798,11 +900,21 @@ def generate(model, proc, image, prompt: str, kind: str) -> tuple[str, str]:
     """One image per call (batch 1). The model's own generation_config is replaced by the pinned dict, and the same
     dict is passed explicitly. Prompt ids are stripped only when the output starts with them."""
     import torch
-    from transformers import GenerationConfig
     tok = proc.tokenizer
-    gc = gen_config(kind, tok.eos_token_id, tok.pad_token_id)
-    model.generation_config = GenerationConfig(**gc)
     x = proc(images=[image], text=[prompt], return_tensors="pt").to(model.device, getattr(torch, DTYPE))
+    return _gen(model, tok, x, gen_config(kind, tok.eos_token_id, tok.pad_token_id))
+
+
+def generate_text(model, tok, prompt: str, kind: str) -> tuple[str, str]:
+    """A5 (S9 §2): XGLM, text only, batch 1, greedy under the same pinned dict; stops at </s> (its eos)."""
+    return _gen(model, tok, tok(prompt, return_tensors="pt").to(model.device),
+                gen_config(kind, tok.eos_token_id, tok.pad_token_id))
+
+
+def _gen(model, tok, x, gc: dict) -> tuple[str, str]:
+    import torch
+    from transformers import GenerationConfig
+    model.generation_config = GenerationConfig(**gc)
     with torch.inference_mode():
         out = model.generate(**x, generation_config=GenerationConfig(**gc))[0].tolist()
     ids = x["input_ids"][0].tolist()
@@ -819,6 +931,9 @@ def header(root: Path) -> dict:
     return {"label": LABEL, "c_pvr_sha256": sha_file(Path(__file__)), "prompts": PROMPT_SHAS, "k": K, "cap": CAP,
             "seeds": SEEDS, "a8_input": A8_INPUT, "a8_delete": A8_DELETE, "dtype": DTYPE, "batch": 1,
             "mblip": {"repo": MBLIP["repo"], "revision": MBLIP["revision"]},
+            "s9": {"helpers": {k: v[:2] for k, v in HELPERS.items()}, "mclip": [MCLIP_NAME, MCLIP_DTYPE],
+                   "xglm_dtype": XGLM_DTYPE, "nes_tau": NES_TAU, "a4_degen": A4_DEGEN, "a9_pool": A9_POOL,
+                   "lmcap_n": LMCAP_N},
             "llava": {"repo": LLAVA["repo"], "revision": LLAVA["revision"]},
             "generation": {k: gen_config(k, "<tokenizer eos>", "<tokenizer pad>") for k in MAX_NEW},
             "libs": LIB_VERSIONS, "vnc": VNC_PINS, "oi_test_url": OI_TEST_URL}
@@ -1053,7 +1168,7 @@ def _st_arms() -> None:
     assert a2 == ["d22", "d46", "d39", "d43"] and a3 == ["r6", "r0", "r5", "r2"], (a2, a3)
     pick("A2", "other", ranked, ds)
     assert pick("A2", "i1", ranked, ds[::-1]) == a2 and pick("A3", "i1", ranked, ds) == a3  # order-free
-    assert len(set(SEEDS.values())) == 3 and not set(SEEDS.values()) & set(BOOT_SEEDS)
+    assert len(set(SEEDS.values())) == 4 and not set(SEEDS.values()) & set(BOOT_SEEDS)
     pvr = [[True] * 3 + [False] * 5, [True, True], [False]]
     a7 = a7_masks("i1", pvr)
     assert [sum(m) for m in a7] == [3, 2, 0] and a7 == a7_masks("i1", pvr), a7
@@ -1062,6 +1177,58 @@ def _st_arms() -> None:
                       {"kind": "obj", "classes": ["mèo"]}, {"kind": "obj", "classes": ["quần", "áo"]}]}]
     assert a12_masks(dcs, {"chó": "absent", "mèo": "present", "quần": "present", "áo": "absent"}.get) == [
         [True, False, False, True]]
+
+
+def _st_s9(P: dict) -> None:
+    """S9 §8.4-8.5: the three prompt files byte for byte, the constants, and the A4 / A9 / A5 / A10 procedures."""
+    want = {"lmcap_block_vi.txt": 177, "rederive_vi.txt": 68, "rederive_cap_vi.txt": 54}
+    assert {n: len(P[n].encode()) for n in want} == want and not any(P[n].endswith("\n") for n in want)
+    assert (NES_TAU, A4_DEGEN, A9_POOL, LMCAP_N, MAX_NEW["rederive"], SEEDS["A5"]) == (
+        0.2, (0.05, 0.90), 7, 3, 16, 20262005)
+    assert HELPERS["xglm"][:2] == ("facebook/xglm-2.9B", "33c659ae27de09c0a54123d3902dac48cbb8592a")
+    assert HELPERS["mclip"][1] == "f9ab955287d06ac45c7654f26fecd29301c70a1f" and MCLIP_DTYPE == "float32"
+    # A5: one rendered prompt, byte for byte (= C-T1 lmcap_prompt with 'vietnamese')
+    blk = ("I am an intelligent image captioning bot. Similar images have the following captions: {} A creative short "
+           "caption I can generate to describe this image in vietnamese is:")
+    shots = [([f"s{j}c{i} " for i in range(4)], f" s{j}y ") for j in range(3)]
+    got = lmcap_prompt(P, shots, ["qa", "qb", "qc", "qd"])
+    exp = "".join(blk.format(" ".join(f"s{j}c{i}</s>" for i in range(4))) + f" s{j}y</s> " for j in range(3))
+    assert got == exp + blk.format("qa</s> qb</s> qc</s> qd</s>"), got
+    _must("not N = 3", lmcap_prompt, P, shots[:2], ["qa", "qb", "qc", "qd"])
+    _must("K = 4", lmcap_prompt, P, shots, ["qa", "qb", "qc"])
+    ds = [f"d{j}" for j in range(50)]
+    sh = a5_shot_ids(ds)
+    assert sh == a5_shot_ids(ds[::-1]) and len(set(sh)) == 3 and sh == ["d23", "d4", "d45"], sh
+    # A4: mention text (spans joined, quote rule), < tau dropped, = tau kept, text propositions untouched
+    t = 'Ba ấm "đồng" xếp hàng, chữ ZQ, một mâm.'
+    ob = lambda w, *ms: {"kind": "obj", "text": "WHOLE", "mentions": [[t.index(m), t.index(m) + len(m)] for m in ms]}  # noqa: E731
+    dc = {"text": t, "props": [ob("a", "ấm", '"đồng"'), {"kind": "text", "text": "ZQ", "mentions": []}, ob("b", "mâm")]}
+    assert a4_texts([dc]) == [["ấm 'đồng'", None, "mâm"]]
+    assert a4_masks([dc], [[0.2, None, 0.19999]]) == [[False, False, True]]
+    assert a4_masks([dc], [[0.1, None, 0.9]]) == [[True, False, False]]
+    assert [a4_label(x) for x in (0.9, 0.9001, 0.05, 0.0499, 0.5)] == [
+        None, "near-total filter", None, "near-null filter", None]
+    # A9: top K of the pool by score, ties to the better A1 rank, descending order
+    pool = [f"p{j}" for j in range(7)]
+    assert a9_pick(pool, [0.1, 0.5, 0.5, 0.3, 0.9, 0.0, 0.3]) == ["p4", "p1", "p2", "p3"]
+    _must("not 7", a9_pick, pool[:6], [0.0] * 6)
+    # A10: keys deduplicated in order, one call per key up to CAP, empty answer drops its key, A0 fallback
+    dc2 = {"text": t, "props": [ob("c", "mâm"), ob("d", "ấm", '"đồng"')]}
+    keys = a10_keys([dc, dc2])
+    assert keys == ["ấm 'đồng'", "mâm"]
+    asked = []
+    ans = {"ấm 'đồng'": "  sáng   loáng ", "mâm": ""}
+    pr, tpl, st, a = a10_prompt(P, keys, lambda q: asked.append(q) or ans[q.split('"')[1]])
+    assert asked[0] == 'Describe "ấm \'đồng\'" in this image in a few words. Answer in Vietnamese:', asked
+    assert pr == "Facts about this image:\n1. ấm 'đồng': sáng loáng\nCaption in Vietnamese:" and tpl == "rederive_cap_vi.txt"
+    assert a == ["sáng loáng", ""] and st == {"arm": "A10", "n_keys": 2, "calls": 2, "cap_hits": 0}, (a, st)
+    many = [f"k{j}" for j in range(40)]
+    asked.clear()
+    pr, tpl, st, a = a10_prompt(P, many, lambda q: asked.append(q) or ("" if "k1" in q else "x"))
+    assert len(asked) == CAP and st["cap_hits"] == 8 and st["calls"] == CAP and len(a) == CAP
+    assert pr.split("\n")[1:3] == ["1. k0: x", "2. k2: x"] and pr.count("\n") == CAP - 11 + 1, pr
+    assert a10_prompt(P, keys, lambda q: " ")[:2] == (P["cap_vi_0.txt"], "cap_vi_0.txt")
+    assert a10_prompt(P, [], lambda q: "x")[1:3] == ("cap_vi_0.txt", {"arm": "A10", "n_keys": 0, "calls": 0, "cap_hits": 0})
 
 
 def _st_rebuild() -> None:
@@ -1194,6 +1361,10 @@ def _st_models(root: Path) -> None:
         def decode(self, ids, skip_special_tokens):
             return " ".join(map(str, [i for i in ids if i not in (2, 3)]))
 
+        def __call__(self, prompt, return_tensors):  # the XGLM tokenizer (A5, text only)
+            calls["tok"] = (prompt, return_tensors)
+            return Batch(input_ids=T([T([9, 8])]))
+
     class Proc:
         tokenizer = Tok()
 
@@ -1303,6 +1474,10 @@ def _st_models(root: Path) -> None:
             assert g["temperature"] is None and g["top_k"] is None and g["top_p"] is None
             assert g["num_return_sequences"] == 1 and (g["eos_token_id"], g["pad_token_id"]) == (2, 3)
             assert calls["proc"] == {"images": ["IMG"], "text": ["prompt"], "return_tensors": "pt"}
+        for kind, mx in (("caption", 64), ("rederive", 16)):  # A5 XGLM path and the A10 key calls
+            assert generate_text(model, Tok(), "lm prompt", kind) == ("5 6", "eos") and calls["tok"] == ("lm prompt", "pt")
+            assert calls["generate"]["generation_config"].k["max_new_tokens"] == mx == model.generation_config.k[
+                "max_new_tokens"]
         Model.generate = lambda self, **k: T([T([5, 6, 7])])  # an output without the prompt echo is kept whole
         assert generate(model, proc, "IMG", "p", "verify") == ("5 6 7", "other")
     finally:
@@ -1405,6 +1580,7 @@ def selftest(root: Path) -> None:
     _st_text(P)
     _st_verify()
     _st_arms()
+    _st_s9(P)
     _st_rebuild()
     _st_en_map(root)
     _st_proxy(root)

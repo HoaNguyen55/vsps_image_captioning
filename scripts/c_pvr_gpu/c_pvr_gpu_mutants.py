@@ -70,6 +70,29 @@ M = {
     "democap_manifest_unchecked": ('    if bad := [i for i, d in M["demos"].items() if d["text"] != want[i]]:',
                                    '    if bad := []:'),
     "helper_blob_as_sha256": ('        if (s256 if kind == "lfs" else s1) != want:', '        if s256 != want:'),
+    # CC-270r2 N1': the r_host string form and its range
+    "r_host_no_fullmatch": ('    if not re.fullmatch(r"[0-9]+(\\.[0-9]+)?", line):\n', "    if False:\n"),
+    "r_host_unicode_digits": ('re.fullmatch(r"[0-9]+(\\.[0-9]+)?", line)', 're.fullmatch(r"\\d+(\\.\\d+)?", line)'),
+    "r_host_no_range": ("    if not R_HOST[0] <= r <= R_HOST[1]:\n", "    if r <= 0:\n"),
+    # CC-270 P2: S9 passes (A4 / A9 M-CLIP, A5 XGLM, A10 two calls), D-VI only, outputs-only answers and scores
+    "s9_dvi_guard_off": ('    if x.arm in S9_ARMS and ds != "d_vi":\n', "    if False:\n"),
+    "a5_loads_mblip": ('load("xglm" if x.arm == "A5" else "mblip")', 'load("mblip")'),
+    "mclip_not_closed": ("        close()\n", ""),
+    "mclip_after_generator": ('    gen, _ = load("xglm" if x.arm == "A5" else "mblip")\n    t0, n = clock() - pass_sec, 0\n',
+                              "    t0, n = clock() - pass_sec, 0\n"),
+    "a9_no_mclip_pass": ('    if x.arm in ("A4", "A9"):\n        score, close', '    if x.arm == "A4":\n        score, close'),
+    "a4_prop_text_scored": ('        rows = CP.a4_texts([M["demos"][i] for i in ranked[:CP.K]])\n',
+                            '        rows = [[p["text"] if p["kind"] == "obj" else None for p in M["demos"][i]["props"]]'
+                            ' for i in ranked[:CP.K]]\n'),
+    "a9_rank_order": ("        ids = CP.a9_pick(ranked[:CP.A9_POOL], sc)\n", "        ids = ranked[:CP.K]\n"),
+    "mclip_fp16": ("model.encode_text(tok(texts).to(dev)).float()", "model.encode_text(tok(texts).to(dev)).float().half()"),
+    "mclip_trunc_ge": ("> tok.context_length for x in texts)", ">= tok.context_length for x in texts)"),
+    "a5_shots_unchecked": ("    if sorted(got) != sorted(want):\n", "    if False:\n"),
+    "a5_shot_self_kept": ("caps = [i for i in norm_ids(got[s], kept) if i != s][:CP.K]",
+                          "caps = [i for i in norm_ids(got[s], kept)][:CP.K]"),
+    "a10_answers_dropped": ('                st["answers"] = answers\n', ""),
+    "answers_in_log": ('LOG_KEYS = {"utc", "set",', 'LOG_KEYS = {"answers", "scores", "utc", "set",'),
+    "a4_scores_not_written": ('        st = {"scores": prior[q["id"]], "masks": masks}\n', '        st = {"masks": masks}\n'),
 }
 
 
