@@ -47,11 +47,19 @@ PINS = {
     "A10": S9,  # c_pvr.py MAX_NEW["rederive"], rederive_vi.txt, rederive_cap_vi.txt + the two-call step (S9 §4)
     "EN": "Q-LLAVA P3",  # PINS-A §12: c_pvr.py EN_MODELS (4481d270, CLIP tower ce19dc91, LLaVA code c121f043),
     # LLaVA env = requirements_c_pvr_llava.lock; S1 = PVR-drop [proposal] (EN_AS)
-    "DEMOCAP_d_tc": PENDING,  # CC-269r2 W5: D-TC demonstration-caption rule, to be ruled at the S10 read
-    "DEMOCAP_d_en": PENDING,  # CC-269r2 W5: D-EN rule, same
+    # CC-269r2 W5: CC-270 Ruling 6 adopted the D-TC / D-EN rules and democap_tc / democap_en implement them (P4);
+    # no committed document holds that text yet (S9 v2 l.340 defers it), so the flip waits on a committed record
+    "DEMOCAP_d_tc": PENDING,
+    "DEMOCAP_d_en": PENDING,
 }
 S9_ARMS = ("A4", "A5", "A9", "A10")  # S9 N10: pinned for D-VI only; no D-TC / D-EN version exists
 DEMO_SRC = {"ktvic_train": "train_data.json", "openviic_train": "uit-openviic-annotation-train.json"}  # in <hc>/src
+DEMO_PIN = {  # CC-270 Ruling 6: the D-EN / D-TC sources at their existing pins (no new value), also in <hc>/src
+    "karpathy": ("dataset_coco.json",  # scripts/c_en/cen_fetch.py INPUTS l.37-38 (CC-113 W3)
+                 "2fd999220673258012acfb411a4e7e66af7d488050b2519b0badcc49b7600b8d"),
+    "textcaps_train": ("TextCaps_0.1_train.json",  # LOG OPS-1104c-textcaps-pin l.1460 (CC-247)
+                       "e2b4ae504a230a80d2abc58bf57f7d4294b5340bbaa03252ebf1e26df69ca92d"),
+}
 # OPS-1106c-datastores (LOG l.1655), CC-268 GO 93: decode against these kept-id files only, re-hashed before use
 KEPT = {
     "d_vi": ("d_vi_kept_ids.txt", 9098, "753cf695445d9eabfee476089143ea2b72efdbe73514a721ba31d879737d02ba"),
@@ -189,15 +197,21 @@ def echo_probe(model) -> dict:
     return rec
 
 
-def check_echo(gen, probe: dict, P: dict, image, lang: str = "vi") -> dict:
-    """prereg PINS-A §12 Ruling 2(b): the decoded text never holds the prompt, for both kinds."""
+def check_echo(gen, probe: dict, P: dict, image, lang: str = "vi", seen: list | None = None) -> dict:
+    """prereg PINS-A §12 Ruling 2(b): the decoded text never holds the prompt, for both kinds. With genconfig_spy's
+    list, each kind also records the config its own call validated last (CC-273 N5)."""
     out = {}
     for kind, prompt in (("caption", CP.render(P, [], lang)), ("verify", CP.ver_prompt(P, "một con chó"))):
+        n0 = len(seen or [])
         text, finish = gen(image, prompt, kind)
         body = CP.clean(prompt)
         if body in CP.clean(text) or CP.clean(text).startswith(body[:24]):
             fault(f"prompt echo in the {kind} output")
         out[kind] = {"strip_branch": probe.get("starts_with_prompt_ids"), "finish": finish, "chars": len(text)}
+        if seen is not None:
+            if len(seen) == n0:
+                fault(f"no GenerationConfig was validated in the {kind} call")
+            out[kind]["genconfig"] = seen[-1]
     return out
 
 
@@ -239,12 +253,17 @@ def write_rec(f, rec: dict, keys: set = LOG_KEYS) -> None:
     f.flush()
 
 
+def pinned_bytes(p: Path, sha: str) -> bytes:
+    b = guard(p).read_bytes()
+    if hashlib.sha256(b).hexdigest() != sha:
+        fault(f"{p.name} differs from its pin {sha[:8]}")
+    return b
+
+
 def kept_ids(kdir: Path, name: str) -> frozenset:
     """OPS-1106c-datastores: re-hash against the pin before use (CC-268 W2); sorted, unique, one id per line."""
     fname, n, sha = KEPT[name]
-    b = guard(kdir / fname).read_bytes()
-    if hashlib.sha256(b).hexdigest() != sha:
-        fault(f"{fname} differs from its pin {sha[:8]}")
+    b = pinned_bytes(kdir / fname, sha)
     ids = b.decode("utf-8").split("\n")
     if ids.pop() != "" or len(ids) != n or ids != sorted(set(ids)):
         fault(f"{fname}: not {n} sorted unique LF-terminated ids")
@@ -385,12 +404,7 @@ def demo_captions(ids, src: Path) -> dict:
     (KTVIC: first annotations entry with str(image_id) == id; OpenViIC: captions[0]), then rendering rule 4 (clean).
     Source by id form (W2): bare unpadded integer -> KTVIC, 11-digit file name -> OpenViIC. Source jsons sha-checked
     against the lists pins (W3). Unlike stage-1 there is no cluster/shown() step: D-VI is unclustered (W1)."""
-    raw = {}
-    for k, fname in DEMO_SRC.items():
-        b = guard(src / fname).read_bytes()
-        if hashlib.sha256(b).hexdigest() != CR.LISTS_IN[k][1]:
-            fault(f"{fname} differs from its lists pin {CR.LISTS_IN[k][1][:8]}")
-        raw[k] = json.loads(b)
+    raw = {k: src_json(src, fname, CR.LISTS_IN[k][1]) for k, fname in DEMO_SRC.items()}
     first = {}
     for a in raw["ktvic_train"]["annotations"]:
         first.setdefault(str(a["image_id"]), a["caption"])
@@ -407,11 +421,39 @@ def demo_captions(ids, src: Path) -> dict:
     return out
 
 
-def democap_p4(ids, src: Path) -> dict:
-    fault("no demonstration-caption code for this datastore yet (P4, CC-270 Ruling 6: routed by datastore)")
+def src_json(src: Path, fname: str, sha: str):
+    """A demonstration-caption source json, sha-checked against its pin before it is parsed (W3)."""
+    return json.loads(pinned_bytes(src / fname, sha))
 
 
-DEMOCAP_RULE = {"d_vi": demo_captions, "d_tc": democap_p4, "d_en": democap_p4}  # by DATASTORE, never by id form
+def first_caps(ids, first: dict) -> dict:
+    if miss := [i for i in ids if not first.get(i)]:
+        fault(f"{len(miss)} ids have no caption in their source (first {miss[0]!r})")
+    return {i: CP.clean(first[i]) for i in ids}
+
+
+def democap_en(ids, src: Path) -> dict:
+    """CC-270 Ruling 6, D-EN: sentences[0]["raw"] of the id's cocoid in dataset_coco.json, Karpathy train / restval
+    only (the per-id part of cen_memory.py l.161-163; D-EN is unclustered), then clean(). An id absent there or
+    outside train / restval FAULTs. Real data (counts only): 80,040 / 80,040 kept ids in train, none empty."""
+    first = {}
+    for i in src_json(src, *DEMO_PIN["karpathy"])["images"]:
+        if i["split"] in ("train", "restval"):
+            first.setdefault(str(i["cocoid"]), i["sentences"][0]["raw"])
+    return first_caps(ids, first)
+
+
+def democap_tc(ids, src: Path) -> dict:
+    """CC-270 Ruling 6, D-TC: caption_str of the first "data" entry whose str(image_id) is the id, then clean().
+    The "data" / "image_id" keys are those of tc_ids.py (5cc1a109); "caption_str" is not checked on real data here
+    (the json was deleted at F5), so a missing key fails closed as "no caption"."""
+    first = {}
+    for a in src_json(src, *DEMO_PIN["textcaps_train"])["data"]:
+        first.setdefault(str(a["image_id"]), a.get("caption_str"))
+    return first_caps(ids, first)
+
+
+DEMOCAP_RULE = {"d_vi": demo_captions, "d_tc": democap_tc, "d_en": democap_en}  # by DATASTORE, never by id form
 
 
 # ---------------------------------------------------------------------------------------------- money (T1-REP §9)
@@ -580,7 +622,7 @@ def decode(x, load, image_of, clock=time.time, sleep=time.sleep) -> int:
     norm_ids(list(M["demos"]), kept)
     want = DEMOCAP_RULE[ds](sorted(M["demos"]), x.src)
     if bad := [i for i, d in M["demos"].items() if d["text"] != want[i]]:
-        fault(f"{len(bad)} manifest demonstration texts differ from the N8 rule (first {bad[0]!r})")
+        fault(f"{len(bad)} manifest demonstration texts differ from the DEMOCAP rule (first {bad[0]!r})")
     qs = M["queries"]
     P = CP.prompts(x.root)
     prior = {}
@@ -683,6 +725,15 @@ def preflight(pairs) -> None:
             need(f"DEMOCAP_{SETS[s][0]}")
 
 
+def host_preflight(pairs, hc: Path, hc_en: Path) -> None:
+    """The preflight command: HOSTCHECK_OK.json fresh, HOSTCHECK_EN_OK.json fresh whenever an EN arm is listed
+    (CC-273 N6), then every pin the steps need."""
+    hostcheck_fresh(hc)
+    if any(a in EN_ARMS for _, a in pairs):
+        hostcheck_fresh(hc_en)
+    preflight(pairs)
+
+
 PHASES = (("A1", "S3", "PVR-drop", "PVR-keep", "A12", "A0", "A6", "A7", "A4", "A9", "S1", "S4", "S5"),  # never-cut
           ("A8", "S2"),  # after the laptop decomposition of A1 / S3, which overlaps phase 1 (B2)
           tuple(reversed(CUT_ORDER)))  # cuttable, A10 last: a cap stop falls here only (CC-270 B1)
@@ -736,8 +787,8 @@ def hostcheck(x) -> dict:
     img = Image.new("RGB", (384, 384), (120, 160, 200))  # synthetic: no dataset image is opened
     P = CP.prompts(x.root)
     seen = genconfig_spy(GenerationConfig)
-    rep["echo"] = check_echo(lambda i, p, k: CP.generate(model, proc, i, p, k), probe, P, img)
-    rep["effective_genconfig"] = {"mblip": seen[-1]}  # CC-272 N7, N-S11d (bos_token_id included)
+    rep["echo"] = check_echo(lambda i, p, k: CP.generate(model, proc, i, p, k), probe, P, img, seen=seen)
+    rep["effective_genconfig"] = {"mblip": {k: v.pop("genconfig") for k, v in rep["echo"].items()}}  # N7, N-S11d
     rep["kept"] = {k: len(kept_ids(x.kept, k)) for k in KEPT}
     rep["vram_peak_bytes"] = torch.cuda.max_memory_allocated()  # mBLIP alone
     del model
@@ -794,8 +845,8 @@ def hostcheck_en(x) -> dict:
     probe = echo_probe(model)
     img = Image.new("RGB", (384, 288), (120, 160, 200))  # synthetic, not square: the 'pad' branch runs
     rep["echo"] = check_echo(lambda i, p, k: CP.generate_llava(model, tok, ip, i, p, k), probe, CP.prompts(x.root),
-                             img, "en")
-    rep["effective_genconfig"] = {"llava": seen[-1]}
+                             img, "en", seen)
+    rep["effective_genconfig"] = {"llava": {k: v.pop("genconfig") for k, v in rep["echo"].items()}}  # CC-273 N5
     rep["vram_peak_bytes"] = torch.cuda.max_memory_allocated()
     (x.out / "HOSTCHECK_EN_OK.json").write_text(json.dumps(rep, indent=1, sort_keys=True) + "\n")
     return rep
@@ -937,8 +988,12 @@ def _st_decode(work: Path) -> None:
     assert "Một bức ảnh." in (out / "xm3600_vi.A1.jsonl").read_text("utf-8")
     assert b"caption" not in b"".join(f.read_bytes() for f in (out / "logs").iterdir())
     preflight([("xm3600_vi", a) for a in ("A1", *S9_ARMS, *EN_ARMS)])  # S9 (P2) and EN (P3) pinned
-    _must("DEMOCAP_d_en pin is PENDING", preflight, steps("speed", None))  # P4 open: speed and tier1 still refuse
-    _must("DEMOCAP_d_tc pin is PENDING", preflight, steps("tier1", None))
+    for k, mode, s, a in (("DEMOCAP_d_en", "speed", "kt_c", "S3"), ("DEMOCAP_d_tc", "tier1", "t_a", "A1")):
+        _must(f"{k} pin is PENDING", preflight, steps(mode, None))  # speed and tier1 still refuse (pins PENDING)
+        _must(f"{k} pin is PENDING", run, set=s, arm=a)  # the step too, before any d_tc / d_en file is read
+    PINS.update(DEMOCAP_d_tc="fixture", DEMOCAP_d_en="fixture")  # P4 code below; selftest() restores the PENDING pins
+    preflight(steps("speed", None))
+    preflight(steps("tier1", None))
     PINS["A4"] = PENDING
     try:  # a PENDING never-cut pin refuses the block even when no A4 step is listed (T1-REP R-1)
         _must("A4 pin is PENDING", preflight, [("xm3600_vi", "A1")])
@@ -951,8 +1006,6 @@ def _st_decode(work: Path) -> None:
     assert ("xm3600_vi", "A8") not in sp and ("kt_c", "S1") in sp and {s for s, _ in sp} == {"xm3600_vi", "kt_c"}
     _st_steps()
     _must("does not run", run, arm="S1")
-    _must("DEMOCAP_d_tc", run, set="t_a", arm="A1")  # N9: before any d_tc / d_en file is read
-    _must("DEMOCAP_d_en", run, set="kt_c", arm="S3")
     tim = work / "t.jsonl"
     seen.clear()
     (work / "o2").mkdir()
@@ -970,6 +1023,7 @@ def _st_decode(work: Path) -> None:
     _must("not timed", run, arm="A8", speed=2, timing=tim)
     _st_a8(work, rows, run, base, load)
     _st_en(work, run, loads, seen)
+    _st_tc(work, run, loads)
     capf = work / "cap.json"
     capf.write_text(json.dumps({"p1_epoch": 0, "cap_h": 1}))
     assert run(arm="A3", cap=capf, out=work / "o2") == CAP_STOP_RC  # wall clock long past the stamp
@@ -1125,12 +1179,12 @@ def _st_democap(src: Path, texts: dict, man: Path, run, work: Path) -> None:
     kt = src / DEMO_SRC["ktvic_train"]
     keep = kt.read_bytes()
     kt.write_bytes(keep + b" ")
-    _must("differs from its lists pin", demo_captions, ["13"], src)
+    _must("differs from its pin", demo_captions, ["13"], src)
     kt.write_bytes(keep)
     M = json.loads(man.read_text())
     M["demos"]["13"] = {**M["demos"]["13"], "text": "Chú thích thứ hai."}
     (work / "m2.json").write_text(json.dumps(M, ensure_ascii=False))
-    _must("differ from the N8 rule", run, arm="A1", manifest=work / "m2.json")
+    _must("differ from the DEMOCAP rule", run, arm="A1", manifest=work / "m2.json")
     assert {k: (v[0], len(v[2])) for k, v in CP.HELPERS.items()} == {
         "mclip": ("laion/CLIP-ViT-H-14-frozen-xlm-roberta-large-laion5B-s13B-b90k", 3),
         "xlmr": ("xlm-roberta-large", 3 + 1), "xglm": ("facebook/xglm-2.9B", 7)}
@@ -1170,10 +1224,27 @@ def _st_pool_cap(run, loads, man: Path, work: Path) -> None:
 
 def _st_en(work: Path, run, loads, seen) -> None:
     """P3 / N5': S1-S5 on kt_c with stand-in LLaVA: EN prompts, the EN_AS procedures, rows keep the S arm, S2 corrects
-    the S3 outputs (never A1's); the demonstration-caption rule is routed by datastore (COCO ids look like KTVIC)."""
+    the S3 outputs (never A1's). P4 (CC-270 Ruling 6): the D-EN rule, routed by datastore; the cocoids here equal
+    the KTVIC fixture ids, so the D-VI rule would return other texts."""
     P = CP.prompts(ROOT)
-    ids = [str(i) for i in range(30, 40)]  # COCO-style ids: they fullmatch KT_ID, so the D-VI rule must not see them
+    ids = [str(i) for i in range(10, 20)]  # COCO-style ids that fullmatch KT_ID and ARE KTVIC fixture ids
     en = {i: f"A zq kettle{i} beside a zq heron." for i in ids}
+    src = work / "src"
+    imgs = [{"cocoid": int(i), "split": ("train", "restval")[int(i) % 2], "sentences": [
+        {"raw": f"  {t.replace(' beside', '  beside')} "}, {"raw": "A zq second line."}]} for i, t in en.items()]
+    imgs += [{"cocoid": 40, "split": "test", "sentences": [{"raw": "A zq test line."}]},
+             {"cocoid": 41, "split": "val", "sentences": [{"raw": "A zq val line."}]},
+             {"cocoid": 10, "split": "train", "sentences": [{"raw": "A zq later duplicate."}]}]
+    kar = src / DEMO_PIN["karpathy"][0]
+    kar.write_text(json.dumps({"images": imgs}))
+    DEMO_PIN["karpathy"] = (kar.name, hashlib.sha256(kar.read_bytes()).hexdigest())
+    assert democap_en(ids, src) == en and demo_captions(ids, src) != en  # first sentence, cleaned; train + restval
+    for bad in ("40", "41", "42"):  # Karpathy test, val, absent
+        _must("no caption", democap_en, [bad], src)
+    keep = kar.read_bytes()
+    kar.write_bytes(keep + b" ")
+    _must("differs from its pin", democap_en, ids, src)
+    kar.write_bytes(keep)
     body = "".join(f"{i}\n" for i in sorted(ids)).encode()
     KEPT["d_en"] = ("d_en_kept_ids.txt", len(ids), hashlib.sha256(body).hexdigest())
     kdir = work / "kept"
@@ -1183,9 +1254,6 @@ def _st_en(work: Path, run, loads, seen) -> None:
     men.write_text(json.dumps({"label": CP.LABEL, "set": "kt_c", "datastore": "d_en", "queries": qs,
                                "demos": {i: _dc(t, ["A zq kettle", "a zq heron"]) for i, t in en.items()}}))
     oen = work / "o_en"
-    PINS["DEMOCAP_d_en"] = "fixture"
-    _must("P4", run, set="kt_c", arm="S3", manifest=men, out=oen)  # no D-EN rule yet: never the D-VI one
-    DEMOCAP_RULE["d_en"] = lambda want, src: {i: en[i] for i in want}
     en0, PINS["EN"] = PINS["EN"], PENDING
     try:  # decode itself refuses an arm whose pin is PENDING, before any file or model is touched
         _must("EN pin is PENDING", run, set="kt_c", arm="S3", manifest=men, out=oen)
@@ -1214,6 +1282,34 @@ def _st_en(work: Path, run, loads, seen) -> None:
     assert [r["id"] for r in s2] == [r["id"] for r in rows("S3")] and {r["arm"] for r in s2} == {"S2"}
     assert s2[0]["tpl"] == "ver_3way.txt" and loads == ["llava"]
     _must("needs --a1-decomp", run, set="kt_c", arm="S2", manifest=men, out=oen)
+
+
+def _st_tc(work: Path, run, loads) -> None:
+    """P4 (CC-270 Ruling 6): the D-TC rule (first "data" entry per str(image_id), caption_str, clean) on t_a."""
+    src, kdir = work / "src", work / "kept"
+    ids = [f"{j:016x}" for j in range(0xa0, 0xa6)]
+    tc = {i: f"A zq sign{n} reads zq words." for n, i in enumerate(ids)}
+    data = [{"image_id": i, "caption_str": f" {t}  ", "set_name": "train"} for i, t in tc.items()]
+    data += [{"image_id": i, "caption_str": "A zq later caption."} for i in ids]
+    data += [{"image_id": "00000000000000b0"}, {"image_id": "00000000000000b0", "caption_str": "A zq second."}]
+    (src / DEMO_PIN["textcaps_train"][0]).write_text(json.dumps({"data": data}))
+    DEMO_PIN["textcaps_train"] = (DEMO_PIN["textcaps_train"][0],
+                                  hashlib.sha256((src / DEMO_PIN["textcaps_train"][0]).read_bytes()).hexdigest())
+    assert democap_tc(ids, src) == tc
+    for bad in ("00000000000000b0", "00000000000000b1"):  # first entry without caption_str; absent
+        _must("no caption", democap_tc, [bad], src)
+    body = "".join(f"{i}\n" for i in sorted(ids)).encode()
+    KEPT["d_tc"] = ("d_tc_kept_ids.txt", len(ids), hashlib.sha256(body).hexdigest())
+    (kdir / "d_tc_kept_ids.txt").write_bytes(body)
+    qs = [{"id": f"t{j}", "image": f"t{j}.jpg", "ranked": [ids[(j + i) % 6] for i in range(7)]} for j in range(2)]
+    M = {"label": CP.LABEL, "set": "t_a", "datastore": "d_tc", "queries": qs,
+         "demos": {i: _dc(t, ["A zq sign"]) for i, t in tc.items()}}
+    (work / "m_tc.json").write_text(json.dumps(M))
+    loads.clear()
+    assert run(set="t_a", arm="A1", manifest=work / "m_tc.json", out=work / "o_tc") == 0 and loads == ["mblip"]
+    M["demos"][ids[0]]["text"] = "A zq later caption."  # the second entry's caption: not the rule's
+    (work / "m_tc.json").write_text(json.dumps(M))
+    _must("differ from the DEMOCAP rule", run, set="t_a", arm="A1", manifest=work / "m_tc.json", out=work / "o_tc2")
 
 
 def _st_n7(work: Path) -> None:
@@ -1316,7 +1412,8 @@ def selftest() -> None:
         raise OSError("selftest: network disabled")
 
     socket.socket, socket.create_connection = no_net, no_net  # type: ignore[assignment,misc]  after the imports
-    pend, kept0, lists0, rule0 = dict(PINS), dict(KEPT), dict(CR.LISTS_IN), dict(DEMOCAP_RULE)
+    pend, kept0, lists0, rule0, dpin0 = dict(PINS), dict(KEPT), dict(CR.LISTS_IN), dict(DEMOCAP_RULE), dict(DEMO_PIN)
+    assert {k: v[1][:8] for k, v in DEMO_PIN.items()} == {"karpathy": "2fd99922", "textcaps_train": "e2b4ae50"}
     with tempfile.TemporaryDirectory() as td:
         work = Path(td)
         if torch is not None:  # real torch: the wrapper on the real loader, and the M-CLIP cosine
@@ -1346,6 +1443,7 @@ def selftest() -> None:
             CR.LISTS_IN.update(lists0)
             PINS.update(pend)
             DEMOCAP_RULE.update(rule0)
+            DEMO_PIN.update(dpin0)
         _st_wipe(work)
         hc = work / "HOSTCHECK_OK.json"
         mine = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -1353,9 +1451,17 @@ def selftest() -> None:
         hostcheck_fresh(hc)
         hc.write_text(json.dumps({"c_pvr_gpu_sha256": "0" * 64, "c_pvr_sha256": CODE["scripts/c_pvr/c_pvr.py"]}))
         _must("other code", hostcheck_fresh, hc)
+        fresh = json.dumps({"c_pvr_gpu_sha256": mine, "c_pvr_sha256": CODE["scripts/c_pvr/c_pvr.py"]})
+        hc_en = work / "HOSTCHECK_EN_OK.json"
+        hc_en.write_text(hc.read_text())  # stale EN check
+        hc.write_text(fresh)
+        _must("other code", host_preflight, [("kt_c", "S3")], hc, hc_en)  # CC-273 N6
+        host_preflight([("xm3600_vi", "A1")], hc, work / "absent.json")  # no EN arm: the EN file is not read
+        hc_en.write_text(fresh)
+        _must("DEMOCAP_d_en pin is PENDING", host_preflight, [("kt_c", "S3")], hc, hc_en)  # fresh: on to the pins
         _must("REFUSED", guard, Path.home() / ".vsps_sealed" / "c_pvr")
     assert PINS == pend and [k for k, v in PINS.items() if v == PENDING] == ["DEMOCAP_d_tc", "DEMOCAP_d_en"]
-    assert KEPT == kept0 and CR.LISTS_IN == lists0 and DEMOCAP_RULE == rule0
+    assert KEPT == kept0 and CR.LISTS_IN == lists0 and DEMOCAP_RULE == rule0 and DEMO_PIN == dpin0
     print(f"selftest ok  {CP.LABEL}  c_pvr_gpu.py {hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}  "
           f"torch={'real' if torch else 'absent'} transformers={'real' if GenerationConfig else 'absent'}")
 
@@ -1393,8 +1499,10 @@ def _st_echo() -> None:
         lead = []
 
         def generate(self, **k):
+            gcs.append(dict(vars(k["generation_config"])))  # what genconfig_spy records on a real model
             return T([T(self.lead + list(k["input_ids"][0]) + [vocab.setdefault("chó", 99), 2])])
 
+    gcs = []
     th = types.SimpleNamespace(bfloat16="bf16", inference_mode=lambda: open(os.devnull))
     tr = types.SimpleNamespace(GenerationConfig=lambda **k: types.SimpleNamespace(**k))
     old = {m: sys.modules.get(m) for m in ("torch", "transformers")}
@@ -1403,8 +1511,11 @@ def _st_echo() -> None:
         m, p = Model(), Proc()
         probe = echo_probe(m)
         P = CP.prompts(ROOT)
-        rep = check_echo(lambda i, pr, k: CP.generate(m, p, i, pr, k), probe, P, "IMG")
+        rep = check_echo(lambda i, pr, k: CP.generate(m, p, i, pr, k), probe, P, "IMG", seen=gcs)
         assert rep["caption"]["strip_branch"] is True and rep["verify"]["finish"] == "eos"
+        assert [rep[k]["genconfig"]["max_new_tokens"] for k in ("caption", "verify")] == [64, 8]  # CC-273 N5
+        _must("no GenerationConfig was validated in the caption call", check_echo, lambda i, pr, k: ("zq", "eos"),
+              probe, P, "IMG", seen=[{"stale": 1}])
         Model.lead = [5]  # e.g. image/query tokens before the prompt: the id-prefix strip misses
         _must("prompt echo", check_echo, lambda i, pr, k: CP.generate(m, p, i, pr, k), probe, P, "IMG")
     finally:
@@ -1456,11 +1567,7 @@ def main() -> int:
     if x.cmd == "selftest":
         return selftest()
     if x.cmd == "preflight":
-        pairs = [tuple(t.split(":")) for t in x.steps]
-        hostcheck_fresh(x.hostcheck)
-        if any(a in EN_ARMS for _, a in pairs):
-            hostcheck_fresh(x.hostcheck_en)
-        return preflight(pairs)
+        return host_preflight([tuple(t.split(":")) for t in x.steps], x.hostcheck, x.hostcheck_en)
     if x.cmd == "steps":
         cap = json.loads(x.cap.read_text()) if x.cap else None
         if x.mode != "speed" and (cap or {}).get("decision") != "RUN":
