@@ -1,0 +1,370 @@
+{
+ "code_sha256": {
+  "scripts/c_en/cen_fetch.py": "e51918e958ad86e832dd34fbf5ed86d2f7fc13cf41b602dfe537afa43af4c673",
+  "scripts/c_pvr/c_pvr.py": "8f10bd6097eb60a56e7f4e4bef9cd5d716fbebaa94ee15e4a7cca139caece120",
+  "scripts/c_pvr/gates.py": "3bced05e7f718377b34837cfb3f6d6539fb8aafc28bc5f8818e5d7be4ccdf897",
+  "scripts/c_stage1/build_memory.py": "e771b92df9096e286e8d5de207d3adafe49c8e5e59eab276978b0236cc0eeab9",
+  "scripts/c_stage1/decode_icl.py": "fa5a251160d4fd4fb0cd130af33614283863a84e6ed7905f3da81bb6255010db",
+  "scripts/g2b/decode_qwen3vl.py": "8a855ef483c933621776099b6f9de3b60c4fbfaaf706bb40c74e7d84d9dfb5e5",
+  "scripts/grl/common.py": "bbe7ee61f659b1a7bfc3cab418d83ed779b76187107708fef2d8ab44df0ad23a",
+  "scripts/lb/decode_hf_vlm.py": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+  "scripts/match_openviic.py": "c0d9dd30e3222ab6542a7e1acfbb9bd3899e4b6db5c896b0adc4d805c1005a8b",
+  "scripts/w25/w25.py": "d6d127807929c0534e6140d77831b682e3a7202484fa074d56229e0d091316c0"
+ },
+ "d_en_no_feature_row": 80083,
+ "datastore": {
+  "d_en": {
+   "flagged": 0,
+   "flagged_by_set": {
+    "kt_c": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "ktvic_test": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "nocaps_test": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "nocaps_val": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "openviic_test": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "ovqa_dev": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "t_a": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "vitextvqa_dev": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "xm3600": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    }
+   },
+   "kept": 0,
+   "n": 80083,
+   "out": 80083
+  },
+  "d_tc": {
+   "flagged": 41,
+   "flagged_by_set": {
+    "kt_c": {
+     "C1_C2_registered": 4,
+     "C3_sscd_0.75": 4,
+     "excluded": 4,
+     "report_sscd_0.5": 7
+    },
+    "ktvic_test": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "nocaps_test": {
+     "C1_C2_registered": 1,
+     "C3_sscd_0.75": 2,
+     "excluded": 3,
+     "report_sscd_0.5": 15
+    },
+    "nocaps_val": {
+     "C1_C2_registered": 1,
+     "C3_sscd_0.75": 0,
+     "excluded": 1,
+     "report_sscd_0.5": 5
+    },
+    "openviic_test": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "ovqa_dev": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 1
+    },
+    "t_a": {
+     "C1_C2_registered": 29,
+     "C3_sscd_0.75": 7,
+     "excluded": 33,
+     "report_sscd_0.5": 122
+    },
+    "vitextvqa_dev": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "xm3600": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 1
+    }
+   },
+   "kept": 20842,
+   "n": 20883,
+   "out": 41
+  },
+  "d_vi": {
+   "flagged": 1470,
+   "flagged_by_set": {
+    "kt_c": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "ktvic_test": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 11
+    },
+    "nocaps_test": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "nocaps_val": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "openviic_test": {
+     "C1_C2_registered": 40,
+     "C3_sscd_0.75": 80,
+     "excluded": 81,
+     "report_sscd_0.5": 191
+    },
+    "ovqa_dev": {
+     "C1_C2_registered": 699,
+     "C3_sscd_0.75": 706,
+     "excluded": 706,
+     "report_sscd_0.5": 745
+    },
+    "t_a": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "vitextvqa_dev": {
+     "C1_C2_registered": 751,
+     "C3_sscd_0.75": 775,
+     "excluded": 776,
+     "report_sscd_0.5": 832
+    },
+    "xm3600": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 1
+    }
+   },
+   "kept": 9098,
+   "n": 10568,
+   "out": 1470
+  }
+ },
+ "dropped_truncated": {
+  "dvi_openviic": 1
+ },
+ "feats_sha256": "8f707edd3c30180d05a597bd7867a278605e3c9f3cdfc93ebc8544b98d7b50f9",
+ "featured": {
+  "dvi_ktvic": 2192,
+  "dvi_openviic": 8376,
+  "textcaps": 21953,
+  "vitextvqa_dev": 1676
+ },
+ "label": "TIER 1 / DEV-EXPLORE (C-PVR-T1)",
+ "lists_sha256": "edb07fbbea45b69b246ec1e82e23103784b7c777c4e0ef6737e49151d1dc8e18",
+ "nocaps_val_xm3600_by_id": 43,
+ "o_b": "not computed: tier 2 only (prereg \u00a74.1 'Not touched in tier 1: ... O_B'; \u00a74.3 NB-OVQALOST keeps the train json to keys and lengths until the tier-2 prereg licenses the O_B read); O_B x D-VI and the O_B pool wait",
+ "owners_sha256": "0cf330d39ae4a24b1e95841fbb16f617d405a9d4ffca9747498ef33657f3b086",
+ "queries": {
+  "kt_c": 3907,
+  "ktvic_test": 558,
+  "nocaps_test": 10496,
+  "nocaps_val": 4500,
+  "openviic_test": 2001,
+  "ovqa_dev": 1070,
+  "t_a": 1070,
+  "vitextvqa_dev": 1676,
+  "xm3600": 3600
+ },
+ "rule": "RULE \u00a73 (289c0a59): C1 byte-identical OR C2 min(pHash,dHash)<=10 AND SSCD>=0.5 OR C3 SSCD>0.75",
+ "run_sha256": "84b0d587513fc143623ec63f9e1c9bbe16b842e2c10ff3019ef0e10b3fc9f847",
+ "sscd_sha256": "9f26bd4c848cc19b73d2ae92eea6e04886f61a7b764ceb7a13aeee62e6a6db56",
+ "t2pool": {
+  "ktvic_test_confirm": {
+   "flagged": 39,
+   "flagged_by_set": {
+    "kt_c": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "ktvic_test_explore": {
+     "C1_C2_registered": 1,
+     "C3_sscd_0.75": 1,
+     "excluded": 1,
+     "report_sscd_0.5": 1
+    },
+    "openviic_test_explore": {
+     "C1_C2_registered": 25,
+     "C3_sscd_0.75": 25,
+     "excluded": 25,
+     "report_sscd_0.5": 25
+    },
+    "t_a": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "vitextvqa_dev": {
+     "C1_C2_registered": 16,
+     "C3_sscd_0.75": 16,
+     "excluded": 16,
+     "report_sscd_0.5": 17
+    },
+    "xm3600": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    }
+   },
+   "kept": 233,
+   "n": 272,
+   "out": 39
+  },
+  "nocaps_val": {
+   "flagged": 43,
+   "flagged_by_set": {
+    "kt_c": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "ktvic_test_explore": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "openviic_test_explore": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "t_a": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "vitextvqa_dev": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "xm3600": {
+     "C1_C2_registered": 43,
+     "C3_sscd_0.75": 43,
+     "excluded": 43,
+     "report_sscd_0.5": 43
+    }
+   },
+   "kept": 4457,
+   "n": 4500,
+   "out": 43
+  },
+  "openviic_test_confirm": {
+   "flagged": 95,
+   "flagged_by_set": {
+    "kt_c": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "ktvic_test_explore": {
+     "C1_C2_registered": 17,
+     "C3_sscd_0.75": 17,
+     "excluded": 17,
+     "report_sscd_0.5": 19
+    },
+    "openviic_test_explore": {
+     "C1_C2_registered": 4,
+     "C3_sscd_0.75": 6,
+     "excluded": 6,
+     "report_sscd_0.5": 12
+    },
+    "t_a": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    },
+    "vitextvqa_dev": {
+     "C1_C2_registered": 72,
+     "C3_sscd_0.75": 74,
+     "excluded": 74,
+     "report_sscd_0.5": 80
+    },
+    "xm3600": {
+     "C1_C2_registered": 0,
+     "C3_sscd_0.75": 0,
+     "excluded": 0,
+     "report_sscd_0.5": 0
+    }
+   },
+   "kept": 886,
+   "n": 981,
+   "out": 95
+  }
+ },
+ "t2pool_note": "images only; the >= 1 verified mapped label filter needs labels and is left to the tier-2 prereg",
+ "utc": "2026-11-05T16:09:59Z",
+ "w25_counts_sha256": "72ae5ad34f1c118ce7aac31deea281336226ca4d1150b21da1226d57c9b7eae5",
+ "w25_run_sha256": "290a75dc414df655d4bdb5f2f18947b3885305673f647bc6d4c6556d0087a352"
+}

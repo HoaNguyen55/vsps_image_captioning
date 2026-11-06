@@ -1,0 +1,105 @@
+{
+ "code_sha256": {
+  "scripts/c_en/cen_fetch.py": "e51918e958ad86e832dd34fbf5ed86d2f7fc13cf41b602dfe537afa43af4c673",
+  "scripts/c_pvr/c_pvr.py": "8f10bd6097eb60a56e7f4e4bef9cd5d716fbebaa94ee15e4a7cca139caece120",
+  "scripts/c_pvr/gates.py": "3bced05e7f718377b34837cfb3f6d6539fb8aafc28bc5f8818e5d7be4ccdf897",
+  "scripts/c_stage1/build_memory.py": "e771b92df9096e286e8d5de207d3adafe49c8e5e59eab276978b0236cc0eeab9",
+  "scripts/c_stage1/decode_icl.py": "fa5a251160d4fd4fb0cd130af33614283863a84e6ed7905f3da81bb6255010db",
+  "scripts/g2b/decode_qwen3vl.py": "8a855ef483c933621776099b6f9de3b60c4fbfaaf706bb40c74e7d84d9dfb5e5",
+  "scripts/grl/common.py": "bbe7ee61f659b1a7bfc3cab418d83ed779b76187107708fef2d8ab44df0ad23a",
+  "scripts/lb/decode_hf_vlm.py": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+  "scripts/match_openviic.py": "c0d9dd30e3222ab6542a7e1acfbb9bd3899e4b6db5c896b0adc4d805c1005a8b",
+  "scripts/w25/w25.py": "d6d127807929c0534e6140d77831b682e3a7202484fa074d56229e0d091316c0"
+ },
+ "d_en": {
+  "flagged": 41,
+  "flagged_by_set": {
+   "kt_c": {
+    "C1_C2_registered": 2,
+    "C3_sscd_0.75": 2,
+    "excluded": 2,
+    "report_sscd_0.5": 17
+   },
+   "ktvic_test": {
+    "C1_C2_registered": 0,
+    "C3_sscd_0.75": 0,
+    "excluded": 0,
+    "report_sscd_0.5": 0
+   },
+   "nocaps_test": {
+    "C1_C2_registered": 27,
+    "C3_sscd_0.75": 27,
+    "excluded": 27,
+    "report_sscd_0.5": 33
+   },
+   "nocaps_val": {
+    "C1_C2_registered": 7,
+    "C3_sscd_0.75": 7,
+    "excluded": 7,
+    "report_sscd_0.5": 11
+   },
+   "openviic_test": {
+    "C1_C2_registered": 0,
+    "C3_sscd_0.75": 0,
+    "excluded": 0,
+    "report_sscd_0.5": 0
+   },
+   "ovqa_dev": {
+    "C1_C2_registered": 0,
+    "C3_sscd_0.75": 0,
+    "excluded": 0,
+    "report_sscd_0.5": 0
+   },
+   "t_a": {
+    "C1_C2_registered": 2,
+    "C3_sscd_0.75": 2,
+    "excluded": 2,
+    "report_sscd_0.5": 2
+   },
+   "vitextvqa_dev": {
+    "C1_C2_registered": 0,
+    "C3_sscd_0.75": 0,
+    "excluded": 0,
+    "report_sscd_0.5": 0
+   },
+   "xm3600": {
+    "C1_C2_registered": 3,
+    "C3_sscd_0.75": 3,
+    "excluded": 3,
+    "report_sscd_0.5": 3
+   }
+  },
+  "kept": 80040,
+  "n": 80083,
+  "out": 43
+ },
+ "d_en_no_feature_row": 2,
+ "dev_run_sha256": "84b0d587513fc143623ec63f9e1c9bbe16b842e2c10ff3019ef0e10b3fc9f847",
+ "featured": {
+  "dvi_ktvic": 2192,
+  "dvi_openviic": 8376,
+  "textcaps": 21953,
+  "vitextvqa_dev": 1676
+ },
+ "label": "TIER 1 / DEV-EXPLORE (C-PVR-T1)",
+ "n2_equal_outside_d_en": true,
+ "queries": {
+  "kt_c": 3907,
+  "ktvic_test": 558,
+  "nocaps_test": 10496,
+  "nocaps_val": 4500,
+  "openviic_test": 2001,
+  "ovqa_dev": 1070,
+  "t_a": 1070,
+  "vitextvqa_dev": 1676,
+  "xm3600": 3600
+ },
+ "rule": "RULE \u00a73 (289c0a59): C1 byte-identical OR C2 min(pHash,dHash)<=10 AND SSCD>=0.5 OR C3 SSCD>0.75",
+ "run_sha256": "3d3eeed09c7ebb13e00f84ddf347754c1d8cb78464f8acccfc4f4eb7d721ec1d",
+ "utc": "2026-11-05T20:15:30Z",
+ "v1_sha256": {
+  "dev_w25_counts.json": "b91b1336effa8132d91a822af46d0f2da42c6c68eb85beae599005bcf0ad6bb5",
+  "dev_w25_out_ids.json": "ffdcb6ba7e654f104b086cf487a47c8f2a746cb5b201d42d7f1d52ffbbe4e4af"
+ },
+ "w25_run_sha256": "290a75dc414df655d4bdb5f2f18947b3885305673f647bc6d4c6556d0087a352"
+}
