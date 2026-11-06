@@ -55,6 +55,11 @@ M = {
     "no_prompt_strip": ("new = out[len(ids):] if out[:len(ids)] == ids else out", "new = out[len(ids):]"),
     "no_weight_sha": ("        if sha_file(snap / f) != sha:\n", "        if False:\n"),
     "dtype_fp16": ('DTYPE = "bfloat16"', 'DTYPE = "float16"'),
+    # M1 (m9 probe, OPS-1106c-m9-probe-meta): tied lm_head / word_embeddings left on meta
+    "mblip_meta_guard_off": ("    if meta := [n for n, t in [*model.named_parameters(), *model.named_buffers()] if t.is_meta]:\n",
+                             "    if meta := []:\n"),
+    "mblip_tie_skipped": ("    tie_mblip(model, snap, files, torch)\n", ""),
+    "mblip_tie_unchecked": ("    if w is not lm.get_input_embeddings().weight or not torch.equal(w, head):\n", "    if False:\n"),
     # proxy (v3 §7)
     "diacritics_stripped": ("def norm(s: str, strip_marks: bool = False)", "def norm(s: str, strip_marks: bool = True)"),
     "norm_no_nfc": ('    s = unicodedata.normalize("NFC", s).casefold()\n    if strip_marks',

@@ -764,7 +764,34 @@ def load_mblip(snap: Path, files: dict = MBLIP["files"]):
     proc = Blip2Processor.from_pretrained(snap, local_files_only=True)
     model = Blip2ForConditionalGeneration.from_pretrained(snap, local_files_only=True, use_safetensors=True,
                                                           torch_dtype=getattr(torch, DTYPE))
+    tie_mblip(model, snap, files, torch)
     return model.eval(), proc
+
+
+MBLIP_HEAD = "language_model.lm_head.weight"
+
+
+def tie_mblip(model, snap: Path, files: dict, torch) -> None:
+    """M1 (m9 probe, OPS-1106c-m9-probe-meta): the pinned shards hold 1096 of the 1097 index keys; the missing tied
+    word_embeddings stays a meta tensor after from_pretrained. Set it from MBLIP_HEAD read out of a pinned shard
+    (never the unpinned index), tie, then fail closed: no meta parameter or buffer, head IS the embedding, and it
+    equals the shard tensor."""
+    from safetensors import safe_open
+    head = None
+    for f in sorted(f for f in files if f.endswith(".safetensors")):
+        with safe_open(str(snap / f), framework="pt") as s:
+            if MBLIP_HEAD in s.keys():
+                head = s.get_tensor(MBLIP_HEAD).to(getattr(torch, DTYPE))
+    if head is None:
+        fault(f"{MBLIP_HEAD} is in no pinned shard")
+    lm = model.language_model
+    lm.get_input_embeddings().weight = torch.nn.Parameter(head)
+    lm.tie_weights()
+    if meta := [n for n, t in [*model.named_parameters(), *model.named_buffers()] if t.is_meta]:
+        fault(f"{len(meta)} mBLIP tensors still on meta after the tie (first {meta[0]}); nothing is decoded")
+    w = lm.get_output_embeddings().weight
+    if w is not lm.get_input_embeddings().weight or not torch.equal(w, head):
+        fault("mBLIP lm_head is not the tied embedding equal to the shard tensor")
 
 
 def generate(model, proc, image, prompt: str, kind: str) -> tuple[str, str]:
@@ -1174,8 +1201,39 @@ def _st_models(root: Path) -> None:
             calls["proc"] = k
             return Batch(input_ids=T([T([9, 8])]))
 
+    class W:  # a tensor stand-in for the M1 tie (no real weights)
+        def __init__(self, v, meta=False):
+            self.v, self.is_meta = v, meta
+
+        def to(self, *a):
+            return self
+
+    class LM:  # emb missing from the shards (meta), head loaded; tie_weights() = head := embedding
+        def __init__(self):
+            self.emb, self.head = types.SimpleNamespace(weight=W(None, True)), types.SimpleNamespace(weight=W("H"))
+
+        def get_input_embeddings(self):
+            return self.emb
+
+        def get_output_embeddings(self):
+            return self.head
+
+        def tie_weights(self):
+            self.head.weight = self.emb.weight
+
     class Model:
         device = "cpu"
+        buf = W(0)
+
+        def __init__(self):
+            self.language_model = LM()
+
+        def named_parameters(self):
+            lm = self.language_model
+            return [("lm.emb", lm.emb.weight), ("lm.head", lm.head.weight)]
+
+        def named_buffers(self):
+            return [("buf", Model.buf)]
 
         def generate(self, **k):
             calls["generate"] = k
@@ -1192,18 +1250,49 @@ def _st_models(root: Path) -> None:
         calls["load"] = k
         return Model()
 
+    class Shard:
+        keys_ = [MBLIP_HEAD]
+
+        def __init__(self, f, framework):
+            assert framework == "pt" and f.endswith(".safetensors")
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *a):
+            return False
+
+        def keys(self):
+            return Shard.keys_
+
+        def get_tensor(self, k):
+            return W("H")
+
     tr = types.SimpleNamespace(Blip2ForConditionalGeneration=types.SimpleNamespace(from_pretrained=from_pretrained),
                                Blip2Processor=types.SimpleNamespace(from_pretrained=lambda s, **k: Proc()),
                                GenerationConfig=GC)
-    th = types.SimpleNamespace(bfloat16="bf16", inference_mode=lambda: open(os.devnull))
-    old = {m: sys.modules.get(m) for m in ("transformers", "torch")}
-    sys.modules.update(transformers=tr, torch=th)
+    th = types.SimpleNamespace(bfloat16="bf16", inference_mode=lambda: open(os.devnull),
+                               nn=types.SimpleNamespace(Parameter=lambda t: t), equal=lambda a, b: a.v == b.v)
+    old = {m: sys.modules.get(m) for m in ("transformers", "torch", "safetensors")}
+    sys.modules.update(transformers=tr, torch=th, safetensors=types.SimpleNamespace(safe_open=Shard))
     try:
         with tempfile.TemporaryDirectory() as td:
             snap = Path(td)
             (snap / "w.safetensors").write_bytes(b"w")
             _must("differs from its pin", load_mblip, snap, {"w.safetensors": "0" * 64})
-            model, proc = load_mblip(snap, {"w.safetensors": hashlib.sha256(b"w").hexdigest()})
+            pin = {"w.safetensors": hashlib.sha256(b"w").hexdigest()}
+            model, proc = load_mblip(snap, pin)
+            lm = model.language_model
+            assert lm.get_output_embeddings().weight is lm.get_input_embeddings().weight and lm.emb.weight.v == "H"
+            Model.buf = W(0, True)  # M1: any meta tensor left after the tie is a FAULT
+            _must("still on meta", load_mblip, snap, pin)
+            Model.buf = W(0)
+            tie, LM.tie_weights = LM.tie_weights, lambda self: None  # head not tied to the embedding
+            _must("not the tied embedding", load_mblip, snap, pin)
+            LM.tie_weights = tie
+            Shard.keys_ = []
+            _must("in no pinned shard", load_mblip, snap, pin)
+            Shard.keys_ = [MBLIP_HEAD]
         assert calls["load"] == {"local_files_only": True, "use_safetensors": True, "torch_dtype": "bf16"}
         for kind, mx in (("caption", 64), ("verify", 8)):
             text, fin = generate(model, proc, "IMG", "prompt", kind)

@@ -1,0 +1,24 @@
+# requirements_c_pvr_gpu.lock -- the GPU-host lock (PINS-A v1.4 §11 "GPU lock"), DRAFT, top-level pins [proposal].
+# One RTX 3090 / 3090 Ti host (host amendment v3). ONE venv for mBLIP and the S9 helpers (they never share the GPU,
+# S9 §5): ~/venvs/c_pvr_gpu_<first 8 hex of this file's sha256>, built by setup_host.sh, so a lock edit makes a new venv.
+# Hashes are written on the host (PINS-A §11): setup_host.sh installs these pins with `pip install --report` and writes
+# the full hashed closure plus the pip-freeze sha256 next to the venv. Those come back for a diff read; the freeze sha
+# then replaces FREEZE_SHA=PENDING in c_pvr_job.sh (its only home).
+# torch >= 2.6: transformers refuses torch.load of a .bin checkpoint under torch < 2.6 (CVE-2025-32434), and XGLM
+# 33c659ae ships only pytorch_model.bin (C-T1 AMENDMENT_2 §1, the B3 failure). transformers 4.51.3 = the version the
+# laptop selftest round-tripped GEN_BASE through. open_clip_torch 2.32.0 / ftfy 6.3.1 / wcwidth 0.2.13 = venv-t1 (S9 §8.8).
+--extra-index-url https://download.pytorch.org/whl/cu124
+torch==2.6.0+cu124
+torchvision==0.21.0+cu124
+transformers==4.51.3
+tokenizers==0.21.4
+safetensors==0.8.0
+huggingface_hub==0.36.2
+pillow==13.0.0
+numpy==2.5.4
+open_clip_torch==2.32.0
+ftfy==6.3.1
+wcwidth==0.2.13
+timm==1.0.15
+# PENDING Q-LLAVA (PINS-A §12): the LLaVA env is a second venv with its own lock, written once the LLaVA code commit
+# is pinned; EN arms S1-S5 FAULT until then (c_pvr.load_llava).
