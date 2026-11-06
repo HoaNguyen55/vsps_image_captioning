@@ -4,7 +4,8 @@
 #   selftest  laptop-mock selftest on both host venvs, then the GPU-host selftests: hostcheck (mBLIP + S9 helpers)
 #             -> HOSTCHECK_OK.json, hostcheck-en (LLaVA, EN venv, Q-LLAVA) -> HOSTCHECK_EN_OK.json
 #   speed     prereg §10.1: SPEED_N XM3600-vi images x every VI arm + KT-C x S1-S5 (A8/S2 untimed, A8_PROXY);
-#             timing rows only, captions never written (NB-SPEED); whole mode under 1.5 h (host v3 §6)
+#             timing rows only, captions never written (NB-SPEED); whole mode under 3.0 h from speed_start.epoch
+#             (host v3 §6 H-9 as amended by PI-1106l; CC-280 AM4: a constant fixed before the speed test)
 #   EN arms S1-S5 run with the EN venv's python (requirements_c_pvr_llava.lock), every other arm with the main venv.
 #   tier1     every uncut arm of CAP.json on every set, under the wall-clock cap from the P1 stamp (T1-REP §9),
 #             arm-major in three phases (CC-270 B1): never-cut, then A8 / S2, then the cuttable arms (A10 last).
@@ -22,7 +23,7 @@ MODE=${1:?usage: c_pvr_job.sh selftest|speed|tier1 HEAD MANIFEST_SHA}; EXPECT=${
 cd "$(dirname "$0")/../.."
 FREEZE_SHA=PENDING   # the GPU-lock freeze (setup_host.sh writes it); only home; required from mode speed on
 FREEZE_SHA_EN=PENDING   # the same for the EN (LLaVA) venv
-LK=$(sha256sum scripts/c_pvr_gpu/requirements_c_pvr_gpu.lock | cut -c1-8)
+LK=$(sha256sum scripts/c_pvr_gpu/requirements_c_pvr_gpu.host.lock | cut -c1-8)   # the installed closure (AM1), as setup_host.sh
 LKE=$(sha256sum scripts/c_pvr_gpu/requirements_c_pvr_llava.lock | cut -c1-8)
 PY=$HOME/venvs/c_pvr_gpu_$LK/bin/python; PYE=$HOME/venvs/c_pvr_llava_$LKE/bin/python; X=scripts/c_pvr_gpu/c_pvr_gpu.py
 O=$HOME/c_pvr_out; LOG=$O/logs; P=$O/out; HC=/dev/shm/c_pvr_hc; CAP=$O/CAP.json; MARK=$O/CAP_STOP.json
@@ -54,6 +55,10 @@ nvidia-smi --query-gpu=name --format=csv,noheader | grep -Eq '^NVIDIA GeForce RT
 [ "$(stat -c %a $HC)" = 700 ] || stop "$HC is not mode 0700"
 [ "$(sha256sum < $HC/MANIFEST.sha256 | cut -c1-64)" = "$TMAN" ] || stop "tmpfs MANIFEST.sha256 differs from the run doc"
 (cd $HC && sha256sum --quiet -c MANIFEST.sha256) || stop "a tmpfs file differs from its arrival sha (FAULT)"
+hc_want() { echo MANIFEST.sha256; cut -c67- $HC/MANIFEST.sha256
+  if [ -s $HC/a1_decomp/MANIFEST.sha256 ]; then echo a1_decomp/MANIFEST.sha256; cut -c67- $HC/a1_decomp/MANIFEST.sha256 | sed 's|^|a1_decomp/|'; fi; }
+[ "$(cd $HC && find . -type f | sed 's|^\./||' | LC_ALL=C sort)" = "$(hc_want | LC_ALL=C sort)" ] \
+  || stop "tmpfs file set differs from MANIFEST.sha256 (+ a1_decomp) (CC-277 N1)"
 $PY -I -B $X selftest >> $LOG/selftest.log 2>&1 || stop "c_pvr_gpu selftest"
 $PYE -I -B $X selftest >> $LOG/selftest.log 2>&1 || stop "c_pvr_gpu selftest (EN venv)"
 sha256sum $X $0 scripts/c_pvr/c_pvr.py > $O/code_at_start_$MODE.sha256
@@ -69,8 +74,8 @@ fi
 [ "$C_PVR_FREEZE_EN" = "$FREEZE_SHA_EN" ] || stop "EN venv freeze differs from the LLaVA lock"
 case "$MODE" in
   speed) STEPS=$($PY -I -B $X steps --mode speed)
-         [ -s $O/speed_start.epoch ] || date +%s > $O/speed_start.epoch   # CC-270 N2: 1.5 h in total, not per run
-         END=$(( $(cat $O/speed_start.epoch) + 5400 ));;
+         [ -s $O/speed_start.epoch ] || date +%s > $O/speed_start.epoch   # CC-270 N2: 3.0 h in total, not per run
+         END=$(( $(cat $O/speed_start.epoch) + 10800 ));;   # CC-280 AM4 (PI-1106l), fixed before the speed test
   tier1) STEPS=$($PY -I -B $X steps --mode tier1 --cap $CAP) || stop "CAP.json missing or not RUN";;
   *) stop "unknown mode $MODE";;
 esac
@@ -82,7 +87,7 @@ while read -r SET ARM; do
   [ -s $LOG/$MODE.$SET.$ARM.done ] && continue
   ARGS=(decode --set $SET --arm $ARM --manifest $HC/manifest/$SET.json --kept $HC/kept --images $HC/images/$SET --democap $HC/democap)
   if [ "$MODE" = speed ]; then  # ids-only logs under speed/; no caption file is opened in speed mode
-    LEFT=$(( END - $(date +%s) )); [ $LEFT -gt 0 ] || stop "speed test over 1.5 h before $SET $ARM"
+    LEFT=$(( END - $(date +%s) )); [ $LEFT -gt 0 ] || stop "speed test over 3.0 h before $SET $ARM"
     mkdir -p $O/speed
     ARGS+=(--speed --timing $O/timing.jsonl --out $O/speed)
   else
@@ -94,7 +99,7 @@ while read -r SET ARM; do
   case $ARM in S[1-5]) PYS=$PYE;; *) PYS=$PY;; esac   # LLaVA's own venv (Q-LLAVA)
   say "START $SET $ARM (left $(( LEFT / 60 )) min)"
   rc=0; timeout ${LEFT}s $PYS -I -B $X "${ARGS[@]}" >> $LOG/decode.log 2>&1 || rc=$?
-  if [ $rc = 124 ] || [ $rc = 4 ]; then [ "$MODE" = speed ] && stop "speed test over 1.5 h"; cap_stop "during $SET $ARM"; fi
+  if [ $rc = 124 ] || [ $rc = 4 ]; then [ "$MODE" = speed ] && stop "speed test over 3.0 h"; cap_stop "during $SET $ARM"; fi
   [ $rc = 0 ] || stop "$SET $ARM rc=$rc"
   ts > $LOG/$MODE.$SET.$ARM.done; say "OK $SET $ARM"
 done <<< "$STEPS"

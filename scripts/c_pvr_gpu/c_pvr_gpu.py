@@ -106,6 +106,7 @@ OUT_KEYS = LOG_KEYS | {"caption", "masks", "scores", "answers"}  # scores: A4/A9
 FREE = ("caption", "answers")  # the only free text: the query's own model outputs (A10 answers: outputs only, §8.7)
 SPEED_LOG = {"utc", "set", "arm", "id", "calls"}  # calls follows from the inputs (props, CAP), not from an answer  # caption = the query's own model output, the only free text
 ID_RX = re.compile(r"[A-Za-z0-9_.:+-]{1,80}")
+QKEYS = {"id", "image", "image_sha256", "ranked", "a12_masks"}  # CC-277 N2: the query keys the builder writes, no other
 
 
 def fault(msg: str):
@@ -117,7 +118,7 @@ def utc() -> str:
 
 
 def guard(p) -> Path:
-    if BARRED.search(str(p)):
+    if BARRED.search(str(p)) or BARRED.search(str(Path(p).resolve())):  # CC-277 N1: a symlink into custody too
         raise SystemExit(f"REFUSED: {p} (sealed custody or tier-2 pool)")
     return Path(p)
 
@@ -654,7 +655,7 @@ def decode(x, load, image_of, clock=time.time, sleep=time.sleep) -> int:
     if bad := [i for i, d in M["demos"].items() if d["text"] != want[i]]:
         fault(f"{len(bad)} manifest demonstration texts differ from the DEMOCAP rule (first {bad[0]!r})")
     qs = M["queries"]
-    if any("absent" in q for q in qs):  # CC-270 Q4: A12 masks come from the laptop; no OI label reaches the host
+    if any(set(q) - QKEYS for q in qs):  # CC-270 Q4 / CC-277 N2: a whitelist; no OI label reaches the host
         fault("manifest carries query labels")
     P = CP.prompts(x.root)
     prior = {}
@@ -1255,6 +1256,10 @@ def _st_democap(src: Path, texts: dict, man: Path, run, work: Path) -> None:
     M["queries"][0]["absent"] = ["mèo"]  # an OI label on the host (CC-270 Q4)
     (work / "m4.json").write_text(json.dumps(M, ensure_ascii=False))
     _must("manifest carries query labels", run, arm="A1", manifest=work / "m4.json")
+    M = json.loads(man.read_text())
+    M["queries"][0]["present"] = ["mèo"]  # any key outside QKEYS (CC-277 N2: a whitelist, not one blacklisted key)
+    (work / "m4.json").write_text(json.dumps(M, ensure_ascii=False))
+    _must("manifest carries query labels", run, arm="A1", manifest=work / "m4.json")
     for bad in ([[False, 1]] * 4, [[False, True]] * 3, [[False]] * 4):  # not a bool; one demo short; one prop short
         M = json.loads(man.read_text())
         M["queries"][0]["a12_masks"] = bad
@@ -1552,6 +1557,9 @@ def selftest() -> None:
         host_preflight([("kt_c", "S3")], hc, hc_en)  # fresh, and DEMOCAP_d_en is pinned (P5)
         host_preflight([("t_a", "A1")], hc, hc_en)  # DEMOCAP_d_tc is pinned (W2, OPS-1106c-w2-dtc)
         _must("REFUSED", guard, Path.home() / ".vsps_sealed" / "c_pvr")
+        (work / "t2pool_z.txt").write_bytes(b"")
+        (work / "plain.txt").symlink_to(work / "t2pool_z.txt")
+        _must("REFUSED", guard, work / "plain.txt")  # CC-277 N1: the resolved path is checked too
     assert PINS == pend and [k for k, v in PINS.items() if v == PENDING] == []  # TC flipped after W2
     assert KEPT == kept0 and CR.LISTS_IN == lists0 and DEMOCAP_RULE == rule0 and DEMO_PIN == dpin0
     print(f"selftest ok  {CP.LABEL}  c_pvr_gpu.py {hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}  "
