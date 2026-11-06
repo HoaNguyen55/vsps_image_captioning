@@ -51,9 +51,9 @@ PINS = {
     # LLaVA env = requirements_c_pvr_llava.lock; S1 = PVR-drop [proposal] (EN_AS)
     # CC-269r2 W5: CC-270 Ruling 6 is the binding record of the D-TC / D-EN rules (CC-276 Ruling 1; form of CC-269r2
     # l.72); democap_tc / democap_en implement them (P4) and run only in c_pvr_manifest.py on the laptop (W1).
-    # D-TC stays PENDING until the CC-276 W2 laptop check (P5_W2_DTC_CHECK_PLAN_v1.md) has run and passed. With
-    # D-EN flipped, preflight(steps("speed")) passes the pins; FREEZE_SHA and HOSTCHECK still block the speed test.
-    "DEMOCAP_d_tc": PENDING,
+    # D-TC flipped after the CC-276 W2 laptop check (P5_W2_DTC_CHECK_PLAN_v1.md, CC-278) passed (LOG OPS-1106c-w2-dtc).
+    # preflight(steps("speed")) and tier1 pass the pins; FREEZE_SHA and HOSTCHECK still block all modes but selftest.
+    "DEMOCAP_d_tc": "CC-270 Ruling 6 + CC-276 Ruling 1 (P5) + W2 OPS-1106c-w2-dtc",
     "DEMOCAP_d_en": "CC-270 Ruling 6 + CC-276 Ruling 1 (P5)",
 }
 S9_ARMS = ("A4", "A5", "A9", "A10")  # S9 N10: pinned for D-VI only; no D-TC / D-EN version exists
@@ -1041,11 +1041,14 @@ def _st_decode(work: Path) -> None:
     assert "Một bức ảnh." in (out / "xm3600_vi.A1.jsonl").read_text("utf-8")
     assert b"caption" not in b"".join(f.read_bytes() for f in (out / "logs").iterdir())
     preflight([("xm3600_vi", a) for a in ("A1", *S9_ARMS, *EN_ARMS)])  # S9 (P2) and EN (P3) pinned
-    _must("DEMOCAP_d_tc pin is PENDING", preflight, steps("tier1", None))  # tier1 refuses until W2 (t_a, D-TC)
-    _must("DEMOCAP_d_tc pin is PENDING", run, set="t_a", arm="A1")  # the step too, before any d_tc file is read
+    tc_pin, PINS["DEMOCAP_d_tc"] = PINS["DEMOCAP_d_tc"], PENDING
+    try:  # a PENDING DEMOCAP pin refuses tier1 and the step, before any d_tc file is read
+        _must("DEMOCAP_d_tc pin is PENDING", preflight, steps("tier1", None))
+        _must("DEMOCAP_d_tc pin is PENDING", run, set="t_a", arm="A1")
+    finally:
+        PINS["DEMOCAP_d_tc"] = tc_pin
     preflight(steps("speed", None))  # D-EN flipped at P5 (W1 done): the speed pins pass; FREEZE_SHA / HOSTCHECK block
-    PINS.update(DEMOCAP_d_tc="fixture")  # P4 code below; selftest() restores the PENDING pin
-    preflight(steps("tier1", None))
+    preflight(steps("tier1", None))  # D-TC flipped after W2 (OPS-1106c-w2-dtc)
     PINS["A4"] = PENDING
     try:  # a PENDING never-cut pin refuses the block even when no A4 step is listed (T1-REP R-1)
         _must("A4 pin is PENDING", preflight, [("xm3600_vi", "A1")])
@@ -1547,9 +1550,9 @@ def selftest() -> None:
         host_preflight([("xm3600_vi", "A1")], hc, work / "absent.json")  # no EN arm: the EN file is not read
         hc_en.write_text(fresh)
         host_preflight([("kt_c", "S3")], hc, hc_en)  # fresh, and DEMOCAP_d_en is pinned (P5)
-        _must("DEMOCAP_d_tc pin is PENDING", host_preflight, [("t_a", "A1")], hc, hc_en)  # until W2
+        host_preflight([("t_a", "A1")], hc, hc_en)  # DEMOCAP_d_tc is pinned (W2, OPS-1106c-w2-dtc)
         _must("REFUSED", guard, Path.home() / ".vsps_sealed" / "c_pvr")
-    assert PINS == pend and [k for k, v in PINS.items() if v == PENDING] == ["DEMOCAP_d_tc"]  # TC: after W2
+    assert PINS == pend and [k for k, v in PINS.items() if v == PENDING] == []  # TC flipped after W2
     assert KEPT == kept0 and CR.LISTS_IN == lists0 and DEMOCAP_RULE == rule0 and DEMO_PIN == dpin0
     print(f"selftest ok  {CP.LABEL}  c_pvr_gpu.py {hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}  "
           f"torch={'real' if torch else 'absent'} transformers={'real' if GenerationConfig else 'absent'}")

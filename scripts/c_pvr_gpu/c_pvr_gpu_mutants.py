@@ -151,7 +151,7 @@ M = {
     "w3_vi_empty_ok": ("        if not isinstance(cap, str) or not CP.clean(cap):  # CC-276 W3", "        if not cap:  # CC-276 W3"),
     "w3_first_caps_empty_ok": ("    if miss := [i for i in ids if not isinstance(first.get(i), str) or not CP.clean(first[i])]:",
                                "    if miss := [i for i in ids if not first.get(i)]:"),
-    "democap_pin_tc_flipped": ('    "DEMOCAP_d_tc": PENDING,', '    "DEMOCAP_d_tc": "flipped",'),
+    "democap_pin_tc_pending": ('    "DEMOCAP_d_tc": "CC-270 Ruling 6 + CC-276 Ruling 1 (P5) + W2 OPS-1106c-w2-dtc",', '    "DEMOCAP_d_tc": PENDING,'),
     "democap_pin_en_pending": ('    "DEMOCAP_d_en": "CC-270 Ruling 6 + CC-276 Ruling 1 (P5)",', '    "DEMOCAP_d_en": PENDING,'),
     "kept_glob": ("    b = pinned_bytes(kdir / fname, sha)\n",
                   '    b = pinned_bytes(next(p for p in sorted(kdir.glob("*_kept_ids.txt")) if p.name == fname), sha)\n'),
