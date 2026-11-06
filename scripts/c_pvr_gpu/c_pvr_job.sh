@@ -80,7 +80,7 @@ $PY -I -B $X preflight --hostcheck $O/HOSTCHECK_OK.json --hostcheck-en $O/HOSTCH
 cap_stop() { printf '{"cap_stop": "%s", "utc": "%s"}\n' "$1" "$(ts)" > $MARK; say "CAP STOP $1 (final)"; exit 0; }
 while read -r SET ARM; do
   [ -s $LOG/$MODE.$SET.$ARM.done ] && continue
-  ARGS=(decode --set $SET --arm $ARM --manifest $HC/manifest/$SET.json --kept $HC/kept --images $HC/images/$SET --src $HC/src)
+  ARGS=(decode --set $SET --arm $ARM --manifest $HC/manifest/$SET.json --kept $HC/kept --images $HC/images/$SET --democap $HC/democap)
   if [ "$MODE" = speed ]; then  # ids-only logs under speed/; no caption file is opened in speed mode
     LEFT=$(( END - $(date +%s) )); [ $LEFT -gt 0 ] || stop "speed test over 1.5 h before $SET $ARM"
     mkdir -p $O/speed

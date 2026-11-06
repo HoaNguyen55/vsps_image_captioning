@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Mutant harness for scripts/c_pvr_gpu/c_pvr_gpu.py (pattern of scripts/c_pvr/c_pvr_mutants.py).
 Usage: <venv python> -I -B c_pvr_gpu_mutants.py <repo root> <empty scratch dir outside /mnt>.
-The scratch dir gets scripts/c_pvr/{c_pvr.py,c_pvr_run.py,prompts/} and one mutated scripts/c_pvr_gpu/c_pvr_gpu.py per mutant.
+The scratch dir gets scripts/c_pvr/{c_pvr.py,c_pvr_run.py,prompts/} and one mutated scripts/c_pvr_gpu/c_pvr_gpu.py per mutant
+(set M), then one mutated scripts/c_pvr_gpu/c_pvr_manifest.py per mutant beside the unmutated c_pvr_gpu.py (set MB, P5).
 Each mutant replaces one exact string (it must occur once) and runs `selftest` on the copy. The unmutated copy runs
 first and must print 'selftest ok'. KILLED = the selftest fails.
 Then c_pvr_job.sh (CC-270 N9): the unmutated script must pass every dry-run case of job_dry() under <scratch>/job, and
@@ -102,7 +103,6 @@ M = {
     "en_loads_mblip": ('load("llava" if x.arm in EN_ARMS else "xglm" if x.arm == "A5" else "mblip")',
                        'load("xglm" if x.arm == "A5" else "mblip")'),
     "en_rec_arm_overwritten": ('if k in OUT_KEYS and k != "arm"}', "if k in OUT_KEYS}"),
-    "democap_by_id_form": ('    want = DEMOCAP_RULE[ds](sorted(M["demos"]), x.src)', '    want = demo_captions(sorted(M["demos"]), x.src)'),
     "en_need_skipped": ("    if x.arm in NEEDS:\n        need(NEEDS[x.arm])\n", ""),
     # CC-272 N4 (pools before any load), N6 (cap inside the M-CLIP pass), N7 (hostcheck records), N1 (refs/main)
     "pool_check_off": ("    pool_check(base, todo, M, kept)\n", ""),
@@ -127,16 +127,59 @@ M = {
     "tc_skips_uncaptioned": ('first.setdefault(str(a["image_id"]), a.get("caption_str"))',
                              'a.get("caption_str") and first.setdefault(str(a["image_id"]), a["caption_str"])'),
     "first_caps_unclean": ("    return {i: CP.clean(first[i]) for i in ids}", "    return {i: first[i] for i in ids}"),
-    "first_caps_no_fault": ("    if miss := [i for i in ids if not first.get(i)]:", "    if miss := []:"),
+    "first_caps_no_fault": ("    if miss := [i for i in ids if not isinstance(first.get(i), str) or not CP.clean(first[i])]:",
+                            "    if miss := []:"),
     "democap_tc_as_en": ('"d_tc": democap_tc,', '"d_tc": democap_en,'),
     "democap_en_as_vi": ('"d_en": democap_en}', '"d_en": demo_captions}'),
     "en_pin_wrong_file": ('src_json(src, *DEMO_PIN["karpathy"])', 'src_json(src, *DEMO_PIN["textcaps_train"])'),
-    "democap_pin_en_flipped": ('    "DEMOCAP_d_en": PENDING,', '    "DEMOCAP_d_en": "flipped",'),
     "genconfig_seen0": ('            out[kind]["genconfig"] = seen[-1]', '            out[kind]["genconfig"] = seen[0]'),
     "genconfig_stale_ok": ("            if len(seen) == n0:\n", "            if False:\n"),
     "en_hostcheck_unchecked": ("        hostcheck_fresh(hc_en)\n", "        pass\n"),
     "llava_code_unchecked": ('    for s, n in ((snap, "llava"), (tower, "clip336"), (code, "llava_code")):',
                              '    for s, n in ((snap, "llava"), (tower, "clip336")):'),
+    # P5: CC-276 W1 (no source json on the host; derived file by datastore, pinned), W3, W5, W7; CC-270 Q4 (A12)
+    "host_reads_src": ('    want = read_democap(x.democap, ds, M["democap_sha256"], kept)  # W1: no source json on the host',
+                       '    want = DEMOCAP_RULE[ds](sorted(M["demos"]), x.src)'),
+    "democap_file_not_by_ds": ('    doc = json.loads(pinned_bytes(d / f"{ds}.json", sha))',
+                               '    doc = json.loads(pinned_bytes(d / "d_vi.json", sha))'),
+    "democap_file_unpinned": ('    doc = json.loads(pinned_bytes(d / f"{ds}.json", sha))',
+                              '    doc = json.loads((d / f"{ds}.json").read_bytes())'),
+    "democap_ids_unchecked": ("CP.LABEL, ds) or set(t) != kept or any(", "CP.LABEL, ds) or any("),
+    "labels_on_host_ok": ('    if any("absent" in q for q in qs):', "    if False:"),
+    "a12_masks_unchecked": ('        if [len(m) for m in masks] != [len(dc["props"]) for dc in dcs] or any(', "        if False and any("),
+    "a12_laptop_masks_ignored": ('        masks = q["a12_masks"]\n', '        masks = [[False] * len(dc["props"]) for dc in dcs]\n'),
+    "w3_vi_empty_ok": ("        if not isinstance(cap, str) or not CP.clean(cap):  # CC-276 W3", "        if not cap:  # CC-276 W3"),
+    "w3_first_caps_empty_ok": ("    if miss := [i for i in ids if not isinstance(first.get(i), str) or not CP.clean(first[i])]:",
+                               "    if miss := [i for i in ids if not first.get(i)]:"),
+    "democap_pin_tc_flipped": ('    "DEMOCAP_d_tc": PENDING,', '    "DEMOCAP_d_tc": "flipped",'),
+    "democap_pin_en_pending": ('    "DEMOCAP_d_en": "CC-270 Ruling 6 + CC-276 Ruling 1 (P5)",', '    "DEMOCAP_d_en": PENDING,'),
+    "kept_glob": ("    b = pinned_bytes(kdir / fname, sha)\n",
+                  '    b = pinned_bytes(next(p for p in sorted(kdir.glob("*_kept_ids.txt")) if p.name == fname), sha)\n'),
+    "host_audit_off": ('    if HOST and event in ("open",', '    if False and event in ("open",'),
+    "echo_en_noun_vi": ('    noun = "một con chó" if lang == "vi" else "a dog"', '    noun = "một con chó"'),
+}
+# P5 builder (c_pvr_manifest.py): ranking, demos coverage, the derived file, A12 masks, seal, atomic write
+MB = {
+    "rank_tie_desc": ("np.lexsort((cand, -r[cand]))", "np.lexsort((-cand, -r[cand]))"),
+    "rank_ascending": ("np.lexsort((cand, -r[cand]))", "np.lexsort((cand, r[cand]))"),
+    "rank_cut_short": ("np.partition(r, -n)[-n]", "np.partition(r, -n)[-n + 1]"),
+    "n_rank_k": ("N_RANK = 7  #", "N_RANK = 4  #"),
+    "emb_not_normalised": ("    return v / np.linalg.norm(v, axis=1, keepdims=True), sha(b)", "    return v, sha(b)"),
+    "emb_missing_ok": ("    if miss := [i for i in ids if i not in row]:", "    if miss := []:"),
+    "a2_not_in_demos": ('        need |= {i for q, r in zip(qids, ranked) for i in G.CP.pick("A2", q, r, kept)}', "        pass"),
+    "shots_not_in_demos": ('        need |= set(want) | {i for r in M["a5_shots"].values() for i in r}', "        pass"),
+    "democap_rule_by_id_form": ("    texts = G.DEMOCAP_RULE[ds](kept, src)", "    texts = G.demo_captions(kept, src)"),
+    "dry_writes": ("    if not dry:\n        put(", "    if True:\n        put("),
+    "decomp_text_unchecked": ('    if [d["text"] for d in dcs] != [texts[i] for i in order]:', "    if False:"),
+    "a12_labels_shipped": ('        rec = {"id": q, "image": img,', '        rec = {"absent": [], "id": q, "image": img,'),
+    "a12_absent_ignored": ('            absent = set(lab.get(q, {}).get("absent", []))', "            absent = set()"),
+    "image_sha_of_name": ('"image_sha256": sha(G.guard(images / img).read_bytes())', '"image_sha256": sha(img.encode())'),
+    "sizes_unchecked": ("    if len(rows) != SIZES[s] or (s in EXPLORE", "    if (s in EXPLORE"),
+    "explore_unchecked": ("(s in EXPLORE and not all(map(G.CR.half, qids)))", "False"),
+    "shots_draw_unchecked": ("        if sorted(i for i, _ in srows) != sorted(want):", "        if False:"),
+    "seal_shot_check_off": ("    if hit := set(shots[0].values()) & ", "    if hit := set() & "),
+    "seal_twice": ("    if man.exists():\n", "    if False:\n"),
+    "put_overwrites_tmp": ('with open(tmp, "xb") as f:', 'with open(tmp, "wb") as f:'),
 }
 
 
@@ -152,6 +195,7 @@ J = {
     "a8_no_decomp_arg": ("    case $ARM in A8|S2) ARGS+=(--a1-decomp $HC/a1_decomp/$SET.json);; esac\n", ""),
     "en_main_venv": ("  case $ARM in S[1-5]) PYS=$PYE;; *) PYS=$PY;; esac", "  PYS=$PY"),
     "en_freeze_unchecked": ('[ "$C_PVR_FREEZE_EN" = "$FREEZE_SHA_EN" ] || stop', "true || stop"),
+    "src_arg_restored": ("--images $HC/images/$SET --democap $HC/democap)", "--images $HC/images/$SET --src $HC/src)"),
 }
 FAKE_PY = r"""#!/bin/bash
 echo "$0 $*" >> "$DRY_CALLS"
@@ -262,6 +306,8 @@ def job_dry(root: Path, base: Path, text: str) -> list[str]:
     check("rc4_cap_stop_then_wipe", r.returncode == 0 and (o / "CAP_STOP.json").exists() and not alive
           and log.index("CAP STOP during xm3600_vi A11") < log.index("EXIT tier1 rc=0") and dl[2:] == ["2", "2\n"]
           and "WIPE COUNT MISMATCH" not in log)
+    check("democap_arg_no_src", dec and all("--src" not in d and d[d.index("--democap") + 1] == f"{hc}/democap"
+                                            for d in dec if "--democap" in d) and all("--democap" in d for d in dec))
     check("phased_order_in_job", arms == ["A1"] * 5 + ["A8"] * 5 + ["A11"] and len(a8) == 5 and all(
         d[d.index("--a1-decomp") + 1] == f"{hc}/a1_decomp/{d[d.index('--set') + 1]}.json" for d in a8
         if "--a1-decomp" in d) and all("--a1-decomp" in d for d in a8))
@@ -290,26 +336,30 @@ def main() -> int:
     for f in ("c_pvr.py", "c_pvr_run.py"):
         shutil.copy2(root / "scripts/c_pvr" / f, scratch / "scripts/c_pvr" / f)
     (scratch / "scripts/c_pvr_gpu").mkdir()
-    src = (root / "scripts/c_pvr_gpu/c_pvr_gpu.py").read_text("utf-8")
-    dst = scratch / "scripts/c_pvr_gpu/c_pvr_gpu.py"
-
-    def run(text: str) -> bool:
-        dst.write_text(text, "utf-8")
-        r = subprocess.run([sys.executable, "-I", "-B", str(dst), "selftest"], capture_output=True, text=True,
-                           env={"PATH": "/usr/bin:/bin", "HF_HUB_OFFLINE": "1"})
-        return r.returncode == 0 and "selftest ok" in r.stdout
-
-    if not run(src):
-        raise SystemExit("the unmutated copy fails its selftest")
     survived = []
-    for name, (a, b) in M.items():
-        if src.count(a) != 1:
-            raise SystemExit(f"{name}: pattern occurs {src.count(a)} times")
-        killed = not run(src.replace(a, b))
-        print(f"{'KILLED' if killed else 'SURVIVED'}  {name}")
-        if not killed:
-            survived.append(name)
-    print(f"{len(M) - len(survived)}/{len(M)} killed")
+    for fname, muts in (("c_pvr_gpu.py", M), ("c_pvr_manifest.py", MB)):
+        src = (root / "scripts/c_pvr_gpu" / fname).read_text("utf-8")
+        dst = scratch / "scripts/c_pvr_gpu" / fname
+
+        def run(text: str) -> bool:
+            dst.write_text(text, "utf-8")
+            r = subprocess.run([sys.executable, "-I", "-B", str(dst), "selftest"], capture_output=True, text=True,
+                               env={"PATH": "/usr/bin:/bin", "HF_HUB_OFFLINE": "1"})
+            return r.returncode == 0 and "selftest ok" in r.stdout
+
+        if bad := [n for n, (a, _) in muts.items() if src.count(a) != 1]:
+            raise SystemExit(f"{fname}: patterns not occurring once: {bad}")
+        if not run(src):
+            raise SystemExit(f"the unmutated {fname} fails its selftest")
+        gone = []
+        for name, (a, b) in muts.items():
+            killed = not run(src.replace(a, b))
+            print(f"{'KILLED' if killed else 'SURVIVED'}  {fname}:{name}")
+            if not killed:
+                gone.append(name)
+        dst.write_text(src, "utf-8")  # the builder imports the unmutated c_pvr_gpu.py
+        print(f"{fname} {len(muts) - len(gone)}/{len(muts)} killed")
+        survived += gone
     job = (root / "scripts/c_pvr_gpu/c_pvr_job.sh").read_text("utf-8")
     if bad := job_dry(root, scratch / "job", job):
         raise SystemExit(f"the unmutated c_pvr_job.sh fails its dry run: {bad}")
