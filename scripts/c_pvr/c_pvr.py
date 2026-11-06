@@ -13,7 +13,7 @@ Interpreter: the C venv of requirements_c_pvr.lock (spaCy, rapidfuzz); python -I
     python -I scripts/c_pvr/c_pvr.py ovqa-pin count --rule F --rule-sha H [--dev-zip Z]   lengths-only identity check
 
 Label on every output: TIER 1 / DEV-EXPLORE (C-PVR-T1). Model code (mBLIP) runs only on the GPU host through
-c_pvr_job.sh; LLaVA decode is refused until its code commit is pinned. No question or answer string of OpenViVQA is
+c_pvr_job.sh; LLaVA (EN arms) runs in the second host venv (requirements_c_pvr_llava.lock, Q-LLAVA). No question or answer string of OpenViVQA is
 read, printed or stored here.
 """
 from __future__ import annotations
@@ -77,6 +77,40 @@ MBLIP = {"repo": "Gregor/mblip-bloomz-7b", "revision": "4d95b91d56fcdce86504c951
 LLAVA = {"repo": "liuhaotian/llava-v1.5-7b", "revision": "4481d270cc22fd5c4d1bb5df129622006ccd9234",
          "conv": "A chat between a curious human and an artificial intelligence assistant. The assistant gives "
                  "helpful, detailed, and polite answers to the human's questions. USER: <image>\n{prompt} ASSISTANT:"}
+# Q-LLAVA (PINS-A §12; CC-270 PATH P3): the files the EN arms load, in the HELPERS form; HF tree API 2026-11-06 (llava
+# tree body = PINS-A v1.1's 8931c0e7). llava: only what model_vqa loads (the shards hold model.mm_projector.*, so
+# mm_projector.bin is not used); clip336 = config mm_vision_tower, loaded BY NAME (refs/main, setup_host.sh), main HEAD
+# (6 commits, last 2022-10-04) = the K2/N9 addendum pin; llava_code = github haotian-liu/LLaVA main c121f043 (= G-C1's README pin), the files that
+# `from llava.model.language_model.llava_llama import ...` and mm_utils import, blob = GitHub tree API.
+EN_MODELS = {
+    "llava": (LLAVA["repo"], LLAVA["revision"], {
+        "pytorch_model-00001-of-00002.bin": ("lfs", "492fdfa63cf314097d99da81a3586d54a97adc1471a0ae0535f5caa269b86314"),
+        "pytorch_model-00002-of-00002.bin": ("lfs", "c0eb94eb3fa578a4c63567f2eca6b0acf6a44a891c257aca0df88ffa891de72e"),
+        "tokenizer.model": ("lfs", "9e556afd44213b6bd1be2b850ebbbd98f5481437a8021afaf58ee7fb1818d347"),
+        "config.json": ("blob", "0ce10a15ac0e34d9f7c25f598e6a237d88b99a46"),  # raw sha256 f112de88 (PINS-A v1.1)
+        "generation_config.json": ("blob", "0a2211d8cb8868624f2556fe27d138585e151fea"),
+        "pytorch_model.bin.index.json": ("blob", "239de7c61647372780b7546a8df572ed42f7fc57"),
+        "special_tokens_map.json": ("blob", "14761dcf1466dc232bd41de9c21d4c617b15755e"),
+        "tokenizer_config.json": ("blob", "740756b4bef305e27d0bb4d2e1a40dd8847797f7")}),
+    "clip336": ("openai/clip-vit-large-patch14-336", "ce19dc912ca5cd21c8a653c79e251e808ccabcd1", {
+        "pytorch_model.bin": ("lfs", "c6032c2e0caae3dc2d4fba35535fa6307dbb49df59c7e182b1bc4b3329b81801"),
+        "config.json": ("blob", "e9c5a5dc325b017eda0b6e802f79283a1f68bf27"),
+        "preprocessor_config.json": ("blob", "a4604d0a1564fa0c45a6ff087bada5066a6335ea")}),
+    "llava_code": ("haotian-liu/LLaVA", "c121f0432da27facab705978f83c4ada465e46fd", {
+        "llava/__init__.py": ("blob", "4d1f016db1028101d45ba7d68cb3f0bcb558c2bb"),
+        "llava/constants.py": ("blob", "374be090510b302de9882d880c755787a8eafe11"),
+        "llava/conversation.py": ("blob", "00c56867dd1fd88094df9556f3d1c57e71a7ada8"),
+        "llava/mm_utils.py": ("blob", "de97345cf424fe72cc90de30f42d127ff20b99ef"),
+        "llava/model/__init__.py": ("blob", "dbd91789f0cde61dd13a7f9a5f7a69488ad07279"),
+        "llava/model/llava_arch.py": ("blob", "d71650eac767d178f9be2cc24508ac71907713bd"),
+        "llava/model/language_model/llava_llama.py": ("blob", "069d0d1c10da42f5d278598e8534f166d1f9f5ff"),
+        "llava/model/language_model/llava_mpt.py": ("blob", "02e5237ece031af23fcd76b5b4e0d9b0bc5f55cc"),
+        "llava/model/language_model/llava_mistral.py": ("blob", "0def682ea3c497e36aa85f1c53eb2cfab6e2fb87"),
+        "llava/model/multimodal_encoder/builder.py": ("blob", "29f63a26d5a4485a64bf235391d0f7593a96f3b6"),
+        "llava/model/multimodal_encoder/clip_encoder.py": ("blob", "2c81415cd0f4ebbbe66385450236c427f5e8fb02"),
+        "llava/model/multimodal_projector/builder.py": ("blob", "31cd4f48e6055cd6d00a162af30b1c8139e26b57")}),
+}
+LLAVA_DTYPE = "float16"  # config.json torch_dtype and model_vqa's .half(); batch 1, as mBLIP
 # S9 §1-§2 helpers (A9 scorer = M-CLIP, CC-269 Ruling 3; A5 generator = XGLM, PI-1106e): name -> (repo, revision,
 # {file: (kind, value)}); kind "lfs" = sha256, "blob" = git-blob SHA-1 (blob_hashes). Checked by c_pvr_gpu.helper_check.
 HELPERS = {
@@ -917,14 +951,48 @@ def _gen(model, tok, x, gc: dict) -> tuple[str, str]:
     model.generation_config = GenerationConfig(**gc)
     with torch.inference_mode():
         out = model.generate(**x, generation_config=GenerationConfig(**gc))[0].tolist()
-    ids = x["input_ids"][0].tolist()
+    ids = x["input_ids" if "input_ids" in x else "inputs"][0].tolist()  # LLaVA's generate() names it inputs
     new = out[len(ids):] if out[:len(ids)] == ids else out
     finish = "eos" if tok.eos_token_id in new else "length" if len(new) >= gc["max_new_tokens"] else "other"
     return tok.decode(new, skip_special_tokens=True).strip(), finish
 
 
-def load_llava(*_):
-    fault("LLaVA inference-code commit and weight format are OPEN (PINS-A §11); EN decode refused until pinned")
+def load_llava(snap: Path, code: Path):
+    """Q-LLAVA: model_vqa.py's load (builder.load_pretrained_model, non-LoRA llava branch) from the pinned code dir
+    (holds llava/), after its llava_v1 template is byte-compared with LLAVA["conv"]: slow tokenizer, LlavaLlamaForCausalLM
+    fp16 with low_cpu_mem_usage, then the CLIP tower BY NAME (mm_vision_tower) in fp32, as device_map='auto' leaves it.
+    File pins and the by-name cache are checked by the caller (c_pvr_gpu.load_llava_host) before this runs."""
+    import torch
+    sys.path.insert(0, str(code))
+    from llava.conversation import conv_templates
+    from llava.model.language_model.llava_llama import LlavaLlamaForCausalLM
+    from transformers import AutoTokenizer
+    conv = conv_templates["llava_v1"].copy()
+    conv.append_message(conv.roles[0], "<image>\n{prompt}")  # model_vqa: DEFAULT_IMAGE_TOKEN + '\n' + qs
+    conv.append_message(conv.roles[1], None)
+    if conv.get_prompt() != LLAVA["conv"]:
+        fault("the pinned LLaVA llava_v1 template differs from LLAVA['conv']; nothing is decoded")
+    tok = AutoTokenizer.from_pretrained(snap, use_fast=False, local_files_only=True)
+    model = LlavaLlamaForCausalLM.from_pretrained(snap, low_cpu_mem_usage=True, torch_dtype=getattr(torch, LLAVA_DTYPE),
+                                                  local_files_only=True)
+    vt = model.get_vision_tower()
+    if not vt.is_loaded:
+        vt.load_model()
+    return model.eval(), tok, vt.image_processor
+
+
+def generate_llava(model, tok, ip, image, text: str, kind: str) -> tuple[str, str]:
+    """model_vqa per call: llava_prompt(text), tokenizer_image_token, process_images ('pad'), fp16 pixels, image_sizes;
+    the pinned dict replaces model_vqa's sampling arguments. The output holds new tokens only (inputs_embeds path).
+    bos_token_id = the tokenizer's (1, = generation_config.json, which model_vqa's generate uses): transformers 4.37
+    refuses an inputs_embeds-only call without it. It is not fed to the model (the first step uses the embeddings), but
+    4.37 puts it at the head of the returned ids; skip_special_tokens drops it from the text and finish ignores it."""
+    from llava.constants import IMAGE_TOKEN_INDEX
+    from llava.mm_utils import process_images, tokenizer_image_token
+    ids = tokenizer_image_token(llava_prompt(text), tok, IMAGE_TOKEN_INDEX, return_tensors="pt").unsqueeze(0)
+    px = process_images([image], ip, model.config)[0].unsqueeze(0).half()
+    x = {"inputs": ids.to(model.device), "images": px.to(model.device), "image_sizes": [image.size]}
+    return _gen(model, tok, x, {**gen_config(kind, tok.eos_token_id, tok.pad_token_id), "bos_token_id": tok.bos_token_id})
 
 
 def header(root: Path) -> dict:
@@ -934,7 +1002,8 @@ def header(root: Path) -> dict:
             "s9": {"helpers": {k: v[:2] for k, v in HELPERS.items()}, "mclip": [MCLIP_NAME, MCLIP_DTYPE],
                    "xglm_dtype": XGLM_DTYPE, "nes_tau": NES_TAU, "a4_degen": A4_DEGEN, "a9_pool": A9_POOL,
                    "lmcap_n": LMCAP_N},
-            "llava": {"repo": LLAVA["repo"], "revision": LLAVA["revision"]},
+            "llava": {"repo": LLAVA["repo"], "revision": LLAVA["revision"], "dtype": LLAVA_DTYPE,
+                      "pins": {k: v[:2] for k, v in EN_MODELS.items()}},
             "generation": {k: gen_config(k, "<tokenizer eos>", "<tokenizer pad>") for k in MAX_NEW},
             "libs": LIB_VERSIONS, "vnc": VNC_PINS, "oi_test_url": OI_TEST_URL}
 
@@ -1486,7 +1555,111 @@ def _st_models(root: Path) -> None:
                 sys.modules.pop(m, None)
             else:
                 sys.modules[m] = v
-    _must("EN decode refused", load_llava)
+    _st_llava()
+
+
+def _st_llava() -> None:
+    """Q-LLAVA load and call order on stand-in llava / transformers / torch modules (no weights, no LLaVA code)."""
+    import types
+    calls = {}
+
+    class Conv:
+        system, roles, ok = LLAVA["conv"].split(" USER:")[0], ("USER", "ASSISTANT"), True
+
+        def copy(self):
+            c = Conv()
+            c.msgs = []
+            return c
+
+        def append_message(self, role, msg):
+            self.msgs.append((role, msg))
+
+        def get_prompt(self):  # SeparatorStyle.TWO, sep " "
+            body = "".join(f"{r}: {m} " if m else f"{r}:" for r, m in self.msgs)
+            return f"{self.system if Conv.ok else 'x'} {body}"
+
+    class VT:
+        is_loaded, image_processor = False, "IP"
+
+        def load_model(self):
+            calls["tower"] = True
+
+    class LLM:
+        device, config = "cpu", "CFG"
+
+        @staticmethod
+        def from_pretrained(snap, **k):
+            calls["load"] = k
+            return LLM()
+
+        def get_vision_tower(self):
+            return VT()
+
+        def eval(self):
+            return self
+
+        def generate(self, **k):
+            calls["generate"] = k
+            return [types.SimpleNamespace(tolist=lambda: [5, 6, 2])]
+
+    class Ten:
+        def __init__(self, tag):
+            self.tag = tag
+
+        def unsqueeze(self, d):
+            return Ten(self.tag + f".u{d}")
+
+        def half(self):
+            return Ten(self.tag + ".half")
+
+        def to(self, dev):
+            return Ten(self.tag + f".to({dev})")
+
+        def __getitem__(self, i):
+            return Ten(self.tag + f"[{i}]") if self.tag == "px" else types.SimpleNamespace(tolist=lambda: [9, -200, 8])
+
+    class Tok:
+        eos_token_id, pad_token_id, bos_token_id = 2, 0, 1
+
+        def decode(self, ids, skip_special_tokens):
+            return " ".join(map(str, [i for i in ids if i != 2]))
+
+    def tit(prompt, tok, idx, return_tensors):
+        calls["prompt"] = (prompt, idx, return_tensors)
+        return Ten("ids")
+
+    def pim(images, ip, cfg):
+        calls["pix"] = (len(images), ip, cfg)
+        return Ten("px")
+
+    mods = {"llava": types.ModuleType("llava"),
+            "llava.conversation": types.SimpleNamespace(conv_templates={"llava_v1": Conv()}),
+            "llava.model.language_model.llava_llama": types.SimpleNamespace(LlavaLlamaForCausalLM=LLM),
+            "llava.constants": types.SimpleNamespace(IMAGE_TOKEN_INDEX=-200),
+            "llava.mm_utils": types.SimpleNamespace(process_images=pim, tokenizer_image_token=tit),
+            "transformers": types.SimpleNamespace(
+                AutoTokenizer=types.SimpleNamespace(from_pretrained=lambda s, **k: calls.setdefault("tok", k) and Tok()),
+                GenerationConfig=lambda **k: types.SimpleNamespace(k=k)),
+            "torch": types.SimpleNamespace(float16="fp16", inference_mode=lambda: open(os.devnull))}
+    old = {m: sys.modules.get(m) for m in mods}
+    sys.modules.update(mods)
+    try:
+        model, tok, ip = load_llava(Path("/snap"), Path("/code"))
+        assert calls["tok"] == {"use_fast": False, "local_files_only": True} and calls["tower"] and ip == "IP"
+        assert calls["load"] == {"low_cpu_mem_usage": True, "torch_dtype": "fp16", "local_files_only": True}
+        text, fin = generate_llava(model, tok, ip, types.SimpleNamespace(size=(7, 5)), "Q zq", "verify")
+        g = calls["generate"]
+        assert (text, fin) == ("5 6", "eos") and calls["prompt"] == (llava_prompt("Q zq"), -200, "pt")
+        assert g["inputs"].tag == "ids.u0.to(cpu)" and g["images"].tag == "px[0].u0.half.to(cpu)"
+        assert g["image_sizes"] == [(7, 5)] and calls["pix"] == (1, "IP", "CFG")
+        assert g["generation_config"].k == {**gen_config("verify", 2, 0), "bos_token_id": 1}
+        Conv.ok = False
+        _must("template differs", load_llava, Path("/snap"), Path("/code"))
+    finally:
+        while "/code" in sys.path:
+            sys.path.remove("/code")
+        for m, v in old.items():
+            sys.modules.pop(m) if v is None else sys.modules.__setitem__(m, v)
 
 
 def _st_ovqa() -> None:

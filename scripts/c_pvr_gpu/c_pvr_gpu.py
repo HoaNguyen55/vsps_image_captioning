@@ -4,6 +4,7 @@ v3 5d6f5ca), money rule T1-REP v4 §9 (4124ef3), tier-1 STOPs prereg v1.2 §10.1
 
     $PY -I -B scripts/c_pvr_gpu/c_pvr_gpu.py selftest                laptop CPU: mocks the GPU parts, sockets off
     $PY -I -B scripts/c_pvr_gpu/c_pvr_gpu.py hostcheck --mblip SNAP --kept DIR --out O     GPU-host selftest
+    $PYE -I -B scripts/c_pvr_gpu/c_pvr_gpu.py hostcheck-en --out O     the same for LLaVA, in the EN venv (Q-LLAVA)
     $PY -I -B scripts/c_pvr_gpu/c_pvr_gpu.py decode --set S --arm A --manifest M --kept DIR --out O
                                              [--speed N --timing T] [--a1-decomp F] [--cap CAP.json]
     $PY -I -B scripts/c_pvr_gpu/c_pvr_gpu.py cap --timing T --sizes Z --s-vnd S --r-host R --p1-epoch E
@@ -32,8 +33,8 @@ from fractions import Fraction
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-CODE = {"scripts/c_pvr/c_pvr.py": "50c29fae9408d2def21558bdaca15cdd599a4cbd142d6e433183897de0ac256b",
-        "scripts/c_pvr/c_pvr_run.py": "ce93f8eaa3674522124e57dc92e3f8374e65fae0183e3cfebcb971ba78ef9de0"}
+CODE = {"scripts/c_pvr/c_pvr.py": "a503644a06ef5723496c47d69f9d91c6ef604b199a205c7357b66f2dc7ba2ec8",
+        "scripts/c_pvr/c_pvr_run.py": "0c80ee68ec57402fc3f0a77bbaf7f81f992cf16b2bf2abbda8ea94a6b9b26b98"}
 CP = CR = None  # c_pvr, c_pvr_run (stdlib-only at import): bound by load() after their shas match
 
 PENDING = "PENDING"
@@ -44,7 +45,8 @@ PINS = {
     "A9": S9,  # c_pvr.py A9_POOL + the M-CLIP pass of the A9 step (S9 §3)
     "A5": S9,  # c_pvr.py LMCAP_N, SEEDS["A5"], lmcap_block_vi.txt + the XGLM step (S9 §2)
     "A10": S9,  # c_pvr.py MAX_NEW["rederive"], rederive_vi.txt, rederive_cap_vi.txt + the two-call step (S9 §4)
-    "EN": PENDING,  # LLaVA code commit, CLIP tower sha, LLaVA env (PINS-A §12 Q-LLAVA)
+    "EN": "Q-LLAVA P3",  # PINS-A §12: c_pvr.py EN_MODELS (4481d270, CLIP tower ce19dc91, LLaVA code c121f043),
+    # LLaVA env = requirements_c_pvr_llava.lock; S1 = PVR-drop [proposal] (EN_AS)
     "DEMOCAP_d_tc": PENDING,  # CC-269r2 W5: D-TC demonstration-caption rule, to be ruled at the S10 read
     "DEMOCAP_d_en": PENDING,  # CC-269r2 W5: D-EN rule, same
 }
@@ -65,13 +67,16 @@ SETS = {  # [proposal] set -> (datastore, prompt language, arms); prereg §4.1 a
     "ktvic_explore": ("d_vi", "vi", tuple(a for a in VI_ARMS if a != "A12")),  # A12 needs OI labels: XM3600 only
     "openviic_explore": ("d_vi", "vi", tuple(a for a in VI_ARMS if a != "A12")),
     "vitextvqa_dev": ("d_vi", "vi", tuple(a for a in VI_ARMS if a != "A12")),
-    "t_a": ("d_tc", "en", tuple(a for a in VI_ARMS if a != "A12")),
+    "t_a": ("d_tc", "en", tuple(a for a in VI_ARMS if a not in ("A12", *S9_ARMS))),  # CC-272 N2: S9 is D-VI only
     "kt_c": ("d_en", "en", EN_ARMS),
 }
 SPEED_SET = {"vi": "xm3600_vi", "en": "kt_c"}  # prereg §10.1: 200 XM3600-vi x every VI arm, 200 KT-C x S1-S5
 SPEED_N = 200
 NEEDS = {"A4": "A4", "A9": "A9", "A5": "A5", "A10": "A10", **{s: "EN" for s in EN_ARMS}}
 NEVER_CUT = {"A4", "A9"}  # T1-REP R-1: a PENDING pin here may not become a silent cut
+EN_AS = {"S1": "PVR-drop", "S2": "A8", "S3": "A1", "S4": "A0", "S5": "A6"}  # prereg §5.1; S1 variant [proposal]
+A8_SRC = {"A8": "A1", "S2": "S3"}  # CC-270r2 N5': the arm whose outputs A8 / S2 decompose and correct
+BY_NAME = ("xlmr", "clip336")  # CC-272 N1: loaded BY NAME offline (open_clip's text tower; LLaVA's CLIP tower)
 
 # money (host v3 §2-§3; T1-REP §9): integer VND and integer seconds only
 M_BASE, M_PQC2 = 350_000, 465_000
@@ -111,6 +116,14 @@ def load(root: Path = ROOT) -> None:
     sys.path.insert(0, str(root / "scripts/c_pvr"))
     import c_pvr as CP  # noqa: E402  LABEL, prompts, render, pick, verify, pvr_masks, a7/a12 masks, generate ...
     import c_pvr_run as CR  # noqa: E402  LISTS_IN (source json pins, W3), KT_ID, OV_KEY (id forms, W2)
+    sets_ok()
+
+
+def sets_ok() -> None:
+    """CC-272 N2: the S9 arms are pinned for D-VI only (S9 N10), so no other set may list them; checked on every
+    command, before steps() can order a step that would FAULT mid-block."""
+    if bad := [(s, a) for s, (ds, _, arms) in SETS.items() for a in arms if a in S9_ARMS and ds != "d_vi"]:
+        fault(f"S9 arms on a non-D-VI set: {bad}")
 
 
 def need(key: str) -> None:
@@ -168,7 +181,7 @@ def echo_probe(model) -> dict:
 
     def spy(**k):
         out = orig(**k)
-        ids, o = k["input_ids"][0].tolist(), out[0].tolist()
+        ids, o = k["input_ids" if "input_ids" in k else "inputs"][0].tolist(), out[0].tolist()
         rec["starts_with_prompt_ids"] = o[:len(ids)] == ids
         return out
 
@@ -176,16 +189,36 @@ def echo_probe(model) -> dict:
     return rec
 
 
-def check_echo(gen, probe: dict, P: dict, image) -> dict:
+def check_echo(gen, probe: dict, P: dict, image, lang: str = "vi") -> dict:
     """prereg PINS-A §12 Ruling 2(b): the decoded text never holds the prompt, for both kinds."""
     out = {}
-    for kind, prompt in (("caption", CP.render(P, [], "vi")), ("verify", CP.ver_prompt(P, "một con chó"))):
+    for kind, prompt in (("caption", CP.render(P, [], lang)), ("verify", CP.ver_prompt(P, "một con chó"))):
         text, finish = gen(image, prompt, kind)
         body = CP.clean(prompt)
         if body in CP.clean(text) or CP.clean(text).startswith(body[:24]):
             fault(f"prompt echo in the {kind} output")
         out[kind] = {"strip_branch": probe.get("starts_with_prompt_ids"), "finish": finish, "chars": len(text)}
     return out
+
+
+def genconfig_spy(GenerationConfig) -> list:
+    """CC-272 N7 / N-S11d: record GenerationConfig.validate()'s config on every call. generate() validates the
+    effective config last (4.37: after update(); 4.51: update() at the end of _prepare_generation_config, after the
+    model-default merge), so seen[-1] after a call is the config that decoded."""
+    seen, orig = [], GenerationConfig.validate
+
+    def validate(self, *a, **k):
+        seen.append({n: v for n, v in self.to_dict().items() if n != "transformers_version"})
+        return orig(self, *a, **k)
+
+    GenerationConfig.validate = validate
+    return seen
+
+
+def xglm_ok(text: str, P: dict) -> None:
+    """CC-272 N7: the hostcheck XGLM call must give text, and not an echo of the LMCap block's head."""
+    if not text.strip() or CP.clean(P["lmcap_block_vi.txt"])[:19] in CP.clean(text):
+        fault(f"XGLM synthetic call: empty or a template echo ({len(text)} chars)")
 
 
 def rec_ok(rec: dict, keys: set = LOG_KEYS) -> dict:
@@ -226,12 +259,43 @@ def norm_ids(a, universe: frozenset) -> list[str]:
     return ids
 
 
-def helper_check(snap: Path, name: str) -> None:
-    """S9 §8.1: every pinned helper file by LFS sha256 or git-blob SHA-1 before any load; a mismatch is a FAULT."""
-    for f, (kind, want) in CP.HELPERS[name][2].items():
+def spec(name: str) -> tuple:
+    return {**CP.HELPERS, **CP.EN_MODELS}[name]
+
+
+def helper_check(snap: Path, name: str) -> dict:
+    """S9 §8.1 (and Q-LLAVA): every pinned file by LFS sha256 or git-blob SHA-1 before any load; a mismatch is a
+    FAULT. Returns the raw sha256 of the blob-pinned files (CC-272 N7, S9 §9 U7: the host records them)."""
+    raw = {}
+    for f, (kind, want) in spec(name)[2].items():
         _, s256, s1 = CP.blob_hashes(guard(snap / f))
         if (s256 if kind == "lfs" else s1) != want:
-            fault(f"{name} {f} differs from its S9 pin {want[:8]}; nothing is loaded")
+            fault(f"{name} {f} differs from its pin {want[:8]}; nothing is loaded")
+        if kind == "blob":
+            raw[f] = s256
+    return raw
+
+
+def by_name_ok(name: str, snap: Path, cache=None) -> None:
+    """A repo loaded BY NAME offline must resolve, file by file, to its pinned snapshot (refs/main = the pin)."""
+    from huggingface_hub import try_to_load_from_cache
+    repo, _, files = spec(name)
+    for f in files:
+        got = try_to_load_from_cache(repo, f, cache_dir=cache)
+        if not isinstance(got, str) or Path(got).parent.resolve() != snap.resolve():
+            fault(f"{repo} {f} does not resolve BY NAME to the pinned snapshot; nothing is loaded")
+
+
+def write_ref(cache: Path, name: str) -> Path:
+    """CC-272 N1 (closes CC-178 N1, OPS-1030n): snapshot_download by revision writes no refs/main, so each BY_NAME
+    repo gets refs/main = its pinned revision (no newline, as huggingface_hub writes it), then by_name_ok."""
+    repo, rev, _ = spec(name)
+    snap = cache / f"models--{repo.replace('/', '--')}" / "snapshots" / rev
+    ref = snap.parent.parent / "refs" / "main"
+    ref.parent.mkdir(exist_ok=True)
+    ref.write_text(rev)
+    by_name_ok(name, snap, cache)
+    return snap
 
 
 def helper_snap(d: Path, name: str) -> Path:
@@ -245,11 +309,7 @@ def load_mclip(d: Path):
     snap, xlmr = helper_snap(d, "mclip"), helper_snap(d, "xlmr")
     helper_check(snap, "mclip")
     helper_check(xlmr, "xlmr")
-    from huggingface_hub import try_to_load_from_cache
-    for f in CP.HELPERS["xlmr"][2]:
-        got = try_to_load_from_cache(CP.HELPERS["xlmr"][0], f)
-        if not isinstance(got, str) or Path(got).parent.resolve() != xlmr.resolve():
-            fault(f"{CP.HELPERS['xlmr'][0]} {f} does not resolve BY NAME to the pinned snapshot; nothing is scored")
+    by_name_ok("xlmr", xlmr)
     import open_clip
     model, _, pre = open_clip.create_model_and_transforms(
         CP.MCLIP_NAME, pretrained=str(snap / "open_clip_pytorch_model.bin"), precision="fp32")
@@ -265,6 +325,16 @@ def load_xglm(d: Path):
     tok = AutoTokenizer.from_pretrained(snap, local_files_only=True)
     model = XGLMForCausalLM.from_pretrained(snap, local_files_only=True, torch_dtype=getattr(torch, CP.XGLM_DTYPE))
     return model.eval().to("cuda"), tok
+
+
+def load_llava_host(d: Path):
+    """Q-LLAVA (PINS-A §12): every pin first (shards, tokenizer, configs, the CLIP tower, the LLaVA code files), the
+    tower must resolve BY NAME to its pinned snapshot, then c_pvr.load_llava (each torch.load under weights_only_guard)."""
+    snap, tower, code = (helper_snap(d, n) for n in ("llava", "clip336", "llava_code"))
+    for s, n in ((snap, "llava"), (tower, "clip336"), (code, "llava_code")):
+        helper_check(s, n)
+    by_name_ok("clip336", tower)
+    return CP.load_llava(snap, code)
 
 
 def mclip_cos(model, pre, tok, image, texts: list[str], torch) -> tuple[list[float], int]:
@@ -302,6 +372,8 @@ def a5_shots(M: dict, kept: frozenset, qids: set) -> list[tuple[list[str], str]]
     out = []
     for s in want:
         caps = [i for i in norm_ids(got[s], kept) if i != s][:CP.K]
+        if len(caps) != CP.K:
+            fault(f"A5 shot {s!r}: {len(caps)} kept ids besides itself, not K = {CP.K}")
         if miss := [i for i in [s, *caps] if i not in M["demos"]]:
             fault(f"A5 shot {s!r}: {len(miss)} ids have no manifest demonstration")
         out.append(([M["demos"][i]["text"] for i in caps], M["demos"][s]["text"]))
@@ -333,6 +405,13 @@ def demo_captions(ids, src: Path) -> dict:
             fault(f"id {i!r} has no caption in its source")
         out[i] = CP.clean(cap)
     return out
+
+
+def democap_p4(ids, src: Path) -> dict:
+    fault("no demonstration-caption code for this datastore yet (P4, CC-270 Ruling 6: routed by datastore)")
+
+
+DEMOCAP_RULE = {"d_vi": demo_captions, "d_tc": democap_p4, "d_en": democap_p4}  # by DATASTORE, never by id form
 
 
 # ---------------------------------------------------------------------------------------------- money (T1-REP §9)
@@ -412,9 +491,7 @@ def left_sec(cap: dict, now: float) -> int:
 
 # ---------------------------------------------------------------------------------------------- decode
 def demos_for(arm: str, q: dict, M: dict, kept: frozenset, ask, prior: dict) -> tuple[list[str], list[str], dict]:
-    """Arm -> (demo ids, demo texts, stats). Reuses c_pvr.py arm code only."""
-    if arm in NEEDS:
-        need(NEEDS[arm])
+    """Arm (EN arms as their EN_AS twin) -> (demo ids, demo texts, stats). Reuses c_pvr.py arm code only."""
     ranked = norm_ids(q["ranked"], kept)  # CC-261 N6: json/npz ids may be int; matched as str only
     if arm == "A9":  # S9 §3: A1's top A9_POOL re-ranked by this step's M-CLIP pass, the best K kept
         sc, trunc = prior[q["id"]]
@@ -445,6 +522,16 @@ def demos_for(arm: str, q: dict, M: dict, kept: frozenset, ask, prior: dict) -> 
         fault(f"arm {arm} has no demonstration rule here")
     texts, emptied = CP.demos_after(dcs, masks)
     return ids, texts, {**st, "emptied": emptied}
+
+
+def pool_check(arm: str, todo: list, M: dict, kept: frozenset) -> None:
+    """CC-272 N4: before any billed model load, every query has the ranked kept ids its arm reads (A9 / A3 the top 7,
+    A0 / A2 / A8 none, else K), each with a manifest demonstration."""
+    n = 0 if arm in ("A0", "A2", "A8") else CP.A9_POOL if arm == "A9" else CP.A3_TOP if arm == "A3" else CP.K
+    for q in todo:
+        r = norm_ids(q["ranked"], kept)[:n]
+        if len(r) < n or any(i not in M["demos"] for i in r):
+            fault(f"query {q['id']!r}: fewer than {n} ranked kept ids with a demonstration ({arm}); nothing is loaded")
 
 
 def speed_ids(ids: list[str], n: int) -> list[str]:
@@ -481,16 +568,17 @@ def decode(x, load, image_of, clock=time.time, sleep=time.sleep) -> int:
     ds, lang, arms = SETS[x.set]
     if x.arm not in arms:
         fault(f"{x.arm} does not run on {x.set}")
-    if x.arm in S9_ARMS and ds != "d_vi":
-        fault(f"{x.arm} on {x.set}: the S9 pins cover D-VI only (S9 N10); no {ds} version is pinned")
+    if x.arm in NEEDS:
+        need(NEEDS[x.arm])
     if ds != "d_vi":
         need(f"DEMOCAP_{ds}")
+    base = EN_AS.get(x.arm, x.arm)  # S1-S5 run their VI twin's procedure on D-EN with LLaVA (prereg §5.1)
     kept = kept_ids(x.kept, ds)
     M = json.loads(guard(x.manifest).read_text("utf-8"))
     if (M.get("label"), M.get("set"), M.get("datastore")) != (CP.LABEL, x.set, ds):
         fault("manifest label/set/datastore mismatch")
     norm_ids(list(M["demos"]), kept)
-    want = demo_captions(sorted(M["demos"]), x.src)
+    want = DEMOCAP_RULE[ds](sorted(M["demos"]), x.src)
     if bad := [i for i, d in M["demos"].items() if d["text"] != want[i]]:
         fault(f"{len(bad)} manifest demonstration texts differ from the N8 rule (first {bad[0]!r})")
     qs = M["queries"]
@@ -502,10 +590,11 @@ def decode(x, load, image_of, clock=time.time, sleep=time.sleep) -> int:
         rows = (x.out / f"{x.set}.PVR-drop.jsonl").read_text().splitlines()
         prior = {r["id"]: r["masks"] for r in map(json.loads, rows)}
     waited = None
-    if x.arm == "A8":
+    if base == "A8":
         if not x.a1_decomp:
-            fault("A8 needs --a1-decomp")
-        a1 = {r["id"]: r["caption"] for r in map(json.loads, (x.out / f"{x.set}.A1.jsonl").read_text().splitlines())}
+            fault(f"{x.arm} needs --a1-decomp")
+        a1 = {r["id"]: r["caption"] for r in map(json.loads, (x.out / f"{x.set}.{A8_SRC[x.arm]}.jsonl").read_text()
+                                                .splitlines())}
         dec, waited = a1_decomp(x.a1_decomp, set(a1), clock, sleep)
     shots = a5_shots(M, kept, {q["id"] for q in qs}) if x.arm == "A5" else None
     if x.speed:
@@ -522,13 +611,19 @@ def decode(x, load, image_of, clock=time.time, sleep=time.sleep) -> int:
     if waited is not None:
         write_rec(log, {"utc": utc(), "event": "A8_WAIT", "set": x.set, "arm": x.arm, "sec": waited})
     todo, pass_sec = [q for q in qs if q["id"] not in done], 0.0
+    pool_check(base, todo, M, kept)
     if x.arm in ("A4", "A9"):
         score, close = load("mclip")
         s0 = clock()
-        prior = {q["id"]: mclip_scores(x.arm, q, M, kept, image_of(q), score) for q in todo}
+        for q in todo:
+            if cap and left_sec(cap, clock()) <= 0:  # CC-272 N6: the cap also binds inside the M-CLIP pass
+                close()
+                write_rec(log, {"utc": utc(), "event": "CAP_STOP", "set": x.set, "arm": x.arm, "id": q["id"]})
+                return CAP_STOP_RC
+            prior[q["id"]] = mclip_scores(x.arm, q, M, kept, image_of(q), score)
         pass_sec = clock() - s0
         close()
-    gen, _ = load("xglm" if x.arm == "A5" else "mblip")
+    gen, _ = load("llava" if x.arm in EN_ARMS else "xglm" if x.arm == "A5" else "mblip")
     t0, n = clock() - pass_sec, 0
     for q in todo:
         if cap and left_sec(cap, clock()) <= 0:
@@ -536,7 +631,7 @@ def decode(x, load, image_of, clock=time.time, sleep=time.sleep) -> int:
             return CAP_STOP_RC
         img = image_of(q)
         ask = lambda t, img=img: gen(img, CP.ver_prompt(P, t), "verify")[0]  # noqa: E731
-        if x.arm == "A8":
+        if base == "A8":
             text, st = CP.a8_caption({"A1": a1[q["id"]]}, lambda _c, i=q["id"]: dec[i], ask)
             ids, finish, tpl = [], "a8", "ver_3way.txt"
         elif x.arm in ("A5", "A10"):  # S9 §2 / §4: A1's top K, D-VI, the §6 (N8) caption rule
@@ -549,11 +644,11 @@ def decode(x, load, image_of, clock=time.time, sleep=time.sleep) -> int:
                 st["answers"] = answers
             text, finish = gen(img, prompt, "caption")
         else:
-            ids, demos, st = demos_for(x.arm, q, M, kept, ask, prior)
+            ids, demos, st = demos_for(base, q, M, kept, ask, prior)
             text, finish = gen(img, CP.render(P, demos, lang), "caption")
             tpl = f"cap_{lang}_{'k' if demos else '0'}.txt"
         rec = {"utc": utc(), "set": x.set, "arm": x.arm, "id": q["id"], "demo_ids": ids, "tpl": tpl,
-               "finish": finish, **{k: v for k, v in st.items() if k in OUT_KEYS}}
+               "finish": finish, **{k: v for k, v in st.items() if k in OUT_KEYS and k != "arm"}}
         keep = SPEED_LOG if x.speed else LOG_KEYS  # NB-SPEED: nothing derived from an output is kept
         write_rec(log, {k: v for k, v in rec.items() if k in keep})  # the prompt dump: template + demo ids
         if out:
@@ -576,13 +671,16 @@ def hostcheck_fresh(hc: Path) -> None:
         fault("HOSTCHECK_OK.json was written by other code; rerun mode selftest")
 
 
-def preflight(arms) -> None:
-    """Never-cut arms with a PENDING pin refuse the whole block (no silent cut)."""
+def preflight(pairs) -> None:
+    """Every pin the listed (set, arm) steps need, before the first step: never-cut arms (no silent cut), the arm
+    pins, and the DEMOCAP rule of every non-D-VI datastore, so no step can FAULT on a PENDING pin mid-block."""
     for a in sorted(NEVER_CUT):
         need(a)
-    for a in arms:
+    for s, a in pairs:
         if a in NEEDS:
             need(NEEDS[a])
+        if SETS[s][0] != "d_vi":
+            need(f"DEMOCAP_{SETS[s][0]}")
 
 
 PHASES = (("A1", "S3", "PVR-drop", "PVR-keep", "A12", "A0", "A6", "A7", "A4", "A9", "S1", "S4", "S5"),  # never-cut
@@ -637,7 +735,9 @@ def hostcheck(x) -> dict:
     probe = echo_probe(model)
     img = Image.new("RGB", (384, 384), (120, 160, 200))  # synthetic: no dataset image is opened
     P = CP.prompts(x.root)
+    seen = genconfig_spy(GenerationConfig)
     rep["echo"] = check_echo(lambda i, p, k: CP.generate(model, proc, i, p, k), probe, P, img)
+    rep["effective_genconfig"] = {"mblip": seen[-1]}  # CC-272 N7, N-S11d (bos_token_id included)
     rep["kept"] = {k: len(kept_ids(x.kept, k)) for k in KEPT}
     rep["vram_peak_bytes"] = torch.cuda.max_memory_allocated()  # mBLIP alone
     del model
@@ -645,11 +745,11 @@ def hostcheck(x) -> dict:
     rep["helpers"] = {}
     for name in CP.HELPERS:  # S9 §8.1 + §8.3: pins, then both pickles load under weights_only=True
         snap = helper_snap(x.out, name)
-        helper_check(snap, name)
+        raw = helper_check(snap, name)
         pk = [f for f in CP.HELPERS[name][2] if f.endswith(".bin")]
         for f in pk:
             torch.load(snap / f, map_location="cpu")
-        rep["helpers"][name] = {"pins": "ok", "weights_only_loaded": pk}
+        rep["helpers"][name] = {"pins": "ok", "weights_only_loaded": pk, "raw_sha256": raw}  # N7, S9 U7
     # CC-270 N6, S9 U1/U4/U8: the real loader paths, one synthetic call each, peak VRAM per pass (never co-resident)
     torch.cuda.reset_peak_memory_stats()
     m = load_mclip(x.out)
@@ -664,11 +764,40 @@ def hostcheck(x) -> dict:
     xm, xt = load_xglm(x.out)
     shots = [([f"zq {j}{i}" for i in range(CP.K)], f"zq {j}") for j in range(CP.LMCAP_N)]
     text, finish = CP.generate_text(xm, xt, CP.lmcap_prompt(P, shots, [f"zq q{i}" for i in range(CP.K)]), "caption")
+    xglm_ok(text, P)
     rep["xglm"] = {"finish": finish, "chars": len(text), "vram_peak_bytes": torch.cuda.max_memory_allocated()}
+    rep["effective_genconfig"]["xglm"] = seen[-1]
     del xm
     torch.cuda.empty_cache()
     common_checks(work, np)
     (x.out / "HOSTCHECK_OK.json").write_text(json.dumps(rep, indent=1, sort_keys=True) + "\n")
+    return rep
+
+
+def hostcheck_en(x) -> dict:
+    """GPU-host selftest of the EN venv (Q-LLAVA, PINS-A §12): weights_only wrapper, GenerationConfig round trip under
+    its transformers, every LLaVA pin and the tower's by-name cache, the template byte check (in c_pvr.load_llava),
+    the echo check on both kinds, the effective generation config, peak VRAM. Writes HOSTCHECK_EN_OK.json."""
+    import torch
+    weights_only_guard(torch)  # before transformers / the LLaVA code are imported
+    from PIL import Image
+    from transformers import GenerationConfig
+    rep = {"label": CP.LABEL, "utc": utc(), "c_pvr_gpu_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+           "c_pvr_sha256": CODE["scripts/c_pvr/c_pvr.py"], "freeze_sha256": os.environ.get("C_PVR_FREEZE_EN", "")}
+    work = x.out / "hostcheck_en"
+    work.mkdir(parents=True, exist_ok=True)
+    check_weights_only(torch, work)
+    rep["genconfig_none_keys"] = check_genconfig(GenerationConfig)
+    seen = genconfig_spy(GenerationConfig)
+    model, tok, ip = load_llava_host(x.out)
+    model = model.to("cuda")
+    probe = echo_probe(model)
+    img = Image.new("RGB", (384, 288), (120, 160, 200))  # synthetic, not square: the 'pad' branch runs
+    rep["echo"] = check_echo(lambda i, p, k: CP.generate_llava(model, tok, ip, i, p, k), probe, CP.prompts(x.root),
+                             img, "en")
+    rep["effective_genconfig"] = {"llava": seen[-1]}
+    rep["vram_peak_bytes"] = torch.cuda.max_memory_allocated()
+    (x.out / "HOSTCHECK_EN_OK.json").write_text(json.dumps(rep, indent=1, sort_keys=True) + "\n")
     return rep
 
 
@@ -807,15 +936,17 @@ def _st_decode(work: Path) -> None:
     assert not any(t.encode() in blob for t in texts.values()) and b"Captions" not in blob  # no demo text, no prompt
     assert "Một bức ảnh." in (out / "xm3600_vi.A1.jsonl").read_text("utf-8")
     assert b"caption" not in b"".join(f.read_bytes() for f in (out / "logs").iterdir())
-    preflight(["A1", *S9_ARMS])  # S9 pinned (P2); EN still PENDING, so speed and tier1 still refuse today
-    _must("EN pin is PENDING", preflight, sorted({a for _, a in steps("speed", None)}))
+    preflight([("xm3600_vi", a) for a in ("A1", *S9_ARMS, *EN_ARMS)])  # S9 (P2) and EN (P3) pinned
+    _must("DEMOCAP_d_en pin is PENDING", preflight, steps("speed", None))  # P4 open: speed and tier1 still refuse
+    _must("DEMOCAP_d_tc pin is PENDING", preflight, steps("tier1", None))
     PINS["A4"] = PENDING
     try:  # a PENDING never-cut pin refuses the block even when no A4 step is listed (T1-REP R-1)
-        _must("A4 pin is PENDING", preflight, ["A1"])
+        _must("A4 pin is PENDING", preflight, [("xm3600_vi", "A1")])
     finally:
         PINS["A4"] = S9
-    for a in S9_ARMS:  # S9 N10: D-VI only, refused before any d_tc file is read
-        _must("D-VI only", run, set="t_a", arm=a)
+    for a in S9_ARMS:  # CC-272 N2 / S9 N10: D-VI only, so t_a does not list them
+        _must("does not run", run, set="t_a", arm=a)
+    _st_pool_cap(run, loads, man, work)
     sp = steps("speed", None)
     assert ("xm3600_vi", "A8") not in sp and ("kt_c", "S1") in sp and {s for s, _ in sp} == {"xm3600_vi", "kt_c"}
     _st_steps()
@@ -838,6 +969,7 @@ def _st_decode(work: Path) -> None:
     assert [json.loads(r)["n"] for r in tim.read_text().splitlines()][-4:] == [2] * 4
     _must("not timed", run, arm="A8", speed=2, timing=tim)
     _st_a8(work, rows, run, base, load)
+    _st_en(work, run, loads, seen)
     capf = work / "cap.json"
     capf.write_text(json.dumps({"p1_epoch": 0, "cap_h": 1}))
     assert run(arm="A3", cap=capf, out=work / "o2") == CAP_STOP_RC  # wall clock long past the stamp
@@ -860,11 +992,19 @@ def _st_steps() -> None:
     assert sorted(flat) == sorted(VI_ARMS + EN_ARMS) and len(flat) == len(set(flat)) and PHASES[2][-1] == "A10"
     full = steps("tier1", None)
     vi = [s for s, (_, _, arms) in SETS.items() if "A1" in arms]
-    assert len(full) == len(set(full)) == sum(len(a) for _, _, a in SETS.values()) == 76
+    assert len(full) == len(set(full)) == sum(len(a) for _, _, a in SETS.values()) == 72  # t_a: no S9 arm (N2)
     assert full[:6] == [(s, "A1") for s in vi] + [("kt_c", "S3")]
     pos = lambda arms: [i for i, (_, a) in enumerate(full) if a in arms]  # noqa: E731
     assert max(pos(PHASES[0])) < min(pos(PHASES[1])) <= max(pos(PHASES[1])) < min(pos(CUT_ORDER))
-    assert [a for _, a in full[-25:]] == [a for a in reversed(CUT_ORDER) for _ in vi]  # A11 x5 ... A10 x5
+    tail = [(s, a) for a in reversed(CUT_ORDER) for s, (_, _, arms) in SETS.items() if a in arms]
+    assert full[-len(tail):] == tail and len(tail) == 23 and full[-1] == ("vitextvqa_dev", "A10")  # A11 x5 ... A10 x4
+    assert not [a for s, a in full if s == "t_a" and a in S9_ARMS]
+    old = SETS["t_a"]
+    SETS["t_a"] = (old[0], old[1], old[2] + ("A4",))
+    try:  # an S9 arm on a non-D-VI set FAULTs on every command, before any step is ordered (N2)
+        _must("S9 arms on a non-D-VI set", sets_ok)
+    finally:
+        SETS["t_a"] = old
     assert all(full.index((s, "PVR-drop")) < full.index((s, "A7")) for s in vi)
     t1 = steps("tier1", {"arms": [a for a in VI_ARMS if a not in ("A10", "A5")]})
     assert ("t_a", "A12") not in t1 and ("xm3600_vi", "A10") not in t1 and ("kt_c", "S1") not in t1
@@ -900,6 +1040,11 @@ def _st_s9_decode(run, rows, seen, loads, texts: dict, shot: dict, out: Path, ma
     M["a5_shots"] = {**{s: r for s, r in shot.items() if s != s0}, other: shot[s0]}  # one shot off the SEEDS draw
     (out.parent / "m_shots.json").write_text(json.dumps(M, ensure_ascii=False))
     _must("SEEDS['A5'] draw", run, arm="A5", manifest=out.parent / "m_shots.json")
+    M["a5_shots"] = {s: r[:4] for s, r in shot.items()}  # the shot itself + 3 others: short, before any load (N4)
+    (out.parent / "m_shots.json").write_text(json.dumps(M, ensure_ascii=False))
+    loads.clear()
+    _must("kept ids besides itself", run, arm="A5", manifest=out.parent / "m_shots.json")
+    assert loads == []
     logs = b"".join(f.read_bytes() for f in (out / "logs").iterdir())
     assert "sáng".encode() not in logs and b"answers" not in logs and b"scores" not in logs  # outputs only (§8.7)
 
@@ -997,11 +1142,141 @@ def _st_democap(src: Path, texts: dict, man: Path, run, work: Path) -> None:
     CP.HELPERS["t"] = ("t", "r", {"w.bin": ("lfs", hashlib.sha256(b"w").hexdigest()),
                                "c.json": ("blob", hashlib.sha1(b"blob 2\0{}").hexdigest())})
     try:
-        helper_check(snap, "t")
+        assert helper_check(snap, "t") == {"c.json": hashlib.sha256(b"{}").hexdigest()}  # N7: raw sha of blob files
         (snap / "c.json").write_bytes(b"[]")
-        _must("differs from its S9 pin", helper_check, snap, "t")
+        _must("differs from its pin", helper_check, snap, "t")
     finally:
         del CP.HELPERS["t"]
+
+
+def _st_pool_cap(run, loads, man: Path, work: Path) -> None:
+    """CC-272 N4: a short ranked pool FAULTs before any model load; N6: the cap binds inside the M-CLIP pass."""
+    M = json.loads(man.read_text("utf-8"))
+    q0 = M["queries"][0]
+    for arm, n, msg in (("A9", 5, "fewer than 7"), ("A3", 6, "fewer than 7"), ("A1", 3, "fewer than 4"),
+                        ("A10", 3, "fewer than 4")):
+        M["queries"] = [q0 | {"ranked": q0["ranked"][:n]}]
+        (work / "m_short.json").write_text(json.dumps(M, ensure_ascii=False))
+        loads.clear()
+        _must(msg, run, arm=arm, manifest=work / "m_short.json", out=work / "o_pool")
+        assert loads == [], (arm, loads)
+    M["queries"] = [q0 | {"ranked": q0["ranked"][:4]}]  # K ids are enough for A1 and A0 (none needed)
+    (work / "m_short.json").write_text(json.dumps(M, ensure_ascii=False))
+    assert run(arm="A0", manifest=work / "m_short.json", out=work / "o_pool") == 0
+    (work / "cap_past.json").write_text(json.dumps({"p1_epoch": 0, "cap_h": 1}))
+    loads.clear()
+    assert run(arm="A4", cap=work / "cap_past.json", out=work / "o_pool") == CAP_STOP_RC and loads == ["mclip", "close"]
+
+
+def _st_en(work: Path, run, loads, seen) -> None:
+    """P3 / N5': S1-S5 on kt_c with stand-in LLaVA: EN prompts, the EN_AS procedures, rows keep the S arm, S2 corrects
+    the S3 outputs (never A1's); the demonstration-caption rule is routed by datastore (COCO ids look like KTVIC)."""
+    P = CP.prompts(ROOT)
+    ids = [str(i) for i in range(30, 40)]  # COCO-style ids: they fullmatch KT_ID, so the D-VI rule must not see them
+    en = {i: f"A zq kettle{i} beside a zq heron." for i in ids}
+    body = "".join(f"{i}\n" for i in sorted(ids)).encode()
+    KEPT["d_en"] = ("d_en_kept_ids.txt", len(ids), hashlib.sha256(body).hexdigest())
+    kdir = work / "kept"
+    (kdir / "d_en_kept_ids.txt").write_bytes(body)
+    qs = [{"id": f"k{j}", "image": f"k{j}.jpg", "ranked": [ids[(j + i) % 10] for i in range(7)]} for j in range(3)]
+    men = work / "m_en.json"
+    men.write_text(json.dumps({"label": CP.LABEL, "set": "kt_c", "datastore": "d_en", "queries": qs,
+                               "demos": {i: _dc(t, ["A zq kettle", "a zq heron"]) for i, t in en.items()}}))
+    oen = work / "o_en"
+    PINS["DEMOCAP_d_en"] = "fixture"
+    _must("P4", run, set="kt_c", arm="S3", manifest=men, out=oen)  # no D-EN rule yet: never the D-VI one
+    DEMOCAP_RULE["d_en"] = lambda want, src: {i: en[i] for i in want}
+    en0, PINS["EN"] = PINS["EN"], PENDING
+    try:  # decode itself refuses an arm whose pin is PENDING, before any file or model is touched
+        _must("EN pin is PENDING", run, set="kt_c", arm="S3", manifest=men, out=oen)
+    finally:
+        PINS["EN"] = en0
+    rows = lambda a: [json.loads(r) for r in (oen / f"kt_c.{a}.jsonl").read_text().splitlines()]  # noqa: E731
+    for a in ("S3", "S1", "S4", "S5"):
+        loads.clear()
+        seen.clear()
+        assert run(set="kt_c", arm=a, manifest=men, out=oen) == 0 and loads == ["llava"], (a, loads)
+        cap = [p for k, p in seen if k == "caption"]
+        assert len(cap) == 3 and all(c.startswith("Captions of similar images:\n1. A zq kettle") and c.endswith(
+            P["cap_en_0.txt"]) for c in cap) if a != "S4" else cap == [P["cap_en_0.txt"]] * 3, (a, cap[:1])
+        assert {r["arm"] for r in rows(a)} == {a}
+    assert rows("S3")[0]["demo_ids"] == ids[:4] and rows("S4")[0]["demo_ids"] == []
+    s1 = rows("S1")[0]
+    assert s1["calls"] == 8 and s1["masks"] == [[False, False]] * 4  # the verifier ran (stand-in: all yes)
+    dd = work / "a1_decomp_en"
+    dd.mkdir()
+    dec = dd / "kt_c.json"
+    dec.write_text(json.dumps({r["id"]: _dc("A zq heron sleeps.", ["A zq heron"]) for r in rows("S3")}))
+    (dd / "MANIFEST.sha256").write_text(f"{hashlib.sha256(dec.read_bytes()).hexdigest()}  {dec.name}\n")
+    loads.clear()
+    assert not (oen / "kt_c.A1.jsonl").exists() and run(set="kt_c", arm="S2", manifest=men, out=oen, a1_decomp=dec) == 0
+    s2 = rows("S2")
+    assert [r["id"] for r in s2] == [r["id"] for r in rows("S3")] and {r["arm"] for r in s2} == {"S2"}
+    assert s2[0]["tpl"] == "ver_3way.txt" and loads == ["llava"]
+    _must("needs --a1-decomp", run, set="kt_c", arm="S2", manifest=men, out=oen)
+
+
+def _st_n7(work: Path) -> None:
+    """CC-272 N7 (effective GenerationConfig, XGLM output check, raw sha256 of blob files) and N1 (refs/main for the
+    BY_NAME repos, the LLaVA host loader's pin and by-name order) on stand-ins."""
+    class GC:
+        def __init__(self, **k):
+            self.k = k
+            self.validate()
+
+        def to_dict(self):
+            return dict(self.k, transformers_version="x")
+
+        def validate(self):
+            return None
+
+    seen = genconfig_spy(GC)
+    GC(bos_token_id=1, max_new_tokens=8)
+    assert seen == [{"bos_token_id": 1, "max_new_tokens": 8}]
+    P = CP.prompts(ROOT)
+    xglm_ok("Một con zq lạ.", P)
+    for bad in ("", "  ", "x " + P["lmcap_block_vi.txt"][:30]):
+        _must("XGLM synthetic call", xglm_ok, bad, P)
+    try:
+        import huggingface_hub  # noqa: F401
+    except ImportError:
+        return print("selftest: huggingface_hub absent, refs/main fixture skipped (it runs in the host venvs)")
+    cache, rev = work / "hub", "e" * 40
+    files = {"c.json": ("blob", hashlib.sha1(b"blob 2\0{}").hexdigest()), "w.bin": ("lfs", hashlib.sha256(b"w").hexdigest())}
+    saved = {n: CP.EN_MODELS[n] for n in ("llava", "clip336", "llava_code")}
+    d = work / "snaps"
+    d.mkdir()
+    try:
+        for n in saved:
+            CP.EN_MODELS[n] = (f"zq-org/zq-{n}", rev, files)
+            snap = cache / f"models--zq-org--zq-{n}" / "snapshots" / rev
+            snap.mkdir(parents=True)
+            (snap / "c.json").write_bytes(b"{}")
+            (snap / "w.bin").write_bytes(b"w")
+            (d / f"{n}_snapshot.path").write_text(f"{snap}\n")
+        assert helper_check(snap, "llava_code") == {"c.json": hashlib.sha256(b"{}").hexdigest()}
+        _must("does not resolve BY NAME", by_name_ok, "clip336", helper_snap(d, "clip336"), cache)  # no refs/main yet
+        got, CP.load_llava = CP.load_llava, lambda s, c: ("LOADED", s, c)
+        import huggingface_hub.constants as hc  # by_name_ok(cache=None) reads the default cache: point it here
+        import huggingface_hub.file_download as fd  # (older hubs bind the constant at import)
+        hc0 = {m: m.HF_HUB_CACHE for m in (hc, fd) if hasattr(m, "HF_HUB_CACHE")}
+        for m in hc0:
+            m.HF_HUB_CACHE = str(cache)
+        try:
+            _must("does not resolve BY NAME", load_llava_host, d)
+            assert write_ref(cache, "clip336") == helper_snap(d, "clip336")
+            assert (cache / "models--zq-org--zq-clip336/refs/main").read_text() == rev
+            assert load_llava_host(d) == ("LOADED", helper_snap(d, "llava"), helper_snap(d, "llava_code"))
+            (helper_snap(d, "llava_code") / "c.json").write_bytes(b"[]")  # a changed LLaVA code file: FAULT first
+            _must("llava_code c.json differs", load_llava_host, d)
+            (cache / "models--zq-org--zq-clip336/refs/main").write_text("f" * 40)
+            _must("does not resolve BY NAME", by_name_ok, "clip336", helper_snap(d, "clip336"), cache)
+        finally:
+            CP.load_llava = got
+            for m, v in hc0.items():
+                m.HF_HUB_CACHE = v
+    finally:
+        CP.EN_MODELS.update(saved)
 
 
 def _st_wipe(work: Path) -> None:
@@ -1041,7 +1316,7 @@ def selftest() -> None:
         raise OSError("selftest: network disabled")
 
     socket.socket, socket.create_connection = no_net, no_net  # type: ignore[assignment,misc]  after the imports
-    pend, kept0, lists0 = dict(PINS), dict(KEPT), dict(CR.LISTS_IN)
+    pend, kept0, lists0, rule0 = dict(PINS), dict(KEPT), dict(CR.LISTS_IN), dict(DEMOCAP_RULE)
     with tempfile.TemporaryDirectory() as td:
         work = Path(td)
         if torch is not None:  # real torch: the wrapper on the real loader, and the M-CLIP cosine
@@ -1058,6 +1333,7 @@ def selftest() -> None:
             def to_dict(self):
                 return self.k
         _must("drops or changes", check_genconfig, GC)
+        _st_n7(work)
         _st_echo()
         common_checks(work, np)
         _st_money()
@@ -1068,6 +1344,8 @@ def selftest() -> None:
             KEPT.update(kept0)
             CR.LISTS_IN.clear()
             CR.LISTS_IN.update(lists0)
+            PINS.update(pend)
+            DEMOCAP_RULE.update(rule0)
         _st_wipe(work)
         hc = work / "HOSTCHECK_OK.json"
         mine = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
@@ -1076,8 +1354,8 @@ def selftest() -> None:
         hc.write_text(json.dumps({"c_pvr_gpu_sha256": "0" * 64, "c_pvr_sha256": CODE["scripts/c_pvr/c_pvr.py"]}))
         _must("other code", hostcheck_fresh, hc)
         _must("REFUSED", guard, Path.home() / ".vsps_sealed" / "c_pvr")
-    assert PINS == pend and [k for k, v in PINS.items() if v == PENDING] == ["EN", "DEMOCAP_d_tc", "DEMOCAP_d_en"]
-    assert KEPT == kept0 and CR.LISTS_IN == lists0
+    assert PINS == pend and [k for k, v in PINS.items() if v == PENDING] == ["DEMOCAP_d_tc", "DEMOCAP_d_en"]
+    assert KEPT == kept0 and CR.LISTS_IN == lists0 and DEMOCAP_RULE == rule0
     print(f"selftest ok  {CP.LABEL}  c_pvr_gpu.py {hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}  "
           f"torch={'real' if torch else 'absent'} transformers={'real' if GenerationConfig else 'absent'}")
 
@@ -1140,11 +1418,13 @@ def main() -> int:
     sp = ap.add_subparsers(dest="cmd", required=True)
     sp.add_parser("selftest")
     pf = sp.add_parser("preflight")
-    pf.add_argument("--arms", nargs="*", default=[])
+    pf.add_argument("--steps", nargs="*", default=[], help="SET:ARM tokens, as steps() prints them")
     pf.add_argument("--hostcheck", type=Path, required=True)
+    pf.add_argument("--hostcheck-en", type=Path, required=True)
     h = sp.add_parser("hostcheck")
     for a in ("--mblip", "--kept", "--out"):
         h.add_argument(a, type=Path, required=True)
+    sp.add_parser("hostcheck-en").add_argument("--out", type=Path, required=True)
     d = sp.add_parser("decode")
     d.add_argument("--set", choices=SETS, required=True)
     d.add_argument("--arm", required=True)
@@ -1176,8 +1456,11 @@ def main() -> int:
     if x.cmd == "selftest":
         return selftest()
     if x.cmd == "preflight":
+        pairs = [tuple(t.split(":")) for t in x.steps]
         hostcheck_fresh(x.hostcheck)
-        return preflight(x.arms)
+        if any(a in EN_ARMS for _, a in pairs):
+            hostcheck_fresh(x.hostcheck_en)
+        return preflight(pairs)
     if x.cmd == "steps":
         cap = json.loads(x.cap.read_text()) if x.cap else None
         if x.mode != "speed" and (cap or {}).get("decision") != "RUN":
@@ -1205,14 +1488,18 @@ def main() -> int:
         return 0 if plan["decision"] == "RUN" else 3
     if x.cmd == "hostcheck":
         return print(json.dumps(hostcheck(x), sort_keys=True))
+    if x.cmd == "hostcheck-en":
+        return print(json.dumps(hostcheck_en(x), sort_keys=True))
     import torch
     weights_only_guard(torch)
     from PIL import Image
-    if x.arm in EN_ARMS:
-        CP.load_llava()  # FAULTs until Q-LLAVA pins (PINS-A §12)
     snaps = Path(os.environ["C_PVR_SNAPS"])  # ~/c_pvr_out: the <name>_snapshot.path files (c_pvr_job.sh)
 
     def loader(name):  # one generator per step process; the M-CLIP pass is closed before it loads (S9 §5)
+        if name == "llava":  # EN arms, run by c_pvr_job.sh with the EN venv's python
+            lm, tok, ip = load_llava_host(snaps)
+            lm = lm.to("cuda")
+            return (lambda i, p, k: CP.generate_llava(lm, tok, ip, i, p, k)), None
         if name == "mblip":
             model, proc = CP.load_mblip(Path(os.environ["C_PVR_MBLIP"]))
             model = model.to("cuda")

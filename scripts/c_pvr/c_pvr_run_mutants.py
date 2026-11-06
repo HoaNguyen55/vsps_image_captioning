@@ -17,7 +17,7 @@ from pathlib import Path
 
 M = {
     # Q-SPLIT (ii) pins and the import closure
-    "code_pin_c_pvr": ('"scripts/c_pvr/c_pvr.py": "50c29fae94', '"scripts/c_pvr/c_pvr.py": "50c29fae90'),
+    "code_pin_c_pvr": ('"scripts/c_pvr/c_pvr.py": "a503644a06', '"scripts/c_pvr/c_pvr.py": "a503644a00'),
     "no_code_check": ("    if bad := code_bad(root):\n", "    if (bad := code_bad(root)) and False:\n"),
     "code_bad_no_file_check": ("if not (root / rel).is_file() or hashlib", "if hashlib"),
     "no_closure_check": ("    if stray:\n", "    if False:\n"),

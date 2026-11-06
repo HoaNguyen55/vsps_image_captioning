@@ -75,10 +75,13 @@ M = {
     "r_host_unicode_digits": ('re.fullmatch(r"[0-9]+(\\.[0-9]+)?", line)', 're.fullmatch(r"\\d+(\\.\\d+)?", line)'),
     "r_host_no_range": ("    if not R_HOST[0] <= r <= R_HOST[1]:\n", "    if r <= 0:\n"),
     # CC-270 P2: S9 passes (A4 / A9 M-CLIP, A5 XGLM, A10 two calls), D-VI only, outputs-only answers and scores
-    "s9_dvi_guard_off": ('    if x.arm in S9_ARMS and ds != "d_vi":\n', "    if False:\n"),
-    "a5_loads_mblip": ('load("xglm" if x.arm == "A5" else "mblip")', 'load("mblip")'),
-    "mclip_not_closed": ("        close()\n", ""),
-    "mclip_after_generator": ('    gen, _ = load("xglm" if x.arm == "A5" else "mblip")\n    t0, n = clock() - pass_sec, 0\n',
+    "t_a_keeps_s9": ('tuple(a for a in VI_ARMS if a not in ("A12", *S9_ARMS))),', 'tuple(a for a in VI_ARMS if a != "A12")),'),
+    "sets_ok_off": ("    if bad := [(s, a) for s, (ds, _, arms) in SETS.items() for a in arms if a in S9_ARMS and ds != \"d_vi\"]:",
+                    "    if bad := []:"),
+    "a5_loads_mblip": ('else "xglm" if x.arm == "A5" else "mblip")', 'else "mblip")'),
+    "mclip_not_closed": ("        pass_sec = clock() - s0\n        close()\n", "        pass_sec = clock() - s0\n"),
+    "mclip_after_generator": ('    gen, _ = load("llava" if x.arm in EN_ARMS else "xglm" if x.arm == "A5" else "mblip")\n'
+                              '    t0, n = clock() - pass_sec, 0\n',
                               "    t0, n = clock() - pass_sec, 0\n"),
     "a9_no_mclip_pass": ('    if x.arm in ("A4", "A9"):\n        score, close', '    if x.arm == "A4":\n        score, close'),
     "a4_prop_text_scored": ('        rows = CP.a4_texts([M["demos"][i] for i in ranked[:CP.K]])\n',
@@ -93,6 +96,27 @@ M = {
     "a10_answers_dropped": ('                st["answers"] = answers\n', ""),
     "answers_in_log": ('LOG_KEYS = {"utc", "set",', 'LOG_KEYS = {"answers", "scores", "utc", "set",'),
     "a4_scores_not_written": ('        st = {"scores": prior[q["id"]], "masks": masks}\n', '        st = {"masks": masks}\n'),
+    # P3: EN arms (Q-LLAVA), S2 on S3 (CC-270r2 N5'), DEMOCAP by datastore (CC-270 Ruling 6), preflight per (set, arm)
+    "preflight_no_democap": ('        if SETS[s][0] != "d_vi":\n            need(f"DEMOCAP_{SETS[s][0]}")\n', ""),
+    "s2_reads_a1": ('A8_SRC = {"A8": "A1", "S2": "S3"}', 'A8_SRC = {"A8": "A1", "S2": "A1"}'),
+    "s2_through_demos_for": ('    if base == "A8":\n        if not x.a1_decomp:', '    if x.arm == "A8":\n        if not x.a1_decomp:'),
+    "en_loads_mblip": ('load("llava" if x.arm in EN_ARMS else "xglm" if x.arm == "A5" else "mblip")',
+                       'load("xglm" if x.arm == "A5" else "mblip")'),
+    "en_rec_arm_overwritten": ('if k in OUT_KEYS and k != "arm"}', "if k in OUT_KEYS}"),
+    "democap_by_id_form": ('    want = DEMOCAP_RULE[ds](sorted(M["demos"]), x.src)', '    want = demo_captions(sorted(M["demos"]), x.src)'),
+    "en_need_skipped": ("    if x.arm in NEEDS:\n        need(NEEDS[x.arm])\n", ""),
+    # CC-272 N4 (pools before any load), N6 (cap inside the M-CLIP pass), N7 (hostcheck records), N1 (refs/main)
+    "pool_check_off": ("    pool_check(base, todo, M, kept)\n", ""),
+    "pool_a9_k": ('CP.A9_POOL if arm == "A9"', 'CP.K if arm == "A9"'),
+    "a5_shot_short": ("        if len(caps) != CP.K:\n", "        if False:\n"),
+    "mclip_pass_no_cap": ("            if cap and left_sec(cap, clock()) <= 0:  # CC-272 N6", "            if False:  # CC-272 N6"),
+    "xglm_check_off": ('    if not text.strip() or CP.clean(P["lmcap_block_vi.txt"])[:19] in CP.clean(text):\n', "    if False:\n"),
+    "genconfig_spy_noop": ("    GenerationConfig.validate = validate\n", ""),
+    "raw_sha_dropped": ('        if kind == "blob":\n            raw[f] = s256\n', ""),
+    "ref_not_written": ("    ref.write_text(rev)\n", ""),
+    "by_name_unchecked": ('    by_name_ok("clip336", tower)\n', ""),
+    "llava_code_unchecked": ('    for s, n in ((snap, "llava"), (tower, "clip336"), (code, "llava_code")):',
+                             '    for s, n in ((snap, "llava"), (tower, "clip336")):'),
 }
 
 
@@ -106,10 +130,12 @@ J = {
     "rc4_not_cap_stop": ("if [ $rc = 124 ] || [ $rc = 4 ]; then", "if [ $rc = 124 ]; then"),
     "speed_end_per_run": ("END=$(( $(cat $O/speed_start.epoch) + 5400 ))", "END=$(( $(date +%s) + 5400 ))"),
     "a8_no_decomp_arg": ("    case $ARM in A8|S2) ARGS+=(--a1-decomp $HC/a1_decomp/$SET.json);; esac\n", ""),
+    "en_main_venv": ("  case $ARM in S[1-5]) PYS=$PYE;; *) PYS=$PY;; esac", "  PYS=$PY"),
+    "en_freeze_unchecked": ('[ "$C_PVR_FREEZE_EN" = "$FREEZE_SHA_EN" ] || stop', "true || stop"),
 }
 FAKE_PY = r"""#!/bin/bash
-echo "$*" >> "$DRY_CALLS"
-[ "$1 $2 $3" = "-m pip freeze" ] && { echo "torch==2.6.0+cu124"; exit 0; }
+echo "$0 $*" >> "$DRY_CALLS"
+[ "$1 $2 $3" = "-m pip freeze" ] && { case "$0:${DRY_EN_BAD:-}" in *c_pvr_llava_*:1) echo other;; *) echo "torch==2.6.0+cu124";; esac; exit 0; }
 case "$4" in
   selftest|hostcheck) exit 0;;
   preflight) exit ${DRY_PREFLIGHT_RC:-0};;
@@ -135,11 +161,12 @@ def job_dry(root: Path, base: Path, text: str) -> list[str]:
         shutil.copy2(root / "scripts/c_pvr" / f, repo / "scripts/c_pvr" / f)
     g = repo / "scripts/c_pvr_gpu"
     g.mkdir()
-    for f in ("c_pvr_gpu.py", "requirements_c_pvr_gpu.lock"):
+    for f in ("c_pvr_gpu.py", "requirements_c_pvr_gpu.lock", "requirements_c_pvr_llava.lock"):
         shutil.copy2(root / "scripts/c_pvr_gpu" / f, g / f)
     hc = base / "hc"
     freeze = hashlib.sha256(b"torch==2.6.0+cu124\n").hexdigest()
-    for a, b in (("HC=/dev/shm/c_pvr_hc;", f"HC={hc};"), ("FREEZE_SHA=PENDING ", f"FREEZE_SHA={freeze} ")):
+    for a, b in (("HC=/dev/shm/c_pvr_hc;", f"HC={hc};"), ("FREEZE_SHA=PENDING ", f"FREEZE_SHA={freeze} "),
+                 ("FREEZE_SHA_EN=PENDING ", f"FREEZE_SHA_EN={freeze} ")):
         if text.count(a) != 1:
             raise SystemExit(f"job.sh pattern {a!r} occurs {text.count(a)} times")
         text = text.replace(a, b)
@@ -147,13 +174,16 @@ def job_dry(root: Path, base: Path, text: str) -> list[str]:
     sums = lambda d, names: "".join(  # noqa: E731
         f"{hashlib.sha256((repo / d / n).read_bytes()).hexdigest()}  {d}/{n}\n" for n in names)
     (g / "SHA256SUMS").write_text(sums("scripts/c_pvr_gpu", ("c_pvr_gpu.py", "c_pvr_job.sh",
-                                                            "requirements_c_pvr_gpu.lock")))
+                                                            "requirements_c_pvr_gpu.lock",
+                                                            "requirements_c_pvr_llava.lock")))
     (repo / "scripts/c_pvr/SHA256SUMS").write_text(sums("scripts/c_pvr", ("c_pvr.py", "c_pvr_run.py")))
     lk = hashlib.sha256((g / "requirements_c_pvr_gpu.lock").read_bytes()).hexdigest()[:8]
-    py = home / f"venvs/c_pvr_gpu_{lk}/bin/python"
+    lke = hashlib.sha256((g / "requirements_c_pvr_llava.lock").read_bytes()).hexdigest()[:8]
+    py, pye = home / f"venvs/c_pvr_gpu_{lk}/bin/python", home / f"venvs/c_pvr_llava_{lke}/bin/python"
     fb.mkdir(parents=True)
     py.parent.mkdir(parents=True)
-    for p, body in ((py, FAKE_PY), (fb / "git", '#!/bin/bash\n[ "$1" = rev-parse ] && echo "$DRY_HEAD"; exit 0\n'),
+    pye.parent.mkdir(parents=True)
+    for p, body in ((py, FAKE_PY), (pye, FAKE_PY), (fb / "git", '#!/bin/bash\n[ "$1" = rev-parse ] && echo "$DRY_HEAD"; exit 0\n'),
                     (fb / "nvidia-smi", "#!/bin/bash\necho 'NVIDIA GeForce RTX 3090'\n")):
         p.write_text(body)
         p.chmod(0o755)
@@ -166,6 +196,7 @@ def job_dry(root: Path, base: Path, text: str) -> list[str]:
         (o / "logs").mkdir(parents=True)
         (o / "mblip_snapshot.path").write_text("/nonexistent\n")
         (o / "HOSTCHECK_OK.json").write_text("{}\n")
+        (o / "HOSTCHECK_EN_OK.json").write_text("{}\n")
         if cap:
             (o / "CAP.json").write_text(json.dumps({"decision": "RUN", "cap_h": 1, "p1_epoch": int(time.time())} | cap))
         if hc.exists():
@@ -214,6 +245,15 @@ def job_dry(root: Path, base: Path, text: str) -> list[str]:
     check("phased_order_in_job", arms == ["A1"] * 5 + ["A8"] * 5 + ["A11"] and len(a8) == 5 and all(
         d[d.index("--a1-decomp") + 1] == f"{hc}/a1_decomp/{d[d.index('--set') + 1]}.json" for d in a8
         if "--a1-decomp" in d) and all("--a1-decomp" in d for d in a8))
+    r, log, dec, alive = case("tier1", {"arms": ["A1", "S3", "S2"]})  # P3: EN venv per arm, S2 bound to kt_c's push
+    arms = [d[d.index("--arm") + 1] for d in dec]
+    s2 = [d for d in dec if d[d.index("--arm") + 1] == "S2"]
+    check("en_venv_s2_decomp", r.returncode == 0 and arms == ["A1"] * 5 + ["S3", "S2"] and all(
+        ("/c_pvr_llava_" in d[0]) == (d[d.index("--arm") + 1] in ("S3", "S2")) for d in dec)
+        and len(s2) == 1 and "--a1-decomp" in s2[0] and s2[0][s2[0].index("--a1-decomp") + 1] == f"{hc}/a1_decomp/kt_c.json"
+        and all("--a1-decomp" not in d for d in dec if "S3" in d))
+    r, log, dec, alive = case("tier1", {"arms": ["A1"]}, env={"DRY_EN_BAD": "1"})
+    check("en_freeze_mismatch", r.returncode == 1 and "EN venv freeze differs" in log and not dec and not alive)
     r, log, dec, alive = case("speed", env={"DRY_RC1": "xm3600_vi A1"})
     stamp = o / "speed_start.epoch"
     check("speed_stamp_written", r.returncode == 1 and stamp.exists() and len(dec) == 1)
