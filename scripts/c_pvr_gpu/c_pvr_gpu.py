@@ -736,14 +736,17 @@ def decode(x, load, image_of, clock=time.time, sleep=time.sleep) -> int:
 
 
 # ---------------------------------------------------------------------------------------------- host steps
-def hostcheck_fresh(hc: Path) -> None:
+def hostcheck_fresh(hc: Path, env: str = "C_PVR_FREEZE") -> None:
     """HOSTCHECK_OK.json must have been written by the code that runs now (PINS-A §12 Ruling 2(b): a fixed echo is a
-    code diff, so an older pass never counts)."""
+    code diff, so an older pass never counts) and under the venv that runs now (CC-282 N2: its recorded freeze =
+    $env, which c_pvr_job.sh exports; C_PVR_FREEZE_EN for HOSTCHECK_EN_OK.json)."""
     rep = json.loads(hc.read_text())
     now = {"c_pvr_gpu_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), "c_pvr_sha256": CODE[
-        "scripts/c_pvr/c_pvr.py"]}
+        "scripts/c_pvr/c_pvr.py"], "freeze_sha256": os.environ.get(env, "")}
+    if not now["freeze_sha256"]:
+        fault(f"{env} is not set (c_pvr_job.sh exports it)")
     if {k: rep.get(k) for k in now} != now:
-        fault("HOSTCHECK_OK.json was written by other code; rerun mode selftest")
+        fault(f"{hc.name} was written by other code or another venv; rerun mode selftest")
 
 
 def preflight(pairs) -> None:
@@ -763,7 +766,7 @@ def host_preflight(pairs, hc: Path, hc_en: Path) -> None:
     (CC-273 N6), then every pin the steps need."""
     hostcheck_fresh(hc)
     if any(a in EN_ARMS for _, a in pairs):
-        hostcheck_fresh(hc_en)
+        hostcheck_fresh(hc_en, "C_PVR_FREEZE_EN")
     preflight(pairs)
 
 
@@ -1543,19 +1546,32 @@ def selftest() -> None:
         _st_wipe(work)
         hc = work / "HOSTCHECK_OK.json"
         mine = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
-        hc.write_text(json.dumps({"c_pvr_gpu_sha256": mine, "c_pvr_sha256": CODE["scripts/c_pvr/c_pvr.py"]}))
-        hostcheck_fresh(hc)
-        hc.write_text(json.dumps({"c_pvr_gpu_sha256": "0" * 64, "c_pvr_sha256": CODE["scripts/c_pvr/c_pvr.py"]}))
-        _must("other code", hostcheck_fresh, hc)
-        fresh = json.dumps({"c_pvr_gpu_sha256": mine, "c_pvr_sha256": CODE["scripts/c_pvr/c_pvr.py"]})
-        hc_en = work / "HOSTCHECK_EN_OK.json"
-        hc_en.write_text(hc.read_text())  # stale EN check
-        hc.write_text(fresh)
-        _must("other code", host_preflight, [("kt_c", "S3")], hc, hc_en)  # CC-273 N6
-        host_preflight([("xm3600_vi", "A1")], hc, work / "absent.json")  # no EN arm: the EN file is not read
-        hc_en.write_text(fresh)
-        host_preflight([("kt_c", "S3")], hc, hc_en)  # fresh, and DEMOCAP_d_en is pinned (P5)
-        host_preflight([("t_a", "A1")], hc, hc_en)  # DEMOCAP_d_tc is pinned (W2, OPS-1106c-w2-dtc)
+        env0 = {k: os.environ.pop(k, None) for k in ("C_PVR_FREEZE", "C_PVR_FREEZE_EN")}
+        fz, fze = "f" * 64, "e" * 64  # the two venv freezes (CC-282 N2)
+        rec = lambda g, f: json.dumps({"c_pvr_gpu_sha256": g, "c_pvr_sha256": CODE["scripts/c_pvr/c_pvr.py"],  # noqa: E731
+                                       "freeze_sha256": f})
+        try:
+            hc.write_text(rec(mine, fz))
+            _must("C_PVR_FREEZE is not set", hostcheck_fresh, hc)
+            os.environ.update(C_PVR_FREEZE=fz, C_PVR_FREEZE_EN=fze)
+            hostcheck_fresh(hc)
+            hc.write_text(rec("0" * 64, fz))
+            _must("other code", hostcheck_fresh, hc)
+            hc.write_text(rec(mine, "0" * 64))
+            _must("another venv", hostcheck_fresh, hc)  # same code, other venv: stale (N2)
+            hc_en = work / "HOSTCHECK_EN_OK.json"
+            hc_en.write_text(rec("0" * 64, fze))  # stale EN check
+            hc.write_text(rec(mine, fz))
+            _must("other code", host_preflight, [("kt_c", "S3")], hc, hc_en)  # CC-273 N6
+            host_preflight([("xm3600_vi", "A1")], hc, work / "absent.json")  # no EN arm: the EN file is not read
+            hc_en.write_text(rec(mine, fz))  # EN file recorded under the main venv's freeze
+            _must("another venv", host_preflight, [("kt_c", "S3")], hc, hc_en)  # read against C_PVR_FREEZE_EN
+            hc_en.write_text(rec(mine, fze))
+            host_preflight([("kt_c", "S3")], hc, hc_en)  # fresh, and DEMOCAP_d_en is pinned (P5)
+            host_preflight([("t_a", "A1")], hc, hc_en)  # DEMOCAP_d_tc is pinned (W2, OPS-1106c-w2-dtc)
+        finally:
+            for k, v in env0.items():
+                os.environ.pop(k, None) if v is None else os.environ.update({k: v})
         _must("REFUSED", guard, Path.home() / ".vsps_sealed" / "c_pvr")
         (work / "t2pool_z.txt").write_bytes(b"")
         (work / "plain.txt").symlink_to(work / "t2pool_z.txt")

@@ -9,6 +9,7 @@ Each mutant replaces one exact string (it must occur once) and runs `selftest` o
 first and must print 'selftest ok'. KILLED = the selftest fails.
 Then c_pvr_job.sh (CC-270 N9): the unmutated script must pass every dry-run case of job_dry() under <scratch>/job, and
 each J mutant must fail at least one case (KILLED). The two tallies are printed separately."""
+import re
 import shutil
 import subprocess
 import sys
@@ -136,7 +137,12 @@ M = {
     "en_pin_wrong_file": ('src_json(src, *DEMO_PIN["karpathy"])', 'src_json(src, *DEMO_PIN["textcaps_train"])'),
     "genconfig_seen0": ('            out[kind]["genconfig"] = seen[-1]', '            out[kind]["genconfig"] = seen[0]'),
     "genconfig_stale_ok": ("            if len(seen) == n0:\n", "            if False:\n"),
-    "en_hostcheck_unchecked": ("        hostcheck_fresh(hc_en)\n", "        pass\n"),
+    "en_hostcheck_unchecked": ('        hostcheck_fresh(hc_en, "C_PVR_FREEZE_EN")\n', "        pass\n"),
+    "fresh_freeze_unchecked": ("    if {k: rep.get(k) for k in now} != now:\n        fault(f\"{hc.name}",
+                               "    if {k: rep.get(k) for k in now if k[0] != 'f'} != {k: v for k, v in now.items() if k[0] != 'f'}:"
+                               "\n        fault(f\"{hc.name}"),  # CC-282 N2
+    "fresh_en_main_env": ('        hostcheck_fresh(hc_en, "C_PVR_FREEZE_EN")\n', "        hostcheck_fresh(hc_en)\n"),
+    "fresh_freeze_unset_ok": ('    if not now["freeze_sha256"]:\n        fault(', '    if False:\n        fault('),
     "llava_code_unchecked": ('    for s, n in ((snap, "llava"), (tower, "clip336"), (code, "llava_code")):',
                              '    for s, n in ((snap, "llava"), (tower, "clip336")):'),
     # P5: CC-276 W1 (no source json on the host; derived file by datastore, pinned), W3, W5, W7; CC-270 Q4 (A12)
@@ -263,6 +269,7 @@ J = {
     "speed_end_per_run": ("END=$(( $(cat $O/speed_start.epoch) + 10800 ))", "END=$(( $(date +%s) + 10800 ))"),
     "speed_end_1h30": ("END=$(( $(cat $O/speed_start.epoch) + 10800 ))", "END=$(( $(cat $O/speed_start.epoch) + 5400 ))"),  # AM4
     "hc_fileset_unchecked": ('  || stop "tmpfs file set differs', '  || true "tmpfs file set differs'),  # CC-277 N1
+    "hc_find_files_only": ("find . ! -type d | sed", "find . -type f | sed"),  # CC-282 N7
     "a8_no_decomp_arg": ("    case $ARM in A8|S2) ARGS+=(--a1-decomp $HC/a1_decomp/$SET.json);; esac\n", ""),
     "en_main_venv": ("  case $ARM in S[1-5]) PYS=$PYE;; *) PYS=$PY;; esac", "  PYS=$PY"),
     "en_freeze_unchecked": ('[ "$C_PVR_FREEZE_EN" = "$FREEZE_SHA_EN" ] || stop', "true || stop"),
@@ -300,11 +307,11 @@ def job_dry(root: Path, base: Path, text: str) -> list[str]:
         shutil.copy2(root / "scripts/c_pvr_gpu" / f, g / f)
     hc = base / "hc"
     freeze = hashlib.sha256(b"torch==2.6.0+cu124\n").hexdigest()
-    for a, b in (("HC=/dev/shm/c_pvr_hc;", f"HC={hc};"), ("FREEZE_SHA=PENDING ", f"FREEZE_SHA={freeze} "),
-                 ("FREEZE_SHA_EN=PENDING ", f"FREEZE_SHA_EN={freeze} ")):
-        if text.count(a) != 1:
-            raise SystemExit(f"job.sh pattern {a!r} occurs {text.count(a)} times")
-        text = text.replace(a, b)
+    for a, b in ((r"HC=/dev/shm/c_pvr_hc;", f"HC={hc};"), (r"^FREEZE_SHA=[0-9a-f]{64} ", f"FREEZE_SHA={freeze} "),
+                 (r"^FREEZE_SHA_EN=[0-9a-f]{64} ", f"FREEZE_SHA_EN={freeze} ")):  # R-P6: the pins are real shas
+        text, n = re.subn(a, b, text, flags=re.M)
+        if n != 1:
+            raise SystemExit(f"job.sh pattern {a!r} occurs {n} times")
     (g / "c_pvr_job.sh").write_text(text)
     sums = lambda d, names: "".join(  # noqa: E731
         f"{hashlib.sha256((repo / d / n).read_bytes()).hexdigest()}  {d}/{n}\n" for n in names)
@@ -403,6 +410,8 @@ def job_dry(root: Path, base: Path, text: str) -> list[str]:
     check("speed_runs_past_1h30", r.returncode == 0 and "JOB DONE speed" in log and len(dec) > 1)  # PI-1106l, AM4
     r, log, dec, alive = case("tier1", {"arms": ["A1"]}, stray=True)
     check("hc_stray_file", r.returncode == 1 and "tmpfs file set differs" in log and not dec and not alive)
+    r, log, dec, alive = case("tier1", {"arms": ["A1"]}, pre=lambda: (hc / "b.bin").symlink_to(hc / "a.bin"))
+    check("hc_stray_symlink", r.returncode == 1 and "tmpfs file set differs" in log and not dec)  # CC-282 N7
     return fails
 
 
@@ -445,6 +454,10 @@ def main() -> int:
         print(f"{fname} {len(muts) - len(gone)}/{len(muts)} killed")
         survived += gone
     job = (root / "scripts/c_pvr_gpu/c_pvr_job.sh").read_text("utf-8")
+    fz = re.findall(r"^FREEZE_SHA=([0-9a-f]{64}) ", job, re.M)  # R-P6: = setup_host.sh's m9 pin (CC-280 AM1)
+    m9 = re.findall(r"^M9_FREEZE=([0-9a-f]{64}) ", (root / "scripts/c_pvr_gpu/setup_host.sh").read_text(), re.M)
+    if len(fz) != 1 or fz != m9 or len(re.findall(r"^FREEZE_SHA_EN=[0-9a-f]{64} ", job, re.M)) != 1:
+        raise SystemExit("job.sh FREEZE_SHA is not setup_host.sh M9_FREEZE, or FREEZE_SHA_EN is not one 64-hex pin")
     if bad := job_dry(root, scratch / "job", job):
         raise SystemExit(f"the unmutated c_pvr_job.sh fails its dry run: {bad}")
     print("job dry run ok (unmutated)")

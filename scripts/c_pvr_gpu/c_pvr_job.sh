@@ -21,8 +21,10 @@
 set -euo pipefail
 MODE=${1:?usage: c_pvr_job.sh selftest|speed|tier1 HEAD MANIFEST_SHA}; EXPECT=${2:?HEAD}; TMAN=${3:?MANIFEST sha}
 cd "$(dirname "$0")/../.."
-FREEZE_SHA=PENDING   # the GPU-lock freeze (setup_host.sh writes it); only home; required from mode speed on
-FREEZE_SHA_EN=PENDING   # the same for the EN (LLaVA) venv
+FREEZE_SHA=9a0745307b3b8d7c4e4c195bc78e2e1a9a52eb5046fd6f438c6402802fe9c09f   # main venv freeze (host.lock 966eb327)
+FREEZE_SHA_EN=8e8a13c359b3e7e549f9006ddfce61a9e1d15b3d9046884c23d2938a8d87afcc   # EN venv freeze (llava.lock d2f0f262)
+# both from instance E-G 106231 (OPS-1107c-emb, OPS-1107c-eg-done); main = m9's (CC-280 AM1, setup_host.sh M9_FREEZE);
+# set by the R-P6 diff read; required from mode speed on
 LK=$(sha256sum scripts/c_pvr_gpu/requirements_c_pvr_gpu.host.lock | cut -c1-8)   # the installed closure (AM1), as setup_host.sh
 LKE=$(sha256sum scripts/c_pvr_gpu/requirements_c_pvr_llava.lock | cut -c1-8)
 PY=$HOME/venvs/c_pvr_gpu_$LK/bin/python; PYE=$HOME/venvs/c_pvr_llava_$LKE/bin/python; X=scripts/c_pvr_gpu/c_pvr_gpu.py
@@ -57,7 +59,7 @@ nvidia-smi --query-gpu=name --format=csv,noheader | grep -Eq '^NVIDIA GeForce RT
 (cd $HC && sha256sum --quiet -c MANIFEST.sha256) || stop "a tmpfs file differs from its arrival sha (FAULT)"
 hc_want() { echo MANIFEST.sha256; cut -c67- $HC/MANIFEST.sha256
   if [ -s $HC/a1_decomp/MANIFEST.sha256 ]; then echo a1_decomp/MANIFEST.sha256; cut -c67- $HC/a1_decomp/MANIFEST.sha256 | sed 's|^|a1_decomp/|'; fi; }
-[ "$(cd $HC && find . -type f | sed 's|^\./||' | LC_ALL=C sort)" = "$(hc_want | LC_ALL=C sort)" ] \
+[ "$(cd $HC && find . ! -type d | sed 's|^\./||' | LC_ALL=C sort)" = "$(hc_want | LC_ALL=C sort)" ] \
   || stop "tmpfs file set differs from MANIFEST.sha256 (+ a1_decomp) (CC-277 N1)"
 $PY -I -B $X selftest >> $LOG/selftest.log 2>&1 || stop "c_pvr_gpu selftest"
 $PYE -I -B $X selftest >> $LOG/selftest.log 2>&1 || stop "c_pvr_gpu selftest (EN venv)"
