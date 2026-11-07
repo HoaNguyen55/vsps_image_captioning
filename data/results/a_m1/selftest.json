@@ -1,0 +1,566 @@
+{
+ "schema": "vsps.a_m1.selftest.v1",
+ "script_sha256": "fa8c9bf2503e3bcf1e7a530568ca402918b5b2ea87873865a5cc6671d877f800",
+ "plan_sha256": "12d6ad3d87a01067930c3825d817b13fcb4a9a46af936357dcb9b0aad724525c",
+ "core_only": false,
+ "atomic_write_probe": {
+  "ok": true,
+  "dir": "data/results/a_m1/_selftest_probe_3573119",
+  "log": [
+   {
+    "v1": "probe",
+    "dir_fsync": "ok"
+   }
+  ],
+  "second_write_refused": true
+ },
+ "checks": {
+  "f0_hat: Chao2 3.2, bias-corrected 4.8 at phi2 = 0, t = 0 adds 0, closed forms": true,
+  "Lemma 1: E f0 >= ((K-1)/K)(E phi1)^2/(2 E phi2) on 10,000 w vectors; equality at constant w": true,
+  "estimator pooled over (image, class) pairs, not summed per image": true,
+  "all C(5,k) subsets; rarefaction identity; G and the k->K prediction equal brute force": true,
+  "interval = 2.5th and 97.5th percentiles": true,
+  "V1: VIOLATED iff 97.5th pct of D_L* < 0; labels CONSISTENT/VIOLATED only": true,
+  "V2-A labels from the interval (D3 scheme), never the point": true,
+  "arm L incidence = R_ik & C_i (classes outside C_i dropped)": true,
+  "COCO: exactly the first 5 references": true,
+  "custody: deny patterns, system outputs and unpinned repo paths FAULT; pinned pyc and OUT allowed": true,
+  "one shared weight matrix: identical rows collapse every interval to the point": true,
+  "records keyed by full path": true,
+  "gate: computes no phi_j (guard armed), G1-G4 only": true,
+  "17: COCO VIOLATED then UIT FAULT -> FALSIFIED": true,
+  "17: no VIOLATED and a FAULT -> NOT_RUN/FAULT; both CONSISTENT -> METHOD/BOUND_ONLY": true,
+  "17b: exception inside COCO after V1 VIOLATED -> FALSIFIED": true,
+  "17b: cap inside COCO after V1 VIOLATED -> FALSIFIED": true,
+  "17c: dead run after COCO VIOLATED (no result file) -> FALSIFIED from the persisted record": true,
+  "17d: V1 write fails after VIOLATED -> the result still says VIOLATED -> FALSIFIED": true,
+  "17c: V1 write is atomic (no target before rename), never rewritten; run refuses with records": true,
+  "17c: V1 handed over before V2-A": true,
+  "W1: a set past the cap after V1 is NOT_RUN, not COMPLETED; VIOLATED there is still FALSIFIED": true,
+  "HMi: FAULT after a CONSISTENT V1 -> NOT_RUN/FAULT (l.307)": true,
+  "W2: failed freeze/gate time summed into the budget; an unreadable failed record refuses": true,
+  "W2: a raising S0 attempt (exception or Fault) leaves a failed record with its time, then re-raises; selftest writes it to a scratch root": true,
+  "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent": true,
+  "W3r2: EIO on the first result fsync; the fallback writes a readable result, FALSIFIED from records + result and in the stored status; no temp file left": true,
+  "W3: a real compute_set output and its V1 dict round-trip through json.dumps/json.loads": true,
+  "HMa: EIO on the directory fsync raises; EINVAL is skipped and logged": true,
+  "HMc: run refuses with only v1_uitviic231.json present": true,
+  "N3: the restated Fault and sha_file equal a_dchecks' (checked in load_libs)": true,
+  "18: the WP-M and WP-D registry is complete": true,
+  "N-C: floor(3s/7 + 1/2) for s = 1..10": true,
+  "synthetic worlds: every registered kind generates; S equals the nameable pairs": true,
+  "N-G: registered atomic write on data/results/a_m1/ (dir fsync ok or skipped and logged)": true
+ },
+ "pass": true,
+ "calibration": {
+  "configs": {
+   "A1 n=231 lam=2 beta(2.0,2.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.995,
+    "mean_S_hat_over_S": 0.9553317650150411,
+    "V2A_rates": {
+     "PASS": 0.525,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.475,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=231 lam=2 beta(1.0,1.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.9018434495214026,
+    "V2A_rates": {
+     "PASS": 0.055,
+     "FAIL": 0.01,
+     "UNDERPOWERED": 0.935,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=231 lam=2 beta(0.5,1.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.7257733773098838,
+    "V2A_rates": {
+     "PASS": 0.3,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.7,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=231 lam=2 beta(0.3,0.6)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.6454316033044694,
+    "V2A_rates": {
+     "PASS": 0.05,
+     "FAIL": 0.01,
+     "UNDERPOWERED": 0.94,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=231 lam=2 const(0.4,None)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.45,
+    "mean_S_hat_over_S": 1.001803977673229,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=231 lam=4 beta(2.0,2.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.9525041880827626,
+    "V2A_rates": {
+     "PASS": 0.715,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.285,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=231 lam=4 beta(1.0,1.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.8989210432954521,
+    "V2A_rates": {
+     "PASS": 0.04,
+     "FAIL": 0.015,
+     "UNDERPOWERED": 0.945,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=231 lam=4 beta(0.5,1.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.7282925873670348,
+    "V2A_rates": {
+     "PASS": 0.335,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.665,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=231 lam=4 beta(0.3,0.6)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.6465627993039549,
+    "V2A_rates": {
+     "PASS": 0.01,
+     "FAIL": 0.06,
+     "UNDERPOWERED": 0.93,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=231 lam=4 const(0.4,None)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.535,
+    "mean_S_hat_over_S": 1.0006079641992744,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=2 beta(2.0,2.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.9520902962685679,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=2 beta(1.0,1.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.9001612381372018,
+    "V2A_rates": {
+     "PASS": 0.03,
+     "FAIL": 0.02,
+     "UNDERPOWERED": 0.95,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=2 beta(0.5,1.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.7285584218123239,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=2 beta(0.3,0.6)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.6429848969150899,
+    "V2A_rates": {
+     "PASS": 0.0,
+     "FAIL": 0.275,
+     "UNDERPOWERED": 0.725,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=2 const(0.4,None)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.5,
+    "mean_S_hat_over_S": 0.9998867086253115,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=4 beta(2.0,2.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.9527915328838792,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=4 beta(1.0,1.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.8997265461801551,
+    "V2A_rates": {
+     "PASS": 0.03,
+     "FAIL": 0.03,
+     "UNDERPOWERED": 0.94,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=4 beta(0.5,1.0)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.7290403937969484,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=4 beta(0.3,0.6)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.6426694037937889,
+    "V2A_rates": {
+     "PASS": 0.0,
+     "FAIL": 0.45,
+     "UNDERPOWERED": 0.55,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "A1 n=5000 lam=4 const(0.4,None)": {
+    "group": "A1",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.46,
+    "mean_S_hat_over_S": 1.0003419606411088,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "avoid0.1 n=231": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.7908879983254328,
+    "V2A_rates": {
+     "PASS": 0.18,
+     "FAIL": 0.005,
+     "UNDERPOWERED": 0.815,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "avoid0.3 n=231": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.39,
+    "mean_S_hat_over_S": 1.0240727358446668,
+    "V2A_rates": {
+     "PASS": 0.42,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.58,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "avoid0.5 n=231": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.135,
+    "share_S_hat_le_S": 0.0,
+    "mean_S_hat_over_S": 1.527131757747049,
+    "V2A_rates": {
+     "PASS": 0.955,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.045,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "forced n=231": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.61,
+    "mean_S_hat_over_S": 0.989054627377845,
+    "V2A_rates": {
+     "PASS": 0.28,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.72,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "copy n=231": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.5834815305768021,
+    "V2A_rates": {
+     "PASS": 0.11,
+     "FAIL": 0.005,
+     "UNDERPOWERED": 0.885,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "avoid0.1 n=5000": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.7926264516606946,
+    "V2A_rates": {
+     "PASS": 0.905,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.095,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "avoid0.3 n=5000": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.16,
+    "mean_S_hat_over_S": 1.0158517999769783,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "avoid0.5 n=5000": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.785,
+    "share_S_hat_le_S": 0.0,
+    "mean_S_hat_over_S": 1.5041611596650677,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "forced n=5000": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.83,
+    "mean_S_hat_over_S": 0.9893486247077281,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "copy n=5000": {
+    "group": "violation",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.5780858442711048,
+    "V2A_rates": {
+     "PASS": 0.765,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.235,
+     "NOT_EVALUABLE": 0.0
+    }
+   },
+   "WP-M n=231": {
+    "group": "WP",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.728772208214069,
+    "V2A_rates": {
+     "PASS": 0.095,
+     "FAIL": 0.01,
+     "UNDERPOWERED": 0.895,
+     "NOT_EVALUABLE": 0.0
+    },
+    "flag": "BOUND_HOLDS"
+   },
+   "WP-M n=5000": {
+    "group": "WP",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 1.0,
+    "mean_S_hat_over_S": 0.7286231777307155,
+    "V2A_rates": {
+     "PASS": 0.305,
+     "FAIL": 0.005,
+     "UNDERPOWERED": 0.69,
+     "NOT_EVALUABLE": 0.0
+    },
+    "flag": "BOUND_HOLDS"
+   },
+   "WP-D(0.5,0.2) n=231": {
+    "group": "WP",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.13,
+    "mean_S_hat_over_S": 1.0346099687839847,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    },
+    "flag": "BREAKS_UNDETECTED"
+   },
+   "WP-D(0.6,0.05) n=231": {
+    "group": "WP",
+    "worlds": 200,
+    "V1_violated_rate": 0.89,
+    "share_S_hat_le_S": 0.0,
+    "mean_S_hat_over_S": 1.8688327208990176,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    },
+    "flag": "BREAKS_DETECTED"
+   },
+   "WP-D(0.8,0.1) n=231": {
+    "group": "WP",
+    "worlds": 200,
+    "V1_violated_rate": 0.04,
+    "share_S_hat_le_S": 0.0,
+    "mean_S_hat_over_S": 1.427180892894003,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    },
+    "flag": "BREAKS_UNDETECTED"
+   },
+   "WP-D(0.5,0.2) n=5000": {
+    "group": "WP",
+    "worlds": 200,
+    "V1_violated_rate": 0.0,
+    "share_S_hat_le_S": 0.0,
+    "mean_S_hat_over_S": 1.0339852410622783,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    },
+    "flag": "BREAKS_UNDETECTED"
+   },
+   "WP-D(0.6,0.05) n=5000": {
+    "group": "WP",
+    "worlds": 200,
+    "V1_violated_rate": 1.0,
+    "share_S_hat_le_S": 0.0,
+    "mean_S_hat_over_S": 1.8290069378632985,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    },
+    "flag": "BREAKS_DETECTED"
+   },
+   "WP-D(0.8,0.1) n=5000": {
+    "group": "WP",
+    "worlds": 200,
+    "V1_violated_rate": 0.225,
+    "share_S_hat_le_S": 0.0,
+    "mean_S_hat_over_S": 1.4308246779902276,
+    "V2A_rates": {
+     "PASS": 1.0,
+     "FAIL": 0.0,
+     "UNDERPOWERED": 0.0,
+     "NOT_EVALUABLE": 0.0
+    },
+    "flag": "BREAKS_UNDETECTED"
+   }
+  },
+  "acceptance_A1_V1_le_0.05": true,
+  "uit_s5_only_rule_fires": true,
+  "note": "synthetic; never printed in the paper (plan §7.2)"
+ },
+ "cpu_s": 395.932845756,
+ "wall_s": 242.51181166502647
+}

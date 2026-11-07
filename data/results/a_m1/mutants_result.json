@@ -1,0 +1,294 @@
+{
+ "source_sha256": "fa8c9bf2503e3bcf1e7a530568ca402918b5b2ea87873865a5cc6671d877f800",
+ "n": 36,
+ "killed": 36,
+ "mutants": {
+  "01_per_image_summed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "estimator pooled over (image, class) pairs, not summed per image",
+    "all C(5,k) subsets; rarefaction identity; G and the k->K prediction equal brute force"
+   ]
+  },
+  "02_factor_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "f0_hat: Chao2 3.2, bias-corrected 4.8 at phi2 = 0, t = 0 adds 0, closed forms"
+   ]
+  },
+  "03_classic_at_phi2_0": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "f0_hat: Chao2 3.2, bias-corrected 4.8 at phi2 = 0, t = 0 adds 0, closed forms"
+   ]
+  },
+  "04_first_k_only": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "all C(5,k) subsets; rarefaction identity; G and the k->K prediction equal brute force"
+   ]
+  },
+  "05_G_first_k": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "all C(5,k) subsets; rarefaction identity; G and the k->K prediction equal brute force"
+   ]
+  },
+  "06_v2a_on_point": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V2-A labels from the interval (D3 scheme), never the point"
+   ]
+  },
+  "07_v2a_at_90pct": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "interval = 2.5th and 97.5th percentiles"
+   ]
+  },
+  "08_v1_on_2p5th": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V1: VIOLATED iff 97.5th pct of D_L* < 0; labels CONSISTENT/VIOLATED only"
+   ]
+  },
+  "09_armL_not_intersected": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "arm L incidence = R_ik & C_i (classes outside C_i dropped)"
+   ]
+  },
+  "10_coco_more_than_5": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "COCO: exactly the first 5 references"
+   ]
+  },
+  "11_custody_hook_off": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "custody: deny patterns, system outputs and unpinned repo paths FAULT; pinned pyc and OUT allowed"
+   ]
+  },
+  "12_v1_labelled_pass": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V1: VIOLATED iff 97.5th pct of D_L* < 0; labels CONSISTENT/VIOLATED only"
+   ]
+  },
+  "13_bootstrap_over_subsets": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "all C(5,k) subsets; rarefaction identity; G and the k->K prediction equal brute force"
+   ]
+  },
+  "14_own_draw_per_statistic": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "one shared weight matrix: identical rows collapse every interval to the point"
+   ]
+  },
+  "15_basename_keys": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "records keyed by full path"
+   ]
+  },
+  "16_gate_computes_phi": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "gate: computes no phi_j (guard armed), G1-G4 only",
+    "gate: computes no phi_j (guard armed), G1-G4 only [raised Fault: FAULT: gate computes no phi_j (plan \u00a76)]"
+   ]
+  },
+  "17_precedence_swapped": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "17: COCO VIOLATED then UIT FAULT -> FALSIFIED",
+    "17b: exception inside COCO after V1 VIOLATED -> FALSIFIED",
+    "17b: cap inside COCO after V1 VIOLATED -> FALSIFIED",
+    "17c: dead run after COCO VIOLATED (no result file) -> FALSIFIED from the persisted record",
+    "17d: V1 write fails after VIOLATED -> the result still says VIOLATED -> FALSIFIED",
+    "W1: a set past the cap after V1 is NOT_RUN, not COMPLETED; VIOLATED there is still FALSIFIED",
+    "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent",
+    "W3r2: EIO on the first result fsync; the fallback writes a readable result, FALSIFIED from records + result and in the stored status; no temp file left"
+   ]
+  },
+  "17b_v1_of_completed_sets_only": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "17b: exception inside COCO after V1 VIOLATED -> FALSIFIED",
+    "17b: cap inside COCO after V1 VIOLATED -> FALSIFIED",
+    "17c: dead run after COCO VIOLATED (no result file) -> FALSIFIED from the persisted record",
+    "17d: V1 write fails after VIOLATED -> the result still says VIOLATED -> FALSIFIED",
+    "W1: a set past the cap after V1 is NOT_RUN, not COMPLETED; VIOLATED there is still FALSIFIED",
+    "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent",
+    "W3r2: EIO on the first result fsync; the fallback writes a readable result, FALSIFIED from records + result and in the stored status; no temp file left"
+   ]
+  },
+  "17c_dead_run_ignores_records": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "17c: dead run after COCO VIOLATED (no result file) -> FALSIFIED from the persisted record"
+   ]
+  },
+  "17c_non_atomic_write": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "17: no VIOLATED and a FAULT -> NOT_RUN/FAULT; both CONSISTENT -> METHOD/BOUND_ONLY",
+    "17c: V1 write is atomic (no target before rename), never rewritten; run refuses with records",
+    "17c: V1 write is atomic (no target before rename), never rewritten; run refuses with records [raised FileNotFoundError: [Errno 2] No such file or directory: '/tmp/a_m1_at__izyk1kv/.v1_coco5000.json.tm]",
+    "W1: a set past the cap after V1 is NOT_RUN, not COMPLETED; VIOLATED there is still FALSIFIED",
+    "HMa: EIO on the directory fsync raises; EINVAL is skipped and logged",
+    "HMa: EIO on the directory fsync raises; EINVAL is skipped and logged [raised Fault: FAULT: refused: v1_coco5000.json exists (one record per set, never rewritten)]",
+    "HMc: run refuses with only v1_uitviic231.json present",
+    "HMc: run refuses with only v1_uitviic231.json present [raised Fault: FAULT: refused: v1_uitviic231.json exists (one record per set, never rewritten)]",
+    "N-G: registered atomic write on data/results/a_m1/ (dir fsync ok or skipped and logged)"
+   ]
+  },
+  "17c_late_v1_write": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "17c: V1 handed over before V2-A"
+   ]
+  },
+  "17c_record_rewritable": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "17c: V1 write is atomic (no target before rename), never rewritten; run refuses with records",
+    "N-G: registered atomic write on data/results/a_m1/ (dir fsync ok or skipped and logged)"
+   ]
+  },
+  "17c_run_does_not_refuse_records": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "17c: V1 write is atomic (no target before rename), never rewritten; run refuses with records",
+    "HMc: run refuses with only v1_uitviic231.json present"
+   ]
+  },
+  "17d_persist_before_memory": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "17d: V1 write fails after VIOLATED -> the result still says VIOLATED -> FALSIFIED",
+    "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent",
+    "W3r2: EIO on the first result fsync; the fallback writes a readable result, FALSIFIED from records + result and in the stored status; no temp file left"
+   ]
+  },
+  "17d_result_drops_memory_v1": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "17d: V1 write fails after VIOLATED -> the result still says VIOLATED -> FALSIFIED",
+    "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent",
+    "W3r2: EIO on the first result fsync; the fallback writes a readable result, FALSIFIED from records + result and in the stored status; no temp file left"
+   ]
+  },
+  "W1_completed_past_cap": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "W1: a set past the cap after V1 is NOT_RUN, not COMPLETED; VIOLATED there is still FALSIFIED"
+   ]
+  },
+  "W2_failed_gate_time_ignored": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "W2: failed freeze/gate time summed into the budget; an unreadable failed record refuses",
+    "W2: a raising S0 attempt (exception or Fault) leaves a failed record with its time, then re-raises; selftest writes it to a scratch root"
+   ]
+  },
+  "W2_raising_attempt_unrecorded": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "W2: a raising S0 attempt (exception or Fault) leaves a failed record with its time, then re-raises; selftest writes it to a scratch root"
+   ]
+  },
+  "W3_fallback_skeleton": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent",
+    "W3r2: EIO on the first result fsync; the fallback writes a readable result, FALSIFIED from records + result and in the stored status; no temp file left"
+   ]
+  },
+  "W3_result_not_atomic": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent",
+    "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent [raised FileExistsError: [Errno 17] File exists: '/tmp/a_m1_w3_j0bvfxfb/a_m1_result.json']"
+   ]
+  },
+  "W3_torn_result_raises": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent",
+    "W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent [raised JSONDecodeError: Expecting value: line 1 column 23 (char 22)]"
+   ]
+  },
+  "HMa_dir_fsync_eio_swallowed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "HMa: EIO on the directory fsync raises; EINVAL is skipped and logged"
+   ]
+  },
+  "HMc_refusal_glob_narrowed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "HMc: run refuses with only v1_uitviic231.json present"
+   ]
+  },
+  "HMi_fault_after_v1_completed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "HMi: FAULT after a CONSISTENT V1 -> NOT_RUN/FAULT (l.307)"
+   ]
+  },
+  "W3r2_fix_reverted": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "W3r2: EIO on the first result fsync; the fallback writes a readable result, FALSIFIED from records + result and in the stored status; no temp file left",
+    "W3r2: EIO on the first result fsync; the fallback writes a readable result, FALSIFIED from records + result and in the stored status; no temp file left [raised FileExistsError: [Errno 17] File exists: '/tmp/a_m1_w3r2_ggqp0h6n/.a_m1_result.json.tmp3572956']"
+   ]
+  },
+  "18_wp_config_missing": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "18: the WP-M and WP-D registry is complete",
+    "18: the WP-M and WP-D registry is complete [raised Fault: FAULT: WP registry incomplete: missing ['WP-D(0.8,0.1) n=231', 'WP-D(0.8,0.1) n=]"
+   ]
+  }
+ }
+}

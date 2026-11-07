@@ -1,0 +1,74 @@
+PASS f0_hat: Chao2 3.2, bias-corrected 4.8 at phi2 = 0, t = 0 adds 0, closed forms
+PASS Lemma 1: E f0 >= ((K-1)/K)(E phi1)^2/(2 E phi2) on 10,000 w vectors; equality at constant w
+PASS estimator pooled over (image, class) pairs, not summed per image
+PASS all C(5,k) subsets; rarefaction identity; G and the k->K prediction equal brute force
+PASS interval = 2.5th and 97.5th percentiles
+PASS V1: VIOLATED iff 97.5th pct of D_L* < 0; labels CONSISTENT/VIOLATED only
+PASS V2-A labels from the interval (D3 scheme), never the point
+PASS arm L incidence = R_ik & C_i (classes outside C_i dropped)
+PASS COCO: exactly the first 5 references
+PASS custody: deny patterns, system outputs and unpinned repo paths FAULT; pinned pyc and OUT allowed
+PASS one shared weight matrix: identical rows collapse every interval to the point
+PASS records keyed by full path
+PASS gate: computes no phi_j (guard armed), G1-G4 only
+PASS 17: COCO VIOLATED then UIT FAULT -> FALSIFIED
+PASS 17: no VIOLATED and a FAULT -> NOT_RUN/FAULT; both CONSISTENT -> METHOD/BOUND_ONLY
+PASS 17b: exception inside COCO after V1 VIOLATED -> FALSIFIED
+PASS 17b: cap inside COCO after V1 VIOLATED -> FALSIFIED
+PASS 17c: dead run after COCO VIOLATED (no result file) -> FALSIFIED from the persisted record
+PASS 17d: V1 write fails after VIOLATED -> the result still says VIOLATED -> FALSIFIED
+PASS 17c: V1 write is atomic (no target before rename), never rewritten; run refuses with records
+PASS 17c: V1 handed over before V2-A
+PASS W1: a set past the cap after V1 is NOT_RUN, not COMPLETED; VIOLATED there is still FALSIFIED
+PASS HMi: FAULT after a CONSISTENT V1 -> NOT_RUN/FAULT (l.307)
+PASS W2: failed freeze/gate time summed into the budget; an unreadable failed record refuses
+PASS W2: a raising S0 attempt (exception or Fault) leaves a failed record with its time, then re-raises; selftest writes it to a scratch root
+PASS W3: fallback keeps the partial result and in-memory V1 (FALSIFIED); atomic result write; torn = absent
+PASS W3r2: EIO on the first result fsync; the fallback writes a readable result, FALSIFIED from records + result and in the stored status; no temp file left
+PASS W3: a real compute_set output and its V1 dict round-trip through json.dumps/json.loads
+PASS HMa: EIO on the directory fsync raises; EINVAL is skipped and logged
+PASS HMc: run refuses with only v1_uitviic231.json present
+PASS N3: the restated Fault and sha_file equal a_dchecks' (checked in load_libs)
+PASS 18: the WP-M and WP-D registry is complete
+PASS N-C: floor(3s/7 + 1/2) for s = 1..10
+PASS synthetic worlds: every registered kind generates; S equals the nameable pairs
+PASS N-G: registered atomic write on data/results/a_m1/ (dir fsync ok or skipped and logged)
+  A1 n=231 lam=2 beta(2.0,2.0): V1 0.000 S<=S 0.995 S/S 0.955 V2A {'PASS': 0.525, 'FAIL': 0.0, 'UNDERPOWERED': 0.475, 'NOT_EVALUABLE': 0.0} 
+  A1 n=231 lam=2 beta(1.0,1.0): V1 0.000 S<=S 1.000 S/S 0.902 V2A {'PASS': 0.055, 'FAIL': 0.01, 'UNDERPOWERED': 0.935, 'NOT_EVALUABLE': 0.0} 
+  A1 n=231 lam=2 beta(0.5,1.0): V1 0.000 S<=S 1.000 S/S 0.726 V2A {'PASS': 0.3, 'FAIL': 0.0, 'UNDERPOWERED': 0.7, 'NOT_EVALUABLE': 0.0} 
+  A1 n=231 lam=2 beta(0.3,0.6): V1 0.000 S<=S 1.000 S/S 0.645 V2A {'PASS': 0.05, 'FAIL': 0.01, 'UNDERPOWERED': 0.94, 'NOT_EVALUABLE': 0.0} 
+  A1 n=231 lam=2 const(0.4,None): V1 0.000 S<=S 0.450 S/S 1.002 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  A1 n=231 lam=4 beta(2.0,2.0): V1 0.000 S<=S 1.000 S/S 0.953 V2A {'PASS': 0.715, 'FAIL': 0.0, 'UNDERPOWERED': 0.285, 'NOT_EVALUABLE': 0.0} 
+  A1 n=231 lam=4 beta(1.0,1.0): V1 0.000 S<=S 1.000 S/S 0.899 V2A {'PASS': 0.04, 'FAIL': 0.015, 'UNDERPOWERED': 0.945, 'NOT_EVALUABLE': 0.0} 
+  A1 n=231 lam=4 beta(0.5,1.0): V1 0.000 S<=S 1.000 S/S 0.728 V2A {'PASS': 0.335, 'FAIL': 0.0, 'UNDERPOWERED': 0.665, 'NOT_EVALUABLE': 0.0} 
+  A1 n=231 lam=4 beta(0.3,0.6): V1 0.000 S<=S 1.000 S/S 0.647 V2A {'PASS': 0.01, 'FAIL': 0.06, 'UNDERPOWERED': 0.93, 'NOT_EVALUABLE': 0.0} 
+  A1 n=231 lam=4 const(0.4,None): V1 0.000 S<=S 0.535 S/S 1.001 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=2 beta(2.0,2.0): V1 0.000 S<=S 1.000 S/S 0.952 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=2 beta(1.0,1.0): V1 0.000 S<=S 1.000 S/S 0.900 V2A {'PASS': 0.03, 'FAIL': 0.02, 'UNDERPOWERED': 0.95, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=2 beta(0.5,1.0): V1 0.000 S<=S 1.000 S/S 0.729 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=2 beta(0.3,0.6): V1 0.000 S<=S 1.000 S/S 0.643 V2A {'PASS': 0.0, 'FAIL': 0.275, 'UNDERPOWERED': 0.725, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=2 const(0.4,None): V1 0.000 S<=S 0.500 S/S 1.000 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=4 beta(2.0,2.0): V1 0.000 S<=S 1.000 S/S 0.953 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=4 beta(1.0,1.0): V1 0.000 S<=S 1.000 S/S 0.900 V2A {'PASS': 0.03, 'FAIL': 0.03, 'UNDERPOWERED': 0.94, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=4 beta(0.5,1.0): V1 0.000 S<=S 1.000 S/S 0.729 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=4 beta(0.3,0.6): V1 0.000 S<=S 1.000 S/S 0.643 V2A {'PASS': 0.0, 'FAIL': 0.45, 'UNDERPOWERED': 0.55, 'NOT_EVALUABLE': 0.0} 
+  A1 n=5000 lam=4 const(0.4,None): V1 0.000 S<=S 0.460 S/S 1.000 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  avoid0.1 n=231: V1 0.000 S<=S 1.000 S/S 0.791 V2A {'PASS': 0.18, 'FAIL': 0.005, 'UNDERPOWERED': 0.815, 'NOT_EVALUABLE': 0.0} 
+  avoid0.3 n=231: V1 0.000 S<=S 0.390 S/S 1.024 V2A {'PASS': 0.42, 'FAIL': 0.0, 'UNDERPOWERED': 0.58, 'NOT_EVALUABLE': 0.0} 
+  avoid0.5 n=231: V1 0.135 S<=S 0.000 S/S 1.527 V2A {'PASS': 0.955, 'FAIL': 0.0, 'UNDERPOWERED': 0.045, 'NOT_EVALUABLE': 0.0} 
+  forced n=231: V1 0.000 S<=S 0.610 S/S 0.989 V2A {'PASS': 0.28, 'FAIL': 0.0, 'UNDERPOWERED': 0.72, 'NOT_EVALUABLE': 0.0} 
+  copy n=231: V1 0.000 S<=S 1.000 S/S 0.583 V2A {'PASS': 0.11, 'FAIL': 0.005, 'UNDERPOWERED': 0.885, 'NOT_EVALUABLE': 0.0} 
+  avoid0.1 n=5000: V1 0.000 S<=S 1.000 S/S 0.793 V2A {'PASS': 0.905, 'FAIL': 0.0, 'UNDERPOWERED': 0.095, 'NOT_EVALUABLE': 0.0} 
+  avoid0.3 n=5000: V1 0.000 S<=S 0.160 S/S 1.016 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  avoid0.5 n=5000: V1 0.785 S<=S 0.000 S/S 1.504 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  forced n=5000: V1 0.000 S<=S 0.830 S/S 0.989 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} 
+  copy n=5000: V1 0.000 S<=S 1.000 S/S 0.578 V2A {'PASS': 0.765, 'FAIL': 0.0, 'UNDERPOWERED': 0.235, 'NOT_EVALUABLE': 0.0} 
+  WP-M n=231: V1 0.000 S<=S 1.000 S/S 0.729 V2A {'PASS': 0.095, 'FAIL': 0.01, 'UNDERPOWERED': 0.895, 'NOT_EVALUABLE': 0.0} BOUND_HOLDS
+  WP-M n=5000: V1 0.000 S<=S 1.000 S/S 0.729 V2A {'PASS': 0.305, 'FAIL': 0.005, 'UNDERPOWERED': 0.69, 'NOT_EVALUABLE': 0.0} BOUND_HOLDS
+  WP-D(0.5,0.2) n=231: V1 0.000 S<=S 0.130 S/S 1.035 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} BREAKS_UNDETECTED
+  WP-D(0.6,0.05) n=231: V1 0.890 S<=S 0.000 S/S 1.869 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} BREAKS_DETECTED
+  WP-D(0.8,0.1) n=231: V1 0.040 S<=S 0.000 S/S 1.427 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} BREAKS_UNDETECTED
+  WP-D(0.5,0.2) n=5000: V1 0.000 S<=S 0.000 S/S 1.034 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} BREAKS_UNDETECTED
+  WP-D(0.6,0.05) n=5000: V1 1.000 S<=S 0.000 S/S 1.829 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} BREAKS_DETECTED
+  WP-D(0.8,0.1) n=5000: V1 0.225 S<=S 0.000 S/S 1.431 V2A {'PASS': 1.0, 'FAIL': 0.0, 'UNDERPOWERED': 0.0, 'NOT_EVALUABLE': 0.0} BREAKS_UNDETECTED
+selftest ok
