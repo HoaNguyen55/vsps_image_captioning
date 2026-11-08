@@ -1,0 +1,1249 @@
+{
+ "schema": "vsps.b_pa1.registry.v1",
+ "tier": "TIER 1 / DEV-EXPLORE (B-PA1-T1)",
+ "status": "DRAFT, not read; R1 and prompt shas need gatekeeper LOG pin lines before first use (v3.1 l.653-659)",
+ "source": "HF API /api/models/<repo>/revision/<rev> (safetensors, gated, cardData) and /tree/<rev>?recursive=true, read 2026-11-08 about 06:00Z, user-agent vsps-research; revision = main HEAD at that read (Gemma-3n: the v3.1 l.181 pin c1221e9c, equal to main HEAD); files: ['lfs', sha256] = LFS oid, ['blob', sha1] = git blob",
+ "rule_s_max_params": 8000000000,
+ "walk": [
+  "internvl2_5_8b",
+  "internvl2_5_2b",
+  "mblip_mt0_xl",
+  "mblip_bloomz_7b",
+  "gemma3n_e4b",
+  "minicpm_v4",
+  "gemma3_4b",
+  "phi3_5_vision",
+  "molmo_7b_o",
+  "llava15_7b"
+ ],
+ "a4_first": "qwen2_5_vl_3b",
+ "a4_pool": [
+  "gemma3_4b",
+  "internvl3_2b"
+ ],
+ "verifier": "qwen2_5_vl_3b",
+ "decomposer": "qwen2_5_7b",
+ "clip": [
+  "mclip",
+  "xlmr"
+ ],
+ "clip_w": 2.5,
+ "clip_open_clip_name": "xlm-roberta-large-ViT-H-14",
+ "decode": {
+  "max_new_tokens": 60,
+  "do_sample": false,
+  "num_beams": 1,
+  "repetition_penalty": 1.0,
+  "batch": 1
+ },
+ "decomposer_decode": {
+  "max_new_tokens": 512,
+  "do_sample": false,
+  "num_beams": 1,
+  "repetition_penalty": 1.0,
+  "batch": 8
+ },
+ "prop_types": [
+  "object",
+  "count",
+  "colour",
+  "attribute",
+  "action",
+  "relation"
+ ],
+ "verify_types": [
+  "object",
+  "count",
+  "colour",
+  "attribute",
+  "action",
+  "relation"
+ ],
+ "token_words": {
+  "vi": {
+   "Y": [
+    "có",
+    "Có",
+    " có",
+    " Có"
+   ],
+   "N": [
+    "không",
+    "Không",
+    " không",
+    " Không"
+   ]
+  },
+  "en": {
+   "Y": [
+    "yes",
+    "Yes",
+    " yes",
+    " Yes"
+   ],
+   "N": [
+    "no",
+    "No",
+    " no",
+    " No"
+   ]
+  }
+ },
+ "prompt_lang": {
+  "v1": "vi",
+  "v2": "en",
+  "ja": "vi"
+ },
+ "digits": [
+  "0",
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9"
+ ],
+ "gate": {
+  "n_images": 231,
+  "pass_share": "95/100",
+  "n_accept": 4
+ },
+ "smoke": {
+  "n_images": 64,
+  "a4_decode_images": 16
+ },
+ "h_salt": "b-pa1-h2|",
+ "instrument_llm": {
+  "mode": "agent-drafted, amendment-logged",
+  "id": null,
+  "revision": "none (agent-drafted, no model revision)",
+  "source": "PI-1108e Q2 (a), CC-295 W5: step-4 map additions are agent-drafted proposals, never gold, under a new logged §6.1 amendment read at the irreversible tier; each instrument entry names its drafter; the entries file names that amendment, LOG-pinned (b_pa1_mid.amend)",
+  "prompts": "instrument_i / instrument_ii point by name to the LOG-pinned step-4 amendment (CC-295r2 W8)"
+ },
+ "models": {
+  "internvl2_5_8b": {
+   "repo": "OpenGVLab/InternVL2_5-8B",
+   "revision": "e9e4c0dc1db56bfab10458671519b7fa3dd29463",
+   "role": "candidate",
+   "walk": 1,
+   "venv": "legacy",
+   "adapter": "internvl",
+   "trust_remote_code": true,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 8075365376,
+   "rule_s": "fail",
+   "lineage": {
+    "V": "InternViT",
+    "L": "InternLM",
+    "source": "card base_model: OpenGVLab/InternViT-300M-448px-V2_5, internlm/internlm2_5-7b-chat"
+   },
+   "download": false,
+   "files": {
+    "added_tokens.json": [
+     "blob",
+     "35f5893c8e29d6102945a953529819a2d56c62a9"
+    ],
+    "config.json": [
+     "blob",
+     "90be7fce58a2f69f59fb06159c8de0cfa5507888"
+    ],
+    "configuration_intern_vit.py": [
+     "blob",
+     "7e630c456eb9cf350e55bf850c3ff72f445a7e17"
+    ],
+    "configuration_internlm2.py": [
+     "blob",
+     "282b13b1e2066ecc074ecae87b35a19d251f0ed7"
+    ],
+    "configuration_internvl_chat.py": [
+     "blob",
+     "50d3ee82772f8abb4fa1ae6a7c80899df7ddd941"
+    ],
+    "conversation.py": [
+     "blob",
+     "5a771766f21ce3aeeb99b286fb8d188b0038a547"
+    ],
+    "generation_config.json": [
+     "blob",
+     "d45dc4fdf649b1096e6d30f54fa59c1366ddecfb"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "8b024ee06fb58c2607a1c54a04b8ee0749d14f2c"
+    ],
+    "modeling_intern_vit.py": [
+     "blob",
+     "233b0293451a13c7b5211d65633deb73a13b240c"
+    ],
+    "modeling_internlm2.py": [
+     "blob",
+     "7c8c24d873f6ecd152d00fd65371e23ead981e1d"
+    ],
+    "modeling_internvl_chat.py": [
+     "blob",
+     "6dd05026716317d3483b2abd4a573e61cf1048c7"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "dfd7e50d9d4e67cd679b16b337b419a0c6cfa849"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "cbf34a50d27c43ed8d1e2823b800b4e6f66e637a"
+    ],
+    "tokenization_internlm2.py": [
+     "blob",
+     "1be581da37ef678de65f2737493fc0ed7160446e"
+    ],
+    "tokenization_internlm2_fast.py": [
+     "blob",
+     "aa0fccbd0f1d029d79e19821f2edcb01b594537c"
+    ],
+    "tokenizer.model": [
+     "lfs",
+     "f868398fc4e05ee1e8aeba95ddf18ddcc45b8bce55d5093bead5bbf80429b48b"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "c8e0cbeffaa659a63b960b3649d6a3360239b697"
+    ]
+   },
+   "bytes": 1682235
+  },
+  "internvl2_5_2b": {
+   "repo": "OpenGVLab/InternVL2_5-2B",
+   "revision": "573169ee54df216786bb9a189e9a32a060a008cf",
+   "role": "candidate",
+   "walk": 2,
+   "venv": "legacy",
+   "adapter": "internvl",
+   "trust_remote_code": true,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 2205754368,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "InternViT",
+    "L": "InternLM",
+    "source": "card base_model and table: InternViT-300M-448px-V2_5, internlm2_5-1_8b-chat"
+   },
+   "download": true,
+   "files": {
+    "added_tokens.json": [
+     "blob",
+     "35f5893c8e29d6102945a953529819a2d56c62a9"
+    ],
+    "config.json": [
+     "blob",
+     "ecf99b56a4851e452eb5ee4e1d93ebd916a47855"
+    ],
+    "configuration_intern_vit.py": [
+     "blob",
+     "7e630c456eb9cf350e55bf850c3ff72f445a7e17"
+    ],
+    "configuration_internlm2.py": [
+     "blob",
+     "282b13b1e2066ecc074ecae87b35a19d251f0ed7"
+    ],
+    "configuration_internvl_chat.py": [
+     "blob",
+     "50d3ee82772f8abb4fa1ae6a7c80899df7ddd941"
+    ],
+    "conversation.py": [
+     "blob",
+     "5a771766f21ce3aeeb99b286fb8d188b0038a547"
+    ],
+    "generation_config.json": [
+     "blob",
+     "d45dc4fdf649b1096e6d30f54fa59c1366ddecfb"
+    ],
+    "model.safetensors": [
+     "lfs",
+     "2135909ed23cb6c934a57a9f7e194c6ab128042a76f8934cdedfa0194181f50d"
+    ],
+    "modeling_intern_vit.py": [
+     "blob",
+     "233b0293451a13c7b5211d65633deb73a13b240c"
+    ],
+    "modeling_internlm2.py": [
+     "blob",
+     "7c8c24d873f6ecd152d00fd65371e23ead981e1d"
+    ],
+    "modeling_internvl_chat.py": [
+     "blob",
+     "6dd05026716317d3483b2abd4a573e61cf1048c7"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "dfd7e50d9d4e67cd679b16b337b419a0c6cfa849"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "cbf34a50d27c43ed8d1e2823b800b4e6f66e637a"
+    ],
+    "tokenization_internlm2.py": [
+     "blob",
+     "1be581da37ef678de65f2737493fc0ed7160446e"
+    ],
+    "tokenization_internlm2_fast.py": [
+     "blob",
+     "aa0fccbd0f1d029d79e19821f2edcb01b594537c"
+    ],
+    "tokenizer.model": [
+     "lfs",
+     "f868398fc4e05ee1e8aeba95ddf18ddcc45b8bce55d5093bead5bbf80429b48b"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "c8e0cbeffaa659a63b960b3649d6a3360239b697"
+    ]
+   },
+   "bytes": 4413202109
+  },
+  "mblip_mt0_xl": {
+   "repo": "Gregor/mblip-mt0-xl",
+   "revision": "5e3ca094d5de4c53ed5548b20fd21a7787cafd1a",
+   "role": "candidate",
+   "walk": 3,
+   "venv": "main",
+   "adapter": "blip2",
+   "trust_remote_code": false,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 4835309056,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "EVA-CLIP",
+    "L": "mT5",
+    "source": "card: 'The Q-Former and ViT have both been initialized by an English BLIP-2 checkpoint (blip2-flan-t5-xl)', LLM mt0-xl; v3.1 l.157 BLIP-2 ViT-g follows its EVA-CLIP initialisation"
+   },
+   "download": true,
+   "files": {
+    "config.json": [
+     "blob",
+     "99b5f82365a6598f317f263a2e0f54148414be31"
+    ],
+    "model-00001-of-00002.safetensors": [
+     "lfs",
+     "4896d4d7c615de06f40bcc941a3eafd62c5080f120ae18a643a5e1959214134a"
+    ],
+    "model-00002-of-00002.safetensors": [
+     "lfs",
+     "27f81d7f5a1ccd7b93c96cb9f93cc9f5eee1d5186f51d8e09a6094c837169311"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "d8ba883b89c7516fd86f4ea1f9b0ae7b7fe36d6e"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "0b0fa393c4e1fa80a41fd3b84e022c6e3488230e"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "79ae7ea5bf033de69d0055820c57885e3d377bbb"
+    ],
+    "spiece.model": [
+     "lfs",
+     "ef78f86560d809067d12bac6c09f19a462cb3af3f54d2b8acbba26e1433125d6"
+    ],
+    "tokenizer.json": [
+     "lfs",
+     "99cc999819aaabf74898a252863b10d86fbcd86e8b3f65c118ff334ff85c5ea5"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "11a23785fa89679ab7d8b26f1bfd67293368f74d"
+    ]
+   },
+   "bytes": 19362170756
+  },
+  "mblip_bloomz_7b": {
+   "repo": "Gregor/mblip-bloomz-7b",
+   "revision": "4d95b91d56fcdce86504c951a28f016b15e219a1",
+   "role": "candidate",
+   "walk": 4,
+   "venv": "main",
+   "adapter": "blip2",
+   "trust_remote_code": false,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 8163280384,
+   "rule_s": "fail",
+   "lineage": {
+    "V": "EVA-CLIP",
+    "L": "BLOOM",
+    "source": "card: BLIP-2 ViT re-aligned to bloomz-7b1 (same family card as mblip-mt0-xl); v3.1 l.157-158"
+   },
+   "download": false,
+   "files": {
+    "config.json": [
+     "blob",
+     "b56aa3dec29cdc24a1cb4537c65f7dbdac81b532"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "9465df3cf54a718d93d3f213c659c6084b4345ce"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "0b0fa393c4e1fa80a41fd3b84e022c6e3488230e"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "fdafe480f024ff444c7492147536765ce5d55a2d"
+    ],
+    "tokenizer.json": [
+     "lfs",
+     "17a208233d2ee8d8c83b23bc214df737c44806a1919f444e89b31e586cd956ba"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "612d97d5aeea6f682ea29c0ee6d1fed2eba39468"
+    ]
+   },
+   "bytes": 14619122
+  },
+  "gemma3n_e4b": {
+   "repo": "google/gemma-3n-E4B-it",
+   "revision": "c1221e9c62e34a43ab7ffacd1be0ea71f126ef10",
+   "role": "candidate",
+   "walk": 5,
+   "venv": "main",
+   "adapter": "gemma3n",
+   "trust_remote_code": false,
+   "dtype": "bfloat16",
+   "gated": true,
+   "safetensors_total": 7849978192,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "MobileNet-V5",
+    "L": "Gemma",
+    "source": "PI-1108e Q1 + ERRATUM_LINEAGE_GEMMA3N_v1_2.md (substantive pre-data amendment of N6: card, then technical report or paper, then the developer's official model documentation; a documented new encoder with no stated initialisation from another series is its own line; O4 'undetermined = clash' overridden for Gemma-3n only; V fixed at that file's pin line): Google Developers Blog 'Introducing Gemma 3n: The developer guide' (2025-06-26, developers.googleblog.com/en/introducing-gemma-3n-developer-guide/): 'a new, highly efficient vision encoder, MobileNet-V5-300M'; 'Benefiting from novel architectural designs and advanced distillation techniques, MobileNet-V5-300M substantially outperforms the baseline SoViT in Gemma 3 (trained with SigLip, no distillation)' (SigLIP names the Gemma 3 baseline only; no teacher named; a teacher never merges lineages, v3.1 §4.1); retrieved 2026-11-08; ai.google.dev/gemma/docs/gemma-3n: 'MobileNet-V5 encoder'; card base_model google/gemma-3n-E4B (L); the card names no vision encoder; config mobilenetv5_300m_enc confirms the architecture only (N6)",
+    "V_without_erratum": "undetermined"
+   },
+   "download": true,
+   "files": {
+    "chat_template.jinja": [
+     "blob",
+     "a0405ea9c2eb8f0c6ea0dd8975f0272714d88011"
+    ],
+    "config.json": [
+     "blob",
+     "9b7cbbc7d1d2a384f889936615bab69ee1134607"
+    ],
+    "generation_config.json": [
+     "blob",
+     "62d2af0d9b124c94210da65e8625004049d97e85"
+    ],
+    "model-00001-of-00004.safetensors": [
+     "lfs",
+     "1af26e1fd61af0dc067252c907bf52900c7cd5864893e29970e6ea87320322a6"
+    ],
+    "model-00002-of-00004.safetensors": [
+     "lfs",
+     "5dff2214c41034789c514931257d804bc0808b8ce709a795a8f966b8cc36c002"
+    ],
+    "model-00003-of-00004.safetensors": [
+     "lfs",
+     "bbe396c49b463b6147243ea883b06a4c09e85d558a392501c2dbfbdd0e1f2f9f"
+    ],
+    "model-00004-of-00004.safetensors": [
+     "lfs",
+     "5bebe6d74423ec0cfb6a837d42319c36e5999888832606992a136258cd49e718"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "d2fa9a0727cfc47d436d04db4552f50722a80803"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "94feb43565657aae6ed7b6a2ba8436b532717161"
+    ],
+    "processor_config.json": [
+     "blob",
+     "2ffcf33a70b7f8f18caa71940a459bd47db4704e"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "6bb15953db58fec11fc61720db517062f5a4f040"
+    ],
+    "tokenizer.json": [
+     "lfs",
+     "c4c19736bf24d1c6805cf49340e31bd02c70fb7857a2cb31065c90c2b5719c4e"
+    ],
+    "tokenizer.model": [
+     "lfs",
+     "ea5f0cc48abfbfc04d14562270a32e02149a3e7035f368cc5a462786f4a59961"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "f8325f19c3290c347da10b47e534360c1d12125a"
+    ]
+   },
+   "bytes": 15739702421
+  },
+  "minicpm_v4": {
+   "repo": "openbmb/MiniCPM-V-4",
+   "revision": "6f69a8235885be89608f3a71ffd40695b379e1e7",
+   "role": "candidate",
+   "walk": 6,
+   "venv": "main",
+   "adapter": "minicpm",
+   "trust_remote_code": true,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 4059533040,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "SigLIP",
+    "L": "MiniCPM",
+    "source": "card l.26: 'built based on SigLIP2-400M and MiniCPM4-3B'"
+   },
+   "download": true,
+   "files": {
+    "config.json": [
+     "blob",
+     "be2bdfedbbe7b66bea9e91ce1963d2bc78bf600f"
+    ],
+    "configuration_minicpm.py": [
+     "blob",
+     "2d4752b4efe85786f137340dc5912bbf9d8ffe26"
+    ],
+    "generation_config.json": [
+     "blob",
+     "fb6a92ca912734f18bce7582e63792f456fc3343"
+    ],
+    "image_processing_minicpmv.py": [
+     "blob",
+     "67ff552fbd59b6142f0969dfe00e19edfb1127bf"
+    ],
+    "model-00001-of-00002.safetensors": [
+     "lfs",
+     "c1636a5c21c7fedb3f6f0ff3f3a4e35103e6208c1144f320a0c5a92c22a16af6"
+    ],
+    "model-00002-of-00002.safetensors": [
+     "lfs",
+     "cd6ee63b0a3ae1ad24790f954cca3448392cd3a0d9d2d208cb2b14e0da53d32e"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "c57dec39f67009792c1cdfd39452184d809b0e6c"
+    ],
+    "modeling_minicpmv.py": [
+     "blob",
+     "945f913cc89e91ed78179251908c0f492dfbb1ae"
+    ],
+    "modeling_navit_siglip.py": [
+     "blob",
+     "6fe732cf0d5884613003c00bccea0c5ae64a1905"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "951fd9164475e0c264b68745132c3bc53919a976"
+    ],
+    "processing_minicpmv.py": [
+     "blob",
+     "8d89205da5513f0a49bc3d8e2b38d7fc9ebddf68"
+    ],
+    "resampler.py": [
+     "blob",
+     "cdec5f777789a190e5ba6a6727f24e13ba1129cb"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "8619dda6f3eb6d60d0a1bb274820054e46f41699"
+    ],
+    "tokenization_minicpmv_fast.py": [
+     "blob",
+     "b863f1b9b6ffc6c071dc8516957dcfb491ca88e5"
+    ],
+    "tokenizer.json": [
+     "blob",
+     "a79a8753aa25a89b615f521361b356f63188e48b"
+    ],
+    "tokenizer.model": [
+     "lfs",
+     "63099373ce6901674187ba3d7233c5970a253e8e0874056823bf0d3abc8d96a1"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "1e84284c9f7d2b760ef1d0c4a4975e8c78f7d21a"
+    ]
+   },
+   "bytes": 8124225125
+  },
+  "gemma3_4b": {
+   "repo": "google/gemma-3-4b-it",
+   "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+   "role": "candidate",
+   "walk": 7,
+   "venv": "main",
+   "adapter": "gemma3",
+   "trust_remote_code": false,
+   "dtype": "bfloat16",
+   "gated": true,
+   "safetensors_total": 4300079472,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "SigLIP",
+    "L": "Gemma",
+    "source": "card base_model google/gemma-3-4b-pt; Gemma 3 report arXiv 2503.19786 §2.1: 'We use a 400M variant of the SigLIP encoder'"
+   },
+   "download": true,
+   "files": {
+    "added_tokens.json": [
+     "blob",
+     "e17bde03d42feda32d1abfca6d3b598b9a020df7"
+    ],
+    "chat_template.json": [
+     "blob",
+     "719b0cd0d7a373a400b0c119ee0e051f41ea88d9"
+    ],
+    "config.json": [
+     "blob",
+     "fcdc8a6cd637c7ae460065204e7fd0d8c00a38fc"
+    ],
+    "generation_config.json": [
+     "blob",
+     "37a4c871d263a349f50e4a313db3e72164950702"
+    ],
+    "model-00001-of-00002.safetensors": [
+     "lfs",
+     "eb5fd5e97ddd07b56778733e9653c07312529cb00980a318fc3e1c4e3b5a8f1f"
+    ],
+    "model-00002-of-00002.safetensors": [
+     "lfs",
+     "fdde0e5aa5ced0fa203b3d50f4ab78168b7e3a3e08c6349f5cc9326666e1bb13"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "4b95241f208f06d324d17c9675568ec58dafd9fb"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "b1e00fc184f61b698181821169c6374cd5813e5c"
+    ],
+    "processor_config.json": [
+     "blob",
+     "453c7966d4b5d0b4a317c585989f64c58c2a6bf0"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "1a6193244714d3d78be48666cb02cdbfac62ad86"
+    ],
+    "tokenizer.json": [
+     "lfs",
+     "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795"
+    ],
+    "tokenizer.model": [
+     "lfs",
+     "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "7bdd14f0eaec30c8d2c56bc9d543587676e19c0f"
+    ]
+   },
+   "bytes": 8639603101
+  },
+  "phi3_5_vision": {
+   "repo": "microsoft/Phi-3.5-vision-instruct",
+   "revision": "12b77fb40b63a2c73c68243d3f767aab688a1b2a",
+   "role": "candidate",
+   "walk": 8,
+   "venv": "legacy",
+   "adapter": "phi3v",
+   "trust_remote_code": true,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 4146621440,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "CLIP",
+    "L": "Phi",
+    "source": "card l.220: 'contains image encoder, connector, projector, and Phi-3 Mini language model'; Phi-3 report arXiv 2404.14219 §7.1: 'an image encoder, i.e., CLIP ViT-L/14'"
+   },
+   "download": true,
+   "files": {
+    "config.json": [
+     "blob",
+     "d17800328ba8d16688e87fd95a3d6a6f851cc7db"
+    ],
+    "configuration_phi3_v.py": [
+     "blob",
+     "e3affcbfa11f737f840d7f0f4b34153fd0415098"
+    ],
+    "generation_config.json": [
+     "blob",
+     "4db2e1bb076bed5ceb0ba1b5fc1a7b2d5c2329ae"
+    ],
+    "model-00001-of-00002.safetensors": [
+     "lfs",
+     "be7bdee601478b3560aeb7122fe87a7d68445bb21b5f1ca88a764e8530b3aab8"
+    ],
+    "model-00002-of-00002.safetensors": [
+     "lfs",
+     "94621eca6936d7a2fb94bd90f37edb0e28850235e7ba2c5e20445d2fc56bcaed"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "6b0eab0c79547e71df1cce9ffce0570a4e3e76a7"
+    ],
+    "modeling_phi3_v.py": [
+     "blob",
+     "f08fb1649b5d530c8a0ed1c74d8f379ddc50c096"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "5559abc31e77a754d6c876fc86878f7b6c679986"
+    ],
+    "processing_phi3_v.py": [
+     "blob",
+     "4a4109dd1c20e257e9fdc1e16071a0a9d66051de"
+    ],
+    "processor_config.json": [
+     "blob",
+     "b9cdc63dde1bec3027ff85f7ea884603bb4fff50"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "0616f20a3af0830d0991f72c15c4f5e6d5dc02fa"
+    ],
+    "tokenizer.json": [
+     "blob",
+     "6a0986c7e1b01a58ff8cc31fc2d64ddd230fec7e"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "3c7b5bda28936460312aa5161c8ad08d583829fc"
+    ]
+   },
+   "bytes": 8295387436
+  },
+  "molmo_7b_o": {
+   "repo": "allenai/Molmo-7B-O-0924",
+   "revision": "7a8c4bf80c839c243a6908c6ebbb0f1ee576d7ca",
+   "role": "candidate",
+   "walk": 9,
+   "venv": "legacy",
+   "adapter": "molmo",
+   "trust_remote_code": true,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 7665032192,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "CLIP",
+    "L": "OLMo",
+    "source": "card base_model: openai/clip-vit-large-patch14-336, allenai/OLMo-7B-1124"
+   },
+   "download": true,
+   "files": {
+    "added_tokens.json": [
+     "blob",
+     "0a79b4ccb144e0d1e767715efebc519629987874"
+    ],
+    "config.json": [
+     "blob",
+     "6e845e2ad857a5c73f838f5180b090acdc21b3fe"
+    ],
+    "config_molmo.py": [
+     "blob",
+     "2322810b01f38dbfe7e6581da01df60cd92087e0"
+    ],
+    "generation_config.json": [
+     "blob",
+     "b0d282ee31d19141d61c6740dcbf23218565a795"
+    ],
+    "image_preprocessing_molmo.py": [
+     "blob",
+     "ef787ecb772f467d947ef318c848ec14bcfa426e"
+    ],
+    "merges.txt": [
+     "blob",
+     "354558edcdbd64ca7abd407b8be3d5d09d39d781"
+    ],
+    "model-00001-of-00007.safetensors": [
+     "lfs",
+     "f62462f2b44ec6cf5e9e463be3d628f63b2a8685519d9d58920311a00a79d74d"
+    ],
+    "model-00002-of-00007.safetensors": [
+     "lfs",
+     "27fa5b456885e5541ca10c08b6768ffe4bfdfd376199e58d0b57ce7ad1dea9eb"
+    ],
+    "model-00003-of-00007.safetensors": [
+     "lfs",
+     "569422af4369e75a7d2243484aa25715d3aa8d0a47500001b79c18826b078654"
+    ],
+    "model-00004-of-00007.safetensors": [
+     "lfs",
+     "b6f1b3639387e4a063ae0c29477684018cd6719be3123a21dc5640172dfdd2ed"
+    ],
+    "model-00005-of-00007.safetensors": [
+     "lfs",
+     "67c52ed3b2d8e75f07e31eb9a7ab663518f7b843ed08e7571581e154538afe5b"
+    ],
+    "model-00006-of-00007.safetensors": [
+     "lfs",
+     "e9bd0ebb5ea43f3167015279b60351ed5480af76067d1bf8330336e9e1426a4f"
+    ],
+    "model-00007-of-00007.safetensors": [
+     "lfs",
+     "d5a6e64e4b75e2268eeb34b0f07520a0a24092a6fd548991664a9170c5acac45"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "a2ae8ab6556b6c065933861ddcde220ef91c42b9"
+    ],
+    "modeling_molmo.py": [
+     "blob",
+     "989289765050f1fa6453b9534c3e1e94cc3c0656"
+    ],
+    "preprocessing_molmo.py": [
+     "blob",
+     "3598399448f4627c2c7603561b04083b9dc02b98"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "7acc461b5da94e0576f55ea00b2bb7d6f9c6ddc4"
+    ],
+    "processor_config.json": [
+     "blob",
+     "c4a9652bce368dc3c529f64ad0072320d6855105"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "cfa9c2bc2f585a700ed1e4026003a1e669bc6bcd"
+    ],
+    "tokenizer.json": [
+     "blob",
+     "daafebffb3d54b4f9045574a91385c32a3a6fd88"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "976f627038a5b618ef07d9a6cf733782f7253b75"
+    ],
+    "vocab.json": [
+     "blob",
+     "51135344eec01a62fc4deaca39c72ac08f5b9709"
+    ]
+   },
+   "bytes": 30667184605
+  },
+  "llava15_7b": {
+   "repo": "llava-hf/llava-1.5-7b-hf",
+   "revision": "b234b804b114d9e37bb655e11cbbb5f5e971b7a9",
+   "role": "candidate",
+   "walk": 10,
+   "venv": "main",
+   "adapter": "llava",
+   "trust_remote_code": false,
+   "dtype": "float16",
+   "gated": false,
+   "safetensors_total": 7063427072,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "CLIP",
+    "L": "Llama",
+    "source": "card l.27: 'fine-tuning LLaMA/Vicuna'; LLaVA-1.5 paper arXiv 2310.03744: CLIP-ViT-L-336px vision encoder"
+   },
+   "download": true,
+   "files": {
+    "added_tokens.json": [
+     "blob",
+     "4bd5222947172917d6a7770e47e797f3253c669a"
+    ],
+    "chat_template.jinja": [
+     "blob",
+     "b432799326738da5fedb3458dfd18ccf373554de"
+    ],
+    "chat_template.json": [
+     "blob",
+     "c998e15e4dfb9f8559cad83653555ccd696cd7ec"
+    ],
+    "config.json": [
+     "blob",
+     "5de92935009a2c670e07576ed411be82fd58b2ee"
+    ],
+    "generation_config.json": [
+     "blob",
+     "8d7eb9299fc02285ea047807e43b0688944ff6d0"
+    ],
+    "model-00001-of-00003.safetensors": [
+     "lfs",
+     "c11dbf016ee7d35ee130c19b67e20eb04873996006f424b7bcbd453b6517ee66"
+    ],
+    "model-00002-of-00003.safetensors": [
+     "lfs",
+     "46df6c6e5fad297fe7fbca4963dcf180cb1d0528cabc884d1f603311fed01328"
+    ],
+    "model-00003-of-00003.safetensors": [
+     "lfs",
+     "4f06177c37ca13944e73b57dd6d051767b950dffc12400c700dfa2509c24c697"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "695b1d57193f2740ecab31f39297a4fd2a2ed050"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "38f4d736a2e2b34af9eaef607847407c0efc7980"
+    ],
+    "processor_config.json": [
+     "blob",
+     "af0ccfc7718788d1bdd1b747d6298d91ed48ffa4"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "a782b2f1cdab4d0bacb2dc0f85d02c4b1e31f0bd"
+    ],
+    "tokenizer.json": [
+     "blob",
+     "ed9b377d211618c8274de275f3d9d64257406615"
+    ],
+    "tokenizer.model": [
+     "lfs",
+     "9e556afd44213b6bd1be2b850ebbbd98f5481437a8021afaf58ee7fb1818d347"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "04d334b028b1c479e0a1152eb71348ae509bb2d5"
+    ]
+   },
+   "bytes": 14131140467
+  },
+  "qwen2_5_vl_3b": {
+   "repo": "Qwen/Qwen2.5-VL-3B-Instruct",
+   "revision": "66285546d2b821cf421d4f5eb2576359d3770cd3",
+   "role": "verifier",
+   "walk": null,
+   "venv": "main",
+   "adapter": "qwen2_5_vl",
+   "trust_remote_code": false,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 3754622976,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "Qwen-ViT",
+    "L": "Qwen",
+    "source": "Qwen2.5-VL report arXiv 2502.13923 §2.1.1: 'we train the redesigned ViT from scratch'; §2.2.2 'We trained a Vision Transformer (ViT) from scratch'; LLM Qwen2.5"
+   },
+   "download": true,
+   "files": {
+    "chat_template.json": [
+     "blob",
+     "732bd68bc5427d1fb6c06a59b3bf2456b2155d24"
+    ],
+    "config.json": [
+     "blob",
+     "0ae1866f05ab0153ad293bdc92bb1b842c4d95b1"
+    ],
+    "generation_config.json": [
+     "blob",
+     "1dfafa23e24b68b694722c6211e7da36730e9917"
+    ],
+    "merges.txt": [
+     "blob",
+     "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+    ],
+    "model-00001-of-00002.safetensors": [
+     "lfs",
+     "41a8895c164b4d32bae6b302f4603fcbc1797f32dafa45c7e9bcda23c6755df8"
+    ],
+    "model-00002-of-00002.safetensors": [
+     "lfs",
+     "365531ff8752420e89dee707b79d021fb2d6e25abafe486f080555a4fe6972e4"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "7a3ec4f48662e38593f8cab48fe12a4f28003aba"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "7f3b746825e5eef53ed8ed57a91df9e86ee62c0a"
+    ],
+    "tokenizer.json": [
+     "blob",
+     "443909a61d429dff23010e5bddd28ff530edda00"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "91684ea3dc135a7d815e2c932054ce88c1aab41f"
+    ],
+    "vocab.json": [
+     "blob",
+     "4783fe10ac3adce15ac8f358ef5462739852c569"
+    ]
+   },
+   "bytes": 7520892432
+  },
+  "internvl3_2b": {
+   "repo": "OpenGVLab/InternVL3-2B",
+   "revision": "899155015275a9b7338c7f4677e19c784e0e5a21",
+   "role": "a4",
+   "walk": null,
+   "venv": "main",
+   "adapter": "internvl",
+   "trust_remote_code": true,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 2088957440,
+   "rule_s": "pass",
+   "lineage": {
+    "V": "InternViT",
+    "L": "Qwen",
+    "source": "card table: InternViT-300M-448px-V2_5, Qwen2.5-1.5B"
+   },
+   "download": true,
+   "files": {
+    "added_tokens.json": [
+     "blob",
+     "dd972e4080e791eab591742c1168ee7fd6279146"
+    ],
+    "config.json": [
+     "blob",
+     "91b5777a06c1fb806d054ff69152177444256fbf"
+    ],
+    "configuration_intern_vit.py": [
+     "blob",
+     "7e630c456eb9cf350e55bf850c3ff72f445a7e17"
+    ],
+    "configuration_internvl_chat.py": [
+     "blob",
+     "502772cc6e24e6d1fbc5bf91ce76c9b234101eaf"
+    ],
+    "conversation.py": [
+     "blob",
+     "5a771766f21ce3aeeb99b286fb8d188b0038a547"
+    ],
+    "generation_config.json": [
+     "blob",
+     "467e2ba8edc477ad1fb650f892ab5be9210522ab"
+    ],
+    "merges.txt": [
+     "blob",
+     "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7"
+    ],
+    "model.safetensors": [
+     "lfs",
+     "18b4cdbc8eab790f447feac717f4d0cecbb85caf8df198b3b2401c22506858e7"
+    ],
+    "modeling_intern_vit.py": [
+     "blob",
+     "eb4aef44ddace5782035f0316de3834563b1c8dd"
+    ],
+    "modeling_internvl_chat.py": [
+     "blob",
+     "ccf2ab9cc83283f41aafb611d379c4cc50614132"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "dfd7e50d9d4e67cd679b16b337b419a0c6cfa849"
+    ],
+    "special_tokens_map.json": [
+     "blob",
+     "ac23c0aaa2434523c494330aeb79c58395378103"
+    ],
+    "tokenizer.json": [
+     "blob",
+     "1b4f039248a420730cd195d6d6a1a9cc713a7f14"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "f18c701c825405350d5f0ae158749015b3239e6e"
+    ],
+    "vocab.json": [
+     "blob",
+     "6bce3a0a3866c4791a74d83d78f6824c3af64ec3"
+    ]
+   },
+   "bytes": 4190162129
+  },
+  "qwen2_5_7b": {
+   "repo": "Qwen/Qwen2.5-7B-Instruct",
+   "revision": "a09a35458c702b33eeacc393d103063234e8bc28",
+   "role": "decomposer",
+   "walk": null,
+   "venv": "main",
+   "adapter": "qwen_text",
+   "trust_remote_code": false,
+   "dtype": "bfloat16",
+   "gated": false,
+   "safetensors_total": 7615616512,
+   "rule_s": "pass",
+   "lineage": {
+    "V": null,
+    "L": "Qwen",
+    "source": "card base_model Qwen/Qwen2.5-7B"
+   },
+   "download": true,
+   "files": {
+    "config.json": [
+     "blob",
+     "0178295f88afc3c7f279ed284f961f8c1be00654"
+    ],
+    "generation_config.json": [
+     "blob",
+     "0eb3c536657dcd12626e09eca4b6198c0cbcde1e"
+    ],
+    "merges.txt": [
+     "blob",
+     "20024bfe7c83998e9aeaf98a0cd6a2ce6306c2f0"
+    ],
+    "model-00001-of-00004.safetensors": [
+     "lfs",
+     "a1333e6293854747c481288ea83b348226af178dd565c49b6f9495ba1966aba7"
+    ],
+    "model-00002-of-00004.safetensors": [
+     "lfs",
+     "f5d25a2772cb825164a2a2c0fb6d51a87e282abf21e4dd75bc5cfb3cd0ea6185"
+    ],
+    "model-00003-of-00004.safetensors": [
+     "lfs",
+     "8efdec4c1bc12317ae1a38dc42b595ce777738a64deea3fcb8a0a91381bcdfd5"
+    ],
+    "model-00004-of-00004.safetensors": [
+     "lfs",
+     "1a72d403cdf0c1ec3cb7f289f17b394a01e64394c2e9b3c0f94dbce3faf879bd"
+    ],
+    "model.safetensors.index.json": [
+     "blob",
+     "14d037fdda5a1311dcc0275003a7a370d84114e6"
+    ],
+    "tokenizer.json": [
+     "blob",
+     "443909a61d429dff23010e5bddd28ff530edda00"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "07bfe0640cb5a0037f9322287fbfc682806cf672"
+    ],
+    "vocab.json": [
+     "blob",
+     "4783fe10ac3adce15ac8f358ef5462739852c569"
+    ]
+   },
+   "bytes": 15242788168
+  },
+  "mclip": {
+   "repo": "laion/CLIP-ViT-H-14-frozen-xlm-roberta-large-laion5B-s13B-b90k",
+   "revision": "f9ab955287d06ac45c7654f26fecd29301c70a1f",
+   "role": "clip",
+   "walk": null,
+   "venv": "main",
+   "adapter": "mclip",
+   "trust_remote_code": false,
+   "dtype": "float32",
+   "gated": false,
+   "safetensors_total": null,
+   "rule_s": "n/a (CLIPScore control, not a captioner or verifier)",
+   "lineage": {
+    "V": null,
+    "L": null,
+    "source": "C-T1 pin (scripts/c_pvr/c_pvr.py HELPERS)"
+   },
+   "download": true,
+   "files": {
+    "open_clip_pytorch_model.bin": [
+     "lfs",
+     "ee81ce53c8591d48ee5e7b390b2f10d502c721df5920c3096c6bdb54d1459881"
+    ],
+    "preprocessor_config.json": [
+     "blob",
+     "c13c679c06519325749d1eef242ff98e2a5d2165"
+    ],
+    "tokenizer.json": [
+     "blob",
+     "463f3414782c1c9405828c9b31bfa36dda1f45c5"
+    ]
+   },
+   "bytes": 4781484996
+  },
+  "xlmr": {
+   "repo": "xlm-roberta-large",
+   "revision": "c23d21b0620b635a76227c604d44e43a9f0ee389",
+   "role": "clip_text",
+   "walk": null,
+   "venv": "main",
+   "adapter": "mclip",
+   "trust_remote_code": false,
+   "dtype": "float32",
+   "gated": false,
+   "safetensors_total": null,
+   "rule_s": "n/a (CLIPScore control, not a captioner or verifier)",
+   "lineage": {
+    "V": null,
+    "L": null,
+    "source": "C-T1 pin (scripts/c_pvr/c_pvr.py HELPERS)"
+   },
+   "download": true,
+   "files": {
+    "config.json": [
+     "blob",
+     "8e5fb14e1352fd8fc678a7b293b63cfb5cf091f6"
+    ],
+    "sentencepiece.bpe.model": [
+     "blob",
+     "db9af13bf09fd3028ca32be90d3fb66d5e470399"
+    ],
+    "tokenizer.json": [
+     "blob",
+     "463f3414782c1c9405828c9b31bfa36dda1f45c5"
+    ],
+    "tokenizer_config.json": [
+     "blob",
+     "34ddbd64a4cd3f2d9d8a9120d3662d0bf91baead"
+    ]
+   },
+   "bytes": 14166410
+  }
+ },
+ "prompts": {
+  "captioner": {
+   "text": "Mô tả bức ảnh này bằng MỘT câu tiếng Việt ngắn gọn, giống chú thích ảnh. Không liệt kê, không giải thích.",
+   "sha256": "8870589c4a32307cbbeb68e363490007682237c0b5a3a1ee7e21cb91fce93886"
+  },
+  "d1": {
+   "text": "You split a Vietnamese image caption into atomic propositions. Each proposition states one fact that the caption claims about the image. Types: object (an object is present), count (how many of an object there are), colour (the colour of an object), attribute (another property of an object), action (what an object is doing), relation (how two objects relate, for example their position). Write each proposition as a short Vietnamese sentence that uses the caption's own words; do not translate, and do not add any fact that the caption does not state. For each proposition, give the head noun of the object it is about, copied from the caption. Answer with a JSON array only, one item per proposition: {\"type\": \"<type>\", \"text\": \"<proposition>\", \"object\": \"<head noun>\"}.\n\nCaption: {caption}\nAnswer:",
+   "sha256": "f39a472f60bb04aeb79c11b3b6317e86c7382ea28085430f1c9357e4ba9327ec"
+  },
+  "d2": {
+   "text": "You split a Vietnamese image caption into atomic propositions. Each proposition states one fact that the caption claims about the image. Types: object (an object is present), count (how many of an object there are), colour (the colour of an object), attribute (another property of an object), action (what an object is doing), relation (how two objects relate, for example their position). Write each proposition as a short Vietnamese sentence that uses the caption's own words; do not translate, and do not add any fact that the caption does not state. For each proposition, give the head noun of the object it is about, copied from the caption. Answer with a JSON array only, one item per proposition: {\"type\": \"<type>\", \"text\": \"<proposition>\", \"object\": \"<head noun>\"}.\n\nExample 1. Caption: Ba quả dứa vàng xếp cạnh một chiếc đèn lồng giấy.\nAnswer: [{\"type\": \"object\", \"text\": \"Có quả dứa.\", \"object\": \"dứa\"}, {\"type\": \"count\", \"text\": \"Có ba quả dứa.\", \"object\": \"dứa\"}, {\"type\": \"colour\", \"text\": \"Quả dứa màu vàng.\", \"object\": \"dứa\"}, {\"type\": \"object\", \"text\": \"Có chiếc đèn lồng.\", \"object\": \"đèn lồng\"}, {\"type\": \"attribute\", \"text\": \"Đèn lồng bằng giấy.\", \"object\": \"đèn lồng\"}, {\"type\": \"relation\", \"text\": \"Quả dứa ở cạnh chiếc đèn lồng.\", \"object\": \"dứa\"}]\n\nExample 2. Caption: Một cụ ông râu bạc đang tưới cây xương rồng trong chậu sứ.\nAnswer: [{\"type\": \"object\", \"text\": \"Có cụ ông.\", \"object\": \"cụ ông\"}, {\"type\": \"count\", \"text\": \"Có một cụ ông.\", \"object\": \"cụ ông\"}, {\"type\": \"attribute\", \"text\": \"Cụ ông có râu bạc.\", \"object\": \"cụ ông\"}, {\"type\": \"action\", \"text\": \"Cụ ông đang tưới cây.\", \"object\": \"cụ ông\"}, {\"type\": \"object\", \"text\": \"Có cây xương rồng.\", \"object\": \"cây xương rồng\"}, {\"type\": \"object\", \"text\": \"Có chậu sứ.\", \"object\": \"chậu sứ\"}, {\"type\": \"relation\", \"text\": \"Cây xương rồng ở trong chậu sứ.\", \"object\": \"cây xương rồng\"}]\n\nExample 3. Caption: Con vẹt xanh lá đứng trên mép một thùng gỗ sơn tím.\nAnswer: [{\"type\": \"object\", \"text\": \"Có con vẹt.\", \"object\": \"vẹt\"}, {\"type\": \"colour\", \"text\": \"Con vẹt màu xanh lá.\", \"object\": \"vẹt\"}, {\"type\": \"object\", \"text\": \"Có thùng gỗ.\", \"object\": \"thùng gỗ\"}, {\"type\": \"colour\", \"text\": \"Thùng gỗ sơn màu tím.\", \"object\": \"thùng gỗ\"}, {\"type\": \"relation\", \"text\": \"Con vẹt đứng trên mép thùng gỗ.\", \"object\": \"vẹt\"}]\n\nCaption: {caption}\nAnswer:",
+   "sha256": "4c37cf262e711ee233f1ca4cdda38f05acf1ad86e590ab8b737ee94870716d89"
+  },
+  "v1": {
+   "text": "Hãy nhìn bức ảnh. Mệnh đề sau có đúng với bức ảnh không: \"{prop}\" Trả lời có hoặc không.",
+   "sha256": "0fba6d6bc88966f1f5cc0b255c8b8484083f9e20fbfe9d455964aa38e5e555bc"
+  },
+  "v2": {
+   "text": "Look at the image. Is the following Vietnamese statement true for this image: \"{prop}\" Answer yes or no.",
+   "sha256": "340e20e1841cd0c94d0b6bd1e34d01e8173bb2974fe2cf2951d77c81f0a775fe"
+  },
+  "ja": {
+   "text": "Hãy nhìn bức ảnh và đọc chú thích sau: \"{caption}\" Tất cả các vật được nhắc đến trong chú thích có thật sự xuất hiện trong ảnh không? Trả lời có hoặc không.",
+   "sha256": "8513ac07ea22f59d0be56dca1c6059004fda9a9a08f7caa9b67d2260bc835476"
+  },
+  "jb": {
+   "text": "Hãy nhìn bức ảnh và đọc chú thích sau: \"{caption}\" Hãy chấm điểm từ 0 đến 9 cho mức độ đúng của các vật được nhắc đến trong chú thích so với bức ảnh: 9 là mọi vật đều có trong ảnh, 0 là không vật nào có trong ảnh. Chỉ trả lời bằng một chữ số.",
+   "sha256": "1efe7f049aa8bb48852fe533df0997f0c5bb0bbe8a36a9cb98ad6df96fd1adbe"
+  },
+  "jc": {
+   "text": "Hãy nhìn bức ảnh và đọc chú thích sau: \"{caption}\" Hãy chấm điểm từ 0 đến 9 cho mức độ đúng sự thật của toàn bộ chú thích so với bức ảnh: 9 là hoàn toàn đúng, 0 là hoàn toàn sai. Chỉ trả lời bằng một chữ số.",
+   "sha256": "5f556b64c21739a3ce44f3f10f8fb4a33eb1b89017637f637c55c6875b045f61"
+  },
+  "instrument_i": {
+   "text": "Step-4 (i) entries: no drafting rule is registered here. They are drafted under the step-4 amendment named in each entries file's provenance and pinned on a LOG line (b_pa1_mid.amendment_ok); that amendment's rules govern.",
+   "sha256": "4ac3f695d09bc4c1ba660a3268aee363db0a55b541ec1b17037c492d46e2dbd4"
+  },
+  "instrument_ii": {
+   "text": "Step-4 (ii) entries: no drafting rule is registered here. They are drafted under the step-4 amendment named in each entries file's provenance and pinned on a LOG line (b_pa1_mid.amendment_ok); that amendment's rules govern.",
+   "sha256": "79950e29e3a6b9cb0b8e67a4ed34e5be3f9a6ca8461beae94008423606623ac1"
+  }
+ }
+}

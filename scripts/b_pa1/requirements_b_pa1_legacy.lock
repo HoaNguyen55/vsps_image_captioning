@@ -1,0 +1,55 @@
+# requirements_b_pa1_legacy.lock -- B-PA1-T1 HB-T1 SECOND (legacy) venv, for InternVL2_5-2B, Phi-3.5-vision and Molmo-7B-O only venv (DRAFT, not read). Full hashed closure for
+# pip install --require-hashes --no-deps --extra-index-url https://download.pytorch.org/whl/cu124 on python3.12, linux
+# x86_64; setup_host.sh builds ~/venvs/b_pa1_legacy_<first 8 hex of this file's sha256>. Provenance: every line is
+# copied from C's m9 host build closure scripts/c_pvr_gpu/requirements_c_pvr_gpu.host.lock 966eb327 (CC-280 AM1), except
+# transformers 4.51.3 -> 4.45.2 and tokenizers 0.21.4 -> 0.20.3, and the main-lock deltas timm 1.0.19, einops, sentencepiece, protobuf; those hashes are the PyPI JSON sha256 of the cp312 manylinux_2_17 x86_64 or py3-none-any wheel, read
+# 2026-11-08 (user-agent vsps-research). Why a second venv: a CPU probe on 2026-11-08 (tiny random configs of the pinned remote code, unshare -rn) showed InternLM2ForCausalLM (InternVL2_5-2B's LLM) and MolmoForCausalLM without generate() and Phi3VForCausalLM failing on DynamicCache.get_max_length under 4.53.3; all three generate under 4.45.2. Requires-Dist checked as for the main lock (transformers 4.45.2: huggingface-hub>=0.23.2, safetensors>=0.4.1, tokenizers>=0.20,<0.21; tokenizers 0.20.3: huggingface-hub>=0.16.4).
+--extra-index-url https://download.pytorch.org/whl/cu124
+torch==2.6.0+cu124 --hash=sha256:a393b506844035c0dac2f30ea8478c343b8e95a429f06f3b3cadfc7f53adb597
+torchvision==0.21.0+cu124 --hash=sha256:efb53ea0af7bf09b7b53e2a18b9be6d245f7d46a90b51d5cf97f37e9b929a991
+transformers==4.45.2 --hash=sha256:c551b33660cfc815bae1f9f097ecfd1e65be623f13c6ee0dda372bd881460210
+tokenizers==0.20.3 --hash=sha256:f2b7cb962564785a83dafbba0144ecb7f579f1d57d8c406cdaa7f32fe32f18ad
+safetensors==0.8.0 --hash=sha256:fd6f3f93c9a0a7cc2788ee63fb763353d4bd2e89b0751bc78fcf7dda00bea774
+huggingface_hub==0.36.2 --hash=sha256:48f0c8eac16145dfce371e9d2d7772854a4f591bcb56c9cf548accf531d54270
+pillow==13.0.0 --hash=sha256:42d63be3af4f9b951b199b0a9d23365d37ab14687e6d77b74940432c8515c4ca
+numpy==2.5.4 --hash=sha256:fbde6962867ee75b48b0ee29b2b9372ec5d617799dbaf38e82dc0596f2f7738a
+open_clip_torch==2.32.0 --hash=sha256:80b35b43e37afc2b6173aa5ab0ad68744ab3a3211e624f72dfe743a162707637
+ftfy==6.3.1 --hash=sha256:7c70eb532015cd2f9adb53f101fb6c7945988d023a085d127d1573dc49dd0083
+wcwidth==0.2.13 --hash=sha256:3da69048e4540d84af32131829ff948f1e022c1c6bdb8d6102117aac784f6859
+timm==1.0.19 --hash=sha256:c07b56c32f3d3226c656f75c1b5479c08eb34eefed927c82fd8751a852f47931
+nvidia-cublas-cu12==12.4.5.8 --hash=sha256:2fc8da60df463fdefa81e323eef2e36489e1c94335b5358bcb38360adf75ac9b
+nvidia-cuda-cupti-cu12==12.4.127 --hash=sha256:9dec60f5ac126f7bb551c055072b69d85392b13311fcc1bcda2202d172df30fb
+nvidia-cuda-nvrtc-cu12==12.4.127 --hash=sha256:a178759ebb095827bd30ef56598ec182b85547f1508941a3d560eb7ea1fbf338
+nvidia-cuda-runtime-cu12==12.4.127 --hash=sha256:64403288fa2136ee8e467cdc9c9427e0434110899d07c779f25b5c068934faa5
+nvidia-cudnn-cu12==9.1.0.70 --hash=sha256:165764f44ef8c61fcdfdfdbe769d687e06374059fbb388b6c89ecb0e28793a6f
+nvidia-cufft-cu12==11.2.1.3 --hash=sha256:f083fc24912aa410be21fa16d157fed2055dab1cc4b6934a0e03cba69eb242b9
+nvidia-curand-cu12==10.3.5.147 --hash=sha256:a88f583d4e0bb643c49743469964103aa59f7f708d862c3ddb0fc07f851e3b8b
+nvidia-cusolver-cu12==11.6.1.9 --hash=sha256:19e33fa442bcfd085b3086c4ebf7e8debc07cfe01e11513cc6d332fd918ac260
+nvidia-cusparse-cu12==12.3.1.170 --hash=sha256:ea4f11a2904e2a8dc4b1833cc1b5181cde564edd0d5cd33e3c168eff2d1863f1
+nvidia-cusparselt-cu12==0.6.2 --hash=sha256:df2c24502fd76ebafe7457dbc4716b2fec071aabaed4fb7691a201cde03704d9
+nvidia-nccl-cu12==2.21.5 --hash=sha256:8579076d30a8c24988834445f8d633c697d42397e92ffc3f63fa26766d25e0a0
+nvidia-nvjitlink-cu12==12.4.127 --hash=sha256:06b3b9b25bf3f8af351d664978ca26a16d2c5127dbd53c0497e28d1fb9611d57
+nvidia-nvtx-cu12==12.4.127 --hash=sha256:781e950d9b9f60d8241ccea575b32f5105a5baf4c2351cab5256a24869f12a1a
+sympy==1.13.1 --hash=sha256:db36cdc64bf61b9b24578b6f7bab1ecdd2452cf008f34faa33776680c26d66f8
+triton==3.2.0 --hash=sha256:0fc1217eed33c7695272f981f5a8874ce3cb0195bbb2bfed16d58edd0aefef04
+fsspec==2026.9.0 --hash=sha256:8dd6e646e99ea382bd85f97a45e6b526a442d79423a7dc673f1e2756d05fcb5f
+hf-xet==1.8.0 --hash=sha256:29dab7c904cd1914a0439c6e1306c12c7497c8bd32290fbe563ebf51ca4b6d6d
+packaging==26.3 --hash=sha256:d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c
+PyYAML==6.0.3 --hash=sha256:ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc
+regex==2026.9.29 --hash=sha256:39ab5894d971f9ac68baa6eca5c50387db579cfcacf36ae8df3feceb1815e6d0
+tqdm==4.70.1 --hash=sha256:c293e525e6fef9c20e8728fd4612df02a0aa31bb5fe91ecd93e123b1b7bffa73
+typing_extensions==4.16.0 --hash=sha256:481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8
+filelock==4.2.9 --hash=sha256:a379c50a729e5b68c8519a4d26489f755d9769960a236ecd838190e2a78db2e9
+Jinja2==3.1.6 --hash=sha256:85ece4451f492d0c13c5dd7c13a64681a86afae63a5f347908daf103ce6d2f67
+networkx==3.7 --hash=sha256:e3fd2c13a7814cee3746340d8d7f8598a67f16a58bf47fb7f8793fab6efca1b0
+requests==2.34.2 --hash=sha256:2a0d60c172f83ac6ab31e4554906c0f3b3588d37b5cb939b1c061f4907e278e0
+setuptools==84.2.1 --hash=sha256:ca140b45d5325a9478f880e351484f62fef15f336462e449ca0c03c873d589c2
+certifi==2026.10.23 --hash=sha256:e9b54de76e530bb6cf0ccd036787103acb58fd42ba930ea8bf948ddbaa2f61d1
+charset-normalizer==3.5.2 --hash=sha256:3d31298449090ab8d47b7b1b2a555ff73cac7ed438a08b7ac160980c7ebed649
+idna==3.20 --hash=sha256:ab7ae7122974553370f0bdb919e1a960b2cd1bc1ef0276416d896db81c14582c
+MarkupSafe==3.0.4 --hash=sha256:8e124f974786f831d6043728e38296969d3579db8896fe004682f5758e613581
+mpmath==1.3.0 --hash=sha256:a0b2b9fe80bbcd81a6647ff13108738cfb482d481d826cc0e02f5b35e5c88d2c
+urllib3==2.8.0 --hash=sha256:0cf3cae568d36aa9576b28dfb35f11328f1cb974ca7647d9475ebb86c75ac6e3
+einops==0.8.1 --hash=sha256:919387eb55330f5757c6bea9165c5ff5cfe63a642682ea788a6d472576d81737
+sentencepiece==0.2.0 --hash=sha256:f295105c6bdbb05bd5e1b0cafbd78ff95036f5d3641e7949455a3f4e5e7c3109
+protobuf==4.25.3 --hash=sha256:7c8daa26095f82482307bc717364e7c13f4f1c99659be82890dcfc215194554d --hash=sha256:f0700d54bcf45424477e46a9f0944155b46fb0639d69728739c0e47bab83f2b9
