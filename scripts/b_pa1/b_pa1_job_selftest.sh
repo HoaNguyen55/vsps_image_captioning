@@ -47,6 +47,8 @@ case "${CMD:-}" in
        trap "sleep 2; /usr/bin/python3 -I -c \"import time; print(time.monotonic())\" > \$HOME/stub.exit; exit 0" TERM
        sleep 60 & wait $!; exit 0; }
      [ -z "${STUB_LATE137:-}" ] || { sleep $STUB_LATE137; exit 137; }
+     case $ST in a1decode.decode.*) K=${ST#a1decode.decode.}; mkdir -p $HOME/b_pa1_out/out/a1decode   # ids-only rows, no text
+       printf "{\"id\": 1, \"cap\": \"%s\"}\n" $K >> $HOME/b_pa1_out/out/a1decode/captions_$K.jsonl;; esac
      V=STUB_RC_${ST//./_}; exit ${!V:-0};;
   hostcheck|inputs|selftest) exit 0;;
 esac
@@ -61,7 +63,7 @@ newhome() {  # [done modes...]: a fresh HOME with venv stubs, first-build freeze
   echo '{"accepted": ["internvl2_5_2b", "mblip_mt0_xl", "minicpm_v4", "phi3_5_vision"]}' > $O/out/s/ACCEPT.json
   echo '{"kept": ["a3", "h"], "core_fits": true}' > $O/out/s/TRIM.json
   B_PA1_OUT=$O /usr/bin/python3 -I -B $B/b_pa1_gpu.py cap-init --cap-h 28 --r-host 10092 --fee 30 \
-    --t0 2026-11-10T01:00:00Z --used-sec ${USED:-0} > /dev/null
+    --t0 2026-11-10T01:00:00Z --used-sec ${USED:-0} --used-w-sec ${USED_W:-0} > /dev/null
   for m in "$@"; do date -u > $O/RUN.$m.done; done
   export B_PA1_OUT=$O
 }
@@ -103,7 +105,8 @@ hc $UUID
 MAN=$(mkset); expect "a1score before a1decode refused (W3)" 1 "needs RUN.a1decode.done" $J a1score $H $MAN $M64
 MAN=$(mkset); expect "a1decode runs" 0 "JOB DONE a1decode" $J a1decode $H $MAN
 ok "trap wiped the set" '[ ! -e $HB/a ]'
-ok "mode manifest written last: it verifies with job.log (CC-295r2)" 'verifies SHA256SUMS_a1decode && tail -n 1 $O/logs/job.log | grep -q "EXIT a1decode rc=0"'
+ok "mode manifest written last: it verifies with job.log (CC-295r2)" 'verifies SHA256SUMS_a1decode_all && tail -n 1 $O/logs/job.log | grep -q "EXIT a1decode rc=0"'
+ok "a1decode manifest = the 4 caption files (F-1)" '[ "$(cut -c67- $O/SHA256SUMS_a1decode | LC_ALL=C sort)" = "$(cd $O && ls out/a1decode/captions_*.jsonl | LC_ALL=C sort)" ] && [ "$(wc -l < $O/SHA256SUMS_a1decode)" = 4 ] && (cd $O && sha256sum --quiet -c SHA256SUMS_a1decode)'
 MAN=$(mkset); expect "a finished mode refuses" 1 "already done" $J a1decode $H $MAN
 MAN=$(mkset); expect "a1score needs MAPF" 1 "final map sha" $J a1score $H $MAN -
 MAN=$(mkset); expect "a1score runs" 0 "JOB DONE a1score" $J a1score $H $MAN $M64
@@ -163,9 +166,15 @@ MAN=$(mkset)
 ok "second TERM inside teardown: rc 143, EXIT line, stop manifest verifies (W9 e)" '[ -e $HOME/wipe.started ] && [ "$(cat $SB/kill5.rc)" = 143 ] && grep -q "EXIT a1score rc=143" $O/logs/job.log && grep -q "MONEY STOP (final) on signal" $O/logs/job.log && verifies SHA256SUMS_a1score_stop'
 ok "second TERM inside teardown: set wiped, one deletion line" '[ ! -e $HB/a ] && [ "$(wc -l < $O/b_pa1_hb_deletions.log)" = 1 ]'
 
-# --- C: block S, E-12 line
+# --- C: block S, E-12 line; then F-1: the job's own s and a1decode manifests, a torn tail and a stray file present,
+#     go through the committed b_pa1_mid.pulled_captions (the laptop reader of coverage --pulled and htrans)
 newhome
 MAN=$(mkset); expect "block S logs E1/E2 NOT RUN" 0 "E1 E2 NOT RUN (pre-fixed, R5 E-12)" $J s $H $MAN
+mkdir -p $O/out/a1decode; printf '{"id": 9, "ca' > $O/out/a1decode/captions_minicpm_v4.jsonl.torn.2026-11-10T02:00:00Z
+echo '{}' > $O/out/a1decode/stray.json
+MAN=$(mkset); expect "a1decode runs beside a torn tail" 0 "JOB DONE a1decode" $J a1decode $H $MAN
+ok "pulled_captions accepts the job's manifests (F-1)" '/usr/bin/python3 -I -B -c "import sys; from pathlib import Path; sys.path.insert(0, sys.argv[1]); import b_pa1_mid as M; a, c = M.pulled_captions(Path(sys.argv[2])); sys.exit(len(c) != 4)" $R/scripts/b_pa1 $O'
+ok "the torn tail is in the full manifest only (F-1)" 'grep -q "\.torn\." $O/SHA256SUMS_a1decode_all && ! grep -q "\.torn\." $O/SHA256SUMS_a1decode'
 
 # --- D, E: rc 137 before LEFT = guard failure; at or after LEFT = CAP STOP (W2; fake timeout)
 newhome s
@@ -195,6 +204,8 @@ ok "PA3 stop writes its manifest (N-f HM32)" 'verifies SHA256SUMS_s_stop'
 newhome
 printf '{"ev": "start", "step": "w.feats0", "t": 1}\n{"ev": "end", "rc": 0, "sec": 3598, "step": "w.feats0", "t": 3599}\n' > $O/ledger.jsonl
 MAN=$(mkset w); STUB_SLEEP=6 expect "W step bounded by the W cap" 0 "CAP STOP during w.feats1" $J w $H $MAN - 1
+USED=3598 USED_W=3598 newhome   # F-3: HB-T1' with HB-T1's W seconds in cap-init, on a fresh ledger
+MAN=$(mkset w); STUB_SLEEP=6 expect "HB-T1': W bounded by HB-T1's W seconds (F-3)" 0 "CAP STOP during w.feats1" $J w $H $MAN - 1
 
 # --- J: a money stop written while a mode runs stops it at the next step
 newhome s

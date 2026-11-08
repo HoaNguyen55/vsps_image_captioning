@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Guard mutants for b_pa1_gpu.py, b_pa1_mid.py and b_pa1_job.sh (DRAFT; the job's runner is b_pa1_job_selftest.sh). The committed mutants.py is only imported (its tree()),
+"""Guard mutants for b_pa1_gpu.py, b_pa1_mid.py, b_pa1_job.sh and b_pa1_d8i_validate.py (DRAFT; the job's runner is b_pa1_job_selftest.sh). The committed mutants.py is only imported (its tree()),
 never edited. Each mutant breaks one guard or rule in a scratch copy and must make its file's selftest fail, offline
 (unshare -rn), -I -B. Run:  python3 -I -B scripts/b_pa1/b_pa1_gpu_mutants.py
 """
@@ -12,8 +12,8 @@ sys.path.insert(0, str(HERE))
 from mutants import tree  # noqa: E402  scratch scripts/ of symlinks, so common.ROOT stays the repo
 from b_pa1_gpu import scratch  # noqa: E402  removes its tree by name and rmdir (no recursive delete)
 
-G, D, J = "b_pa1_gpu.py", "b_pa1_mid.py", "b_pa1_job.sh"
-PY = {G: sys.executable, D: "/usr/bin/python3"}
+G, D, J, V = "b_pa1_gpu.py", "b_pa1_mid.py", "b_pa1_job.sh", "b_pa1_d8i_validate.py"
+PY = {G: sys.executable, D: "/usr/bin/python3", V: "/usr/bin/python3"}
 MUT = [  # (id, file, old, new): each old must occur exactly once
     ("G1 gate >= 0.95", G, 'return share >= Fraction(reg["gate"]["pass_share"])', 'return share > Fraction(reg["gate"]["pass_share"])'),
     ("G2 gate denominator 231", G, "return Fraction(sum(map(is_vn, caps)), n)", "return Fraction(sum(map(is_vn, caps)), max(1, sum(map(bool, caps))))"),
@@ -54,7 +54,7 @@ MUT = [  # (id, file, old, new): each old must occur exactly once
     ("G37 slice-A count", G, 'if len(rows) != N_SLICE or len(want) != N_SLICE or len(names) != N_SLICE:', 'if False:'),
     ("G38 slice order = frame", G, 'rows = [r for r in frame if r[1] in want]', 'rows = [r for f in names for r in frame if r[1] == f]'),
     ("G39 W blocks aligned", G, 'if i < 0 or i % block or', 'if i < 0 or'),
-    ("G40 W cap 1.0 GPU-h", G, 'return min(left, W_CAP_SEC - used_sec(rows, True)) if w else left', 'return left'),
+    ("G40 W cap 1.0 GPU-h", G, 'return min(left, W_CAP_SEC - c["used_w_before_sec"] - used_sec(rows, True)) if w else left', 'return left'),
     ("G41 open step refused", G, 'if st and not in_step:', 'if False:'),
     ("G42 ledger one open step", G, 'if st:\n            fault(f"ledger step', 'if False:\n            fault(f"ledger step'),
     ("G43 money stop marker", G, 'FINAL = ("CAP_STOP.json", "MONEY_STOP.json", "PA3.json", "CORE_STOP.json")', 'FINAL = ("CAP_STOP.json", "PA3.json", "CORE_STOP.json")'),
@@ -182,6 +182,22 @@ MUT = [  # (id, file, old, new): each old must occur exactly once
     ("D48 W5 drafter logged", D, "drafter={e['drafter']} vi=", "drafter=- vi="),
     ("D49 W7 entries file LOG pin", D, 'if not B.pin_line(log, sha(ent_b), a.entries.name):', 'if False:'),
     ("D50 N-c coverage checks its own root", D, 'out = outside_tree(a.out_dir, root)\n    mp, mb, _, _', 'out = outside_tree(a.out_dir)\n    mp, mb, _, _'),
+    ("J39 F-1 a1decode manifest names the 4 caption files", J, '(cd $O && sha256sum $NARROW) > $O/SHA256SUMS_a1decode', 'sums > $O/SHA256SUMS_a1decode'),
+    ("J40 F-1 no glob over out/a1decode", J, """NARROW=$(echo "$STEPS" | sed -n 's|^a1decode\\.decode\\.\\([^ ]*\\) .*$|out/a1decode/captions_\\1.jsonl|p')""", 'NARROW=$(cd $O && find out/a1decode -type f | LC_ALL=C sort)'),
+    ("J41 F-1 a1decode full manifest _all", J, '  MANIFEST=SHA256SUMS_a1decode_all   #', '  MANIFEST=   #'),
+    ("G80 F-3 cap-init stores --used-w-sec", G, '"used_w_before_sec": a.used_w_sec,', '"used_w_before_sec": 0,'),
+    ("G81 F-3 left --w subtracts HB-T1's W seconds", G, 'W_CAP_SEC - c["used_w_before_sec"] - used_sec(rows, True)', 'W_CAP_SEC - used_sec(rows, True)'),
+    ("G82 F-3 0 <= used_w_sec <= used_sec", G, 'not 0 <= a.used_w_sec <= a.used_sec:', 'a.used_sec < 0:'),
+    ("V1 F-2 the (i) amend runs", V, 'r1 = run(M.cmd_amend, ns(ei), d / "LOG.md")', 'r1 = ("ok", json.dumps({"added": n1}))'),
+    ("V2 F-2 (ii) before (i)", V, 'r2 = run(M.cmd_amend, ns(eii), d / "LOG.md")\n        r1 = run(M.cmd_amend, ns(ei), d / "LOG.md")', 'r1 = run(M.cmd_amend, ns(ei), d / "LOG.md")\n        r2 = run(M.cmd_amend, ns(eii), d / "LOG.md")'),
+    ("V3 F-2 the (i) pin line on the scratch LOG", V, 'log.read_text(encoding="utf-8") + line + "\\n"', 'log.read_text(encoding="utf-8")'),
+    ("V4 F-2 computed RESULT", V, "RESULT {'PASS' if not bad else 'FAIL ' + ','.join(bad)}", "RESULT PASS"),
+    ("V5 F-2 file name", V, '"name": ei.name == EN_I,', '"name": True,'),
+    ("V6 F-2 provenance = md v1.3", V, '"provenance": (doc_i.get("provenance") or {}).get("amendment") ==', '"provenance": True or (doc_i.get("provenance") or {}).get("amendment") =='),
+    ("V7 F-2 src i only", V, '"src_i": n1 > 0 and all(e.get("src") == "i" for e in doc_i["entries"]),', '"src_i": n1 > 0,'),
+    ("V8 F-2 pulled coverage", V, '"pulled_coverage": cv.get("classes_only") is False}', '"pulled_coverage": True}'),
+    ("V9 F-2 (A)+(B) on the LOG", V, '"ab_on_log": B.pin_line(log, ms, MD) and', '"ab_on_log": True or'),
+    ("V10 F-2 final count", V, 'ok["final"] = fm["n_added"] == n1 + n2 and', 'ok["final"] = True or'),
     ("D43 case toggle", D, 'return t.lower() if t != t.lower() else t[:1].upper() + t[1:]', 'return t.lower()'),
 ]
 
@@ -198,10 +214,10 @@ def run(d: Path, f: str) -> tuple[bool, str]:
 def main() -> int:
     with scratch("b_pa1_gpu_mut_") as root:
         d = tree(root)
-        for f in (G, D, J):
+        for f in (G, D, J, V):
             ok, why = run(d, f)
             assert ok, f"control fails: {f} {why}"
-        print("control: the three selftests pass on the unmutated files", flush=True)
+        print("control: the four selftests pass on the unmutated files", flush=True)
         survived = []
         for mid, f, old, new in MUT:
             src = (HERE / f).read_text(encoding="utf-8")

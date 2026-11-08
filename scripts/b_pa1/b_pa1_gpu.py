@@ -5,7 +5,7 @@ DRAFT, not read. Driven by b_pa1_job.sh; every command below is one job step or 
 
     python3 -I -B scripts/b_pa1/b_pa1_gpu.py selftest        CPU only, fake models, synthetic files (laptop and host)
     ... hostcheck --venv main|legacy                          host selftest T1-T7, T9 on a synthetic image (GPU)
-    ... cap-init --cap-h 28|22 --r-host R --fee F --t0 UTC [--used-sec S]   CAP.json once (rental line values)
+    ... cap-init --cap-h 28|22 --r-host R --fee F --t0 UTC [--used-sec S --used-w-sec SW]   CAP.json once (rental line values)
     ... steps --mode s|a1decode|a1score|rest                  "<step> <venv>" lines in the registered order
     ... ledger start|end STEP [--rc N] | left [--w]            the GPU-h ledger (R6 §I.3 rule 0, RB3)
     ... inputs --set a|w --nblk N                              slice A / W set = MAN + frame (reading 1)
@@ -432,7 +432,7 @@ def left_sec(w: bool = False, in_step: bool = False) -> int:
     if st and not in_step:
         fault("ledger has an open step (machine loss or a killed job): close it with `resume`")
     left = c["cap_sec"] - c["used_before_sec"] - used_sec(rows) - (int(time.monotonic() - st["m"]) + 1 if st else 0)
-    return min(left, W_CAP_SEC - used_sec(rows, True)) if w else left
+    return min(left, W_CAP_SEC - c["used_w_before_sec"] - used_sec(rows, True)) if w else left  # F-3: HB-T1's W seconds
 
 
 def markers() -> None:
@@ -869,13 +869,13 @@ def gate_step(M: Models, key: str, A: list, img_dir: Path, sd: Path) -> int:
 
 # ---------------------------------------------------------------------------------------------- CLI helpers
 def cmd_cap_init(a) -> int:
-    if a.cap_h not in (22, 28) or not (1000 <= a.r_host <= 100_000) or a.fee < 0 or a.used_sec < 0:
+    if a.cap_h not in (22, 28) or not (1000 <= a.r_host <= 100_000) or a.fee < 0 or not 0 <= a.used_w_sec <= a.used_sec:
         fault("cap-init values out of range (cap 22 or 28 GPU-h, R6 Part II §2)")
     if not re.fullmatch(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ", a.t0):
         fault("T0 must be the rental line's date -u stamp")
     O().mkdir(parents=True, exist_ok=True)
     d = {"tier": B.LABEL, "cap_h": a.cap_h, "cap_sec": a.cap_h * 3600, "r_host": a.r_host, "fee": a.fee, "t0": a.t0,
-         "used_before_sec": a.used_sec, "utc": utc()}
+         "used_before_sec": a.used_sec, "used_w_before_sec": a.used_w_sec, "utc": utc()}
     B.write_new(O() / "CAP.json", (json.dumps(d, sort_keys=True) + "\n").encode())
     print(sha_bytes((O() / "CAP.json").read_bytes()))
     return 0
@@ -948,6 +948,7 @@ def main() -> int:
     ci.add_argument("--fee", type=int, required=True)
     ci.add_argument("--t0", required=True)
     ci.add_argument("--used-sec", type=int, default=0, help="HB-T1': GPU-h used on HB-T1 (Part II §2 step 5)")
+    ci.add_argument("--used-w-sec", type=int, default=0, help="HB-T1': the part of --used-sec spent in w. steps (F-3)")
     sp.add_parser("steps").add_argument("--mode", required=True)
     lg = sp.add_parser("ledger")
     lg.add_argument("op", choices=("start", "end"))
@@ -1268,8 +1269,9 @@ def selftest() -> int:  # noqa: C901  one linear script of fixtures
             refuse(lambda: w_block_ok(frame, names[1:] + names[:1], 100), "block-aligned")
 
             ns = lambda **k: NS(**{"cap_h": 28, "r_host": 10092, "fee": 30, "t0": "2026-11-10T01:00:00Z",  # noqa
-                                   "used_sec": 0, **k})
-            for bad in (ns(cap_h=20), ns(r_host=10), ns(t0="today"), ns(used_sec=-1)):
+                                   "used_sec": 0, "used_w_sec": 0, **k})
+            for bad in (ns(cap_h=20), ns(r_host=10), ns(t0="today"), ns(used_sec=-1), ns(used_w_sec=-1),
+                        ns(used_sec=100, used_w_sec=101)):
                 refuse(lambda: cmd_cap_init(bad), "cap-init" if bad.t0 != "today" else "T0")
             with contextlib.redirect_stdout(io.StringIO()):
                 cmd_cap_init(ns())
@@ -1299,6 +1301,11 @@ def selftest() -> int:  # noqa: C901  one linear script of fixtures
                 with contextlib.redirect_stdout(io.StringIO()):
                     cmd_cap_init(ns(used_sec=10_000))
                 assert left_sec() == 28 * 3600 - 10_000 and cap_doc()["used_before_sec"] == 10_000
+            with scratch() as hb3:  # F-3: HB-T1's W seconds come in by --used-w-sec and lower W's own 1.0 GPU-h
+                os.environ["B_PA1_OUT"] = str(hb3)
+                with contextlib.redirect_stdout(io.StringIO()):
+                    cmd_cap_init(ns(used_sec=10_000, used_w_sec=3000))
+                assert left_sec(w=True) == 600 and left_sec() == 28 * 3600 - 10_000, (left_sec(w=True), left_sec())
                 os.environ["B_PA1_OUT"] = o_main
             assert next_read_h(30_277 + 6 * 20_184, 30_277, 20_184) == 1 and next_read_h(200_000, 30_277, 20_184) == 6
             assert next_read_h(30_277, 30_277, 20_184) == 0 and next_read_h(30_278, 30_277, 20_184) == 1

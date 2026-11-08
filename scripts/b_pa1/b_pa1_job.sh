@@ -10,8 +10,9 @@
 # Never rents, tops up or deletes a machine; it only stops. Final stops: a cap stop (rc 124, or rc 137 at or after the
 # step's LEFT; W: its own 1.0 GPU-h), a money stop (MONEY_STOP.json, written by the coordinator, who then kills this job
 # by ~/b_pa1_out/job.pid; a TERM with MONEY_STOP.json present is that final stop), PA3.json and CORE_STOP.json (the core
-# cannot finish: the PI decides). Each final stop writes SHA256SUMS_<run>_stop, a done mode SHA256SUMS_<mode>; the EXIT
-# trap writes either one last, after the EXIT line, so logs/job.log verifies at the pull (CC-295r2); teardown ignores
+# cannot finish: the PI decides). Each final stop writes SHA256SUMS_<run>_stop, a done mode SHA256SUMS_<mode> (done
+# a1decode: SHA256SUMS_a1decode_all, plus SHA256SUMS_a1decode = the 4 caption files b_pa1_mid reads, F-1); the EXIT
+# trap writes the full one last, after the EXIT line, so logs/job.log verifies at the pull (CC-295r2); teardown ignores
 # TERM / HUP / INT / PIPE and say() cannot fail on a dead console, so a tmux kill-session or a second TERM cannot cut it
 # short (CC-295r3 W9). Only a KILL of the job itself (untrappable) loses the manifest. A rc 137 before LEFT (OOM or an outside KILL) is a guard failure, not final. Each step runs in
 # the background with stdin </dev/null; TERM / HUP / INT to the job is forwarded to the step's process group (GNU
@@ -40,12 +41,13 @@ exec 9> $O/.job.lock
 flock -n 9 || { echo "REFUSED: another b_pa1 job is running"; exit 1; }
 echo $$ > $O/job.pid   # the coordinator stops this job only through this file (kp, never a pattern)
 FINAL="CAP_STOP.json MONEY_STOP.json PA3.json CORE_STOP.json"
-STEP=; SPID=; RK=$MODE; MANIFEST=
+STEP=; SPID=; RK=$MODE; MANIFEST=; NARROW=
 teardown() {
   local rc=$?; trap '' TERM HUP INT PIPE   # CC-295r3 W9 (a): no second signal can cut teardown short
   if [ -n "$STEP" ]; then $PYM -I -B $X ledger end "$STEP" --rc $rc || say "LEDGER END FAILED $STEP"; fi
   if [ -d $HB/$SET ]; then $PYM -I -B $X wipe --dir $HB/$SET --log $O/b_pa1_hb_deletions.log || say "WIPE COUNT MISMATCH"; fi
   if [ $rc = 143 ] && [ -e $O/MONEY_STOP.json ]; then MANIFEST=SHA256SUMS_${RK}_stop; say "MONEY STOP (final) on signal"; fi  # CC-295r2 N-a
+  [ -z "$NARROW" ] || (cd $O && sha256sum $NARROW) > $O/SHA256SUMS_a1decode || say "A1DECODE MANIFEST FAILED"   # F-1
   say "EXIT $MODE rc=$rc"
   [ -z "$MANIFEST" ] || sums > $O/$MANIFEST   # last: the lines above are in job.log before it is hashed
 }
@@ -166,5 +168,9 @@ while read -r ST V; do
 done <<< "$STEPS"
 ts > $O/RUN.$RK.done
 MANIFEST=SHA256SUMS_$MODE   # written by the EXIT trap, after JOB DONE and EXIT
+if [ $MODE = a1decode ]; then   # F-1: b_pa1_mid.pulled_captions needs exactly the 4 caption files, named, never a glob
+  MANIFEST=SHA256SUMS_a1decode_all   # (a resume leaves captions_<k>.jsonl.torn.<UTC> beside them: only in _all)
+  NARROW=$(echo "$STEPS" | sed -n 's|^a1decode\.decode\.\([^ ]*\) .*$|out/a1decode/captions_\1.jsonl|p')
+fi
 [ "$MODE" != s ] || say "E1 E2 NOT RUN (pre-fixed, R5 E-12)"   # in the run log before the end of A2 (R5 E-12)
 say "JOB DONE $MODE"

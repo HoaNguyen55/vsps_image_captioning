@@ -1,6 +1,6 @@
-# B-PA1-T1 GPU code: numbered readings and the CC-295 / CC-295r2 / CC-295r3 hunk maps
+# B-PA1-T1 GPU code: numbered readings and the CC-295 / CC-295r2 / CC-295r3 / F-1..F-3 hunk maps
 
-Status: **DRAFT for a round-4 full read limited to W6 and W9 (CC-295r3 ESCALATE_TO_PI; needs a PI line); not registered.**
+Status: **DRAFT, unread.** It goes to a one-judge code read of the B_RUN_DOC v1.1 fixes F-1, F-2 and F-3 (last section). The earlier text was read at CC-295r4 (H_B 6e17728). Not registered.
 - Each reading is a choice that the registered sources leave open, or a ruling on one. The open readings carry a
   short "why" in the section after the table (CC-295r2 Ruling 2).
 - Code lines are `file:line` in `scripts/b_pa1/` at the shas of `SHA256SUMS_GPU`.
@@ -12,9 +12,9 @@ Status: **DRAFT for a round-4 full read limited to W6 and W9 (CC-295r3 ESCALATE_
 | # | reading (default) | code | source | status |
 |---|---|---|---|---|
 | 1 | The host never reads `b_pa1_lists.json`. Slice A = the frame rows whose file is in the slice-A MANIFEST (sha = AMAN, on an OPS line), in frame order. The gate set = its first 231. The lists file is made by the committed `slices pick` and is read only on the laptop (`htrans`) | `b_pa1_gpu.py:370`, `b_pa1_gpu.py:712` | v3.1 l.252-254 (slice order), l.216 (gate set); RD §9.4 (AMAN from the lists) | ACCEPTED, CC-295r3 Ruling 6 |
-| 2 | The GPU code lives in new sibling files with their own `SHA256SUMS_GPU`; `b_pa1.py` is not edited. The job checks both SUMS | `b_pa1_job.sh:67` | v3.1 l.12; CC-226r3 (b_pa1.py c481fcf4) | ACCEPTED, CC-295 Ruling 1 |
-| 3 | Two GPU venvs: main (transformers 4.53.3) and legacy (4.45.2, for InternVL2_5-2B, Phi-3.5-vision, Molmo-7B-O). The registry gives each model its venv | `b_pa1_job.sh:150`; registry `models.*.venv`; lock headers | CPU probe 2026-11-08 (lock header); C CC-280 AM1 | ACCEPTED, Ruling 2 |
-| 4 | Freeze check: the first host build writes `freeze_<venv>.sha256` and each job start compares against it. The R2 LOG pin is checked on the laptop. Only the W venv is checked against a constant (1a639a50) | `b_pa1_setup_host.sh:38`, `b_pa1_job.sh:75` | v3.1 l.653-655 (R2); RD §1.1 | ACCEPTED, CC-295r3 Ruling 6 |
+| 2 | The GPU code lives in new sibling files with their own `SHA256SUMS_GPU`; `b_pa1.py` is not edited. The job checks both SUMS | `b_pa1_job.sh:69` | v3.1 l.12; CC-226r3 (b_pa1.py c481fcf4) | ACCEPTED, CC-295 Ruling 1 |
+| 3 | Two GPU venvs: main (transformers 4.53.3) and legacy (4.45.2, for InternVL2_5-2B, Phi-3.5-vision, Molmo-7B-O). The registry gives each model its venv | `b_pa1_job.sh:152`; registry `models.*.venv`; lock headers | CPU probe 2026-11-08 (lock header); C CC-280 AM1 | ACCEPTED, Ruling 2 |
+| 4 | Freeze check: the first host build writes `freeze_<venv>.sha256` and each job start compares against it. The R2 LOG pin is checked on the laptop. Only the W venv is checked against a constant (1a639a50) | `b_pa1_setup_host.sh:38`, `b_pa1_job.sh:77` | v3.1 l.653-655 (R2); RD §1.1 | ACCEPTED, CC-295r3 Ruling 6 |
 | 5 | Eager download of every Rule-S-passing pin at setup (141.1 GB pinned). One combined check (ungated + gated, models not yet fetched) at the first fetch: setup refuses if bytes × 1.1 > free disk. pip runs with no wheel cache | `b_pa1_setup_host.sh:64`, `b_pa1_setup_host.sh:73`, `b_pa1_setup_host.sh:25` | RD RB6 / D-9 (lazy) struck; CC-295r2 Ruling 15 | ACCEPTED, Ruling 3 (+ N11, N-d) |
 | 6 | The verifier answers all six proposition types; the laptop scorer keeps the object type for B's score | `b_pa1_gpu.py:622`; registry `verify_types` | v3.1 l.96-98, §7.1, §9.1 (p·r_v) | ACCEPTED, Ruling 4 |
 | 7 | Decomposer: English instruction, Vietnamese propositions copied from the caption, JSON {type, text, object}, 512 new tokens, batch 8 left-padded greedy. Each parse is marked ok, partial or fail | `b_pa1_gpu.py:253`, `b_pa1_models.py:268`; registry `prompts.d1`, `decomposer_decode` | v3.1 §7.1, §7.2 (d1, d2) | ACCEPTED, CC-295r3 Ruling 6 |
@@ -30,19 +30,19 @@ Status: **DRAFT for a round-4 full read limited to W6 and W9 (CC-295r3 ESCALATE_
 | 17 | parity2 gate: the map v1 parity1-done line; a mapfinal pin carrying the final sha, `b_pa1_map_final.json`, the crosswalk sha, the map v1 sha and the amendments-log sha; exactly one later `OPS-<id>-parity2-start:` line carrying the final, crosswalk, refs, gold and EX shas and the run dir; no parity2-done line | `b_pa1_mid.py:286` | v3.1 §6.3 run 2, §6.4 step 5 | ACCEPTED, CC-295r3 Ruling 6 |
 | 18 | Instrument entries are **agent-drafted, amendment-logged**, with no model id. Each instrument entry names its drafter. The entries file names a LOG-pinned amendment, and the registry mode must match. Every entries file (dictionary or instrument) must itself be on a LOG pin line with its name and sha (W7). Registry `prompts.instrument_i` / `instrument_ii` name no drafting rule; they point by name to that amendment (W8) | `b_pa1_mid.py:198`, `b_pa1_mid.py:181`, `b_pa1_mid.py:246`; registry `instrument_llm`, `prompts.instrument_i`, `prompts.instrument_ii` | v3.1 l.328-329; PI-1108e Q2 (a) | **decided by PI-1108e**; the step-4 amendment (D8 draft, another agent) needs its own irreversible-tier read |
 | 19 | Captioner prompt = `scripts/evaluate.py` `PROMPTS["short"]`, the short mode behind the 0.8409 s rate | registry `prompts.captioner` | B direction §3.7; MT4 DEV_RULE (a) | ACCEPTED, CC-295r3 Ruling 6 |
-| 20 | Money stop: the coordinator writes MONEY_STOP.json (`money-stop`), then stops the job through `~/b_pa1_out/job.pid` (kp). TERM reaches the running step at once (W1); the trap waits for the step to end (N-b); a TERM with the marker present is the final money stop, with its manifest (N-a); a marker written mid-mode stops the job at the next step (N3). The run doc's money path is one TERM by job.pid, never a kill-session; a kill-session is still survived (W9). Panel reads are hourly once within 6 h × Σ r_live of the threshold (N13) | `b_pa1_gpu.py:918`, `b_pa1_gpu.py:444`, `b_pa1_job.sh:52`, `b_pa1_job.sh:41` | R6 §I.3 rule 4; RD RB9 | W1 FIXED; cadence = run doc v1.1 |
-| 21 | Ledger: GPU-h = the sum of step wall seconds. The trap closes a killed step; after machine loss `resume --close-sec` closes an open step. **HB-T1′ form (N9, one form only):** setup on a fresh `~/b_pa1_out`, then `cap-init --used-sec S` (S = HB-T1's used GPU-s from the pulled ledger), then restore `out/`, `logs/`, `RUN.*` and `done.*` from the pull, and `RESUME.json` and `RESUME_USED` when present, then `resume --cause machine`. If either of those two files exists, HB-T1′ takes no resume and the PI decides (v3.1 l.519-520). S counts an open step up to the loss time, from the same pull-loop evidence as `--close-sec`. CAP.json, the ledger and the freeze files are never copied (N-i) | `b_pa1_gpu.py:428`, `b_pa1_gpu.py:900`, `b_pa1_gpu.py:871` | R6-II §2 step 5; v3.1 l.519-520 | ACCEPTED (code), CC-295r3 Ruling 6; run-doc conditions N-i |
-| 22 | One resume in total: `RESUME.json` (exclusive create) plus a `RESUME_USED` marker; on HB-T1′ under reading 21's restore condition (N-i) | `b_pa1_job.sh:129` | v3.1 l.519-520 | ACCEPTED, CC-295r3 Ruling 6 |
+| 20 | Money stop: the coordinator writes MONEY_STOP.json (`money-stop`), then stops the job through `~/b_pa1_out/job.pid` (kp). TERM reaches the running step at once (W1); the trap waits for the step to end (N-b); a TERM with the marker present is the final money stop, with its manifest (N-a); a marker written mid-mode stops the job at the next step (N3). The run doc's money path is one TERM by job.pid, never a kill-session; a kill-session is still survived (W9). Panel reads are hourly once within 6 h × Σ r_live of the threshold (N13) | `b_pa1_gpu.py:918`, `b_pa1_gpu.py:444`, `b_pa1_job.sh:54`, `b_pa1_job.sh:42` | R6 §I.3 rule 4; RD RB9 | W1 FIXED; cadence = run doc v1.1 |
+| 21 | Ledger: GPU-h = the sum of step wall seconds. The trap closes a killed step; after machine loss `resume --close-sec` closes an open step. **HB-T1′ form (N9, one form only):** setup on a fresh `~/b_pa1_out`, then `cap-init --used-sec S --used-w-sec SW` (S = HB-T1's used GPU-s from the pulled ledger; SW = the part of S in `w.` steps, so block W keeps one 1.0 GPU-h over both hosts, F-3), then restore `out/`, `logs/`, `RUN.*` and `done.*` from the pull, and `RESUME.json` and `RESUME_USED` when present, then `resume --cause machine`. If either of those two files exists, HB-T1′ takes no resume and the PI decides (v3.1 l.519-520). S counts an open step up to the loss time, from the same pull-loop evidence as `--close-sec`. CAP.json, the ledger and the freeze files are never copied (N-i) | `b_pa1_gpu.py:428`, `b_pa1_gpu.py:900`, `b_pa1_gpu.py:871` | R6-II §2 step 5; v3.1 l.519-520 | ACCEPTED (code), CC-295r3 Ruling 6; run-doc conditions N-i; SW added by F-3 (not yet read) |
+| 22 | One resume in total: `RESUME.json` (exclusive create) plus a `RESUME_USED` marker; on HB-T1′ under reading 21's restore condition (N-i) | `b_pa1_job.sh:131` | v3.1 l.519-520 | ACCEPTED, CC-295r3 Ruling 6 |
 | 23 | Trim projection formulas; the cap left is measured inside `s.trim`; TRIM.json is decided once and kept on a rerun | `b_pa1_gpu.py:473`, `b_pa1_gpu.py:756` | v3.1 l.510-511; R5 E-12; R6 §I.6; R6-II §3 | logic CORRECT, Ruling 9 |
-| 24 | Core does not fit → CORE_STOP.json (written by `s.trim`, and by the job if absent). Every later step and mode refuses. a1decode needs RUN.s.done and TRIM core_fits true; a1score needs RUN.a1decode.done; rest needs RUN.a1score.done | `b_pa1_gpu.py:43`, `b_pa1_gpu.py:507`, `b_pa1_job.sh:108`, `b_pa1_job.sh:162` | v3.1 l.506 as R5 E-12 | semantics ACCEPTED (Ruling 7); W3 FIXED |
+| 24 | Core does not fit → CORE_STOP.json (written by `s.trim`, and by the job if absent). Every later step and mode refuses. a1decode needs RUN.s.done and TRIM core_fits true; a1score needs RUN.a1decode.done; rest needs RUN.a1score.done | `b_pa1_gpu.py:43`, `b_pa1_gpu.py:507`, `b_pa1_job.sh:110`, `b_pa1_job.sh:164` | v3.1 l.506 as R5 E-12 | semantics ACCEPTED (Ruling 7); W3 FIXED |
 | 25 | `b_pa1_dev_contacts.json` (v3.1 §3) is not written by this code; it is an after-run laptop step | — | v3.1 l.143-147 | ACCEPTED, CC-295r3 Ruling 6 |
-| 26 | Gemma-3n V = **MobileNet-V5**, under `ERRATUM_LINEAGE_GEMMA3N_v1_2.md`, a substantive pre-data amendment of N6: card, then report or paper, then the developer's official model documentation; a documented new encoder with no stated initialisation from another series is its own V line; O4's "undetermined = clash" is overridden for Gemma-3n only; V is fixed at that file's pin line. One switch: `lineage.V`; without it, `V_without_erratum` = "undetermined" | registry `models.gemma3n_e4b.lineage`; `b_pa1_gpu.py:135`, `b_pa1_gpu.py:1106` | v3.1 §4.1 N6; PI-1108e Q1 | **decided by PI-1108e**; the erratum needs its irreversible-tier read |
+| 26 | Gemma-3n V = **MobileNet-V5**, under `ERRATUM_LINEAGE_GEMMA3N_v1_2.md`, a substantive pre-data amendment of N6: card, then report or paper, then the developer's official model documentation; a documented new encoder with no stated initialisation from another series is its own V line; O4's "undetermined = clash" is overridden for Gemma-3n only; V is fixed at that file's pin line. One switch: `lineage.V`; without it, `V_without_erratum` = "undetermined" | registry `models.gemma3n_e4b.lineage`; `b_pa1_gpu.py:135`, `b_pa1_gpu.py:1107` | v3.1 §4.1 N6; PI-1108e Q1 | **decided by PI-1108e**; the erratum needs its irreversible-tier read |
 | 27 | First-token Y/N rule: Y holds `C` (from "Có" = C + ó) and N holds `kh` (from "không"). HOSTCHECK records each word's token count and first token | `b_pa1_gpu.py:192`, `b_pa1_models.py:428` | v3.1 §7.1 N5 | ACCEPTED, Ruling 8 (+ N6) |
-| 28 | "E1 E2 NOT RUN (pre-fixed, R5 E-12)" goes into the job log at the end of S and into TRIM.json | `b_pa1_job.sh:169`, `b_pa1_gpu.py:758` | R5 E-12 | ACCEPTED, CC-295r3 Ruling 6 |
-| 29 | HOSTCHECK_*.json is bound to code, freeze and the GPU uuid (HB-T1′ forces a fresh host selftest) | `b_pa1_job.sh:99` | RD §8 | ACCEPTED, CC-295r3 Ruling 6 |
-| 30 | rc 137 is a final CAP STOP only if the step's elapsed time ≥ its LEFT (KILL after the timeout). An earlier 137 (OOM or an outside KILL) is a guard failure and gets the one resume. Two clocks, each compared only with itself: the job's `mono` = `/proc/uptime` (CLOCK_BOOTTIME) for EL, and the ledger's `m` = `time.monotonic()` (CLOCK_MONOTONIC) for step seconds. A wall-clock step moves neither (one was seen on the laptop during the tests). An open step from an earlier boot is never subtracted: `left` faults on an open step outside `s.trim`, `resume` needs `--close-sec`, and reading 21 never copies the ledger to HB-T1′ | `b_pa1_job.sh:159`, `b_pa1_job.sh:36`, `b_pa1_gpu.py:891`, `b_pa1_gpu.py:433` | v3.1 l.503-504, l.519-520 | ACCEPTED, CC-295r2 item 7 (N-e wording) |
-| 31 | A final stop (CAP, MONEY, PA3, CORE) writes `SHA256SUMS_<run>_stop` of out/, logs/ and w25_parts; a done mode writes `SHA256SUMS_<mode>`. The EXIT trap writes either one last, after the EXIT line, so `logs/job.log` itself verifies at the pull. Teardown first ignores TERM, HUP, INT and PIPE, and `say` writes the file before the console, so a dead console cannot fail it (W9). **Tested scope** (job selftest): one TERM (B), marker then TERM (B2), marker then tmux kill-session (B4), marker, TERM and a second TERM inside a slowed teardown (B5), the in-loop marker (J), CAP (A, F, I), PA3 and CORE (G), a done mode (A). **Not covered:** a KILL of the job itself (untrappable) or a machine loss; neither leaves a manifest, and machine loss takes the reading-21 path | `b_pa1_job.sh:58`, `b_pa1_job.sh:45`, `b_pa1_job.sh:37`, `b_pa1_job.sh:48`, `b_pa1_job.sh:50` | RD §14 step 4 | W9 FIXED (CC-295r3 Ruling 5); reworded to the tested scope |
-| 32 | `host_w25.sums` is required on the host (fail closed) | `b_pa1_job.sh:68` | RD §1.4 | ACCEPTED, CC-295r2 Ruling 5 |
+| 28 | "E1 E2 NOT RUN (pre-fixed, R5 E-12)" goes into the job log at the end of S and into TRIM.json | `b_pa1_job.sh:175`, `b_pa1_gpu.py:758` | R5 E-12 | ACCEPTED, CC-295r3 Ruling 6 |
+| 29 | HOSTCHECK_*.json is bound to code, freeze and the GPU uuid (HB-T1′ forces a fresh host selftest) | `b_pa1_job.sh:101` | RD §8 | ACCEPTED, CC-295r3 Ruling 6 |
+| 30 | rc 137 is a final CAP STOP only if the step's elapsed time ≥ its LEFT (KILL after the timeout). An earlier 137 (OOM or an outside KILL) is a guard failure and gets the one resume. Two clocks, each compared only with itself: the job's `mono` = `/proc/uptime` (CLOCK_BOOTTIME) for EL, and the ledger's `m` = `time.monotonic()` (CLOCK_MONOTONIC) for step seconds. A wall-clock step moves neither (one was seen on the laptop during the tests). An open step from an earlier boot is never subtracted: `left` faults on an open step outside `s.trim`, `resume` needs `--close-sec`, and reading 21 never copies the ledger to HB-T1′ | `b_pa1_job.sh:161`, `b_pa1_job.sh:37`, `b_pa1_gpu.py:891`, `b_pa1_gpu.py:433` | v3.1 l.503-504, l.519-520 | ACCEPTED, CC-295r2 item 7 (N-e wording) |
+| 31 | A final stop (CAP, MONEY, PA3, CORE) writes `SHA256SUMS_<run>_stop` of out/, logs/ and w25_parts; a done mode writes `SHA256SUMS_<mode>`, except a done a1decode: `SHA256SUMS_a1decode_all` over the same dirs, and `SHA256SUMS_a1decode` naming exactly the 4 `out/a1decode/captions_<k>.jsonl` files, for `b_pa1_mid.pulled_captions` (F-1). The EXIT trap writes the full one last, after the EXIT line, so `logs/job.log` itself verifies at the pull. Teardown first ignores TERM, HUP, INT and PIPE, and `say` writes the file before the console, so a dead console cannot fail it (W9). **Tested scope** (job selftest): one TERM (B), marker then TERM (B2), marker then tmux kill-session (B4), marker, TERM and a second TERM inside a slowed teardown (B5), the in-loop marker (J), CAP (A, F, I), PA3 and CORE (G), a done mode (A). **Not covered:** a KILL of the job itself (untrappable) or a machine loss; neither leaves a manifest, and machine loss takes the reading-21 path | `b_pa1_job.sh:60`, `b_pa1_job.sh:46`, `b_pa1_job.sh:38`, `b_pa1_job.sh:49`, `b_pa1_job.sh:52` | RD §14 step 4 | W9 FIXED (CC-295r3 Ruling 5); reworded to the tested scope |
+| 32 | `host_w25.sums` is required on the host (fail closed) | `b_pa1_job.sh:70` | RD §1.4 | ACCEPTED, CC-295r2 Ruling 5 |
 | 33 | Before each verify or judge step, its input must be complete (4 × 2,000 for A1 and A3; the H count; 2,000 × n for A4) | `b_pa1_gpu.py:770` | v3.1 §9.1 | ACCEPTED, CC-295r2 Ruling 5 |
 | 34 | Selftest and mutant scratch dirs are removed by a guarded file-by-file delete: the temp-dir parent and the prefix are checked, links are unlinked and never entered, and each emptied dir is removed with rmdir | `b_pa1_gpu.py:453` | coordinator rule (no rm -rf) | ACCEPTED, CC-295r2 Ruling 5 (N-e wording) |
 
@@ -50,22 +50,22 @@ Status: **DRAFT for a round-4 full read limited to W6 and W9 (CC-295r3 ESCALATE_
 
 | item | change | where |
 |---|---|---|
-| W1 | Each step runs in the background (`&`, `SPID`, `wait`). The TERM / HUP / INT trap kills the step's process group, waits, then exits 143, so the EXIT trap closes the ledger step and wipes. The job writes `job.pid`. Tests: job selftest group B; mutant J17 | `b_pa1_job.sh:52`, `b_pa1_job.sh:153` |
-| W2 | rc 124 → CAP STOP; rc 137 → CAP STOP only if the monotonic EL ≥ LEFT, else a guard stop. Tests: groups D, E; J18, J19 | `b_pa1_job.sh:159` |
-| W3 | CORE_STOP.json is in both marker lists. `s.trim` writes it, and the job writes it if absent. Later modes need core_fits true and the previous RUN marker. Tests: python core-stop; groups G, H; G70-G72, J20-J23 | `b_pa1_gpu.py:43`, `b_pa1_gpu.py:764`, `b_pa1_job.sh:108` |
+| W1 | Each step runs in the background (`&`, `SPID`, `wait`). The TERM / HUP / INT trap kills the step's process group, waits, then exits 143, so the EXIT trap closes the ledger step and wipes. The job writes `job.pid`. Tests: job selftest group B; mutant J17 | `b_pa1_job.sh:54`, `b_pa1_job.sh:155` |
+| W2 | rc 124 → CAP STOP; rc 137 → CAP STOP only if the monotonic EL ≥ LEFT, else a guard stop. Tests: groups D, E; J18, J19 | `b_pa1_job.sh:161` |
+| W3 | CORE_STOP.json is in both marker lists. `s.trim` writes it, and the job writes it if absent. Later modes need core_fits true and the previous RUN marker. Tests: python core-stop; groups G, H; G70-G72, J20-J23 | `b_pa1_gpu.py:43`, `b_pa1_gpu.py:764`, `b_pa1_job.sh:110` |
 | W4 | this file | — |
 | W5 | Registry `instrument_llm` = agent-drafted, amendment-logged, no id. `amend` checks the mode, the LOG-pinned amendment and a drafter per instrument entry; the log line carries `drafter=`. Tests: mid amend cases; D44-D48 | `b_pa1_mid.py:198`, `b_pa1_mid.py:179` |
 | W6 | Registry Gemma-3n `lineage.V` = MobileNet-V5 with `V_without_erratum`; the erratum file is drafted (v1; now v1_2, see the CC-295r3 map). Tests: python lineage-switch | registry; `manuscript/prereg/2026-11-01_b_pa1_tier1/ERRATUM_LINEAGE_GEMMA3N_v1_2.md` |
-| N1 | Kill cases: a fake-clock ledger (HM1, HM3), `--used-sec` (HM2, HM4), the money boundary (HM5), LEFT 0 (HM8, group F), the W cap (HM10, group I), rc 13 (HM9), rc 137 (HM11). Mutants G75-G79, J24, J25 | `b_pa1_gpu.py:1287` |
-| N2 | Every step runs with `< /dev/null`. Test group L; J29 | `b_pa1_job.sh:149` |
-| N3 | Markers are checked in the loop before `ledger start`, logging "MONEY STOP (final)" and the like. STEP is set only after `ledger start` succeeds. Group J; J26 | `b_pa1_job.sh:138` |
-| N4 | A stop manifest on every final stop (now `MANIFEST=`, written by the EXIT trap; CC-295r2). J27 | `b_pa1_job.sh:58` |
-| N5 | `host_w25.sums` required. J28 | `b_pa1_job.sh:68` |
+| N1 | Kill cases: a fake-clock ledger (HM1, HM3), `--used-sec` (HM2, HM4), the money boundary (HM5), LEFT 0 (HM8, group F), the W cap (HM10, group I), rc 13 (HM9), rc 137 (HM11). Mutants G75-G79, J24, J25 | `b_pa1_gpu.py:1289` |
+| N2 | Every step runs with `< /dev/null`. Test group L; J29 | `b_pa1_job.sh:151` |
+| N3 | Markers are checked in the loop before `ledger start`, logging "MONEY STOP (final)" and the like. STEP is set only after `ledger start` succeeds. Group J; J26 | `b_pa1_job.sh:140` |
+| N4 | A stop manifest on every final stop (now `MANIFEST=`, written by the EXIT trap; CC-295r2). J27 | `b_pa1_job.sh:60` |
+| N5 | `host_w25.sums` required. J28 | `b_pa1_job.sh:70` |
 | N6 | HOSTCHECK records each Y/N word's token count and first token, the digit tokens, and each captioner's decode settings | `b_pa1_models.py:76` |
 | N7 | accepted (the W venv installs unhashed; the freeze compare decides) | — |
 | N8 | `need()` completeness checks. G73 | `b_pa1_gpu.py:770` |
 | N9 | the HB-T1′ form, reading 21 (run doc v1.1) | — |
-| N10 | job selftest count reported as N checks + PASS | `b_pa1_job_selftest.sh:215` |
+| N10 | job selftest count reported as N checks + PASS | `b_pa1_job_selftest.sh:226` |
 | N11 | disk precheck in the weights stage | `b_pa1_setup_host.sh:75` |
 | N12 | process notes stay in the record | — |
 | N13 | `next_read_h` and `balance-cadence`. G74 | `b_pa1_gpu.py:444` |
@@ -84,7 +84,7 @@ choice; nothing here changes a registered rule.
 
 **4. Freeze check against the first host build.**
 - Code: `b_pa1_setup_host.sh:38`,
-  `b_pa1_job.sh:75`.
+  `b_pa1_job.sh:77`.
 - Why: R2 pins each venv freeze on a LOG line before the first step that reads it (v3.1 l.653-655). A GPU venv's
   freeze exists only after its first build on the host, so its R2 line can be written only after that build, from the
   pulled value. The host therefore records the first-build value and every job compares with it; the laptop compares
@@ -169,6 +169,8 @@ choice; nothing here changes a registered rule.
 
 **21. Ledger and the HB-T1′ form.**
 - Code: `b_pa1_gpu.py:428`, `b_pa1_gpu.py:900`, `b_pa1_gpu.py:871`.
+- F-3: `left --w` is min(left, 3600 − SW − the W seconds in this ledger). Without SW, a fresh HB-T1′ ledger gave block W
+  a second full 1.0 GPU-h. `cap-init` refuses unless 0 ≤ SW ≤ S.
 - Why: the cap is GPU-h of steps; setup and pushes are costed apart (§9.1 "plus 4 h setup"). The step seconds come from
   the monotonic clock (reading 30). R6-II §2 step 5 makes the cap one total over HB-T1 and HB-T1′, so `cap-init
   --used-sec` carries the used seconds to the new host. The ledger is not copied, because its `m` values belong to the
@@ -178,7 +180,7 @@ choice; nothing here changes a registered rule.
   without them a resume used on HB-T1 would not count. If either exists, HB-T1′ takes no resume and the PI decides.
 
 **22. One resume in total.**
-- Code: `b_pa1_job.sh:129`.
+- Code: `b_pa1_job.sh:131`.
 - Why: v3.1 l.519-520 allows one resume, for machine loss or a guard failure only. `RESUME.json` records the cause.
   `RESUME_USED` is made with noclobber (`set -C`), so it is created at most once; a second attempt, even after a crash
   in between, finds it and stops.
@@ -190,14 +192,14 @@ choice; nothing here changes a registered rule.
   from the pulled and sha-checked files, gives one source and one sha.
 
 **28. "E1 E2 NOT RUN".**
-- Code: `b_pa1_job.sh:169`,
+- Code: `b_pa1_job.sh:175`,
   `b_pa1_gpu.py:758`.
 - Why: R5 E-12 fixes E1 and E2 as NOT RUN and asks for the record in the run log before the end of A2. The end of block
   S is the first point after the trim decision. TRIM.json carries the same words, so the record is in the pulled
   output as well as in the log.
 
 **29. HOSTCHECK binding.**
-- Code: `b_pa1_job.sh:99`.
+- Code: `b_pa1_job.sh:101`.
 - Why: a HOSTCHECK file proves the token sets, digit tokens and decode settings for one code sha, one freeze and one
   GPU. HB-T1′ restores `~/b_pa1_out` from the pull, which would bring the lost host's HOSTCHECK files with it. The
   uuid binding makes the job refuse them, so the new machine must pass its own `selftest` mode first (RD §8).
@@ -209,8 +211,8 @@ choice; nothing here changes a registered rule.
 | W7 | `amend` refuses an entries file whose own sha is not on a LOG pin line naming it (every entries file, dictionary or instrument; the D-8 §7 pin form). Tests: mid "amend-entries-pin" (an unpinned file with a pinned amendment is refused; look-alike non-pin lines do not count). Mutant D49 | `b_pa1_mid.py:246` |
 | W8 | Registry `prompts.instrument_i` (sha 4ac3f695) and `instrument_ii` (sha 79950e29) name no drafting rule. They point by name, not by sha, to "the step-4 amendment named in each entries file's provenance and pinned on a LOG line (b_pa1_mid.amendment_ok)" | registry `prompts`; `instrument_llm.prompts` |
 | W6 | The registry source string and the selftest assert name `ERRATUM_LINEAGE_GEMMA3N_v1_1.md`, with v1_1's resolver order | gpu selftest assert (renamed to v1_2 in round 4); registry `models.gemma3n_e4b.lineage.source` |
-| N-a | Teardown: rc 143 with MONEY_STOP.json present logs "MONEY STOP (final) on signal" and writes `SHA256SUMS_<run>_stop`. Every manifest (stop or done) is now written by the EXIT trap after the EXIT line, so `logs/job.log` verifies. Tests: group B2; "mode manifest written last"; each stop manifest is verified with `sha256sum -c`. Mutants J32, J33, J34 (J26, J27 re-cut) | `b_pa1_job.sh:48`, `b_pa1_job.sh:50`, `b_pa1_job.sh:168` |
-| N-b | Kill case for the trap's `wait`: a stub step traps TERM and exits 2 s later, recording its exit on CLOCK_MONOTONIC. The test asserts that the ledger end's `sec` exceeds (stub exit − start `m`), so the end was written after the step ended. Mutant J31 | `b_pa1_job_selftest.sh:46`, `b_pa1_job_selftest.sh:74` |
+| N-a | Teardown: rc 143 with MONEY_STOP.json present logs "MONEY STOP (final) on signal" and writes `SHA256SUMS_<run>_stop`. Every manifest (stop or done) is now written by the EXIT trap after the EXIT line, so `logs/job.log` verifies. Tests: group B2; "mode manifest written last"; each stop manifest is verified with `sha256sum -c`. Mutants J32, J33, J34 (J26, J27 re-cut) | `b_pa1_job.sh:49`, `b_pa1_job.sh:52`, `b_pa1_job.sh:170` |
+| N-b | Kill case for the trap's `wait`: a stub step traps TERM and exits 2 s later, recording its exit on CLOCK_MONOTONIC. The test asserts that the ledger end's `sec` exceeds (stub exit − start `m`), so the end was written after the step ended. Mutant J31 | `b_pa1_job_selftest.sh:46`, `b_pa1_job_selftest.sh:76` |
 | N-c | `x/coverage.json` removed by name and `x/` by rmdir. `outside_tree` takes the tree root; the refusal case targets `x/` inside the selftest's own fixture repo and asserts nothing was made, so D14 dies on its assertion and a mutant can write only in the scratch tree. Mutant D50 | `b_pa1_mid.py:64`, `b_pa1_mid.py:518` |
 | N-d | One combined disk check at the first fetch; `PIP_NO_CACHE_DIR=1` | `b_pa1_setup_host.sh:73`, `b_pa1_setup_host.sh:25` |
 | N-e | Readings 30 (the two clocks) and 34 (the guarded delete) reworded | this file |
@@ -221,16 +223,25 @@ choice; nothing here changes a registered rule.
 
 | item | change | where |
 |---|---|---|
-| W6 | The registry source string and the gpu selftest assert name `ERRATUM_LINEAGE_GEMMA3N_v1_2.md`. Only that file name changes in the registry; model pins and prompt shas are unchanged | `b_pa1_gpu.py:1106`; registry `models.gemma3n_e4b.lineage.source` |
-| W9 (a) | Teardown's first line keeps `rc`, then ignores TERM, HUP, INT and PIPE, so a second signal cannot cut it short. Test: group B5 (marker, TERM, a second TERM while the slowed wipe runs; rc 143, EXIT line, manifest verifies). Mutant J35 | `b_pa1_job.sh:45` |
-| W9 (b) | `say` writes job.log first, then the console with `|| true`, so a dead pty cannot end teardown under errexit. Test: group B4 (marker, then `tmux kill-session` on the job's own tmux socket; EXIT line, money line, manifest verifies, set wiped). Mutant J36 | `b_pa1_job.sh:37` |
-| W9 (c) | The kills and the `wait` in `on_signal` end with `|| true` | `b_pa1_job.sh:52` |
+| W6 | The registry source string and the gpu selftest assert name `ERRATUM_LINEAGE_GEMMA3N_v1_2.md`. Only that file name changes in the registry; model pins and prompt shas are unchanged | `b_pa1_gpu.py:1107`; registry `models.gemma3n_e4b.lineage.source` |
+| W9 (a) | Teardown's first line keeps `rc`, then ignores TERM, HUP, INT and PIPE, so a second signal cannot cut it short. Test: group B5 (marker, TERM, a second TERM while the slowed wipe runs; rc 143, EXIT line, manifest verifies). Mutant J35 | `b_pa1_job.sh:46` |
+| W9 (b) | `say` writes job.log first, then the console with `|| true`, so a dead pty cannot end teardown under errexit. Test: group B4 (marker, then `tmux kill-session` on the job's own tmux socket; EXIT line, money line, manifest verifies, set wiped). Mutant J36 | `b_pa1_job.sh:38` |
+| W9 (c) | The kills and the `wait` in `on_signal` end with `|| true` | `b_pa1_job.sh:54` |
 | reading 31 | Reworded to the tested scope | this file |
-| N-f HM28 | Group B: a TERM without the marker writes no money line and no stop manifest. Mutant J37 | `b_pa1_job_selftest.sh:133` |
-| N-f HM32 | A rc-3 step (`s.smoke`) gives PA3 STOP with a verified `SHA256SUMS_s_stop`. Mutant J38 | `b_pa1_job_selftest.sh:192` |
+| N-f HM28 | Group B: a TERM without the marker writes no money line and no stop manifest. Mutant J37 | `b_pa1_job_selftest.sh:136` |
+| N-f HM32 | A rc-3 step (`s.smoke`) gives PA3 STOP with a verified `SHA256SUMS_s_stop`. Mutant J38 | `b_pa1_job_selftest.sh:201` |
 | N-f HM36 | **Not done.** The case ("the right sha under another name is refused") belongs in the `b_pa1_mid` selftest, and `b_pa1_mid.py` must stay b8afa120. By reading, `amend` passes `a.entries.name` to `pin_line`, which needs the name as a delimited token on the same PIN_RE line | `b_pa1_mid.py` `cmd_amend` (unchanged) |
 | N-g | Reading 10 states that H uses the A1-decode captions. The optional `htrans` assert is not added, for the same reason (mid frozen) | this file |
 | N-h | Reading 14: the tier-2 prereg copies the pick form verbatim | this file |
 | N-i | Reading 21: the HB-T1′ restore list adds `RESUME.json` and `RESUME_USED`; if either exists, no resume and the PI decides; S counts an open step up to the loss. It binds the run doc v1.1; no code change (with `RESUME_USED` restored, the job's `set -C` guard refuses; with `RESUME.json` restored, `resume` refuses on its exclusive create) | this file |
 | J17, J31 | Patterns re-cut to the `|| true` form | `b_pa1_gpu_mutants.py` |
 | erratum | `ERRATUM_LINEAGE_GEMMA3N_v1_2.md` (E9: l.155-156 twice, l.158, the l.160-162 quote verbatim in full); v1 and v1_1 kept unchanged and never committed | `manuscript/prereg/2026-11-01_b_pa1_tier1/` |
+
+## B_RUN_DOC v1.1 F-1 / F-2 / F-3 hunk map (code-agent draft for a one-judge code read; `b_pa1_mid.py` unchanged at b8afa120)
+
+| item | change | where |
+|---|---|---|
+| F-1 | A done a1decode writes `SHA256SUMS_a1decode` from `NARROW`: the `out/a1decode/captions_<k>.jsonl` names built from the `a1decode.decode.<k>` lines of `$STEPS` (the ACCEPT.json order, `steps`). The files are named, never globbed, so a `captions_<k>.jsonl.torn.<UTC>` file left by `resume` and any other file stay out. The full manifest becomes `SHA256SUMS_a1decode_all`, still written last, after the EXIT line. The narrow one is written in teardown before the EXIT line; a failure logs `A1DECODE MANIFEST FAILED` and cannot abort teardown. Other modes are unchanged (`SHA256SUMS_s` keeps `out/s/ACCEPT.json`). Tests: the stub writes one ids-only row per a1decode step; group A checks the 4-line manifest; group C runs `s` and then `a1decode` with a torn tail and a stray file present, and the committed `b_pa1_mid.pulled_captions` accepts the job's own manifests (at H_B it refuses: "lists other files"). Mutants J39 (narrow = `sums`), J40 (a find over out/a1decode), J41 (no `_all`) | `b_pa1_job.sh:50`, `b_pa1_job.sh:171`; `b_pa1_job_selftest.sh:109`, `b_pa1_job_selftest.sh:169` |
+| F-2 | New laptop tool `b_pa1_d8i_validate.py --entries-i E --coverage C [--entries-ii E2]`. Lines (A) and (B) must stand on the real LOG. It fills the md v1.3 §7 (i) form with E's sha (the three `<8-hex>` slots in order: md, coverage, mid) and appends it to a scratch LOG copy. Then `b_pa1_mid.cmd_amend` (ii) and `cmd_amend` (i) run on one scratch amendments log, then `cmd_final`. It also checks the file name, `provenance.amendment` = md v1.3, src i only, and `classes_only` false. One counts-only line ending `RESULT PASS`/`FAIL <checks>`; rc 0 only on PASS. It reuses mid's own checks and writes neither the real LOG nor the real amendments log (scratch dirs via `scratch`). `selftest`: a synthetic token passes; six broken fixtures fail on their own check ((i)×(ii) term clash, which fails on exactly `i_added,log_re,final`, file name, amendment sha, src ii, classes-only coverage, LOG without (A)/(B)). Mutants V1-V10. Not exercised: `one_form` and `form_filled`, which guard against a changed md (fixed by its sha) | `b_pa1_d8i_validate.py:54`, `b_pa1_d8i_validate.py:94` |
+| F-3 | `cap-init --used-w-sec SW` (default 0; refused unless 0 ≤ SW ≤ S) writes `used_w_before_sec`, and `left --w` subtracts it. Tests: gpu selftest `used-before` (S 10,000, SW 3,000 → `left --w` 600; SW −1 and SW > S refused); job group I twin (HB-T1′ with SW 3,598 on a fresh ledger: CAP STOP during `w.feats1`). Mutants G80-G82; G40's pattern re-cut | `b_pa1_gpu.py:435`, `b_pa1_gpu.py:872`, `b_pa1_gpu.py:951`; `b_pa1_job_selftest.sh:207` |
+| SUMS | `SHA256SUMS_GPU` adds `b_pa1_d8i_validate.py`, so the P8 pin binds it; `SHA256SUMS` unchanged | `SHA256SUMS_GPU` |
