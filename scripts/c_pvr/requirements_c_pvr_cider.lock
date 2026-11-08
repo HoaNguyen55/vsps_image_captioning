@@ -1,0 +1,11 @@
+# requirements_c_pvr_cider.lock -- laptop CPU, CIDEr-VI producer only (scripts/c_pvr/c_pvr_cider_vi.py; CIDER_VI_PIN_v1).
+# Python 3.12.3 venv ~/.venvs/c_pvr_cider. The c_pvr lock has no scipy, and kit_b protocol_pilot.py imports scipy.stats.
+# Install (offline once the wheels are on disk):
+#   python3 -m venv ~/.venvs/c_pvr_cider && ~/.venvs/c_pvr_cider/bin/pip install --no-deps --require-hashes --no-index \
+#     --find-links <wheel dir> -r scripts/c_pvr/requirements_c_pvr_cider.lock
+# Wheels from PyPI (pip download --no-deps, 2026-11-08T05:10Z). numpy line = requirements_c_pvr.lock. pycocoevalcap is
+# installed --no-deps (no pycocotools): only pycocoevalcap.cider is imported, by the selftest equality check.
+# Non-pip pins: as requirements_c_pvr.lock (openjdk 21.0.12.1; VnCoreNLP 62bbc58f jar / wordsegmenter.rdr / vi-vocab).
+numpy==2.5.4 --hash=sha256:fbde6962867ee75b48b0ee29b2b9372ec5d617799dbaf38e82dc0596f2f7738a
+scipy==1.18.1 --hash=sha256:f55fa87b6c612ecd6b058f167c53231b1d14e412efe361d3d6e38b3631c73218
+pycocoevalcap==1.2 --hash=sha256:083ed7910f1aec000b0a237ef6665f74edf19954204d0b1cbdb8399ed132228d
