@@ -179,6 +179,10 @@ M = {  # name: (file, old, new)
         ('        if "differs from its pin" in str(e):\n            raise\n        words = [None]', '        words = [None]'),
         ('            if "differs from its pin" in str(e):\n                raise\n            out.append(None)', '            out.append(None)')]),
     "seg_no_text_fallback": ("c_pvr_score.py", "            w = segment([u])[0] if w is None else w\n", ""),
+    # OPS-1108c-s16-fault1: the real pull carries the ids-only logs out/logs/<set>.<arm>.ids.jsonl (c_pvr_gpu l.684)
+    "f1_ids_logs_rejected": ("c_pvr_score.py", 'k not in known | ids_logs):', "k not in known):"),
+    "f1_any_out_logs_name": ("c_pvr_score.py", 'k not in known | ids_logs):', 'k not in known and not k.startswith("out/logs/")):'),
+    "f1_log_sha_unchecked": ("c_pvr_score.py", "if CP.sha_file(x.out / k) != sums[k]]:", "if False]:"),
     "sc_cut_output_allowed": ("c_pvr_score.py", "                if r is not None:\n                    fault(", "                if False:\n                    fault("),
 }
 EQUIV = {  # run and expected to SURVIVE; each with its proof

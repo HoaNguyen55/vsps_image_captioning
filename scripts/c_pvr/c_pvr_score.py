@@ -842,8 +842,11 @@ def score(x, boot, decompose, pins: bool = True, segment=None) -> tuple[dict, di
     capj = json.loads(safe(x.cap).read_bytes())
     cut = set(capj.get("cuts", []))
     known = {f"out/{s}.{a}.jsonl" for s, (_, _, arms) in G.SETS.items() for a in arms}
-    if bad := sorted(k for k in sums if k.startswith("out/") and k not in known):
+    ids_logs = {f"out/logs/{s}.{a}.ids.jsonl" for s, (_, _, arms) in G.SETS.items() for a in arms}  # c_pvr_gpu l.684
+    if bad := sorted(k for k in sums if k.startswith("out/") and k not in known | ids_logs):
         fault(f"SUMS lists outputs of no registered (set, arm): {bad[:3]}")
+    if bad := [k for k in sorted(ids_logs & set(sums)) if CP.sha_file(x.out / k) != sums[k]]:  # hashed, never parsed
+        fault(f"ids-only logs differ from their SUMS lines: {bad[:3]}")
     ids = {s: sorted(q["id"] for q in M["queries"]) for s, M in Ms.items()}
     R, status = {}, {}
     for s, (_, _, arms) in G.SETS.items():
@@ -1210,7 +1213,7 @@ def _world(base: Path, chair, mfn, cut=("A10",), tweak=None) -> argparse.Namespa
     vmap = XO.resolve_map(desc)
     build, out = base / "build", base / "pull"
     (build / "manifest").mkdir(parents=True)
-    (out / "out").mkdir(parents=True)
+    (out / "out" / "logs").mkdir(parents=True)  # the real pull layout: outputs, ids-only logs, job logs
     labels, sums, man = {}, {}, []
     for s, (_, lang, arms) in G.SETS.items():
         n = 40 if s == XM else 4
@@ -1255,7 +1258,13 @@ def _world(base: Path, chair, mfn, cut=("A10",), tweak=None) -> argparse.Namespa
             b = "".join(json.dumps(r, ensure_ascii=False, sort_keys=True) + "\n" for r in rows).encode()
             (out / "out" / f"{s}.{a}.jsonl").write_bytes(b)
             sums[f"out/{s}.{a}.jsonl"] = sha(b)
+            lg = "".join(json.dumps({k: r[k] for k in ("utc", "set", "arm", "id")}, sort_keys=True) + "\n" for r in rows).encode()
+            (out / "out" / "logs" / f"{s}.{a}.ids.jsonl").write_bytes(lg)
+            sums[f"out/logs/{s}.{a}.ids.jsonl"] = sha(lg)
     (build / "MANIFEST.sha256").write_text("".join(man))
+    (out / "logs").mkdir()
+    (out / "logs" / "job.log").write_bytes(b"synthetic\n")
+    sums["logs/job.log"] = sha(b"synthetic\n")
     (out / "SUMS").write_text("".join(f"{h}  {k}\n" for k, h in sorted(sums.items())))
     (base / "labels.json").write_text(json.dumps(labels), "utf-8")
     (base / "cap.json").write_text(json.dumps({"decision": "RUN", "arms": [], "cuts": list(cut)}))
@@ -1387,6 +1396,12 @@ def _st_world(tmp: Path, mfn, chair, boot) -> None:
     del c[XM]["A0"]
     xa.cider.write_text(json.dumps(c))
     xa.cider_sha = sha(xa.cider.read_bytes())
+    xu = _world(tmp / "f_unreg_log", chair, mfn)  # an ids-log name of no registered (set, arm) still FAULTs
+    (xu.out / "out" / "logs" / f"{XM}.A99.ids.jsonl").write_bytes(b"{}\n")
+    with open(xu.out / "SUMS", "a") as f:
+        f.write(f"{sha(b'{}' + bytes([10]))}  out/logs/{XM}.A99.ids.jsonl\n")
+    xg = _world(tmp / "f_log_sha", chair, mfn)  # an ids-log whose bytes no longer match its SUMS line
+    (xg.out / "out" / "logs" / f"{XM}.A2.ids.jsonl").write_bytes(b"{}\n")
     xd = _world(tmp / "f_done", chair, mfn, tweak=lambda s, a, rows: s == XM and a == "A3" and rows.pop())
     _cider_file(tmp / "f_done", xd)  # with CIDEr-VI input, so the N4 completeness check is the one that fires
     (xd.out / "SHA256SUMS_tier1").write_bytes((xd.out / "SUMS").read_bytes())
@@ -1400,10 +1415,11 @@ def _st_world(tmp: Path, mfn, chair, boot) -> None:
     res3, cm3 = score(xp, boot, None, pins=False)
     assert res3["status"][XM]["A7"].startswith("partial") and cm3["C-M1"] == {"label": "NOT_RUN", "missing": {"A7": 1}}, "§9.2 NOT_RUN"
     assert "A7" not in res3[XM]["variants"]["PVR-drop"]["holm"]["members"], "an incomplete arm leaves the family"
-    WHY = {"job_done_partial": "incomplete uncut arms", "no_cider_job_done": "--no-cider under a JOB DONE pull",
+    WHY = {"unregistered_log": "no registered (set, arm)", "ids_log_sha": "ids-only logs differ", "job_done_partial": "incomplete uncut arms", "no_cider_job_done": "--no-cider under a JOB DONE pull",
            "neither_cider_flag": "exactly one", "both_cider_flags": "exactly one", "cider_without_sha": "exactly one",
            "cider_no_A0": "lacks", **{f"cider_{t}": "non-finite value or one outside" for t in bad_c}}
     for name, fn in (("sums", lambda: score(xs, boot, None, pins=False)), ("torn", lambda: score(xt, boot, None, pins=False)),
+                     ("unregistered_log", lambda: score(xu, boot, None, pins=False)), ("ids_log_sha", lambda: score(xg, boot, None, pins=False)),
                      ("tman", lambda: score(xm_, boot, None, pins=False)), ("cut_with_output", lambda: score(xc, boot, None, pins=False)),
                      ("job_done_partial", lambda: score(xd, boot, None, pins=False)), ("cider_no_A0", lambda: score(xa, boot, None, pins=False)), ("rerun_id", lambda: score(xr, boot, None, pins=False)),
                      ("no_cider_job_done", lambda: score(xj, boot, None, pins=False)), ("neither_cider_flag", lambda: score(xn, boot, None, pins=False)),
