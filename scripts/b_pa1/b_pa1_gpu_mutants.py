@@ -185,6 +185,8 @@ MUT = [  # (id, file, old, new): each old must occur exactly once
     ("J39 F-1 a1decode manifest names the 4 caption files", J, '(cd $O && sha256sum $NARROW) > $O/SHA256SUMS_a1decode', 'sums > $O/SHA256SUMS_a1decode'),
     ("J40 F-1 no glob over out/a1decode", J, """NARROW=$(echo "$STEPS" | sed -n 's|^a1decode\\.decode\\.\\([^ ]*\\) .*$|out/a1decode/captions_\\1.jsonl|p')""", 'NARROW=$(cd $O && find out/a1decode -type f | LC_ALL=C sort)'),
     ("J41 F-1 a1decode full manifest _all", J, '  MANIFEST=SHA256SUMS_a1decode_all   #', '  MANIFEST=   #'),
+    ("J42 F-4 UTF-8 mode in the job interpreters", J, 'PYM="$HOME/venvs/b_pa1_main_$LKM/bin/python -X utf8"; PYL="$HOME/venvs/b_pa1_legacy_$LKL/bin/python -X utf8"; PYW="$HOME/venvs/b_pa1_w/bin/python -X utf8"',
+     'PYM=$HOME/venvs/b_pa1_main_$LKM/bin/python; PYL=$HOME/venvs/b_pa1_legacy_$LKL/bin/python; PYW=$HOME/venvs/b_pa1_w/bin/python'),
     ("G80 F-3 cap-init stores --used-w-sec", G, '"used_w_before_sec": a.used_w_sec,', '"used_w_before_sec": 0,'),
     ("G81 F-3 left --w subtracts HB-T1's W seconds", G, 'W_CAP_SEC - c["used_w_before_sec"] - used_sec(rows, True)', 'W_CAP_SEC - used_sec(rows, True)'),
     ("G82 F-3 0 <= used_w_sec <= used_sec", G, 'not 0 <= a.used_w_sec <= a.used_sec:', 'a.used_sec < 0:'),

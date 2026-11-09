@@ -36,10 +36,12 @@ chmod +x $SB/bin/nvidia-smi $SB/fake/timeout; export PATH=$SB/bin:$PATH
 LKM=$(sha256sum $B/requirements_b_pa1_main.lock | cut -c1-8); LKL=$(sha256sum $B/requirements_b_pa1_legacy.lock | cut -c1-8)
 FZ=$(echo "stub==1" | sha256sum | cut -c1-64); CODE=$(sha256sum $B/SHA256SUMS_GPU | cut -c1-64)
 STUB='#!/bin/bash
+XO=(); while [ "$1" = -X ]; do XO+=("$1" "$2"); shift 2; done   # F-4: the job interpreter options; probe = the host default (ASCII under C), the first -X utf8 wins
+probe() { LC_ALL=C /usr/bin/python3 "${XO[@]}" -X utf8=0 -I -c "import sys; open(sys.argv[1], \"a\").write(chr(243) + chr(10))" $HOME/stub.utf8 || exit 1; }
 if [ "$1" = -m ] && [ "$2" = pip ]; then if [[ $0 == */b_pa1_w/* ]]; then cat '$B'/requirements_b_pa1_w.txt; else echo "stub==1"; fi; exit 0; fi
 for a in "$@"; do case "$a" in run|hostcheck|inputs|selftest|feats) CMD=$a; break;; esac; done
 case "${CMD:-}" in
-  run|feats) [ $CMD = run ] && ST=$5 || ST=w.feats; echo "$ST" >> $HOME/stub.log
+  run|feats) probe; [ $CMD = run ] && ST=$5 || ST=w.feats; echo "$ST" >> $HOME/stub.log
      [ "${STUB_MONEY:-}" != "$ST" ] || echo "{}" > $HOME/b_pa1_out/MONEY_STOP.json
      [ -z "${STUB_READ:-}" ] || cat > /dev/null   # a step that reads stdin
      [ -z "${STUB_SLEEP:-}" ] || { echo $$ > $HOME/stub.pid; exec sleep $STUB_SLEEP; }
@@ -50,10 +52,11 @@ case "${CMD:-}" in
      case $ST in a1decode.decode.*) K=${ST#a1decode.decode.}; mkdir -p $HOME/b_pa1_out/out/a1decode   # ids-only rows, no text
        printf "{\"id\": 1, \"cap\": \"%s\"}\n" $K >> $HOME/b_pa1_out/out/a1decode/captions_$K.jsonl;; esac
      V=STUB_RC_${ST//./_}; exit ${!V:-0};;
-  hostcheck|inputs|selftest) exit 0;;
+  hostcheck) probe; exit 0;;
+  inputs|selftest) exit 0;;
 esac
 if [ -n "${STUB_SLOWWIPE:-}" ] && [[ " $* " == *" wipe "* ]]; then touch $HOME/wipe.started; sleep 2; fi   # W9 (e)
-exec /usr/bin/python3 "$@"'
+exec /usr/bin/python3 "${XO[@]}" "$@"'
 newhome() {  # [done modes...]: a fresh HOME with venv stubs, first-build freezes, a fresh hostcheck, CAP.json
   export HOME=$(mktemp -d $SB/home.XXXX); O=$HOME/b_pa1_out; mkdir -p $O/in $O/out/s
   for v in main_$LKM legacy_$LKL w; do mkdir -p $HOME/venvs/b_pa1_$v/bin; echo "$STUB" > $HOME/venvs/b_pa1_$v/bin/python
@@ -221,6 +224,7 @@ ok "every step of the mode ran (N2)" '[ "$(wc -l < $HOME/stub.log)" = 4 ]'
 newhome
 expect "selftest mode: T8 wipe line" 0 "HOSTCHECK OK" $J selftest $H -
 ok "no set dir left" '[ ! -e $HB/a ] && [ ! -e $HB/w ] && [ ! -e $HB/st ]'
+ok "F-4: hostcheck main + legacy write non-ASCII text under LC_ALL=C with an ASCII default" '[ "$(od -An -tx1 $HOME/stub.utf8 | tr -d " \n")" = c3b30ac3b30a ]'
 for s in a w; do [ ! -e $HB/$s ] || { rm -f $HB/$s/f1 $HB/$s/MANIFEST.sha256 $HB/$s/extra; rmdir $HB/$s; }; done
 [ ! -e $HB ] || rmdir $HB
 echo "sandbox $SB (left in place)"; [ $FAIL = 0 ] && echo "JOB SELFTEST PASS ($N checks)" || echo "JOB SELFTEST FAIL"

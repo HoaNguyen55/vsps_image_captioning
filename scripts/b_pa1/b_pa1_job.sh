@@ -28,7 +28,7 @@ FRAME_SHA=863ad3e90577c37dac2d2384062239fc71e747c167700d2566926ba2d69b7234   # L
 W_FREEZE=1a639a50adf550c50c6dfe284146e279b2a2bf2a716ade743e9eb357ccbf0778    # R5 §D.2 (= requirements_b_pa1_w.txt)
 B=scripts/b_pa1; X=$B/b_pa1_gpu.py
 LKM=$(sha256sum $B/requirements_b_pa1_main.lock | cut -c1-8); LKL=$(sha256sum $B/requirements_b_pa1_legacy.lock | cut -c1-8)
-PYM=$HOME/venvs/b_pa1_main_$LKM/bin/python; PYL=$HOME/venvs/b_pa1_legacy_$LKL/bin/python; PYW=$HOME/venvs/b_pa1_w/bin/python
+PYM="$HOME/venvs/b_pa1_main_$LKM/bin/python -X utf8"; PYL="$HOME/venvs/b_pa1_legacy_$LKL/bin/python -X utf8"; PYW="$HOME/venvs/b_pa1_w/bin/python -X utf8"   # F-4: UTF-8 text I/O in every job interpreter, any locale (-I ignores PYTHONUTF8); used unquoted
 O=$HOME/b_pa1_out; LOG=$O/logs; HB=/dev/shm/b_pa1_hb; SSCD=$HOME/b_pa1_models/sscd_disc_mixup.torchscript.pt
 export HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 HF_HOME=$HOME/b_pa1_models/hf B_PA1_OUT=$O B_PA1_HB=$HB
 case "$MODE" in selftest) SET=st;; w) SET=w;; s|a1decode|a1score|rest) SET=a;; *) echo "unknown mode $MODE"; exit 2;; esac
