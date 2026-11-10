@@ -1,0 +1,250 @@
+{
+ "rule": "(min(pHash, dHash) <= 10 and SSCD >= 0.5) or SSCD > 0.75 or identical sha256  [xtab.py:19; xtab2.py:14 and :33]",
+ "ktvic_test": {
+  "n": 558,
+  "n_flagged": 16,
+  "n_byte_identical": 2,
+  "ids": [
+   "208",
+   "303",
+   "331",
+   "488",
+   "507",
+   "1184",
+   "1335",
+   "1724",
+   "1898",
+   "4075",
+   "4307",
+   "4515",
+   "5142",
+   "5151",
+   "9914",
+   "11071"
+  ],
+  "byte_identical_ids": [
+   "507",
+   "1335"
+  ],
+  "pairs": {
+   "208": [
+    {
+     "train": "2349",
+     "sscd": 0.7623,
+     "byte_identical": false
+    }
+   ],
+   "303": [
+    {
+     "train": "3160",
+     "sscd": 1.0,
+     "byte_identical": false
+    }
+   ],
+   "331": [
+    {
+     "train": "3589",
+     "sscd": 1.0,
+     "byte_identical": false
+    }
+   ],
+   "488": [
+    {
+     "train": "2304",
+     "sscd": 0.9841,
+     "byte_identical": false
+    }
+   ],
+   "507": [
+    {
+     "train": "7511",
+     "sscd": 1.0,
+     "byte_identical": true
+    }
+   ],
+   "1184": [
+    {
+     "train": "7315",
+     "sscd": 0.993,
+     "byte_identical": false
+    }
+   ],
+   "1335": [
+    {
+     "train": "3589",
+     "sscd": 1.0,
+     "byte_identical": true
+    }
+   ],
+   "1724": [
+    {
+     "train": "5870",
+     "sscd": 0.8338,
+     "byte_identical": false
+    }
+   ],
+   "1898": [
+    {
+     "train": "10398",
+     "sscd": 0.9893,
+     "byte_identical": false
+    }
+   ],
+   "4075": [
+    {
+     "train": "1437",
+     "sscd": 0.956,
+     "byte_identical": false
+    }
+   ],
+   "4307": [
+    {
+     "train": "7253",
+     "sscd": 0.9872,
+     "byte_identical": false
+    },
+    {
+     "train": "7412",
+     "sscd": 0.9872,
+     "byte_identical": false
+    }
+   ],
+   "4515": [
+    {
+     "train": "2737",
+     "sscd": 0.9973,
+     "byte_identical": false
+    },
+    {
+     "train": "4006",
+     "sscd": 0.9973,
+     "byte_identical": false
+    }
+   ],
+   "5142": [
+    {
+     "train": "9939",
+     "sscd": 0.9423,
+     "byte_identical": false
+    }
+   ],
+   "5151": [
+    {
+     "train": "5073",
+     "sscd": 0.9979,
+     "byte_identical": false
+    }
+   ],
+   "9914": [
+    {
+     "train": "9890",
+     "sscd": 0.8519,
+     "byte_identical": false
+    }
+   ],
+   "11071": [
+    {
+     "train": "9794",
+     "sscd": 0.9953,
+     "byte_identical": false
+    }
+   ]
+  },
+  "xtab_py_counts": {
+   "pool_imgs": 17,
+   "test_imgs": 16,
+   "exact_sha_pairs": 2,
+   "exact_test_imgs": 2,
+   "sscd_ge_0.9_test_imgs": 13
+  }
+ },
+ "ktvic_dev300": {
+  "n": 300,
+  "n_flagged": 7,
+  "n_byte_identical": 1,
+  "ids": [
+   "1594",
+   "2004",
+   "4954",
+   "5198",
+   "9981",
+   "10448",
+   "10489"
+  ],
+  "byte_identical_ids": [
+   "2004"
+  ],
+  "pairs": {
+   "1594": [
+    {
+     "train": "1628",
+     "sscd": 0.8076,
+     "byte_identical": false
+    }
+   ],
+   "2004": [
+    {
+     "train": "4487",
+     "sscd": 1.0,
+     "byte_identical": true
+    }
+   ],
+   "4954": [
+    {
+     "train": "2049",
+     "sscd": 0.9628,
+     "byte_identical": false
+    }
+   ],
+   "5198": [
+    {
+     "train": "1826",
+     "sscd": 0.9709,
+     "byte_identical": false
+    },
+    {
+     "train": "5891",
+     "sscd": 0.9691,
+     "byte_identical": false
+    }
+   ],
+   "9981": [
+    {
+     "train": "5297",
+     "sscd": 0.8055,
+     "byte_identical": false
+    }
+   ],
+   "10448": [
+    {
+     "train": "4469",
+     "sscd": 0.8986,
+     "byte_identical": false
+    }
+   ],
+   "10489": [
+    {
+     "train": "713",
+     "sscd": 0.9825,
+     "byte_identical": false
+    }
+   ]
+  },
+  "xtab2_py_ids": [
+   "10448",
+   "10489",
+   "1594",
+   "2004",
+   "4954",
+   "5198",
+   "9981"
+  ]
+ },
+ "inputs_sha256": {
+  "pool.npz": "d217bdba40cd23ffa1e4d75cc5c0fa0a2b62e4b50909b20e9bbb94dcb1f65daf",
+  "ktvic_test.npz": "cd985050fd2042b87049410334a05a6406b4363d69c05a45e6ed28ccae86702d",
+  "ktvic_dev300.txt": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+  "xtab.py": "65eba96d70ff65ba6514672a7f17046b0a5e15db238ac17ad440ce615746e58c",
+  "xtab2.py": "8c2da7e991e4c45d0ae3fc67550bb5964b5d082039b8b1501ffe69e0f03f2b70"
+ }
+}

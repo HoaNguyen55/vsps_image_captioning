@@ -1,0 +1,67 @@
+POST HOC rows C1, C2, B1, B2: gate-3 selftest and mutant output. Synthetic fixtures only; no row computed.
+start 2026-11-10T19:26:32Z; interpreter Python 3.12.3 numpy 2.5.4
+8e84d392b4dfc8d9695a765614d242a72b2f9623e40c0220837ce5a1092fd267  posthoc_rows.py
+777ea8c218c7c6c17b5d52e4c7c9edc6d6e3c129b4fc3014636eaa553e95aa2b  selftest.py
+2a36e109b8a8132d4e0566b4929776909aa439e60761828fdc0d1fb03c2902a9  mutants.py
+
+$ ~/.venvs/c_stage1_lists/bin/python -I -B scripts/posthoc_1110/selftest.py
+selftest ok: R1 (audit list = declared files, undeclared and denied opens stop, one row per process), R2 and R4 fields, R3 (COCO only), sha and pin stops, exclusion = exactly the pinned ids with exact answers on c1, c2, b1, b2, identity stops, registered block copied unchanged, run once, fixed command line
+exit 0
+
+$ ~/.venvs/c_stage1_lists/bin/python -I -B scripts/posthoc_1110/mutants.py
+control: selftest passes on the unmutated file
+R1a every open is logged: KILLED AssertionError: b2: R1 audit list differs: ['/tmp/posthoc_selftest_tjwwn_6h/b2_headline.json', '/tmp/posthoc_s
+R1b the hook is installed: KILLED AssertionError: b2: R1 audit list differs: ['/tmp/posthoc_selftest_y_pm0tlf/b2_headline.json', '/tmp/posthoc_s
+R1c allow-list stop: KILLED AssertionError: an undeclared file under /mnt/d/vsps_image_captioning must stop the row
+R1d stop before the file is touched: KILLED AssertionError: b2: wanted a stop on 'R1 STOP: open of': R1 STOP: refused opens: ['/tmp/posthoc_selftest_pq5tj
+R1e a swallowed stop still stops: KILLED AssertionError: b2: wanted a stop on 'R1 STOP: refused opens': 
+R1f data root /mnt/d/vsps_papers: KILLED AssertionError: R1 roots and name patterns
+R1g sealed folder: KILLED AssertionError: /home/hoanguyen/.vsps_sealed/a.json must stop the row even when allow-listed
+R1h annotation-test name: KILLED AssertionError: R1 roots and name patterns
+R1i preds name: KILLED AssertionError: R1 roots and name patterns
+R1j caption name: KILLED AssertionError: R1 roots and name patterns
+R1k name match on the file name: KILLED AssertionError
+R1l interpreter and venv exempt: KILLED AssertionError: interpreter and venv paths are exempt
+R1m exact allow-list: KILLED AssertionError: b2: R1 audit list differs: ['/mnt/d/vsps_image_captioning/scripts/evaluate.py']
+R1n one row per process: KILLED AssertionError: b2: wanted a stop on 'one row per process': 
+R1o no .pyc stands in for the source: KILLED AssertionError: no .pyc may stand in for a sha-checked source
+R2 stored-scores statement: KILLED AssertionError: b2: R2, R4
+R3 C2 is the COCO ledger: KILLED AssertionError: R3
+R4a label POST HOC: KILLED AssertionError: b2: R2, R4
+R4b no verdict: KILLED AssertionError: b2: R2, R4
+R4c output folder: KILLED AssertionError: c1: R4 output folder
+R4d run once: KILLED AssertionError: R4 run once: FileExistsError: [Errno 17] File exists: '/tmp/posthoc_selftest_ncs55rrp/b2_out.j
+P5a input and pin sha first (rule 5): KILLED AssertionError: b2: R1 audit list differs: ['/tmp/posthoc_selftest_78wlhyrx/b2_headline.json']
+P5b --ids fixed: KILLED AssertionError: the command line accepted another --ids or --out
+P5c --out fixed: KILLED AssertionError: the command line accepted another --ids or --out
+P6a identity stops the row (rule 6): KILLED AssertionError: b2: wanted a stop on 'identity check failed': 
+P6b identity within 1e-9 (rule 6): KILLED AssertionError: b1: wanted a stop on 'identity check failed': 
+X1 pinned id inside the set: KILLED AssertionError: b2: wanted a stop on 'pinned id': 
+X2 pinned id once: KILLED AssertionError: b2: wanted a stop on 'pinned id': 
+X3 n before and after as planned: KILLED AssertionError: b2: wanted a stop on 'is not the planned': 
+C1a row on the kept queries: KILLED AssertionError: c1: estimate {'P1': {'d': 12.182380216383308, 'lo': 9.091190108191654, 'hi': 15.78876867594023
+C1b identity on all 1,941 in the pinned order: KILLED AssertionError: c1: the fixture run failed: identity check failed: all 1,941 = decide_ov.json::P1 (largest dif
+C1c P1 = pooled ret - rand: KILLED AssertionError: c1: the fixture run failed: identity check failed: all 1,941 = decide_ov.json::P1 (largest dif
+C1d P2 = pcm_ci: KILLED AssertionError: c1: the fixture run failed: identity check failed: all 1,941 = decide_ov.json::P2.qwen25vl_7b 
+C1e registered block copied: KILLED AssertionError: c1: the registered block is not copied unchanged
+C2a exclusion: KILLED AssertionError: c2: the fixture run failed: c2: n 300 -> 300 is not the planned [300, 297]
+C2b ret - rand: KILLED AssertionError: c2: the fixture run failed: TypeError: 'NoneType' object is not subscriptable
+C2c frozen tau: KILLED AssertionError: c2: the fixture run failed: identity check failed: subset form, nothing excluded = decide_coco
+C2d row on the kept queries: KILLED AssertionError: c2: estimate {'d': 16.0, 'lo': 6.0, 'hi': 29.333333333333332} is not {'d': 6.0, 'lo': 6.0, 'hi
+B1a draws of the masked images dropped: KILLED AssertionError: b1: the fixture run failed: identity check failed: image 2004 alone = decide.json::sensitivity
+B1b point means over the kept images: KILLED AssertionError: b1: the fixture run failed: identity check failed: image 2004 alone = decide.json::sensitivity
+B1c bootstrap seed 0: KILLED AssertionError: b1: the fixture run failed: identity check failed: empty set = decide.json::P-B1 (largest diff
+B1d B = 2000: KILLED AssertionError: b1: the fixture run failed: identity check failed: empty set = decide.json::P-B1 (largest diff
+B1e the row masks the pinned list: KILLED AssertionError: b1: estimate {'b': 5.404018472392005, 'ci95': [3.7986683591613444, 7.407367199385351]} is not 
+B1f one common id list: KILLED AssertionError: b1: wanted a stop on 'one common id list': identity check failed: image 2004 alone = decide.js
+B2a the three seeds, never mbr: KILLED AssertionError: b2: estimate {'per_seed': {'s42': 100.0, 's43': 101.0, 's44': 102.0, 'mbr': 999.0}, 'mean': 32
+B2b sample SD: KILLED AssertionError: b2: estimate {'per_seed': {'s42': 100.0, 's43': 101.0, 's44': 102.0}, 'mean': 101.0, 'sd': 0.8
+B2c exclusion: KILLED AssertionError: b2: the fixture run failed: b2: n 40 -> 40 is not the planned [40, 35]
+B2d headline result sha: KILLED AssertionError: b2: wanted a stop on 'result_sha256': 
+B2e means at four decimals: KILLED AssertionError: b2: wanted a stop on 'identity check failed': 
+B2f scores computed on all images (Ruling 7): KILLED AssertionError: CC-315 Ruling 7
+B2g the all-images recomputation: KILLED AssertionError: b2: the mean and SD over all images
+B2h no registered verdict: KILLED AssertionError: b2: the registered block is not copied unchanged
+52/52 killed; survived: none
+exit 0
+end 2026-11-10T19:31:22Z

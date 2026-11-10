@@ -1,0 +1,38 @@
+Pinned id lists for POSTHOC_ROWS_PLAN_v1_1.md. Made 2026-11-10T14:40Z to 15:10Z on the laptop CPU.
+Interpreter: ~/.venvs/c_stage1_lists/bin/python (Python 3.12.3, numpy 2.5.4), flags -I -B. No GPU, no network.
+Working directory for every command: this folder (manuscript/directions/integrity_2026-11-10/ids).
+The files hold ids, ranks, cluster ids, similarity values and counts. No caption, prediction or score was read.
+
+1. PIN-C (OpenViIC test)
+   ~/.venvs/c_stage1_lists/bin/python -I -B pin_ids.py c
+   wrote: xtab3_stdout.txt (output of the unchanged CC-199 check xtab3.py), pin_c_ov_test.json,
+          pin_c_ov_test_ret_qwen25vl_7b.txt, pin_c_ov_test_ret_internvl3_8b.txt, pin_c_ov_test_ret_union.txt
+   printed: ret qwen25vl_7b (12 flagged, 9 at rank 1), internvl3_8b (12, 9), union 12; rand 0, 0, 0
+
+2. PIN-K (KTVIC)
+   ~/.venvs/c_stage1_lists/bin/python -I -B pin_ids.py k
+   wrote: xtab_stdout.txt, xtab2_stdout.txt (outputs of the unchanged checks), pin_k_ktvic.json,
+          pin_k_ktvic_test.txt, pin_k_ktvic_dev300.txt
+   printed: ktvic_test (558, 16 flagged, 2 byte-identical), ktvic_dev300 (300, 7, 1)
+
+3. PIN-C2 (XM-test2500, COCO Karpathy test, NoCaps val)
+   ~/.venvs/c_stage1_lists/bin/python -I -B pin_ids.py c2
+   wrote: pin_c2_xm_test2500.json, pin_c2_coco_test.json, pin_c2_nocaps_val.json and, per set,
+          <name>_ret_qwen25vl_7b.txt, <name>_ret_internvl3_8b.txt, <name>_ret_union.txt
+   printed: xm_test2500 ret 0 / rand 0; coco_test ret 1 (1 at rank 1) for both backbones / rand 0;
+            nocaps_val ret 0 / rand 0
+   controls inside the run (asserted): the registered rule on the same feature files recovers the memory images
+   that cen_memory.json dropped (28 for coco_test, 15 for nocaps_val); the cached XM feature rows carry the
+   sha256 values that lists.json lists for the 2,500 test images.
+
+4. Control for the XM count
+   ~/.venvs/c_stage1_lists/bin/python -I -B xm_control.py > xm_control_stdout.txt
+
+5. Manifests
+   INPUTS.sha256: sha256sum of every pin input and every row input named in the plan (absolute paths).
+   SHA256SUMS:    sha256sum of every file in this folder, written last:
+   sha256sum COMMANDS.txt INPUTS.sha256 pin_*.json pin_*.txt pin_ids.py xm_control.py x*_stdout.txt > SHA256SUMS
+
+An empty list file (sha256 e3b0c442...) means no flagged query. Each output of pin_ids.py is created once;
+a second run stops instead of replacing a pin. A re-run in an empty copy of this folder must give the same
+sha256 for every pin file.

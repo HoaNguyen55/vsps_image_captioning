@@ -1,0 +1,58 @@
+{
+ "set": "nocaps_val",
+ "n_queries_in_exemplar_file": 4500,
+ "n_scored": 4500,
+ "rule": "(min(pHash, dHash) <= 10 and SSCD >= 0.5) or SSCD > 0.75 or identical sha256  [xtab3.py:27]",
+ "arms": {
+  "ret": {
+   "qwen25vl_7b": {
+    "k": 8,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "internvl3_8b": {
+    "k": 4,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "union": {
+    "n_flagged": 0,
+    "ids": []
+   },
+   "flagged_outside_scored_set": []
+  },
+  "rand": {
+   "qwen25vl_7b": {
+    "k": 8,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "internvl3_8b": {
+    "k": 4,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "union": {
+    "n_flagged": 0,
+    "ids": []
+   },
+   "flagged_outside_scored_set": []
+  }
+ },
+ "hits_rank_cluster_sscd_clause_minhash": {
+  "ret": {},
+  "rand": {}
+ },
+ "inputs_sha256": {
+  "feats_memory.npz": "caf4a62199fccfe903e3a553a3717673d62a32ae07a2e289c2a706d70132e437",
+  "feats_nocaps_val.npz": "b69dac29b4dd07e759d1ff2fc38cb5d716cbe31ddb34c4233ff8f8667b8acba6",
+  "ex_nocaps_val.json": "80db15a700445e2f76c4c82e23d551ed75d50b04a030e482c08050b9f83a35a9",
+  "cen_memory.json": "b77e4bdec5613fbce7d2b44ef8e6c5883900c6e2d8e717603e5c09b4524eb91e",
+  "xtab3.py": "21979bf512483f1e4a4d102867bd07e4d9a8dd27005a5366c15f9261640bc068"
+ },
+ "positive_control_registered_rule_memory_images_dropped": 15
+}

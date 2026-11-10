@@ -1,0 +1,57 @@
+{
+ "set": "xm_test2500",
+ "n_queries_in_exemplar_file": 2500,
+ "n_scored": 2500,
+ "rule": "(min(pHash, dHash) <= 10 and SSCD >= 0.5) or SSCD > 0.75 or identical sha256  [xtab3.py:27]",
+ "arms": {
+  "ret": {
+   "qwen25vl_7b": {
+    "k": 8,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "internvl3_8b": {
+    "k": 4,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "union": {
+    "n_flagged": 0,
+    "ids": []
+   },
+   "flagged_outside_scored_set": []
+  },
+  "rand": {
+   "qwen25vl_7b": {
+    "k": 8,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "internvl3_8b": {
+    "k": 4,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "union": {
+    "n_flagged": 0,
+    "ids": []
+   },
+   "flagged_outside_scored_set": []
+  }
+ },
+ "hits_rank_cluster_sscd_clause_minhash": {
+  "ret": {},
+  "rand": {}
+ },
+ "inputs_sha256": {
+  "pool.npz": "d217bdba40cd23ffa1e4d75cc5c0fa0a2b62e4b50909b20e9bbb94dcb1f65daf",
+  "of_xm3600_all.npz": "10de1a60700574812f188b89ffdeb800092cd8f068cd508cd496f961d619e01f",
+  "ex_xm_test2500.json": "242b30a24dfad26cef9a53448c464ab4a460ecb1c98fcafc9ee669cf1c17dd9b",
+  "lists.json": "5c479f03e8be544f4cd12b5d997b5dc92b6c622df061760cd02f6ba82f6b4371",
+  "xtab3.py": "21979bf512483f1e4a4d102867bd07e4d9a8dd27005a5366c15f9261640bc068"
+ }
+}

@@ -1,0 +1,74 @@
+{
+ "set": "coco_test",
+ "n_queries_in_exemplar_file": 5000,
+ "n_scored": 5000,
+ "rule": "(min(pHash, dHash) <= 10 and SSCD >= 0.5) or SSCD > 0.75 or identical sha256  [xtab3.py:27]",
+ "arms": {
+  "ret": {
+   "qwen25vl_7b": {
+    "k": 8,
+    "n_flagged": 1,
+    "n_first_hit_rank1": 1,
+    "ids": [
+     "179441"
+    ]
+   },
+   "internvl3_8b": {
+    "k": 4,
+    "n_flagged": 1,
+    "n_first_hit_rank1": 1,
+    "ids": [
+     "179441"
+    ]
+   },
+   "union": {
+    "n_flagged": 1,
+    "ids": [
+     "179441"
+    ]
+   },
+   "flagged_outside_scored_set": []
+  },
+  "rand": {
+   "qwen25vl_7b": {
+    "k": 8,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "internvl3_8b": {
+    "k": 4,
+    "n_flagged": 0,
+    "n_first_hit_rank1": 0,
+    "ids": []
+   },
+   "union": {
+    "n_flagged": 0,
+    "ids": []
+   },
+   "flagged_outside_scored_set": []
+  }
+ },
+ "hits_rank_cluster_sscd_clause_minhash": {
+  "ret": {
+   "179441": [
+    [
+     1,
+     "e094357",
+     0.7928,
+     "C3",
+     20
+    ]
+   ]
+  },
+  "rand": {}
+ },
+ "inputs_sha256": {
+  "feats_memory.npz": "caf4a62199fccfe903e3a553a3717673d62a32ae07a2e289c2a706d70132e437",
+  "feats_coco_test.npz": "2bc3b83ea4116603a041559d35e156f11005c44a910f29100439658593d45934",
+  "ex_coco_test.json": "3551974434a12137885d35a58f61819df32d9646064f19da6f3bba76bbf0b4ba",
+  "cen_memory.json": "b77e4bdec5613fbce7d2b44ef8e6c5883900c6e2d8e717603e5c09b4524eb91e",
+  "xtab3.py": "21979bf512483f1e4a4d102867bd07e4d9a8dd27005a5366c15f9261640bc068"
+ },
+ "positive_control_registered_rule_memory_images_dropped": 28
+}
