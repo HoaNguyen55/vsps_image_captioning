@@ -1,0 +1,115 @@
+{
+ "row": "b1",
+ "label": "POST HOC",
+ "verdict": null,
+ "statement": "post hoc row, no verdict; this row does not alter the registered result. 'registered' is copied unchanged from the registered decide file (c1, c2, b1); b2 has no registered verdict and no decide file",
+ "scores": "per-image scores as stored; document frequencies not recomputed",
+ "utc": "2026-11-10T20:41:52Z",
+ "script": {
+  "path": "/mnt/d/vsps_image_captioning/scripts/posthoc_1110/posthoc_rows.py",
+  "sha256": "8e84d392b4dfc8d9695a765614d242a72b2f9623e40c0220837ce5a1092fd267"
+ },
+ "inputs": {
+  "ledger": {
+   "path": "/mnt/d/vsps_image_captioning/.session_backup/machines/M4/root/outputs/b1_scaling/ledger.json",
+   "sha256": "4afa3f44fa2da731f6fa6b8e02182b40328340f455443e334db36a4f1faab394"
+  },
+  "decide": {
+   "path": "/mnt/d/vsps_image_captioning/.session_backup/machines/M4/root/outputs/b1_scaling/decide.json",
+   "sha256": "b44a76fe6456e6c037fc5578b701f949e73515973b5f68263236e65d65addaf9"
+  },
+  "code": {
+   "path": "/mnt/d/vsps_image_captioning/scripts/b1_scaling/b1.py",
+   "sha256": "e747205ead426fb0747be3e8aa60649b0e05e139e4d75a53827f049a6aa2d19a"
+  },
+  "probe": {
+   "path": "/mnt/d/vsps_image_captioning/scripts/scaling_probe.py",
+   "sha256": "0342f6e59a6c6d1a89be0fac3ad87bafff76648415c9cf532b5eddc405abac28"
+  }
+ },
+ "pinned_ids": {
+  "path": "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_k_ktvic_dev300.txt",
+  "sha256": "dd284b51ce14ae52b28ccddce99fadec0649f2bdb838dcc4959bb2e5d4e10aa0",
+  "n": 7
+ },
+ "n_before": 300,
+ "n_after": 293,
+ "identity": [
+  {
+   "what": "empty set = decide.json::P-B1",
+   "max_abs_diff": 0.0,
+   "tol": 1e-09
+  },
+  {
+   "what": "image 2004 alone = decide.json::sensitivity_minus_dev_twin.pooled",
+   "max_abs_diff": 0.0,
+   "tol": 1e-09
+  }
+ ],
+ "estimate": {
+  "b": 9.765242237950922,
+  "ci95": [
+   7.276485871468554,
+   12.53132806417996
+  ]
+ },
+ "registered": {
+  "P-B1": {
+   "b": 9.60961884899396,
+   "ci95": [
+    7.17590147043827,
+    12.364847776968343
+   ],
+   "outcome": "FUND_EXTERNAL_IMAGE_DATA",
+   "verdict": "PASS",
+   "rule": "FUND_EXTERNAL_IMAGE_DATA if CI_lo(b) > +1; CLOSE_DATA_VOLUME_LEVERS if b < +1; INCONCLUSIVE otherwise (no external-data spend)",
+   "proposal_use": {
+    "floor": 2.0,
+    "met": true,
+    "note": "floor set after S5's +9.40 was seen; it is not the primary rule"
+   }
+  },
+  "sensitivity_minus_dev_twin.pooled": {
+   "b": 9.607780168095244,
+   "ci95": [
+    7.16903518647262,
+    12.370029825537703
+   ],
+   "s5_rule_applied_descriptively": "PASS"
+  }
+ },
+ "opened": [
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M4/root/outputs/b1_scaling/ledger.json",
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M4/root/outputs/b1_scaling/decide.json",
+  "/mnt/d/vsps_image_captioning/scripts/b1_scaling/b1.py",
+  "/mnt/d/vsps_image_captioning/scripts/scaling_probe.py",
+  "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_k_ktvic_dev300.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_k_ktvic_dev300.txt",
+  "/mnt/d/vsps_image_captioning/scripts/b1_scaling/b1.py",
+  "/mnt/d/vsps_image_captioning/scripts/scaling_probe.py",
+  "/mnt/d/vsps_image_captioning/scripts/checkpoint_resume_hook.py",
+  "/mnt/d/vsps_image_captioning/scripts/rl_report.py",
+  "/mnt/d/vsps_image_captioning/scripts/rl_reward.py",
+  "/mnt/d/vsps_image_captioning/scripts/evaluate.py",
+  "/mnt/d/vsps_image_captioning/scripts/object_prf.py",
+  "/mnt/d/vsps_image_captioning/rescap/__init__.py",
+  "/mnt/d/vsps_image_captioning/rescap/metrics.py",
+  "/mnt/d/vsps_image_captioning/rescap/repro.py",
+  "/mnt/d/vsps_image_captioning/rescap/vocab.py",
+  "/mnt/d/vsps_image_captioning/rescap/chair.py",
+  "/mnt/d/vsps_image_captioning/rescap/svp/__init__.py",
+  "/mnt/d/vsps_image_captioning/rescap/svp/entailment.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/__init__.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/classifier.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/lexicon.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/color.py",
+  "/mnt/d/vsps_image_captioning/rescap/svp/matching.py",
+  "/mnt/d/vsps_image_captioning/scripts/train_rl.py",
+  "/mnt/d/vsps_image_captioning/scripts/rl_policy.py",
+  "/mnt/d/vsps_image_captioning/scripts/train_stage2.py",
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M4/root/outputs/b1_scaling/decide.json",
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M4/root/outputs/b1_scaling/ledger.json",
+  "/mnt/d/vsps_image_captioning/scripts/posthoc_1110/posthoc_rows.py",
+  "/mnt/d/vsps_image_captioning/.session_backup/2026-11-10/posthoc/b1_mask7_posthoc.json"
+ ]
+}

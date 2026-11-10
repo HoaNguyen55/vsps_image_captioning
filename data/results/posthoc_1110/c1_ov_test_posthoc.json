@@ -1,0 +1,186 @@
+{
+ "row": "c1",
+ "label": "POST HOC",
+ "verdict": null,
+ "statement": "post hoc row, no verdict; this row does not alter the registered result. 'registered' is copied unchanged from the registered decide file (c1, c2, b1); b2 has no registered verdict and no decide file",
+ "scores": "per-image scores as stored; document frequencies not recomputed",
+ "utc": "2026-11-10T20:41:41Z",
+ "script": {
+  "path": "/mnt/d/vsps_image_captioning/scripts/posthoc_1110/posthoc_rows.py",
+  "sha256": "8e84d392b4dfc8d9695a765614d242a72b2f9623e40c0220837ce5a1092fd267"
+ },
+ "inputs": {
+  "ledger": {
+   "path": "/mnt/d/vsps_image_captioning/.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl",
+   "sha256": "50878193f1cfc473786ca86e4cc5eb59f13720faa9d97ea52206dd36c0daa154"
+  },
+  "decide": {
+   "path": "/mnt/d/vsps_image_captioning/.session_backup/machines/M3/root/outputs/c_test/decide_ov.json",
+   "sha256": "9bcad4989adcfd2d43e2a39a2b9e09835795c1a4480649d27b6b15a8d56806da"
+  },
+  "lists": {
+   "path": "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage1/lists.json",
+   "sha256": "5c479f03e8be544f4cd12b5d997b5dc92b6c622df061760cd02f6ba82f6b4371"
+  },
+  "frozen": {
+   "path": "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+   "sha256": "2f0c32be7720b672f6e4aae229aba69da8742e0f9e32d34c5137e985ea36aa16"
+  },
+  "code": {
+   "path": "/mnt/d/vsps_image_captioning/scripts/c_test/score_t.py",
+   "sha256": "de94294256789ebc3ad960162f468e8233597866013d5b4f9ffbccac7a18e4b5"
+  }
+ },
+ "pinned_ids": {
+  "path": "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_c_ov_test_ret_union.txt",
+  "sha256": "8c75134e7c4bb25faef05876c459da1a5b5c90d4cbfdc11a73c362ba4e505bc9",
+  "n": 12
+ },
+ "n_before": 1941,
+ "n_after": 1929,
+ "identity": [
+  {
+   "what": "all 1,941 = decide_ov.json::P1",
+   "max_abs_diff": 0.0,
+   "tol": 1e-09
+  },
+  {
+   "what": "all 1,941 = decide_ov.json::P2.qwen25vl_7b",
+   "max_abs_diff": 0.0,
+   "tol": 1e-09
+  },
+  {
+   "what": "all 1,941 = decide_ov.json::P2.internvl3_8b",
+   "max_abs_diff": 0.0,
+   "tol": 1e-09
+  }
+ ],
+ "estimate": {
+  "P1": {
+   "d": 4.472995852773457,
+   "lo": 3.440535547563504,
+   "hi": 5.408397345127009
+  },
+  "P2": {
+   "qwen25vl_7b": {
+    "d": 5.34477070273837,
+    "lo": 3.87019557126123,
+    "hi": 6.815974010373556
+   },
+   "internvl3_8b": {
+    "d": 1.608139153265507,
+    "lo": 0.6789196101868222,
+    "hi": 2.5624810679798338
+   }
+  }
+ },
+ "registered": {
+  "P1": {
+   "d": 4.494451313755795,
+   "lo": 3.5240117542503864,
+   "hi": 5.569854032071096,
+   "passed": true,
+   "L": false,
+   "verdict": "PASS",
+   "length": {
+    "qwen25vl_7b": {
+     "ret": 18.465224111282843,
+     "rand": 17.19526017516744,
+     "rel_gap": 0.07385546500479376,
+     "not_separated_from_length": false
+    },
+    "internvl3_8b": {
+     "ret": 17.020092735703244,
+     "rand": 17.71973209685729,
+     "rel_gap": 0.039483630865848725,
+     "not_separated_from_length": false
+    }
+   }
+  },
+  "P2": {
+   "qwen25vl_7b": {
+    "d": 5.413385826771654,
+    "lo": 3.881625279528339,
+    "hi": 7.006281289656579,
+    "passed": true
+   },
+   "internvl3_8b": {
+    "d": 1.5681149950996405,
+    "lo": 0.6539795738573703,
+    "hi": 2.5147320958260466,
+    "passed": true
+   },
+   "passed_both": true
+  }
+ },
+ "opened": [
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl",
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M3/root/outputs/c_test/decide_ov.json",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage1/lists.json",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+  "/mnt/d/vsps_image_captioning/scripts/c_test/score_t.py",
+  "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_c_ov_test_ret_union.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_c_ov_test_ret_union.txt",
+  "/mnt/d/vsps_image_captioning/scripts/c_test/score_t.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_test/ctest.py",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/SHA256SUMS",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/c_stage2_job.sh",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/decide2.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/decode2.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/guard2.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/score2.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/stage2.py",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-25_c_test/SHA256SUMS",
+  "/mnt/d/vsps_image_captioning/scripts/c_test/make_ov_test_manifest.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_test/make_xm_threeref108.py",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-25_c_test/ov_test_files.tsv",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-25_c_test/ov_test_primary1941.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-25_c_test/xm_test2500_threeref108.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-25_c_test/PREREG.md",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/decode2.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/stage2.py",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage1/SHA256SUMS",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/build_memory.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/decode_icl.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/guard.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/score.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/decode_icl.py",
+  "/mnt/d/vsps_image_captioning/scripts/lb/decode_hf_vlm.py",
+  "/mnt/d/vsps_image_captioning/scripts/g2b/decode_qwen3vl.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/guard.py",
+  "/mnt/d/vsps_image_captioning/scripts/rl_reward.py",
+  "/mnt/d/vsps_image_captioning/rescap/__init__.py",
+  "/mnt/d/vsps_image_captioning/rescap/metrics.py",
+  "/mnt/d/vsps_image_captioning/rescap/repro.py",
+  "/mnt/d/vsps_image_captioning/rescap/vocab.py",
+  "/mnt/d/vsps_image_captioning/rescap/chair.py",
+  "/mnt/d/vsps_image_captioning/rescap/svp/__init__.py",
+  "/mnt/d/vsps_image_captioning/rescap/svp/entailment.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/__init__.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/classifier.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/lexicon.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/color.py",
+  "/mnt/d/vsps_image_captioning/rescap/svp/matching.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/build_memory.py",
+  "/mnt/d/vsps_image_captioning/scripts/match_openviic.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/decide2.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/score.py",
+  "/mnt/d/vsps_image_captioning/scripts/plan_f1.py",
+  "/mnt/d/vsps_image_captioning/scripts/object_prf.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/score2.py",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M3/root/outputs/c_test/decide_ov.json",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage1/lists.json",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage1/lists.json",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-25_c_test/ov_test_files.tsv",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-25_c_test/ov_test_files.tsv",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-25_c_test/ov_test_primary1941.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-25_c_test/ov_test_primary1941.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/ov_test_dev299_neardup_files.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/ov_test_dev299_neardup_files.txt",
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M3/root/outputs/c_test/ledger_ov_test_1941.jsonl",
+  "/mnt/d/vsps_image_captioning/scripts/posthoc_1110/posthoc_rows.py",
+  "/mnt/d/vsps_image_captioning/.session_backup/2026-11-10/posthoc/c1_ov_test_posthoc.json"
+ ]
+}

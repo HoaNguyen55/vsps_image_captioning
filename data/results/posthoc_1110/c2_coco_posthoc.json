@@ -1,0 +1,111 @@
+{
+ "row": "c2",
+ "label": "POST HOC",
+ "verdict": null,
+ "statement": "post hoc row, no verdict; this row does not alter the registered result. 'registered' is copied unchanged from the registered decide file (c1, c2, b1); b2 has no registered verdict and no decide file",
+ "scores": "per-image scores as stored; document frequencies not recomputed",
+ "utc": "2026-11-10T20:41:51Z",
+ "script": {
+  "path": "/mnt/d/vsps_image_captioning/scripts/posthoc_1110/posthoc_rows.py",
+  "sha256": "8e84d392b4dfc8d9695a765614d242a72b2f9623e40c0220837ce5a1092fd267"
+ },
+ "inputs": {
+  "ledger": {
+   "path": "/mnt/d/vsps_image_captioning/.session_backup/machines/M1/root/outputs/c_en/ledger_coco_test_5000.jsonl",
+   "sha256": "58074daee2ffb20de83f41af2662cdd5d9ec120efb9deaf038103eae52c4b5f0"
+  },
+  "decide": {
+   "path": "/mnt/d/vsps_image_captioning/.session_backup/machines/M1/root/outputs/c_en/decide_coco_test.json",
+   "sha256": "efc6eac7fe5d7f1941826dcd81942608cf87c274c06bbce7d7994f9b4af15855"
+  },
+  "frozen": {
+   "path": "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+   "sha256": "2f0c32be7720b672f6e4aae229aba69da8742e0f9e32d34c5137e985ea36aa16"
+  },
+  "code": {
+   "path": "/mnt/d/vsps_image_captioning/scripts/c_en/cen_score.py",
+   "sha256": "68a700ab86506e34e092dfe814ea5404fadf9cd564ede93752834849e5ebd82a"
+  }
+ },
+ "pinned_ids": {
+  "path": "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_c2_coco_test_ret_union.txt",
+  "sha256": "c2b749ec07865949f326bc4dc7d404a8fd2c23e1f5fe7697fbdf25e31dc495a1",
+  "n": 1
+ },
+ "n_before": 5000,
+ "n_after": 4999,
+ "identity": [
+  {
+   "what": "one_set pooled = decide_coco_test.json::P1_EN",
+   "max_abs_diff": 0.0,
+   "tol": 1e-09
+  },
+  {
+   "what": "subset form, nothing excluded = decide_coco_test.json::P1_EN",
+   "max_abs_diff": 0.0,
+   "tol": 1e-09
+  }
+ ],
+ "estimate": {
+  "d": 3.0749045035007,
+  "lo": 2.081111464957992,
+  "hi": 4.056135507161432
+ },
+ "registered": {
+  "P1_EN": {
+   "passed": true,
+   "d": 3.0764343771,
+   "lo": 2.0840084127025,
+   "hi": 4.032914425455,
+   "verdict": "PASS",
+   "L": false
+  }
+ },
+ "opened": [
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M1/root/outputs/c_en/ledger_coco_test_5000.jsonl",
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M1/root/outputs/c_en/decide_coco_test.json",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+  "/mnt/d/vsps_image_captioning/scripts/c_en/cen_score.py",
+  "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_c2_coco_test_ret_union.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_c2_coco_test_ret_union.txt",
+  "/mnt/d/vsps_image_captioning/scripts/c_en/cen_score.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_en/cen_decode.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_en/cen_fetch.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_en/cen_memory.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/build_memory.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/decode_icl.py",
+  "/mnt/d/vsps_image_captioning/scripts/lb/decode_hf_vlm.py",
+  "/mnt/d/vsps_image_captioning/scripts/g2b/decode_qwen3vl.py",
+  "/mnt/d/vsps_image_captioning/scripts/match_openviic.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage2/stage2.py",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage1/SHA256SUMS",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/build_memory.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/decode_icl.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/guard.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/score.py",
+  "/mnt/d/vsps_image_captioning/scripts/c_stage1/guard.py",
+  "/mnt/d/vsps_image_captioning/scripts/rl_reward.py",
+  "/mnt/d/vsps_image_captioning/rescap/__init__.py",
+  "/mnt/d/vsps_image_captioning/rescap/metrics.py",
+  "/mnt/d/vsps_image_captioning/rescap/repro.py",
+  "/mnt/d/vsps_image_captioning/rescap/vocab.py",
+  "/mnt/d/vsps_image_captioning/rescap/chair.py",
+  "/mnt/d/vsps_image_captioning/rescap/svp/__init__.py",
+  "/mnt/d/vsps_image_captioning/rescap/svp/entailment.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/__init__.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/classifier.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/lexicon.py",
+  "/mnt/d/vsps_image_captioning/rescap/vi/color.py",
+  "/mnt/d/vsps_image_captioning/rescap/svp/matching.py",
+  "/mnt/d/vsps_image_captioning/scripts/score_coco_probe.py",
+  "/mnt/d/vsps_image_captioning/data/coco_probe/chair_synonyms.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M1/root/outputs/c_en/decide_coco_test.json",
+  "/mnt/d/vsps_image_captioning/.session_backup/machines/M1/root/outputs/c_en/ledger_coco_test_5000.jsonl",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+  "/mnt/d/vsps_image_captioning/manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
+  "/mnt/d/vsps_image_captioning/scripts/posthoc_1110/posthoc_rows.py",
+  "/mnt/d/vsps_image_captioning/.session_backup/2026-11-10/posthoc/c2_coco_posthoc.json"
+ ]
+}

@@ -1,0 +1,77 @@
+{
+ "row": "b2",
+ "label": "POST HOC",
+ "verdict": null,
+ "statement": "post hoc row, no verdict; this row does not alter the registered result. 'registered' is copied unchanged from the registered decide file (c1, c2, b1); b2 has no registered verdict and no decide file",
+ "scores": "per-image scores as stored; document frequencies not recomputed",
+ "utc": "2026-11-10T20:41:52Z",
+ "script": {
+  "path": "/mnt/d/vsps_image_captioning/scripts/posthoc_1110/posthoc_rows.py",
+  "sha256": "8e84d392b4dfc8d9695a765614d242a72b2f9623e40c0220837ce5a1092fd267"
+ },
+ "inputs": {
+  "ledger": {
+   "path": "/mnt/d/vsps_image_captioning/data/results/b_posthoc/b_posthoc_mbr3_run.json",
+   "sha256": "7a51aadfa5790b28ab5155cc44f1cb548655fc839ba64348bc8540b8bf3d229f"
+  },
+  "headline": {
+   "path": "/mnt/d/vsps_image_captioning/.session_backup/2026-10-15/paperA_keys/cider_3seed_mean.json",
+   "sha256": "f6f68d02f4f923657365529852d9a6064d97cc819bc94f3de6f9c442c4928b49"
+  }
+ },
+ "pinned_ids": {
+  "path": "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_k_ktvic_test.txt",
+  "sha256": "a4c7d272dfe0debe9b317d50749096e3e7b202a6262fdbc9c33fe6ba5d347813",
+  "n": 16
+ },
+ "n_before": 558,
+ "n_after": 542,
+ "identity": [
+  {
+   "what": "s42: mean over all images at four decimals",
+   "max_abs_diff": 3.869141926315933e-05,
+   "tol": 5e-05
+  },
+  {
+   "what": "s43: mean over all images at four decimals",
+   "max_abs_diff": 3.103996795061903e-05,
+   "tol": 5e-05
+  },
+  {
+   "what": "s44: mean over all images at four decimals",
+   "max_abs_diff": 9.404934445456092e-06,
+   "tol": 5e-05
+  }
+ ],
+ "estimate": {
+  "per_seed": {
+   "s42": 149.2917420594739,
+   "s43": 148.68039371596296,
+   "s44": 148.65324897400203
+  },
+  "mean": 148.87512824981297,
+  "sd": 0.36105333270056206
+ },
+ "scores_computed_on": "all 558 images",
+ "registered": {
+  "verdict": null
+ },
+ "three_seed_mean_sd_all_images": {
+  "per_seed": {
+   "s42": 148.66403869141925,
+   "s43": 148.06296896003204,
+   "s44": 147.96149059506556
+  },
+  "mean": 148.22949941550561,
+  "sd": 0.37972720652163955
+ },
+ "opened": [
+  "/mnt/d/vsps_image_captioning/data/results/b_posthoc/b_posthoc_mbr3_run.json",
+  "/mnt/d/vsps_image_captioning/.session_backup/2026-10-15/paperA_keys/cider_3seed_mean.json",
+  "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_k_ktvic_test.txt",
+  "/mnt/d/vsps_image_captioning/manuscript/directions/integrity_2026-11-10/ids/pin_k_ktvic_test.txt",
+  "/mnt/d/vsps_image_captioning/data/results/b_posthoc/b_posthoc_mbr3_run.json",
+  "/mnt/d/vsps_image_captioning/scripts/posthoc_1110/posthoc_rows.py",
+  "/mnt/d/vsps_image_captioning/.session_backup/2026-11-10/posthoc/b2_ktvic_test_posthoc.json"
+ ]
+}
