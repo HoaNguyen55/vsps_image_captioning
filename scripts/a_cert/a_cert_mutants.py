@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Mutant harness for scripts/a_cert/a_cert.py: registration §11 mutants, CC-333 Ruling 5(2) additions, and one or
-more mutants per blocking rule B1, B2, B4. Pattern of scripts/a_m1/a_m1_mutants.py.
+"""Mutant harness for scripts/a_cert/a_cert.py: registration §11 mutants, CC-333 Ruling 5(2) additions, one or
+more mutants per blocking rule B1, B2, B4, the v1.3 (H2d) list and the CC-343 S1-S4 score-side rows. Pattern of
+scripts/a_m1/a_m1_mutants.py.
 Usage: <venv python> -I -B a_cert_mutants.py <scratch dir outside the repo>
 Each mutant applies its exact replacements (each target must occur exactly once) and runs `selftest --out
 <scratch>/<name>.json` on the mutated source, executed with __file__ = the original path. The unmutated source runs
@@ -87,6 +88,39 @@ M = {
     "H2d_10_margin_alone": [("np.maximum(A[1][1:], A[2][1:])", "A[1][1:]"), ("max(auc[1:])", "auc[1]")],
     "H2d_11_excluded_pairs_kept": [('ev = [k for k, p in enumerate(prs) if p["verdict"] in ("CERTIFIED", "NOT CERTIFIED")]',
                                     "ev = list(range(len(prs)))")],
+    # CC-343 S4 (v1.3 §5): killed by S4_H2d_w_star_from_freeze, S4_H2d_margin_from_freeze,
+    # S4_H2d_no_abs_delta_tiebreak_for_w_star
+    "H2d_12_w_star_recomputed_in_score": [('"scope": p["scope"], "w_star": p["w_star"],',
+                                           '"scope": p["scope"], "w_star": w_star(pair_cells(w["ms"], p["A"], p["B"], gr, idx)),')],
+    "H2d_13_margin_recomputed_from_completed_counts": [(
+        '"dabs": abs(Fr(c["tA"], c["nA"]) - Fr(c["tB"], c["nB"])) if c["nA"] and c["nB"] else None',
+        '"dabs": Fr(abs(float(np.nan_to_num(e["A"]["reg"][0] - e["B"]["reg"][0])))) if c["nA"] and c["nB"] else None')],
+    "H2d_14_abs_delta_tiebreak_for_w_star": [(
+        '[-math.inf if p["w_star"] == "NI" else -p["w_star"] for p in prs]',
+        '[(-9.0 if p["w_star"] == "NI" else -p["w_star"]) + 1e-6 * m.index(p["dabs"]) for p in prs]')],
+    # CC-343 S1 and Ruling 4: killed by S1_hint_full_by_hand / S1_rows_in_result / repeat_label_partial_k_of_150
+    "S1_01_hint_any_overlap": [('return w["pos_mids"][c] <= w["oi_neg"].get(i, frozenset())',
+                                'return bool(w["pos_mids"][c] & w["oi_neg"].get(i, frozenset()))')],
+    "S1_02_ctrl_present_in_hint_split": [('if k["role"] != "ctrl_present" and\n', "if True and\n")],
+    "S1_03_role_rows_all_expect_N": [('for k, a in c1 if k["role"] == r], e) for r, e in exp.items()}',
+                                      'for k, a in c1 if k["role"] == r], "N") for r, e in exp.items()}')],
+    "S1_04_repeat_partial_label_dropped": [('return f"{k} of {n}" if k == n else', 'return f"{k} of {n}" if True else')],
+    # CC-343 S2: killed by S2_gold_i_by_hand / S2_gold_ii_by_hand / S2_rows_in_result
+    "S2_01_gold_ii_without_human_Y": [('        if a == "Y":\n            pres[pos[i]].add(c)\n',
+                                       '        if a == "Y":\n            pass\n')],
+    "S2_02_hallucination_over_named": [("/ nab if nab", "/ sum(map(len, m)) if nab")],
+    "S2_03_gold_i_F1_with_gold_ii_recall": [('f1_of(p, r1["recall"])', 'f1_of(p, r2["recall"])')],
+    "S2_04_gold_ii_without_human_N": [("            ab[pos[i]].add(c)\n", "            pass\n")],
+    "S2_05_gold_ii_label_changed": [('GOLD_II_LABEL = "pooled gold; favours systems that name more"',
+                                     'GOLD_II_LABEL = "pooled gold"')],
+    # CC-343 S3: killed by S3_row1_universe_all_system_named / S3_h3_all_named_by_hand / S3_D_L_rule_boundary /
+    # S3_D_L_over_completed_present
+    "S3_01_row1_on_N_u_only": [("**h3_row(w, gr, h, named, Wb, i600)", "**h3_row(w, gr, h, nu, Wb, i600)")],
+    "S3_02_X_without_OI_present": [('sum(o == "present" or (o is None and a == "Y") for o, a in st)',
+                                    'sum(o is None and a == "Y" for o, a in st)')],
+    "S3_03_D_L_on_2.5th_percentile": [("np.percentile(np.asarray(d_star, float), 97.5) < 0",
+                                       "np.percentile(np.asarray(d_star, float), 2.5) < 0")],
+    "S3_04_D_L_without_human_Y": [("dl_row(w, gr, pres2, Wb, i600)", "dl_row(w, gr, completed_sets(w, {})[0], Wb, i600)")],
 }
 
 

@@ -60,6 +60,10 @@ BONF7 = 100 * ALPHA / 7 / 2  # v1.3 §3: "the 0.36th percentile" (Bonferroni ove
 H2D_LABEL = ("registered on 2026-11-11 after the aggregate look on COCO-5000, before anyone but the annotator opened a "
              "human label value; the human answers are unseen by the analysts, the Open Images statuses that enter the "
              "outcome are partly seen (v1.1 §9)")
+BONF7_TXT = "0.36th percentile (100 alpha/14 = 0.357)"  # CC-343 N5
+GOLD_II_LABEL = "pooled gold; favours systems that name more"  # plan §5; CC-343 S2
+SHA_REG = "e564b7b10cf500db50e48748f9e4e2e010378313eaeca89c4d14bde6d072aa7e"  # CC-343 N4: v1.1 at 0519b82
+SHA_H2D = "d0afcaf0390031f1a2825a2d1e1b49ede6e57d42424be8281682c48f1e440515"  # CC-343 N4: v1.3 at 659f6c7
 N_TARGETS1, N_NAMED, N_CTRL = 1790, 4910, 443
 REG_SLOPE = {"Q25": 19.3247, "Q3": 13.70847}
 S72 = {"Q25": (5.83, 20.13), "Q3": (1.97, 14.78)}
@@ -393,8 +397,113 @@ def h2d_rule(prs: list, Y) -> dict:
             if lab == "FAIL" and ci[1] < 0 else None,
             "n1": n1, "n0": n0, "n_excluded": len(prs) - len(P), "n_NI": sum(p["w_star"] == "NI" for p in P),
             "AUC_w_star_margin_length": auc, "D": D, "D_ci95": ci.tolist(),
-            "D_star_p036_bonferroni7": float(np.percentile(ds, BONF7)), "n_replicates": len(ds),
+            "D_star_p036_bonferroni7": float(np.percentile(ds, BONF7)), "D_star_p036_label": BONF7_TXT,
+            "n_replicates": len(ds),
             "n_replicates_empty_class": int((n10[1:] == 0).sum())}
+
+
+# ------------------------------------------------------------------------------------------------ score-side rows (CC-343)
+def ctl_row(got: list, want: str) -> dict:
+    """Plan §4 control agreement of one group (descriptive, gates nothing): answers equal to the Open Images answer."""
+    agree, yn = sum(a == want for a in got), sum(a in ("Y", "N") for a in got)
+    return {"n": len(got), "agree": agree, "agreement_of_all": agree / len(got) if got else None,
+            "agreement_among_YN": agree / yn if yn else None, "Y": got.count("Y"), "N": got.count("N"),
+            "U": got.count("U"), "A": got.count("A"), "unanswered": got.count(None)}
+
+
+def hint_full(w: dict, i: str, c: str) -> bool:
+    """S1: full hint coverage iff every MID of vmap[c]["pos"] is among the image's verified-absent MIDs."""
+    return w["pos_mids"][c] <= w["oi_neg"].get(i, frozenset())
+
+
+def repeat_label(k: int, n: int) -> str:
+    """CC-343 Ruling 4: part 3 may be partial at the part-1 unsealing."""
+    return f"{k} of {n}" if k == n else f"partial ({k} of {n} answered at the part-1 unsealing)"
+
+
+def completed_sets(w: dict, h: dict) -> tuple[list, list]:
+    """Per image: present = OI present + human Y on part-1 targets; absent = OI absent + human N (S2 gold (ii)).
+    With h = {} this is gold (i), the Open Images verified classes."""
+    pres = [{c for c, s in o.items() if s == "present"} for o in w["oi"]]
+    ab = [{c for c, s in o.items() if s == "absent"} for o in w["oi"]]
+    pos = {i: k for k, i in enumerate(w["ids"])}
+    for (i, c), a in h.items():
+        if a == "Y":
+            pres[pos[i]].add(c)
+        elif a == "N":
+            ab[pos[i]].add(c)
+    return pres, ab
+
+
+def gold_rows(w: dict, s: str, pres: list, ab: list, idx) -> dict:
+    """Over distinct mapped classes per image, pooled over idx: recall = named present / present classes;
+    hallucination = named absent / absent classes; share of captions naming at least one absent class."""
+    m, P, A = [w["ms"][s][k] for k in idx], [pres[k] for k in idx], [ab[k] for k in idx]
+    npos, nab = sum(map(len, P)), sum(map(len, A))
+    return {"recall": sum(len(x & p) for x, p in zip(m, P)) / npos if npos else None,
+            "hallucination": sum(len(x & a) for x, a in zip(m, A)) / nab if nab else None,
+            "share_naming_absent": sum(bool(x & a) for x, a in zip(m, A)) / len(m) if m else None}
+
+
+def f1_of(p, r):
+    return 2 * p * r / (p + r) if p is not None and r is not None and p + r > 0 else None
+
+
+def secondary_golds(w: dict, h: dict, cn: dict, idx) -> dict:
+    """S2 (plan §5, v1.1 §10 row 2): per system, point values, the two golds never mixed in one row. Gold (i): the
+    registered OI recall, F1 = 2 P_c R/(P_c + R) at reg, lo and hi. Gold (ii): F1 with P_c (reg); no verdict."""
+    g1, g2 = completed_sets(w, {}), completed_sets(w, h)
+    out = {"gold_i": {"label": "gold (i): Open Images verified classes, as registered", "systems": {}},
+           "gold_ii": {"label": GOLD_II_LABEL, "verdict": None, "systems": {}}}
+    for s in w["sys"]:
+        e = {m: float(v[0]) for m, v in pc_ends(cn[s], np.ones((1, len(idx))), idx).items()}
+        r1, r2 = gold_rows(w, s, *g1, idx), gold_rows(w, s, *g2, idx)
+        out["gold_i"]["systems"][s] = {**r1, "P_c": e, "F1": {m: f1_of(p, r1["recall"]) for m, p in e.items()}}
+        out["gold_ii"]["systems"][s] = {**r2, "P_c": e["reg"], "F1": f1_of(e["reg"], r2["recall"])}
+    return out
+
+
+def h3_row(w: dict, gr: list, h: dict, uni: list, Wb: np.ndarray, idx) -> dict:
+    """S3 row 1 (v1.1 §6 H3 secondary): H3 on a universe uni of pairs per image. X = pairs named by neither reference
+    that are OI present or human Y; X_hi adds the remainder (no OI status, no Y or N). No verdict."""
+    per = {x: np.zeros(len(w["ids"])) for x in ("p1", "p2", "X", "Xhi")}
+    for k in idx:
+        i = w["ids"][k]
+        per["p1"][k], per["p2"][k] = len(uni[k] & gr[k]["once"]), len(uni[k] & gr[k]["twice"])
+        st = [(w["oi"][k].get(c), h.get((i, c))) for c in uni[k] - gr[k]["kp"]]
+        per["X"][k] = sum(o == "present" or (o is None and a == "Y") for o, a in st)
+        per["Xhi"][k] = per["X"][k] + sum(o is None and a is None for o, a in st)
+    g = {x: Wb @ per[x][idx] for x in per}
+    f0 = w["f0_hat"](g["p1"], g["p2"], 2, np.inf)
+    D, Dhi = g["X"] - f0, g["Xhi"] - f0
+    return {"phi1": float(g["p1"][0]), "phi2": float(g["p2"][0]), "f0_hat": float(f0[0]), "X": float(g["X"][0]),
+            "X_hi": float(g["Xhi"][0]), "D": float(D[0]), "D_hi": float(Dhi[0]),
+            "D_ci95": np.percentile(D[1:], [2.5, 97.5]).tolist(), "D_hi_ci95": np.percentile(Dhi[1:], [2.5, 97.5]).tolist(),
+            "reading_no_verdict": h3_rule(g["p1"][0], g["p2"][0], D[1:], Dhi[1:])}
+
+
+def dl_rule(d_star) -> str:
+    """secondary (v1.1 §6): A-M1 D_L over all completed-present pairs; only "consistent" can be read"""
+    return ("no reading (A-M1 VIOLATED rule met; v1.1 §6: only consistent can be read, the labels are not a complete "
+            "inventory)") if np.percentile(np.asarray(d_star, float), 97.5) < 0 else "consistent"
+
+
+def dl_row(w: dict, gr: list, pres: list, Wb: np.ndarray, idx) -> dict:
+    """S3 row 2: the A-M1 form D_L = (L - S_hat)/L (A_M1_PLAN_v3 l.83, l.283; a_m1.compute_set) over the completed-present
+    pairs: L = their number, S_hat = U + f0_hat(phi1, phi2, 2) with U, phi1, phi2 = those named by at least one, exactly
+    one and both of the two references (§4.2 draw)."""
+    per = {x: np.zeros(len(w["ids"])) for x in ("L", "U", "p1", "p2")}
+    for k in idx:
+        per["L"][k], per["U"][k] = len(pres[k]), len(pres[k] & gr[k]["kp"])
+        per["p1"][k], per["p2"][k] = len(pres[k] & gr[k]["once"]), len(pres[k] & gr[k]["twice"])
+    g = {x: Wb @ per[x][idx] for x in per}
+    S = g["U"] + w["f0_hat"](g["p1"], g["p2"], 2, np.inf)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        D = (g["L"] - S) / g["L"]
+    return {"label_row": 'secondary (v1.1 §6): A-M1 D_L over all completed-present pairs; only "consistent" can be read',
+            "L": float(g["L"][0]), "U_L": float(g["U"][0]), "phi1": float(g["p1"][0]), "phi2": float(g["p2"][0]),
+            "S_hat": float(S[0]), "D_L": float(D[0]), "D_L_ci95": np.percentile(D[1:], [2.5, 97.5]).tolist(),
+            "label": dl_rule(D[1:])}
 
 
 # ------------------------------------------------------------------------------------------------ registered slopes
@@ -526,6 +635,17 @@ def _a_m1():
     if a_m1._HOOK["on"]:
         raise Fault("a_m1 guard active on import")
     return a_m1
+
+
+def _score_world() -> dict:
+    """score's world: _load_world (unchanged, pinned inputs) plus, for S1, each class's `pos` MIDs and the verified-absent
+    MIDs per image, from the same pinned oiv7_labels.json and class descriptions."""
+    w = _load_world()
+    xo = w["br"].v.xo
+    labels = json.loads(xo.LABELS.read_text(encoding="utf-8"))
+    vmap = xo.resolve_map(ROOT / "data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv")
+    return {**w, "pos_mids": {c: m["pos"] for c, m in vmap.items()},
+            "oi_neg": {i: set(labels[i]["neg"]) for i in w["ids"] if i in labels}}
 
 
 # ------------------------------------------------------------------------------------------------ gate / freeze
@@ -707,6 +827,13 @@ def score_core(w: dict, fz: dict, key: dict, ans: dict) -> dict:
                "control_U": sum(a == "U" for a in ctl), "control_A": sum(a == "A" for a in ctl),
                "repeat_agreement": float(np.mean(rep)) if rep else None, "n_repeat": len(rep),
                "UA_rate_by_class": {c: a / b for c, (a, b) in sorted(ua.items())}, "synonym_disagreements": syn_dis}
+    # S1 (plan §4; CC-343 Ruling 5): per role, and the absent controls split by hint coverage (label-free membership)
+    c1 = [(k, ans.get(q)) for q, k in key.items() if k["part"] == 1 and k["role"] in exp]
+    quality["control_by_role"] = {r: ctl_row([a for k, a in c1 if k["role"] == r], e) for r, e in exp.items()}
+    quality["control_absent_by_hint_coverage"] = {cov: ctl_row([a for k, a in c1 if k["role"] != "ctrl_present" and
+                                                                hint_full(w, k["image"], k["class"]) == (cov == "full")],
+                                                               "N") for cov in ("full", "partial")}
+    quality["repeat_answered"] = repeat_label(len(rep), sum(k["part"] == 3 for k in key.values()))
     # (2) H3
     two, _ = draw_two(w["refs_all"], w["ids"])
     gr = gold_ref(two, w["vm"])
@@ -841,14 +968,22 @@ def score_core(w: dict, fz: dict, key: dict, ans: dict) -> dict:
                    "b_F_minus_S72_upper_ci95": r["reg"]["ci"](r["reg"]["F"][1] - hi_m["F"][1]),
                    "remainder_corner_F_secondary": [float(adv[0]), float(adv[1])],
                    "label_inside_S72": h1_inside_rule(bF["reg"], bF["lo"], bF["hi"], *S72[fam]),
+                   "S72_ends_unrounded_from_FREEZE": fz["slopes"][fam]["clabel"]["s72"],  # CC-343 3(g), no verdict
                    "direction": ["below" if v < S72[fam][0] else "above" if v > S72[fam][1] else "inside"
                                  for v in bF.values()]}
     h1["H1a"] = h1a_rule(h1["Q3"]["b_F"]["reg"], h1["Q3"]["b_F_ci95"], h1["Q3"]["b_F"]["lo"], h1["Q3"]["b_F"]["hi"])
     h1["H1b"], h1["H1c"] = h1["Q25"]["label_inside_S72"], h1["Q3"]["label_inside_S72"]
     labels = {"H1a": h1["H1a"], "H1b": h1["H1b"], "H1c": h1["H1c"], "H2a": h2a["label"], "H2b": h2b["label"],
               "H3": h3["label"], "H2d": h2d["label"]}
+    # (6) secondary rows, no verdict: S2 golds (i)/(ii) on I600; S3 H3 on all system-named pairs and A-M1 D_L (CC-343)
+    pres2, _ = completed_sets(w, h)
+    sec_rows = {"golds_I600": secondary_golds(w, h, cn, i600),
+                "H3_all_system_named": {"label_row": "secondary (v1.1 §6): H3 on all system-named pairs of V_m in I600; "
+                                                     "no verdict", **h3_row(w, gr, h, named, Wb, i600)},
+                "D_L": dl_row(w, gr, pres2, Wb, i600)}
     return {"schema": "vsps.a_cert.result.v1", "label": "single annotator; new labels on previously analysed captions",
-            "registered": labels, "quality": quality, "H3": h3, "H2b": h2b, "H2a": h2a, "H2d": h2d, "H1": h1}
+            "registered": labels, "quality": quality, "H3": h3, "H2b": h2b, "H2a": h2a, "H2d": h2d, "H1": h1,
+            "secondary": sec_rows}
 
 
 # ------------------------------------------------------------------------------------------------ modes
@@ -872,22 +1007,26 @@ def score(labels: str, labels_sha: str, key_path: str, P: dict = P_REAL, world_f
         fz, fsha = pinned_freeze(P)
         if P is P_REAL and not (committed(SELF) and committed(REG) and committed(H2D)):
             raise Fault("a_cert.py, v1.1 and H2d v1.3 must equal their HEAD blobs")
-        _LABEL_OK.update({os.path.abspath(labels), os.path.abspath(key_path)})
-        if sha(labels) != labels_sha:
-            raise Fault("label copy sha differs from its argument")
-        ksha = sha(key_path)
-        if P is P_REAL and ksha != KEY_SHA:
-            raise Fault("key.json sha differs from BUILD.json")
-        key = json.loads(Path(key_path).read_text(encoding="utf-8"))
-        ans = answers(Path(labels).read_text(encoding="utf-8").splitlines())
-        part1 = {q for q, k in key.items() if k["part"] == 1}
-        if len(part1) != P["part1_n"] or len(part1 & ans.keys()) != P["part1_n"]:
-            raise Fault("part 1 is not complete")
-        w = (world_fn or _load_world)()
+        if P is P_REAL and (sha(ROOT / REG), sha(ROOT / H2D)) != (SHA_REG, SHA_H2D):
+            raise Fault("v1.1 or H2d v1.3 is not the registered file")
+        # CC-343 N12: every label-free check before the first label byte is read
+        w = (world_fn or _score_world)()
         if w["pins"] != fz["pins"]:
             raise Fault("inputs differ from FREEZE pins")
         if P is P_REAL and len(w["ids"]) != 600:
             raise Fault("H2d stream needs boot_weights(600, ...)")
+        _LABEL_OK.update({os.path.abspath(labels), os.path.abspath(key_path)})
+        lab_b, key_b = Path(labels).read_bytes(), Path(key_path).read_bytes()  # N8: hash and parse the same bytes
+        if hashlib.sha256(lab_b).hexdigest() != labels_sha:
+            raise Fault("label copy sha differs from its argument")
+        ksha = hashlib.sha256(key_b).hexdigest()
+        if P is P_REAL and ksha != KEY_SHA:
+            raise Fault("key.json sha differs from BUILD.json")
+        key = json.loads(key_b.decode("utf-8"))
+        ans = answers(lab_b.decode("utf-8").splitlines())
+        part1 = {q for q, k in key.items() if k["part"] == 1}
+        if len(part1) != P["part1_n"] or len(part1 & ans.keys()) != P["part1_n"]:
+            raise Fault("part 1 is not complete")
         out = score_core(w, fz, key, ans)
         out["provenance"] = {"freeze_sha256": fsha, "labels_sha256": labels_sha, "key_sha256": ksha,
                              "script_sha256": sha(__file__)}
@@ -976,10 +1115,15 @@ def fixture(br, n: int = 40, seed: int = 7) -> dict:
     g2 = {"name": "xm600", "systems": q3, "idx": idx3, "lo_q": 2.5, "hi_q": 97.5, "floor": 1e-9,
           "W": rng.multinomial(len(idx3), np.full(len(idx3), 1 / len(idx3)), size=200).astype(float),
           "rows": {s: g.oiv7_rows(ms_all[s], lex) for s in q3}}
+    # S1 hint coverage, deterministic (no draw, so the fixture above is unchanged): two pos MIDs per class; an absent
+    # status always verifies "/a", and "/b" only on alternate image-class parities (full vs partial coverage)
+    neg = {i: {f"{c}/a" for c, s in oi[k].items() if s == "absent"} |
+           {f"{c}/b" for c, s in oi[k].items() if s == "absent" and (k + int(c[1:])) % 2 == 0} for k, i in enumerate(ids)}
     return {"ids": ids, "sys": names, "vm": vm, "syn": syn, "ms_all": ms_all,
             "ms": {s: [m & vm for m in ms_all[s]] for s in names}, "refs_all": refs_all, "oi": oi,
             "fam": {"Q25": q25, "Q3": q3}, "idx": {"Q25": np.arange(n), "Q3": idx3}, "ctx": {"Q25": s75, "Q3": g2},
-            "br": br, "pins": {"fixture": "synthetic"}, "f0_hat": _p50x().f0_hat, "boot_weights": _a_m1().boot_weights}
+            "br": br, "pins": {"fixture": "synthetic"}, "f0_hat": _p50x().f0_hat, "boot_weights": _a_m1().boot_weights,
+            "pos_mids": {c: {f"{c}/a", f"{c}/b"} for c in vm}, "oi_neg": neg}
 
 
 def fixture_labels(w: dict, seed: int = 11) -> tuple[dict, list]:
@@ -1007,6 +1151,13 @@ def fixture_labels(w: dict, seed: int = 11) -> tuple[dict, list]:
         if rng.random() < 0.2:
             lines.append(json.dumps({"qid": qq, "label": "U"}))
         lines.append(json.dumps({"qid": qq, "label": lab}))
+    # S1: six foil_absent controls on OI-absent pairs, added after the draws above, answers alternating N and Y.
+    # Synthetic: almost every fixture pair is named, so a foil may share its pair with a ctrl_absent; qid part 9 avoids
+    # a collision while the record says part 1.
+    foils = [(i, c) for k, i in enumerate(w["ids"]) for c in sorted(w["vm"]) if w["oi"][k].get(c) == "absent"][:6]
+    for j, (i, c) in enumerate(foils):
+        key[q(9, i, c)] = {"image": i, "class": c, "part": 1, "role": "foil_absent"}
+        lines.append(json.dumps({"qid": q(9, i, c), "label": "NY"[j % 2]}))
     return key, lines
 
 
@@ -1299,6 +1450,76 @@ def _selftest_checks(ck: dict) -> None:
                       if y[i] and not y[j]) / (sum(y) * (k - sum(y))) for s in sc]
             okb &= h2d_case(rows)["AUC_w_star_margin_length"] == bf
     ck["H2d_AUC_equals_brute_force_40"] = okb
+    # CC-343 S4 (v1.3 §5): scores only from FREEZE (two tampered copies; a recomputed score would not follow both) and
+    # no |Delta| tie-break for w*
+    conf = {p["idx"]: p["confirmed"] for p in res["H2a"]["pairs"]}
+    evi = {p["idx"] for p in fz["pairs"] if p["scope"] != "cross" and p["cref"][str(W0)]["verdict"] in (C, NC)}
+    sent = []
+    for ws_, sep in (("NI", False), (0.5, True)):
+        t = json.loads(json.dumps(fz, default=float))
+        for p in t["pairs"]:
+            if p["idx"] in evi:
+                p["w_star"] = ws_
+                p["cells"].update(tA=2 if sep and conf[p["idx"]] else 1, nA=2, tB=0, nB=2)
+        sent.append(score_core(w, t, key, ans)["H2d"])
+    ck["S4_H2d_w_star_from_freeze"] = len(evi) > 0 and [d["n_NI"] for d in sent] == [len(evi), 0]
+    ck["S4_H2d_margin_from_freeze"] = [d["AUC_w_star_margin_length"][1] for d in sent] == [Fr(1, 2), Fr(1)]
+    r = h2d_case([(C, .3, Fr(1, 2), 2, 1), (NC, .3, Fr(1, 4), 2, 0), (C, "NI", Fr(1, 2), 2, 1), (NC, "NI", Fr(1, 4), 2, 0)])
+    ck["S4_H2d_no_abs_delta_tiebreak_for_w_star"] = r["AUC_w_star_margin_length"][:2] == [Fr(1, 2), Fr(1)]
+    ck["N5_label_and_S72_ends"] = res["H2d"]["D_star_p036_label"] == "0.36th percentile (100 alpha/14 = 0.357)" and \
+        round(BONF7, 3) == 0.357 and all(res["H1"][f]["S72_ends_unrounded_from_FREEZE"] == fz["slopes"][f]["clabel"]["s72"]
+                                         for f in ("Q25", "Q3"))
+    # CC-343 S1: control rows per role and by hint coverage
+    ck["S1_ctl_row_by_hand"] = ctl_row(["N", "N", "Y", "U", "A", None], "N") == {
+        "n": 6, "agree": 2, "agreement_of_all": 1 / 3, "agreement_among_YN": 2 / 3, "Y": 1, "N": 2, "U": 1, "A": 1,
+        "unanswered": 1} and ctl_row([], "Y")["agreement_of_all"] is None
+    wh = {"pos_mids": {"c0": {"a", "b"}}, "oi_neg": {"i": {"a", "b", "x"}, "j": {"a"}}}
+    ck["S1_hint_full_by_hand"] = [hint_full(wh, i, "c0") for i in "ijk"] == [True, False, False]
+    qa = res["quality"]
+    got = {r_: [ans.get(q) for q, k in key.items() if k["part"] == 1 and k["role"] == r_]
+           for r_ in ("ctrl_present", "ctrl_absent", "foil_absent")}
+    absk = [k for k in key.values() if k["part"] == 1 and k["role"] in ("ctrl_absent", "foil_absent")]
+    nfull = sum(all(m in w["oi_neg"][k["image"]] for m in w["pos_mids"][k["class"]]) for k in absk)
+    hc = qa["control_absent_by_hint_coverage"]
+    ck["S1_rows_in_result"] = all(qa["control_by_role"][r_]["n"] == len(a) and qa["control_by_role"][r_]["agree"] ==
+                                  a.count(e) for (r_, a), e in zip(got.items(), "YNN")) and \
+        len(got["foil_absent"]) == 6 and 0 < nfull < len(absk) and (hc["full"]["n"], hc["partial"]["n"]) == \
+        (nfull, len(absk) - nfull)
+    ck["repeat_label_partial_k_of_150"] = [repeat_label(149, 150), repeat_label(150, 150)] == [
+        "partial (149 of 150 answered at the part-1 unsealing)", "150 of 150"]
+    # CC-343 S2 and S3 by hand: two images, one system; i: c0 OI present, c1 and c9 OI absent, c8 OI present (named by
+    # no reference), c2/c4 human Y, c7 remainder; j: c3 OI present, c5 human N, c6 remainder
+    wm = {"ids": ["i", "j"], "sys": ["s"], "f0_hat": _p50x().f0_hat, "ms": {"s": [{"c0", "c1", "c4", "c7"}, {"c5"}]},
+          "oi": [{"c0": "present", "c1": "absent", "c8": "present", "c9": "absent"}, {"c3": "present"}]}
+    hm = {("i", "c2"): "Y", ("i", "c4"): "Y", ("j", "c5"): "N", ("j", "c6"): None}
+    grm = [{"kp": {"c0", "c2"}, "once": {"c2"}, "twice": {"c0"}}, {"kp": {"c3"}, "once": {"c3"}, "twice": set()}]
+    ix2, Wm = np.arange(2), np.ones((3, 2))
+    sg = secondary_golds(wm, hm, {"s": counts(wm, "s", hm)}, ix2)
+    s1, s2 = sg["gold_i"]["systems"]["s"], sg["gold_ii"]["systems"]["s"]
+    near = lambda a, b: a is not None and abs(a - b) < 1e-12  # noqa: E731
+    ck["S2_gold_i_by_hand"] = near(s1["recall"], 1 / 3) and near(s1["hallucination"], 1 / 2) and \
+        near(s1["share_naming_absent"], 1 / 2) and [s1["P_c"][m] for m in ("reg", "lo", "hi")] == [.5, .4, .6] and \
+        all(near(s1["F1"][m], x) for m, x in (("reg", .4), ("lo", 4 / 11), ("hi", 3 / 7)))
+    ck["S2_gold_ii_by_hand"] = near(s2["recall"], 2 / 5) and near(s2["hallucination"], 2 / 3) and \
+        near(s2["share_naming_absent"], 1.0) and near(s2["F1"], 4 / 9) and s2["P_c"] == .5
+    sr = res["secondary"]["golds_I600"]
+    ck["S2_rows_in_result"] = set(sr["gold_i"]["systems"]) == set(sr["gold_ii"]["systems"]) == set(w["sys"]) and \
+        sr["gold_ii"]["label"] == "pooled gold; favours systems that name more" and sr["gold_ii"]["verdict"] is None
+    r = h3_row(wm, grm, hm, [{"c0", "c1", "c2", "c4", "c7", "c8"}, {"c3", "c5", "c6"}], Wm, ix2)
+    ck["S3_h3_all_named_by_hand"] = (r["phi1"], r["phi2"], r["f0_hat"], r["X"], r["X_hi"], r["D"], r["D_hi"]) == \
+        (2.0, 1.0, 1.0, 2.0, 4.0, 1.0, 3.0) and r["reading_no_verdict"] == "NOT EVALUABLE"
+    r = dl_row(wm, grm, completed_sets(wm, hm)[0], Wm, ix2)
+    ck["S3_D_L_by_hand"] = (r["L"], r["U_L"], r["phi1"], r["phi2"], r["S_hat"]) == (5.0, 3.0, 2.0, 1.0, 4.0) and \
+        near(r["D_L"], 0.2) and r["label"] == "consistent"
+    ck["S3_D_L_rule_boundary"] = [dl_rule(np.linspace(-0.2, -0.01, 401)), dl_rule(np.linspace(-0.2, 0.01, 401))] == \
+        ["no reading (A-M1 VIOLATED rule met; v1.1 §6: only consistent can be read, the labels are not a complete "
+         "inventory)", "consistent"]
+    nmd = [set().union(*(w["ms"][s][k] for s in w["sys"])) for k in range(40)]
+    sa = res["secondary"]["H3_all_system_named"]
+    ck["S3_row1_universe_all_system_named"] = (sa["phi1"], sa["phi2"]) == (
+        float(sum(len(nmd[k] & gr[k]["once"]) for k in range(40))), float(sum(len(nmd[k] & gr[k]["twice"]) for k in range(40))))
+    ck["S3_D_L_over_completed_present"] = res["secondary"]["D_L"]["L"] == float(
+        sum(x == "present" for o in w["oi"] for x in o.values()) + sum(a == "Y" for a in h.values()))
     # custody: a label path is refused before any allowance
     tmp = Path(tempfile.mkdtemp(prefix="a_cert_selftest_"))
     ldir = tmp / "vsps_labels"
