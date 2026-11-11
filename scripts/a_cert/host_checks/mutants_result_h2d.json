@@ -1,0 +1,318 @@
+{
+ "source_sha256": "d507bf7e10e7e2c62675b19b7c94aee3e219fee4085b7b5302721494a61b7593",
+ "n": 38,
+ "killed": 38,
+ "mutants": {
+  "01_separate_intervals": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "T2_paired_certified_+0.05",
+    "T2_no_assumption_-0.25",
+    "T2_w_star_0.5",
+    "closed_form_equals_enumeration_300"
+   ]
+  },
+  "02_shared_cell_sign_flipped": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "T2_paired_certified_+0.05",
+    "T2_no_assumption_-0.25",
+    "T2_w_star_0.5",
+    "closed_form_equals_enumeration_300"
+   ]
+  },
+  "03_c_ignores_k": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "T1_w0201_certified",
+    "T1_w_star_0.2",
+    "T2_paired_certified_+0.05",
+    "T2_separate_not_certified",
+    "T2_caps_0_1",
+    "T2_w_star_0.5",
+    "beta_B_value",
+    "slope_corners_alpha_over_m"
+   ]
+  },
+  "04_cap_without_min_U": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "cap_le_U",
+    "dmin_monotone_in_w"
+   ]
+  },
+  "05_tie_counted_confirmed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "tie_not_confirmed"
+   ]
+  },
+  "06_human_N_overrides_OI": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "oi_never_overridden"
+   ]
+  },
+  "06b_controls_enter_status": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "controls_never_enter_status"
+   ]
+  },
+  "07_part3_answer_as_label": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "last_line_wins_and_part3_ignored",
+    "oi_never_overridden"
+   ]
+  },
+  "08_Y_propagated_to_synonym": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "U_A_to_remainder_no_propagation",
+    "synonym_disagreement_counted",
+    "oi_never_overridden"
+   ]
+  },
+  "09_recall_from_completed_gold": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "recall_never_from_completed_gold"
+   ]
+  },
+  "10_remainder_dropped_from_ends": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "P_c_and_ends_by_hand",
+    "P_c_columns_and_remainder_ends_in_slopes"
+   ]
+  },
+  "10b_remainder_dropped_from_H1_hi": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H1_slopes_at_registered_and_both_remainder_ends"
+   ]
+  },
+  "11_certified_set_recomputed_after_labels": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "certified_set_from_freeze"
+   ]
+  },
+  "12_H3_wrong_percentile": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "h3_rules"
+   ]
+  },
+  "13_freeze_may_open_label_path": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "guard_refuses_label_path"
+   ]
+  },
+  "14_orientation_from_completed_gold": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "orientation_from_freeze",
+    "abstain_never_confirmed",
+    "H2d_point_y_is_H2a_truth_on_30_pairs"
+   ]
+  },
+  "15_all_three_references": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "draw_uses_exactly_two"
+   ]
+  },
+  "16_I537_I600_swapped": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "Q3_pairs_on_I537_Q25_on_I600"
+   ]
+  },
+  "17_slope_alpha_not_divided_by_m": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "slope_corners_alpha_over_m"
+   ]
+  },
+  "18_abstain_counted_confirmed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "abstain_never_confirmed"
+   ]
+  },
+  "19_P_c_remainder_in_denominator": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "P_c_and_ends_by_hand",
+    "P_c_columns_and_remainder_ends_in_slopes"
+   ]
+  },
+  "20_score_without_freeze_pin": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "x_refuses_without_freeze_pin",
+    "x_refuses_label_sha_mismatch",
+    "x_refuses_part1_count",
+    "B4_STOP_writes_and_prints_no_statistic",
+    "B4_exception_writes_nothing",
+    "x_valid_run_writes_once"
+   ]
+  },
+  "21_fault_path_prints_a_statistic": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "STOP_guard_Q25_F",
+    "STOP_guard_Q3_F",
+    "STOP_guard_Q3_P",
+    "x_refuses_without_freeze_pin",
+    "x_refuses_label_sha_mismatch",
+    "x_refuses_part1_count",
+    "B4_STOP_writes_and_prints_no_statistic",
+    "B4_exception_writes_nothing",
+    "x_refuses_if_result_exists"
+   ]
+  },
+  "B1a_remainder_one_end_only_H1bc": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "B1_h1_inside"
+   ]
+  },
+  "B1b_remainder_one_end_only_H1a": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "B1_h1a"
+   ]
+  },
+  "B2_tied_pairs_counted_in_V_c": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "B2_ties_and_undefined_excluded"
+   ]
+  },
+  "B4_faulting_score_writes_output": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "B4_STOP_writes_and_prints_no_statistic",
+    "B4_exception_writes_nothing",
+    "x_valid_run_writes_once"
+   ]
+  },
+  "H2d_01_SESOI_changed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_FAIL_at_D_0.08_below_SESOI"
+   ]
+  },
+  "H2d_02_percentile_bound_not_required": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_FAIL_when_2.5th_percentile_not_above_0"
+   ]
+  },
+  "H2d_03_NI_ranked_first": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_ties_half_NI_last_and_tied_exclusions",
+    "H2d_AUC_equals_brute_force_40"
+   ]
+  },
+  "H2d_04_stream_other_seed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_stream_rows_1_2000_of_boot_weights_rng_20261111"
+   ]
+  },
+  "H2d_05_stream_other_rng_call": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_stream_rows_1_2000_of_boot_weights_rng_20261111"
+   ]
+  },
+  "H2d_06_evaluable_at_4": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_NOT_EVALUABLE_n1_4"
+   ]
+  },
+  "H2d_07_ties_scored_0": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_PASS_at_D_0.10",
+    "H2d_FAIL_at_D_0.08_below_SESOI",
+    "H2d_FAIL_when_2.5th_percentile_not_above_0",
+    "H2d_ties_half_NI_last_and_tied_exclusions",
+    "H2d_AUC_equals_brute_force_40"
+   ]
+  },
+  "H2d_08_ties_scored_1": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_PASS_at_D_0.10",
+    "H2d_FAIL_at_D_0.08_below_SESOI",
+    "H2d_FAIL_when_2.5th_percentile_not_above_0",
+    "H2d_ties_half_NI_last_and_tied_exclusions",
+    "H2d_AUC_equals_brute_force_40"
+   ]
+  },
+  "H2d_09_max_replaced_by_min": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_ties_half_NI_last_and_tied_exclusions"
+   ]
+  },
+  "H2d_10_margin_alone": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "H2d_ties_half_NI_last_and_tied_exclusions"
+   ]
+  },
+  "H2d_11_excluded_pairs_kept": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "no_exception (TypeError: '<' not supported between instances of 'NoneType' and 'Fraction')"
+   ]
+  }
+ }
+}
