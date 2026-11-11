@@ -1,0 +1,633 @@
+--- ../c_t2/c_t2.py	2026-10-31 00:06:03.210053300 +0700
++++ c_attr.py	2026-11-11 15:05:25.508008300 +0700
+@@ -1,21 +1,28 @@
+ #!/usr/bin/env python3
+-"""Paper C, tier 2 (DEV-CONFIRM rehearsal, C-T2) on Flickr30K val. A copy of scripts/c_t1/c_t1.py (sha256 022af90e)
+-with the minimal CC-191 W1 change: f30k_val is admitted (SETS, extract, store, guard lists, items_of, embed), Flickr30K
+-test stays refused everywhere, outputs go to /root/outputs/c_t2, cap 3.0 GPU-h, and the `t2` command applies the
+-tier-2/3 rules of manuscript/prereg/2026-10-30_c_t2/PREREG.md (= C-T1 PREREG §8). Read the change as
+-`diff scripts/c_t1/c_t1.py scripts/c_t2/c_t2.py`. Tier-1 commands are kept unchanged and are not used by the C-T2 job.
+-
+-  python3 scripts/c_t2/c_t2.py --selftest                                              CPU, synthetic only
+-  python3 scripts/c_t2/c_t2.py lists --csv F                                            laptop: Flickr30K split
+-  python3 scripts/c_t2/c_t2.py store --csv F --what carve_refs|val_refs|f30k_memory --out P      laptop, outside the repo
+-  python3 scripts/c_t2/c_t2.py draws --mem-emb E --query-emb Q --set S [--ex X] --out O CPU: X1 rand draws
+-  python  scripts/c_t2/c_t2.py embed --set S --images DIR --snapshot DIR --out O       GPU: SigLIP2 vectors
+-  python  scripts/c_t2/c_t2.py decode --model M --set S --arm A [--draw D] [--memory coco|f30k] ...   GPU
+-  python  scripts/c_t2/c_t2.py lmcap --set S --variant ri|se ...                        GPU: LMCap re-implementation
+-  python  scripts/c_t2/c_t2.py select --ledger L --out O                                CPU: third-backbone config
+-  python  scripts/c_t2/c_t2.py summary --ledger L ... --out O                           CPU: contrasts, advance rules
+-  python3 scripts/c_t2/c_t2.py dupcheck --manifest M --mem-files F --carve-manifest C --out O   CPU: PI-1030f exact sha
+-  python3 scripts/c_t2/c_t2.py t2 --ledger L --carve-ledger T1 [--exclude D] --out O    laptop: tier-2 decision
++"""Paper C, C-ATTR-DEV (DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY): host decoder of the retrieval-attribution
++development runs, manuscript/prereg/2026-11-11_c_attr_dev/C_ATTR_DEV_PREREG_v1_1.md §11.1 (ruling CC-331). A copy of
++scripts/c_t2/c_t2.py (sha256 6113844a) with the listed additions only: sets ov_dev_a and xm_dev500; arms perm (draw p),
++fix with a set index, rand_img, lmcap_rand and lmcap_perm; example ids read from scripts/c_attr/c_attr_lists.json
++only; the 50-item re-decode modes of step 1.0 (host50, rev50) and their string comparator (`compare`, prints counts and
++item ids only); the guard with the refusal lists of §5; InternVL3 and every backbone at tau = -inf (no deletion step);
++outputs under /root/outputs/c_attr, block-1 cap 12 GPU-h. lmcap_rand / lmcap_perm are a re-implementation of the LMCap
++recipe by this study; ret_img vs rand_img is an image-caption-pair prompt format, as used by RAGCap; not RAGCap.
++Read the change as `diff scripts/c_t2/c_t2.py scripts/c_attr/c_attr.py` (scripts/c_attr/C_ATTR_VS_C_T2.diff).
++The C-T2 commands below are kept unchanged and are not used by the C-ATTR job.
++
++  python3 scripts/c_attr/c_attr.py --selftest                                              CPU, synthetic only
++  python3 scripts/c_attr/c_attr.py lists --csv F                                            laptop: Flickr30K split
++  python3 scripts/c_attr/c_attr.py store --csv F --what carve_refs|val_refs|f30k_memory --out P      laptop, outside the repo
++  python3 scripts/c_attr/c_attr.py draws --mem-emb E --query-emb Q --set S [--ex X] --out O CPU: X1 rand draws
++  python  scripts/c_attr/c_attr.py embed --set S --images DIR --snapshot DIR --out O       GPU: SigLIP2 vectors
++  python  scripts/c_attr/c_attr.py decode --model M --set S --arm A [--draw D] [--memory coco|f30k] ...   GPU
++      [--redecode host50|rev50 --stored RUN] [--dry-run]                              step 1.0; dry run
++  python  scripts/c_attr/c_attr.py compare --name N --set S --new F --old F [--stored] --out O   step 1.0 / A1
++  python  scripts/c_attr/c_attr.py lmcap --set S --variant ri|se|rand|perm ...              GPU: LMCap re-implementation by this study
++  python  scripts/c_attr/c_attr.py select --ledger L --out O                                CPU: third-backbone config
++  python  scripts/c_attr/c_attr.py summary --ledger L ... --out O                           CPU: contrasts, advance rules
++  python3 scripts/c_attr/c_attr.py dupcheck --manifest M --mem-files F --carve-manifest C --out O   CPU: PI-1030f exact sha
++  python3 scripts/c_attr/c_attr.py t2 --ledger L --carve-ledger T1 [--exclude D] --out O    laptop: tier-2 decision
+ Outputs hold captions and are never committed; ledgers and the summary hold ids and numbers only. Nothing here
+ prints a caption. The pinned C modules (decode_icl, build_memory, stage2, cen_decode, the LB decoder) are imported
+ unchanged; nothing in them is edited.
+@@ -49,8 +56,13 @@
+ PDIR = ROOT / "manuscript/prereg/2026-10-30_c_t1"
+ REG = PDIR / "c_t1_registry.json"
+ LISTS = PDIR / "c_t1_f30k_lists.json"
+-LABEL, SCHEMA = "TIER 2 / DEV-CONFIRM (C-T2)", "vsps.c_t1.v1"  # schema kept: same record layout as tier 1
+-CAP_S = int(3.0 * 3600)  # CC-191 r7
++LABEL, SCHEMA = "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY", "vsps.c_t1.v1"  # schema kept: same record layout
++CAP_S = int(12.0 * 3600)  # C-ATTR §6.3 / §10.2: block 1 hard cap
++ATTR = ROOT / "scripts/c_attr"
++ATTR_LISTS = ATTR / "c_attr_lists.json"  # §11.1 list file: cluster and image ids only
++PERMS, FIXES, REDECODE_N = (1, 2), (0, 1, 2, 3, 4), 50  # §2.1 D = 2; §2 fix f0-f4; step 1.0
++#: binding 1 and §5: never a set of this code (the set choices below are a closed list of development sets)
++TEST_SETS = ("ov_test", "xm_test2500", "ktvic_test", "uitviic_test", "f30k_test", "coco_karpathy_test", "nocaps_val")
+ SESOI = 2.0  # C's registered value, both languages (C-EN reused it); a planning value, see PREREG §9
+ DRAWS = (0, 1, 2)  # X1: draw 0 is C's own rand rule, unchanged
+ F30K_CSV_SHA256 = "395990db603ab8bafd5c7ab2746b22058bb1e75b78b3eb56ad755931364ac137"  # nlphuji/flickr30k @2b239bef
+@@ -61,7 +73,8 @@
+ VI_ASSESS_MIN = 0.95  # share of zero-shot captions with a Vietnamese letter or tone mark (§6.2)
+ VI_LETTERS = set("ăâđêôơư")
+ VI_TONES = {"̀", "́", "̃", "̉", "̣"}
+-SETS = {"ktvic_dev299": "vi", "ov_dev_b": "vi", "f30k_carve": "en", "f30k_val": "en"}  # never a test set
++SETS = {"ktvic_dev299": "vi", "ov_dev_b": "vi", "f30k_carve": "en", "f30k_val": "en",
++        "ov_dev_a": "vi", "xm_dev500": "vi"}  # never a test set
+ F30K = {"f30k_carve": "carve", "f30k_val": "val"}  # set -> part of c_t1_f30k_lists.json
+ LANG_NAME = {"vi": "vietnamese", "en": "english"}
+ LMCAP_K, LMCAP_N, LMCAP_BEAM, LMCAP_NEW = 4, 3, 3, 40  # Ramos et al. 2023 §3 and App. D
+@@ -278,6 +291,8 @@
+ # ------------------------------------------------------------------------------------------------ GPU decode
+ def items_of(ds: str, a) -> list[tuple[str, str, str]]:
+     """[(id, file, sha256)]; refused for any Flickr30K test file and for C's refused images."""
++    if ds not in SETS or ds in TEST_SETS:
++        raise SystemExit(f"REFUSED: {ds} is not a development set of C-ATTR-DEV")
+     if ds in F30K:
+         names = f30k_names(F30K[ds], load_lists())
+         man = json.loads(Path(a.manifest).read_text(encoding="utf-8"))  # {file: sha256}, written at staging
+@@ -286,7 +301,12 @@
+         return [(f, f, man[f]) for f in names]
+     import stage2 as S2
+     clists = C.load_lists(a.c_lists)
+-    return C.manifest(ds, clists) if ds == "ktvic_dev299" else S2.manifest2(ds, clists)
++    if ds in ("ktvic_dev299", "ov_dev_a"):  # stage-1 sets: stage-1 refusal (OV-dev-B, XM and every test set refused)
++        return C.manifest(ds, clists)
++    rows = S2.manifest2(ds, clists)  # stage-2 carve-out: refused2 keeps every test set refused
++    if gpu_host():
++        S2.check_folder(ds, clists)  # §12 item 3 of stage 2: only XM-dev500 images in its folder
++    return rows
+ 
+ 
+ def img_folder(ds: str, a) -> Path:
+@@ -298,20 +318,46 @@
+ 
+ 
+ def example_ids(arm: str, k: int, order: str | None, qid: str, ex: dict, draw: int) -> list[str]:
+-    if arm in ("ret", "ret_img"):
+-        ids = [c for c, _x in ex["ret"][qid][:k]]
++    """ex = one set of c_attr_lists.json (ids only). perm takes the k-prefix and the order rule as ret (§2.1);
++    rand_img shows the rand draw-0 clusters (§2); fix is one list per set index."""
++    if arm in ("ret", "ret_img", "perm"):
++        ids = ex["perm"][str(draw)][qid][:k] if arm == "perm" else ex["ret"][qid][:k]
+         return ids[::-1] if order == "last" else ids
+-    if arm == "rand":
++    if arm in ("rand", "rand_img"):
+         return ex["rand"][str(draw)][qid][:k]
++    if arm == "fix":
++        return ex["fix"][str(draw)][:k]
+     return []
+ 
+ 
++def attr_ex(ds: str) -> dict:
++    """The set's example lists from the pinned list file (its sha256 sidecar must match)."""
++    want = (ATTR_LISTS.parent / (ATTR_LISTS.name + ".sha256")).read_text().split()[0]
++    if sha(ATTR_LISTS) != want:
++        raise SystemExit(f"{ATTR_LISTS}: sha256 differs from its sidecar")
++    return json.loads(ATTR_LISTS.read_text(encoding="utf-8"))["sets"][ds]
++
++
++def run_id_of(a) -> str:
++    """Unique per model, set, arm, k, order, template, draw / permutation / fix index and re-decode mode."""
++    tagd = {"rand": "d", "rand_img": "d", "perm": "p", "fix": "f"}.get(a.arm)
++    return f"at_{a.model}_{a.set}-{a.arm}" + (f"-k{a.k}-{a.order or ''}-{a.tpl}" if a.arm != "zs" else "") \
++        + (f"-{tagd}{a.draw}" if tagd else "") + (f"-m{a.memory}" if a.arm != "zs" else "") \
++        + (f"-{a.redecode}" if a.redecode else "") + ("-smoke" if a.limit else "")
++
++
++def skeleton(text: str) -> str:
++    """A3 (§9): the prompt without its example lines; equal across the arms of one template."""
++    return "\n".join(x for x in text.split("\n") if not x.startswith(C.LINE.split("{")[0]))
++
++
+ def memory_text(a, lang: str):
+     """(captions, shown): memory 'vi' = C's memory captions read from $NCS_DATA (decode_icl.memory_captions), shown
+     with C's own-dataset rule; 'coco' / 'f30k' = a caption store {cluster id: caption} outside the repo."""
+     if a.memory == "vi":
++        import stage2  # noqa: F401  registers ov_dev_b and xm_dev500 in C.DATASETS (their src, as decode2 uses)
+         caps = C.memory_captions(C.load_lists(a.c_lists))
+-        src = "openviic" if a.set == "ov_dev_b" else "ktvic"
++        src = C.DATASETS[a.set]["src"]
+         return caps, lambda c: C.shown(caps[c], src)
+     caps = json.loads(Path(a.captions).read_text(encoding="utf-8"))
+     return caps, lambda c: caps[c]
+@@ -326,17 +372,23 @@
+ def cmd_decode(a) -> None:
+     import decode_hf_vlm as LB
+ 
+-    lang = SETS[a.set]
++    lang = SETS.get(a.set)  # an unknown set is refused by items_of below, before any model load
+     m = model_spec(a.model)
+     if pins_open(m):
+         raise SystemExit(f"{a.model}: pins open {pins_open(m)}; fill them from the authenticated tree API first")
+-    LB.check_snapshot(m, a.snapshot)
++    if a.draw not in {"perm": PERMS, "fix": FIXES}.get(a.arm, DRAWS):
++        raise SystemExit(f"{a.arm}: draw {a.draw} is not registered")
++    if a.dry_run:  # PI-1109g laptop dry run: no weights on the laptop, nothing is loaded
++        print(f"DRY: snapshot check of {a.model} skipped (no weights on the laptop)")
++    else:
++        LB.check_snapshot(m, a.snapshot)
+     items = items_of(a.set, a)
+-    ex = json.loads(Path(a.ex).read_text(encoding="utf-8")) if a.arm != "zs" else {}
++    ex = attr_ex(a.set) if a.arm != "zs" else {}
+     caps, shown = memory_text(a, lang) if a.arm != "zs" else ({}, None)
+-    run_id = f"t2_{a.model}_{a.set}-{a.arm}" + (f"-k{a.k}-{a.order or ''}-{a.tpl}" if a.arm != "zs" else "") \
+-        + (f"-d{a.draw}" if a.arm == "rand" else "") + (f"-m{a.memory}" if a.arm != "zs" else "") \
+-        + ("-smoke" if a.limit else "")
++    run_id = run_id_of(a)
++    if a.redecode:  # step 1.0: the first 50 items; host50 keeps the stored order and batch slices (the last slice
++        n = -(-REDECODE_N // m["batch_size"]) * m["batch_size"]  # rounded up to a whole slice), rev50 reverses them
++        items = items[:n] if a.redecode == "host50" else items[:REDECODE_N][::-1]
+     if a.limit:  # W-d smoke (N7): the first images only, timing; never scored
+         items = items[:a.limit]
+     out = Path(a.out_dir) / f"{run_id}.preds.json"
+@@ -345,24 +397,38 @@
+     exids = {i: example_ids(a.arm, a.k, a.order, i, ex, a.draw) for i, _f, _h in items}
+     zs_text = (lb.prompt_text(lb.load_prereg(C.pinned(C.B_N1)), "short") if lang == "vi" else D.zs_prompt())
+     texts = {i: zs_text if a.arm == "zs" else text_prompt(lang, a.tpl, [shown(c) for c in exids[i]]) for i in exids}
+-    if a.arm == "ret_img":  # N3: the sha covers the interleaved text parts (images as a placeholder)
++    if a.arm != "zs" and lang == "vi" and {skeleton(t) for t in texts.values()} != {skeleton(C.prompt(a.tpl, []))}:
++        raise SystemExit("A3: the prompt differs from the template outside the example block")  # §9 A3, STOP
++    if a.arm in ("ret_img", "rand_img"):  # N3: the sha covers the interleaved text parts (images as a placeholder)
+         texts = {i: "\x1e".join(x.get("text", "<image>") for x in rices_content(
+             lang, a.tpl, [None] * len(exids[i]), [shown(c) for c in exids[i]], None)) for i in exids}
++    if a.stored:  # step 1.0: the re-decode's prompts must equal the stored run's (counts and ids only)
++        s = stored_run(Path(a.stored))
++        old = s.get("prompt_sha256_per_image") or s["prompt_sha256"]
++        bad = [i for i, t in texts.items() if old.get(i) != C.sha(t)]
++        print(f"prompt parity with {Path(a.stored).name}: {len(texts) - len(bad)}/{len(texts)} equal")
++        if bad:
++            raise SystemExit(f"PROMPT PARITY FAIL: {len(bad)} items, ids {bad[:10]}")
++    if a.dry_run:
++        print(f"DRY {run_id}: {len(items)} items, examples and prompts built; stop before the model load")
++        return
+     proc, net = LB.load(m, a.snapshot, "cuda:0")
+     folder = img_folder(a.set, a)
+-    if a.arm == "ret_img":
++    if a.arm in ("ret_img", "rand_img"):
+         gen = rices_generate(proc, net, lang, a.tpl, folder, Path(a.mem_images), exids, shown, a.mem_files)
+         batch = 1
+     else:
+         g = LB.make_generate(proc, net, None, D.N_NEW, folder)
+-        gen, batch = (lambda sl: g(sl, [texts[i] for i, _f, _h in sl])), m["batch_size"]
++        gen, batch = (lambda sl: g(sl, [texts[i] for i, _f, _h in sl])), 1 if a.redecode == "rev50" else m["batch_size"]
+     rows = LB.decode_slices(items, batch, gen, out.with_name(out.name + ".partial.jsonl"), run_id)
+     rec = {"schema": SCHEMA, "label": LABEL, "run_id": run_id, "model": a.model, "dataset": a.set, "lang": lang,
+-           "spec": {"arm": "ret" if a.arm == "ret_img" else a.arm, "img_examples": a.arm == "ret_img",
++           "spec": {"arm": {"ret_img": "ret", "rand_img": "rand"}.get(a.arm, a.arm),
++                    "img_examples": a.arm in ("ret_img", "rand_img"),
+                     "k": 0 if a.arm == "zs" else a.k, "order": a.order, "tpl": a.tpl, "draw": a.draw,
+-                    "memory": None if a.arm == "zs" else a.memory},
++                    "memory": None if a.arm == "zs" else a.memory, "tau": "-inf", "redecode": a.redecode,
++                    "batch_size": batch},
+            "hub_id": m["hub_id"], "revision": m["revision"], "c_t1_sha256": sha(Path(__file__)),
+-           "ex_sha256": sha(a.ex) if a.arm != "zs" else None, "exemplars": exids,
++           "ex_sha256": sha(ATTR_LISTS) if a.arm != "zs" else None, "exemplars": exids,
+            "predictions": {r["image_id"]: r["caption"] for r in rows},
+            "hit_max": {r["image_id"]: r["hit_max"] for r in rows}, "n_tokens": {r["image_id"]: r["n_tokens"] for r in rows},
+            "prompt_sha256": {i: C.sha(t) for i, t in texts.items()}, "utc": lb.utc()}
+@@ -445,7 +511,7 @@
+     for key, snap in (("xglm_2_9b", a.xglm), ("mclip_h14", a.mclip)):
+         lb.check_snapshot(reg["models"][key], snap)
+     items = items_of(a.set, a)
+-    ex = json.loads(Path(a.ex).read_text(encoding="utf-8"))
++    ex = attr_ex(a.set)
+     caps, shown = memory_text(a, lang)
+     m, q = np.load(a.mem_emb), np.load(a.query_emb)  # SigLIP2: C's near cut applies to LMCap's retrieval too
+     sk = [str(k) for k in m["keys"] if "|" not in str(k)]
+@@ -480,7 +546,7 @@
+             raise SystemExit(f"shot {c}: sha256 differs")
+     shot_imgs = enc_img([Path(a.mem_images) / files[c][0] for c in shot_ids])
+ 
+-    def retrieve(v, skip: set[str]) -> list[str]:
++    def retrieve(v, skip: set[str]) -> list[str]:  # LMCap's ranking, the first K not skipped
+         sc = (mtext @ v).cpu().numpy()
+         return [mkeys[j] for j in np.lexsort((mkeys, -sc)) if mkeys[j] not in skip][:LMCAP_K]
+ 
+@@ -488,17 +554,30 @@
+     xt = AutoTokenizer.from_pretrained(a.xglm)
+     xm = XGLMForCausalLM.from_pretrained(a.xglm, torch_dtype=torch.float16).eval().cuda()
+     preds, exids, hitmax = {}, {}, {}
++    near = {i: {sk[j] for j in np.flatnonzero(row >= BM.NEAR_COS)} for row, (i, _f, _h) in zip(scos, items)}
++    file_of = {i: (f, h) for i, f, h in items}
+     if a.limit:
+         items, scos = items[:a.limit], scos[:a.limit]
+     folder = img_folder(a.set, a)
+-    for row, (i, f, h) in zip(scos, items):
++
++    def img_vec(i):
++        f, h = file_of[i]
+         if sha(folder / f) != h:
+             raise SystemExit(f"{f}: sha256 differs from the manifest")
+-        v = enc_img([folder / f])[0]
+-        if a.variant == "se":  # C's own top-4 retrieved clusters, nearest first
+-            q = [c for c, _x in ex["ret"][i][:LMCAP_K]]
+-        else:  # ri: M-CLIP image-to-caption retrieval; never a shot, never a cluster at SigLIP2 cosine >= NEAR_COS
+-            q = retrieve(v, set(shot_ids) | {sk[j] for j in np.flatnonzero(row >= BM.NEAR_COS)})
++        return enc_img([folder / f])[0]
++    perm_q = {}
++    if a.variant == "perm":  # A2 (§9, N7): the lmcap_perm lists are written and hashed before any decode
++        for i, _f, _h in items:
++            d = ex["donor"]["1"][i]
++            perm_q[i] = retrieve(img_vec(d), set(shot_ids) | near[d] | near[i])
++        pl = Path(a.out_dir) / f"at_lmcap-perm_{a.set}-m{a.memory}.lists.json"
++        pl.write_text(json.dumps({"label": LABEL, "perm_query_ids": perm_q}) + "\n", encoding="utf-8")
++        Path(str(pl) + ".sha256").write_text(f"{sha(pl)}  {pl.name}\n")
++        print(f"lmcap_perm lists {pl.name} sha256 {sha(pl)}", flush=True)
++    for i, f, h in items:
++        v = img_vec(i)
++        q = perm_q[i] if a.variant == "perm" else lmcap_query(a.variant, i, ex, set(shot_ids),
++                                                               retrieve(v, set(shot_ids) | near[i]))
+         exids[i] = q
+         enc = xt(lmcap_prompt(shots, [shown(c) for c in q], lang), return_tensors="pt").to("cuda")
+         with torch.no_grad():
+@@ -509,17 +588,28 @@
+         best = int(torch.argmax(enc_text(cands) @ v))
+         preds[i] = cands[best]
+         hitmax[i] = xt.eos_token_id not in gen[best] and len(gen[best]) >= LMCAP_NEW  # N4
+-    run_id = f"t2_lmcap-{a.variant}_{a.set}-m{a.memory}" + ("-smoke" if a.limit else "")
++    run_id = f"at_lmcap-{a.variant}_{a.set}-m{a.memory}" + ("-smoke" if a.limit else "")
+     out = Path(a.out_dir) / f"{run_id}.preds.json"
+     rec = {"schema": SCHEMA, "label": LABEL, "run_id": run_id, "model": f"lmcap_{a.variant}", "dataset": a.set,
+            "lang": lang, "spec": {"arm": "lmcap", "k": LMCAP_K, "n_shots": LMCAP_N, "beam": LMCAP_BEAM,
+                                   "variant": a.variant, "memory": a.memory},
+-           "c_t1_sha256": sha(Path(__file__)), "ex_sha256": sha(a.ex), "exemplars": exids, "predictions": preds,
++           "c_t1_sha256": sha(Path(__file__)), "ex_sha256": sha(ATTR_LISTS), "exemplars": exids, "predictions": preds,
+            "hit_max": hitmax, "shots": shot_ids, "utc": lb.utc()}
+     out.write_text(json.dumps(rec, ensure_ascii=False) + "\n", encoding="utf-8")
+     Path(str(out) + ".sha256").write_text(f"{sha(out)}  {out.name}\n")
+ 
+ 
++def lmcap_query(variant: str, qid: str, ex: dict, shots: set[str], retrieved: list[str]) -> list[str]:
++    """The query block's K cluster ids. ri: LMCap's own M-CLIP retrieval (passed in); se: C's top-K ret, nearest
++    first; rand (lmcap_rand, a re-implementation of the LMCap recipe by this study): the first K clusters of q's rand
++    draw-0 list that are not a shot cluster, no retrieved cluster kept (§2)."""
++    if variant == "se":
++        return ex["ret"][qid][:LMCAP_K]
++    if variant == "rand":
++        return [c for c in ex["rand"]["0"][qid] if c not in shots][:LMCAP_K]
++    return retrieved
++
++
+ def cmd_memfiles(a) -> None:
+     """{cluster id: [path under the images root, sha256]} of each cluster's first member (laptop; ids and hashes only).
+     Vietnamese: C's lists.json memory (root $NCS_DATA/datasets); English: C-EN's cen_memory.json (root = its images)."""
+@@ -604,23 +694,28 @@
+ 
+ #: AMENDMENT_1 read isolation (job on M1, role m3, beside test-side files): the only $NCS_DATA/datasets dirs the job
+ #: may read, the other $NCS_DATA dirs it may read, and the commands that run under the open() audit hook.
+-ISO_DATASETS = ("ktvic", "openviic", "c_t1_f30k_carve", "c_t1_f30k_memory", "cen_memory", "c_t1_mem", "c_t2_f30k_val")
++ISO_DATASETS = ("ktvic", "openviic", "c_xm_dev500", "c_t1_f30k_carve", "c_t1_f30k_memory", "cen_memory", "c_t1_mem", "c_t2_f30k_val")
+ ISO_NCS = ("models", "vncorenlp")
+ ISO_CMDS = ("draws", "embed", "decode", "lmcap", "score", "select", "vicheck", "memcheck", "t1check", "pinsok", "cfg",
+-            "dupcheck")
++            "dupcheck", "compare")
+ ARCHIVES = (".zip", ".tar", ".tar.gz", ".tgz", ".7z")  # plus any ".tar.*" (N6)
+-RESTORED = PDIR / "RESTORED_SHA256"
++RESTORED = ATTR / "STORED_SHA256"  # C-ATTR: the stored runs and vectors, pinned by their sidecars
+ 
+ 
+ def refused_names() -> set[str]:
+-    return set(load_lists()["refuse"]["test"])  # C-T2: val is admitted, test stays refused
++    """§5: the Flickr30K test file names, the OpenViIC test files (stage-1 refusal minus the OV-dev-B carve-out) and
++    the XM-test2500 files."""
++    cl = C.load_lists(ROOT / "manuscript/prereg/2026-10-22_c_stage1/lists.json")
++    ovb = {r[1] for r in cl["sets"]["ov_dev_b"]}
++    return set(load_lists()["refuse"]["test"]) | (set(cl["refuse"]["openviic_files"]) - ovb) \
++        | {r[1] for r in cl["sets"]["xm_test2500"]}
+ 
+ 
+ def iso_config(ncs: Path, outputs: Path, restored: list[str], refused: set[str]) -> dict:
+     rp = os.path.realpath
+     return {"ncs": rp(ncs), "outputs": rp(outputs), "refused": refused,
+             "ncs_ok": [rp(Path(ncs) / "datasets" / d) for d in ISO_DATASETS] + [rp(Path(ncs) / d) for d in ISO_NCS],
+-            "out_ok": [rp(Path(outputs) / "c_t2")], "files_ok": {rp(f) for f in restored}}
++            "out_ok": [rp(Path(outputs) / "c_attr")], "files_ok": {rp(f) for f in restored}}
+ 
+ 
+ def iso_default() -> dict:
+@@ -770,11 +865,11 @@
+     import score2 as S2s
+ 
+     lang = SETS[a.set]
+-    runs = [json.loads(Path(p).read_text(encoding="utf-8")) | {"_sha256": sha(p)} for p in a.runs]
++    runs = [as_run(p) for p in a.runs]
+     if any(r["dataset"] != a.set or r.get("schema") != SCHEMA for r in runs):
+         raise SystemExit("score: a run is not a C-T1 output of this set")
+-    if any(r["run_id"].endswith("-smoke") for r in runs):
+-        raise SystemExit("score: smoke runs are never scored")
++    if any(r["run_id"].endswith(("-smoke", "-host50", "-rev50")) for r in runs):
++        raise SystemExit("score: smoke and re-decode runs are never scored")
+     c2 = c2_runs(Path(a.c2_dir)) if a.c2_dir else []
+     if c2 and a.set != "ov_dev_b":
+         raise SystemExit("score: C's stage-2 runs belong to ov_dev_b")
+@@ -797,7 +892,7 @@
+         for b in S.score_set(a.set, others, zs_by, refs, ctx):
+             r = next(x for x in model_runs if x["run_id"] == b["run_id"])
+             rows.append({**b, **tag(r)})
+-        src = "openviic" if a.set == "ov_dev_b" else "ktvic"
++        src = C.DATASETS[a.set]["src"]
+         store = json.loads(Path(a.captions).read_text(encoding="utf-8")) if a.captions else {}
+ 
+         def shown_of(r: dict, c: str) -> str:  # LMCap-ri on OV-dev-B with C-EN's English COCO memory (N6)
+@@ -841,6 +936,45 @@
+     print(f"appended {len(rows)} rows to {a.ledger}")
+ 
+ 
++def stored_run(p: Path) -> dict:
++    """A stored C / C-T1 run file, admitted only by its pin in STORED_SHA256."""
++    if sha(p) not in {ln.split()[0] for ln in RESTORED.read_text().splitlines() if ln.strip()}:
++        raise SystemExit(f"{p}: not a pinned stored run")
++    return json.loads(Path(p).read_text(encoding="utf-8"))
++
++
++def as_run(p: Path) -> dict:
++    """A run for the scorer: a C-ATTR / C-T1 record as written, or a pinned stored C run in the C-T1 layout."""
++    r = json.loads(Path(p).read_text(encoding="utf-8"))
++    if r.get("schema") != SCHEMA:
++        r = stored_run(Path(p))
++        r = {**r, "schema": SCHEMA, "c2_source": Path(p).name,
++             "spec": {**r["spec"], "draw": 0, "memory": "vi", "img_examples": False}}
++    return r | {"_sha256": sha(p)}
++
++
++def differing(new: dict, old: dict, ids: list[str]) -> list[str]:
++    """Step 1.0 and A1 (§9): ids whose captions are not identical strings (or missing). Never returns a caption."""
++    return [i for i in ids if i not in new["predictions"] or new["predictions"][i] != old["predictions"].get(i)]
++
++
++def cmd_compare(a) -> None:
++    """rc 0 when the first 50 manifest items are identical strings, rc 3 otherwise; prints counts and ids only."""
++    old = stored_run(Path(a.old)) if a.stored else None
++    ids = [i for i, _f, _h in items_of(a.set, a)][:REDECODE_N]
++    if a.dry_run:
++        print(f"DRY compare {a.name}: {len(ids)} ids; reference {'pinned' if a.stored else 'a host run'}; rc 3")
++        sys.exit(3)
++    new = json.loads(Path(a.new).read_text(encoding="utf-8"))
++    old = old or json.loads(Path(a.old).read_text(encoding="utf-8"))
++    bad = differing(new, old, ids)
++    rec = {"label": LABEL, "check": a.name, "n": len(ids), "identical": len(ids) - len(bad), "failing_ids": bad,
++           "new_sha256": sha(a.new), "old_sha256": sha(a.old), "utc": lb.utc()}
++    Path(a.out).write_text(json.dumps(rec) + "\n", encoding="utf-8")
++    print(f"{a.name}: {rec['identical']}/{rec['n']} identical; failing ids {bad}")
++    sys.exit(3 if bad else 0)
++
++
+ def c2_runs(folder: Path) -> list[dict]:
+     """C's six stage-2 OV-dev-B run files (schema vsps.lb_decode.v1), sha-pinned, as C-T1 run dicts (draw 0, vi)."""
+     out = []
+@@ -1007,9 +1141,10 @@
+     per, pcm, ids0 = {}, {}, None
+     for r in rows:
+         if r.get("dataset") != ds or r.get("tau", "-inf") != "-inf" or r.get("variant", "plain") not in ("plain", "masked3") \
+-                or not r.get("model") or r.get("arm") in ("nn_top1", "nn_cons", "fix", "blind"):
+-            continue
+-        arm = r["arm"] + (f"_d{r.get('draw') or 0}" if r["arm"] == "rand" else "") \
++                or not r.get("model") or r.get("arm") in ("nn_top1", "nn_cons", "blind"):
++            continue  # tau -inf only: no deletion step for any backbone (binding 10)
++        arm = r["arm"] + {"rand": f"_d{r.get('draw') or 0}", "perm": f"_p{r.get('draw')}",
++                          "fix": f"_f{r.get('draw') or 0}"}.get(r["arm"], "") \
+             + ("_img" if r.get("img_examples") else "") \
+             + (f"_{r['memory']}" if r.get("memory") not in (None, DEFAULT_MEM[lang]) else "") \
+             + ("_m3" if r.get("variant") == "masked3" else "")
+@@ -1302,14 +1437,14 @@
+         ncs, outs = Path(tmp) / "ncs", Path(tmp) / "out"
+         for d in ("datasets/c_t1_f30k_carve/images", "f30k_raw", "ade20k_raw", "models/m"):
+             (ncs / d).mkdir(parents=True)
+-        for d in ("c_t2", "c_t1", "c_en", "c_test"):
++        for d in ("c_attr", "c_t1", "c_en", "c_test"):
+             (outs / d).mkdir(parents=True)
+         files = {"carve_img": ncs / "datasets/c_t1_f30k_carve/images/t1.jpg", "model": ncs / "models/m/w.bin",
+-                 "restored": outs / "c_en/cen_memory_emb.npz", "own_output": outs / "c_t2/a.json",
++                 "restored": outs / "c_en/cen_memory_emb.npz", "own_output": outs / "c_attr/a.json",
+                  "elsewhere": Path(tmp) / "elsewhere.txt", "f30k_zip": ncs / "f30k_raw/flickr30k-images.zip",
+                  "f30k_raw": ncs / "f30k_raw/x.jpg", "ade20k": ncs / "ade20k_raw/y.png",
+                  "test_side": outs / "c_en/emb_coco_test.npz", "c_test": outs / "c_test/a.json",
+-                 "val_name": ncs / "models/m/v1.jpg", "archive": outs / "c_t2/x.tar", "tier1_output": outs / "c_t1/a.json"}
++                 "val_name": ncs / "models/m/v1.jpg", "archive": outs / "c_attr/x.tar", "tier1_output": outs / "c_t1/a.json"}
+         allowed = {"carve_img", "model", "restored", "own_output", "elsewhere"}
+         for f in files.values():
+             f.write_text("x")
+@@ -1330,7 +1465,7 @@
+         assert any("esc.jpg" in x for x in gp) and any(x.endswith("extra") for x in gp), gp
+         probe = {k: str(f) for k, f in files.items()} | {"link": str(link)} | {k: str(f) for k, f in named.items()}
+         child = (f"import json, os, sys; sys.argv = ['x']; sys.path.insert(0, {str(Path(__file__).parent)!r})\n"
+-                 "import c_t2 as T\n"
++                 "import c_attr as T\n"
+                  f"T.iso_install(T.iso_config({str(ncs)!r}, {str(outs)!r}, [{str(files['restored'])!r}], {{'v1.jpg'}}))\n"
+                  "res = {}\n"
+                  "for k, p in json.loads(sys.stdin.read()).items():\n"
+@@ -1345,7 +1480,7 @@
+         assert json.loads(r.stdout) == want, "the hook refuses exactly the denied paths"
+         live = iso_default()  # the real config: M1's test-side files are denied, the staged ones are not
+         lists = load_lists()  # C-T2: exactly the 1,000 test names are refused; val names are admitted
+-        assert len(live["files_ok"]) == 6 and live["refused"] == set(lists["refuse"]["test"]) and len(live["refused"]) == 1000
++        assert len(live["files_ok"]) == 43 and live["refused"] >= set(lists["refuse"]["test"])  # C-ATTR: + §5 lists
+         assert not live["refused"] & set(f30k_names("val", lists))
+         v0, t0 = f30k_names("val", lists)[0], lists["refuse"]["test"][0]
+         assert iso_denied(f"/root/ncs-data/datasets/c_t2_f30k_val/images/{v0}", live) is None, "a val image is readable"
+@@ -1357,11 +1492,12 @@
+                   "/root/outputs/c_en/emb_coco_test.npz", "/root/outputs/c_stage2/runs/x.json"):
+             assert iso_denied(p, live), p
+         for p in ("/root/ncs-data/datasets/c_t1_f30k_carve/images/a.jpg", "/root/outputs/c_en/cen_memory_emb.npz",
+-                  "/root/outputs/c_t2/out/x.json", "/root/ncs-data/models/c_t1_xglm_2_9b/config.json"):
++                  "/root/outputs/c_attr/out/x.json", "/root/ncs-data/models/c_t1_xglm_2_9b/config.json"):
+             assert iso_denied(p, live) is None, p
+     ok.append("summary end to end (dev299 skipped, VI descriptive), C2 pins, guard, store refusal")
+     ok.append("AMENDMENT_1 isolation (deny rules, symlink escape, datasets allow-list, open/os.open hook in a child)")
+     selftest_t2(ok)
++    selftest_attr(ok)
+     print("selftest ok: " + "; ".join(ok))
+ 
+ 
+@@ -1461,6 +1597,95 @@
+     ok.append("C-T2 decision (5 claims, val PASS, single-pass m, 0.98 margin, NOT RUN, W2 rows, W4), dupcheck, t2 CLI")
+ 
+ 
++def selftest_attr(ok: list) -> None:
++    """C-ATTR §11.1: run ids, example ids from the list file, A3 prompt shape, refusals with real names, the string
++    comparator, tau = -inf columns, pinned stored runs, decode refusals before any model load."""
++    ns = argparse.Namespace
++    ids = set()
++    for ds in ("ov_dev_a", "ov_dev_b", "xm_dev500"):
++        for arm, draws in (("zs", (0,)), ("ret", (0,)), ("rand", DRAWS), ("perm", PERMS), ("fix", FIXES),
++                           ("rand_img", (0,)), ("ret_img", (0,))):
++            for d in draws:
++                for rd in (None, "host50", "rev50"):
++                    ids.add(run_id_of(ns(model="qwen25vl_7b", set=ds, arm=arm, k=8, order="first", tpl="T1", draw=d,
++                                         memory="vi", redecode=rd, limit=0)))
++    assert len(ids) == 3 * (1 + 1 + 3 + 2 + 5 + 1 + 1) * 3, "run ids unique per arm, draw, set and re-decode mode"
++    ex = {"ret": {"q": ["r1", "r2", "r3", "r4"]}, "rand": {"0": {"q": ["a1", "a2", "a3", "a4"]}},
++          "perm": {"1": {"q": ["p1", "p2", "p3", "p4"]}, "2": {"q": ["s1", "s2", "s3", "s4"]}},
++          "fix": {"0": ["f1", "f2"], "3": ["g1", "g2"]}}
++    assert example_ids("perm", 3, "first", "q", ex, 1) == ["p1", "p2", "p3"], "perm from the list file only"
++    assert example_ids("perm", 3, "last", "q", ex, 2) == ["s3", "s2", "s1"], "perm: k-prefix and order rule as ret"
++    assert example_ids("rand_img", 4, None, "q", ex, 0) == ex["rand"]["0"]["q"], "rand_img shows the rand d0 clusters"
++    assert example_ids("fix", 2, None, "q", ex, 3) == ["g1", "g2"] and example_ids("ret", 2, "last", "q", ex, 0) == ["r2", "r1"]
++    shots = {"a2"}
++    assert lmcap_query("rand", "q", {**ex, "rand": {"0": {"q": ["a1", "a2", "a3", "a4", "a5"]}}}, shots,
++                       ["r9", "r8", "r7", "r6"]) == ["a1", "a3", "a4", "a5"], "lmcap_rand: rand d0 minus shots, nothing retrieved"
++    assert lmcap_query("ri", "q", ex, shots, ["r9"]) == ["r9"] and lmcap_query("se", "q", ex, shots, []) == ["r1", "r2", "r3", "r4"]
++    ok.append("C-ATTR run ids, example ids (perm / fix / rand_img from the list file), lmcap_rand")
++    pa, pb = C.prompt("T1", ["x y", "z"]), C.prompt("T1", ["u v w", "t"])
++    assert C.sha(pa) != C.sha(pb) and skeleton(pa) == skeleton(pb) == skeleton(C.prompt("T1", []))
++    assert skeleton(pa + "\nthêm") != skeleton(C.prompt("T1", [])), "a change outside the example block is seen"
++    ok.append("A3 prompt shape: two arms differ only through the example block")
++    assert not set(TEST_SETS) & set(SETS)
++    a = ns(c_lists=ROOT / "manuscript/prereg/2026-10-22_c_stage1/lists.json")
++    for bad in ("xm_test2500", "ov_test"):  # xm_test2500: a real set of lists.json
++        try:
++            items_of(bad, a)
++            raise AssertionError(f"{bad} must be refused")
++        except SystemExit as e:
++            assert "REFUSED" in str(e), e
++    rows = {ds: items_of(ds, a) for ds in ("ov_dev_a", "ov_dev_b", "xm_dev500")}
++    assert [len(v) for v in rows.values()] == [911, 925, 500], "the development sets pass"
++    cl = C.load_lists(a.c_lists)
++    live, refused = iso_default(), refused_names()
++    names = {"f30k test": load_lists()["refuse"]["test"][0], "xm test": cl["sets"]["xm_test2500"][0][1],
++             "ov test": sorted(set(cl["refuse"]["openviic_files"]) - {r[1] for r in cl["sets"]["ov_dev_b"]})[0]}
++    for what, n in names.items():
++        assert n in refused and iso_denied(f"/root/ncs-data/datasets/openviic/images/{n}", live), what
++    dev = {r[1] for v in rows.values() for r in v} | set(f30k_names("val", load_lists())) | \
++        {mm[2] for m in cl["memory"] for mm in m["members"]}
++    assert not dev & refused, "no development or memory file shares a name with a refused file"
++    for d, n in (("openviic", rows["ov_dev_b"][0][1]), ("c_xm_dev500", rows["xm_dev500"][0][1])):
++        assert iso_denied(f"/root/ncs-data/datasets/{d}/images/{n}", live) is None, n
++    with tempfile.TemporaryDirectory() as tmp:
++        g = Path(tmp) / "g"
++        g.mkdir()
++        (g / rows["ov_dev_b"][0][1]).write_text("")
++        assert guard_problems([g], refused) == []
++        (g / names["ov test"]).write_text("")
++        assert guard_problems([g], refused) == [str(g / names["ov test"])], "the guard sees an OV-test file"
++        ok.append("refusals: test-set names and real test file names refused; real dev names pass; no name clash")
++        new = {"predictions": {"a": "x", "b": "y", "c": "z"}}
++        assert differing(new, {"predictions": {"a": "x", "b": "y ", "c": "z"}}, ["a", "b", "c"]) == ["b"]
++        assert differing({"predictions": {"a": "x"}}, new, ["a", "b"]) == ["b"], "a missing caption is a failure"
++        f = Path(tmp) / "r.json"
++        f.write_text("{}")
++        try:
++            stored_run(f)
++            raise AssertionError("an unpinned stored run must be refused")
++        except SystemExit:
++            pass
++        mk = lambda tau, v: {"dataset": "ov_dev_b", "model": "internvl3_8b", "arm": "ret", "tau": tau, "run_id": tau,
++                             "per_image": {"ids": ["a", "b"], "cider_s": v}}
++        per, _p, _i = set_columns([mk("-inf", [1.0, 2.0]), mk("0.10", [5.0, 5.0]),
++                                   {**mk("-inf", [3.0, 3.0]), "arm": "perm", "draw": 2, "run_id": "p2"},
++                                   {**mk("-inf", [4.0, 4.0]), "arm": "fix", "draw": 3, "run_id": "f3"}], "ov_dev_b", "vi")
++        assert list(per["internvl3_8b|ret"]) == [1.0, 2.0], "tau = -inf only: no deletion step for InternVL3"
++        assert set(per) == {"internvl3_8b|ret", "internvl3_8b|perm_p2", "internvl3_8b|fix_f3"}
++        out = Path(tmp) / "o"
++        out.mkdir()
++        da = ns(model="qwen25vl_7b", set="ov_dev_b", arm="zs", k=0, order=None, tpl=None, draw=0, memory="vi",
++                redecode=None, limit=0, dry_run=True, stored=None, out_dir=out, c_lists=a.c_lists, snapshot=None)
++        (out / f"{run_id_of(da)}.preds.json").write_text("{}")
++        for kw, msg in (({}, "exists"), ({"arm": "perm", "draw": 3}, "not registered"), ({"set": "xm_test2500"}, "REFUSED")):
++            try:
++                cmd_decode(ns(**{**vars(da), **kw}))
++                raise AssertionError(msg)
++            except SystemExit as e:
++                assert msg in str(e), e
++    ok.append("comparator (ids only), pinned stored runs, tau -inf columns, decode refusals before the model load")
++
++
+ # ------------------------------------------------------------------------------------------------ CLI
+ def main() -> None:
+     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+@@ -1484,20 +1709,23 @@
+     for name in ("decode", "lmcap"):
+         p = sub.add_parser(name)
+         p.add_argument("--set", choices=sorted(SETS), required=True)
+-        for k in ("images", "out_dir", "captions", "ex", "manifest", "c_lists", "mem_images", "mem_files"):
++        for k in ("images", "out_dir", "captions", "manifest", "c_lists", "mem_images", "mem_files"):
+             p.add_argument("--" + k.replace("_", "-"), type=Path)
+         p.add_argument("--memory", choices=("vi", "coco", "f30k"), default="vi")
+         p.add_argument("--limit", type=int, default=0, help="W-d smoke: first N images only, never scored")
+         if name == "decode":
+             p.add_argument("--model", choices=OLD + THIRD, required=True)
+             p.add_argument("--snapshot", type=Path, required=True)
+-            p.add_argument("--arm", choices=("zs", "ret", "rand", "ret_img"), required=True)
++            p.add_argument("--arm", choices=("zs", "ret", "rand", "ret_img", "perm", "fix", "rand_img"), required=True)
+             p.add_argument("--k", type=int, default=0)
+             p.add_argument("--order", choices=("first", "last"))
+             p.add_argument("--tpl", choices=("T1", "T2"))
+-            p.add_argument("--draw", type=int, choices=DRAWS, default=0)
++            p.add_argument("--draw", type=int, choices=sorted(set(DRAWS) | set(PERMS) | set(FIXES)), default=0)
++            p.add_argument("--redecode", choices=("host50", "rev50"), help="step 1.0: first 50 items, never scored")
++            p.add_argument("--stored", type=Path, help="pinned stored run: its per-image prompt hashes must match")
++            p.add_argument("--dry-run", action="store_true", help="PI-1109g: stop before the model load")
+         else:
+-            p.add_argument("--variant", choices=("ri", "se"), required=True)
++            p.add_argument("--variant", choices=("ri", "se", "rand", "perm"), required=True)
+             p.add_argument("--xglm", type=Path, required=True)
+             p.add_argument("--mclip", type=Path, required=True)
+             p.add_argument("--mem-emb", type=Path, required=True)
+@@ -1509,6 +1737,13 @@
+     for k in ("kit_b", "c_lists", "refs", "captions", "c2_dir", "c2_ledger"):
+         p.add_argument("--" + k.replace("_", "-"), type=Path)
+     p.add_argument("--memory", choices=("vi", "coco", "f30k"), default=None)
++    p = sub.add_parser("compare")
++    p.add_argument("--name", required=True)
++    p.add_argument("--set", choices=sorted(SETS), required=True)
++    for k in ("new", "old", "out", "c_lists"):
++        p.add_argument("--" + k.replace("_", "-"), type=Path)
++    p.add_argument("--stored", action="store_true", help="--old is a stored run, admitted by its pin")
++    p.add_argument("--dry-run", action="store_true")
+     p = sub.add_parser("extract")
+     p.add_argument("--zip", type=Path, required=True)
+     p.add_argument("--out", type=Path, required=True)
+@@ -1556,7 +1791,7 @@
+     a = ap.parse_args()
+     if a.selftest:
+         return selftest()
+-    if a.cmd in ISO_CMDS and machine_id() in ("m3", "m4"):  # AMENDMENT_1: on a GPU host, always under the hook
++    if a.cmd in ISO_CMDS and machine_id() in ("h1", "h2"):  # AMENDMENT_1: on a GPU host, always under the hook
+         iso_install(iso_default())
+ 
+     def lock():
+@@ -1573,7 +1808,7 @@
+      "cfg": lambda: cmd_cfg(a), "extract": lambda: cmd_extract(a), "guard": lambda: cmd_guard(a),
+      "memcheck": lambda: cmd_memcheck(a), "fetch": lambda: cmd_fetch(a), "pinsok": lambda: cmd_pinsok(a),
+      "t1check": lambda: cmd_t1check(a), "select": lambda: cmd_select(a), "summary": lambda: cmd_summary(a), "t2": lambda: cmd_t2(a),
+-     "dupcheck": lambda: cmd_dupcheck(a), "lock": lock, "left": left
++     "dupcheck": lambda: cmd_dupcheck(a), "lock": lock, "left": left, "compare": lambda: cmd_compare(a)
+      }.get(a.cmd, ap.print_help)()
+ 
+ 

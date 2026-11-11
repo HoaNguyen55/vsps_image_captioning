@@ -1,0 +1,517 @@
+# c_attr dry run 2026-11-11T09:02:14Z; sandbox HEAD 4186dded235c1f3fabf08f9be75c7033c8d88761 (throwaway commit on repo HEAD 0519b826725b54355d2764b7829b2c944da07f19); rc=0
+# ---- logs/job.log
+2026-11-11T09:01:16Z DRY RUN (laptop, PI-1109g): mode selftest, decodes stop before the model load
+2026-11-11T09:01:21Z DRY: GPU-busy check skipped (no GPU)
+2026-11-11T09:01:21Z DRY: venv-lb freeze check skipped (laptop venv)
+2026-11-11T09:01:23Z DRY: aya_vision_8b pinsok skipped (no weights on the laptop)
+2026-11-11T09:01:23Z PREFLIGHT OK head 4186dded235c1f3fabf08f9be75c7033c8d88761 mode selftest
+2026-11-11T09:01:23Z SELFTEST MODE DONE
+2026-11-11T09:01:24Z DRY RUN (laptop, PI-1109g): mode block1, decodes stop before the model load
+2026-11-11T09:01:24Z DRY: GPU-busy check skipped (no GPU)
+2026-11-11T09:01:24Z DRY: venv-lb freeze check skipped (laptop venv)
+2026-11-11T09:01:26Z DRY: aya_vision_8b pinsok skipped (no weights on the laptop)
+2026-11-11T09:01:26Z PREFLIGHT OK head 4186dded235c1f3fabf08f9be75c7033c8d88761 mode block1
+2026-11-11T09:01:26Z STEP 1.0 host parity (a) and A1 (b): 300 registered + 100 per CC-331 N12 captions
+2026-11-11T09:01:26Z START S10a_qwen25vl_7b_ov_dev_b attempt 1 (left 720 min)
+2026-11-11T09:01:27Z OK S10a_qwen25vl_7b_ov_dev_b
+2026-11-11T09:01:27Z START S10a_qwen25vl_7b_ov_dev_a attempt 1 (left 719 min)
+2026-11-11T09:01:30Z OK S10a_qwen25vl_7b_ov_dev_a
+2026-11-11T09:01:30Z START S10b_qwen25vl_7b attempt 1 (left 719 min)
+2026-11-11T09:01:31Z OK S10b_qwen25vl_7b
+2026-11-11T09:01:31Z STEP 1.0 qwen25vl_7b host parity FAIL, A1 FAIL (K1: leaves the families)
+2026-11-11T09:01:31Z START S10a_aya_vision_8b_ov_dev_b attempt 1 (left 719 min)
+2026-11-11T09:01:32Z OK S10a_aya_vision_8b_ov_dev_b
+2026-11-11T09:01:32Z START S10b_aya_vision_8b attempt 1 (left 719 min)
+2026-11-11T09:01:33Z OK S10b_aya_vision_8b
+2026-11-11T09:01:33Z STEP 1.0 aya_vision_8b host parity FAIL, A1 FAIL (K1: leaves the families)
+2026-11-11T09:01:33Z START S10a_internvl3_8b_ov_dev_b attempt 1 (left 719 min)
+2026-11-11T09:01:34Z OK S10a_internvl3_8b_ov_dev_b
+2026-11-11T09:01:34Z START S10a_internvl3_8b_ov_dev_a attempt 1 (left 719 min)
+2026-11-11T09:01:35Z OK S10a_internvl3_8b_ov_dev_a
+2026-11-11T09:01:35Z START S10b_internvl3_8b attempt 1 (left 719 min)
+2026-11-11T09:01:36Z OK S10b_internvl3_8b
+2026-11-11T09:01:36Z STEP 1.0 internvl3_8b host parity FAIL, A1 FAIL (K1: leaves the families)
+2026-11-11T09:01:36Z DRY: comparators answered rc 3, so every fallback branch below is exercised
+2026-11-11T09:01:36Z FALLBACK qwen25vl_7b: base arms re-decoded on the new host (ov_dev_a ov_dev_b xm_dev500)
+2026-11-11T09:01:36Z START F_qwen25vl_7b_ov_dev_a_zs attempt 1 (left 719 min)
+2026-11-11T09:01:37Z OK F_qwen25vl_7b_ov_dev_a_zs
+2026-11-11T09:01:37Z START F_qwen25vl_7b_ov_dev_a_ret attempt 1 (left 719 min)
+2026-11-11T09:01:37Z OK F_qwen25vl_7b_ov_dev_a_ret
+2026-11-11T09:01:38Z START F_qwen25vl_7b_ov_dev_a_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:38Z OK F_qwen25vl_7b_ov_dev_a_rand0
+2026-11-11T09:01:38Z START F_qwen25vl_7b_ov_dev_b_zs attempt 1 (left 719 min)
+2026-11-11T09:01:39Z OK F_qwen25vl_7b_ov_dev_b_zs
+2026-11-11T09:01:39Z START F_qwen25vl_7b_ov_dev_b_ret attempt 1 (left 719 min)
+2026-11-11T09:01:39Z OK F_qwen25vl_7b_ov_dev_b_ret
+2026-11-11T09:01:40Z START F_qwen25vl_7b_ov_dev_b_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:40Z OK F_qwen25vl_7b_ov_dev_b_rand0
+2026-11-11T09:01:40Z START F_qwen25vl_7b_xm_dev500_zs attempt 1 (left 719 min)
+2026-11-11T09:01:41Z OK F_qwen25vl_7b_xm_dev500_zs
+2026-11-11T09:01:41Z START F_qwen25vl_7b_xm_dev500_ret attempt 1 (left 719 min)
+2026-11-11T09:01:41Z OK F_qwen25vl_7b_xm_dev500_ret
+2026-11-11T09:01:41Z START F_qwen25vl_7b_xm_dev500_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:42Z OK F_qwen25vl_7b_xm_dev500_rand0
+2026-11-11T09:01:42Z START S11_qwen25vl_7b_ov_dev_a_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:43Z OK S11_qwen25vl_7b_ov_dev_a_perm1
+2026-11-11T09:01:43Z START S11_qwen25vl_7b_ov_dev_a_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:43Z OK S11_qwen25vl_7b_ov_dev_a_perm2
+2026-11-11T09:01:44Z START S11_qwen25vl_7b_ov_dev_b_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:44Z OK S11_qwen25vl_7b_ov_dev_b_perm1
+2026-11-11T09:01:44Z START S11_qwen25vl_7b_ov_dev_b_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:45Z OK S11_qwen25vl_7b_ov_dev_b_perm2
+2026-11-11T09:01:45Z START S11_qwen25vl_7b_xm_dev500_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:45Z OK S11_qwen25vl_7b_xm_dev500_perm1
+2026-11-11T09:01:46Z START S11_qwen25vl_7b_xm_dev500_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:46Z OK S11_qwen25vl_7b_xm_dev500_perm2
+2026-11-11T09:01:46Z START S12_aya_xm_zs attempt 1 (left 719 min)
+2026-11-11T09:01:47Z OK S12_aya_xm_zs
+2026-11-11T09:01:47Z START S12_aya_xm_ret attempt 1 (left 719 min)
+2026-11-11T09:01:47Z OK S12_aya_xm_ret
+2026-11-11T09:01:48Z START S12_aya_xm_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:48Z OK S12_aya_xm_rand0
+2026-11-11T09:01:48Z FALLBACK aya_vision_8b: base arms re-decoded on the new host (ov_dev_b)
+2026-11-11T09:01:48Z START F_aya_vision_8b_ov_dev_b_zs attempt 1 (left 719 min)
+2026-11-11T09:01:49Z OK F_aya_vision_8b_ov_dev_b_zs
+2026-11-11T09:01:49Z START F_aya_vision_8b_ov_dev_b_ret attempt 1 (left 719 min)
+2026-11-11T09:01:49Z OK F_aya_vision_8b_ov_dev_b_ret
+2026-11-11T09:01:50Z START F_aya_vision_8b_ov_dev_b_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:50Z OK F_aya_vision_8b_ov_dev_b_rand0
+2026-11-11T09:01:50Z START S12_aya_vision_8b_ov_dev_b_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:51Z OK S12_aya_vision_8b_ov_dev_b_perm1
+2026-11-11T09:01:51Z START S12_aya_vision_8b_ov_dev_b_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:51Z OK S12_aya_vision_8b_ov_dev_b_perm2
+2026-11-11T09:01:52Z START S12_aya_vision_8b_xm_dev500_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:52Z OK S12_aya_vision_8b_xm_dev500_perm1
+2026-11-11T09:01:52Z START S12_aya_vision_8b_xm_dev500_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:53Z OK S12_aya_vision_8b_xm_dev500_perm2
+2026-11-11T09:01:53Z FALLBACK internvl3_8b: base arms re-decoded on the new host (ov_dev_a ov_dev_b xm_dev500)
+2026-11-11T09:01:53Z START F_internvl3_8b_ov_dev_a_zs attempt 1 (left 719 min)
+2026-11-11T09:01:53Z OK F_internvl3_8b_ov_dev_a_zs
+2026-11-11T09:01:54Z START F_internvl3_8b_ov_dev_a_ret attempt 1 (left 719 min)
+2026-11-11T09:01:54Z OK F_internvl3_8b_ov_dev_a_ret
+2026-11-11T09:01:55Z START F_internvl3_8b_ov_dev_a_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:55Z OK F_internvl3_8b_ov_dev_a_rand0
+2026-11-11T09:01:56Z START F_internvl3_8b_ov_dev_b_zs attempt 1 (left 719 min)
+2026-11-11T09:01:56Z OK F_internvl3_8b_ov_dev_b_zs
+2026-11-11T09:01:56Z START F_internvl3_8b_ov_dev_b_ret attempt 1 (left 719 min)
+2026-11-11T09:01:57Z OK F_internvl3_8b_ov_dev_b_ret
+2026-11-11T09:01:57Z START F_internvl3_8b_ov_dev_b_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:58Z OK F_internvl3_8b_ov_dev_b_rand0
+2026-11-11T09:01:58Z START F_internvl3_8b_xm_dev500_zs attempt 1 (left 719 min)
+2026-11-11T09:01:58Z OK F_internvl3_8b_xm_dev500_zs
+2026-11-11T09:01:58Z START F_internvl3_8b_xm_dev500_ret attempt 1 (left 719 min)
+2026-11-11T09:01:59Z OK F_internvl3_8b_xm_dev500_ret
+2026-11-11T09:01:59Z START F_internvl3_8b_xm_dev500_rand0 attempt 1 (left 719 min)
+2026-11-11T09:02:00Z OK F_internvl3_8b_xm_dev500_rand0
+2026-11-11T09:02:00Z START S13_internvl3_8b_ov_dev_a_perm1 attempt 1 (left 719 min)
+2026-11-11T09:02:00Z OK S13_internvl3_8b_ov_dev_a_perm1
+2026-11-11T09:02:01Z START S13_internvl3_8b_ov_dev_a_perm2 attempt 1 (left 719 min)
+2026-11-11T09:02:01Z OK S13_internvl3_8b_ov_dev_a_perm2
+2026-11-11T09:02:01Z START S13_internvl3_8b_ov_dev_b_perm1 attempt 1 (left 719 min)
+2026-11-11T09:02:02Z OK S13_internvl3_8b_ov_dev_b_perm1
+2026-11-11T09:02:02Z START S13_internvl3_8b_ov_dev_b_perm2 attempt 1 (left 719 min)
+2026-11-11T09:02:03Z OK S13_internvl3_8b_ov_dev_b_perm2
+2026-11-11T09:02:03Z START S13_internvl3_8b_xm_dev500_perm1 attempt 1 (left 719 min)
+2026-11-11T09:02:03Z OK S13_internvl3_8b_xm_dev500_perm1
+2026-11-11T09:02:04Z START S13_internvl3_8b_xm_dev500_perm2 attempt 1 (left 719 min)
+2026-11-11T09:02:04Z OK S13_internvl3_8b_xm_dev500_perm2
+2026-11-11T09:02:04Z START S14_qwen_ov_dev_b_fix1 attempt 1 (left 719 min)
+2026-11-11T09:02:05Z OK S14_qwen_ov_dev_b_fix1
+2026-11-11T09:02:05Z START S14_qwen_ov_dev_b_fix2 attempt 1 (left 719 min)
+2026-11-11T09:02:05Z OK S14_qwen_ov_dev_b_fix2
+2026-11-11T09:02:06Z START S14_qwen_ov_dev_b_fix3 attempt 1 (left 719 min)
+2026-11-11T09:02:06Z OK S14_qwen_ov_dev_b_fix3
+2026-11-11T09:02:06Z START S14_qwen_ov_dev_b_fix4 attempt 1 (left 719 min)
+2026-11-11T09:02:07Z OK S14_qwen_ov_dev_b_fix4
+2026-11-11T09:02:07Z START S14_qwen_xm_dev500_fix1 attempt 1 (left 719 min)
+2026-11-11T09:02:08Z OK S14_qwen_xm_dev500_fix1
+2026-11-11T09:02:08Z START S14_qwen_xm_dev500_fix2 attempt 1 (left 719 min)
+2026-11-11T09:02:09Z OK S14_qwen_xm_dev500_fix2
+2026-11-11T09:02:09Z START S14_qwen_xm_dev500_fix3 attempt 1 (left 719 min)
+2026-11-11T09:02:09Z OK S14_qwen_xm_dev500_fix3
+2026-11-11T09:02:09Z START S14_qwen_xm_dev500_fix4 attempt 1 (left 719 min)
+2026-11-11T09:02:10Z OK S14_qwen_xm_dev500_fix4
+2026-11-11T09:02:10Z START S15_qwen25vl_7b_xm_rand1 attempt 1 (left 719 min)
+2026-11-11T09:02:11Z OK S15_qwen25vl_7b_xm_rand1
+2026-11-11T09:02:11Z START S15_qwen25vl_7b_xm_rand2 attempt 1 (left 719 min)
+2026-11-11T09:02:11Z OK S15_qwen25vl_7b_xm_rand2
+2026-11-11T09:02:12Z START S15_aya_vision_8b_xm_rand1 attempt 1 (left 719 min)
+2026-11-11T09:02:12Z OK S15_aya_vision_8b_xm_rand1
+2026-11-11T09:02:12Z START S15_aya_vision_8b_xm_rand2 attempt 1 (left 719 min)
+2026-11-11T09:02:13Z OK S15_aya_vision_8b_xm_rand2
+2026-11-11T09:02:13Z START S15_internvl3_8b_xm_rand1 attempt 1 (left 719 min)
+2026-11-11T09:02:14Z OK S15_internvl3_8b_xm_rand1
+2026-11-11T09:02:14Z START S15_internvl3_8b_xm_rand2 attempt 1 (left 719 min)
+2026-11-11T09:02:14Z OK S15_internvl3_8b_xm_rand2
+2026-11-11T09:02:14Z JOB DONE gpu_h 0.01
+# ---- logs/F_aya_vision_8b_ov_dev_b_rand0.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_ov_dev_b-rand-k4--T1-d0-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_aya_vision_8b_ov_dev_b_ret.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_ov_dev_b-ret-k4-last-T1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_aya_vision_8b_ov_dev_b_zs.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_ov_dev_b-zs-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_internvl3_8b_ov_dev_a_rand0.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_a-rand-k4--T2-d0-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_internvl3_8b_ov_dev_a_ret.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_a-ret-k4-last-T2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_internvl3_8b_ov_dev_a_zs.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_a-zs-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_internvl3_8b_ov_dev_b_rand0.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_b-rand-k4--T2-d0-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_internvl3_8b_ov_dev_b_ret.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_b-ret-k4-last-T2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_internvl3_8b_ov_dev_b_zs.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_b-zs-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_internvl3_8b_xm_dev500_rand0.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_xm_dev500-rand-k4--T2-d0-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_internvl3_8b_xm_dev500_ret.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_xm_dev500-ret-k4-last-T2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_internvl3_8b_xm_dev500_zs.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_xm_dev500-zs-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_qwen25vl_7b_ov_dev_a_rand0.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_a-rand-k8--T1-d0-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_qwen25vl_7b_ov_dev_a_ret.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_a-ret-k8-first-T1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_qwen25vl_7b_ov_dev_a_zs.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_a-zs-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_qwen25vl_7b_ov_dev_b_rand0.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-rand-k8--T1-d0-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_qwen25vl_7b_ov_dev_b_ret.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-ret-k8-first-T1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_qwen25vl_7b_ov_dev_b_zs.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-zs-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_qwen25vl_7b_xm_dev500_rand0.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-rand-k8--T1-d0-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_qwen25vl_7b_xm_dev500_ret.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-ret-k8-first-T1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/F_qwen25vl_7b_xm_dev500_zs.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-zs-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S10a_aya_vision_8b_ov_dev_b.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+prompt parity with t1_aya_vision_8b_ov_dev_b-ret-k4-last-T1-mvi.preds.json: 2/2 equal
+DRY at_aya_vision_8b_ov_dev_b-ret-k4-last-T1-mvi-host50-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S10a_internvl3_8b_ov_dev_a.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+prompt parity with c1_internvl3_8b_ov_dev_a-ret-k4-last-T2.preds.json: 2/2 equal
+DRY at_internvl3_8b_ov_dev_a-ret-k4-last-T2-mvi-host50-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S10a_internvl3_8b_ov_dev_b.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+prompt parity with c2_internvl3_8b_ov_dev_b-ret-k4-last-T2.preds.json: 2/2 equal
+DRY at_internvl3_8b_ov_dev_b-ret-k4-last-T2-mvi-host50-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S10a_qwen25vl_7b_ov_dev_a.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+prompt parity with c1_qwen25vl_7b_ov_dev_a-ret-k8-first-T1.preds.json: 2/2 equal
+DRY at_qwen25vl_7b_ov_dev_a-ret-k8-first-T1-mvi-host50-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S10a_qwen25vl_7b_ov_dev_b.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+prompt parity with c2_qwen25vl_7b_ov_dev_b-ret-k8-first-T1.preds.json: 2/2 equal
+DRY at_qwen25vl_7b_ov_dev_b-ret-k8-first-T1-mvi-host50-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S10b_aya_vision_8b.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_ov_dev_b-ret-k4-last-T1-mvi-rev50-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S10b_internvl3_8b.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_b-ret-k4-last-T2-mvi-rev50-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S10b_qwen25vl_7b.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-ret-k8-first-T1-mvi-rev50-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S11_qwen25vl_7b_ov_dev_a_perm1.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_a-perm-k8-first-T1-p1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S11_qwen25vl_7b_ov_dev_a_perm2.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_a-perm-k8-first-T1-p2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S11_qwen25vl_7b_ov_dev_b_perm1.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-perm-k8-first-T1-p1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S11_qwen25vl_7b_ov_dev_b_perm2.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-perm-k8-first-T1-p2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S11_qwen25vl_7b_xm_dev500_perm1.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-perm-k8-first-T1-p1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S11_qwen25vl_7b_xm_dev500_perm2.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-perm-k8-first-T1-p2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S12_aya_vision_8b_ov_dev_b_perm1.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_ov_dev_b-perm-k4-last-T1-p1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S12_aya_vision_8b_ov_dev_b_perm2.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_ov_dev_b-perm-k4-last-T1-p2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S12_aya_vision_8b_xm_dev500_perm1.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_xm_dev500-perm-k4-last-T1-p1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S12_aya_vision_8b_xm_dev500_perm2.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_xm_dev500-perm-k4-last-T1-p2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S12_aya_xm_rand0.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_xm_dev500-rand-k4--T1-d0-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S12_aya_xm_ret.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_xm_dev500-ret-k4-last-T1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S12_aya_xm_zs.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_xm_dev500-zs-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S13_internvl3_8b_ov_dev_a_perm1.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_a-perm-k4-last-T2-p1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S13_internvl3_8b_ov_dev_a_perm2.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_a-perm-k4-last-T2-p2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S13_internvl3_8b_ov_dev_b_perm1.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_b-perm-k4-last-T2-p1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S13_internvl3_8b_ov_dev_b_perm2.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_ov_dev_b-perm-k4-last-T2-p2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S13_internvl3_8b_xm_dev500_perm1.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_xm_dev500-perm-k4-last-T2-p1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S13_internvl3_8b_xm_dev500_perm2.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_xm_dev500-perm-k4-last-T2-p2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S14_qwen_ov_dev_b_fix1.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-fix-k8--T1-f1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S14_qwen_ov_dev_b_fix2.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-fix-k8--T1-f2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S14_qwen_ov_dev_b_fix3.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-fix-k8--T1-f3-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S14_qwen_ov_dev_b_fix4.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-fix-k8--T1-f4-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S14_qwen_xm_dev500_fix1.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-fix-k8--T1-f1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S14_qwen_xm_dev500_fix2.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-fix-k8--T1-f2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S14_qwen_xm_dev500_fix3.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-fix-k8--T1-f3-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S14_qwen_xm_dev500_fix4.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-fix-k8--T1-f4-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S15_aya_vision_8b_xm_rand1.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_xm_dev500-rand-k4--T1-d1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S15_aya_vision_8b_xm_rand2.log
+DRY: snapshot check of aya_vision_8b skipped (no weights on the laptop)
+DRY at_aya_vision_8b_xm_dev500-rand-k4--T1-d2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S15_internvl3_8b_xm_rand1.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_xm_dev500-rand-k4--T2-d1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S15_internvl3_8b_xm_rand2.log
+DRY: snapshot check of internvl3_8b skipped (no weights on the laptop)
+DRY at_internvl3_8b_xm_dev500-rand-k4--T2-d2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S15_qwen25vl_7b_xm_rand1.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-rand-k8--T1-d1-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/S15_qwen25vl_7b_xm_rand2.log
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-rand-k8--T1-d2-mvi-smoke: 2 items, examples and prompts built; stop before the model load
+# ---- logs/compare.log
+DRY compare S10a_qwen25vl_7b_ov_dev_b: 50 ids; reference pinned; rc 3
+DRY compare S10a_qwen25vl_7b_ov_dev_a: 50 ids; reference pinned; rc 3
+DRY compare S10b_qwen25vl_7b: 50 ids; reference a host run; rc 3
+DRY compare S10a_aya_vision_8b_ov_dev_b: 50 ids; reference pinned; rc 3
+DRY compare S10b_aya_vision_8b: 50 ids; reference a host run; rc 3
+DRY compare S10a_internvl3_8b_ov_dev_b: 50 ids; reference pinned; rc 3
+DRY compare S10a_internvl3_8b_ov_dev_a: 50 ids; reference pinned; rc 3
+DRY compare S10b_internvl3_8b: 50 ids; reference a host run; rc 3
+# ---- logs/guard.log
+guard ok
+guard ok
+# ---- logs/selftest.log
+{"f30k_carve": {"qwen25vl_7b: ret-rand": "NOMINATE", "qwen25vl_7b: ret-rand (X1, 2 draws)": null, "qwen25vl_7b: ret_img-ret (RICES, descriptive)": null}}
+{"f30k_carve": {"qwen25vl_7b: ret-rand": "NOMINATE", "qwen25vl_7b: ret-rand (X1, 2 draws)": null, "qwen25vl_7b: ret_img-ret (RICES, descriptive)": null}}
+{"ov_dev_b": {"qwen25vl_7b: ret-rand": "DESCRIPTIVE"}}
+{}
+{"family": ["E1 aya_vision_8b: ret-rand", "E3 aya_vision_8b: ret-lmcap_ri", "E3 internvl3_8b: ret-lmcap_ri", "E3 qwen25vl_7b: ret-lmcap_ri"], "m_plan": 4, "status": {"E1 aya_vision_8b: ret-rand": "TIER-3 FAMILY", "E2 qwen25vl_7b: ret-rand": "VAL FAIL", "E3 aya_vision_8b: ret-lmcap_ri": "TIER-3 FAMILY", "E3 internvl3_8b: ret-lmcap_ri": "TIER-3 FAMILY", "E3 qwen25vl_7b: ret-lmcap_ri": "TIER-3 FAMILY"}}
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+selftest ok: split; X1 draws (draw-0 parity with C's rule); prompts (LMCap App. D, RICES interleave, C/C-EN templates unchanged); Vietnamese check; X2 masking; third-backbone selection (C's stage-A rule, W1); contrasts, X1 folding, X3 precision, advance labels, kill gate; budget, registry pins; summary end to end (dev299 skipped, VI descriptive), C2 pins, guard, store refusal; AMENDMENT_1 isolation (deny rules, symlink escape, datasets allow-list, open/os.open hook in a child); C-T2 admission: val admitted; test refused (names, extract, items_of, guard, hook), summary skips val; C-T2 decision (5 claims, val PASS, single-pass m, 0.98 margin, NOT RUN, W2 rows, W4), dupcheck, t2 CLI; C-ATTR run ids, example ids (perm / fix / rand_img from the list file), lmcap_rand; A3 prompt shape: two arms differ only through the example block; refusals: test-set names and real test file names refused; real dev names pass; no name clash; comparator (ids only), pinned stored runs, tau -inf columns, decode refusals before the model load
+c_attr_lists selftest ok: Sattolo: one n-cycle, no fixed point, (set, p) only; toy (12 clusters, 6 images): donor, near cut on q, refill count, ret / rand d0 / f0 = C's rule, f1-f4; K0 comparator (counts and failing ids); inputs pinned in STORED_SHA256; manifests 911 / 500
+{"f30k_carve": {"qwen25vl_7b: ret-rand": "NOMINATE", "qwen25vl_7b: ret-rand (X1, 2 draws)": null, "qwen25vl_7b: ret_img-ret (RICES, descriptive)": null}}
+{"f30k_carve": {"qwen25vl_7b: ret-rand": "NOMINATE", "qwen25vl_7b: ret-rand (X1, 2 draws)": null, "qwen25vl_7b: ret_img-ret (RICES, descriptive)": null}}
+{"ov_dev_b": {"qwen25vl_7b: ret-rand": "DESCRIPTIVE"}}
+{}
+{"family": ["E1 aya_vision_8b: ret-rand", "E3 aya_vision_8b: ret-lmcap_ri", "E3 internvl3_8b: ret-lmcap_ri", "E3 qwen25vl_7b: ret-lmcap_ri"], "m_plan": 4, "status": {"E1 aya_vision_8b: ret-rand": "TIER-3 FAMILY", "E2 qwen25vl_7b: ret-rand": "VAL FAIL", "E3 aya_vision_8b: ret-lmcap_ri": "TIER-3 FAMILY", "E3 internvl3_8b: ret-lmcap_ri": "TIER-3 FAMILY", "E3 qwen25vl_7b: ret-lmcap_ri": "TIER-3 FAMILY"}}
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+selftest ok: split; X1 draws (draw-0 parity with C's rule); prompts (LMCap App. D, RICES interleave, C/C-EN templates unchanged); Vietnamese check; X2 masking; third-backbone selection (C's stage-A rule, W1); contrasts, X1 folding, X3 precision, advance labels, kill gate; budget, registry pins; summary end to end (dev299 skipped, VI descriptive), C2 pins, guard, store refusal; AMENDMENT_1 isolation (deny rules, symlink escape, datasets allow-list, open/os.open hook in a child); C-T2 admission: val admitted; test refused (names, extract, items_of, guard, hook), summary skips val; C-T2 decision (5 claims, val PASS, single-pass m, 0.98 margin, NOT RUN, W2 rows, W4), dupcheck, t2 CLI; C-ATTR run ids, example ids (perm / fix / rand_img from the list file), lmcap_rand; A3 prompt shape: two arms differ only through the example block; refusals: test-set names and real test file names refused; real dev names pass; no name clash; comparator (ids only), pinned stored runs, tau -inf columns, decode refusals before the model load
+c_attr_lists selftest ok: Sattolo: one n-cycle, no fixed point, (set, p) only; toy (12 clusters, 6 images): donor, near cut on q, refill count, ret / rand d0 / f0 = C's rule, f1-f4; K0 comparator (counts and failing ids); inputs pinned in STORED_SHA256; manifests 911 / 500
+# ---- parity/
+{"model": "aya_vision_8b", "host_parity": "FAIL", "A1": "FAIL", "utc": "2026-11-11T09:01:33Z"}
+{"model": "internvl3_8b", "host_parity": "FAIL", "A1": "FAIL", "utc": "2026-11-11T09:01:36Z"}
+{"model": "qwen25vl_7b", "host_parity": "FAIL", "A1": "FAIL", "utc": "2026-11-11T09:01:31Z"}
+# ---- stdout
+2026-11-11T09:01:16Z DRY RUN (laptop, PI-1109g): mode selftest, decodes stop before the model load
+2026-11-11T09:01:21Z DRY: GPU-busy check skipped (no GPU)
+2026-11-11T09:01:21Z DRY: venv-lb freeze check skipped (laptop venv)
+2026-11-11T09:01:23Z DRY: aya_vision_8b pinsok skipped (no weights on the laptop)
+2026-11-11T09:01:23Z PREFLIGHT OK head 4186dded235c1f3fabf08f9be75c7033c8d88761 mode selftest
+2026-11-11T09:01:23Z SELFTEST MODE DONE
+2026-11-11T09:01:24Z DRY RUN (laptop, PI-1109g): mode block1, decodes stop before the model load
+2026-11-11T09:01:24Z DRY: GPU-busy check skipped (no GPU)
+2026-11-11T09:01:24Z DRY: venv-lb freeze check skipped (laptop venv)
+2026-11-11T09:01:26Z DRY: aya_vision_8b pinsok skipped (no weights on the laptop)
+2026-11-11T09:01:26Z PREFLIGHT OK head 4186dded235c1f3fabf08f9be75c7033c8d88761 mode block1
+2026-11-11T09:01:26Z STEP 1.0 host parity (a) and A1 (b): 300 registered + 100 per CC-331 N12 captions
+2026-11-11T09:01:26Z START S10a_qwen25vl_7b_ov_dev_b attempt 1 (left 720 min)
+2026-11-11T09:01:27Z OK S10a_qwen25vl_7b_ov_dev_b
+2026-11-11T09:01:27Z START S10a_qwen25vl_7b_ov_dev_a attempt 1 (left 719 min)
+2026-11-11T09:01:30Z OK S10a_qwen25vl_7b_ov_dev_a
+2026-11-11T09:01:30Z START S10b_qwen25vl_7b attempt 1 (left 719 min)
+2026-11-11T09:01:31Z OK S10b_qwen25vl_7b
+2026-11-11T09:01:31Z STEP 1.0 qwen25vl_7b host parity FAIL, A1 FAIL (K1: leaves the families)
+2026-11-11T09:01:31Z START S10a_aya_vision_8b_ov_dev_b attempt 1 (left 719 min)
+2026-11-11T09:01:32Z OK S10a_aya_vision_8b_ov_dev_b
+2026-11-11T09:01:32Z START S10b_aya_vision_8b attempt 1 (left 719 min)
+2026-11-11T09:01:33Z OK S10b_aya_vision_8b
+2026-11-11T09:01:33Z STEP 1.0 aya_vision_8b host parity FAIL, A1 FAIL (K1: leaves the families)
+2026-11-11T09:01:33Z START S10a_internvl3_8b_ov_dev_b attempt 1 (left 719 min)
+2026-11-11T09:01:34Z OK S10a_internvl3_8b_ov_dev_b
+2026-11-11T09:01:34Z START S10a_internvl3_8b_ov_dev_a attempt 1 (left 719 min)
+2026-11-11T09:01:35Z OK S10a_internvl3_8b_ov_dev_a
+2026-11-11T09:01:35Z START S10b_internvl3_8b attempt 1 (left 719 min)
+2026-11-11T09:01:36Z OK S10b_internvl3_8b
+2026-11-11T09:01:36Z STEP 1.0 internvl3_8b host parity FAIL, A1 FAIL (K1: leaves the families)
+2026-11-11T09:01:36Z DRY: comparators answered rc 3, so every fallback branch below is exercised
+2026-11-11T09:01:36Z FALLBACK qwen25vl_7b: base arms re-decoded on the new host (ov_dev_a ov_dev_b xm_dev500)
+2026-11-11T09:01:36Z START F_qwen25vl_7b_ov_dev_a_zs attempt 1 (left 719 min)
+2026-11-11T09:01:37Z OK F_qwen25vl_7b_ov_dev_a_zs
+2026-11-11T09:01:37Z START F_qwen25vl_7b_ov_dev_a_ret attempt 1 (left 719 min)
+2026-11-11T09:01:37Z OK F_qwen25vl_7b_ov_dev_a_ret
+2026-11-11T09:01:38Z START F_qwen25vl_7b_ov_dev_a_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:38Z OK F_qwen25vl_7b_ov_dev_a_rand0
+2026-11-11T09:01:38Z START F_qwen25vl_7b_ov_dev_b_zs attempt 1 (left 719 min)
+2026-11-11T09:01:39Z OK F_qwen25vl_7b_ov_dev_b_zs
+2026-11-11T09:01:39Z START F_qwen25vl_7b_ov_dev_b_ret attempt 1 (left 719 min)
+2026-11-11T09:01:39Z OK F_qwen25vl_7b_ov_dev_b_ret
+2026-11-11T09:01:40Z START F_qwen25vl_7b_ov_dev_b_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:40Z OK F_qwen25vl_7b_ov_dev_b_rand0
+2026-11-11T09:01:40Z START F_qwen25vl_7b_xm_dev500_zs attempt 1 (left 719 min)
+2026-11-11T09:01:41Z OK F_qwen25vl_7b_xm_dev500_zs
+2026-11-11T09:01:41Z START F_qwen25vl_7b_xm_dev500_ret attempt 1 (left 719 min)
+2026-11-11T09:01:41Z OK F_qwen25vl_7b_xm_dev500_ret
+2026-11-11T09:01:41Z START F_qwen25vl_7b_xm_dev500_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:42Z OK F_qwen25vl_7b_xm_dev500_rand0
+2026-11-11T09:01:42Z START S11_qwen25vl_7b_ov_dev_a_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:43Z OK S11_qwen25vl_7b_ov_dev_a_perm1
+2026-11-11T09:01:43Z START S11_qwen25vl_7b_ov_dev_a_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:43Z OK S11_qwen25vl_7b_ov_dev_a_perm2
+2026-11-11T09:01:44Z START S11_qwen25vl_7b_ov_dev_b_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:44Z OK S11_qwen25vl_7b_ov_dev_b_perm1
+2026-11-11T09:01:44Z START S11_qwen25vl_7b_ov_dev_b_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:45Z OK S11_qwen25vl_7b_ov_dev_b_perm2
+2026-11-11T09:01:45Z START S11_qwen25vl_7b_xm_dev500_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:45Z OK S11_qwen25vl_7b_xm_dev500_perm1
+2026-11-11T09:01:46Z START S11_qwen25vl_7b_xm_dev500_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:46Z OK S11_qwen25vl_7b_xm_dev500_perm2
+2026-11-11T09:01:46Z START S12_aya_xm_zs attempt 1 (left 719 min)
+2026-11-11T09:01:47Z OK S12_aya_xm_zs
+2026-11-11T09:01:47Z START S12_aya_xm_ret attempt 1 (left 719 min)
+2026-11-11T09:01:47Z OK S12_aya_xm_ret
+2026-11-11T09:01:48Z START S12_aya_xm_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:48Z OK S12_aya_xm_rand0
+2026-11-11T09:01:48Z FALLBACK aya_vision_8b: base arms re-decoded on the new host (ov_dev_b)
+2026-11-11T09:01:48Z START F_aya_vision_8b_ov_dev_b_zs attempt 1 (left 719 min)
+2026-11-11T09:01:49Z OK F_aya_vision_8b_ov_dev_b_zs
+2026-11-11T09:01:49Z START F_aya_vision_8b_ov_dev_b_ret attempt 1 (left 719 min)
+2026-11-11T09:01:49Z OK F_aya_vision_8b_ov_dev_b_ret
+2026-11-11T09:01:50Z START F_aya_vision_8b_ov_dev_b_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:50Z OK F_aya_vision_8b_ov_dev_b_rand0
+2026-11-11T09:01:50Z START S12_aya_vision_8b_ov_dev_b_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:51Z OK S12_aya_vision_8b_ov_dev_b_perm1
+2026-11-11T09:01:51Z START S12_aya_vision_8b_ov_dev_b_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:51Z OK S12_aya_vision_8b_ov_dev_b_perm2
+2026-11-11T09:01:52Z START S12_aya_vision_8b_xm_dev500_perm1 attempt 1 (left 719 min)
+2026-11-11T09:01:52Z OK S12_aya_vision_8b_xm_dev500_perm1
+2026-11-11T09:01:52Z START S12_aya_vision_8b_xm_dev500_perm2 attempt 1 (left 719 min)
+2026-11-11T09:01:53Z OK S12_aya_vision_8b_xm_dev500_perm2
+2026-11-11T09:01:53Z FALLBACK internvl3_8b: base arms re-decoded on the new host (ov_dev_a ov_dev_b xm_dev500)
+2026-11-11T09:01:53Z START F_internvl3_8b_ov_dev_a_zs attempt 1 (left 719 min)
+2026-11-11T09:01:53Z OK F_internvl3_8b_ov_dev_a_zs
+2026-11-11T09:01:54Z START F_internvl3_8b_ov_dev_a_ret attempt 1 (left 719 min)
+2026-11-11T09:01:54Z OK F_internvl3_8b_ov_dev_a_ret
+2026-11-11T09:01:55Z START F_internvl3_8b_ov_dev_a_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:55Z OK F_internvl3_8b_ov_dev_a_rand0
+2026-11-11T09:01:56Z START F_internvl3_8b_ov_dev_b_zs attempt 1 (left 719 min)
+2026-11-11T09:01:56Z OK F_internvl3_8b_ov_dev_b_zs
+2026-11-11T09:01:56Z START F_internvl3_8b_ov_dev_b_ret attempt 1 (left 719 min)
+2026-11-11T09:01:57Z OK F_internvl3_8b_ov_dev_b_ret
+2026-11-11T09:01:57Z START F_internvl3_8b_ov_dev_b_rand0 attempt 1 (left 719 min)
+2026-11-11T09:01:58Z OK F_internvl3_8b_ov_dev_b_rand0
+2026-11-11T09:01:58Z START F_internvl3_8b_xm_dev500_zs attempt 1 (left 719 min)
+2026-11-11T09:01:58Z OK F_internvl3_8b_xm_dev500_zs
+2026-11-11T09:01:58Z START F_internvl3_8b_xm_dev500_ret attempt 1 (left 719 min)
+2026-11-11T09:01:59Z OK F_internvl3_8b_xm_dev500_ret
+2026-11-11T09:01:59Z START F_internvl3_8b_xm_dev500_rand0 attempt 1 (left 719 min)
+2026-11-11T09:02:00Z OK F_internvl3_8b_xm_dev500_rand0
+2026-11-11T09:02:00Z START S13_internvl3_8b_ov_dev_a_perm1 attempt 1 (left 719 min)
+2026-11-11T09:02:00Z OK S13_internvl3_8b_ov_dev_a_perm1
+2026-11-11T09:02:01Z START S13_internvl3_8b_ov_dev_a_perm2 attempt 1 (left 719 min)
+2026-11-11T09:02:01Z OK S13_internvl3_8b_ov_dev_a_perm2
+2026-11-11T09:02:01Z START S13_internvl3_8b_ov_dev_b_perm1 attempt 1 (left 719 min)
+2026-11-11T09:02:02Z OK S13_internvl3_8b_ov_dev_b_perm1
+2026-11-11T09:02:02Z START S13_internvl3_8b_ov_dev_b_perm2 attempt 1 (left 719 min)
+2026-11-11T09:02:03Z OK S13_internvl3_8b_ov_dev_b_perm2
+2026-11-11T09:02:03Z START S13_internvl3_8b_xm_dev500_perm1 attempt 1 (left 719 min)
+2026-11-11T09:02:03Z OK S13_internvl3_8b_xm_dev500_perm1
+2026-11-11T09:02:04Z START S13_internvl3_8b_xm_dev500_perm2 attempt 1 (left 719 min)
+2026-11-11T09:02:04Z OK S13_internvl3_8b_xm_dev500_perm2
+2026-11-11T09:02:04Z START S14_qwen_ov_dev_b_fix1 attempt 1 (left 719 min)
+2026-11-11T09:02:05Z OK S14_qwen_ov_dev_b_fix1
+2026-11-11T09:02:05Z START S14_qwen_ov_dev_b_fix2 attempt 1 (left 719 min)
+2026-11-11T09:02:05Z OK S14_qwen_ov_dev_b_fix2
+2026-11-11T09:02:06Z START S14_qwen_ov_dev_b_fix3 attempt 1 (left 719 min)
+2026-11-11T09:02:06Z OK S14_qwen_ov_dev_b_fix3
+2026-11-11T09:02:06Z START S14_qwen_ov_dev_b_fix4 attempt 1 (left 719 min)
+2026-11-11T09:02:07Z OK S14_qwen_ov_dev_b_fix4
+2026-11-11T09:02:07Z START S14_qwen_xm_dev500_fix1 attempt 1 (left 719 min)
+2026-11-11T09:02:08Z OK S14_qwen_xm_dev500_fix1
+2026-11-11T09:02:08Z START S14_qwen_xm_dev500_fix2 attempt 1 (left 719 min)
+2026-11-11T09:02:09Z OK S14_qwen_xm_dev500_fix2
+2026-11-11T09:02:09Z START S14_qwen_xm_dev500_fix3 attempt 1 (left 719 min)
+2026-11-11T09:02:09Z OK S14_qwen_xm_dev500_fix3
+2026-11-11T09:02:09Z START S14_qwen_xm_dev500_fix4 attempt 1 (left 719 min)
+2026-11-11T09:02:10Z OK S14_qwen_xm_dev500_fix4
+2026-11-11T09:02:10Z START S15_qwen25vl_7b_xm_rand1 attempt 1 (left 719 min)
+2026-11-11T09:02:11Z OK S15_qwen25vl_7b_xm_rand1
+2026-11-11T09:02:11Z START S15_qwen25vl_7b_xm_rand2 attempt 1 (left 719 min)
+2026-11-11T09:02:11Z OK S15_qwen25vl_7b_xm_rand2
+2026-11-11T09:02:12Z START S15_aya_vision_8b_xm_rand1 attempt 1 (left 719 min)
+2026-11-11T09:02:12Z OK S15_aya_vision_8b_xm_rand1
+2026-11-11T09:02:12Z START S15_aya_vision_8b_xm_rand2 attempt 1 (left 719 min)
+2026-11-11T09:02:13Z OK S15_aya_vision_8b_xm_rand2
+2026-11-11T09:02:13Z START S15_internvl3_8b_xm_rand1 attempt 1 (left 719 min)
+2026-11-11T09:02:14Z OK S15_internvl3_8b_xm_rand1
+2026-11-11T09:02:14Z START S15_internvl3_8b_xm_rand2 attempt 1 (left 719 min)
+2026-11-11T09:02:14Z OK S15_internvl3_8b_xm_rand2
+2026-11-11T09:02:14Z JOB DONE gpu_h 0.01
