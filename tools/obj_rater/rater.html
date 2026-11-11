@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gán nhãn vật thể · XM3600-600</title>
+<style>
+  :root { --bg:#f6f7f9; --fg:#1b1f24; --mut:#5b6470; --card:#fff; --line:#d5dae1; --act:#e8f0fe; --y:#1a7f37; --n:#b42318; --u:#8a6d00; --a:#5b4bb7; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font: 16px/1.45 system-ui, "Segoe UI", Roboto, sans-serif; }
+  header { display:flex; gap:16px; align-items:center; flex-wrap:wrap; padding:8px 16px; background:var(--card); border-bottom:1px solid var(--line); }
+  header b { font-size:17px; } .mut { color:var(--mut); font-size:14px; }
+  #bar { flex:1 1 200px; height:8px; background:var(--line); border-radius:4px; overflow:hidden; min-width:120px; }
+  #bar i { display:block; height:100%; width:0; background:var(--y); }
+  #warn { display:none; background:#fde8e8; color:var(--n); padding:8px 16px; font-weight:600; }
+  main { display:grid; grid-template-columns: minmax(0,3fr) minmax(320px,2fr); gap:16px; padding:16px; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  #imgbox { background:#000; border-radius:8px; display:flex; align-items:center; justify-content:center; position:sticky; top:8px; align-self:start; height:calc(100vh - 76px); }
+  #img { max-width:100%; max-height:100%; object-fit:contain; cursor:zoom-in; }
+  .row { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:6px 10px; margin-bottom:6px; display:grid; grid-template-columns:minmax(0,1fr) auto; column-gap:10px; align-items:center; }
+  .row .fb { grid-column:1 / -1; }
+  .row.active { background:var(--act); border-color:#7aa2f7; }
+  .txt { min-width:0; } .lab { font-size:21px; font-weight:700; }
+  .hint { color:var(--mut); font-size:13px; line-height:1.3; }
+  .btns { display:flex; gap:5px; }
+  button { font: inherit; padding:7px 9px; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer; white-space:nowrap; }
+  button.sel.Y { background:var(--y); color:#fff; } button.sel.N { background:var(--n); color:#fff; }
+  button.sel.U { background:var(--u); color:#fff; } button.sel.A { background:var(--a); color:#fff; }
+  .fb { margin-top:6px; font-size:14px; font-weight:600; } .ok { color:var(--y); } .bad { color:var(--n); }
+  #nav { display:flex; gap:8px; margin-top:8px; } #next { flex:1; background:#1b1f24; color:#fff; font-weight:600; }
+  #next:disabled { opacity:.4; cursor:not-allowed; }
+  details { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:8px 12px; margin-bottom:10px; font-size:14px; }
+  details li { margin:3px 0; } kbd { border:1px solid var(--line); border-bottom-width:2px; border-radius:4px; padding:0 5px; background:#fff; }
+  #done { display:none; padding:48px 16px; text-align:center; font-size:20px; }
+</style>
+</head>
+<body>
+<header>
+  <b id="title">Gán nhãn vật thể</b><span class="mut" id="who"></span>
+  <span class="mut" id="prog"></span><div id="bar"><i></i></div><span class="mut" id="clock"></span>
+</header>
+<div id="warn">Chưa lưu được câu trả lời lên máy chủ. Đừng đóng trang; trang sẽ tự thử lại.</div>
+<main id="main">
+  <div id="imgbox"><img id="img" alt="ảnh cần xem" title="Bấm để mở ảnh cỡ lớn ở tab mới"></div>
+  <div>
+    <details id="guide">
+      <summary><b>Cách trả lời</b> (bấm để mở)</summary>
+      <ul>
+        <li><b>Có</b> <kbd>1</kbd>: nhìn thấy vật thuộc lớp này trong ảnh, kể cả nhỏ, ở hậu cảnh hoặc bị che một phần. Hình vẽ, tượng, ảnh in của vật cũng tính là Có.</li>
+        <li><b>Không</b> <kbd>2</kbd>: đã nhìn kỹ toàn ảnh và không thấy vật thuộc lớp này.</li>
+        <li><b>Không xác định được</b> (nút "Không rõ") <kbd>3</kbd>: ảnh quá mờ, vật quá nhỏ hoặc bị che nên không thể quyết định.</li>
+        <li><b>Tên lớp mơ hồ</b> (nút "Mơ hồ") <kbd>4</kbd>: từ này không chỉ một loại vật thể rõ ràng nên không trả lời được.</li>
+        <li>Nếu có dòng "Open Images: …", hãy hiểu lớp theo các tên tiếng Anh đó.</li>
+        <li>Chỉ dựa vào những gì nhìn thấy trong ảnh. Không tra cứu, không suy đoán theo bối cảnh.</li>
+        <li>Phím: <kbd>1</kbd>–<kbd>4</kbd> trả lời, <kbd>↑</kbd><kbd>↓</kbd> đổi dòng, <kbd>Enter</kbd> sang ảnh kế, <kbd>Backspace</kbd> quay lại ảnh trước.</li>
+      </ul>
+    </details>
+    <div id="rows"></div>
+    <div id="nav"><button id="prev">← Ảnh trước</button><button id="next">Ảnh kế (Enter)</button></div>
+  </div>
+</main>
+<div id="done"></div>
+<script>
+"use strict";
+const KIND = new URLSearchParams(location.search).has("practice") ? "practice" : "assignment";
+const NAMES = {Y:"Có", N:"Không", U:"Không xác định được", A:"Tên lớp mơ hồ"}, SHORT = {Y:"Có", N:"Không", U:"Không rõ", A:"Mơ hồ"}, KEYS = {"1":"Y","2":"N","3":"U","4":"A"};
+const $ = id => document.getElementById(id);
+let screens = [], ans = {}, cur = 0, row = 0, shownAt = 0, revealed = false, queue = [], t0 = Date.now();
+
+async function getJSON(u) { const r = await fetch(u, {cache:"no-store"}); if (!r.ok) throw new Error(u + " " + r.status); return r.json(); }
+
+async function flush() {
+  while (queue.length) {
+    try {
+      const r = await fetch("/save", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(queue[0])});
+      if (!r.ok) throw new Error(r.status);
+      queue.shift();
+    } catch (e) { $("warn").style.display = "block"; setTimeout(flush, 3000); return; }
+  }
+  $("warn").style.display = "none"; render();
+}
+
+function setAns(q, label) {
+  ans[q.qid] = label;
+  queue.push({kind: KIND, qid: q.qid, label, ms: Date.now() - shownAt});
+  if (queue.length === 1) flush();
+}
+
+const complete = s => s.q.every(q => ans[q.qid]);
+
+function render() {
+  if (cur >= screens.length) return finish();
+  const s = screens[cur], nq = screens.reduce((a, x) => a + x.q.length, 0), na = Object.keys(ans).filter(k => qset.has(k)).length;
+  if ($("img").dataset.sid !== s.sid) { $("img").src = "/" + s.image; $("img").dataset.sid = s.sid; shownAt = Date.now(); }
+  $("prog").textContent = (KIND === "practice" ? "Làm quen · " : "Phần " + s.part + " · ") + "ảnh " + (cur + 1) + "/" + screens.length + " · đã trả lời " + na + "/" + nq;
+  $("bar").firstElementChild.style.width = (100 * na / Math.max(1, nq)) + "%";
+  const box = $("rows"); box.textContent = "";
+  s.q.forEach((q, i) => {
+    const d = document.createElement("div"); d.className = "row" + (i === row ? " active" : "");
+    const t = document.createElement("div"); t.className = "txt"; d.appendChild(t);
+    const l = document.createElement("div"); l.className = "lab"; l.textContent = q.label; t.appendChild(l);
+    const h = document.createElement("div"); h.className = "hint"; h.textContent = q.hint || ""; h.title = q.hint || ""; t.appendChild(h);
+    const b = document.createElement("div"); b.className = "btns";
+    Object.entries(KEYS).forEach(([k, v]) => {
+      const x = document.createElement("button"); x.textContent = k + " " + SHORT[v]; x.title = NAMES[v]; x.className = (ans[q.qid] === v ? "sel " : "") + v;
+      x.onclick = () => { row = i; choose(v); }; b.appendChild(x);
+    });
+    d.appendChild(b);
+    if (revealed && q.answer) {
+      const f = document.createElement("div"), ok = ans[q.qid] === q.answer;
+      f.className = "fb " + (ok ? "ok" : "bad"); f.textContent = (ok ? "✓ Khớp" : "✗ Khác") + " với nhãn Open Images: " + NAMES[q.answer]; d.appendChild(f);
+    }
+    d.onclick = e => { if (e.target.tagName !== "BUTTON") { row = i; render(); } };
+    box.appendChild(d);
+  });
+  $("next").disabled = !complete(s) || queue.length > 0;
+  $("next").textContent = (KIND === "practice" && complete(s) && !revealed) ? "Xem đáp án (Enter)" : "Ảnh kế (Enter)";
+  $("prev").disabled = cur === 0;
+}
+
+function choose(v) {
+  const s = screens[cur]; if (revealed) return;
+  setAns(s.q[row], v);
+  const nxt = s.q.findIndex((q, i) => i > row && !ans[q.qid]);
+  if (nxt >= 0) row = nxt; else { const first = s.q.findIndex(q => !ans[q.qid]); if (first >= 0) row = first; }
+  render();
+}
+
+function next() {
+  const s = screens[cur]; if (!complete(s) || queue.length) return;
+  if (KIND === "practice" && !revealed) { revealed = true; return render(); }
+  revealed = false; cur += 1; row = 0; render();
+}
+function prev() { if (cur > 0) { revealed = false; cur -= 1; row = 0; render(); } }
+
+function finish() {
+  $("main").style.display = "none"; $("done").style.display = "block";
+  $("done").textContent = KIND === "practice" ? "Xong vòng làm quen. Hãy báo để mở bộ chính." : "Đã trả lời hết các câu. Mọi câu trả lời đã được lưu trên máy. Cảm ơn PI!";
+  $("prog").textContent = "hoàn tất";
+}
+
+document.addEventListener("keydown", e => {
+  if (cur >= screens.length || e.ctrlKey || e.metaKey || e.altKey) return;
+  const s = screens[cur];
+  if (KEYS[e.key]) { choose(KEYS[e.key]); e.preventDefault(); }
+  else if (e.key === "ArrowDown") { row = Math.min(s.q.length - 1, row + 1); render(); e.preventDefault(); }
+  else if (e.key === "ArrowUp") { row = Math.max(0, row - 1); render(); e.preventDefault(); }
+  else if (e.key === "Enter" || e.key === " ") { next(); e.preventDefault(); }
+  else if (e.key === "Backspace") { prev(); e.preventDefault(); }
+});
+$("next").onclick = next; $("prev").onclick = prev;
+$("img").onclick = () => window.open($("img").src, "_blank");
+setInterval(() => { const m = Math.floor((Date.now() - t0) / 60000); $("clock").textContent = "phiên này: " + m + " phút"; }, 10000);
+
+let qset = new Set();
+(async () => {
+  try {
+    const a = await getJSON("/" + KIND + ".json"), st = await getJSON("/state/" + KIND);
+    screens = a.screens; qset = new Set(screens.flatMap(s => s.q.map(q => q.qid))); ans = st.labels || {};
+    $("who").textContent = "Người gán: " + st.annotator; $("title").textContent = KIND === "practice" ? "Vòng làm quen" : "Gán nhãn vật thể · XM3600-600";
+    const i = screens.findIndex(s => !complete(s)); cur = i < 0 ? screens.length : i;
+    if (cur < screens.length) { const r = screens[cur].q.findIndex(q => !ans[q.qid]); row = Math.max(0, r); }
+    if (KIND === "practice") $("guide").open = true;
+    render();
+  } catch (e) { $("warn").style.display = "block"; $("warn").textContent = "Không tải được dữ liệu: " + e.message; }
+})();
+</script>
+</body>
+</html>
