@@ -17,6 +17,8 @@ The C-T2 commands below are kept unchanged and are not used by the C-ATTR job.
   python  scripts/c_attr/c_attr.py embed --set S --images DIR --snapshot DIR --out O       GPU: SigLIP2 vectors
   python  scripts/c_attr/c_attr.py decode --model M --set S --arm A [--draw D] [--memory coco|f30k] ...   GPU
       [--redecode host50|rev50 --stored RUN] [--dry-run]                              step 1.0; dry run
+      [--batch1] [--redecode fwd50]                                   block 1b (addendum v1.2): batch size 1; D1
+  python3 scripts/c_attr/c_attr.py plan1b --d1 RUN... --out CAP.json --steps STEPS.tsv [--dry-run]   V5 steps, V7 cap
   python  scripts/c_attr/c_attr.py compare --name N --set S --new F --old F [--stored] --out O   step 1.0 / A1
   python  scripts/c_attr/c_attr.py lmcap --set S --variant ri|se|rand|perm ...              GPU: LMCap re-implementation by this study
   python  scripts/c_attr/c_attr.py select --ledger L --out O                                CPU: third-backbone config
@@ -40,6 +42,7 @@ import random
 from statistics import NormalDist
 import sys
 import tempfile
+import time
 import unicodedata
 from pathlib import Path
 
@@ -61,6 +64,11 @@ CAP_S = int(12.0 * 3600)  # C-ATTR §6.3 / §10.2: block 1 hard cap
 ATTR = ROOT / "scripts/c_attr"
 ATTR_LISTS = ATTR / "c_attr_lists.json"  # §11.1 list file: cluster and image ids only
 PERMS, FIXES, REDECODE_N = (1, 2), (0, 1, 2, 3, 4), 50  # §2.1 D = 2; §2 fix f0-f4; step 1.0
+#: addendum v1.2 (CC-340): block 1b at batch size 1. V5 sets and backbone configs; V7 Tier-A end (24 h before K7)
+B1B_N = {"ov_dev_a": 911, "ov_dev_b": 925, "xm_dev500": 500}
+B1B_CFG = {"qwen25vl_7b": ("8", "first", "T1"), "internvl3_8b": ("4", "last", "T2"), "aya_vision_8b": ("4", "last", "T1")}
+B1B_PLAN_RATE = {"qwen25vl_7b": 0.80, "internvl3_8b": 1.40, "aya_vision_8b": 1.60}  # §6.1 point rates, dry run only
+B1B_CAP_H, TIER_A_END = 40.0, "2026-11-15T05:00:00Z"
 #: binding 1 and §5: never a set of this code (the set choices below are a closed list of development sets)
 TEST_SETS = ("ov_test", "xm_test2500", "ktvic_test", "uitviic_test", "f30k_test", "coco_karpathy_test", "nocaps_val")
 SESOI = 2.0  # C's registered value, both languages (C-EN reused it); a planning value, see PREREG §9
@@ -339,11 +347,71 @@ def attr_ex(ds: str) -> dict:
 
 
 def run_id_of(a) -> str:
-    """Unique per model, set, arm, k, order, template, draw / permutation / fix index and re-decode mode."""
+    """Unique per model, set, arm, k, order, template, draw / permutation / fix index, batch-1 flag (v1.2: '-b1', so a
+    batch-1 run never collides with a batched id) and re-decode mode."""
     tagd = {"rand": "d", "rand_img": "d", "perm": "p", "fix": "f"}.get(a.arm)
     return f"at_{a.model}_{a.set}-{a.arm}" + (f"-k{a.k}-{a.order or ''}-{a.tpl}" if a.arm != "zs" else "") \
         + (f"-{tagd}{a.draw}" if tagd else "") + (f"-m{a.memory}" if a.arm != "zs" else "") \
+        + ("-b1" if a.batch1 else "") \
         + (f"-{a.redecode}" if a.redecode else "") + ("-smoke" if a.limit else "")
+
+
+def d1_ref(run_id: str) -> str:
+    """V3: the D1 reference of a forward batch-1 decode is this host's step-1.0 (b) decode (reversed order, batch 1)."""
+    if not run_id.endswith("-b1-fwd50"):
+        raise SystemExit(f"{run_id}: not a D1 decode")
+    return run_id[: -len("-b1-fwd50")] + "-rev50"
+
+
+def b1b_steps(models) -> list[dict]:
+    """V5 run order, so the cap drops from the bottom: Tier A (Qwen2.5-VL, then InternVL3; OV-dev-A, then OV-dev-B),
+    Tier B (Aya-Vision OV-dev-B, then zs on OV-dev-B), Tier C (XM-dev500). Backbones not in `models` are NOT RUN."""
+    def arms(m, ds, draws, zs=False):
+        k, o, t = B1B_CFG[m]
+        out = [("zs", "", [])] if zs else []
+        out += [("ret", "", ["--k", k, "--order", o, "--tpl", t, "--memory", "vi"])]
+        out += [("rand", f"d{d}", ["--k", k, "--tpl", t, "--draw", str(d), "--memory", "vi"]) for d in draws]
+        out += [("perm", f"p{p}", ["--k", k, "--order", o, "--tpl", t, "--draw", str(p), "--memory", "vi"]) for p in PERMS]
+        return [(m, ds, *x) for x in out]
+    plan = [("A", x) for m in OLD for x in arms(m, "ov_dev_a", (0,)) + arms(m, "ov_dev_b", DRAWS)]
+    plan += [("B", x) for x in arms("aya_vision_8b", "ov_dev_b", DRAWS)]
+    plan += [("B", (m, "ov_dev_b", "zs", "", [])) for m in (*OLD, "aya_vision_8b")]
+    plan += [("C", x) for m in (*OLD, "aya_vision_8b") for x in arms(m, "xm_dev500", DRAWS, zs=True)]
+    return [{"tier": t, "name": f"B1{t}_{m}_{ds}_{arm}{d}", "model": m, "set": ds, "arm": arm, "args": args,
+             "n": B1B_N[ds]} for t, (m, ds, arm, d, args) in plan if m in models]
+
+
+def plan1b(rates: dict, now: float) -> dict:
+    """V7: P = sum_b [N_b r_b + n_runs_b L_b] / 3600 over the steps of the D1-passing backbones (rates = {model:
+    (L_b, r_b)}); hard cap min(40, 1.5 P) GPU-h. Tier A is never run in part: STOP before it unless 1.5 P_A fits the
+    cap and ends 24 h before K7."""
+    steps = b1b_steps(rates)
+    p = sum(s["n"] * rates[s["model"]][1] + rates[s["model"]][0] for s in steps) / 3600
+    pa = sum(s["n"] * rates[s["model"]][1] + rates[s["model"]][0] for s in steps if s["tier"] == "A") / 3600
+    cap = min(B1B_CAP_H, 1.5 * p)
+    import calendar
+    end = calendar.timegm(time.strptime(TIER_A_END, "%Y-%m-%dT%H:%M:%SZ"))
+    stop = pa > 0 and (1.5 * pa > cap or now + 1.5 * pa * 3600 > end)
+    return {"P_h": p, "P_A_h": pa, "cap_h": cap, "cap_s": int(cap * 3600), "tier_a_stop": stop, "steps": steps,
+            "not_run": [m for m in B1B_CFG if m not in rates]}
+
+
+def cmd_plan1b(a) -> None:
+    """After D1: rates from the D1 run files of the passing backbones (timing, model load excluded; --dry-run: the
+    §6.1 point rates, no load term). Writes the cap file and the step list; rc 4 = STOP before Tier A (V7)."""
+    rates = {}
+    for p in a.d1:
+        r = json.loads(Path(p).read_text(encoding="utf-8")) if not a.dry_run else {}
+        m = r.get("model") or next(m for m in B1B_CFG if f"at_{m}_" in Path(p).name)
+        rates[m] = (0.0, B1B_PLAN_RATE[m]) if a.dry_run else \
+            (r["timing"]["load_s"], r["timing"]["decode_s"] / r["timing"]["n"])
+    res = plan1b(rates, time.time()) | {"label": LABEL, "rates_L_r": rates, "dry_run": a.dry_run, "utc": lb.utc()}
+    Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
+    Path(a.steps).write_text("".join(f"{s['name']} {s['model']} {s['set']} {s['arm']} {' '.join(s['args'])}\n"
+                                     for s in res["steps"]), encoding="utf-8")
+    print(f"PLAN 1b: P {res['P_h']:.2f} GPU-h (Tier A {res['P_A_h']:.2f}), cap {res['cap_h']:.2f} GPU-h, "
+          f"{len(res['steps'])} runs, NOT RUN {res['not_run'] or 'none'}, Tier-A stop {res['tier_a_stop']}")
+    sys.exit(4 if res["tier_a_stop"] else 0)
 
 
 def skeleton(text: str) -> str:
@@ -378,6 +446,8 @@ def cmd_decode(a) -> None:
         raise SystemExit(f"{a.model}: pins open {pins_open(m)}; fill them from the authenticated tree API first")
     if a.draw not in {"perm": PERMS, "fix": FIXES}.get(a.arm, DRAWS):
         raise SystemExit(f"{a.arm}: draw {a.draw} is not registered")
+    if a.redecode == "fwd50" and not a.batch1:
+        raise SystemExit("fwd50 (D1, v1.2 V3) decodes at batch size 1 only: add --batch1")
     if a.dry_run:  # PI-1109g laptop dry run: no weights on the laptop, nothing is loaded
         print(f"DRY: snapshot check of {a.model} skipped (no weights on the laptop)")
     else:
@@ -387,8 +457,8 @@ def cmd_decode(a) -> None:
     caps, shown = memory_text(a, lang) if a.arm != "zs" else ({}, None)
     run_id = run_id_of(a)
     if a.redecode:  # step 1.0: the first 50 items; host50 keeps the stored order and batch slices (the last slice
-        n = -(-REDECODE_N // m["batch_size"]) * m["batch_size"]  # rounded up to a whole slice), rev50 reverses them
-        items = items[:n] if a.redecode == "host50" else items[:REDECODE_N][::-1]
+        n = -(-REDECODE_N // m["batch_size"]) * m["batch_size"]  # rounded up to a whole slice), rev50 reverses them;
+        items = items[:n] if a.redecode == "host50" else items[:REDECODE_N][::-1 if a.redecode == "rev50" else 1]  # fwd50 (D1) keeps the order
     if a.limit:  # W-d smoke (N7): the first images only, timing; never scored
         items = items[:a.limit]
     out = Path(a.out_dir) / f"{run_id}.preds.json"
@@ -412,15 +482,19 @@ def cmd_decode(a) -> None:
     if a.dry_run:
         print(f"DRY {run_id}: {len(items)} items, examples and prompts built; stop before the model load")
         return
+    t0 = time.time()
     proc, net = LB.load(m, a.snapshot, "cuda:0")
+    t1 = time.time()  # V7: model load and decode seconds kept apart
     folder = img_folder(a.set, a)
     if a.arm in ("ret_img", "rand_img"):
         gen = rices_generate(proc, net, lang, a.tpl, folder, Path(a.mem_images), exids, shown, a.mem_files)
         batch = 1
     else:
         g = LB.make_generate(proc, net, None, D.N_NEW, folder)
-        gen, batch = (lambda sl: g(sl, [texts[i] for i, _f, _h in sl])), 1 if a.redecode == "rev50" else m["batch_size"]
+        gen, batch = (lambda sl: g(sl, [texts[i] for i, _f, _h in sl])), \
+            1 if a.batch1 or a.redecode == "rev50" else m["batch_size"]  # v1.2 V2: --batch1
     rows = LB.decode_slices(items, batch, gen, out.with_name(out.name + ".partial.jsonl"), run_id)
+    timing = {"load_s": t1 - t0, "decode_s": time.time() - t1, "n": len(rows)}  # a resumed run under-counts decode_s
     rec = {"schema": SCHEMA, "label": LABEL, "run_id": run_id, "model": a.model, "dataset": a.set, "lang": lang,
            "spec": {"arm": {"ret_img": "ret", "rand_img": "rand"}.get(a.arm, a.arm),
                     "img_examples": a.arm in ("ret_img", "rand_img"),
@@ -431,7 +505,7 @@ def cmd_decode(a) -> None:
            "ex_sha256": sha(ATTR_LISTS) if a.arm != "zs" else None, "exemplars": exids,
            "predictions": {r["image_id"]: r["caption"] for r in rows},
            "hit_max": {r["image_id"]: r["hit_max"] for r in rows}, "n_tokens": {r["image_id"]: r["n_tokens"] for r in rows},
-           "prompt_sha256": {i: C.sha(t) for i, t in texts.items()}, "utc": lb.utc()}
+           "prompt_sha256": {i: C.sha(t) for i, t in texts.items()}, "timing": timing, "utc": lb.utc()}
     out.write_text(json.dumps(rec, ensure_ascii=False) + "\n", encoding="utf-8")
     Path(str(out) + ".sha256").write_text(f"{sha(out)}  {out.name}\n")
     print(f"{run_id}: {len(rows)} images")
@@ -715,7 +789,7 @@ def iso_config(ncs: Path, outputs: Path, restored: list[str], refused: set[str])
     rp = os.path.realpath
     return {"ncs": rp(ncs), "outputs": rp(outputs), "refused": refused,
             "ncs_ok": [rp(Path(ncs) / "datasets" / d) for d in ISO_DATASETS] + [rp(Path(ncs) / d) for d in ISO_NCS],
-            "out_ok": [rp(Path(outputs) / "c_attr")], "files_ok": {rp(f) for f in restored}}
+            "out_ok": [rp(Path(outputs) / "c_attr"), rp(Path(outputs) / "c_attr_b1")], "files_ok": {rp(f) for f in restored}}
 
 
 def iso_default() -> dict:
@@ -868,7 +942,7 @@ def cmd_score(a) -> None:
     runs = [as_run(p) for p in a.runs]
     if any(r["dataset"] != a.set or r.get("schema") != SCHEMA for r in runs):
         raise SystemExit("score: a run is not a C-T1 output of this set")
-    if any(r["run_id"].endswith(("-smoke", "-host50", "-rev50")) for r in runs):
+    if any(r["run_id"].endswith(("-smoke", "-host50", "-rev50", "-fwd50")) for r in runs):
         raise SystemExit("score: smoke and re-decode runs are never scored")
     c2 = c2_runs(Path(a.c2_dir)) if a.c2_dir else []
     if c2 and a.set != "ov_dev_b":
@@ -967,6 +1041,9 @@ def cmd_compare(a) -> None:
         sys.exit(3)
     new = json.loads(Path(a.new).read_text(encoding="utf-8"))
     old = old or json.loads(Path(a.old).read_text(encoding="utf-8"))
+    if a.d1 and (old.get("run_id") != d1_ref(new.get("run_id", ""))
+                                    or new["spec"]["batch_size"] != 1 or old["spec"]["batch_size"] != 1):
+        raise SystemExit("REFUSED: D1 compares a forward batch-1 decode with this host's step-1.0 (b) rev50 decode only")
     bad = differing(new, old, ids)
     rec = {"label": LABEL, "check": a.name, "n": len(ids), "identical": len(ids) - len(bad), "failing_ids": bad,
            "new_sha256": sha(a.new), "old_sha256": sha(a.old), "utc": lb.utc()}
@@ -1608,8 +1685,27 @@ def selftest_attr(ok: list) -> None:
             for d in draws:
                 for rd in (None, "host50", "rev50"):
                     ids.add(run_id_of(ns(model="qwen25vl_7b", set=ds, arm=arm, k=8, order="first", tpl="T1", draw=d,
-                                         memory="vi", redecode=rd, limit=0)))
+                                         memory="vi", redecode=rd, limit=0, batch1=False)))
     assert len(ids) == 3 * (1 + 1 + 3 + 2 + 5 + 1 + 1) * 3, "run ids unique per arm, draw, set and re-decode mode"
+    rid = lambda **kw: run_id_of(ns(**{"model": "qwen25vl_7b", "set": "ov_dev_b", "arm": "ret", "k": 8, "order": "first",
+                                       "tpl": "T1", "draw": 0, "memory": "vi", "redecode": None, "limit": 0, "batch1": False, **kw}))
+    b1 = {rid(arm=arm, draw=d, batch1=True) for arm, d in (("zs", 0), ("ret", 0), ("rand", 0), ("perm", 1), ("fix", 2))}
+    assert len(b1) == 5 and all("b1" in x.split("-") for x in b1) and not b1 & ids, "v1.2: '-b1' in every batch-1 id"
+    assert d1_ref(rid(redecode="fwd50", batch1=True)) == rid(redecode="rev50"), "D1 reference = the step-1.0 (b) decode"
+    st = b1b_steps(B1B_CFG)
+    assert {t: sum(s["n"] for s in st if s["tier"] == t) for t in "ABC"} == {"A": 18388, "B": 8325, "C": 10500}
+    assert len(st) == 50 and len({s["name"] for s in st}) == 50 and [s["tier"] for s in st] == sorted(s["tier"] for s in st)
+    tb = [(s["model"], s["arm"]) for s in st if s["tier"] == "B"]
+    assert tb.index(("qwen25vl_7b", "zs")) == 6 and st[0]["model"] == "qwen25vl_7b" and st[0]["set"] == "ov_dev_a", \
+        "V5 order: Qwen2.5-VL first, OV-dev-A first; Tier B zs after Aya-Vision's six arms (drop order)"
+    pl = plan1b({m: (0.0, r) for m, r in B1B_PLAN_RATE.items()}, 0)
+    assert abs(pl["P_h"] - 12.75) < 0.02 and abs(pl["cap_h"] - 1.5 * pl["P_h"]) < 1e-9 and not pl["tier_a_stop"]
+    big = plan1b({m: (60.0, 50.0) for m in B1B_CFG}, 0)
+    assert big["cap_h"] == B1B_CAP_H and big["tier_a_stop"], "cap min(40, 1.5 P); Tier A never in part"
+    assert plan1b({m: (0.0, r) for m, r in B1B_PLAN_RATE.items()}, 2e9)["tier_a_stop"], "Tier A ends 24 h before K7"
+    one = plan1b({"aya_vision_8b": (30.0, 1.6)}, 0)
+    assert one["not_run"] == list(OLD) and {s["model"] for s in one["steps"]} == {"aya_vision_8b"} and one["P_A_h"] == 0
+    ok.append("v1.2: '-b1' ids, D1 reference, V5 steps and counts (37,213), V7 cap and Tier-A stop")
     ex = {"ret": {"q": ["r1", "r2", "r3", "r4"]}, "rand": {"0": {"q": ["a1", "a2", "a3", "a4"]}},
           "perm": {"1": {"q": ["p1", "p2", "p3", "p4"]}, "2": {"q": ["s1", "s2", "s3", "s4"]}},
           "fix": {"0": ["f1", "f2"], "3": ["g1", "g2"]}}
@@ -1675,15 +1771,42 @@ def selftest_attr(ok: list) -> None:
         out = Path(tmp) / "o"
         out.mkdir()
         da = ns(model="qwen25vl_7b", set="ov_dev_b", arm="zs", k=0, order=None, tpl=None, draw=0, memory="vi",
-                redecode=None, limit=0, dry_run=True, stored=None, out_dir=out, c_lists=a.c_lists, snapshot=None)
+                redecode=None, limit=0, dry_run=True, stored=None, out_dir=out, c_lists=a.c_lists, snapshot=None,
+                batch1=False)
         (out / f"{run_id_of(da)}.preds.json").write_text("{}")
-        for kw, msg in (({}, "exists"), ({"arm": "perm", "draw": 3}, "not registered"), ({"set": "xm_test2500"}, "REFUSED")):
+        for kw, msg in (({}, "exists"), ({"arm": "perm", "draw": 3}, "not registered"), ({"set": "xm_test2500"}, "REFUSED"),
+                        ({"arm": "ret", "redecode": "fwd50"}, "batch size 1 only")):
             try:
                 cmd_decode(ns(**{**vars(da), **kw}))
                 raise AssertionError(msg)
             except SystemExit as e:
                 assert msg in str(e), e
+        import contextlib
+        ids50 = [r[0] for r in rows["ov_dev_b"]][:REDECODE_N]
+        cap = {i: f"chú mèo nằm số {j}" for j, i in enumerate(ids50)}
+        runf = {}
+        for name, run_id, rd, caps in (("new", rid(redecode="fwd50", batch1=True), "fwd50", {**cap, ids50[3]: "con chó"}),
+                                       ("rev", rid(redecode="rev50"), "rev50", cap), ("host", rid(redecode="host50"), "host50", cap)):
+            runf[name] = Path(tmp) / f"{name}.json"
+            runf[name].write_text(json.dumps({"run_id": run_id, "spec": {"redecode": rd, "batch_size": 1}, "predictions": caps}))
+        ca = ns(name="D1", set="ov_dev_b", new=runf["new"], old=runf["rev"], out=Path(tmp) / "d1.json", c_lists=a.c_lists,
+                stored=False, dry_run=False, d1=True)
+        buf = io.StringIO()
+        try:
+            with contextlib.redirect_stdout(buf):
+                cmd_compare(ca)
+            raise AssertionError("one changed caption must give rc 3")
+        except SystemExit as e:
+            assert e.code == 3, e
+        assert "49/50" in buf.getvalue() and "con chó" not in buf.getvalue() and "mèo" not in buf.getvalue(), \
+            "D1 comparator prints counts and ids only"
+        try:
+            cmd_compare(ns(**{**vars(ca), "old": runf["host"]}))
+            raise AssertionError("D1 against the step-1.0 (a) decode must be refused")
+        except SystemExit as e:
+            assert "REFUSED" in str(e), e
     ok.append("comparator (ids only), pinned stored runs, tau -inf columns, decode refusals before the model load")
+    ok.append("v1.2 D1: compared with the rev50 decode only, fwd50 needs --batch1, no caption printed")
 
 
 # ------------------------------------------------------------------------------------------------ CLI
@@ -1721,7 +1844,9 @@ def main() -> None:
             p.add_argument("--order", choices=("first", "last"))
             p.add_argument("--tpl", choices=("T1", "T2"))
             p.add_argument("--draw", type=int, choices=sorted(set(DRAWS) | set(PERMS) | set(FIXES)), default=0)
-            p.add_argument("--redecode", choices=("host50", "rev50"), help="step 1.0: first 50 items, never scored")
+            p.add_argument("--redecode", choices=("host50", "rev50", "fwd50"),
+                           help="step 1.0 / D1 (fwd50, with --batch1): first 50 items, never scored")
+            p.add_argument("--batch1", action="store_true", help="v1.2 block 1b: batch size 1, run id '-b1'")
             p.add_argument("--stored", type=Path, help="pinned stored run: its per-image prompt hashes must match")
             p.add_argument("--dry-run", action="store_true", help="PI-1109g: stop before the model load")
         else:
@@ -1743,6 +1868,12 @@ def main() -> None:
     for k in ("new", "old", "out", "c_lists"):
         p.add_argument("--" + k.replace("_", "-"), type=Path)
     p.add_argument("--stored", action="store_true", help="--old is a stored run, admitted by its pin")
+    p.add_argument("--d1", action="store_true", help="v1.2 V3: --old must be the D1 reference of --new (d1_ref)")
+    p.add_argument("--dry-run", action="store_true")
+    p = sub.add_parser("plan1b")
+    p.add_argument("--d1", type=Path, nargs="*", default=[])
+    p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--steps", type=Path, required=True)
     p.add_argument("--dry-run", action="store_true")
     p = sub.add_parser("extract")
     p.add_argument("--zip", type=Path, required=True)
@@ -1788,6 +1919,7 @@ def main() -> None:
         p.add_argument("--path", type=Path)
         p.add_argument("--used", type=Path)
         p.add_argument("--marker", type=Path)
+        p.add_argument("--cap-s", type=int, default=CAP_S, help="v1.2 block 1b: the V7 cap from CAP_1B.json")
     a = ap.parse_args()
     if a.selftest:
         return selftest()
@@ -1800,7 +1932,7 @@ def main() -> None:
 
     def left():
         import b1
-        print(b1.left(a.used, a.marker, CAP_S))
+        print(b1.left(a.used, a.marker, a.cap_s))
 
     {"lists": lambda: cmd_lists(a), "store": lambda: cmd_store(a), "draws": lambda: cmd_draws(a),
      "embed": lambda: cmd_embed(a), "decode": lambda: cmd_decode(a), "lmcap": lambda: cmd_lmcap(a),
@@ -1808,8 +1940,8 @@ def main() -> None:
      "cfg": lambda: cmd_cfg(a), "extract": lambda: cmd_extract(a), "guard": lambda: cmd_guard(a),
      "memcheck": lambda: cmd_memcheck(a), "fetch": lambda: cmd_fetch(a), "pinsok": lambda: cmd_pinsok(a),
      "t1check": lambda: cmd_t1check(a), "select": lambda: cmd_select(a), "summary": lambda: cmd_summary(a), "t2": lambda: cmd_t2(a),
-     "dupcheck": lambda: cmd_dupcheck(a), "lock": lock, "left": left, "compare": lambda: cmd_compare(a)
-     }.get(a.cmd, ap.print_help)()
+     "dupcheck": lambda: cmd_dupcheck(a), "lock": lock, "left": left, "compare": lambda: cmd_compare(a),
+     "plan1b": lambda: cmd_plan1b(a)}.get(a.cmd, ap.print_help)()
 
 
 if __name__ == "__main__":

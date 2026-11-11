@@ -12,15 +12,20 @@
 # host for the sets of its perm step (rows labelled "base arms re-decoded on the new host"). A failed (b) is recorded
 # (K1: that backbone leaves the families); nothing is dropped for it. No scoring here; the comparators print counts and
 # item ids only. InternVL3 and every backbone at tau = -inf (no deletion step).
-# Usage, inside tmux:  bash scripts/c_attr/c_attr_job.sh selftest|block1 <expected 40-hex HEAD>
+# Usage, inside tmux:  bash scripts/c_attr/c_attr_job.sh selftest|block1|block1b <expected 40-hex HEAD>
+# block1b (addendum v1.2, CC-340/CC-341): outputs under /root/outputs/c_attr_b1; never beside block 1. 1b.0 D1 per
+# backbone (forward batch-1 decode of the first 50 OV-dev-B ret items against this host's step-1.0 (b) rev50 decode;
+# on a host without it, a rev50 decode first), then plan1b (V7 cap from the D1 load / decode seconds) and a PAUSE so
+# the cap is logged before Tier A; the second call runs STEPS_1B.tsv at batch size 1 under that cap (drops from the
+# bottom: Tier C, Tier B zs, Aya-Vision Tier B). C_ATTR_1B_MODELS limits the backbones on a second host (h2).
 # Dry run: C_ATTR_DRY=1 on the host itself (PI 2026-11-11: checks run on the rented host, not the laptop; outputs
 # under /root/outputs/c_attr_dry; scripts/c_attr/dryrun.sh is the laptop harness of the same run): every decode runs with
 # --limit 2 --dry-run and stops before the model load; checks that need the host (GPU, weights, venv freeze) are skipped
 # with a DRY line; the comparators answer rc 3, so the fallback branch is exercised too.
 set -euo pipefail
-MODE=${1:?usage: c_attr_job.sh selftest|block1 <expected HEAD>}; EXPECT=${2:?usage: c_attr_job.sh MODE <expected HEAD>}
+MODE=${1:?usage: c_attr_job.sh selftest|block1|block1b <expected HEAD>}; EXPECT=${2:?usage: c_attr_job.sh MODE <expected HEAD>}
 DRY=${C_ATTR_DRY:-0}
-case $MODE in selftest|block1) ;; *) echo "unknown mode $MODE"; exit 2;; esac
+case $MODE in selftest|block1|block1b) ;; *) echo "unknown mode $MODE"; exit 2;; esac
 MID=$(cat /root/.vsps_machine_id 2>/dev/null || true)
 case "$MID" in h1|h2) ;; *) echo "REFUSED: /root/.vsps_machine_id is not h1 or h2"; exit 1;; esac
 cd /root/vsps
@@ -28,7 +33,8 @@ export NCS_DATA=/root/ncs-data HF_HUB_OFFLINE=1 VSPS_MACHINE_ID=$MID
 LB=/root/venv-lb/bin/python; PY=/root/vsps/.venv/bin/python
 LB_FREEZE=685ffe2a0100ce2489cccd77313d366fb1dce4455871a9d82f65aa139fa85784   # setup_gpu.sh H_LB (as C-T1 / C-T2)
 X=scripts/c_attr/c_attr.py; JOB=scripts/c_attr/c_attr_job.sh
-O=/root/outputs/c_attr; [ "$DRY" = 1 ] && O=/root/outputs/c_attr_dry   # a dry run never leaves .done files for block 1
+O=/root/outputs/c_attr; [ $MODE = block1b ] && O=/root/outputs/c_attr_b1
+[ "$DRY" = 1 ] && O=${O}_dry   # a dry run never leaves .done files for block 1 or 1b
 P=$O/out; LOG=$O/logs; Q=$O/parity; USED=$O/gpu_seconds.tsv; MARK=$O/CAP_STOP.json
 DS=$NCS_DATA/datasets; CL=manuscript/prereg/2026-10-22_c_stage1/lists.json
 snap() { case $1 in qwen25vl_7b|internvl3_8b) echo $NCS_DATA/models/$1;; *) echo $NCS_DATA/models/c_t1_$1;; esac; }
@@ -50,6 +56,11 @@ if dry; then say "DRY: GPU-busy check skipped (no GPU)"
 else [ -z "$(nvidia-smi --query-compute-apps=pid --format=csv,noheader)" ] || stop "GPU busy (another job): never concurrent"; fi
 (cd scripts/c_attr && sha256sum --quiet -c SHA256SUMS) || stop "scripts/c_attr/SHA256SUMS"
 (cd manuscript/prereg/2026-11-11_c_attr_dev && sha256sum --quiet -c SHA256SUMS) || stop "registration SHA256SUMS"
+if [ $MODE = block1b ]; then
+  (cd manuscript/prereg/2026-11-11_c_attr_dev && sha256sum --quiet -c SHA256SUMS_1B) || stop "addendum v1.2 SHA256SUMS_1B"
+  [ -e /root/outputs/c_attr/RUNNING ] && stop "block 1 is still running (never beside it, §6.7)"
+  dry || [ "$MID" = h2 ] || [ -s /root/outputs/c_attr/SHA256SUMS ] || stop "block 1 not closed: /root/outputs/c_attr/SHA256SUMS missing"
+fi
 (cd scripts/c_attr && sha256sum --quiet -c c_attr_lists.json.sha256) || stop "c_attr_lists.json differs from its sidecar"
 grep -E 'ov_dev_[ab]-ret-' scripts/c_attr/STORED_SHA256 | sha256sum --quiet -c || stop "stored ret runs differ"
 if dry; then say "DRY: venv-lb freeze check skipped (laptop venv)"
@@ -77,19 +88,20 @@ gpu() {  # gpu NAME CMD...: one GPU step under the time left; up to 3 attempts, 
   [ -s $LOG/$name.done ] && return 0
   local att t t0 rc
   for att in 1 2 3; do
-    t=$($PY $X left --used $USED --marker $MARK) || stop "cap arithmetic"
-    [ "$t" -gt 0 ] || cap_stop "12 GPU-h cap before $name"
+    t=$($PY $X left --used $USED --marker $MARK "${CAPARGS[@]}") || stop "cap arithmetic"
+    [ "$t" -gt 0 ] || cap_stop "GPU-h cap before $name"
     say "START $name attempt $att (left $((t / 60)) min)"
     rc=0; t0=$(date +%s); echo "$name start $t0" >> $USED
     timeout ${t}s "$@" >> $LOG/$name.log 2>&1 || rc=$?
     echo "$name $(( $(date +%s) - t0 ))" >> $USED
-    [ $rc = 124 ] && cap_stop "12 GPU-h cap reached during $name"
+    [ $rc = 124 ] && cap_stop "GPU-h cap reached during $name"
     [ $rc = 0 ] && { say "OK $name"; ts > $LOG/$name.done; return 0; }
     say "FAIL $name rc=$rc attempt $att"
   done
   stop "$name failed 3 attempts"
 }
 DRYARGS=(); dry && DRYARGS=(--limit 2 --dry-run)
+CAPARGS=()   # block 1: the 12 GPU-h CAP_S of c_attr.py
 dec() {  # dec NAME MODEL SET ARM [extra args]: one decode, Vietnamese memory, example ids from c_attr_lists.json
   local name=$1 m=$2 s=$3 arm=$4; shift 4
   gpu $name $LB $X decode --model $m --set $s --arm $arm --snapshot $(snap $m) --out-dir $P --c-lists $CL \
@@ -114,6 +126,38 @@ declare -A PERM_SETS=([qwen25vl_7b]="ov_dev_a ov_dev_b xm_dev500" [internvl3_8b]
 declare -A FALLBACK_SETS=([qwen25vl_7b]="ov_dev_a ov_dev_b xm_dev500" [internvl3_8b]="ov_dev_a ov_dev_b xm_dev500"
                           [aya_vision_8b]="ov_dev_b")
 out_of() { local m=$1 s=$2 rd=$3; set -- ${CFG[$m]}; echo "$P/at_${m}_${s}-ret-k$1-$2-$3-mvi-$rd$(dry && echo -smoke).preds.json"; }
+
+# ---------------------------------------------------------------- block 1b (addendum v1.2, V3-V7)
+if [ $MODE = block1b ]; then
+  CAPARGS=(--cap-s 144000)   # D1 runs under the 40 GPU-h ceiling of V7; the D1 seconds count against the cap
+  pass=()
+  for m in ${C_ATTR_1B_MODELS:-qwen25vl_7b internvl3_8b aya_vision_8b}; do
+    set -- ${CFG[$m]}; k=$1 o=$2 t=$3
+    ref=/root/outputs/c_attr/out/$(basename $(out_of $m ov_dev_b rev50))
+    if [ ! -s $ref ]; then   # V3 / second-host row: no step-1.0 (b) file here, so a batch-1 reversed decode first
+      [ "$MID" = h1 ] && ! dry && stop "$ref missing on h1 (D1 needs the step-1.0 (b) decode)"
+      dec D1r_$m $m ov_dev_b ret --k $k --order $o --tpl $t --memory vi --redecode rev50; ref=$(out_of $m ov_dev_b rev50)
+    fi
+    dec D1_$m $m ov_dev_b ret --k $k --order $o --tpl $t --memory vi --redecode fwd50 --batch1
+    d1=PASS; cmp_ D1_$m ov_dev_b $(out_of $m ov_dev_b b1-fwd50) $ref --d1 || d1=FAIL
+    dry && d1=PASS   # dry: the comparator answers rc 3; every step is exercised
+    printf '{"model": "%s", "D1": "%s", "host": "%s", "utc": "%s"}\n' $m $d1 $MID "$(ts)" > $Q/STEP1B0_$m.json
+    say "STEP 1b.0 $m D1 $d1$( [ $d1 = FAIL ] && echo ' (leaves the 1b families; its 1b steps NOT RUN)')"
+    if [ $d1 = PASS ]; then pass+=($(out_of $m ov_dev_b b1-fwd50)); fi
+  done
+  if [ ! -s $O/CAP_1B.json ]; then
+    rc=0; $PY $X plan1b --d1 "${pass[@]}" --out $O/CAP_1B.json --steps $O/STEPS_1B.tsv $(dry && echo --dry-run) \
+      >> $LOG/plan.log 2>&1 || rc=$?
+    say "$(tail -1 $LOG/plan.log)"
+    [ $rc = 4 ] && { rm -f $O/CAP_1B.json; stop "Tier A does not fit the cap or ends later than 24 h before K7 (V7): back to the judge"; }
+    [ $rc = 0 ] || stop "plan1b rc=$rc"
+    dry || { say "PAUSE after D1: log the cap line ($O/CAP_1B.json sha256 $(sha256sum $O/CAP_1B.json | cut -c1-64)), then run block1b again"; exit 0; }
+  fi
+  CAPARGS=(--cap-s $($PY -I -c 'import json, sys; print(json.load(open(sys.argv[1]))["cap_s"])' $O/CAP_1B.json))
+  say "BLOCK 1b: $(wc -l < $O/STEPS_1B.tsv) runs at batch size 1 under cap ${CAPARGS[1]} s"
+  while read -r name m s arm rest <&3; do dec $name $m $s $arm $rest --batch1; done 3< $O/STEPS_1B.tsv
+  finish
+fi
 
 # step 1.0: 300 registered captions (3 backbones x 2 x 50, OV-dev-B) + 100 per CC-331 N12 (OV-dev-A, check (a))
 say "STEP 1.0 host parity (a) and A1 (b): 300 registered + 100 per CC-331 N12 captions"

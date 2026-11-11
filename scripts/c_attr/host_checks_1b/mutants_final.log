@@ -1,0 +1,38 @@
+2026-11-11T18:11:28Z
+control: the three self-tests pass on the unmutated files
+L1 identity permutation allowed: KILLED c_attr_lists.py: AssertionError: (2, 1)
+L2 near cut on the donor only: KILLED c_attr_lists.py: AssertionError: no shown cluster at cosine >= 0.92 to q
+L3 fix seed without f<j>: KILLED c_attr_lists.py: AssertionError
+L4 refill from q's own list: KILLED c_attr_lists.py: AssertionError: first 8 of the donor's list
+L5 randrange(i + 1): KILLED c_attr_lists.py: AssertionError: (2, 1)
+A1 perm reads the ret list: KILLED c_attr.py: AssertionError: perm from the list file only
+A2 rand_img uses ret clusters: KILLED c_attr.py: AssertionError: rand_img shows the rand d0 clusters
+A3 lmcap_rand keeps one retrieved caption: KILLED c_attr.py: AssertionError: lmcap_rand: rand d0 minus shots, nothing retrieved
+A4 guard without the Flickr30K test names: KILLED c_attr.py: AssertionError
+A5 deletion step applied to InternVL3 (tau rows other than -inf): KILLED c_attr.py: summary: two ledger rows for internvl3_8b|ret on ov_dev_b
+S1 draw 0 in place of the draw mean: KILLED c_attr_score.py: AssertionError: ret = perm + 3 and perm = rand give tau_pair = 3, tau_marg = 0
+S2 unpaired bootstrap: KILLED c_attr_score.py: AssertionError: replicate-wise identity: one shared matrix
+S3 a fresh index matrix per contrast: KILLED c_attr_score.py: AssertionError: replicate-wise identity: one shared matrix
+S4 kappa without the placebo term: KILLED c_attr_score.py: AssertionError: κ of a zs run against itself is 0
+S5 Holm skipped: KILLED c_attr_score.py: AssertionError: Holm: 0.009 > 0.025 / 3
+S6 >= and > swapped in DETECTED: KILLED c_attr_score.py: AssertionError: boundary (θ̂ = 2.0; p = α_j): both inclusive
+S7 >= and > swapped in NEGLIGIBLE: KILLED c_attr_score.py: AssertionError
+S8 > and >= swapped in REVERSED: KILLED c_attr_score.py: AssertionError
+S9 V_b divided by V_a, not V_img: KILLED c_attr_score.py: AssertionError
+S10 masking applied to the references: KILLED c_attr_score.py: AssertionError: losses with the references unmasked
+S11 Holm at 0.05 in place of 0.025 (CC-331): KILLED c_attr_score.py: AssertionError: Holm: 0.009 > 0.025 / 3
+S12 'split of a known τ_sel' missing on OV-dev-B (CC-331): KILLED c_attr_score.py: KeyError: 'note'
+A6 '-b1' missing from the run id: KILLED c_attr.py: AssertionError: v1.2: '-b1' in every batch-1 id
+A7 D1 compared with the step-1.0 (a) host50 decode: KILLED c_attr.py: AssertionError: D1 reference = the step-1.0 (b) decode
+A8 D1 comparator prints a caption: KILLED c_attr.py: AssertionError: D1 comparator prints counts and ids only
+S13 V4 (1): only perm runs gated on OV-dev-B (CC-338 S4): KILLED c_attr_score.py: AssertionError: <lambda> must refuse
+S14 V4 (3) removed: batched runs scored before the verdict: KILLED c_attr_score.py: AssertionError: <lambda> must refuse
+S15 v11 file accepted by name: KILLED c_attr_score.py: AssertionError: nomination must refuse
+S16 v11 file accepted by content: KILLED c_attr_score.py: AssertionError: nomination must refuse
+S17 batched row missing its label: KILLED c_attr_score.py: AssertionError
+S18 batched run accepted into a 1b contrast: KILLED c_attr_score.py: AssertionError
+S19 host-parity fallback label missing (CC-338 S2): KILLED c_attr_score.py: KeyError: 'host'
+S20 batch-1 rows carry the batched label: KILLED c_attr_score.py: AssertionError
+33/33 killed; survived: none
+rc mutants 0
+2026-11-11T18:11:45Z

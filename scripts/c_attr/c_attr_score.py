@@ -33,6 +33,51 @@ KNOWN_SUM = ("ov_dev_a", "ov_dev_b")
 OLD3 = ("qwen25vl_7b", "internvl3_8b", "aya_vision_8b")
 NOMINATORS = ("qwen25vl_7b", "internvl3_8b")  # §7.5 item 1
 REG_RDF = {"ov_dev_a": (1, 2, 1), "ov_dev_b": (3, 2, 5), "xm_dev500": (3, 2, 5), "f30k_val": (3, 2, 0)}  # §7.2
+#: addendum v1.2 (CC-340): row labels (V1, V6, CC-338 S2), the nomination file it accepts, the v1.1 file it refuses
+REG12 = "C_ATTR_DEV_ADDENDUM_v1_2.md (block 1b, batch size 1)"
+V11_NAME = "c_attr_nomination_v11.json"
+B1_NOTE = "batch size 1; registered in v1.2 after K1 fired, on string-identity counts only"
+BATCHED = "A1 not met; batched decode; descriptive"
+SEL_B1 = "batch-1 re-decode of a known τ_sel"
+HOST_FB = "base arms re-decoded on the new host"
+
+
+def is_b1(run_id: str) -> bool:
+    return "b1" in run_id.split("-")
+
+
+def split_b1(led: list[dict]) -> tuple[list[dict], list[dict]]:
+    """V2: batch-1 rows ('-b1' run ids) and every other row (batched block-1, stored); never mixed in one contrast."""
+    b1 = [r for r in led if is_b1(r.get("run_id", ""))]
+    return b1, [r for r in led if not is_b1(r.get("run_id", ""))]
+
+
+def nomination(path) -> dict:
+    """V4: the v1.2 nomination file; c_attr_nomination_v11.json is refused by name and by content (V1)."""
+    if not path or not Path(path).is_file():
+        raise SystemExit("REFUSED: no v1.2 nomination file (V4)")
+    rec = json.loads(Path(path).read_text(encoding="utf-8"))
+    if Path(path).name == V11_NAME or rec.get("registration") != REG12 or "K1" in str(rec.get("reason", "")):
+        raise SystemExit(f"REFUSED: {Path(path).name} is not a v1.2 nomination file (the v1.1 K1 file never licenses)")
+    return rec
+
+
+def released(a) -> bool:
+    """V4 (3): batched outputs only after the batch-1 OV-dev-B verdict (a v1.2 summary holding OV-dev-B) or, by the
+    release clause, an empty v1.2 nomination file. The LOG lines that must precede both are not checked here."""
+    if a.verdict:
+        v = json.loads(Path(a.verdict).read_text(encoding="utf-8"))
+        return v.get("registration") == REG12 and "ov_dev_b" in v.get("sets", {}) and bool(v.get("nomination_sha256"))
+    return bool(a.nomination) and nomination(a.nomination)["nominated"] == []
+
+
+def parity(paths) -> dict:
+    """CC-338 S2 / v1.2 V3: {model: {host_parity, A1, D1}} from parity/STEP10_<m>.json and STEP1B0_<m>.json."""
+    out = {}
+    for p in paths or []:
+        r = json.loads(Path(p).read_text(encoding="utf-8"))
+        out.setdefault(r["model"], {}).update({k: r[k] for k in ("host_parity", "A1", "D1") if k in r})
+    return out
 
 
 # ------------------------------------------------------------------------------------------------ §7.3-7.4
@@ -132,7 +177,9 @@ def family_keys(nominated: list[str]) -> list[str]:
 
 
 def ovb_perm_scored(ledger_rows: list[dict]) -> bool:
-    return any(r.get("dataset") == "ov_dev_b" and r.get("arm") == "perm" for r in ledger_rows)
+    """CC-338 S4: any new OV-dev-B output (a perm row or any C-ATTR 'at_' run) counts."""
+    return any(r.get("dataset") == "ov_dev_b" and (r.get("arm") == "perm" or str(r.get("run_id", "")).startswith("at_"))
+               for r in ledger_rows)
 
 
 # ------------------------------------------------------------------------------------------------ §7.7 variance
@@ -232,35 +279,68 @@ def strip(o):
 
 def cmd_score(a) -> None:
     runs = [json.loads(Path(p).read_text(encoding="utf-8")) for p in a.runs]
-    if a.set == "ov_dev_b" and any(r.get("spec", {}).get("arm") == "perm" for r in runs):
-        if not a.nomination or not Path(a.nomination).is_file():  # §7.5 item 2, Binding 8
-            raise SystemExit("REFUSED: OV-dev-B perm outputs are scored only after the nomination file is hashed")
+    at = [r for r in runs if str(r.get("run_id", "")).startswith("at_")]
+    b1 = [r for r in at if is_b1(r["run_id"])]
+    if any(r.get("spec", {}).get("batch_size") != 1 for r in b1):
+        raise SystemExit("REFUSED: a '-b1' run that was not decoded at batch size 1")
+    ovb = [r for r in runs if str(r.get("run_id", "")).startswith("at_") or r.get("spec", {}).get("arm") == "perm"]
+    if a.set == "ov_dev_b" and ovb:  # §7.5 item 2, Binding 8, CC-338 S4, v1.2 V4 (1)
+        nomination(a.nomination)
         print(f"nomination file sha256 {A.sha(a.nomination)}")
+    if len(b1) < len(at) and not released(a):  # v1.2 V4 (3)
+        raise SystemExit("REFUSED: batched block-1 outputs are scored only after the batch-1 OV-dev-B verdict (V4)")
     A.cmd_score(a)
 
 
 def cmd_nominate(a) -> None:
+    if a.closed:  # v1.2 V4 release clause: 1b ends with no verdict; the OPS line "1b closed: <reason>" logs its hash
+        rec = {"label": A.LABEL, "registration": REG12, "nominated": [], "closed": a.closed}
+        Path(a.out).write_text(json.dumps(rec, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(f"empty v1.2 nomination file; {a.out} sha256 {A.sha(a.out)} (write it to the LOG first)")
+        return
+    if not a.ledger:
+        raise SystemExit("nominate: --ledger or --closed")
     led = A.read_ledgers(a.ledger)
     if ovb_perm_scored(led) or any(Path(a.ledger[0]).parent.glob("*ov_dev_b*perm*")):
-        raise SystemExit("REFUSED: an OV-dev-B perm score exists; the nomination comes first (§7.5)")
+        raise SystemExit("REFUSED: an OV-dev-B score of a new run exists; the nomination comes first (§7.5)")
+    led = split_b1(led)[0]  # V1: no nomination rule on batched outputs
     per, _p, ids = A.set_columns(led, "ov_dev_a", "vi")
+    if not per:
+        raise SystemExit("REFUSED: no batch-1 OV-dev-A rows; an empty v1.2 file comes only from --closed")
     rows = set_rows(per, "ov_dev_a", A.boot_idx(len(ids)))
     apply_labels(rows, "ov_dev_a", {})
-    rec = {"label": A.LABEL, "rule": "95% lower bound >= +2.0 on OV-dev-A (c_t1.advance)", "note": SPLIT,
+    rec = {"label": A.LABEL, "registration": REG12, "batch": B1_NOTE,
+           "rule": "95% lower bound >= +2.0 on OV-dev-A (c_t1.advance)", "note": SPLIT,
            "nominated": nominate(rows), "rows": strip({k: v for k, v in rows.items() if k.split("|")[0] in NOMINATORS})}
     Path(a.out).write_text(json.dumps(rec, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"nominated {rec['nominated'] or 'nothing'}; {a.out} sha256 {A.sha(a.out)} (write it to the LOG first)")
 
 
 def cmd_summary(a) -> None:
-    led = A.read_ledgers(a.ledger)
-    nom = json.loads(Path(a.nomination).read_text(encoding="utf-8"))["nominated"] if a.nomination else []
-    res = {"label": A.LABEL, "alpha_familywise_one_sided": ALPHA, "sesoi": SESOI, "nominated": nom,
-           "nomination_sha256": A.sha(a.nomination) if a.nomination else None, "sets": {}}
+    led, batched = split_b1(A.read_ledgers(a.ledger))
+    nom = nomination(a.nomination)["nominated"] if a.nomination else []
+    par = parity(a.parity)
+    res = {"label": A.LABEL, "registration": REG12, "alpha_familywise_one_sided": ALPHA, "sesoi": SESOI,
+           "nominated": nom, "nomination_sha256": A.sha(a.nomination) if a.nomination else None, "parity": par,
+           "sets": {}, "batched": {}}
     for ds in ("ov_dev_a", "ov_dev_b", "xm_dev500", "f30k_val"):
+        per, _p, ids = A.set_columns(batched, ds, A.SETS[ds])
+        if per:  # V1 / CC-340 1d: batched and stored rows, no family, labelled; CC-338 S2 reads STEP10
+            rows = set_rows(per, ds, A.boot_idx(len(ids)))
+            apply_labels(rows, ds, {})
+            for r in rows.values():
+                if r["model"] in OLD3 and "A1" not in par.get(r["model"], {}):
+                    raise SystemExit(f"REFUSED: no STEP10 record for {r['model']} (CC-338 S2)")
+                r["batch"] = BATCHED
+                if par.get(r["model"], {}).get("host_parity") == "FAIL":
+                    r["host"] = HOST_FB
+            res["batched"][ds] = {"n": len(ids), "rows": strip(rows)}
         per, _p, ids = A.set_columns(led, ds, A.SETS[ds])
         if not per:
             continue
+        no_d1 = sorted({k.split("|")[0] for k in per} - {m for m, v in par.items() if v.get("D1") == "PASS"})
+        if no_d1:
+            raise SystemExit(f"REFUSED: batch-1 rows of {no_d1} without a D1 PASS (V3)")
         idx = A.boot_idx(len(ids))  # one index matrix per set
         rows = set_rows(per, ds, idx)
         fam = {}
@@ -268,7 +348,11 @@ def cmd_summary(a) -> None:
             fam = {"registered (§7.5)": family_keys(nom),
                    "S-BB (§7.6)": [f"{m}|tau_sel" for m in sorted({k.split("|")[0] for k in per}) if m not in OLD3]}
         apply_labels(rows, ds, fam)
-        if ds == "ov_dev_b" and not nom:
+        for r in rows.values():  # V6
+            r["batch"] = B1_NOTE
+            if r.get("estimand") == "tau_sel" and ds in KNOWN_SUM:
+                r["note"] = SEL_B1
+        if ds == "ov_dev_b" and a.nomination and not nom:  # batch-1 nomination only (CC-340 1c)
             res["no_claim"] = "no claim was nominated on OV-dev-A"
         var = {m: draw_variance(per, m, per.get(f"{m}|ret")) for m in sorted({k.split("|")[0] for k in per})}
         fx = {}
@@ -388,18 +472,21 @@ def selftest() -> None:
         led = Path(tmp) / "ledger_ov_dev_b.jsonl"
         led.write_text(json.dumps({"dataset": "ov_dev_b", "arm": "perm", "model": "qwen25vl_7b"}) + "\n")
         try:
-            cmd_nominate(argparse.Namespace(ledger=[led], out=Path(tmp) / "n.json"))
+            cmd_nominate(argparse.Namespace(ledger=[led], closed=None, out=Path(tmp) / "n.json"))
             raise AssertionError("nomination must be refused")
         except SystemExit as e:
             assert "REFUSED" in str(e)
         try:
             run = Path(tmp) / "run.json"
             run.write_text(json.dumps({"spec": {"arm": "perm"}}))
-            cmd_score(argparse.Namespace(set="ov_dev_b", runs=[run], nomination=None))
+            cmd_score(argparse.Namespace(set="ov_dev_b", runs=[run], nomination=None, verdict=None))
             raise AssertionError("OV-dev-B perm scoring before the nomination must be refused")
         except SystemExit as e:
             assert "REFUSED" in str(e)
     ok.append("nomination (95% lower bound >= +2.0), refused once an OV-dev-B perm score exists; OV-dev-B perm needs it")
+    selftest_v12(per)
+    ok.append("v1.2: v11 file refused by name and content, V4 gates (1) and (3) and release, '-b1' batch size, "
+              "batch-1 rows apart from batched rows, labels (batch 1, batched, τ_sel, host parity), D1 / STEP10 needed")
     pv = draw_variance(per, "qwen25vl_7b", per["qwen25vl_7b|ret"])
     assert abs(pv["sigma2_w"] - np.mean(np.var(np.array(rand), axis=0, ddof=1))) < 1e-9
     nn, rf, vb = 925, 5, 4.0
@@ -436,6 +523,90 @@ def selftest() -> None:
     print("c_attr_score selftest ok: " + "; ".join(ok))
 
 
+def selftest_v12(per: dict) -> None:
+    """Addendum v1.2 (CC-340 W1): planted files and ledgers only."""
+    import tempfile
+    ns = argparse.Namespace
+
+    def refused(f, *args, **kw) -> str:
+        try:
+            f(*args, **kw)
+        except SystemExit as e:
+            return str(e)
+        raise AssertionError(f"{f.__name__} must refuse")
+
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp)
+        good = {"registration": REG12, "nominated": ["H_pair(qwen25vl_7b)"]}
+        files = {"v11": (V11_NAME, good), "k1": ("other.json", {"registration": "C_ATTR_DEV_PREREG_v1_1.md 44f81329",
+                                                                  "claims": [], "reason": "K1 fired"}),
+                 "ok": ("c_attr_nomination.json", good), "empty": ("empty.json", {**good, "nominated": []}),
+                 "verdict": ("verdict.json", {"registration": REG12, "sets": {"ov_dev_b": {}}, "nomination_sha256": "x"})}
+        for k, (name, rec) in files.items():
+            (t / k).mkdir()
+            files[k] = t / k / name
+            files[k].write_text(json.dumps(rec))
+        assert "REFUSED" in refused(nomination, files["v11"]), "the v11 file is refused by name"
+        assert "REFUSED" in refused(nomination, files["k1"]), "the v11 content is refused under any name"
+        assert nomination(files["ok"])["nominated"] == good["nominated"]
+        run = lambda rid, bs=1: {"run_id": rid, "spec": {"arm": "ret", "batch_size": bs}}  # noqa: E731
+        rp = {}
+        for k, r in {"b1": run("at_q_ov_dev_b-ret-k8-first-T1-mvi-b1"), "bad": run("at_q_ov_dev_b-ret-mvi-b1", 4),
+                     "bat": run("at_q_ov_dev_b-perm-k8-first-T1-p1-mvi", 8), "batA": run("at_q_ov_dev_a-perm-p1-mvi", 8)}.items():
+            rp[k] = t / f"{k}.json"
+            rp[k].write_text(json.dumps(r))
+        real = A.cmd_score
+        A.cmd_score = lambda a: None  # the gates only; nothing is scored here
+        try:
+            sc = lambda s, k, **kw: cmd_score(ns(**{"set": s, "runs": [rp[k]], "nomination": None, "verdict": None, **kw}))  # noqa: E731
+            assert "REFUSED" in refused(sc, "ov_dev_b", "b1"), "V4 (1): batch-1 OV-dev-B before the nomination"
+            assert "REFUSED" in refused(sc, "ov_dev_b", "b1", nomination=files["v11"]), "V1: the v11 file is no licence"
+            sc("ov_dev_b", "b1", nomination=files["ok"])
+            assert "batch size 1" in refused(sc, "ov_dev_a", "bad"), "a '-b1' run must be a batch-1 decode"
+            assert "REFUSED" in refused(sc, "ov_dev_a", "batA", nomination=files["ok"]), "V4 (3): batched before the verdict"
+            assert "REFUSED" in refused(sc, "ov_dev_b", "bat", nomination=files["ok"])
+            sc("ov_dev_a", "batA", verdict=files["verdict"])
+            sc("ov_dev_a", "batA", nomination=files["empty"])  # release clause
+        finally:
+            A.cmd_score = real
+        ids = [str(i) for i in range(len(per["qwen25vl_7b|ret"]))]
+        led = t / "ledger.jsonl"
+        lines = []
+        for ds in ("ov_dev_a", "ov_dev_b"):
+            for key, v in per.items():
+                m, arm = key.split("|")
+                base = {"dataset": ds, "model": m, "arm": arm.split("_")[0], "tau": "-inf",
+                        "draw": int(arm[-1]) if "_" in arm else 0, "per_image": {"ids": ids, "cider_s": list(v)}}
+                lines.append({**base, "run_id": f"at_{key}-{ds}-b1"})
+                if arm.startswith(("ret", "perm")):  # batched ret = perm + 10, so a mixed contrast is seen
+                    vv = list(v + 7) if arm == "ret" else list(v)
+                    lines.append({**base, "run_id": f"at_{key}-{ds}", "per_image": {"ids": ids, "cider_s": vv}})
+        led.write_text("".join(json.dumps(x) + "\n" for x in lines))
+        pf = []
+        for m, rec in (("qwen25vl_7b", {"A1": "FAIL", "host_parity": "FAIL"}), ("qwen25vl_7b", {"D1": "PASS"})):
+            pf.append(t / f"p{len(pf)}.json")
+            pf[-1].write_text(json.dumps({"model": m, **rec}))
+        out = t / "s.json"
+        assert "D1" in refused(cmd_summary, ns(ledger=[led], nomination=files["ok"], parity=pf[:1], out=out))
+        assert "STEP10" in refused(cmd_summary, ns(ledger=[led], nomination=files["ok"], parity=pf[1:], out=out))
+        assert "REFUSED" in refused(cmd_summary, ns(ledger=[led], nomination=files["v11"], parity=pf, out=out))
+        cmd_summary(ns(ledger=[led], nomination=files["ok"], parity=pf, out=out))
+        s = json.loads(out.read_text())
+        r1, rb = s["sets"]["ov_dev_b"]["rows"], s["batched"]["ov_dev_b"]["rows"]
+        assert abs(r1["qwen25vl_7b|tau_pair"]["d"] - 3) < 1e-9 and abs(rb["qwen25vl_7b|tau_pair"]["d"] - 10) < 1e-9, \
+            "batch-1 contrasts use batch-1 rows only"
+        assert all(r["batch"] == B1_NOTE for r in r1.values()) and all(r["batch"] == BATCHED for r in rb.values())
+        assert r1["qwen25vl_7b|tau_sel"]["note"] == SEL_B1 and rb["qwen25vl_7b|tau_pair"]["host"] == HOST_FB
+        assert r1["qwen25vl_7b|tau_pair"]["family"] and not rb["qwen25vl_7b|tau_pair"]["family"], "no family on batched rows"
+        only_batched = t / "batched_a.jsonl"
+        only_batched.write_text("".join(json.dumps(x) + "\n" for x in lines
+                                        if x["dataset"] == "ov_dev_a" and not is_b1(x["run_id"])))
+        assert "REFUSED" in refused(cmd_nominate, ns(ledger=[only_batched], closed=None, out=out)), \
+            "V1: no nomination rule on batched rows"
+        cmd_nominate(ns(ledger=[], closed="D1 failed for both Tier-A backbones", out=t / "rel.json"))
+        assert released(ns(verdict=None, nomination=t / "rel.json")), "release clause: the empty v1.2 file"
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--selftest", action="store_true")
@@ -447,12 +618,15 @@ def main() -> None:
     for k in ("kit_b", "c_lists", "refs", "captions", "c2_dir", "c2_ledger", "nomination"):
         p.add_argument("--" + k.replace("_", "-"), type=Path)
     p.add_argument("--memory", choices=("vi", "coco", "f30k"), default=None)
+    p.add_argument("--verdict", type=Path, help="v1.2 V4 (3): the batch-1 OV-dev-B summary, hashed in the LOG")
     p = sub.add_parser("nominate")
-    p.add_argument("--ledger", type=Path, nargs="+", required=True)
+    p.add_argument("--ledger", type=Path, nargs="*", default=[])
+    p.add_argument("--closed", help="v1.2 V4 release clause: write the empty v1.2 nomination file with this reason")
     p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("summary")
     p.add_argument("--ledger", type=Path, nargs="+", required=True)
     p.add_argument("--nomination", type=Path)
+    p.add_argument("--parity", type=Path, nargs="*", default=[], help="parity/STEP10_<m>.json and STEP1B0_<m>.json")
     p.add_argument("--out", type=Path, required=True)
     p = sub.add_parser("copybound")
     p.add_argument("--set", choices=("ov_dev_b", "xm_dev500"), required=True)

@@ -4,6 +4,8 @@ in a scratch copy of scripts/c_attr/ (the rest of the repo mirrored by symlinks,
 the three self-tests must then fail. One KILLED / SURVIVED line per mutant; rc 0 only when all are killed. Offline,
 CPU, laptop:
     ~/.venvs/c_stage1_lists/bin/python -I -B scripts/c_attr/c_attr_mutants.py [--jobs 2]
+--no-netns (CC-339 W3): run the self-tests without `unshare -rn`, for a host whose container refuses user
+namespaces; the self-tests are offline by construction, so this changes no kill.
 """
 import argparse
 import os
@@ -58,8 +60,28 @@ MUT = [  # (id, file, old, new): each old occurs exactly once
     ("S11 Holm at 0.05 in place of 0.025 (CC-331)", S, "SESOI, ALPHA = A.SESOI, 0.025", "SESOI, ALPHA = A.SESOI, 0.05"),
     ("S12 'split of a known τ_sel' missing on OV-dev-B (CC-331)", S, 'KNOWN_SUM = ("ov_dev_a", "ov_dev_b")',
      'KNOWN_SUM = ("ov_dev_a",)'),
+    # addendum v1.2, block 1b (CC-340 W1, CC-341)
+    ("A6 '-b1' missing from the run id", A, '+ ("-b1" if a.batch1 else "")', '+ ""'),
+    ("A7 D1 compared with the step-1.0 (a) host50 decode", A, 'return run_id[: -len("-b1-fwd50")] + "-rev50"',
+     'return run_id[: -len("-b1-fwd50")] + "-host50"'),
+    ("A8 D1 comparator prints a caption", A, "failing ids {bad}\")",
+     "failing ids {bad} {[new['predictions'].get(i) for i in bad]}\")"),
+    ("S13 V4 (1): only perm runs gated on OV-dev-B (CC-338 S4)", S,
+     'ovb = [r for r in runs if str(r.get("run_id", "")).startswith("at_") or r.get("spec", {}).get("arm") == "perm"]',
+     'ovb = [r for r in runs if r.get("spec", {}).get("arm") == "perm"]'),
+    ("S14 V4 (3) removed: batched runs scored before the verdict", S, "if len(b1) < len(at) and not released(a):",
+     "if False:"),
+    ("S15 v11 file accepted by name", S, "if Path(path).name == V11_NAME or rec", "if rec"),
+    ("S16 v11 file accepted by content", S, 'rec.get("registration") != REG12 or "K1" in str(rec.get("reason", ""))',
+     "False"),
+    ("S17 batched row missing its label", S, "r[\"batch\"] = BATCHED", "r[\"batch\"] = None"),
+    ("S18 batched run accepted into a 1b contrast", S, 'b1 = [r for r in led if is_b1(r.get("run_id", ""))]',
+     "b1 = list(led)"),
+    ("S19 host-parity fallback label missing (CC-338 S2)", S, "r[\"host\"] = HOST_FB", "pass"),
+    ("S20 batch-1 rows carry the batched label", S, "r[\"batch\"] = B1_NOTE", "r[\"batch\"] = BATCHED"),
 ]
 PY = sys.executable
+NETNS = ["unshare", "-rn"]
 
 
 def tree(root: Path) -> Path:
@@ -81,7 +103,7 @@ def tree(root: Path) -> Path:
 
 def run(d: Path) -> tuple[bool, str]:
     for t in TESTS:
-        r = subprocess.run(["unshare", "-rn", PY, "-X", "utf8", "-I", "-B", str(d / t), "--selftest"],
+        r = subprocess.run([*NETNS, PY, "-X", "utf8", "-I", "-B", str(d / t), "--selftest"],
                            capture_output=True, text=True, timeout=900)
         if r.returncode:
             tail = [x for x in (r.stderr or r.stdout).splitlines() if x.strip()]
@@ -106,7 +128,10 @@ def one(m) -> tuple[str, bool, str]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--jobs", type=int, default=2)
+    ap.add_argument("--no-netns", action="store_true")
     a = ap.parse_args()
+    if a.no_netns:
+        NETNS.clear()
     root = Path(tempfile.mkdtemp(prefix="c_attr_mut_"))
     try:
         ok, why = run(tree(root))
