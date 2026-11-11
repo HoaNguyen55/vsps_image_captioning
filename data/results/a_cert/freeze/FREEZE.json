@@ -1,0 +1,6085 @@
+{
+ "schema": "vsps.a_cert.freeze.v1",
+ "status": "development (no labels)",
+ "pins": {
+  "manuscript/prereg/2026-11-11_xm600_gold_completion/BUILD.json": "d424fdcaa6a99b84c329a9a65edacff5f3654284fecfe5b716debfa6b5295d87",
+  "manuscript/prereg/2026-11-11_xm600_gold_completion/assignment.json": "55e07337218acc820aafc27659e499ade4ae622cc6eaf41be2f7bb3df510cb2d",
+  "data/results/n_f1/bracket_result.json": "4796ed124dc81df988545cee3ed35d997bb004c4e601375c12d9a0788f7aee47",
+  "data/xm3600/vi_oiv7_map.json": "27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a",
+  "tools/obj_rater/build_assignment.py": "497e57479197fabaccdf0adea93269aa88d827f646e71ded17fe6b70a94bd8dd",
+  "scripts/pascal50s/p50x.py": "3f562e878ed793f4b3cae84dd93373b10d82564d162cb399ab16e03ccf8825c2",
+  "scripts/n_f1/bracket.py": "9d2d3059b0b4cd39a6c6849b33fa657171327f5178bd60ccb994f469a88624d8",
+  "scripts/a_m1/a_m1.py": "fa8c9bf2503e3bcf1e7a530568ca402918b5b2ea87873865a5cc6671d877f800",
+  "data/results/xm3600/xm3600_fuse2_s42-detailed.preds.json": "b941181c7b118c73fdac8f3f66797beee9d07891096a98927b1aa30f36b31203",
+  "data/results/xm3600/xm3600_fuse2_s42-short.preds.json": "426c2d8140a912d17d296dddfcaa807aa93b5e673d3ee8fd5dea6c44885a2943",
+  "data/results/xm3600/xm3600_p1_s43-detailed.preds.json": "296a26bfe17635afe61ab28ba16fae40714577b4981b96786cc021700410c7e2",
+  "data/results/xm3600/xm3600_p1_s43-short.preds.json": "1150a046e63470c09268f0045b7b4976b6cad2a571453873277a9fc82fd2aad9",
+  "data/results/xm3600/xm3600_zeroshot-detailed.preds.json": "47db3b9d279508e89f0332482c3e268a119186af9e0cbf6426cc85ce1a52a32f",
+  "data/results/xm3600/xm3600_zeroshot-short.preds.json": "1f3573324772c67de3eebcdef326f84a39ecbe7fd705ceb5dd4e6863a0d73d4c",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-detailed-T0.preds.json": "a66647d12140858e8c013fdce6133949c4b97179d91acc92c413608bf0a560df",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-detailed-T05.preds.json": "3e6189d627affaec4e327b1eb3ac1a55a3b76cbc8ae5001dc3c63de9c6baa9ee",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-detailed-T08.preds.json": "944668eb32fb4a76209837f394bf6cd62a3245d8ac467e715105b3953dd2e751",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-short-T0.preds.json": "82b6ef5fdb9bc98a34e07b9a68e99b1403277d275285fe6df54864d319f57e5e",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-short-T05.preds.json": "522819dfe54dc8a9e191b9ddf88c0df6edb3a1bda6e9a1c4932533c273e1ae76",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-short-T08.preds.json": "71b168e7909913fe2f95c63727be1f9a664dea5b8271a82357aae15d61f698fc"
+ },
+ "constants": {
+  "alpha": 0.05,
+  "alpha_S": 0.025,
+  "alpha_slope": 0.008333333333333333,
+  "grid": [
+   0.0,
+   0.1,
+   0.2,
+   0.3,
+   0.5
+  ],
+  "w0": 0.2,
+  "seed": 20261111,
+  "B_truth": 2000,
+  "N_min": 10,
+  "share": 0.05
+ },
+ "refs_draw": {
+  "1f6e3d1e95c4b95e": [
+   1,
+   2
+  ],
+  "1fc0cdfb7619ec1a": [
+   1,
+   2
+  ],
+  "202d0c6ccef99ced": [
+   0,
+   2
+  ],
+  "208c44ba960bfc82": [
+   0,
+   2
+  ],
+  "21298fe14c368392": [
+   1,
+   2
+  ],
+  "21460c2dec0fbe44": [
+   0,
+   2
+  ],
+  "21656bca9d83702f": [
+   0,
+   2
+  ],
+  "731ce2ec3c74ecd8": [
+   0,
+   1
+  ],
+  "735c1c90edfb1fbd": [
+   0,
+   2
+  ],
+  "737dc5ccd25a4377": [
+   1,
+   2
+  ],
+  "8aed419bc285a228": [
+   0,
+   1
+  ],
+  "8b305eedcf5dae91": [
+   0,
+   1
+  ],
+  "8b648f4ab70681ac": [
+   0,
+   1
+  ],
+  "a4ccb6391f8e3aeb": [
+   1,
+   2
+  ],
+  "a533dea98cd748cf": [
+   0,
+   2
+  ],
+  "a538799c0368c794": [
+   0,
+   1
+  ],
+  "afa3a35ff07863d4": [
+   0,
+   1
+  ],
+  "b0288b2a3855dcd7": [
+   0,
+   1
+  ],
+  "c0d8ef1a9857ae97": [
+   1,
+   2
+  ],
+  "c13f08be7972aac9": [
+   1,
+   2
+  ],
+  "d49eccd223ed16f1": [
+   0,
+   1
+  ],
+  "d4ea70ad745bccdf": [
+   1,
+   2
+  ],
+  "f74c91352bc538b7": [
+   0,
+   2
+  ],
+  "f7f3700cce266cee": [
+   1,
+   2
+  ],
+  "f830abed20ca5c24": [
+   0,
+   1
+  ],
+  "fc8eed54aa837fd7": [
+   0,
+   2
+  ],
+  "fcd7bde25c97b165": [
+   0,
+   1
+  ]
+ },
+ "pairs": [
+  {
+   "idx": 0,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "g2b_q3_xm600-detailed-T05",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 1229,
+    "tA": 583,
+    "tB": 583,
+    "A": {
+     "U": 217,
+     "f1": 50
+    },
+    "B": {
+     "U": 210,
+     "f1": 36
+    },
+    "S": {
+     "U": 436,
+     "f1": 248
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.17287978491735592,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.17287978491735592,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.13242671048369895,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.07983771371994491,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.036957454820268534,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9907113077500835,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.1579684327774574,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.0026865581247152814,
+   "n_better": 1229,
+   "n_worse": 1236
+  },
+  {
+   "idx": 1,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "g2b_q3_xm600-detailed-T08",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 1224,
+    "tA": 583,
+    "tB": 569,
+    "A": {
+     "U": 254,
+     "f1": 65
+    },
+    "B": {
+     "U": 256,
+     "f1": 42
+    },
+    "S": {
+     "U": 399,
+     "f1": 233
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.20550161812297735,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.20550161812297735,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.116449330541278,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06952376419823593,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.030411193603655053,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9149996682731435,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.191961736150771,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.006813566850688495,
+   "n_better": 1236,
+   "n_worse": 1224
+  },
+  {
+   "idx": 2,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "g2b_q3_xm600-short-T0",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 582,
+    "tA": 583,
+    "tB": 403,
+    "A": {
+     "U": 539,
+     "f1": 158
+    },
+    "B": {
+     "U": 65,
+     "f1": 25
+    },
+    "S": {
+     "U": 114,
+     "f1": 140
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2153271277483068,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2153271277483068,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.12066693357354953,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.015255396523537851,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.1260968204717579,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.28415534621663396,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.25327795015513965,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2207570146465152,
+   "n_better": 582,
+   "n_worse": 1236
+  },
+  {
+   "idx": 3,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "g2b_q3_xm600-short-T05",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 579,
+    "tA": 583,
+    "tB": 402,
+    "A": {
+     "U": 545,
+     "f1": 158
+    },
+    "B": {
+     "U": 69,
+     "f1": 26
+    },
+    "S": {
+     "U": 108,
+     "f1": 140
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21832084108858593,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21832084108858593,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.11880627798178983,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.01711605211529755,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.12795747606351762,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.28179002928361296,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2556676224491507,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2226176702382749,
+   "n_better": 579,
+   "n_worse": 1236
+  },
+  {
+   "idx": 4,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "g2b_q3_xm600-short-T08",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 562,
+    "tA": 583,
+    "tB": 394,
+    "A": {
+     "U": 546,
+     "f1": 169
+    },
+    "B": {
+     "U": 61,
+     "f1": 29
+    },
+    "S": {
+     "U": 107,
+     "f1": 129
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21236280505361113,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21236280505361113,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1330747791636435,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.012556288797521565,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.12906114316645362,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.2879431643858551,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.25164403597876284,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.22938476776192285,
+   "n_better": 562,
+   "n_worse": 1236
+  },
+  {
+   "idx": 5,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "xm3600_fuse2_s42-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 711,
+    "tA": 583,
+    "tB": 460,
+    "A": {
+     "U": 560,
+     "f1": 154
+    },
+    "B": {
+     "U": 158,
+     "f1": 36
+    },
+    "S": {
+     "U": 93,
+     "f1": 144
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.27778119153933334,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.27778119153933334,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1588491527043819,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.025354007073313943,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.08225117092021357,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.33168584125023337,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2753505933117584,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.17529324211762456,
+   "n_better": 711,
+   "n_worse": 1236
+  },
+  {
+   "idx": 6,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "xm3600_fuse2_s42-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 514,
+    "tA": 583,
+    "tB": 380,
+    "A": {
+     "U": 593,
+     "f1": 189
+    },
+    "B": {
+     "U": 74,
+     "f1": 21
+    },
+    "S": {
+     "U": 60,
+     "f1": 109
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21215669978467003,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21215669978467003,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1312505509173561,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.028943623839925454,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.15839346202762772,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.27551732960157105,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2585376449699671,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2676167629985015,
+   "n_better": 514,
+   "n_worse": 1236
+  },
+  {
+   "idx": 7,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "xm3600_p1_s43-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 430,
+    "tA": 583,
+    "tB": 298,
+    "A": {
+     "U": 595,
+     "f1": 212
+    },
+    "B": {
+     "U": 74,
+     "f1": 14
+    },
+    "S": {
+     "U": 58,
+     "f1": 86
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.26005117784300447,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.26005117784300447,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2195981034093475,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.04241363738993001,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.10079024610521563,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.34060104560945165,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2315232934447204,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.22134040791751336,
+   "n_better": 430,
+   "n_worse": 1236
+  },
+  {
+   "idx": 8,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "xm3600_p1_s43-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 444,
+    "tA": 583,
+    "tB": 312,
+    "A": {
+     "U": 596,
+     "f1": 213
+    },
+    "B": {
+     "U": 75,
+     "f1": 15
+    },
+    "S": {
+     "U": 57,
+     "f1": 85
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.25118079244292835,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.25118079244292835,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21153677949794455,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.03354325198985393,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.1096606315052917,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.33133183296117924,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.23305344179130588,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.23101985480626258,
+   "n_better": 444,
+   "n_worse": 1236
+  },
+  {
+   "idx": 9,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 1459,
+    "tA": 583,
+    "tB": 650,
+    "A": {
+     "U": 337,
+     "f1": 71
+    },
+    "B": {
+     "U": 493,
+     "f1": 103
+    },
+    "S": {
+     "U": 316,
+     "f1": 227
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.3117304488821754,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.3117304488821754,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.17602105888902936,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09582914662035219,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.030716055462024574,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.7173729727342725,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.29496585194895647,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.02617222418156693,
+   "n_better": 1236,
+   "n_worse": 1459
+  },
+  {
+   "idx": 10,
+   "A": "g2b_q3_xm600-detailed-T0",
+   "B": "xm3600_zeroshot-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1236,
+    "nB": 560,
+    "tA": 583,
+    "tB": 403,
+    "A": {
+     "U": 580,
+     "f1": 180
+    },
+    "B": {
+     "U": 84,
+     "f1": 26
+    },
+    "S": {
+     "U": 73,
+     "f1": 118
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2212956541840037,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2212956541840037,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.13472607489597782,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.018995607951918632,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.14278201571890892,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.28267946843430397,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2647480351363847,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.247960009246417,
+   "n_better": 560,
+   "n_worse": 1236
+  },
+  {
+   "idx": 11,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "g2b_q3_xm600-detailed-T08",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 1224,
+    "tA": 583,
+    "tB": 569,
+    "A": {
+     "U": 237,
+     "f1": 54
+    },
+    "B": {
+     "U": 246,
+     "f1": 45
+    },
+    "S": {
+     "U": 409,
+     "f1": 230
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19283970707892595,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19283970707892595,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.11849330185016779,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06927758898514653,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.028613384599839392,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.8717412367956713,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.17902926019879067,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.009500124975403777,
+   "n_better": 1229,
+   "n_worse": 1224
+  },
+  {
+   "idx": 12,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "g2b_q3_xm600-short-T0",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 582,
+    "tA": 583,
+    "tB": 403,
+    "A": {
+     "U": 532,
+     "f1": 156
+    },
+    "B": {
+     "U": 65,
+     "f1": 37
+    },
+    "S": {
+     "U": 114,
+     "f1": 128
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21480179734313093,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21480179734313093,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.12204345722921717,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.013839374341165254,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.12368477710764206,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.2850305243302136,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2514504849862571,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2180704565217999,
+   "n_better": 582,
+   "n_worse": 1229
+  },
+  {
+   "idx": 13,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "g2b_q3_xm600-short-T05",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 579,
+    "tA": 583,
+    "tB": 402,
+    "A": {
+     "U": 538,
+     "f1": 155
+    },
+    "B": {
+     "U": 69,
+     "f1": 37
+    },
+    "S": {
+     "U": 108,
+     "f1": 129
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21782315965210353,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21782315965210353,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.11855546233721337,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.016513699583047003,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.1263591023495238,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.2822498788814992,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2506453847786158,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.21993111211355962,
+   "n_better": 579,
+   "n_worse": 1229
+  },
+  {
+   "idx": 14,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "g2b_q3_xm600-short-T08",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 562,
+    "tA": 583,
+    "tB": 394,
+    "A": {
+     "U": 542,
+     "f1": 162
+    },
+    "B": {
+     "U": 64,
+     "f1": 36
+    },
+    "S": {
+     "U": 104,
+     "f1": 122
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21431074072894377,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21431074072894377,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.12480707921551822,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.015957770255596512,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.1298715212726836,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.284016888181679,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.24824452944702316,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.22669820963720758,
+   "n_better": 562,
+   "n_worse": 1229
+  },
+  {
+   "idx": 15,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "xm3600_fuse2_s42-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 711,
+    "tA": 583,
+    "tB": 460,
+    "A": {
+     "U": 549,
+     "f1": 150
+    },
+    "B": {
+     "U": 154,
+     "f1": 46
+    },
+    "S": {
+     "U": 97,
+     "f1": 134
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2740979539240964,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2740979539240964,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1561158546563991,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.025115040986748972,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.08147568317923963,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.3308892495641485,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2686918000180816,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.1726066839929093,
+   "n_better": 711,
+   "n_worse": 1229
+  },
+  {
+   "idx": 16,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "xm3600_fuse2_s42-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 514,
+    "tA": 583,
+    "tB": 380,
+    "A": {
+     "U": 586,
+     "f1": 186
+    },
+    "B": {
+     "U": 74,
+     "f1": 32
+    },
+    "S": {
+     "U": 60,
+     "f1": 98
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21188021009773533,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21188021009773533,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1305132450855303,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.028152336688269542,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.15589847175743146,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.2758376474929972,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.25693597971208126,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2649302048737862,
+   "n_better": 514,
+   "n_worse": 1229
+  },
+  {
+   "idx": 17,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "xm3600_p1_s43-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 430,
+    "tA": 583,
+    "tB": 298,
+    "A": {
+     "U": 583,
+     "f1": 204
+    },
+    "B": {
+     "U": 69,
+     "f1": 20
+    },
+    "S": {
+     "U": 63,
+     "f1": 80
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.25571555622835734,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.25571555622835734,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21015005582152252,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.037652089995647814,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.10148542017522282,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.3371199253341182,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.22922777073438416,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2186538497927981,
+   "n_better": 430,
+   "n_worse": 1229
+  },
+  {
+   "idx": 18,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "xm3600_p1_s43-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 444,
+    "tA": 583,
+    "tB": 312,
+    "A": {
+     "U": 585,
+     "f1": 206
+    },
+    "B": {
+     "U": 71,
+     "f1": 22
+    },
+    "S": {
+     "U": 61,
+     "f1": 78
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2476634486398522,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2476634486398522,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2037252875332615,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.03041365205726475,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.10953752776372792,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.3287279218435287,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.23155315608529603,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.22833329668154728,
+   "n_better": 444,
+   "n_worse": 1229
+  },
+  {
+   "idx": 19,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 1459,
+    "tA": 583,
+    "tB": 650,
+    "A": {
+     "U": 345,
+     "f1": 67
+    },
+    "B": {
+     "U": 508,
+     "f1": 113
+    },
+    "S": {
+     "U": 301,
+     "f1": 217
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.31932490515088024,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.31932490515088024,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18978412379378634,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.10273820192949572,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.03282730405423869,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.7091036887802182,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2990629135619602,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.02885878230628221,
+   "n_better": 1229,
+   "n_worse": 1459
+  },
+  {
+   "idx": 20,
+   "A": "g2b_q3_xm600-detailed-T05",
+   "B": "xm3600_zeroshot-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1229,
+    "nB": 560,
+    "tA": 583,
+    "tB": 403,
+    "A": {
+     "U": 573,
+     "f1": 174
+    },
+    "B": {
+     "U": 84,
+     "f1": 34
+    },
+    "S": {
+     "U": 73,
+     "f1": 110
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2209592583982332,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2209592583982332,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.12820091828431943,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.02151429733813786,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.14193740555620132,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.2800023941397667,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.26393699872137627,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.24527345112170174,
+   "n_better": 560,
+   "n_worse": 1229
+  },
+  {
+   "idx": 21,
+   "A": "g2b_q3_xm600-detailed-T08",
+   "B": "g2b_q3_xm600-short-T0",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1224,
+    "nB": 582,
+    "tA": 569,
+    "tB": 403,
+    "A": {
+     "U": 540,
+     "f1": 148
+    },
+    "B": {
+     "U": 64,
+     "f1": 38
+    },
+    "S": {
+     "U": 115,
+     "f1": 127
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2136058890910316,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2136058890910316,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09922680412371133,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.03149215012465467,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.13688430698739978,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.267808652896434,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2507159221076747,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2275705814972037,
+   "n_better": 582,
+   "n_worse": 1224
+  },
+  {
+   "idx": 22,
+   "A": "g2b_q3_xm600-detailed-T08",
+   "B": "g2b_q3_xm600-short-T05",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1224,
+    "nB": 579,
+    "tA": 569,
+    "tB": 402,
+    "A": {
+     "U": 543,
+     "f1": 147
+    },
+    "B": {
+     "U": 65,
+     "f1": 38
+    },
+    "S": {
+     "U": 112,
+     "f1": 128
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21419621389142876,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21419621389142876,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09491516813979478,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.03416979918046666,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.13956195604321175,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.26513723258953537,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2507577296894578,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2294312370889634,
+   "n_better": 579,
+   "n_worse": 1224
+  },
+  {
+   "idx": 23,
+   "A": "g2b_q3_xm600-detailed-T08",
+   "B": "g2b_q3_xm600-short-T08",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 1224,
+    "nB": 562,
+    "tA": 569,
+    "tB": 394,
+    "A": {
+     "U": 550,
+     "f1": 155
+    },
+    "B": {
+     "U": 63,
+     "f1": 38
+    },
+    "S": {
+     "U": 105,
+     "f1": 120
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21314807061614682,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21314807061614682,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.10367094643314027,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.03194996859953946,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.1422440862465983,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.26785963275469826,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.24590921777963853,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.23619833461261136,
+   "n_better": 562,
+   "n_worse": 1224
+  },
+  {
+   "idx": 24,
+   "A": "g2b_q3_xm600-detailed-T08",
+   "B": "xm3600_fuse2_s42-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1224,
+    "nB": 711,
+    "tA": 569,
+    "tB": 460,
+    "A": {
+     "U": 572,
+     "f1": 145
+    },
+    "B": {
+     "U": 168,
+     "f1": 50
+    },
+    "S": {
+     "U": 83,
+     "f1": 130
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.28521345246959545,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.28521345246959545,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.13897162240423597,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.010703648548026806,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.09305452138661371,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.3134255117597058,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2761437908496732,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.18210680896831305,
+   "n_better": 711,
+   "n_worse": 1224
+  },
+  {
+   "idx": 25,
+   "A": "g2b_q3_xm600-detailed-T08",
+   "B": "xm3600_fuse2_s42-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1224,
+    "nB": 514,
+    "tA": 569,
+    "tB": 380,
+    "A": {
+     "U": 599,
+     "f1": 174
+    },
+    "B": {
+     "U": 78,
+     "f1": 29
+    },
+    "S": {
+     "U": 56,
+     "f1": 101
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21494875511813027,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21494875511813027,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.10056967015081,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.04975712723481091,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.17067215991454948,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.25777628868445746,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.25963225757228964,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.27443032984919,
+   "n_better": 514,
+   "n_worse": 1224
+  },
+  {
+   "idx": 26,
+   "A": "g2b_q3_xm600-detailed-T08",
+   "B": "xm3600_p1_s43-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1224,
+    "nB": 430,
+    "tA": 569,
+    "tB": 298,
+    "A": {
+     "U": 598,
+     "f1": 195
+    },
+    "B": {
+     "U": 75,
+     "f1": 20
+    },
+    "S": {
+     "U": 57,
+     "f1": 80
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.26040811673506614,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.26040811673506614,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18606171150630796,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.019395044839641284,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.11459188326493389,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.3185798364980146,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.227922176622587,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.22815397476820184,
+   "n_better": 430,
+   "n_worse": 1224
+  },
+  {
+   "idx": 27,
+   "A": "g2b_q3_xm600-detailed-T08",
+   "B": "xm3600_p1_s43-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1224,
+    "nB": 444,
+    "tA": 569,
+    "tB": 312,
+    "A": {
+     "U": 600,
+     "f1": 196
+    },
+    "B": {
+     "U": 77,
+     "f1": 21
+    },
+    "S": {
+     "U": 55,
+     "f1": 79
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2523626567744215,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2523626567744215,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1780162515456633,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.011349584878996644,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.12345433668963081,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.30993080218974495,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.23350556438791734,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.23783342165695107,
+   "n_better": 444,
+   "n_worse": 1224
+  },
+  {
+   "idx": 28,
+   "A": "g2b_q3_xm600-detailed-T08",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1224,
+    "nB": 1459,
+    "tA": 569,
+    "tB": 650,
+    "A": {
+     "U": 340,
+     "f1": 57
+    },
+    "B": {
+     "U": 494,
+     "f1": 112
+    },
+    "S": {
+     "U": 315,
+     "f1": 218
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.3192294166924252,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.3192294166924252,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19722804589050608,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.11155292594533815,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.041642028070081126,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.801844779893756,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.29671309922186834,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.019358657330878434,
+   "n_better": 1224,
+   "n_worse": 1459
+  },
+  {
+   "idx": 29,
+   "A": "g2b_q3_xm600-detailed-T08",
+   "B": "xm3600_zeroshot-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 1224,
+    "nB": 560,
+    "tA": 569,
+    "tB": 403,
+    "A": {
+     "U": 587,
+     "f1": 159
+    },
+    "B": {
+     "U": 89,
+     "f1": 28
+    },
+    "S": {
+     "U": 68,
+     "f1": 116
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2248015873015873,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2248015873015873,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09244864612511672,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.04644024276377218,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.15836834733893557,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.25725828032940623,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2600840336134454,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2547735760971055,
+   "n_better": 560,
+   "n_worse": 1224
+  },
+  {
+   "idx": 30,
+   "A": "g2b_q3_xm600-short-T0",
+   "B": "g2b_q3_xm600-short-T05",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 582,
+    "nB": 579,
+    "tA": 403,
+    "tB": 402,
+    "A": {
+     "U": 39,
+     "f1": 18
+    },
+    "B": {
+     "U": 37,
+     "f1": 19
+    },
+    "S": {
+     "U": 140,
+     "f1": 147
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06514965368659081,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06514965368659081,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06514965368659081,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06514965368659081,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.042812883927140645,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": "NI",
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.06060039527803002,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.0018606555917596995,
+   "n_better": 579,
+   "n_worse": 582
+  },
+  {
+   "idx": 31,
+   "A": "g2b_q3_xm600-short-T0",
+   "B": "g2b_q3_xm600-short-T08",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 582,
+    "nB": 562,
+    "tA": 403,
+    "tB": 394,
+    "A": {
+     "U": 60,
+     "f1": 36
+    },
+    "B": {
+     "U": 49,
+     "f1": 29
+    },
+    "S": {
+     "U": 119,
+     "f1": 129
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09446503038974698,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09446503038974698,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09446503038974698,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09446503038974698,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.058382556162942856,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9578280329070985,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.10205940981521566,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.008627753115407663,
+   "n_better": 562,
+   "n_worse": 582
+  },
+  {
+   "idx": 32,
+   "A": "g2b_q3_xm600-short-T0",
+   "B": "xm3600_fuse2_s42-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 582,
+    "nB": 711,
+    "tA": 403,
+    "tB": 460,
+    "A": {
+     "U": 129,
+     "f1": 77
+    },
+    "B": {
+     "U": 201,
+     "f1": 92
+    },
+    "S": {
+     "U": 50,
+     "f1": 88
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23723664941203765,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23723664941203765,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23723664941203765,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1837907984978323,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06142792929952006,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.7401997024966402,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2639015761161135,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.04546377252889063,
+   "n_better": 582,
+   "n_worse": 711
+  },
+  {
+   "idx": 33,
+   "A": "g2b_q3_xm600-short-T0",
+   "B": "xm3600_fuse2_s42-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 582,
+    "nB": 514,
+    "tA": 403,
+    "tB": 380,
+    "A": {
+     "U": 138,
+     "f1": 92
+    },
+    "B": {
+     "U": 93,
+     "f1": 57
+    },
+    "S": {
+     "U": 41,
+     "f1": 73
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19025365370986935,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19025365370986935,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19025365370986935,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19025365370986935,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.08372444408787623,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.7802359648440034,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.21647478839905332,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.04685974835198631,
+   "n_better": 514,
+   "n_worse": 582
+  },
+  {
+   "idx": 34,
+   "A": "g2b_q3_xm600-short-T0",
+   "B": "xm3600_p1_s43-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 582,
+    "nB": 430,
+    "tA": 403,
+    "tB": 298,
+    "A": {
+     "U": 142,
+     "f1": 109
+    },
+    "B": {
+     "U": 95,
+     "f1": 44
+    },
+    "S": {
+     "U": 37,
+     "f1": 56
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24340286102453448,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24340286102453448,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24340286102453448,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24340286102453448,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.14890114281147607,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": "NI",
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.20278909933668984,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.0005833932709981619,
+   "n_better": 430,
+   "n_worse": 582
+  },
+  {
+   "idx": 35,
+   "A": "g2b_q3_xm600-short-T0",
+   "B": "xm3600_p1_s43-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 582,
+    "nB": 444,
+    "tA": 403,
+    "tB": 312,
+    "A": {
+     "U": 142,
+     "f1": 107
+    },
+    "B": {
+     "U": 95,
+     "f1": 42
+    },
+    "S": {
+     "U": 37,
+     "f1": 58
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23372341413578526,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23372341413578526,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23372341413578526,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23372341413578526,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1375034828643076,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9830738310962917,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2006826414042909,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.010262840159747376,
+   "n_better": 444,
+   "n_worse": 582
+  },
+  {
+   "idx": 36,
+   "A": "g2b_q3_xm600-short-T0",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 582,
+    "nB": 1459,
+    "tA": 403,
+    "tB": 650,
+    "A": {
+     "U": 66,
+     "f1": 25
+    },
+    "B": {
+     "U": 696,
+     "f1": 190
+    },
+    "S": {
+     "U": 113,
+     "f1": 140
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23010982902661287,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23010982902661287,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09234423615478285,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.04336515383836314,
+     "better": "A",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.15371470832773942,
+     "better": "A",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.25850434123817834,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.28322487039798006,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.24692923882808213,
+   "n_better": 582,
+   "n_worse": 1459
+  },
+  {
+   "idx": 37,
+   "A": "g2b_q3_xm600-short-T0",
+   "B": "xm3600_zeroshot-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 582,
+    "nB": 560,
+    "tA": 403,
+    "tB": 403,
+    "A": {
+     "U": 126,
+     "f1": 72
+    },
+    "B": {
+     "U": 104,
+     "f1": 51
+    },
+    "S": {
+     "U": 53,
+     "f1": 93
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18929185076092292,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18929185076092292,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18929185076092292,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18929185076092292,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.0827626411389298,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.8650211175428704,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.20439371624938635,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.027202994599901817,
+   "n_better": 560,
+   "n_worse": 582
+  },
+  {
+   "idx": 38,
+   "A": "g2b_q3_xm600-short-T05",
+   "B": "g2b_q3_xm600-short-T08",
+   "scope": "Q3",
+   "n_images": 537,
+   "cells": {
+    "nA": 579,
+    "nB": 562,
+    "tA": 402,
+    "tB": 394,
+    "A": {
+     "U": 61,
+     "f1": 35
+    },
+    "B": {
+     "U": 52,
+     "f1": 27
+    },
+    "S": {
+     "U": 116,
+     "f1": 131
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.0985869611982864,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.0985869611982864,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.0985869611982864,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.0985869611982864,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.060590415429719914,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9876065381793304,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.09868530230671363,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.006767097523647963,
+   "n_better": 562,
+   "n_worse": 579
+  },
+  {
+   "idx": 39,
+   "A": "g2b_q3_xm600-short-T05",
+   "B": "xm3600_fuse2_s42-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 579,
+    "nB": 711,
+    "tA": 402,
+    "tB": 460,
+    "A": {
+     "U": 126,
+     "f1": 81
+    },
+    "B": {
+     "U": 200,
+     "f1": 95
+    },
+    "S": {
+     "U": 51,
+     "f1": 85
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2339695240593778,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2339695240593778,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2339695240593778,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18755602194967316,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.062380213229560645,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.7381909831315276,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2599928583400742,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.04732442812065033,
+   "n_better": 579,
+   "n_worse": 711
+  },
+  {
+   "idx": 40,
+   "A": "g2b_q3_xm600-short-T05",
+   "B": "xm3600_fuse2_s42-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 579,
+    "nB": 514,
+    "tA": 402,
+    "tB": 380,
+    "A": {
+     "U": 136,
+     "f1": 97
+    },
+    "B": {
+     "U": 93,
+     "f1": 61
+    },
+    "S": {
+     "U": 41,
+     "f1": 69
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18988864471818445,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18988864471818445,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18988864471818445,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18988864471818445,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09317016458001519,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.7964837612956761,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.22244847214101865,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.04499909276022661,
+   "n_better": 514,
+   "n_worse": 579
+  },
+  {
+   "idx": 41,
+   "A": "g2b_q3_xm600-short-T05",
+   "B": "xm3600_p1_s43-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 579,
+    "nB": 430,
+    "tA": 402,
+    "tB": 298,
+    "A": {
+     "U": 139,
+     "f1": 111
+    },
+    "B": {
+     "U": 94,
+     "f1": 45
+    },
+    "S": {
+     "U": 38,
+     "f1": 55
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24006908462867013,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24006908462867013,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24006908462867013,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24006908462867013,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.12844117765192595,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": "NI",
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.20721372052857773,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.0012772623207615375,
+   "n_better": 579,
+   "n_worse": 430
+  },
+  {
+   "idx": 42,
+   "A": "g2b_q3_xm600-short-T05",
+   "B": "xm3600_p1_s43-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 579,
+    "nB": 444,
+    "tA": 402,
+    "tB": 312,
+    "A": {
+     "U": 138,
+     "f1": 110
+    },
+    "B": {
+     "U": 93,
+     "f1": 44
+    },
+    "S": {
+     "U": 39,
+     "f1": 56
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.22993978434392942,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.22993978434392942,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.22993978434392942,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.22993978434392942,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1435839985062783,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9897793283201755,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2067987676795967,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.008402184567987676,
+   "n_better": 444,
+   "n_worse": 579
+  },
+  {
+   "idx": 43,
+   "A": "g2b_q3_xm600-short-T05",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 579,
+    "nB": 1459,
+    "tA": 402,
+    "tB": 650,
+    "A": {
+     "U": 66,
+     "f1": 27
+    },
+    "B": {
+     "U": 698,
+     "f1": 191
+    },
+    "S": {
+     "U": 111,
+     "f1": 139
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.22961997535397585,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.22961997535397585,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09185438248214584,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.044540408470561496,
+     "better": "A",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.1548899629599378,
+     "better": "A",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.25829995009675616,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.27989455005616976,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2487898944198418,
+   "n_better": 579,
+   "n_worse": 1459
+  },
+  {
+   "idx": 44,
+   "A": "g2b_q3_xm600-short-T05",
+   "B": "xm3600_zeroshot-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 579,
+    "nB": 560,
+    "tA": 402,
+    "tB": 403,
+    "A": {
+     "U": 126,
+     "f1": 78
+    },
+    "B": {
+     "U": 106,
+     "f1": 56
+    },
+    "S": {
+     "U": 51,
+     "f1": 88
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1922742413027387,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1922742413027387,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1922742413027387,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1922742413027387,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.0921015297310634,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.8838872164040803,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.21025166543301257,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.025342339008142117,
+   "n_better": 560,
+   "n_worse": 579
+  },
+  {
+   "idx": 45,
+   "A": "g2b_q3_xm600-short-T08",
+   "B": "xm3600_fuse2_s42-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 562,
+    "nB": 711,
+    "tA": 394,
+    "tB": 460,
+    "A": {
+     "U": 122,
+     "f1": 78
+    },
+    "B": {
+     "U": 205,
+     "f1": 100
+    },
+    "S": {
+     "U": 46,
+     "f1": 80
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23423477534023054,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23423477534023054,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23423477534023054,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19063421275232617,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.0598325249886131,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.7119289092738182,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2666236216846605,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.05409152564429829,
+   "n_better": 562,
+   "n_worse": 711
+  },
+  {
+   "idx": 46,
+   "A": "g2b_q3_xm600-short-T08",
+   "B": "xm3600_fuse2_s42-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 562,
+    "nB": 514,
+    "tA": 394,
+    "tB": 380,
+    "A": {
+     "U": 131,
+     "f1": 92
+    },
+    "B": {
+     "U": 97,
+     "f1": 64
+    },
+    "S": {
+     "U": 37,
+     "f1": 66
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19486409017267403,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19486409017267403,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19486409017267403,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19486409017267403,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.0969993214894,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.8324815441146493,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2403035296398355,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.03823199523657864,
+   "n_better": 514,
+   "n_worse": 562
+  },
+  {
+   "idx": 47,
+   "A": "g2b_q3_xm600-short-T08",
+   "B": "xm3600_p1_s43-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 562,
+    "nB": 430,
+    "tA": 394,
+    "tB": 298,
+    "A": {
+     "U": 136,
+     "f1": 105
+    },
+    "B": {
+     "U": 100,
+     "f1": 47
+    },
+    "S": {
+     "U": 32,
+     "f1": 53
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24199288256227758,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24199288256227758,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.24199288256227758,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23734171977157992,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.11873706860878921,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9993993998831137,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.22428204915997682,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.008044359844409502,
+   "n_better": 562,
+   "n_worse": 430
+  },
+  {
+   "idx": 48,
+   "A": "g2b_q3_xm600-short-T08",
+   "B": "xm3600_p1_s43-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 562,
+    "nB": 444,
+    "tA": 394,
+    "tB": 312,
+    "A": {
+     "U": 133,
+     "f1": 102
+    },
+    "B": {
+     "U": 97,
+     "f1": 44
+    },
+    "S": {
+     "U": 35,
+     "f1": 56
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23501971722612292,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23501971722612292,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23501971722612292,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.23501971722612292,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.1460517456958738,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": "NI",
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.22193100573883492,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.0016350870443397135,
+   "n_better": 444,
+   "n_worse": 562
+  },
+  {
+   "idx": 49,
+   "A": "g2b_q3_xm600-short-T08",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 562,
+    "nB": 1459,
+    "tA": 394,
+    "tB": 650,
+    "A": {
+     "U": 67,
+     "f1": 29
+    },
+    "B": {
+     "U": 708,
+     "f1": 201
+    },
+    "S": {
+     "U": 101,
+     "f1": 129
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.22970688742594134,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.22970688742594134,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.10085150702840877,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.042397293519912,
+     "better": "A",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.15754465472621768,
+     "better": "A",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.2617090590195729,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.28010702987226177,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2555569919434898,
+   "n_better": 562,
+   "n_worse": 1459
+  },
+  {
+   "idx": 50,
+   "A": "g2b_q3_xm600-short-T08",
+   "B": "xm3600_zeroshot-short",
+   "scope": "cross",
+   "n_images": 537,
+   "cells": {
+    "nA": 562,
+    "nB": 560,
+    "tA": 394,
+    "tB": 403,
+    "A": {
+     "U": 122,
+     "f1": 73
+    },
+    "B": {
+     "U": 111,
+     "f1": 59
+    },
+    "S": {
+     "U": 46,
+     "f1": 85
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19850660904931366,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19850660904931366,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19850660904931366,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19850660904931366,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09530376207422471,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9231491736574097,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.21853075749872902,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.018575241484494152,
+   "n_better": 560,
+   "n_worse": 562
+  },
+  {
+   "idx": 51,
+   "A": "xm3600_fuse2_s42-detailed",
+   "B": "xm3600_fuse2_s42-short",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 796,
+    "nB": 580,
+    "tA": 514,
+    "tB": 428,
+    "A": {
+     "U": 139,
+     "f1": 58
+    },
+    "B": {
+     "U": 9,
+     "f1": 6
+    },
+    "S": {
+     "U": 143,
+     "f1": 139
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.08242072431121122,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.08242072431121122,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.08242072431121122,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.05101368913533183,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.02436319528677872,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.41290581561531864,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.11531796915612545,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.09220239126667822,
+   "n_better": 580,
+   "n_worse": 796
+  },
+  {
+   "idx": 52,
+   "A": "xm3600_fuse2_s42-detailed",
+   "B": "xm3600_p1_s43-detailed",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 796,
+    "nB": 482,
+    "tA": 514,
+    "tB": 332,
+    "A": {
+     "U": 186,
+     "f1": 97
+    },
+    "B": {
+     "U": 54,
+     "f1": 10
+    },
+    "S": {
+     "U": 96,
+     "f1": 100
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19060030442669781,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19060030442669781,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.19060030442669781,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.170499801914135,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.05743447528096916,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.7344660780187695,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.16606372109510206,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.04306803728184491,
+   "n_better": 482,
+   "n_worse": 796
+  },
+  {
+   "idx": 53,
+   "A": "xm3600_fuse2_s42-detailed",
+   "B": "xm3600_p1_s43-short",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 796,
+    "nB": 497,
+    "tA": 514,
+    "tB": 348,
+    "A": {
+     "U": 184,
+     "f1": 95
+    },
+    "B": {
+     "U": 51,
+     "f1": 8
+    },
+    "S": {
+     "U": 98,
+     "f1": 102
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.176683214867092,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.176683214867092,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.176683214867092,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.15532643094749402,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.04351738572136336,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.6693739847680553,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.15486638423505858,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.05447256402738036,
+   "n_better": 497,
+   "n_worse": 796
+  },
+  {
+   "idx": 54,
+   "A": "xm3600_fuse2_s42-detailed",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 796,
+    "nB": 1628,
+    "tA": 514,
+    "tB": 726,
+    "A": {
+     "U": 148,
+     "f1": 39
+    },
+    "B": {
+     "U": 768,
+     "f1": 210
+    },
+    "S": {
+     "U": 134,
+     "f1": 158
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2719617744743373,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2719617744743373,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.13191263442519724,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.001379748867186053,
+     "better": "A",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.10887360636104354,
+     "better": "A",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.29846488555427636,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.27990999222155,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.19978269727013445,
+   "n_better": 796,
+   "n_worse": 1628
+  },
+  {
+   "idx": 55,
+   "A": "xm3600_fuse2_s42-detailed",
+   "B": "xm3600_zeroshot-short",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 796,
+    "nB": 617,
+    "tA": 514,
+    "tB": 445,
+    "A": {
+     "U": 224,
+     "f1": 101
+    },
+    "B": {
+     "U": 114,
+     "f1": 63
+    },
+    "S": {
+     "U": 58,
+     "f1": 96
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.205903911779318,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.205903911779318,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.205903911779318,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.14434612283459436,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.02751195198032301,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.5886536286445334,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.23935724000879602,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.07550312339656141,
+   "n_better": 617,
+   "n_worse": 796
+  },
+  {
+   "idx": 56,
+   "A": "xm3600_fuse2_s42-short",
+   "B": "xm3600_p1_s43-detailed",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 580,
+    "nB": 482,
+    "tA": 428,
+    "tB": 332,
+    "A": {
+     "U": 84,
+     "f1": 51
+    },
+    "B": {
+     "U": 82,
+     "f1": 16
+    },
+    "S": {
+     "U": 68,
+     "f1": 94
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.14482758620689656,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.14482758620689656,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.13652883102017457,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.07636285591644013,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.02657032479610817,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.6547825647927821,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.1243811704106453,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.04913435398483331,
+   "n_better": 580,
+   "n_worse": 482
+  },
+  {
+   "idx": 57,
+   "A": "xm3600_fuse2_s42-short",
+   "B": "xm3600_p1_s43-short",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 580,
+    "nB": 497,
+    "tA": 428,
+    "tB": 348,
+    "A": {
+     "U": 79,
+     "f1": 48
+    },
+    "B": {
+     "U": 76,
+     "f1": 13
+    },
+    "S": {
+     "U": 73,
+     "f1": 97
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.13620689655172413,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.13620689655172413,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.12212238950947062,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06980850620967183,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.027554985082911262,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.6928390736458822,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.10756955526261014,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.03772982723929785,
+   "n_better": 580,
+   "n_worse": 497
+  },
+  {
+   "idx": 58,
+   "A": "xm3600_fuse2_s42-short",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 580,
+    "nB": 1628,
+    "tA": 428,
+    "tB": 726,
+    "A": {
+     "U": 71,
+     "f1": 26
+    },
+    "B": {
+     "U": 821,
+     "f1": 249
+    },
+    "S": {
+     "U": 81,
+     "f1": 119
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2123146657629416,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.2123146657629416,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09376429721257308,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.06164110819283233,
+     "better": "A",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.18694823349995765,
+     "better": "A",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.2502325359238311,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2706091671608913,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.29198508853681265,
+   "n_better": 580,
+   "n_worse": 1628
+  },
+  {
+   "idx": 59,
+   "A": "xm3600_fuse2_s42-short",
+   "B": "xm3600_zeroshot-short",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 580,
+    "nB": 617,
+    "tA": 428,
+    "tB": 445,
+    "A": {
+     "U": 107,
+     "f1": 62
+    },
+    "B": {
+     "U": 127,
+     "f1": 76
+    },
+    "S": {
+     "U": 45,
+     "f1": 83
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18913541608450232,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18913541608450232,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18913541608450232,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18913541608450232,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.09026993796456714,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9256466684844344,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.20316604258648632,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.016699267870116805,
+   "n_better": 580,
+   "n_worse": 617
+  },
+  {
+   "idx": 60,
+   "A": "xm3600_p1_s43-detailed",
+   "B": "xm3600_p1_s43-short",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 482,
+    "nB": 497,
+    "tA": 332,
+    "tB": 348,
+    "A": {
+     "U": 33,
+     "f1": 12
+    },
+    "B": {
+     "U": 32,
+     "f1": 12
+    },
+    "S": {
+     "U": 117,
+     "f1": 98
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06438631790744467,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06438631790744467,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06438631790744467,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.06438631790744467,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.03717324695058317,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9094131851717829,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.08062900222914249,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.011404526745535453,
+   "n_better": 497,
+   "n_worse": 482
+  },
+  {
+   "idx": 61,
+   "A": "xm3600_p1_s43-detailed",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 482,
+    "nB": 1628,
+    "tA": 332,
+    "tB": 726,
+    "A": {
+     "U": 70,
+     "f1": 19
+    },
+    "B": {
+     "U": 822,
+     "f1": 277
+    },
+    "S": {
+     "U": 80,
+     "f1": 91
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.26206327036202554,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.26206327036202554,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18098218928094448,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.010220518519273705,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.1279858696871145,
+     "better": "A",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.3088517297636718,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.23743717312182042,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.24285073455197936,
+   "n_better": 482,
+   "n_worse": 1628
+  },
+  {
+   "idx": 62,
+   "A": "xm3600_p1_s43-detailed",
+   "B": "xm3600_zeroshot-short",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 482,
+    "nB": 617,
+    "tA": 332,
+    "tB": 445,
+    "A": {
+     "U": 109,
+     "f1": 46
+    },
+    "B": {
+     "U": 131,
+     "f1": 95
+    },
+    "S": {
+     "U": 41,
+     "f1": 64
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21231766612641814,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21231766612641814,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21231766612641814,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18534671176957168,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.08161227193554678,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.8582634067619219,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.18906568390754352,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.0324350861147165,
+   "n_better": 617,
+   "n_worse": 482
+  },
+  {
+   "idx": 63,
+   "A": "xm3600_p1_s43-short",
+   "B": "xm3600_zeroshot-detailed",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 497,
+    "nB": 1628,
+    "tA": 348,
+    "tB": 726,
+    "A": {
+     "U": 77,
+     "f1": 19
+    },
+    "B": {
+     "U": 830,
+     "f1": 277
+    },
+    "S": {
+     "U": 72,
+     "f1": 91
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.255572748530495,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.255572748530495,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.169577662535409,
+     "better": "A",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.0011840082262617475,
+     "better": "A",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.13939039643264994,
+     "better": "A",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.2989301081616431,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.2419294637604497,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2542552612975148,
+   "n_better": 497,
+   "n_worse": 1628
+  },
+  {
+   "idx": 64,
+   "A": "xm3600_p1_s43-short",
+   "B": "xm3600_zeroshot-short",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 497,
+    "nB": 617,
+    "tA": 348,
+    "tB": 445,
+    "A": {
+     "U": 110,
+     "f1": 44
+    },
+    "B": {
+     "U": 133,
+     "f1": 93
+    },
+    "S": {
+     "U": 39,
+     "f1": 66
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21555915721231766,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21555915721231766,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.21555915721231766,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.18135392582398768,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.08477444896282069,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    }
+   },
+   "w_star": 0.9179866103045642,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "NOT CERTIFIED",
+    "0.5": "NOT CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.1880814873030729,
+    "better": "A",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.02103055936918105,
+   "n_better": 617,
+   "n_worse": 497
+  },
+  {
+   "idx": 65,
+   "A": "xm3600_zeroshot-detailed",
+   "B": "xm3600_zeroshot-short",
+   "scope": "Q25",
+   "n_images": 600,
+   "cells": {
+    "nA": 1628,
+    "nB": 617,
+    "tA": 726,
+    "tB": 445,
+    "A": {
+     "U": 787,
+     "f1": 226
+    },
+    "B": {
+     "U": 57,
+     "f1": 17
+    },
+    "S": {
+     "U": 115,
+     "f1": 142
+    }
+   },
+   "cref": {
+    "0.0": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.20812941274853755,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.1": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.20812941274853755,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.2": {
+     "verdict": "NOT CERTIFIED",
+     "dmin": -0.07852253314165794,
+     "better": "B",
+     "label": "NOT CERTIFIED"
+    },
+    "0.3": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.06398360936448456,
+     "better": "B",
+     "label": "CERTIFIED"
+    },
+    "0.5": {
+     "verdict": "CERTIFIED",
+     "dmin": 0.17884847422934944,
+     "better": "B",
+     "label": "CERTIFIED"
+    }
+   },
+   "w_star": 0.24506944224797192,
+   "vh": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "first_two": {
+    "0.0": "NOT CERTIFIED",
+    "0.1": "NOT CERTIFIED",
+    "0.2": "NOT CERTIFIED",
+    "0.3": "CERTIFIED",
+    "0.5": "CERTIFIED"
+   },
+   "clabel": {
+    "verdict": "NOT CERTIFIED",
+    "dmin": -0.26390874445979795,
+    "better": "B",
+    "label": "NOT CERTIFIED"
+   },
+   "dabs": 0.2752858206666959,
+   "n_better": 617,
+   "n_worse": 1628
+  }
+ ],
+ "nulls_w0": {
+  "constant": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   11,
+   12,
+   13,
+   14,
+   21,
+   22,
+   23,
+   30,
+   31,
+   38,
+   51,
+   52,
+   53,
+   54,
+   55,
+   56,
+   57,
+   58,
+   59,
+   60,
+   61,
+   62,
+   63,
+   64,
+   65
+  ],
+  "margin": [],
+  "length": [
+   1,
+   11,
+   56,
+   57,
+   60,
+   62,
+   64
+  ]
+ },
+ "certified_by_w_within": {
+  "0.0": 0,
+  "0.1": 0,
+  "0.2": 0,
+  "0.3": 13,
+  "0.5": 15
+ },
+ "w_ev": 0.3,
+ "h2a_declared": {
+  "0.0": {
+   "n_cert": 0,
+   "n_other": 30,
+   "n_excluded": 0,
+   "evaluable": false
+  },
+  "0.1": {
+   "n_cert": 0,
+   "n_other": 30,
+   "n_excluded": 0,
+   "evaluable": false
+  },
+  "0.2": {
+   "n_cert": 0,
+   "n_other": 30,
+   "n_excluded": 0,
+   "evaluable": false
+  },
+  "0.3": {
+   "n_cert": 13,
+   "n_other": 17,
+   "n_excluded": 0,
+   "evaluable": true
+  },
+  "0.5": {
+   "n_cert": 15,
+   "n_other": 15,
+   "n_excluded": 0,
+   "evaluable": true
+  }
+ },
+ "h2a_evaluable_w0": false,
+ "intervals_44": {
+  "g2b_q3_xm600-detailed-T0": {
+   "n": 1388,
+   "t": 647,
+   "U": 741,
+   "f1": 326,
+   "phi1": 326,
+   "phi2": 321,
+   "L_hat": 82.76947040498442,
+   "low": 0.525770511819153,
+   "beta": {
+    "0.0": null,
+    "0.1": 1763.7566400774092,
+    "0.2": 798.551874260906,
+    "0.3": 475.78723462531923,
+    "0.5": 215.47951564576812
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 0.80835734870317,
+    "0.5": 0.6210374639769453
+   },
+   "floor_beta_w0": 798,
+   "oi_present_in_Ns": 161,
+   "binds": false
+  },
+  "g2b_q3_xm600-detailed-T05": {
+   "n": 1381,
+   "t": 647,
+   "U": 734,
+   "f1": 312,
+   "phi1": 312,
+   "phi2": 335,
+   "L_hat": 72.64477611940299,
+   "low": 0.5211041101516314,
+   "beta": {
+    "0.0": null,
+    "0.1": 1695.0060734965446,
+    "0.2": 767.7207451386209,
+    "0.3": 457.61650266466853,
+    "0.5": 207.4790451198815
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 0.7994207096307024,
+    "0.5": 0.6183924692251991
+   },
+   "floor_beta_w0": 767,
+   "oi_present_in_Ns": 163,
+   "binds": false
+  },
+  "g2b_q3_xm600-detailed-T08": {
+   "n": 1365,
+   "t": 628,
+   "U": 737,
+   "f1": 299,
+   "phi1": 299,
+   "phi2": 329,
+   "L_hat": 67.9338905775076,
+   "low": 0.5098416780787601,
+   "beta": {
+    "0.0": null,
+    "0.1": 1631.0504831985122,
+    "0.2": 739.034848996507,
+    "0.3": 440.7067014798363,
+    "0.5": 200.02991589187013
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 0.7824175824175824,
+    "0.5": 0.6065934065934065
+   },
+   "floor_beta_w0": 739,
+   "oi_present_in_Ns": 165,
+   "binds": false
+  },
+  "g2b_q3_xm600-short-T0": {
+   "n": 650,
+   "t": 452,
+   "U": 198,
+   "f1": 184,
+   "phi1": 184,
+   "phi2": 268,
+   "L_hat": 31.582089552238806,
+   "low": 0.7439724454649828,
+   "beta": {
+    "0.0": null,
+    "0.1": 1058.9433923088652,
+    "0.2": 482.1513631170698,
+    "0.3": 289.0933374422517,
+    "0.5": 133.031245984657
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 1.0,
+    "0.5": 0.9
+   },
+   "floor_beta_w0": 482,
+   "oi_present_in_Ns": 74,
+   "binds": false
+  },
+  "g2b_q3_xm600-short-T05": {
+   "n": 640,
+   "t": 444,
+   "U": 196,
+   "f1": 182,
+   "phi1": 182,
+   "phi2": 262,
+   "L_hat": 31.606870229007633,
+   "low": 0.7431357347328245,
+   "beta": {
+    "0.0": null,
+    "0.1": 1048.861838521631,
+    "0.2": 477.6189218108339,
+    "0.3": 286.4144764787846,
+    "0.5": 131.84315010360393
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 1.0,
+    "0.5": 0.8984375
+   },
+   "floor_beta_w0": 477,
+   "oi_present_in_Ns": 76,
+   "binds": false
+  },
+  "g2b_q3_xm600-short-T08": {
+   "n": 630,
+   "t": 445,
+   "U": 185,
+   "f1": 176,
+   "phi1": 176,
+   "phi2": 269,
+   "L_hat": 28.78810408921933,
+   "low": 0.7520446096654275,
+   "beta": {
+    "0.0": null,
+    "0.1": 1018.5815001762518,
+    "0.2": 464.00403914360885,
+    "0.3": 278.3665028284061,
+    "0.5": 128.27266856940736
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 1.0,
+    "0.5": 0.9095238095238095
+   },
+   "floor_beta_w0": 464,
+   "oi_present_in_Ns": 70,
+   "binds": false
+  },
+  "xm3600_fuse2_s42-detailed": {
+   "n": 796,
+   "t": 514,
+   "U": 282,
+   "f1": 197,
+   "phi1": 197,
+   "phi2": 317,
+   "L_hat": 30.60646687697161,
+   "low": 0.6841789784886577,
+   "beta": {
+    "0.0": null,
+    "0.1": 1124.336431808477,
+    "0.2": 511.5447753388026,
+    "0.3": 306.46217253808504,
+    "0.5": 140.73007214072334
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 1.0,
+    "0.5": 0.821608040201005
+   },
+   "floor_beta_w0": 511,
+   "oi_present_in_Ns": 110,
+   "binds": false
+  },
+  "xm3600_fuse2_s42-short": {
+   "n": 580,
+   "t": 428,
+   "U": 152,
+   "f1": 145,
+   "phi1": 145,
+   "phi2": 283,
+   "L_hat": 18.573321554770317,
+   "low": 0.7699540026806384,
+   "beta": {
+    "0.0": null,
+    "0.1": 861.1769003469159,
+    "0.2": 393.189897676142,
+    "0.3": 236.48004072311628,
+    "0.5": 109.65920875471684
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 1.0,
+    "0.5": 0.9258620689655173
+   },
+   "floor_beta_w0": 393,
+   "oi_present_in_Ns": 61,
+   "binds": false
+  },
+  "xm3600_p1_s43-detailed": {
+   "n": 482,
+   "t": 332,
+   "U": 150,
+   "f1": 110,
+   "phi1": 110,
+   "phi2": 222,
+   "L_hat": 13.626126126126126,
+   "low": 0.7170666517139546,
+   "beta": {
+    "0.0": null,
+    "0.1": 681.0134694021567,
+    "0.2": 312.0334867028963,
+    "0.3": 188.40728821720234,
+    "0.5": 88.21918722734608
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 1.0,
+    "0.5": 0.8713692946058091
+   },
+   "floor_beta_w0": 312,
+   "oi_present_in_Ns": 83,
+   "binds": false
+  },
+  "xm3600_p1_s43-short": {
+   "n": 497,
+   "t": 348,
+   "U": 149,
+   "f1": 110,
+   "phi1": 110,
+   "phi2": 238,
+   "L_hat": 12.710084033613445,
+   "low": 0.7257748169690411,
+   "beta": {
+    "0.0": null,
+    "0.1": 681.0134694021567,
+    "0.2": 312.0334867028963,
+    "0.3": 188.40728821720234,
+    "0.5": 88.21918722734608
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 1.0,
+    "0.5": 0.8772635814889336
+   },
+   "floor_beta_w0": 312,
+   "oi_present_in_Ns": 81,
+   "binds": false
+  },
+  "xm3600_zeroshot-detailed": {
+   "n": 1628,
+   "t": 726,
+   "U": 902,
+   "f1": 368,
+   "phi1": 368,
+   "phi2": 358,
+   "L_hat": 94.56983240223464,
+   "low": 0.5040355235885962,
+   "beta": {
+    "0.0": null,
+    "0.1": 1969.3092093063287,
+    "0.2": 890.7011178920192,
+    "0.3": 530.0761263019667,
+    "0.5": 239.35941482831555
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 0.9926289926289926,
+    "0.3": 0.7714987714987716,
+    "0.5": 0.5927518427518428
+   },
+   "floor_beta_w0": 890,
+   "oi_present_in_Ns": 229,
+   "binds": true
+  },
+  "xm3600_zeroshot-short": {
+   "n": 617,
+   "t": 445,
+   "U": 172,
+   "f1": 159,
+   "phi1": 159,
+   "phi2": 286,
+   "L_hat": 22.098776223776223,
+   "low": 0.7570482596819712,
+   "beta": {
+    "0.0": null,
+    "0.1": 932.4751410320565,
+    "0.2": 425.27495435272056,
+    "0.3": 255.4642797483254,
+    "0.5": 118.10213238112392
+   },
+   "high": {
+    "0.0": 1.0,
+    "0.1": 1.0,
+    "0.2": 1.0,
+    "0.3": 1.0,
+    "0.5": 0.9124797406807131
+   },
+   "floor_beta_w0": 425,
+   "oi_present_in_Ns": 60,
+   "binds": false
+  }
+ },
+ "h2b_declared": {
+  "n_binding": 1,
+  "n_oi_above_budget": 0,
+  "determined": null
+ },
+ "slopes": {
+  "Q25": {
+   "cref_P": {
+    "0.0": {
+     "range": [
+      -44.21828352145527,
+      24.32739022933545
+     ],
+     "certified_sign": false
+    },
+    "0.1": {
+     "range": [
+      -44.21828352145527,
+      24.32739022933545
+     ],
+     "certified_sign": false
+    },
+    "0.2": {
+     "range": [
+      -44.21828352145527,
+      24.32739022933545
+     ],
+     "certified_sign": false
+    },
+    "0.3": {
+     "range": [
+      -44.21828352145527,
+      7.784631402237435
+     ],
+     "certified_sign": false
+    },
+    "0.5": {
+     "range": [
+      -35.76634395353762,
+      -7.181116504858032
+     ],
+     "certified_sign": true
+    }
+   },
+   "clabel": {
+    "F": {
+     "range": [
+      2.3129770465065,
+      23.64634217924641
+     ],
+     "ci_min": [
+      -0.09521063488339589,
+      4.371512947191321
+     ],
+     "ci_max": [
+      21.781920705326705,
+      25.597823879256772
+     ],
+     "certified_sign": true
+    },
+    "P": {
+     "range": [
+      -45.670450025307346,
+      26.427725969512647
+     ],
+     "ci_min": [
+      -48.349109165172905,
+      -43.314683250886
+     ],
+     "ci_max": [
+      23.146920129419495,
+      30.029384890836987
+     ],
+     "certified_sign": false
+    },
+    "s72": {
+     "lower": 5.825781873320431,
+     "upper": 20.133537352432477
+    }
+   },
+   "registered_F": 19.324662824869606,
+   "registered_P": -2.5180598403945824
+  },
+  "Q3": {
+   "cref_P": {
+    "0.0": {
+     "range": [
+      -54.62115098172371,
+      31.358962490275232
+     ],
+     "certified_sign": false
+    },
+    "0.1": {
+     "range": [
+      -54.62115098172371,
+      31.358962490275232
+     ],
+     "certified_sign": false
+    },
+    "0.2": {
+     "range": [
+      -54.62115098172371,
+      31.358962490275232
+     ],
+     "certified_sign": false
+    },
+    "0.3": {
+     "range": [
+      -54.62115098172371,
+      13.228189074741833
+     ],
+     "certified_sign": false
+    },
+    "0.5": {
+     "range": [
+      -45.76731226786928,
+      -6.596524753603681
+     ],
+     "certified_sign": true
+    }
+   },
+   "clabel": {
+    "F": {
+     "range": [
+      -4.676187739702608,
+      21.420896254826708
+     ],
+     "ci_min": [
+      -7.563242663562718,
+      -2.2664921543256704
+     ],
+     "ci_max": [
+      19.121071658757298,
+      23.824627925653154
+     ],
+     "certified_sign": false
+    },
+    "P": {
+     "range": [
+      -59.01008886196221,
+      38.80863354001342
+     ],
+     "ci_min": [
+      -63.1072960726112,
+      -55.10001873078537
+     ],
+     "ci_max": [
+      34.36427114947352,
+      43.79148754824492
+     ],
+     "certified_sign": false
+    },
+    "s72": {
+     "lower": 1.9675896249142923,
+     "upper": 14.777118890209811
+    }
+   },
+   "registered_F": 13.708466543235904,
+   "registered_P": -5.371451009287147
+  }
+ },
+ "h3": {
+  "N_u": 1704,
+  "phi1": 268,
+  "phi2": 113,
+  "f0_hat": 158.90265486725664,
+  "evaluable": true
+ },
+ "provenance": {
+  "script_sha256": "2e872588baf6109fad20111aecd25e2504fd0096f9033a95649027a2eed46cf4",
+  "registration_sha256": "e564b7b10cf500db50e48748f9e4e2e010378313eaeca89c4d14bde6d072aa7e",
+  "gate_sha256": "f04d2142aecab6e6ae0bc32f49b005182196899e9ed08a4aa08703275f51086c"
+ }
+}

@@ -1,0 +1,360 @@
+{
+ "schema": "vsps.a_cert.gate.v1",
+ "status": "development (no labels)",
+ "script_sha256": "2e872588baf6109fad20111aecd25e2504fd0096f9033a95649027a2eed46cf4",
+ "pins": {
+  "manuscript/prereg/2026-11-11_xm600_gold_completion/BUILD.json": "d424fdcaa6a99b84c329a9a65edacff5f3654284fecfe5b716debfa6b5295d87",
+  "manuscript/prereg/2026-11-11_xm600_gold_completion/assignment.json": "55e07337218acc820aafc27659e499ade4ae622cc6eaf41be2f7bb3df510cb2d",
+  "data/results/n_f1/bracket_result.json": "4796ed124dc81df988545cee3ed35d997bb004c4e601375c12d9a0788f7aee47",
+  "data/xm3600/vi_oiv7_map.json": "27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a",
+  "tools/obj_rater/build_assignment.py": "497e57479197fabaccdf0adea93269aa88d827f646e71ded17fe6b70a94bd8dd",
+  "scripts/pascal50s/p50x.py": "3f562e878ed793f4b3cae84dd93373b10d82564d162cb399ab16e03ccf8825c2",
+  "scripts/n_f1/bracket.py": "9d2d3059b0b4cd39a6c6849b33fa657171327f5178bd60ccb994f469a88624d8",
+  "scripts/a_m1/a_m1.py": "fa8c9bf2503e3bcf1e7a530568ca402918b5b2ea87873865a5cc6671d877f800",
+  "data/results/xm3600/xm3600_fuse2_s42-detailed.preds.json": "b941181c7b118c73fdac8f3f66797beee9d07891096a98927b1aa30f36b31203",
+  "data/results/xm3600/xm3600_fuse2_s42-short.preds.json": "426c2d8140a912d17d296dddfcaa807aa93b5e673d3ee8fd5dea6c44885a2943",
+  "data/results/xm3600/xm3600_p1_s43-detailed.preds.json": "296a26bfe17635afe61ab28ba16fae40714577b4981b96786cc021700410c7e2",
+  "data/results/xm3600/xm3600_p1_s43-short.preds.json": "1150a046e63470c09268f0045b7b4976b6cad2a571453873277a9fc82fd2aad9",
+  "data/results/xm3600/xm3600_zeroshot-detailed.preds.json": "47db3b9d279508e89f0332482c3e268a119186af9e0cbf6426cc85ce1a52a32f",
+  "data/results/xm3600/xm3600_zeroshot-short.preds.json": "1f3573324772c67de3eebcdef326f84a39ecbe7fd705ceb5dd4e6863a0d73d4c",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-detailed-T0.preds.json": "a66647d12140858e8c013fdce6133949c4b97179d91acc92c413608bf0a560df",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-detailed-T05.preds.json": "3e6189d627affaec4e327b1eb3ac1a55a3b76cbc8ae5001dc3c63de9c6baa9ee",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-detailed-T08.preds.json": "944668eb32fb4a76209837f394bf6cd62a3245d8ac467e715105b3953dd2e751",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-short-T0.preds.json": "82b6ef5fdb9bc98a34e07b9a68e99b1403277d275285fe6df54864d319f57e5e",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-short-T05.preds.json": "522819dfe54dc8a9e191b9ddf88c0df6edb3a1bda6e9a1c4932533c273e1ae76",
+  ".session_backup/machines/O-2308428/root/outputs/g2b_qwen3vl/g2b_q3_xm600-short-T08.preds.json": "71b168e7909913fe2f95c63727be1f9a664dea5b8271a82357aae15d61f698fc"
+ },
+ "cells": [
+  {
+   "check": "named_pairs",
+   "got": 4910,
+   "want": 4910,
+   "ok": true
+  },
+  {
+   "check": "named_pairs_registered",
+   "got": 4910,
+   "want": 4910,
+   "ok": true
+  },
+  {
+   "check": "part1_targets",
+   "got": 1790,
+   "want": 1790,
+   "ok": true
+  },
+  {
+   "check": "part1_targets_subset_of_assignment_part1",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "part1_minus_targets",
+   "got": 443,
+   "want": 443,
+   "ok": true
+  },
+  {
+   "check": "Q25 registered F slope",
+   "got": 19.3247,
+   "want": 19.3247,
+   "ok": true
+  },
+  {
+   "check": "Q25 registered F slope = bracket_result",
+   "got": 19.324662824869606,
+   "want": 19.324662824869606,
+   "ok": true
+  },
+  {
+   "check": "Q25 registered F CI = bracket_result",
+   "got": 0.0,
+   "want": 0.0,
+   "ok": true
+  },
+  {
+   "check": "Q25 lower F slope = bracket_result",
+   "got": 5.825781873320431,
+   "want": 5.825781873320431,
+   "ok": true
+  },
+  {
+   "check": "Q25 lower F CI = bracket_result",
+   "got": 0.0,
+   "want": 0.0,
+   "ok": true
+  },
+  {
+   "check": "Q25 upper F slope = bracket_result",
+   "got": 20.133537352432477,
+   "want": 20.133537352432477,
+   "ok": true
+  },
+  {
+   "check": "Q25 upper F CI = bracket_result",
+   "got": 0.0,
+   "want": 0.0,
+   "ok": true
+  },
+  {
+   "check": "Q25 S7.2 lower (2dp)",
+   "got": 5.83,
+   "want": 5.83,
+   "ok": true
+  },
+  {
+   "check": "Q25 S7.2 upper (2dp)",
+   "got": 20.13,
+   "want": 20.13,
+   "ok": true
+  },
+  {
+   "check": "Q25 §5 F range (2dp)",
+   "got": [
+    2.31,
+    23.65
+   ],
+   "want": [
+    2.31,
+    23.65
+   ],
+   "ok": true
+  },
+  {
+   "check": "Q25 §5 P range (2dp)",
+   "got": [
+    -45.67,
+    26.43
+   ],
+   "want": [
+    -45.67,
+    26.43
+   ],
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_zeroshot-short present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_zeroshot-detailed present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_p1_s43-short present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_p1_s43-detailed present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_fuse2_s42-short present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_fuse2_s42-detailed present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_zeroshot-short mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_zeroshot-detailed mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_p1_s43-short mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_p1_s43-detailed mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_fuse2_s42-short mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q25 xm3600_fuse2_s42-detailed mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 registered F slope",
+   "got": 13.70847,
+   "want": 13.70847,
+   "ok": true
+  },
+  {
+   "check": "Q3 registered F slope = bracket_result",
+   "got": 13.708466543235904,
+   "want": 13.708466543235904,
+   "ok": true
+  },
+  {
+   "check": "Q3 registered F CI = bracket_result",
+   "got": 0.0,
+   "want": 0.0,
+   "ok": true
+  },
+  {
+   "check": "Q3 lower F slope = bracket_result",
+   "got": 1.9675896249142923,
+   "want": 1.9675896249142923,
+   "ok": true
+  },
+  {
+   "check": "Q3 lower F CI = bracket_result",
+   "got": 0.0,
+   "want": 0.0,
+   "ok": true
+  },
+  {
+   "check": "Q3 upper F slope = bracket_result",
+   "got": 14.777118890209811,
+   "want": 14.777118890209811,
+   "ok": true
+  },
+  {
+   "check": "Q3 upper F CI = bracket_result",
+   "got": 0.0,
+   "want": 0.0,
+   "ok": true
+  },
+  {
+   "check": "Q3 S7.2 lower (2dp)",
+   "got": 1.97,
+   "want": 1.97,
+   "ok": true
+  },
+  {
+   "check": "Q3 S7.2 upper (2dp)",
+   "got": 14.78,
+   "want": 14.78,
+   "ok": true
+  },
+  {
+   "check": "Q3 §5 F range (2dp)",
+   "got": [
+    -4.68,
+    21.42
+   ],
+   "want": [
+    -4.68,
+    21.42
+   ],
+   "ok": true
+  },
+  {
+   "check": "Q3 §5 P range (2dp)",
+   "got": [
+    -59.01,
+    38.81
+   ],
+   "want": [
+    -59.01,
+    38.81
+   ],
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-short-T0 present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-detailed-T0 present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-short-T05 present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-detailed-T05 present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-short-T08 present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-detailed-T08 present mentions per image = context",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-short-T0 mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-detailed-T0 mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-short-T05 mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-detailed-T05 mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-short-T08 mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  },
+  {
+   "check": "Q3 g2b_q3_xm600-detailed-T08 mention sets = objects_in as build_assignment",
+   "got": true,
+   "want": true,
+   "ok": true
+  }
+ ],
+ "all_ok": true
+}
