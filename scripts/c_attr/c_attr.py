@@ -69,6 +69,11 @@ B1B_N = {"ov_dev_a": 911, "ov_dev_b": 925, "xm_dev500": 500}
 B1B_CFG = {"qwen25vl_7b": ("8", "first", "T1"), "internvl3_8b": ("4", "last", "T2"), "aya_vision_8b": ("4", "last", "T1")}
 B1B_PLAN_RATE = {"qwen25vl_7b": 0.80, "internvl3_8b": 1.40, "aya_vision_8b": 1.60}  # §6.1 point rates, dry run only
 B1B_CAP_H, TIER_A_END = 40.0, "2026-11-15T05:00:00Z"
+#: block 3 (v1.1 §6.5 + addendum v1.2 V8; C_ATTR_BLOCK3_RUN_DOC_v1.md): batch size 1, D1 per runner (LMCap lmcap_ri,
+#: Qwen2.5-VL ret_img), hard cap min(12, 1.5 P3); planning rates = §6.1 point rates (LMCap; ret_img / rand_img)
+B3_N = {"ov_dev_b": 925, "xm_dev500": 500}
+B3_PLAN_RATE = {"lmcap": 1.14, "qwen25vl_7b": 3.52}
+B3_CAP_H = 12.0
 #: binding 1 and §5: never a set of this code (the set choices below are a closed list of development sets)
 TEST_SETS = ("ov_test", "xm_test2500", "ktvic_test", "uitviic_test", "f30k_test", "coco_karpathy_test", "nocaps_val")
 SESOI = 2.0  # C's registered value, both languages (C-EN reused it); a planning value, see PREREG §9
@@ -414,6 +419,55 @@ def cmd_plan1b(a) -> None:
     sys.exit(4 if res["tier_a_stop"] else 0)
 
 
+def b3_steps(runners) -> list[dict]:
+    """Block 3 in run order, so a final cap stop drops from the bottom: LMCap on OV-dev-B (ri, rand, perm: the K5 arms
+    first), LMCap on XM-dev500, then Qwen2.5-VL ret_img and rand_img d0 on OV-dev-B, then on XM-dev500. The ri and
+    ret_img arms are decoded again on this host, so every contrast pairs decodes of one host. A runner without a D1
+    PASS is NOT RUN."""
+    plan = [("lmcap", ds, v) for ds in B3_N for v in ("ri", "rand", "perm")]
+    plan += [("qwen25vl_7b", ds, arm) for ds in B3_N for arm in ("ret_img", "rand_img")]
+    return [{"name": f"B3_{r}_{ds}_{x}", "runner": r, "set": ds, "arm": x, "n": B3_N[ds]}
+            for r, ds, x in plan if r in runners]
+
+
+def plan3(rates: dict) -> dict:
+    """V8 with the V7 formula: P3 = sum over the steps of the D1-passing runners of (N r + L) / 3600, rates = {runner:
+    (L, r)} from the forward D1 decodes; hard cap min(12, 1.5 P3) GPU-h."""
+    steps = b3_steps(rates)
+    p = sum(s["n"] * rates[s["runner"]][1] + rates[s["runner"]][0] for s in steps) / 3600
+    cap = min(B3_CAP_H, 1.5 * p)
+    return {"P_h": p, "cap_h": cap, "cap_s": int(cap * 3600), "steps": steps,
+            "not_run": [r for r in B3_PLAN_RATE if r not in rates]}
+
+
+def cmd_plan3(a) -> None:
+    """After D1: (load, decode seconds per caption) from the forward D1 file of each passing runner (--dry-run: the
+    §6.1 point rates, no load term). Writes the cap file and the step list."""
+    rates = {}
+    for p in a.d1:
+        key = "lmcap" if Path(p).name.startswith("at_lmcap-") else "qwen25vl_7b"
+        t = {} if a.dry_run else json.loads(Path(p).read_text(encoding="utf-8"))["timing"]
+        rates[key] = (0.0, B3_PLAN_RATE[key]) if a.dry_run else (t["load_s"], t["decode_s"] / t["n"])
+    res = plan3(rates) | {"label": LABEL, "rates_L_r": rates, "dry_run": a.dry_run, "utc": lb.utc()}
+    Path(a.out).write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
+    Path(a.steps).write_text("".join(f"{s['name']} {s['runner']} {s['set']} {s['arm']}\n" for s in res["steps"]),
+                             encoding="utf-8")
+    print(f"PLAN 3: P3 {res['P_h']:.2f} GPU-h, cap {res['cap_h']:.2f} GPU-h, {len(res['steps'])} runs, "
+          f"NOT RUN {res['not_run'] or 'none'}")
+
+
+def lmcap_run_id(a) -> str:
+    """LMCap run id; block 3 (V8) adds '-b1' (LMCap decodes one image per generate call, so batch size 1 always) and
+    the D1 modes rev50 / fwd50, in the order of run_id_of, so d1_ref applies unchanged."""
+    return f"at_lmcap-{a.variant}_{a.set}-m{a.memory}" + ("-b1" if a.batch1 else "") \
+        + (f"-{a.redecode}" if a.redecode else "") + ("-smoke" if a.limit else "")
+
+
+def d1_items(items: list, mode: str) -> list:
+    """Block-3 D1 (V8): the first 50 items, in stored order (fwd50) or reversed (rev50)."""
+    return items[:REDECODE_N][::-1 if mode == "rev50" else 1]
+
+
 def skeleton(text: str) -> str:
     """A3 (§9): the prompt without its example lines; equal across the arms of one template."""
     return "\n".join(x for x in text.split("\n") if not x.startswith(C.LINE.split("{")[0]))
@@ -575,15 +629,23 @@ def cmd_embed(a) -> None:
 def cmd_lmcap(a) -> None:
     """LMCap re-implementation (no licence on the authors' code, so not run): M-CLIP xlm-roberta-large-ViT-H-14
     image-to-caption retrieval over the same memory (variant ri) or C's own top-4 retrieved clusters (variant se),
-    N = 3 fixed shots, XGLM-2.9B, beam 3, 3 candidates re-ranked by M-CLIP image-text similarity."""
-    import open_clip
-    import torch
-    from PIL import Image
-    from transformers import AutoTokenizer, XGLMForCausalLM
-
+    N = 3 fixed shots, XGLM-2.9B, beam 3, 3 candidates re-ranked by M-CLIP image-text similarity. Block 3: the
+    refusals and the dry run come before the GPU imports, so they also run in a venv without open_clip."""
+    t0 = time.time()
     reg, lang = registry(), SETS[a.set]
-    for key, snap in (("xglm_2_9b", a.xglm), ("mclip_h14", a.mclip)):
-        lb.check_snapshot(reg["models"][key], snap)
+    if a.redecode and a.variant != "ri":
+        raise SystemExit("block-3 D1 re-decodes LMCap's own retrieval (variant ri) only")
+    if a.redecode == "fwd50" and not a.batch1:
+        raise SystemExit("fwd50 (D1, v1.2 V8) needs --batch1")
+    run_id = lmcap_run_id(a)
+    out = Path(a.out_dir) / f"{run_id}.preds.json"
+    if out.exists():
+        raise SystemExit(f"{out} exists; a run is decoded once")
+    if a.dry_run:  # no weights on the laptop / in the dry tree
+        print("DRY: snapshot checks of xglm_2_9b and mclip_h14 skipped")
+    else:
+        for key, snap in (("xglm_2_9b", a.xglm), ("mclip_h14", a.mclip)):
+            lb.check_snapshot(reg["models"][key], snap)
     items = items_of(a.set, a)
     ex = attr_ex(a.set)
     caps, shown = memory_text(a, lang)
@@ -594,6 +656,14 @@ def cmd_lmcap(a) -> None:
     scos = np.asarray(q["vecs"], np.float32)[[qpos[i] for i, _f, _h in items]] @ sv.T
     if sorted(sk) != sorted(caps):
         raise SystemExit("LMCap: the embedded memory is not the caption memory")
+    if a.dry_run:
+        print(f"DRY {run_id}: {len(items)} items, memory and lists checked; stop before the model load")
+        return
+    import open_clip
+    import torch
+    from PIL import Image
+    from transformers import AutoTokenizer, XGLMForCausalLM
+
     mkeys = sorted(caps)
     clip, _p, pre = open_clip.create_model_and_transforms(
         "xlm-roberta-large-ViT-H-14", pretrained=str(Path(a.mclip) / "open_clip_pytorch_model.bin"))
@@ -632,6 +702,8 @@ def cmd_lmcap(a) -> None:
     file_of = {i: (f, h) for i, f, h in items}
     if a.limit:
         items, scos = items[:a.limit], scos[:a.limit]
+    if a.redecode:
+        items = d1_items(items, a.redecode)
     folder = img_folder(a.set, a)
 
     def img_vec(i):
@@ -644,10 +716,11 @@ def cmd_lmcap(a) -> None:
         for i, _f, _h in items:
             d = ex["donor"]["1"][i]
             perm_q[i] = retrieve(img_vec(d), set(shot_ids) | near[d] | near[i])
-        pl = Path(a.out_dir) / f"at_lmcap-perm_{a.set}-m{a.memory}.lists.json"
+        pl = Path(a.out_dir) / f"{run_id}.lists.json"
         pl.write_text(json.dumps({"label": LABEL, "perm_query_ids": perm_q}) + "\n", encoding="utf-8")
         Path(str(pl) + ".sha256").write_text(f"{sha(pl)}  {pl.name}\n")
         print(f"lmcap_perm lists {pl.name} sha256 {sha(pl)}", flush=True)
+    t1 = time.time()  # V8 / V7: load (models, memory text, shots, perm lists) and decode seconds kept apart
     for i, f, h in items:
         v = img_vec(i)
         q = perm_q[i] if a.variant == "perm" else lmcap_query(a.variant, i, ex, set(shot_ids),
@@ -662,13 +735,12 @@ def cmd_lmcap(a) -> None:
         best = int(torch.argmax(enc_text(cands) @ v))
         preds[i] = cands[best]
         hitmax[i] = xt.eos_token_id not in gen[best] and len(gen[best]) >= LMCAP_NEW  # N4
-    run_id = f"at_lmcap-{a.variant}_{a.set}-m{a.memory}" + ("-smoke" if a.limit else "")
-    out = Path(a.out_dir) / f"{run_id}.preds.json"
+    timing = {"load_s": t1 - t0, "decode_s": time.time() - t1, "n": len(preds)}
     rec = {"schema": SCHEMA, "label": LABEL, "run_id": run_id, "model": f"lmcap_{a.variant}", "dataset": a.set,
            "lang": lang, "spec": {"arm": "lmcap", "k": LMCAP_K, "n_shots": LMCAP_N, "beam": LMCAP_BEAM,
-                                  "variant": a.variant, "memory": a.memory},
+                                  "variant": a.variant, "memory": a.memory, "redecode": a.redecode, "batch_size": 1},
            "c_t1_sha256": sha(Path(__file__)), "ex_sha256": sha(ATTR_LISTS), "exemplars": exids, "predictions": preds,
-           "hit_max": hitmax, "shots": shot_ids, "utc": lb.utc()}
+           "hit_max": hitmax, "shots": shot_ids, "timing": timing, "utc": lb.utc()}
     out.write_text(json.dumps(rec, ensure_ascii=False) + "\n", encoding="utf-8")
     Path(str(out) + ".sha256").write_text(f"{sha(out)}  {out.name}\n")
 
@@ -789,7 +861,8 @@ def iso_config(ncs: Path, outputs: Path, restored: list[str], refused: set[str])
     rp = os.path.realpath
     return {"ncs": rp(ncs), "outputs": rp(outputs), "refused": refused,
             "ncs_ok": [rp(Path(ncs) / "datasets" / d) for d in ISO_DATASETS] + [rp(Path(ncs) / d) for d in ISO_NCS],
-            "out_ok": [rp(Path(outputs) / "c_attr"), rp(Path(outputs) / "c_attr_b1")], "files_ok": {rp(f) for f in restored}}
+            "out_ok": [rp(Path(outputs) / d) for d in ("c_attr", "c_attr_b1", "c_attr_b3")],
+            "files_ok": {rp(f) for f in restored}}
 
 
 def iso_default() -> dict:
@@ -1687,6 +1760,53 @@ def selftest_t2(ok: list) -> None:
     ok.append("C-T2 decision (5 claims, val PASS, single-pass m, 0.98 margin, NOT RUN, W2 rows, W4), dupcheck, t2 CLI")
 
 
+def selftest_b3(ok: list) -> None:
+    """Block 3 (C_ATTR_BLOCK3_RUN_DOC_v1.md): step order and counts, the P3 cap, LMCap ids and D1 references, the D1
+    slice, the cap file from D1 timings, the LMCap refusals before any model load, the c_attr_b3 output folder."""
+    ns = argparse.Namespace
+    st = b3_steps(B3_PLAN_RATE)
+    assert [(s["runner"], s["set"], s["arm"]) for s in st[:3]] == [("lmcap", "ov_dev_b", v) for v in ("ri", "rand", "perm")], \
+        "the K5 arms (LMCap on OV-dev-B) run first, so a cap stop drops them last"
+    assert (st[-1]["runner"], st[-1]["set"], st[-1]["arm"]) == ("qwen25vl_7b", "xm_dev500", "rand_img")
+    assert len(st) == 10 and len({s["name"] for s in st}) == 10 and sum(s["n"] for s in st) == 7125
+    p3 = plan3({k: (0.0, r) for k, r in B3_PLAN_RATE.items()})
+    assert abs(p3["P_h"] - 4.1404) < 1e-3 and abs(p3["cap_h"] - 1.5 * p3["P_h"]) < 1e-9 and p3["not_run"] == []
+    assert plan3({k: (60.0, 50.0) for k in B3_PLAN_RATE})["cap_h"] == B3_CAP_H, "cap min(12, 1.5 P3)"
+    one = plan3({"lmcap": (3600.0, 0.0)})
+    assert one["not_run"] == ["qwen25vl_7b"] and {s["runner"] for s in one["steps"]} == {"lmcap"} \
+        and abs(one["P_h"] - 6.0) < 1e-9, "a runner without D1 PASS is NOT RUN; one load term per run"
+    lid = lambda **kw: lmcap_run_id(ns(**{"variant": "ri", "set": "ov_dev_b", "memory": "vi", "batch1": False,
+                                          "redecode": None, "limit": 0, **kw}))
+    assert lid() == "at_lmcap-ri_ov_dev_b-mvi", "ids without block-3 flags are unchanged"
+    assert d1_ref(lid(batch1=True, redecode="fwd50")) == lid(redecode="rev50"), "LMCap D1 reference = its rev50 decode"
+    ids = {lid(variant=v, set=ds, batch1=True) for v in ("ri", "rand", "perm") for ds in B3_N}
+    assert len(ids) == 6 and all("b1" in x.split("-") for x in ids), "'-b1' in every block-3 LMCap id"
+    assert d1_items(list(range(60)), "rev50") == list(range(49, -1, -1)) and d1_items(list(range(60)), "fwd50") == list(range(50))
+    cfg = iso_config(Path("/root/ncs-data"), Path("/root/outputs"), [], set())
+    assert iso_denied("/root/outputs/c_attr_b3/out/x.preds.json", cfg) is None and iso_denied("/root/outputs/c_attr_b4/x", cfg)
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp)
+        (t / "at_lmcap-ri_ov_dev_b-mvi-b1-fwd50.preds.json").write_text(json.dumps({"timing": {"load_s": 100.0, "decode_s": 50.0, "n": 50}}))
+        (t / "at_qwen25vl_7b_ov_dev_b-ret_img-k8-first-T1-mvi-b1-fwd50.preds.json").write_text(
+            json.dumps({"timing": {"load_s": 200.0, "decode_s": 175.0, "n": 50}}))
+        cmd_plan3(ns(d1=sorted(t.glob("*.preds.json")), out=t / "CAP_3.json", steps=t / "STEPS_3.tsv", dry_run=False))
+        cap = json.loads((t / "CAP_3.json").read_text())
+        assert abs(cap["P_h"] - 15650 / 3600) < 1e-9 and len((t / "STEPS_3.tsv").read_text().splitlines()) == 10, \
+            "P3 from the D1 load seconds and decode seconds per caption"
+        base = {"set": "ov_dev_b", "variant": "ri", "memory": "vi", "batch1": True, "redecode": None, "limit": 0,
+                "dry_run": True, "out_dir": t, "xglm": None, "mclip": None}
+        (t / f"{lmcap_run_id(ns(**base))}.preds.json").write_text("{}")
+        for kw, why in (({}, "decoded once"), ({"variant": "perm", "redecode": "rev50"}, "variant ri"),
+                        ({"redecode": "fwd50", "batch1": False}, "--batch1")):
+            try:
+                cmd_lmcap(ns(**{**base, **kw}))
+                raise AssertionError(why)
+            except SystemExit as e:
+                assert why in str(e), e
+    ok.append("block 3: step order and counts (7,125), cap min(12, 1.5 P3) from D1 timings, LMCap '-b1' ids and D1 "
+              "reference, D1 slice, LMCap refusals before any model load, c_attr_b3 output folder")
+
+
 def selftest_attr(ok: list) -> None:
     """C-ATTR §11.1: run ids, example ids from the list file, A3 prompt shape, refusals with real names, the string
     comparator, tau = -inf columns, pinned stored runs, decode refusals before any model load."""
@@ -1719,6 +1839,7 @@ def selftest_attr(ok: list) -> None:
     one = plan1b({"aya_vision_8b": (30.0, 1.6)}, 0)
     assert one["not_run"] == list(OLD) and {s["model"] for s in one["steps"]} == {"aya_vision_8b"} and one["P_A_h"] == 0
     ok.append("v1.2: '-b1' ids, D1 reference, V5 steps and counts (37,213), V7 cap and Tier-A stop")
+    selftest_b3(ok)
     ex = {"ret": {"q": ["r1", "r2", "r3", "r4"]}, "rand": {"0": {"q": ["a1", "a2", "a3", "a4"]}},
           "perm": {"1": {"q": ["p1", "p2", "p3", "p4"]}, "2": {"q": ["s1", "s2", "s3", "s4"]}},
           "fix": {"0": ["f1", "f2"], "3": ["g1", "g2"]}}
@@ -1868,6 +1989,9 @@ def main() -> None:
             p.add_argument("--mclip", type=Path, required=True)
             p.add_argument("--mem-emb", type=Path, required=True)
             p.add_argument("--query-emb", type=Path, required=True)
+            p.add_argument("--redecode", choices=("rev50", "fwd50"), help="block-3 D1 (variant ri): never scored")
+            p.add_argument("--batch1", action="store_true", help="block 3 (V8): run id '-b1' (LMCap is batch 1 always)")
+            p.add_argument("--dry-run", action="store_true", help="stop before the model load")
     p = sub.add_parser("score")
     p.add_argument("--set", choices=sorted(SETS), required=True)
     p.add_argument("--runs", type=Path, nargs="+", required=True)
@@ -1884,6 +2008,11 @@ def main() -> None:
     p.add_argument("--d1", action="store_true", help="v1.2 V3: --old must be the D1 reference of --new (d1_ref)")
     p.add_argument("--dry-run", action="store_true")
     p = sub.add_parser("plan1b")
+    p.add_argument("--d1", type=Path, nargs="*", default=[])
+    p.add_argument("--out", type=Path, required=True)
+    p.add_argument("--steps", type=Path, required=True)
+    p.add_argument("--dry-run", action="store_true")
+    p = sub.add_parser("plan3")
     p.add_argument("--d1", type=Path, nargs="*", default=[])
     p.add_argument("--out", type=Path, required=True)
     p.add_argument("--steps", type=Path, required=True)
@@ -1954,7 +2083,7 @@ def main() -> None:
      "memcheck": lambda: cmd_memcheck(a), "fetch": lambda: cmd_fetch(a), "pinsok": lambda: cmd_pinsok(a),
      "t1check": lambda: cmd_t1check(a), "select": lambda: cmd_select(a), "summary": lambda: cmd_summary(a), "t2": lambda: cmd_t2(a),
      "dupcheck": lambda: cmd_dupcheck(a), "lock": lock, "left": left, "compare": lambda: cmd_compare(a),
-     "plan1b": lambda: cmd_plan1b(a)}.get(a.cmd, ap.print_help)()
+     "plan1b": lambda: cmd_plan1b(a), "plan3": lambda: cmd_plan3(a)}.get(a.cmd, ap.print_help)()
 
 
 if __name__ == "__main__":

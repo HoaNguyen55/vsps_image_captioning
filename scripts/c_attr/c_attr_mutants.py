@@ -61,7 +61,7 @@ MUT = [  # (id, file, old, new): each old occurs exactly once
     ("S12 'split of a known τ_sel' missing on OV-dev-B (CC-331)", S, 'KNOWN_SUM = ("ov_dev_a", "ov_dev_b")',
      'KNOWN_SUM = ("ov_dev_a",)'),
     # addendum v1.2, block 1b (CC-340 W1, CC-341)
-    ("A6 '-b1' missing from the run id", A, '+ ("-b1" if a.batch1 else "")', '+ ""'),
+    ("A6 '-b1' missing from the run id", A, '        + ("-b1" if a.batch1 else "")', '        + ""'),
     ("A7 D1 compared with the step-1.0 (a) host50 decode", A, 'return run_id[: -len("-b1-fwd50")] + "-rev50"',
      'return run_id[: -len("-b1-fwd50")] + "-host50"'),
     ("A8 D1 comparator prints a caption", A, "failing ids {bad}\")",
@@ -143,6 +143,22 @@ MUT = [  # (id, file, old, new): each old occurs exactly once
     ("S55 S1: ovb on a closed 1b", S, 'if nomination(nf).get("closed"):', "if False:"),
     ("S56 S1: a score call without a zs", S, "    if not zs:\n", "    if False:\n"),
     ("S57 §7.9: the carve ledger pin", S, "if A.sha(coco) != A.T1_CARVE_LEDGER_SHA256:", "if False:"),
+    # block 3 (C_ATTR_BLOCK3_RUN_DOC_v1.md, V8)
+    ("B1 block 3: K5 arms not first", A, 'for ds in B3_N for v in ("ri", "rand", "perm")]',
+     'for ds in B3_N for v in ("rand", "perm", "ri")]'),
+    ("B2 block 3: cap without the 12 GPU-h ceiling", A, "cap = min(B3_CAP_H, 1.5 * p)", "cap = 1.5 * p"),
+    ("B3 block 3: no load term in P3", A, 's["n"] * rates[s["runner"]][1] + rates[s["runner"]][0] for s in steps',
+     's["n"] * rates[s["runner"]][1] for s in steps'),
+    ("B4 block 3: rate per run, not per caption", A, '(t["load_s"], t["decode_s"] / t["n"])', '(t["load_s"], t["decode_s"])'),
+    ("B5 block 3: LMCap id without '-b1'", A, '-m{a.memory}" + ("-b1" if a.batch1 else "")', '-m{a.memory}" + ("")'),
+    ("B6 block 3: LMCap re-decode of an existing run", A,
+     'if out.exists():\n        raise SystemExit(f"{out} exists; a run is decoded once")\n    if a.dry_run:  # no weights',
+     'if False:\n        raise SystemExit(f"{out} exists; a run is decoded once")\n    if a.dry_run:  # no weights'),
+    ("B7 block 3: D1 re-decode of a variant other than ri", A, 'if a.redecode and a.variant != "ri":', "if False:"),
+    ("B8 block 3: fwd50 without --batch1", A, 'if a.redecode == "fwd50" and not a.batch1:\n        raise SystemExit("fwd50 (D1, v1.2 V8)',
+     'if False:\n        raise SystemExit("fwd50 (D1, v1.2 V8)'),
+    ("B9 block 3: rev50 not reversed", A, '[::-1 if mode == "rev50" else 1]', "[::1]"),
+    ("B10 block 3: output folder c_attr_b3 not allowed", A, '("c_attr", "c_attr_b1", "c_attr_b3")', '("c_attr", "c_attr_b1")'),
 ]
 PY = sys.executable
 NETNS = ["unshare", "-rn"]

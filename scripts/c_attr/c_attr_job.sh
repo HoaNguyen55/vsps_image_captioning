@@ -18,14 +18,19 @@
 # on a host without it, a rev50 decode first), then plan1b (V7 cap from the D1 load / decode seconds) and a PAUSE so
 # the cap is logged before Tier A; the second call runs STEPS_1B.tsv at batch size 1 under that cap (drops from the
 # bottom: Tier C, Tier B zs, Aya-Vision Tier B). C_ATTR_1B_MODELS limits the backbones on a second host (h2).
+# block3 (registration v1.1 §6.5, addendum v1.2 V8; C_ATTR_BLOCK3_RUN_DOC_v1.md): outputs under /root/outputs/c_attr_b3,
+# never beside another job. D1 per runner (LMCap lmcap_ri and Qwen2.5-VL ret_img: first 50 OV-dev-B items, reversed
+# then forward, batch size 1), then plan3 (cap min(12, 1.5 P3) from the forward D1 load / decode seconds) and a PAUSE so
+# the cap is logged; the second call runs STEPS_3.tsv (LMCap OV-dev-B ri, rand, perm; LMCap XM-dev500; Qwen2.5-VL
+# ret_img, rand_img d0 on OV-dev-B, then XM-dev500) under that cap, so a cap stop drops from the bottom.
 # Dry run: C_ATTR_DRY=1 on the host itself (PI 2026-11-11: checks run on the rented host, not the laptop; outputs
 # under /root/outputs/c_attr_dry; scripts/c_attr/dryrun.sh is the laptop harness of the same run): every decode runs with
 # --limit 2 --dry-run and stops before the model load; checks that need the host (GPU, weights, venv freeze) are skipped
 # with a DRY line; the comparators answer rc 3, so the fallback branch is exercised too.
 set -euo pipefail
-MODE=${1:?usage: c_attr_job.sh selftest|block1|block1b <expected HEAD>}; EXPECT=${2:?usage: c_attr_job.sh MODE <expected HEAD>}
+MODE=${1:?usage: c_attr_job.sh selftest|block1|block1b|block3 <expected HEAD>}; EXPECT=${2:?usage: c_attr_job.sh MODE <expected HEAD>}
 DRY=${C_ATTR_DRY:-0}
-case $MODE in selftest|block1|block1b) ;; *) echo "unknown mode $MODE"; exit 2;; esac
+case $MODE in selftest|block1|block1b|block3) ;; *) echo "unknown mode $MODE"; exit 2;; esac
 MID=$(cat /root/.vsps_machine_id 2>/dev/null || true)
 case "$MID" in h1|h2) ;; *) echo "REFUSED: /root/.vsps_machine_id is not h1 or h2"; exit 1;; esac
 cd /root/vsps
@@ -33,7 +38,7 @@ export NCS_DATA=/root/ncs-data HF_HUB_OFFLINE=1 VSPS_MACHINE_ID=$MID
 LB=/root/venv-lb/bin/python; PY=/root/vsps/.venv/bin/python
 LB_FREEZE=685ffe2a0100ce2489cccd77313d366fb1dce4455871a9d82f65aa139fa85784   # setup_gpu.sh H_LB (as C-T1 / C-T2)
 X=scripts/c_attr/c_attr.py; JOB=scripts/c_attr/c_attr_job.sh
-O=/root/outputs/c_attr; [ $MODE = block1b ] && O=/root/outputs/c_attr_b1
+O=/root/outputs/c_attr; [ $MODE = block1b ] && O=/root/outputs/c_attr_b1; [ $MODE = block3 ] && O=/root/outputs/c_attr_b3
 [ "$DRY" = 1 ] && O=${O}_dry   # a dry run never leaves .done files for block 1 or 1b
 P=$O/out; LOG=$O/logs; Q=$O/parity; USED=$O/gpu_seconds.tsv; MARK=$O/CAP_STOP.json
 DS=$NCS_DATA/datasets; CL=manuscript/prereg/2026-10-22_c_stage1/lists.json
@@ -61,18 +66,40 @@ if [ $MODE = block1b ]; then
   [ -e /root/outputs/c_attr/RUNNING ] && stop "block 1 is still running (never beside it, §6.7)"
   dry || [ "$MID" = h2 ] || [ -s /root/outputs/c_attr/SHA256SUMS ] || stop "block 1 not closed: /root/outputs/c_attr/SHA256SUMS missing"
 fi
+MODELS="qwen25vl_7b internvl3_8b aya_vision_8b"
+if [ $MODE = block3 ]; then   # block 3 reads Qwen2.5-VL, LMCap's pinned models and three stored vector files only
+  MODELS=qwen25vl_7b
+  (cd manuscript/prereg/2026-11-11_c_attr_dev && sha256sum --quiet -c SHA256SUMS_1B) || stop "addendum v1.2 SHA256SUMS_1B (V8)"
+  sha256sum --quiet -c manuscript/prereg/2026-10-30_c_t1/SHA256SUMS || stop "c_t1 registry SHA256SUMS (LMCap pins)"
+  for r in /root/outputs/c_attr/RUNNING /root/outputs/c_attr_b1/RUNNING; do [ -e $r ] && stop "$r exists (never beside another job, §6.7)"; done
+  grep -E 'c_stage1/emb\.npz|c_stage2/emb_(ov_dev_b|xm_dev500)\.npz' scripts/c_attr/STORED_SHA256 | sha256sum --quiet -c \
+    || stop "stored SigLIP2 vectors differ"
+else
+  grep -E 'ov_dev_[ab]-ret-' scripts/c_attr/STORED_SHA256 | sha256sum --quiet -c || stop "stored ret runs differ"
+fi
 (cd scripts/c_attr && sha256sum --quiet -c c_attr_lists.json.sha256) || stop "c_attr_lists.json differs from its sidecar"
-grep -E 'ov_dev_[ab]-ret-' scripts/c_attr/STORED_SHA256 | sha256sum --quiet -c || stop "stored ret runs differ"
 if dry; then say "DRY: venv-lb freeze check skipped (laptop venv)"
 else [ "$(/root/venv-lb/bin/pip freeze | sha256sum | cut -c1-64)" = $LB_FREEZE ] || stop "venv-lb freeze differs"; fi
 $LB $X --selftest >> $LOG/selftest.log 2>&1 || stop "c_attr selftest (venv-lb)"
 $PY scripts/c_attr/c_attr_lists.py --selftest >> $LOG/selftest.log 2>&1 || stop "c_attr_lists selftest"
 $PY $X guard --datasets $DS --roots $DS $NCS_DATA/models $O ${HF_HOME:-/root/.cache/huggingface}/hub \
   >> $LOG/guard.log 2>&1 || stop "custody guard (§5 refusal lists, archives, datasets allow-list)"
-for m in qwen25vl_7b internvl3_8b aya_vision_8b; do
+for m in $MODELS; do
   [ -d "$(snap $m)" ] || stop "$m snapshot dir missing"
 done
-if dry; then say "DRY: aya_vision_8b pinsok skipped (no weights on the laptop)"
+T1=/root/venv-t1/bin/python; MEM=$DS/c_t1_mem; CS1=/root/outputs/c_stage1; CS2=/root/outputs/c_stage2
+XG=$NCS_DATA/models/c_t1_xglm_2_9b; MC=$NCS_DATA/models/c_t1_mclip_h14
+T1_FREEZE=1766dc23a71509ba4fb6b8adb34b1999a3a2bf78ebe1e227730fd6647bea3599   # venv-t1 of record (OPS-1030n; C-T2, C-T3)
+if [ $MODE = block3 ]; then
+  if dry; then say "DRY: venv-t1 freeze, LMCap pins and t1check skipped (no weights on the laptop)"
+  else
+    [ "$(/root/venv-t1/bin/pip freeze | sha256sum | cut -c1-64)" = $T1_FREEZE ] || stop "venv-t1 freeze differs"
+    for m in xglm_2_9b mclip_h14; do $PY $X pinsok --model $m --snapshot $(snap $m) >> $LOG/pins.log 2>&1 || stop "$m snapshot"; done
+    $T1 $X t1check --mclip $MC >> $LOG/t1check.log 2>&1 || stop "venv-t1 open_clip offline (W8)"
+  fi
+  $T1 $X --selftest >> $LOG/selftest.log 2>&1 || stop "c_attr selftest (venv-t1)"
+  $PY $X memcheck --mem-files $MEM/memfiles_vi.json --root $DS >> $LOG/memcheck.log 2>&1 || stop "memcheck vi (8,190 representatives)"
+elif dry; then say "DRY: aya_vision_8b pinsok skipped (no weights on the laptop)"
 else $PY $X pinsok --model aya_vision_8b --snapshot $(snap aya_vision_8b) >> $LOG/pins.log 2>&1 || stop "aya snapshot"; fi
 sha256sum $X $JOB scripts/c_attr/c_attr_lists.json > $O/code_at_start.sha256
 say "PREFLIGHT OK head $EXPECT mode $MODE"
@@ -156,6 +183,50 @@ if [ $MODE = block1b ]; then
   CAPARGS=(--cap-s $($PY -I -c 'import json, sys; print(json.load(open(sys.argv[1]))["cap_s"])' $O/CAP_1B.json))
   say "BLOCK 1b: $(wc -l < $O/STEPS_1B.tsv) runs at batch size 1 under cap ${CAPARGS[1]} s"
   while read -r name m s arm rest <&3; do dec $name $m $s $arm $rest --batch1; done 3< $O/STEPS_1B.tsv
+  finish
+fi
+
+# ---------------------------------------------------------------- block 3 (registration v1.1 §6.5, addendum v1.2 V8)
+if [ $MODE = block3 ]; then
+  CAPARGS=(--cap-s $((12 * 3600)))   # D1 runs under the 12 GPU-h ceiling of V8; the D1 seconds count against the cap
+  VMEM=(--memory vi --mem-images $DS --mem-files $MEM/memfiles_vi.json)
+  lm() {  # lm NAME SET VARIANT [extra]: one LMCap re-implementation decode (venv-t1), Vietnamese memory
+    local name=$1 s=$2 v=$3; shift 3
+    gpu $name $T1 $X lmcap --set $s --variant $v --xglm $XG --mclip $MC --mem-emb $CS1/emb.npz \
+      --query-emb $CS2/emb_$s.npz --c-lists $CL --images $DS "${VMEM[@]}" --out-dir $P "$@" "${DRYARGS[@]}"
+  }
+  img() {  # img NAME SET ARM [extra]: one Qwen2.5-VL image-caption-pair decode (k = 8, T1; batch size 1 always)
+    local name=$1 s=$2 arm=$3; local o=(); shift 3; [ $arm = ret_img ] && o=(--order first)
+    dec $name qwen25vl_7b $s $arm --k 8 "${o[@]}" --tpl T1 "${VMEM[@]}" "$@"
+  }
+  pf() { echo "$P/$1$(dry && echo -smoke).preds.json"; }
+  pass=()
+  d1() {  # d1 RUNNER FWD REV: the D1 verdict (counts and ids only); a FAIL leaves the runner's block-3 steps NOT RUN
+    local r=$1 v=PASS
+    cmp_ D1_$r ov_dev_b $2 $3 --d1 || v=FAIL
+    dry && v=PASS   # dry: the comparator answers rc 3; every step is exercised
+    printf '{"model": "%s", "D1": "%s", "host": "%s", "block": 3, "utc": "%s"}\n' $r $v $MID "$(ts)" > $Q/STEP3_$r.json
+    say "STEP 3.0 $r D1 $v$( [ $v = FAIL ] && echo ' (its block-3 steps NOT RUN)')"
+    if [ $v = PASS ]; then pass+=($2); fi
+  }
+  lm D1r_lmcap ov_dev_b ri --redecode rev50
+  lm D1_lmcap ov_dev_b ri --redecode fwd50 --batch1
+  d1 lmcap $(pf at_lmcap-ri_ov_dev_b-mvi-b1-fwd50) $(pf at_lmcap-ri_ov_dev_b-mvi-rev50)
+  img D1r_qwen25vl_7b ov_dev_b ret_img --redecode rev50
+  img D1_qwen25vl_7b ov_dev_b ret_img --redecode fwd50 --batch1
+  d1 qwen25vl_7b $(pf at_qwen25vl_7b_ov_dev_b-ret_img-k8-first-T1-mvi-b1-fwd50) $(pf at_qwen25vl_7b_ov_dev_b-ret_img-k8-first-T1-mvi-rev50)
+  if [ ! -s $O/CAP_3.json ]; then
+    rc=0; $PY $X plan3 --d1 "${pass[@]}" --out $O/CAP_3.json --steps $O/STEPS_3.tsv $(dry && echo --dry-run) \
+      >> $LOG/plan.log 2>&1 || rc=$?
+    say "$(tail -1 $LOG/plan.log)"
+    [ $rc = 0 ] || stop "plan3 rc=$rc"
+    dry || { say "PAUSE after D1: log the cap line ($O/CAP_3.json sha256 $(sha256sum $O/CAP_3.json | cut -c1-64)), then run block3 again"; exit 0; }
+  fi
+  CAPARGS=(--cap-s $($PY -I -c 'import json, sys; print(json.load(open(sys.argv[1]))["cap_s"])' $O/CAP_3.json))
+  say "BLOCK 3: $(wc -l < $O/STEPS_3.tsv) runs at batch size 1 under cap ${CAPARGS[1]} s"
+  while read -r name runner s arm <&3; do
+    if [ $runner = lmcap ]; then lm $name $s $arm --batch1; else img $name $s $arm --batch1; fi
+  done 3< $O/STEPS_3.tsv
   finish
 fi
 
