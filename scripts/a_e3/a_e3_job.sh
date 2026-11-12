@@ -1,0 +1,142 @@
+#!/usr/bin/env bash
+# A-E3, Paper A other-family development arm on XM3600-600: decode only, batch size 1, no scoring.
+# Run document: manuscript/prereg/2026-11-12_a_e3_arm/A_E3_ARM_RUN_DOC_v1_1.md (gates G1-G6, stop rules S1-S8).
+# Every decode is one call of scripts/lb/decode_hf_vlm.py, which reads all settings from A_E3_REG_v1.json.
+# This file only orders the runs and applies the gates: Vietnamese/English share on the 50-image runs (G4),
+# batch-1 determinism D1 (G5), and the 10 GPU-h hard cap over parts 7a + 7b (G6).
+#   tmux, from the A-E3 tree on hc2 (then 7b, same line, after the 7a pull):
+#   A_E3_PART=7a A_E3_SNAP_aya_vision_8b=/root/ncs-data/models/c_t1_aya_vision_8b bash scripts/a_e3/a_e3_job.sh
+# Optional: A_E3_SNAP_<model>=<dir> reuses a pinned snapshot elsewhere on the host (pins are still checked).
+# Aya is C's copy (CC-349 W7): a literal path, never $NCS_DATA/models/..., because NCS_DATA here is /dev/shm/a_e3.
+set -euo pipefail
+cd "$(dirname "$0")/../.."
+PRE=manuscript/prereg/2026-11-12_a_e3_arm
+REG=$PRE/A_E3_REG_v1.json
+DEC=scripts/lb/decode_hf_vlm.py
+PY=${A_E3_PY:-/root/venv-lb/bin/python}
+O=${A_E3_OUT:-/root/a_e3/out}
+MOD=${A_E3_MODELS:-/root/a_e3/models}
+PART=${A_E3_PART:?set A_E3_PART to 7a or 7b}
+CAP_S=36000     # PI-1105k: 10 GPU-h for 7a and 7b together, load time included (S5)
+NEED=4          # plan step 7: four models
+case $PART in
+  7a) MODES="short detailed"; LG=vi ;;
+  7b) MODES="short_en detailed_en"; LG=en ;;
+  *) echo "A_E3_PART must be 7a or 7b"; exit 2 ;;
+esac
+export NCS_DATA=${A_E3_DATA:-/dev/shm/a_e3} HF_HUB_OFFLINE=1
+export VSPS_MACHINE_ID=${VSPS_MACHINE_ID:-$(cat /root/.vsps_machine_id)}
+export VSPS_JOB_SHA256=$(sha256sum "$0" | cut -c1-64)
+export VSPS_VENV_FREEZE_SHA256=$($PY -m pip freeze | sha256sum | cut -c1-64)
+L=$O/ledger.tsv
+mkdir -p "$O"
+touch "$L"
+log() { echo "$(date -u +%FT%TZ) $*" | tee -a "$O/job.log"; }
+stop() { log "JOB STOP: $*"; exit 1; }
+[ ! -e "$O/RUNNING" ] || stop "another A-E3 job holds $O/RUNNING"
+[ ! -e /root/outputs/c_attr_b1/RUNNING ] || stop "Paper C block 1b is RUNNING on this host (CC-346 R5)"
+[ -z "$(nvidia-smi --query-compute-apps=pid --format=csv,noheader)" ] || stop "GPU busy"
+echo "$PART $$" > "$O/RUNNING"
+trap 'rm -f "$O/RUNNING"' EXIT
+git diff --quiet HEAD || stop "tree differs from HEAD"
+sha256sum -c --quiet "$PRE/SHA256SUMS_E3" || stop "pins (SHA256SUMS_E3)"
+# Custody gate (CC-349 W4): no data/ in the A-E3 tree; the datasets dir holds only xm600, with exactly 600 regular
+# *.jpg files and nothing else (find -type f excludes links).
+[ ! -e data ] || stop "data/ exists in the A-E3 tree (W4)"
+[ "$(ls -A "$NCS_DATA/datasets")" = xm600 ] || stop "$NCS_DATA/datasets holds more or less than xm600 (W4)"
+D=$NCS_DATA/datasets/xm600
+[ "$(find "$D" -mindepth 1 | wc -l)" = 600 ] && [ "$(find "$D" -mindepth 1 -maxdepth 1 -type f -name '*.jpg' | wc -l)" = 600 ] \
+  || stop "$D is not exactly 600 regular *.jpg files (W4)"
+$PY -I -B $DEC --selftest --prereg $REG > "$O/selftest_$PART.log" 2>&1 || stop "decoder selftest"
+log "START $PART head $(git rev-parse HEAD) freeze $VSPS_VENV_FREEZE_SHA256 job $VSPS_JOB_SHA256"
+
+spent() { awk -F'\t' '{s += $3} END {print s + 0}' "$L"; }
+secs() { awk -F'\t' -v r="$1" '$1 == r {s += $3} END {print s + 0}' "$L"; }  # all attempts of a run
+dec() {  # run_id snapshot timeout_s; a finished run is never decoded again; one resume attempt
+  # returns 0 done, 1 MODEL FAIL, 2 CAP STOP (CC-349 W1: each timeout is cut to the cap remaining)
+  local a t0 rc rem t
+  if [ -e "$O/$1.preds.json" ]; then log "EXISTS $1 (kept, not decoded again)"; return 0; fi
+  for a in 1 2; do
+    rem=$((CAP_S - $(spent))); [ "$rem" -gt 0 ] || return 2; t=$(( $3 < rem ? $3 : rem ))
+    t0=$(date +%s); rc=0
+    timeout "$t" $PY -I -B $DEC --prereg $REG --run-id "$1" --snapshot "$2" --out-dir "$O" >> "$O/decode.log" 2>&1 || rc=$?
+    printf '%s\t%s\t%s\t%s\n' "$1" "$PART" $(( $(date +%s) - t0 )) "$rc" >> "$L"
+    log "RUN $1 attempt $a rc $rc"
+    [ "$rc" = 0 ] && return 0
+    [ "$rc" = 124 ] && [ "$t" -lt "$3" ] && return 2
+  done
+  return 1
+}
+lang_ok() {  # G4: share of captions with a Vietnamese-only letter or tone mark (c_attr.py l.81-83, l.267-272)
+  $PY -I -B - "$1" "$LG" >> "$O/checks.log" <<'EOF'
+import json, sys, unicodedata
+LETTERS, TONES = set("ăâđêôơư"), {"̀", "́", "̃", "̉", "̣"}
+caps = list(json.load(open(sys.argv[1], encoding="utf-8"))["predictions"].values())
+vi = sum(bool(set(c.lower()) & LETTERS) or any(ch in TONES for ch in unicodedata.normalize("NFD", c.lower()))
+         for c in caps) / len(caps)
+# 7b (CC-349 W3): English = no Vietnamese letter or tone mark AND at least one ASCII letter, so an empty caption fails
+en = sum(not (bool(set(c.lower()) & LETTERS) or any(ch in TONES for ch in unicodedata.normalize("NFD", c.lower())))
+         and any(ch.isascii() and ch.isalpha() for ch in c) for c in caps) / len(caps)
+share = vi if sys.argv[2] == "vi" else en
+print(f"G4 {sys.argv[1].rsplit('/', 1)[-1]} {sys.argv[2]} share {share:.3f} n {len(caps)}")
+sys.exit(0 if share >= 0.95 else 3)
+EOF
+}
+d1_ok() {  # G5: the first 50 items, decoded twice at batch size 1 (two loads), identical as strings
+  $PY -I -B - "$1" "$2" >> "$O/checks.log" <<'EOF'
+import json, sys
+full, f50 = (json.load(open(p, encoding="utf-8"))["predictions"] for p in sys.argv[1:])
+n = sum(full.get(k) == v for k, v in f50.items())
+print(f"G5 D1 {sys.argv[1].rsplit('/', 1)[-1]} {n}/{len(f50)} identical")
+sys.exit(0 if n == len(f50) == 50 else 3)
+EOF
+}
+
+if [ "$PART" = 7a ]; then
+  ORDER=$($PY -I -B $DEC --prereg $REG --models)
+else
+  [ -s "$O/passed_7a.txt" ] || stop "no model passed 7a"
+  ORDER=$(cat "$O/passed_7a.txt")
+fi
+: > "$O/passed_$PART.txt"
+passed=0
+d1f=0  # D1 failures in this part (CC-349 W2, S4)
+for M in $ORDER; do
+  if [ "$PART" = 7a ] && [ "$passed" -ge "$NEED" ]; then break; fi
+  var=A_E3_SNAP_$M
+  W=${!var:-$MOD/$M}
+  if ! $PY -I -B $DEC --prereg $REG --check-snapshot "$M" --snapshot "$W" >> "$O/pins.log" 2>&1; then
+    log "SKIP $M: snapshot missing or a pin differs (S2)"; continue
+  fi
+  ok=1
+  for m in $MODES; do
+    R=ae3_${M}_xm600f50-$m
+    rc=0; dec "$R" "$W" 1800 || rc=$?
+    if [ "$rc" = 2 ]; then log "CAP STOP at $R: spent $(spent) s, cap $CAP_S s; $R and later runs NOT RUN (S5)"; break 2; fi
+    if [ "$rc" != 0 ]; then log "MODEL FAIL $M at $R (S3)"; ok=0; break; fi
+    if ! lang_ok "$O/$R.preds.json"; then log "NOT ASSESSABLE $M $m (G4, S2)"; ok=0; break; fi
+  done
+  [ "$ok" = 1 ] || continue
+  for m in $MODES; do
+    F=ae3_${M}_xm600f50-$m
+    R=ae3_${M}_xm600-$m
+    ms=$(( $(secs "$F") * 1000 / 50 ))
+    need_s=$(( 600 * ms / 1000 ))
+    if [ ! -e "$O/$R.preds.json" ] && [ $(( $(spent) + need_s )) -gt "$CAP_S" ]; then
+      log "CAP STOP before $R: spent $(spent) s + projected $need_s s > $CAP_S s (S5); later runs NOT RUN"; break 2
+    fi
+    to=$(( 2 * need_s > 1800 ? 2 * need_s : 1800 ))
+    rc=0; dec "$R" "$W" "$to" || rc=$?
+    if [ "$rc" = 2 ]; then log "CAP STOP at $R: spent $(spent) s, cap $CAP_S s; $R and later runs NOT RUN (S5)"; break 2; fi
+    if [ "$rc" != 0 ]; then log "MODEL FAIL $M at $R (S3)"; ok=0; break; fi
+    if ! d1_ok "$O/$R.preds.json" "$O/$F.preds.json"; then
+      log "D1 FAIL $M $m: outputs held (G5, S4)"; d1f=$((d1f + 1))
+      if [ "$d1f" -ge 2 ]; then log "PART STOP: two D1 failures (S4)"; break 2; fi
+      ok=0; break
+    fi
+  done
+  if [ "$ok" = 1 ]; then echo "$M" >> "$O/passed_$PART.txt"; passed=$((passed + 1)); log "PASSED $PART $M"; fi
+done
+(cd "$O" && find . -maxdepth 1 -type f \( -name '*.preds.json' -o -name '*.sha256' -o -name '*.txt' -o -name '*.tsv' \
+  -o -name 'checks.log' -o -name 'selftest_*.log' \) | LC_ALL=C sort | xargs -r sha256sum > "SHA256SUMS_$PART")
+log "JOB DONE $PART passed $(paste -sd' ' "$O/passed_$PART.txt") gpu_s $(spent) sums $(sha256sum "$O/SHA256SUMS_$PART" | cut -c1-64)"
