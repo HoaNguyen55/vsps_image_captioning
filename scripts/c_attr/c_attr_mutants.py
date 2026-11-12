@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Mutants of the C-ATTR-DEV code (registration §11.1 plus the two of CC-331 NEXT STEPS 2). Each mutant changes one rule
-in a scratch copy of scripts/c_attr/ (the rest of the repo mirrored by symlinks, scripts/c_diag/c_diag_mutants.py form);
-the three self-tests must then fail. One KILLED / SURVIVED line per mutant; rc 0 only when all are killed. Offline,
-CPU, laptop:
+"""Mutants of the C-ATTR-DEV code (registration §11.1, the two of CC-331 NEXT STEPS 2, addendum v1.2 and the scoring
+package of CC-346 W3). Each mutant changes one rule in a scratch copy of scripts/c_attr/ (the rest of the repo mirrored by
+symlinks, scripts/c_diag/c_diag_mutants.py form); the three self-tests must then fail. One KILLED / SURVIVED line per
+mutant; rc 0 only when all are killed. Offline, CPU, on the rented host (PI-1111j):
     ~/.venvs/c_stage1_lists/bin/python -I -B scripts/c_attr/c_attr_mutants.py [--jobs 2]
 --no-netns (CC-339 W3): run the self-tests without `unshare -rn`, for a host whose container refuses user
 namespaces; the self-tests are offline by construction, so this changes no kill.
@@ -79,6 +79,70 @@ MUT = [  # (id, file, old, new): each old occurs exactly once
      "b1 = list(led)"),
     ("S19 host-parity fallback label missing (CC-338 S2)", S, "r[\"host\"] = HOST_FB", "pass"),
     ("S20 batch-1 rows carry the batched label", S, "r[\"batch\"] = B1_NOTE", "r[\"batch\"] = BATCHED"),
+    # scoring package (CC-346 W3: SC1-SC5, CC-338 S1, S3, S5, and the scorer defects found with them)
+    ("A9 SC1: c_attr.py score without the V4 gate", A, "    CS.v4_gate(a)\n", ""),
+    ("A10 OV-dev-A references through stage 2 (manifest2 refuses OV-dev-A)", A,
+     'if ds in ("ktvic_dev299", "ov_dev_a") else', 'if ds == "ktvic_dev299" else'),
+    ("A11 two zs runs of one backbone in one score call", A, "if len(zs_m) != len(set(zs_m)):", "if False:"),
+    ("S21 SC2: batch-1 rows summarised without a D1 PASS", S, "        if no_d1:\n", "        if False:\n"),
+    ("S22 SC2: batched rows summarised without a STEP10 record", S,
+     'if r["model"] in OLD3 and "A1" not in par.get(r["model"], {}):', "if False:"),
+    ("S23 SC2: a '-b1' run not at batch size 1 accepted", S,
+     'if any(r.get("spec", {}).get("batch_size") != 1 for r in b1):', "if False:"),
+    ("S24 SC3: parity() last file wins", S, 'cur[k] = "FAIL" if "FAIL" in (cur.get(k), r[k]) else r[k]', "cur[k] = r[k]"),
+    ("S25 SC4: nomination before every D1-PASS nominator has its four columns", S, "    if miss:  # SC4",
+     "    if False:  # SC4"),
+    ("S26 SC5: prompt hashes not compared", S, "same = sum(old.get(i) == h for i, h in mine.items())", "same = len(mine)"),
+    ("S27 masked3 columns enter the draw means", S, r'if re.fullmatch(rf"{re.escape(m)}\|{arm}\d+", k))',
+     'if k.startswith(f"{m}|{arm}"))'),
+    ("S28 S3: df not recomputed in the resample", S, "df_refs=[rseg[ids[j]] for j in rows])", "df_refs=None)"),
+    ("S29 S3: an image drawn twice counted once in the df", S, "df_refs=[rseg[ids[j]] for j in rows])",
+     "df_refs=[rseg[i] for i in u])"),
+    ("S30 S3: fixed-df interval off the shared index matrix", S, "v[sub].mean(1)",
+     "v[np.random.default_rng(1).integers(0, len(v), sub.shape)].mean(1)"),
+    ("S31 S3: sensitivity row not tied to the ledger's scores", S,
+     'np.abs(sc[k] - np.array(want[0]["per_image"]["cider_s"])).max() > A.C2_PARITY_TOL', "False"),
+    ("S32 S5: unit (ii) masks syllables", S, "A.masked(sg[caps[i]], [sg[x] for x in shown[i]], n)",
+     "A.masked(caps[i], shown[i], n)"),
+    ("S33 S5: blind run admitted without the stage-2 ledger pin", S, 'if not any(x.get("arm") == "blind" and',
+     'if False and not any(x.get("arm") == "blind" and'),
+    ("S34 S5: blind loss against the rand list, not R_q", S, 'comp["blind_loss"] = pair(copy_loss(blind, r_q,',
+     'comp["blind_loss"] = pair(copy_loss(blind, own_rand,'),
+    ("S35 S5: K_ret - K_nc companion without K_nc", S, '"K_ret_minus_K_nc": pair(kq - knc, zero, idx)',
+     '"K_ret_minus_K_nc": pair(kq, zero, idx)'),
+    ("S36 §7.9: swap δ reversed", S, '"delta": pair(same, other, idx)', '"delta": pair(other, same, idx)'),
+    ("S37 §7.9: rule L at >= 0.10", S, "abs(v - b) / b > LENGTH_GAP", "abs(v - b) / b >= LENGTH_GAP"),
+    ("S38 S1: every file exempt like logs/job.log", S,
+     'bad = [n for n, h in listed.items() if n != "logs/job.log" and A.sha(d / n) != h]', "bad = []"),
+    ("S39 S1: unlisted files in the copy accepted", S, "    if have != set(listed):\n", "    if False:\n"),
+    ("S40 S1: SHA256SUMS not checked against the logged sha", S,
+     "if not sums.is_file() or A.sha(sums) != sums_sha:", "if not sums.is_file():"),
+    ("S41 S1: a stage without the logged sha of the previous file", S,
+     "if not prev.is_file() or A.sha(prev) != a.prev:", "if not prev.is_file():"),
+    ("S42 S1: a stage runs twice", S, "    if out.exists():\n", "    if False:\n"),
+    ("S43 S1: environment change not checked", S, "if env_record() != json.loads(",
+     "if False and env_record() != json.loads("),
+    ("S44 S1: rest follows the nomination although a verdict exists", S,
+     'name = PREV[a.stage] if a.stage != "rest" or (res / PREV["rest"]).is_file() else FILES["ova"]',
+     'name = PREV[a.stage] if a.stage != "rest" else FILES["ova"]'),
+    ("S45 dedup: disagreeing copies of a scored run accepted", S,
+     'raise SystemExit(f"REFUSED: two ledger rows of {k[0]} on {k[1]} disagree")', "pass"),
+    ("S46 S1: verify beside a decode job", S, 'if (src / "RUNNING").exists():', "if False:"),
+    ("S47 S1: verify without the stored pins", S,
+     "bad = [p.name for p, h in stored_files().items() if not p.is_file() or A.sha(p) != h]", "bad = []"),
+    ("S48 S1: verify without the §7.1 parity gate", S,
+     '    A.c2_parity(A.read_ledgers([led]), w / "in/stage2_ledger.jsonl")\n', ""),
+    ("S49 SC5: unequal prompts do not stop", S, '    if pc["unequal"]:\n', "    if False:\n"),
+    ("S50 SC5: a check that compared nothing passes", S, '    if n_b1 and not pc["pairs"]:\n', "    if False:\n"),
+    ("S51 S1: the VnCoreNLP jar not pinned", S, "if not jar.is_file() or A.sha(jar) != S.JAR_SHA256:",
+     "if not jar.is_file():"),
+    ("S52 V3: nomination from rows of a backbone without a D1 PASS", S, "if not d1 or stray:", "if not d1:"),
+    ("S53 S1: ova without a D1-PASS nominator", S, "    if not ms:\n", "    if False:\n"),
+    ("S54 SC4: an incomplete Tier A scored before the refusal", S, "        if not set(B1_COLS) <= have:\n",
+     "        if False:\n"),
+    ("S55 S1: ovb on a closed 1b", S, 'if nomination(nf).get("closed"):', "if False:"),
+    ("S56 S1: a score call without a zs", S, "    if not zs:\n", "    if False:\n"),
+    ("S57 §7.9: the carve ledger pin", S, "if A.sha(coco) != A.T1_CARVE_LEDGER_SHA256:", "if False:"),
 ]
 PY = sys.executable
 NETNS = ["unshare", "-rn"]

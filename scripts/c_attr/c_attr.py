@@ -923,6 +923,14 @@ def masked(caption: str, shown: list[str], n: int = 3) -> str:
 
 
 # ------------------------------------------------------------------------------------------------ score
+def score_refs(ds: str, clists: dict) -> dict[str, list[str]]:
+    """References of a Vietnamese set: C's stage-1 reader for dev299 and OV-dev-A (stage 2's manifest2 refuses
+    OV-dev-A), the stage-2 reader for OV-dev-B and XM-dev500. Importing stage2 registers their sources in C.DATASETS."""
+    import score as S
+    import stage2 as ST2
+    return S.references(ds, clists) if ds in ("ktvic_dev299", "ov_dev_a") else ST2.references2(ds, clists)
+
+
 def tag(r: dict) -> dict:
     """Ledger fields that name a run beyond C's (arm, k, order, tpl)."""
     sp = r["spec"]
@@ -934,6 +942,9 @@ def cmd_score(a) -> None:
     """Vietnamese: C's stage-1 scorer (score_set, unchanged; kit B, RDRSegmenter, stripped CIDEr-D) for model runs, the
     stage-2 plain_row for LMCap and the X2 masked variants. English: C-EN's PTB CIDEr-D (pycocoevalcap 1.2) with df
     over the carve's own references. Rows hold ids and numbers only."""
+    sys.path.insert(0, str(ATTR))
+    import c_attr_score as CS  # SC1 (CC-346): the v1.2 V4 gates bind every call of `score`, not only the wrapper's
+    CS.v4_gate(a)
     import guard as G
     import score as S
     import score2 as S2s
@@ -948,17 +959,19 @@ def cmd_score(a) -> None:
     if c2 and a.set != "ov_dev_b":
         raise SystemExit("score: C's stage-2 runs belong to ov_dev_b")
     runs += c2
+    zs_m = [r["model"] for r in runs if r["spec"]["arm"] == "zs"]
+    if len(zs_m) != len(set(zs_m)):  # zs_by below keeps one zs per backbone; the other would go unscored
+        raise SystemExit(f"score: two zs runs of one backbone in one call ({sorted(zs_m)})")
     if a.memory and any(r["spec"].get("memory") != a.memory for r in runs if r["spec"]["arm"] != "zs"):
         raise SystemExit("score: one memory per score call (its caption store serves X2)")
     model_runs = [r for r in runs if r["spec"]["arm"] != "lmcap"]
     zs_by = {r["model"]: r for r in model_runs if r["spec"]["arm"] == "zs"}
     rows = []
     if lang == "vi":
-        import stage2 as ST2
         E4, PA, PTB = S2s.kit2(a.kit_b)
         clists = C.load_lists(a.c_lists)
         caps = C.memory_captions(clists)
-        refs = S.references(a.set, clists) if a.set == "ktvic_dev299" else ST2.references2(a.set, clists)
+        refs = score_refs(a.set, clists)
         for m in zs_by:
             G.VERIFIER.setdefault(m, "none")  # new backbones run deletion-free: no verifier, tau = -inf only
         ctx = {"cache": {}, "caps": caps, "segment": E4.rdr, "E4": E4, "PA": PA, "PTB": PTB}
@@ -1859,8 +1872,8 @@ def main() -> None:
     p.add_argument("--set", choices=sorted(SETS), required=True)
     p.add_argument("--runs", type=Path, nargs="+", required=True)
     p.add_argument("--ledger", type=Path, required=True)
-    for k in ("kit_b", "c_lists", "refs", "captions", "c2_dir", "c2_ledger"):
-        p.add_argument("--" + k.replace("_", "-"), type=Path)
+    for k in ("kit_b", "c_lists", "refs", "captions", "c2_dir", "c2_ledger", "nomination", "verdict"):
+        p.add_argument("--" + k.replace("_", "-"), type=Path)  # nomination, verdict: the v1.2 V4 gates (SC1)
     p.add_argument("--memory", choices=("vi", "coco", "f30k"), default=None)
     p = sub.add_parser("compare")
     p.add_argument("--name", required=True)
