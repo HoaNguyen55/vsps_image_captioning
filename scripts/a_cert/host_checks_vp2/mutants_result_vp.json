@@ -1,0 +1,313 @@
+{
+ "source_sha256": "867a5974be2dad823db8cc018658b2151a42494bdc6b877f1a8429044c28f5d5",
+ "n": 39,
+ "killed": 39,
+ "mutants": {
+  "M01_masking_seed_changed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "masking_seed_20261115_and_order"
+   ]
+  },
+  "M02_instance_gold_loaded_before_freeze": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V_freeze_runs_label_free",
+    "V_freeze_declares_evaluable_540_of_720",
+    "V_freeze_holds_no_k5_and_nulls",
+    "V_score_refuses_without_pin_no_statistic",
+    "_check_v_e2e: no exception (FileNotFoundError: [Errno 2] No such file or directory: '/tmp/a_cert_vp_selftest_tbg6r46p/v1/freeze)"
+   ]
+  },
+  "M03_certificate_from_full_gold": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "rung_known_present_from_drawn_only"
+   ]
+  },
+  "M04a_V1_error_bound_changed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V1_fail_above_5_percent"
+   ]
+  },
+  "M04b_V1_evaluability_bound_changed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V1_not_evaluable_71_certified"
+   ]
+  },
+  "M05_pair_union_not_intersection": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "P_pairs_on_intersection_of_ids"
+   ]
+  },
+  "M06a_part_P_written_into_XM3600_input": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "P_valid_run_writes_only_under_its_output",
+    "P_rows_carry_POST_HOC_label",
+    "P_pairs_on_intersection_of_ids",
+    "_check_p_e2e: no exception (KeyError: 'P_a')"
+   ]
+  },
+  "M06b_part_P_written_into_OC1_input": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "P_valid_run_writes_only_under_its_output",
+    "P_rows_carry_POST_HOC_label",
+    "P_pairs_on_intersection_of_ids",
+    "_check_p_e2e: no exception (KeyError: 'P_a')"
+   ]
+  },
+  "M07a_POST_HOC_label_missing_on_rows": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "_check_p_e2e: no exception (KeyError: 'label')"
+   ]
+  },
+  "M07b_POST_HOC_label_text_lost": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "P_rows_carry_POST_HOC_label"
+   ]
+  },
+  "S01_k_ignored_in_c": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "c_k_general",
+    "lemma_B_ratio_le_c_k_with_equality_at_w",
+    "toy_T1_w_star_k1_k2_k5",
+    "size_simulation_beta_Bk_k1_k3_k5",
+    "Pb_I0_cap_tighter_adds_certificate",
+    "Pb_w_star_both_caps",
+    "Pb_floor_refuted_no_certificate"
+   ]
+  },
+  "S02_truth_from_drawn_references": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V_fixture_V1_PASS_V3_DISCRIMINATING_V2_REFUTED",
+    "V_sentences_fixed",
+    "V_certified_set_from_freeze"
+   ]
+  },
+  "S03_freeze_may_open_instance_gold": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "guard_instance_gold_in_freeze_only"
+   ]
+  },
+  "S04a_freeze_forms_five_reference_union": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V_freeze_runs_label_free",
+    "V_freeze_declares_evaluable_540_of_720",
+    "V_freeze_holds_no_k5_and_nulls",
+    "V_score_refuses_without_pin_no_statistic",
+    "_check_v_e2e: no exception (FileNotFoundError: [Errno 2] No such file or directory: '/tmp/a_cert_vp_selftest_t0a61gb6/v1/freeze)"
+   ]
+  },
+  "S04b_five_union_guard_removed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "rung_guard_five_union_in_freeze"
+   ]
+  },
+  "S05_certified_set_recomputed_in_score": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V_certified_set_from_freeze"
+   ]
+  },
+  "S06_tie_counted_as_right": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "tie_is_wrong",
+    "V_fixture_V1_PASS_V3_DISCRIMINATING_V2_REFUTED",
+    "V_certified_set_from_freeze"
+   ]
+  },
+  "X01_reference_draw_seed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "reference_draws_seed_20261114_plus_100k"
+   ]
+  },
+  "X02_V3_bootstrap_seed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "bootstrap_seeds_V3_20261116_K2_20261113"
+   ]
+  },
+  "X03_COCO_K2_bootstrap_seed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "bootstrap_seeds_V3_20261116_K2_20261113"
+   ]
+  },
+  "X04_halves_seed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "halves_seed_20261111"
+   ]
+  },
+  "X05_COCO_K2_gain_changed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "COCO_K2_label_boundaries"
+   ]
+  },
+  "X06_cov5_strict_prefix_rule": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "cov5_by_hand"
+   ]
+  },
+  "X07_V2_alpha_changed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V2_boundary_one_in_40"
+   ]
+  },
+  "X08_abstain_counted_as_certified": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V1_abstain_excluded_and_counted",
+    "P_valid_run_writes_only_under_its_output",
+    "P_rows_carry_POST_HOC_label",
+    "P_pairs_on_intersection_of_ids",
+    "_check_p_e2e: no exception (KeyError: 'P_a')"
+   ]
+  },
+  "X09_V1_pair_majority_rule_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V1_fail_pair_wrong_in_most_draws",
+    "V_certified_set_from_freeze"
+   ]
+  },
+  "X10_v4a_fault_removed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V4a_fault_on_w0_certificate"
+   ]
+  },
+  "X11_Pb_I0_cap_ignored": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "Pb_I0_cap_tighter_adds_certificate",
+    "Pb_w_star_both_caps"
+   ]
+  },
+  "X12_Pb_floor_refutation_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "Pb_floor_refuted_no_certificate",
+    "Pb_refuted_any_cell_gives_NI"
+   ]
+  },
+  "X13_not_certified_without_tail": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "P_not_certified_always_followed_by_tail"
+   ]
+  },
+  "X14_KV1_ignored_in_part_P": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "P_KV1_prints_w_star_only"
+   ]
+  },
+  "X15_matcher_gate_always_passes": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "P_matcher_gate_mismatch_drops_part_P"
+   ]
+  },
+  "X16_gt_cache_guard_removed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "guard_gt_cache_needs_flag"
+   ]
+  },
+  "X17_OC1_raw_guard_removed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "guard_OC1_raw_always"
+   ]
+  },
+  "X18_part_P_write_restriction_removed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "guard_P_writes_only_under_its_output",
+    "guard_P_os_open_write_refused"
+   ]
+  },
+  "X19_score_without_freeze_pin": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V_score_refuses_without_pin_no_statistic"
+   ]
+  },
+  "X20_fault_prints_a_statistic": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V_score_refuses_without_pin_no_statistic",
+    "V_fault_writes_and_prints_no_statistic"
+   ]
+  },
+  "X21_second_pass_allowed": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V_score_refuses_second_pass"
+   ]
+  },
+  "X22_KV3_ignored": {
+   "status": "KILLED",
+   "rc": 1,
+   "failed_checks": [
+    "V_KV3_second_fault_to_PI"
+   ]
+  }
+ }
+}
