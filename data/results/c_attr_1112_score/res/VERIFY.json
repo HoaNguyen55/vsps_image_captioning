@@ -1,0 +1,48 @@
+{
+ "label": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY",
+ "registration": "C_ATTR_DEV_ADDENDUM_v1_2.md (block 1b, batch size 1)",
+ "stage": "verify",
+ "prev_sha256": null,
+ "utc": "2026-11-12T11:07:16Z",
+ "trees": {
+  "b1": {
+   "sums_sha256": "0754128c7bab2cfac4a001b534cce6bb68bb8de8e143d29c5af6233ffb6d5113",
+   "files": 224
+  },
+  "b": {
+   "sums_sha256": "a2b63fef7532c70422817ba75539db91c529f2beadf2c4821b1c3344c7593ff7",
+   "files": 180
+  }
+ },
+ "env": {
+  "python": "3.12.3",
+  "packages_sha256": "e95831b6f8c56dfe7f66d652420bd5cfc708c0cd2412f84bd4a632863703ee2d",
+  "java": "openjdk version \"21.0.13.0.3\" 2026-10-24\nOpenJDK Runtime Environment (build 21.0.13.0.3+1-1-24.04.1-Ubuntu)\nOpenJDK 64-Bit Server VM (build 21.0.13.0.3+1-1-24.04.1-Ubuntu, mixed mode, sharing)",
+  "jar_sha256": "9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793",
+  "kit_b": {
+   "b2_controls.py": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3",
+   "cay_audit.py": "7334ced30bde7be514765563a3628c56d2a4c4cc18537795a2770171139b871c",
+   "exchangeability_audit.py": "f30758e372061a15cbab30a568a397f57442f2701e0ffd9cc2372f20901d66a0",
+   "protocol_pilot.py": "6aee428207a2d1a045cd72d054e26a2e2ac8d9c2e414cb0c161e3b95dffd92bf",
+   "ptb_protocol.py": "ea5fbe6e1528e339abfcb9ba00bdd0c4d4e4bde07ae6edd30fffaa72d60754d2",
+   "punctuation_audit.py": "a7e8024030f56cbff07124278cd631964b7b1197607426d7212fd665b6c2f9b1",
+   "xm3600_period_audit.py": "145ab673b5c6f0211227158d79f513d96fffbffc68fd5ddecc38400c998843dd"
+  },
+  "vncorenlp_models": {
+   "models/wordsegmenter/vi-vocab": "0a47c5b55bbce163029d37730a67b9479740388695c29c106c112b815613eaa5",
+   "models/wordsegmenter/wordsegmenter.rdr": "9e62f96bd93e37a24f364238e8d8ae986fa5dad6dbc9f4eae622ab3651b7fa06"
+  }
+ },
+ "prompts": {
+  "b1_runs": 50,
+  "pairs": 50,
+  "unequal": [],
+  "no_reference": [],
+  "not_comparable": []
+ },
+ "parity_7_1": {
+  "ledger_sha256": "62315089ac6ff085da730e62763a3ea1abf894c6b461a304ecd58607ba74e56d",
+  "stage2_ledger_sha256": "be716482c6f934e975bdbc58927cfc42a4c0ff589c9c5f95affd67c03eac0938",
+  "result": "ok"
+ }
+}

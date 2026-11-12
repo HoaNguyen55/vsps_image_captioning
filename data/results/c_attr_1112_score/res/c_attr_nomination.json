@@ -1,0 +1,158 @@
+{
+ "label": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY",
+ "registration": "C_ATTR_DEV_ADDENDUM_v1_2.md (block 1b, batch size 1)",
+ "batch": "batch size 1; registered in v1.2 after K1 fired, on string-identity counts only",
+ "parity": {
+  "aya_vision_8b": {
+   "D1": "PASS",
+   "host_parity": "PASS",
+   "A1": "FAIL"
+  },
+  "internvl3_8b": {
+   "D1": "PASS",
+   "host_parity": "PASS",
+   "A1": "FAIL"
+  },
+  "qwen25vl_7b": {
+   "D1": "PASS",
+   "host_parity": "PASS",
+   "A1": "FAIL"
+  }
+ },
+ "nominators_d1_pass": [
+  "qwen25vl_7b",
+  "internvl3_8b"
+ ],
+ "rule": "95% lower bound >= +2.0 on OV-dev-A (c_t1.advance)",
+ "note": "split of a known τ_sel",
+ "nominated": [
+  "H_pair(qwen25vl_7b)",
+  "H_pair(internvl3_8b)"
+ ],
+ "rows": {
+  "internvl3_8b|tau_sel": {
+   "d": 3.5268555433589484,
+   "lo": 1.6370859083424707,
+   "hi": 5.3902792782656395,
+   "lo90": 1.9590406147091084,
+   "hi90": 5.1135976564215175,
+   "p": 0.0004997501249375312,
+   "model": "internvl3_8b",
+   "estimand": "tau_sel",
+   "R": 1,
+   "D": 2,
+   "registered_R_D": [
+    1,
+    2
+   ],
+   "label": "DETECTED",
+   "family": null,
+   "m": 1,
+   "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+  },
+  "internvl3_8b|tau_marg": {
+   "d": -1.4286902305159188,
+   "lo": -2.782270439077938,
+   "hi": -0.07796801317234082,
+   "lo90": -2.5588439187705814,
+   "hi90": -0.31576622392974696,
+   "p": 0.9790104947526237,
+   "model": "internvl3_8b",
+   "estimand": "tau_marg",
+   "R": 1,
+   "D": 2,
+   "registered_R_D": [
+    1,
+    2
+   ],
+   "label": "REVERSED",
+   "family": null,
+   "m": 1,
+   "note": "split of a known τ_sel",
+   "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+  },
+  "internvl3_8b|tau_pair": {
+   "d": 4.955545773874867,
+   "lo": 3.1184246062019736,
+   "hi": 6.819400552963782,
+   "lo90": 3.433369420965964,
+   "hi90": 6.515259327661913,
+   "p": 0.0004997501249375312,
+   "model": "internvl3_8b",
+   "estimand": "tau_pair",
+   "R": 1,
+   "D": 2,
+   "registered_R_D": [
+    1,
+    2
+   ],
+   "label": "DETECTED",
+   "family": null,
+   "m": 1,
+   "note": "split of a known τ_sel",
+   "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+  },
+  "qwen25vl_7b|tau_sel": {
+   "d": 7.370031723380897,
+   "lo": 5.480500740944016,
+   "hi": 9.327822952799119,
+   "lo90": 5.773103710208559,
+   "hi90": 8.966785076838633,
+   "p": 0.0004997501249375312,
+   "model": "qwen25vl_7b",
+   "estimand": "tau_sel",
+   "R": 1,
+   "D": 2,
+   "registered_R_D": [
+    1,
+    2
+   ],
+   "label": "DETECTED",
+   "family": null,
+   "m": 1,
+   "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+  },
+  "qwen25vl_7b|tau_marg": {
+   "d": -0.055514434687154335,
+   "lo": -1.3847427895170135,
+   "hi": 1.3036076536772785,
+   "lo90": -1.1747012952799067,
+   "hi90": 1.0701084440175608,
+   "p": 0.527736131934033,
+   "model": "qwen25vl_7b",
+   "estimand": "tau_marg",
+   "R": 1,
+   "D": 2,
+   "registered_R_D": [
+    1,
+    2
+   ],
+   "label": "NEGLIGIBLE",
+   "family": null,
+   "m": 1,
+   "note": "split of a known τ_sel",
+   "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+  },
+  "qwen25vl_7b|tau_pair": {
+   "d": 7.425546158068052,
+   "lo": 5.543342892425909,
+   "hi": 9.196925874039524,
+   "lo90": 5.8501457080131685,
+   "hi90": 8.92280003567508,
+   "p": 0.0004997501249375312,
+   "model": "qwen25vl_7b",
+   "estimand": "tau_pair",
+   "R": 1,
+   "D": 2,
+   "registered_R_D": [
+    1,
+    2
+   ],
+   "label": "DETECTED",
+   "family": null,
+   "m": 1,
+   "note": "split of a known τ_sel",
+   "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+  }
+ }
+}

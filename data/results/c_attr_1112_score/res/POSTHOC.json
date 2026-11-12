@@ -1,0 +1,94 @@
+{
+ "label": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY",
+ "registration": "C_ATTR_DEV_ADDENDUM_v1_2.md (block 1b, batch size 1)",
+ "stage": "posthoc",
+ "prev_sha256": "1d78cd205ff804c2183f4d879bacb71f5cd2974c40ad39807d825f11eec9b1ea",
+ "utc": "2026-11-12T11:21:02Z",
+ "copy_bound": {
+  "ov_dev_b|qwen25vl_7b": "4e5c66831ca7bd5c090f4a38eaeb15adb344afe9f91e9e91beb4b681cd1a528f",
+  "ov_dev_b|internvl3_8b": "a647dd95e6770c4cd8589c8cb475e749053a5e6089386f08562fd1d4b8eb282f",
+  "ov_dev_b|aya_vision_8b": "7ae3debc50987e8e97e3381a16ad165bff86bb2b846da141e80b3289350e116d",
+  "xm_dev500|qwen25vl_7b": "26085b20bcf91ad6b76690f06f8bda812e822f4b241630b161f6f0308d34ab6b",
+  "xm_dev500|internvl3_8b": "e9252edefe2dfce0bfe759cbfb448a81f6913aeda26ef7fc5340484a5f4fc1f5",
+  "xm_dev500|aya_vision_8b": "c3e81cafc0d1bf2986bc794183e182a8b0e3e549918e095e2b19b0f2ab030700"
+ },
+ "swap": {
+  "inputs": {
+   "carve_coco.jsonl": "4ced15b41c3efabfd6d69722a8c2008c8287597f69fc3a5ce18a4d4ab01b5615",
+   "carve_f30k.jsonl": "ad841f7aade2ddc3382a1d7034da72a06f40a085e32848c191b4495797d2736b"
+  },
+  "rows": {
+   "aya_vision_8b": {
+    "delta": {
+     "d": -0.009911199999999454,
+     "lo": -3.4165317724999995,
+     "hi": 3.3571946975000024,
+     "lo90": -2.96203333,
+     "hi90": 2.86247582,
+     "p": 0.5242378810594702,
+     "label": "UNRESOLVED",
+     "tier": "POST HOC; size-confounded (full COCO memory, 111,927 clusters, against the Flickr30K-train memory, 28,000)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "tau_sel_f30k": {
+     "d": 6.114182500000001,
+     "lo": 3.7111273699999994,
+     "hi": 8.51815423,
+     "lo90": 4.06156146,
+     "hi90": 8.18633878,
+     "p": 0.0004997501249375312,
+     "label": "DETECTED",
+     "tier": "POST HOC; size-confounded (full COCO memory, 111,927 clusters, against the Flickr30K-train memory, 28,000)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "tau_sel_coco": {
+     "d": 6.1240937,
+     "lo": 3.4746893999999995,
+     "hi": 8.778537847499996,
+     "lo90": 4.0093868100000005,
+     "hi90": 8.374376985,
+     "p": 0.0004997501249375312,
+     "label": "DETECTED",
+     "tier": "POST HOC; size-confounded (full COCO memory, 111,927 clusters, against the Flickr30K-train memory, 28,000)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    }
+   },
+   "qwen25vl_7b": {
+    "delta": {
+     "d": -5.436874500000001,
+     "lo": -9.0747935025,
+     "hi": -2.0357453625000015,
+     "lo90": -8.539047705,
+     "hi90": -2.6098020600000007,
+     "p": 0.9970014992503748,
+     "label": "REVERSED",
+     "tier": "POST HOC; size-confounded (full COCO memory, 111,927 clusters, against the Flickr30K-train memory, 28,000)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "tau_sel_f30k": {
+     "d": -0.39711900000000017,
+     "lo": -2.8089804849999993,
+     "hi": 2.055883577499998,
+     "lo90": -2.54666595,
+     "hi90": 1.6578279100000002,
+     "p": 0.6231884057971014,
+     "label": "UNRESOLVED",
+     "tier": "POST HOC; size-confounded (full COCO memory, 111,927 clusters, against the Flickr30K-train memory, 28,000)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "tau_sel_coco": {
+     "d": 5.039755500000001,
+     "lo": 2.3857199450000004,
+     "hi": 7.670817754999995,
+     "lo90": 2.849696325,
+     "hi90": 7.242426955,
+     "p": 0.0004997501249375312,
+     "label": "DETECTED",
+     "tier": "POST HOC; size-confounded (full COCO memory, 111,927 clusters, against the Flickr30K-train memory, 28,000)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    }
+   }
+  },
+  "length": {}
+ }
+}

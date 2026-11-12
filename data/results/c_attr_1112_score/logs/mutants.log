@@ -1,0 +1,75 @@
+control: the three self-tests pass on the unmutated files
+L1 identity permutation allowed: KILLED c_attr_lists.py: AssertionError: (2, 1)
+L2 near cut on the donor only: KILLED c_attr_lists.py: AssertionError: no shown cluster at cosine >= 0.92 to q
+L3 fix seed without f<j>: KILLED c_attr_lists.py: AssertionError
+L4 refill from q's own list: KILLED c_attr_lists.py: AssertionError: first 8 of the donor's list
+L5 randrange(i + 1): KILLED c_attr_lists.py: AssertionError: (2, 1)
+A1 perm reads the ret list: KILLED c_attr.py: AssertionError: perm from the list file only
+A2 rand_img uses ret clusters: KILLED c_attr.py: AssertionError: rand_img shows the rand d0 clusters
+A3 lmcap_rand keeps one retrieved caption: KILLED c_attr.py: AssertionError: lmcap_rand: rand d0 minus shots, nothing retrieved
+A4 guard without the Flickr30K test names: KILLED c_attr.py: AssertionError
+A5 deletion step applied to InternVL3 (tau rows other than -inf): KILLED c_attr.py: summary: two ledger rows for internvl3_8b|ret on ov_dev_b
+S1 draw 0 in place of the draw mean: KILLED c_attr_score.py: AssertionError: ret = perm + 3 and perm = rand give tau_pair = 3, tau_marg = 0
+S2 unpaired bootstrap: KILLED c_attr_score.py: AssertionError: replicate-wise identity: one shared matrix
+S3 a fresh index matrix per contrast: KILLED c_attr_score.py: AssertionError: replicate-wise identity: one shared matrix
+S4 kappa without the placebo term: KILLED c_attr_score.py: AssertionError: κ of a zs run against itself is 0
+S5 Holm skipped: KILLED c_attr_score.py: AssertionError: Holm: 0.009 > 0.025 / 3
+S6 >= and > swapped in DETECTED: KILLED c_attr_score.py: AssertionError: boundary (θ̂ = 2.0; p = α_j): both inclusive
+S7 >= and > swapped in NEGLIGIBLE: KILLED c_attr_score.py: AssertionError
+S8 > and >= swapped in REVERSED: KILLED c_attr_score.py: AssertionError
+S9 V_b divided by V_a, not V_img: KILLED c_attr_score.py: AssertionError
+S10 masking applied to the references: KILLED c_attr_score.py: AssertionError: the references are never masked (a masked reference would lose 'đen')
+S11 Holm at 0.05 in place of 0.025 (CC-331): KILLED c_attr_score.py: AssertionError: Holm: 0.009 > 0.025 / 3
+S12 'split of a known τ_sel' missing on OV-dev-B (CC-331): KILLED c_attr_score.py: KeyError: 'note'
+A6 '-b1' missing from the run id: KILLED c_attr.py: AssertionError: v1.2: '-b1' in every batch-1 id
+A7 D1 compared with the step-1.0 (a) host50 decode: KILLED c_attr.py: AssertionError: D1 reference = the step-1.0 (b) decode
+A8 D1 comparator prints a caption: KILLED c_attr.py: AssertionError: D1 comparator prints counts and ids only
+S13 V4 (1): only perm runs gated on OV-dev-B (CC-338 S4): KILLED c_attr_score.py: AssertionError: <lambda> must refuse
+S14 V4 (3) removed: batched runs scored before the verdict: KILLED c_attr_score.py: AssertionError: <lambda> must refuse
+S15 v11 file accepted by name: KILLED c_attr_score.py: AssertionError: nomination must refuse
+S16 v11 file accepted by content: KILLED c_attr_score.py: AssertionError: nomination must refuse
+S17 batched row missing its label: KILLED c_attr_score.py: AssertionError
+S18 batched run accepted into a 1b contrast: KILLED c_attr_score.py: AssertionError: SC2
+S19 host-parity fallback label missing (CC-338 S2): KILLED c_attr_score.py: KeyError: 'host'
+S20 batch-1 rows carry the batched label: KILLED c_attr_score.py: AssertionError
+A9 SC1: c_attr.py score without the V4 gate: KILLED c_attr_score.py: AssertionError: SC1: `c_attr.py score` itself refuses OV-dev-B before the nomination (/tmp/tmp2terh8
+A10 OV-dev-A references through stage 2 (manifest2 refuses OV-dev-A): KILLED c_attr_score.py: AssertionError: OV-dev-A references come from C's stage-1 reader (stage 2 refuses OV-dev-A)
+A11 two zs runs of one backbone in one score call: KILLED c_attr_score.py: AssertionError: two zs runs of one backbone in one score call
+S21 SC2: batch-1 rows summarised without a D1 PASS: KILLED c_attr_score.py: AssertionError: cmd_summary must refuse
+S22 SC2: batched rows summarised without a STEP10 record: KILLED c_attr_score.py: AssertionError: cmd_summary must refuse
+S23 SC2: a '-b1' run not at batch size 1 accepted: KILLED c_attr_score.py: AssertionError: <lambda> must refuse
+S24 SC3: parity() last file wins: KILLED c_attr_score.py: AssertionError: SC3: a D1 FAIL on either host stands, in either file order
+S25 SC4: nomination before every D1-PASS nominator has its four columns: KILLED c_attr_score.py: AssertionError: cmd_nominate must refuse
+S26 SC5: prompt hashes not compared: KILLED c_attr_score.py: AssertionError: SC5: one prompt hash differs
+S27 masked3 columns enter the draw means: KILLED c_attr_score.py: AssertionError: the masked3 ('_m3') columns never enter a draw mean
+S28 S3: df not recomputed in the resample: KILLED c_attr_score.py: AssertionError: df recomputed over the resample, an image drawn twice counted twice
+S29 S3: an image drawn twice counted once in the df: KILLED c_attr_score.py: AssertionError: df recomputed over the resample, an image drawn twice counted twice
+S30 S3: fixed-df interval off the shared index matrix: KILLED c_attr_score.py: AssertionError: the fixed-df interval uses the set's shared index matrix (first 200 rows)
+S31 S3: sensitivity row not tied to the ledger's scores: KILLED c_attr_score.py: AssertionError: §9 row on scores other than the ledger's must stop
+S32 S5: unit (ii) masks syllables: KILLED c_attr_score.py: AssertionError: unit (ii): word 3-grams of the segmented texts (con_mèo is a word)
+S33 S5: blind run admitted without the stage-2 ledger pin: KILLED c_attr_score.py: AssertionError: a blind run not pinned by the stage-2 ledger must be refused
+S34 S5: blind loss against the rand list, not R_q: KILLED c_attr_score.py: AssertionError: blind loss against R_q
+S35 S5: K_ret - K_nc companion without K_nc: KILLED c_attr_score.py: AssertionError: companion K_ret - K_nc
+S36 §7.9: swap δ reversed: KILLED c_attr_score.py: AssertionError: swap δ = τ_sel with the Flickr30K-train memory minus τ_sel with the COCO memory
+S37 §7.9: rule L at >= 0.10: KILLED c_attr_score.py: AssertionError: rule L: a gap above 0.10 (0.2) is flagged, a gap of exactly 0.10 is not
+S38 S1: every file exempt like logs/job.log: KILLED c_attr_score.py: AssertionError: tree check must refuse (file)
+S39 S1: unlisted files in the copy accepted: KILLED c_attr_score.py: AssertionError: tree check must refuse (extra)
+S40 S1: SHA256SUMS not checked against the logged sha: KILLED c_attr_score.py: AssertionError: tree check must refuse (sums)
+S41 S1: a stage without the logged sha of the previous file: KILLED c_attr_score.py: AssertionError: a stage without the logged sha256 of the previous file must stop
+S42 S1: a stage runs twice: KILLED c_attr_score.py: AssertionError: a stage runs once (ova and close write the same file)
+S43 S1: environment change not checked: KILLED c_attr_score.py: AssertionError: a changed environment must stop
+S44 S1: rest follows the nomination although a verdict exists: KILLED c_attr_score.py: AssertionError: rest follows the logged verdict when one exists
+S45 dedup: disagreeing copies of a scored run accepted: KILLED c_attr_score.py: AssertionError: cmd_summary must refuse
+S46 S1: verify beside a decode job: KILLED c_attr_score.py: AssertionError: verify must refuse
+S47 S1: verify without the stored pins: KILLED c_attr_score.py: AssertionError: verify must refuse
+S48 S1: verify without the §7.1 parity gate: KILLED c_attr_score.py: AssertionError: verify must refuse
+S49 SC5: unequal prompts do not stop: KILLED c_attr_score.py: AssertionError: prompt_gate must refuse
+S50 SC5: a check that compared nothing passes: KILLED c_attr_score.py: AssertionError: prompt_gate must refuse
+S51 S1: the VnCoreNLP jar not pinned: KILLED c_attr_score.py: AssertionError: env_record must refuse
+S52 V3: nomination from rows of a backbone without a D1 PASS: KILLED c_attr_score.py: AssertionError: cmd_nominate must refuse
+S53 S1: ova without a D1-PASS nominator: KILLED c_attr_score.py: AssertionError: no D1-PASS nominator: nothing scored, only the release clause
+S54 SC4: an incomplete Tier A scored before the refusal: KILLED c_attr_score.py: AssertionError: SC4 before any score: an incomplete Tier A is not scored
+S55 S1: ovb on a closed 1b: KILLED c_attr_score.py: AssertionError: st_ovb must refuse
+S56 S1: a score call without a zs: KILLED c_attr_score.py: AssertionError: with_zs must refuse
+S57 §7.9: the carve ledger pin: KILLED c_attr_score.py: AssertionError: st_posthoc must refuse
+73/73 killed; survived: none
