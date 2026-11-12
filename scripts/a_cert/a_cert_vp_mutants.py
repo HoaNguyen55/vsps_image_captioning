@@ -21,8 +21,8 @@ M = {
     "M04b_V1_evaluability_bound_changed": [("V1_MIN_CERT, V1_MIN_PAIRS, V1_MIN_OTHER = 72, 5, 72\n",
                                             "V1_MIN_CERT, V1_MIN_PAIRS, V1_MIN_OTHER = 71, 5, 72\n")],
     "M05_pair_union_not_intersection": [
-        ("    return [pos[i] for i in sorted(set(pw[\"caps\"][A]) & set(pw[\"caps\"][B]))]\n",
-         "    return [pos[i] for i in sorted(set(pw[\"caps\"][A]) | set(pw[\"caps\"][B]))]\n")],
+        ("    return [pos[i] for i in sorted(set(pw[\"caps\"][A]) & set(pw[\"caps\"][B])) if i in pos]\n",
+         "    return [pos[i] for i in sorted(set(pw[\"caps\"][A]) | set(pw[\"caps\"][B])) if i in pos]\n")],
     "M06a_part_P_written_into_XM3600_input": [
         ("        out = p_score_core(P, _e1(), json.loads(Path(ROOT, P[\"v_result\"]).read_text(encoding=\"utf-8\")))\n",
          "        out = p_score_core(P, _e1(), json.loads(Path(ROOT, P[\"v_result\"]).read_text(encoding=\"utf-8\")))\n"
@@ -90,6 +90,20 @@ M = {
                                       "    print(f\"FAULT {type(e).__name__}: {e}\")\n")],
     "X21_second_pass_allowed": [("    if target.exists():\n", "    if False:\n")],
     "X22_KV3_ignored": [("    if len(prev) >= 2:\n", "    if False:\n")],
+    # CC-347 W1-W4
+    "W1_V2_at_cross_fitted_floor_dropped": [("                    **xfit_v2(hu, info, w0h, beta)}\n",
+                                             "                    }\n")],
+    "W2a_baseline_direction_counted_certified": [("    c, n = cm, len(us)\n", "    c, n = cm + cb, len(us)\n")],
+    "W2b_Pb_baseline_direction_called_certified": [
+        ("    cert = vi[\"verdict\"] == \"CERTIFIED\" and vi[\"better\"] == \"A\"\n",
+         "    cert = vi[\"verdict\"] == \"CERTIFIED\"\n")],
+    "W3_same_image_V2_x_top_under_drawn_gold": [
+        ("        xs = x_top(ms, gold, A, B, v[\"better\"], T, idx)\n",
+         "        xs = x_top(ms, gold, A, B, v[\"better\"], [g[\"kp\"] for g in gold], idx)\n")],
+    "W4_units_include_images_without_instance_entry": [
+        ("    ids = sorted(set().union(*(set(pw[\"caps\"][s]) for s in names)) & set(pw[\"inst\"]))  # E1's kept ids "
+         "(CC-347 W4)\n",
+         "    ids = sorted(set().union(*(set(pw[\"caps\"][s]) for s in names)))\n")],
 }
 
 if __name__ == "__main__":

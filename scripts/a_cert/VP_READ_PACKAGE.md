@@ -155,3 +155,120 @@ Part P needs extra inputs and a PI line, none of which exist yet:
 - `.session_backup/2026-10-14/r12/H3/out/gt_cache.json` (**gold**, `f986f8ff…`), with `--allow-gt-cache` and a PI-1111i line;
 - `.session_backup/2026-10-13/r10_cpu/e1_x1pb_verification_v2.json` (stored aggregate rows from the paper's earlier scoring, `184f9cca…`, untracked);
 - the Part V result and its LOG pin.
+
+## 7. Round 2 (CC-347 W1–W4; for the round-2 diff read)
+
+Base: commit d13ae5c (`a_cert_vp.py` 867a5974…, `a_cert_vp_mutants.py` a29ff113…). The whole change is
+`A_CERT_VP_W1_W4.diff` (`git diff d13ae5c -- scripts/a_cert/a_cert_vp.py scripts/a_cert/a_cert_vp_mutants.py`). Only
+W1–W4 are in it. N2–N5 are NOT in it: the coder brief said "change nothing else", while CC-347 says the N items are
+"carried into the round-2 diff where they touch code". The judge decides. Adding N2/N3/N5 later changes the script sha
+again and needs new host records.
+
+What changed:
+- **W1 (Part V, before `v-freeze`).** New `xfit_v2(hu, info, w0h, beta)`. For each budget (V-B with `beta_Bk`,
+  V-H with `beta_Hk`), every half unit with `better` not None and `w0h[half] > 0` adds the cells
+  `(x_w, floor(beta(cells[worse], w0h[half], α_S, 2)))` and `(x_s, floor(beta(cells["S"], w0h[half], α_S, 2)))`;
+  `xfit` adds `"V2": v2_rule(cells)` and `"n_half_units_excluded_floor_0"` to `cross_fit["V-B"]` and
+  `cross_fit["V-H"]`. Reading: "excluded" counts every half unit of a half whose floor is 0 (including units without
+  a direction). If both floors are 0, `v2_rule([])` gives `FLOOR REFUTED` with 0 cells, as the existing rule is worded.
+- **W2 (Part P).** `p_row`: `c = cm` (method direction only), so `share_certified_w0 = cm/n`, the state sentence uses
+  `cm`, the tail is added whenever `cm < n`, and the aggregate averages `cm/n`. New field
+  `share_certified_w0_baseline_direction = cb/n`. `p_b_row`: `cert` needs `CERTIFIED` and `better == "A"` (the
+  method); `certified_direction` keys on the verdict alone, so it keeps the baseline name. No new prose.
+- **W3 (Part P).** `p_unit` takes the family's G_top `T`. For each k = 2 unit with a direction it stores the worse-only
+  and S cells `(x_top under T on the pair's intersection, floor(beta_Bk(cell, W0, α_S, 2)))`. `p_score_core` adds
+  `same_image_pairs["V2"] = {"label": P_FAMILY_LABEL, "k": 2, "w0": 0.2, "V2": v2_rule(...)}`; under KV1 it carries the
+  same "not computed: KV1 …" text as `V1_V3`.
+- **W4 (Part P).** `p_family`: `ids` = the union of the family's ids ∩ the images with an entry in gt_cache `inst`
+  (E1's kept ids). `inter_idx` keeps only ids in that set (`if i in pos`), so the draws and every intersection use it.
+  The matcher gate is unchanged. Fixture: image 105 (F-B) has no instance entry; the stored rows follow E1's rule.
+- **Mutants.** M05's target line follows the new `inter_idx` line (same mutation: union for intersection). Five new
+  mutants: `W1_V2_at_cross_fitted_floor_dropped`, `W2a_baseline_direction_counted_certified` (restores `c = cm + cb`),
+  `W2b_Pb_baseline_direction_called_certified`, `W3_same_image_V2_x_top_under_drawn_gold`,
+  `W4_units_include_images_without_instance_entry`.
+
+New self-test checks (5): `V2_at_cross_fitted_floor_by_hand_and_on_fixture` (W1: by hand at w = 0.5, floor(β) = 10
+at f1 = 0 and 13 at f1 = 3; on the fixture, both budgets have a non-zero floor, and `n_cells` and the excluded count
+follow the half units), `P_baseline_direction_not_counted_as_certified` (W2: a `p_row` with 15 baseline and 5 method
+certificates; a `p_b_row` whose certificate comes out of `certify` in the baseline direction),
+`P_same_image_V2_worse_only_and_S_under_G_top` (W3, by hand: cells `[(1, 26), (0, 26)]`),
+`P_KV1_suppresses_same_image_V2` (W3), `P_units_only_images_with_instance_entry` (W4: F-B pairs and gate `n_img` = 19).
+
+Round-2 files (sha256):
+
+| File | sha256 |
+|---|---|
+| `scripts/a_cert/a_cert_vp.py` | `17507200acd540fb967c1e11883800b29e138c6509bf04417df5e9c462229ff1` |
+| `scripts/a_cert/a_cert_vp_mutants.py` | `815da83a1d5c4da0d733e3e25b08fdf3d82fd2a73d8e820c07cbbcd3e71f957c` |
+| `scripts/a_cert/A_CERT_VP_W1_W4.diff` | listed in `SHA256SUMS_VP` |
+| `scripts/a_cert/host_checks_vp3/*` | see `host_checks_vp3/SHA256SUMS_VP3CHK` |
+
+Host check, round 2. Host: hc2, because the separate test host was deleted before it started. Tree:
+`/root/a_cert_tree` with the two changed files pushed in, and the committed `a_cert.py` 2e872588… and
+`a_cert_mutants.py` 9d4d5916…. Run: `/root/vsps/.venv/bin/python -I -B` (Python 3.12.3, numpy 2.5.4), CPU only,
+`nice -n 19`, while `/root/outputs/c_attr_b1/RUNNING` existed, as CC-346 Ruling 6 allows. Runner: `run_vp3.sh`.
+Times: 2026-11-12 03:50:56Z to 03:58:57Z. One earlier self-test of a draft ran at 03:49:18–03:49:29Z and failed one
+check, because the W3 block label was overwritten; a second ran at 03:50:16–03:50:27Z and passed. Neither is a record.
+
+| Check | Result | Record |
+|---|---|---|
+| VP self-test | 94/94 (89 + 5 new), `selftest ok` | `selftest_vp.json`, `script_sha256` 17507200…, `a_cert_sha256` 2e872588… |
+| VP mutants | 44/44 killed (39 + 5 new). Each new mutant is killed by its named check, not by a crash. Only M07a is still a crash kill (CC-347 N5, not in this diff) | `mutants_result_vp.json`, `source_sha256` 17507200… |
+| Main-study self-test (`a_cert.py selftest`, environment check of the host) | 92/92, `selftest ok` | `selftest_main_env.json` |
+
+These records are made in the venv that holds the earlier records, `/root/vsps/.venv`. CC-347 Ruling 4(a) asks for the
+round-2 records to come "on the host that will run Part V, in the venv that runs it". If Part V runs on a different
+host or venv, the records have to be made again there.
+
+### Host recipe for the real Part V run (CC-347 Ruling 4(b); W6)
+
+1. **Push 1.** On the laptop: `git archive <commit of the W1–W4 code>` holding exactly:
+   - the code paths of §4;
+   - `scripts/a_cert/{SHA256SUMS_VP, SHA256SUMS_VP_INPUTS}` and `scripts/a_cert/host_checks_vp3/` (or the records made on the Part V host);
+   - the addendum;
+   - the 9 shards, `coco5000_ids.txt`, `chair_synonyms.txt` and `coco80_vi.json`.
+
+   Send `data/datasets/karpathy/dataset_coco.json` (untracked) separately. **The instance gold is not in push 1.**
+   Make a sha256 manifest of the archive on the laptop.
+2. **On the host:**
+   - extract into a NEW directory, then `git init; git add -A; git commit`;
+   - `sha256sum -c` the laptop manifest: every line OK;
+   - `sha256sum -c scripts/a_cert/SHA256SUMS_VP_INPUTS`: 15 OK;
+   - addendum = 0e586fa9…, `a_cert.py` = 2e872588…, `a_cert_mutants.py` = 9d4d5916…;
+   - run the HEAD-blob test of §6;
+   - `test ! -e data/results/a_dchecks/freeze/instance_gold_full5000.json` and `test ! -e data/results/a_cert_v`.
+
+   OPS line with the archive sha and the manifest sha.
+3. **`v-freeze`**, under `timeout 3600 /usr/bin/time -v`, `OMP_NUM_THREADS=2`, `nice -n 19`, one process at a time,
+   with OPS start and end lines. Stop at RSS > 8 GB or wall time > 60 min. On HC2 this may run only after
+   `/root/outputs/c_attr_b1/RUNNING` is gone; until then, on a separate rented host.
+4. **Pull `FREEZE_V.json`.** Laptop checks, all before the pin:
+   - its sha equals the printed sha;
+   - `FREEZE_V["code"]` equals the laptop HEAD sha of every listed file;
+   - `FREEZE_V["pins"]` equals `SHA256SUMS_VP_INPUTS`;
+   - `FREEZE_V["kv0"]` equals the record shas.
+
+   Then hash it, `chmod 444`, gatekeeper commit, and a LOG line holding `FREEZE_V <full 64-hex sha256>`, the commit id
+   and the KV-EV declaration.
+5. **Push 2, only after the pin line:**
+   - the instance gold, from `git show <commit>:data/results/a_dchecks/freeze/instance_gold_full5000.json`, checked on the host against `bd362951…`;
+   - a LOG EXTRACT at the LOG path holding only the byte-copied pin line(s), never the whole LOG. Record its sha256 in the OPS line.
+
+   Pre-flight:
+   - the pin line is in the extract;
+   - the gold is `bd362951…`;
+   - FREEZE_V on the host has the pinned sha;
+   - neither `data/results/a_cert_v/score` nor `data/results/a_cert_v/faults` exists.
+6. **`v-score`**, once, under the same limits. A killed run is fault 1: an OPS line, then a judge line, before any rerun.
+7. **After `v-score`.** Delete the gold and the LOG extract from the host. Pull the result, hash it, `chmod 444`,
+   commit, and write a LOG line with `A_CERT_V_RESULT <full sha>`.
+
+**Part P runs on the laptop, not on a rented host** (CC-347 Ruling 4(c)). `gt_cache.json` never leaves the laptop.
+- The 25 files are fetched into a new empty directory outside the repo.
+- Run `p-fetch-check`, then `p-score`, with `-I -B`, under `timeout 1200 /usr/bin/time -v`, `OMP_NUM_THREADS=2`, `nice -n 15`.
+- Stop at 4 GB, and run only while the labelling server is idle.
+
+**Supersedes (round 2).** The real modes take only the round-2 records: `host_checks_vp3/` or the records re-made on
+the Part V host. The expected sha of `a_cert_vp.py` is now `17507200…`, not `867a5974…`. The `host_checks_vp2` paths
+and the 867a5974 sha in §6 above and in `HOST_CHECKS_VP.md` §3 are superseded. With the vp2 records, `kv0` faults
+inside `v-freeze` and writes `FAULT_1`.

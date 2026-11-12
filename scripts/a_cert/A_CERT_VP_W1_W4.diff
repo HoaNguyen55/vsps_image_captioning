@@ -1,0 +1,252 @@
+diff --git a/scripts/a_cert/a_cert_vp.py b/scripts/a_cert/a_cert_vp.py
+index 3d35d8d..c88537c 100644
+--- a/scripts/a_cert/a_cert_vp.py
++++ b/scripts/a_cert/a_cert_vp.py
+@@ -607,8 +607,17 @@ def transported(hu: list, info: list) -> dict:
+             "tau_P": [tp.numerator, tp.denominator]}
+ 
+ 
++def xfit_v2(hu: list, info: list, w0h: list, beta) -> dict:
++    """V2 at the cross-fitted floor (CC-347 W1): the worse-only and S cells of each half unit with a direction, budget
++    floor(beta(cell, w0h[half], alpha_S, 2)); half units of a half with w0h = 0 have no finite budget and are excluded."""
++    cells = [(x, math.floor(beta(u["cells"][c], w0h[u["half"]], ALPHA_S, 2)))
++             for u, (_, xw, xs) in zip(hu, info) if u["better"] is not None and w0h[u["half"]] > 0
++             for x, c in ((xw, worse(u)), (xs, "S"))]
++    return {"V2": v2_rule(cells), "n_half_units_excluded_floor_0": sum(w0h[u["half"]] == 0 for u in hu)}
++
++
+ def xfit(w: dict, fz: dict, T: list, golds2: list) -> dict:
+-    """Cross-fitted floor (A2 plan §3.8, two image halves, seed 20261111) and V1, V3 at it; secondary."""
++    """Cross-fitted floor (A2 plan §3.8, two image halves, seed 20261111) and V1-V3 at it; secondary."""
+     pairs = list(itertools.combinations(w["sys"], 2))
+     hv = halves(len(w["ids"]))
+     Pt = [{s: prec(w["ms"][s], T, hv[h]) for s in w["sys"]} for h in (0, 1)]
+@@ -623,7 +632,8 @@ def xfit(w: dict, fz: dict, T: list, golds2: list) -> dict:
+     for bud, key, beta in (("V-B", "fmin_B", beta_Bk), ("V-H", "fmin_H", beta_Hk)):
+         w0h = [calibrate(hu, info, 1 - h, beta) for h in (0, 1)]
+         units = [{"pair": u["pair"], "verdict": at_floor(u, w0h[u["half"]], key)} for u in hu]
+-        out[bud] = {"w0_by_half": w0h, **v_rules(units, [x[0] for x in info])}
++        out[bud] = {"w0_by_half": w0h, **v_rules(units, [x[0] for x in info]),
++                    **xfit_v2(hu, info, w0h, beta)}
+     out["transported_margin"] = transported(hu, info)
+     return out
+ 
+@@ -907,24 +917,28 @@ def matcher_gate(pw: dict, e1, stored: dict) -> dict:
+ 
+ def inter_idx(pw: dict, pos: dict, A: str, B: str) -> list:
+     """B6: every pair statistic, certificate and truth uses the intersection of the two systems' image ids."""
+-    return [pos[i] for i in sorted(set(pw["caps"][A]) & set(pw["caps"][B]))]
++    return [pos[i] for i in sorted(set(pw["caps"][A]) & set(pw["caps"][B])) if i in pos]
+ 
+ 
+-def p_unit(ms: dict, A: str, B: str, gold: list, idx: list, k: int, r: int) -> dict:
++def p_unit(ms: dict, A: str, B: str, gold: list, idx: list, k: int, r: int, T: list) -> dict:
+     pc = pair_cells(ms, A, B, gold, idx)
+     beta = partial(beta_Bk, k=k)
+     v, ws = certify(pc, W0, ALPHA_S, beta), w_star(pc, ALPHA_S, beta)
+     if ws == 0.0:
+         raise Fault("§V.4a: a reference-only certificate at w = 0 (Part P)")
+     d = abs(Fr(pc["tA"], pc["nA"]) - Fr(pc["tB"], pc["nB"])) if pc["nA"] and pc["nB"] else None
+-    return {"k": k, "draw": r, "verdict": v["verdict"], "better": {"A": A, "B": B}.get(v["better"]), "w_star": ws,
+-            "dabs": d}
++    u = {"k": k, "draw": r, "verdict": v["verdict"], "better": {"A": A, "B": B}.get(v["better"]), "w_star": ws,
++         "dabs": d}
++    if k == 2 and v["better"] is not None:  # §P.3 V2 (CC-347 W3): worse-only and S cells, x_top under G_top T
++        xs = x_top(ms, gold, A, B, v["better"], T, idx)
++        u["v2_cells"] = [(x, math.floor(beta_Bk(pc[c], W0, ALPHA_S, 2))) for x, c in zip(xs, (worse(v), "S"))]
++    return u
+ 
+ 
+ def p_family(pw: dict, e1, fam: str, names: list, g0: int) -> tuple:
+     """P-a on one released image set: M-ref of §V.3 (draws over the set's images in ascending id), every same-image
+     pair on the intersection of its two systems' ids; truth = precision direction under G_top there."""
+-    ids = sorted(set().union(*(set(pw["caps"][s]) for s in names)))
++    ids = sorted(set().union(*(set(pw["caps"][s]) for s in names)) & set(pw["inst"]))  # E1's kept ids (CC-347 W4)
+     if any(len(pw["refs"].get(i, ())) < 5 for i in ids):
+         raise Fault("an image without five references in gt_cache.json")
+     pos = {i: j for j, i in enumerate(ids)}
+@@ -942,7 +956,7 @@ def p_family(pw: dict, e1, fam: str, names: list, g0: int) -> tuple:
+         pa, pb = prec(ms[A], top, idx), prec(ms[B], top, idx)
+         rows.append({"pair": g, "family": fam, "A": A, "B": B, "n_images": len(idx),
+                      "chair_better": A if right(pa, pb) else B if right(pb, pa) else None,
+-                     "units": [p_unit(ms, A, B, golds[k][r], idx, k, r) for k in KS for r in range(R)]})
++                     "units": [p_unit(ms, A, B, golds[k][r], idx, k, r, top) for k in KS for r in range(R)]})
+     return rows, {"ms": ms, "refs": refs, "inst": inst, "top": top, "pos": pos}
+ 
+ 
+@@ -970,8 +984,9 @@ def p_row(row: dict, method: str, base: str, k: int, kv1: bool, tau) -> dict:
+         return rec
+     cm = sum(u["verdict"] == "CERTIFIED" and u["better"] == method for u in us)
+     cb = sum(u["verdict"] == "CERTIFIED" and u["better"] == base for u in us)
+-    c, n = cm + cb, len(us)
+-    rec.update({"share_certified_w0": c / n, "n_certified_method_direction": cm, "n_certified_baseline_direction": cb,
++    c, n = cm, len(us)
++    rec.update({"share_certified_w0": c / n, "share_certified_w0_baseline_direction": cb / n,
++                "n_certified_method_direction": cm, "n_certified_baseline_direction": cb,
+                 "n_certified_equal_to_chair_gold_direction": sum(
+                     u["verdict"] == "CERTIFIED" and u["better"] == row["chair_better"] for u in us)})
+     if tau is not None:
+@@ -1014,9 +1029,10 @@ def p_b_row(pw: dict, fw: dict, fam: str, method: str, base: str, kv1: bool) ->
+         rec["sentence"] = f"with 5 references and the instance labels, the break-down floor of this published " \
+                           f"comparison on {where} is w* = {fmt(wi)}"
+         return rec
+-    cert = vi["verdict"] == "CERTIFIED"
++    cert = vi["verdict"] == "CERTIFIED" and vi["better"] == "A"
+     rec.update({"verdict_w0_cap_I0": vi["verdict"], "verdict_w0_cap_min_U_floor_beta": vp["verdict"],
+-                "certified_direction": {"A": method, "B": base}.get(vi["better"]) if cert else None,
++                "certified_direction": {"A": method, "B": base}.get(vi["better"]) if vi["verdict"] == "CERTIFIED"
++                else None,
+                 "cells_with_floor_refuted_at_w0": vi["refuted_cells"]})
+     rec["sentence"] = f"with 5 references and the instance labels, the direction of this published comparison is " \
+                       f"{'certified' if cert else 'not certified'} against gold incompleteness at floor w0 = {W0} on " \
+@@ -1054,11 +1070,14 @@ def p_score_core(P: dict, e1, vres: dict) -> dict:
+                       for r in rows]}
+     if kv1:
+         same["V1_V3"] = "not computed: KV1 (Part V V1 FAIL) withdraws the CERTIFIED labels at w0"
++        same["V2"] = same["V1_V3"]
+     else:
+         u94 = [(r, u) for r in rows for u in r["units"] if u["k"] == 2]
+         same["V1_V3"] = {"label": P_FAMILY_LABEL, "k": 2, "w0": W0, **v_rules(
+             [{"pair": r["pair"], "verdict": u["verdict"]} for r, u in u94],
+             [u["better"] is not None and u["better"] == r["chair_better"] for r, u in u94])}
++        same["V2"] = {"label": P_FAMILY_LABEL, "k": 2, "w0": W0,
++                      "V2": v2_rule([c for _, u in u94 for c in u.get("v2_cells", ())])}
+     ns = [r["n_images"] for r in by.values() if (r["A"], r["B"]) in PUB15 or (r["B"], r["A"]) in PUB15]
+     agg = [] if kv1 else [{"label": P_LABEL, "k": k, "text": (
+         f"mean share of the {R} reference draws certified over the 15 published comparisons: "
+@@ -1118,7 +1137,8 @@ def fixture_v(n: int = 60, tiers=("g", "t1", "t2")) -> tuple:
+ 
+ def fixture_p(tmp: Path, e1) -> dict:
+     """Synthetic release logs in the pinned layout, a gt_cache.json, stored E1 rows and a LOG; opera/instructblip__beam5
+-    lacks images 1 and 2, so its pairs have 18 shared images and the others 20."""
++    lacks images 1 and 2, so its pairs have 18 shared images and the others 20; image 105 (F-B) has no instance entry,
++    so E1's rule drops it and the F-B pairs have 19 (CC-347 W4)."""
+     words, seen = [], set()
+     for wd, c in sorted(e1.inv.items()):
+         if wd.isalpha() and wd not in ("toilet", "seat") and c not in seen and e1.nodes(wd) == [c]:
+@@ -1139,6 +1159,7 @@ def fixture_p(tmp: Path, e1) -> dict:
+                 ([[e1.inv[words[29]]]] if i % 2 == 0 else [])
+             inst[i] = t + ([e1.inv[words[10]]] if i % 4 == 0 else [])
+     caps["lim/r6-ours-cap"] = caps["lim/r5-ours-inst"]
++    del inst[105]
+     pins = {}
+     for rel in P_FILES:
+         f = logs / rel
+@@ -1155,7 +1176,7 @@ def fixture_p(tmp: Path, e1) -> dict:
+     write_gt(gt, json.dumps({"refs": {str(i): v for i, v in refs.items()}, "inst": {str(i): v for i, v in inst.items()}}))
+     stored = {}
+     for s in SYS24:
+-        keep = list(caps[s])
++        keep = [i for i in caps[s] if i in inst]
+         a = e1.agg([e1.per_image(caps[s][i], set(inst[i]).union(*refs[i])) for i in keep])
+         stored[s] = {"P_cls": float(a["P_cls"]), "M_cls": float(a["M_cls"]), "n_img": len(keep)}
+     (tmp / "stored.json").write_text(json.dumps({"systems": stored}), encoding="utf-8")
+@@ -1420,7 +1441,21 @@ def _check_pb(ck: dict) -> None:
+     refa = {**pc, "A": cl(1, 0, 1)}
+     ck["Pb_refuted_any_cell_gives_NI"] = pb_wstar(refa, True, E) == f"NI ({REFUTED_I0})" and \
+         pb_verdict(refa, 0.5, True, E)["refuted_cells"] == ["A"]
+-    ck["git_blob_known_values"] = git_blob(b"").startswith("e69de29bb2d1") and git_blob(b"hello\n").startswith("ce013625030b")
++    m, b, ids = "opera/x__ours", "opera/x__greedy", range(1, 21)
++    us = [{"k": 2, "draw": r, "verdict": "CERTIFIED", "better": b if r < 15 else m, "w_star": 0.3, "dabs": Fr(1, 10)}
++          for r in range(20)]
++    rp = p_row({"units": us, "family": "F-A", "n_images": 20, "chair_better": b}, m, b, 2, False, None)
++    ab = frozenset("ab")  # the method names an unknown x on every image: the baseline direction is certified at w0
++    fw = {"refs": [[ab] * 5] * 20, "top": [ab] * 20, "inst": [ab] * 20, "ms": {m: [ab | {"x"}] * 20, b: [ab] * 20},
++          "pos": {i: j for j, i in enumerate(ids)}}
++    rb = p_b_row({"caps": {m: dict.fromkeys(ids, ""), b: dict.fromkeys(ids, "")}}, fw, "F-A", m, b, False)
++    ck["P_baseline_direction_not_counted_as_certified"] = rp.get("share_certified_w0") == 0.25 and \
++        rp.get("share_certified_w0_baseline_direction") == 0.75 and \
++        "certified in 5 and not certified in 15 of the 20 reference draws" in rp.get("sentence", "") and \
++        rp["sentence"].endswith(NOT_CERT_TAIL) and rb.get("verdict_w0_cap_I0") == "CERTIFIED" and \
++        rb.get("certified_direction") == b and "comparison is not certified against" in rb.get("sentence", "") and \
++        rb["sentence"].endswith(NOT_CERT_TAIL)
++    ck["git_blob_known_values"] =git_blob(b"").startswith("e69de29bb2d1") and git_blob(b"hello\n").startswith("ce013625030b")
+ 
+ 
+ def _check_custody(ck: dict, tmp: Path) -> None:
+@@ -1571,6 +1606,19 @@ def _check_v_e2e(ck: dict, tmp: Path) -> None:
+     ck["V_fixture_V1_PASS_V3_DISCRIMINATING_V2_REFUTED"] = reg.get("V1") == "PASS" and \
+         reg.get("V3") == "DISCRIMINATING" and reg.get("V2") == "FLOOR REFUTED" and \
+         res["primary_truth_G_top"]["V1_V3"]["e_c"] == 0 and res["primary_truth_G_top"]["V1_V3"]["e_n"] == 1
++    hc = {"A": {"f1": 0}, "B": {"f1": 0}, "S": {"f1": 3}}
++    hand = xfit_v2([{"half": 0, "better": "A", "cells": hc}, {"half": 0, "better": None, "cells": {}},
++                    {"half": 1, "better": "B", "cells": hc}], [(True, 11, 13), (False, None, None), (True, 99, 99)],
++                   [0.5, 0.0], beta_Bk)  # by hand, w = 0.5, alpha_S = 1/40: floor(beta) = 10 (f1 = 0), 13 (f1 = 3)
++    xf, hu = res.get("primary_truth_G_top", {}).get("cross_fit", {}), fz.get("half_units", [])
++    ok = hand == {"V2": {"label": "FLOOR REFUTED", "n_cells": 2, "n_over_budget": 1, "share": Fr(1, 2)},
++                  "n_half_units_excluded_floor_0": 1}
++    for bud in ("V-B", "V-H"):
++        w0h = xf.get(bud, {}).get("w0_by_half", [0.0, 0.0])
++        ok &= any(x > 0 for x in w0h) and xf[bud].get("V2", {}).get("n_cells") == 2 * sum(
++            u["better"] is not None and w0h[u["half"]] > 0 for u in hu) and \
++            xf[bud].get("n_half_units_excluded_floor_0") == sum(w0h[u["half"]] == 0 for u in hu)
++    ck["V2_at_cross_fitted_floor_by_hand_and_on_fixture"] = ok
+     ck["V_result_KV_names_COCO_K2_no_bare_K2"] = set(res.get("KV", {})) == set(KV_KEYS) and "COCO K2" in reg and \
+         "K2" not in keys_of(res)
+     ck["V_result_labels_on_every_block"] = res.get("label") == V_LABEL and all(
+@@ -1652,7 +1700,20 @@ def _check_p_e2e(ck: dict, tmp: Path) -> None:
+     ck["P_pairs_on_intersection_of_ids"] = nimg.get(("opera/instructblip__ours vs opera/instructblip__beam5", 2)) == 18 and \
+         nimg.get(("opera/instructblip__ours vs opera/instructblip__greedy", 2)) == 20 and \
+         res["P_a"]["same_image_pairs"]["n_pairs"] == 94
+-    ck["P_aggregate_states_k_w0_set"] = all(f"k = {a['k']}, w0 = 0.2, image sets" in a["text"]
++    gs, same = res.get("matcher_gate", {}).get("systems", {}), res.get("P_a", {}).get("same_image_pairs", {})
++    ck["P_units_only_images_with_instance_entry"] = \
++        nimg.get(("opera/llava-1.5__ours vs opera/llava-1.5__greedy", 2)) == 19 and all(
++            gs.get(s, {}).get("recomputed", {}).get("n_img") == 19 for s in FAM["F-B"]) and \
++        [r["n_images"] for r in same.get("pairs", []) if r["image_set"] == "F-B"] == [19] * 36
++    g1 = [{"kp": frozenset("a"), "ka": frozenset(), "once": frozenset(), "twice": frozenset()}]
++    m1 = {"A": [frozenset("axy")], "B": [frozenset("az")]}
++    T1 = [frozenset("axz")]  # by hand: B better; worse-only {x, y} -> x in T: 1; S {a} known: 0; f1 = 0: floor 26
++    v2s = same.get("V2", {})
++    ck["P_same_image_V2_worse_only_and_S_under_G_top"] = \
++        p_unit(m1, "A", "B", g1, [0], 2, 0, T1).get("v2_cells") == [(1, 26), (0, 26)] and \
++        "v2_cells" not in p_unit(m1, "A", "B", g1, [0], 1, 0, T1) and isinstance(v2s, dict) and \
++        v2s.get("label") == P_FAMILY_LABEL and v2s.get("V2", {}).get("n_cells", 0) > 0 and v2s["V2"]["n_cells"] % 2 == 0
++    ck["P_aggregate_states_k_w0_set"] =all(f"k = {a['k']}, w0 = 0.2, image sets" in a["text"]
+                                             for a in res["P_a"]["aggregate"]) and len(res["P_a"]["aggregate"]) == 4
+     ck["P_matcher_gate_passes_on_identity"] = res.get("matcher_gate", {}).get("passed") is True and \
+         len(res["matcher_gate"]["systems"]) == 24
+@@ -1660,6 +1721,7 @@ def _check_p_e2e(ck: dict, tmp: Path) -> None:
+     ck["P_KV1_prints_w_star_only"] = rc == 0 and res2.get("KV1_w_star_only") is True and not any(
+         k in keys_of(res2) for k in ("share_certified_w0", "verdict_w0_cap_I0", "n_certified_method_direction")) and \
+         isinstance(res2["P_a"]["same_image_pairs"]["V1_V3"], str) and not res2["P_a"]["aggregate"]
++    ck["P_KV1_suppresses_same_image_V2"] = isinstance(res2.get("P_a", {}).get("same_image_pairs", {}).get("V2"), str)
+     st = json.loads(Path(P["stored"]).read_text(encoding="utf-8"))
+     st["systems"]["lim/r6-ours-cap"]["P_cls"] += 0.01
+     (tmp / "pf" / "stored_bad.json").write_text(json.dumps(st), encoding="utf-8")
+diff --git a/scripts/a_cert/a_cert_vp_mutants.py b/scripts/a_cert/a_cert_vp_mutants.py
+index be42a2c..33d9c12 100644
+--- a/scripts/a_cert/a_cert_vp_mutants.py
++++ b/scripts/a_cert/a_cert_vp_mutants.py
+@@ -21,8 +21,8 @@ M = {
+     "M04b_V1_evaluability_bound_changed": [("V1_MIN_CERT, V1_MIN_PAIRS, V1_MIN_OTHER = 72, 5, 72\n",
+                                             "V1_MIN_CERT, V1_MIN_PAIRS, V1_MIN_OTHER = 71, 5, 72\n")],
+     "M05_pair_union_not_intersection": [
+-        ("    return [pos[i] for i in sorted(set(pw[\"caps\"][A]) & set(pw[\"caps\"][B]))]\n",
+-         "    return [pos[i] for i in sorted(set(pw[\"caps\"][A]) | set(pw[\"caps\"][B]))]\n")],
++        ("    return [pos[i] for i in sorted(set(pw[\"caps\"][A]) & set(pw[\"caps\"][B])) if i in pos]\n",
++         "    return [pos[i] for i in sorted(set(pw[\"caps\"][A]) | set(pw[\"caps\"][B])) if i in pos]\n")],
+     "M06a_part_P_written_into_XM3600_input": [
+         ("        out = p_score_core(P, _e1(), json.loads(Path(ROOT, P[\"v_result\"]).read_text(encoding=\"utf-8\")))\n",
+          "        out = p_score_core(P, _e1(), json.loads(Path(ROOT, P[\"v_result\"]).read_text(encoding=\"utf-8\")))\n"
+@@ -90,6 +90,20 @@ M = {
+                                       "    print(f\"FAULT {type(e).__name__}: {e}\")\n")],
+     "X21_second_pass_allowed": [("    if target.exists():\n", "    if False:\n")],
+     "X22_KV3_ignored": [("    if len(prev) >= 2:\n", "    if False:\n")],
++    # CC-347 W1-W4
++    "W1_V2_at_cross_fitted_floor_dropped": [("                    **xfit_v2(hu, info, w0h, beta)}\n",
++                                             "                    }\n")],
++    "W2a_baseline_direction_counted_certified": [("    c, n = cm, len(us)\n", "    c, n = cm + cb, len(us)\n")],
++    "W2b_Pb_baseline_direction_called_certified": [
++        ("    cert = vi[\"verdict\"] == \"CERTIFIED\" and vi[\"better\"] == \"A\"\n",
++         "    cert = vi[\"verdict\"] == \"CERTIFIED\"\n")],
++    "W3_same_image_V2_x_top_under_drawn_gold": [
++        ("        xs = x_top(ms, gold, A, B, v[\"better\"], T, idx)\n",
++         "        xs = x_top(ms, gold, A, B, v[\"better\"], [g[\"kp\"] for g in gold], idx)\n")],
++    "W4_units_include_images_without_instance_entry": [
++        ("    ids = sorted(set().union(*(set(pw[\"caps\"][s]) for s in names)) & set(pw[\"inst\"]))  # E1's kept ids "
++         "(CC-347 W4)\n",
++         "    ids = sorted(set().union(*(set(pw[\"caps\"][s]) for s in names)))\n")],
+ }
+ 
+ if __name__ == "__main__":
