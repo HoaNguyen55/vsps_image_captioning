@@ -7,7 +7,7 @@ Written 2026-11-12T04:13Z (`date -u`). vsps HEAD `26574ef`. Writer agent. Draft 
 **Label of every row:** "DEVELOPMENT / A-E3, descriptive, new decodes on previously analysed images". No verdict, no hypothesis.
 
 ## 1. Which outputs are scored
-- Only the 600-image Vietnamese runs `ae3_<key>_xm600-{short,detailed}.preds.json` of models in `passed_7a.txt`, from the pulled 444 copy `.session_backup/machines/ATTR_H1/root/a_e3/out/` (hc2; run document §8 step 1).
+- Only the 600-image Vietnamese runs `ae3_<key>_xm600-{short,detailed}.preds.json` of models in `passed_7a.txt`, from the pulled 444 copy `.session_backup/machines/ATTR_H1/root/a_e3/out/` (hc2; run document §8 step 1), and of models in `passed_7c.txt`, from the pulled 444 copy `.session_backup/machines/ATTR_H1_7c/root/a_e3/out/` (A-E3 addendum v1 §5.2 step 4; CC-359).
 - Not scored: 50-image runs, models that failed G4, HELD outputs (G5), any run reported NOT RUN.
 - S6: with fewer than two passing models the arm adds no family comparison, and no difference row of §2 row B3 is printed.
 
@@ -24,13 +24,13 @@ Written 2026-11-12T04:13Z (`date -u`). vsps HEAD `26574ef`. Writer agent. Draft 
 
 No Vietnamese-versus-English gap row and no Open Images row for 7b (CC-349 Q10).
 
-## 3. Commands (laptop, after this note is committed and the 7a pull is verified)
+## 3. Commands (laptop, after this note is committed and the 7a and 7c pulls are verified; one pass over both, CC-359)
 
 ```
-P=.session_backup/machines/ATTR_H1/root/a_e3/out; F=data/results/a_e3/xm600_vi_flat; mkdir -p $F
-for k in $(cat $P/passed_7a.txt); do for m in short detailed; do
+P=.session_backup/machines/ATTR_H1/root/a_e3/out; Q=.session_backup/machines/ATTR_H1_7c/root/a_e3/out; F=data/results/a_e3/xm600_vi_flat; mkdir -p $F
+for dk in $(sed "s#^#$P:#" $P/passed_7a.txt) $(sed "s#^#$Q:#" $Q/passed_7c.txt); do d=${dk%%:*}; k=${dk#*:}; for m in short detailed; do
   python3 -I -B -c 'import json,sys; d=json.load(open(sys.argv[1],encoding="utf-8")); json.dump(d["predictions"],open(sys.argv[2],"w",encoding="utf-8"),ensure_ascii=False,sort_keys=True,indent=1)' \
-    $P/ae3_${k}_xm600-$m.preds.json $F/ae3_${k}_xm600-$m.preds.json; done; done
+    $d/ae3_${k}_xm600-$m.preds.json $F/ae3_${k}_xm600-$m.preds.json; done; done
 sha256sum $F/*.preds.json > $F/SHA256SUMS_flat
 NCS_DATA=data nice -n 19 ~/.venvs/c_stage1_lists/bin/python -B scripts/xm3600_oiv7.py score --results $F --split test_data.json \
   --out data/results/a_e3/annexB_7a_score.json > /dev/null

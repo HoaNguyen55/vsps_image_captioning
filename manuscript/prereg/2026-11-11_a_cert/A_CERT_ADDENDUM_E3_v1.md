@@ -17,7 +17,7 @@ Written 2026-11-12T04:13Z (`date -u`). vsps HEAD `26574ef`, branch `paper-v10`. 
 
 ## 0. Scope, label and status
 
-- **Systems S_E.** The 600-image Vietnamese caption sets of the A-E3 models that passed G4 and G5 (two per model: `ae3_<key>_xm600-short`, `ae3_<key>_xm600-detailed`), on I600. Only models listed in the pulled `passed_7a.txt`. HELD outputs (G5 failure) and models that failed G4 are not in S_E.
+- **Systems S_E.** The 600-image Vietnamese caption sets of the A-E3 models that passed G4 and G5 (two per model: `ae3_<key>_xm600-short`, `ae3_<key>_xm600-detailed`), on I600. Only models listed in the pulled `passed_7a.txt` (pull copy `.session_backup/machines/ATTR_H1/root/a_e3/out/`) or in the pulled `passed_7c.txt` (pull copy `.session_backup/machines/ATTR_H1_7c/root/a_e3/out/`; A-E3 addendum v1 `A_E3_ADDENDUM_MODELS_v1.md`, CC-359); a `passed_7c.txt` model's rows carry the addendum's disclosure. HELD outputs (G5 failure) and models that failed G4 are not in S_E.
 - **Home.** A-CERT v1.1 §10, row "Other-family arm (PI-1105k, PI-1107c): a third family on I600 — development; C-ref and C-label at once; completed-gold rows only after a top-up labelling session and a separate unsealing; CC-327 L2 applies", and §12 step 7.
 - **Label of every row:** "development; new decodes on previously analysed images; new labels; single annotator until the second annotator's top-up overlap is labelled".
 - **No verdict** attaches to any row of this file. No row is a hypothesis.
