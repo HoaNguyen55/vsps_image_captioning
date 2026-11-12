@@ -284,3 +284,212 @@ A grep of the reused modules found no read of a basename the stricter guard refu
 
    I recommend (a). The code is unchanged pending the ruling.
 8. Every E row carries `row_label` = the §0 label, besides the result-level `label` (check `row_label_on_every_E_row`). E4's own `label` key holds only "NOT EVALUABLE" or null (O6).
+
+---
+
+## Round 2 (CC-366 B1; this later version is for the round-2 code read)
+
+The diff base is the committed 669251e (a_cert_e3.py `cc56f36f…`, mutants `ef933c83…`). The diff is `A_CERT_E3_R1_R2.diff`, from `git diff 669251e -- scripts/a_cert/a_cert_e3.py scripts/a_cert/a_cert_e3_mutants.py`.
+- It inserts lines only: 70 added, 0 removed.
+- Every hunk lies inside `_selftest_checks` (a_cert_e3.py) or the mutant list `M` (a_cert_e3_mutants.py).
+- No line that runs in `e3-freeze` or `e3-score` changed.
+
+Round-1 records in `host_checks_e3code/` belong to cc56f36f and stay as they are.
+
+### R2.1 B1 sub-items
+
+Line numbers are of the new a_cert_e3.py; "code line" is the line under test.
+
+| B1 sub-item | Code line | Self-test check (a_cert_e3.py) | Mutant (a_cert_e3_mutants.py) | Hand value |
+|---|---|---|---|---|
+| E2 interval value `Vc_minus_Vn_ci95` | l.257 | `E2_interval_value_by_hand` (l.651) | `R2_E2_06_interval_sign_reversed` (l.158) | Recomputed from the H2a stream written out and per-image counts by hand; equals [−1/3, 2/3] |
+| E2 grid secondary at w = 0.1 ≠ w0 | l.253 | `E2_grid_secondary_by_hand` (l.657) | `R2_E2_07_grid_uses_w0_verdicts` (l.161) | (r,S) certified at 0.1 only: n_cert 1, unconfirmed 1, V_c 0, V_n 2/3; w0 unchanged (V_n 0.5) |
+| E3 `covered_by_w` | l.322 | `E3_covered_by_w_by_hand` (l.660) | `R2_E3_04_covered_by_w_with_x` (l.164) | β(D; 0.3) set to 1.5: D {0.1 T, 0.2 T, 0.3 F, 0.5 T} (x_hi = 2 > 1; x = 1 would pass); S all T |
+| Base-key refusal | l.454 | `x_refuses_base_key_not_the_part1_key` (l.842) | `R2_S12_base_key_not_checked` (l.166) | The part-1 result names another key sha, so `FAULT Fault` and nothing written |
+| Guard: image set differs from FREEZE_E3 | l.302 | `guard_image_set_differs_from_freeze_is_a_fault` (l.675) | `R2_G03_image_set_guard_dropped` (l.168) | (r,D) frozen with n_images 2, so Fault |
+| Guard: old_repeat not a base part-1 target | l.342 | `guard_old_repeat_not_a_base_target_is_a_fault` (l.677) | `R2_G04_old_repeat_guard_dropped` (l.170) | old_repeat on (i,a), a base control, so Fault |
+
+The two guard checks count only a `Fault`. Any other exception makes the named check fail; it is not counted as a crash. That covers R2_G04, where the dropped guard leads to a KeyError.
+
+### R2.2 Changes beyond B1 (each separate; the judge may refuse either)
+
+- **CC-366 N1, part a.** Check `N1_check_build_refuses_a_wrong_extra_sha` (l.746): a BUILD record with one wrong `--extra` sha must fault, and the right record must not. Mutant `R2_N1a_check_build_names_only` (l.173) mutates `check_build` in the scratch copy only. `check_build` itself is unchanged.
+- **CC-366 N1, part b.** Check `N1_disclosures_and_kappa_in_result` (l.679). Mutant `R2_N1b_kappa_text_dropped` (l.175).
+- **Not done:** N2 (it would change `e3_freeze` / `check_build`, which feed FREEZE_E3) and N3 (a new refusal line in `e3_score`, outside B1). Each needs its own ruling.
+
+Expected new totals: self-test 59 + 8 = **67 checks**; mutants 56 + 8 = **64**. They are not yet run.
+
+### R2.3 FREEZE_E3-feeding functions are unchanged (CC-366 Ruling 8(e))
+
+The functions are `rel` (called by `load_extras`), `load_extras`, `e_ctx`, `e_world`, `ctx_check`, `check_build`, `e_pairs`, `e_idx`, `fam_of`, `e_scope`, `n_u`, `evaluable`, `tag` and `freeze_e3_core`. The module constants they read (`EXTRA_RE`, `ROW_LABEL`, `D7C`, `S_E_REAL`, …) also feed it, and so does the mode `e3_freeze`.
+
+Proof, by diff and hash (laptop, no interpreter run):
+
+```
+git show 669251e:scripts/a_cert/a_cert_e3.py > ~/a_e3code_stage/old.py
+head -n 545 ~/a_e3code_stage/old.py      | sha256sum   # a06bd11eca5df9b2dff883c605e5bcb20d7d1fbf138e530b83d4d8c1f176be8d
+head -n 545 scripts/a_cert/a_cert_e3.py  | sha256sum   # a06bd11eca5df9b2dff883c605e5bcb20d7d1fbf138e530b83d4d8c1f176be8d
+```
+
+Lines 1–545 run up to the line before `def _selftest_checks`. They hold every constant and every function except the self-test and `main`, so they cover all the functions above, `e3_freeze` and `e3_score`.
+
+`main` (after the self-test) is untouched, as the diff hunks show.
+
+Per-function block hashes (first 16 hex digits), old and new: identical for each of the 14 functions.
+
+| Function | Hash |
+|---|---|
+| rel | 823e0a06ae22d51c |
+| load_extras | f7a8094599756e23 |
+| e_ctx | 46932bdfbd28a4e2 |
+| e_world | 2e4b8074ed38860b |
+| ctx_check | 10e1f40fd35599a1 |
+| check_build | 449812a31c5b4e60 |
+| e_pairs | 8a0cd7876c15653c |
+| e_idx | 7969da5cca17e4e9 |
+| fam_of | adf4c5616a94f279 |
+| e_scope | cdeb75b55f78cca4 |
+| n_u | 38739d426ea8db2c |
+| evaluable | 1eec1f05244e1976 |
+| tag | 4f28ddab0a2f4168 |
+| freeze_e3_core | 295d74a162ef4fd9 |
+
+### R2.4 Host records: OWED on the next judged rented host
+
+hc2 was deleted at 15:47Z. Nothing in round 2 has run anywhere; the laptop ran only `py_compile`, `git diff` and `sha256sum`.
+
+Recipe, copy-paste from the laptop:
+- `H` = the next judged host's ssh alias.
+- `PY` = its venv python with numpy (record its version).
+- The tree gets the same 43 code-only paths as round 1, read from the round-1 `status.log`. The two `a_cert_e3*.py` files go up at their new versions.
+- Records go to `host_checks_e3code_r2/`, so the committed round-1 records are not overwritten.
+
+```
+cd /mnt/d/vsps_image_captioning
+H=<alias>; PY=<venv python on the host>
+F=$(sed -n 's/^[0-9a-f]\{64\}  \.\///p' scripts/a_cert/host_checks_e3code/status.log)   # 43 paths, code and lexicon only
+tar cf - $F | ssh -o BatchMode=yes $H 'test -e /root/a_e3code_tree && exit 1; mkdir -p /root/a_e3code_tree /root/outputs_e3code_checks_r2 && tar xf - -C /root/a_e3code_tree' 2>&1 | grep -v -E '([0-9]{1,3}\.){3}[0-9]{1,3}'
+ssh -o BatchMode=yes $H "cd /root/a_e3code_tree && O=/root/outputs_e3code_checks_r2; R='env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=2 nice -n 19 ionice -c3';
+ { echo \"start \$(date -u +%FT%TZ) tree /root/a_e3code_tree (code only) python \$($PY -V 2>&1)\"; find . -type f -not -path '*/__pycache__/*' | sort | xargs sha256sum; } > \$O/status.log
+ \$R $PY -I -B scripts/a_cert/a_cert_e3.py selftest --out \$O/selftest_e3.json > \$O/selftest_e3.log 2>&1; echo \"selftest rc \$? \$(date -u +%FT%TZ)\" >> \$O/status.log
+ \$R $PY -I -B scripts/a_cert/a_cert_e3_mutants.py \$O/mut > \$O/mutants_e3.log 2>&1; echo \"mutants rc \$? \$(date -u +%FT%TZ)\" >> \$O/status.log
+ cp \$O/mut/mutants_result.json \$O/mutants_result_e3.json; echo \"DONE \$(date -u +%FT%TZ)\" >> \$O/status.log; tail -4 \$O/status.log; tail -1 \$O/mutants_e3.log" 2>&1 | grep -v -E '([0-9]{1,3}\.){3}[0-9]{1,3}'
+mkdir -p scripts/a_cert/host_checks_e3code_r2 && ssh -o BatchMode=yes $H 'cd /root/outputs_e3code_checks_r2 && tar cf - status.log selftest_e3.log selftest_e3.json mutants_e3.log mutants_result_e3.json' | tar xf - -C scripts/a_cert/host_checks_e3code_r2
+grep -lE '([0-9]{1,3}\.){3}[0-9]{1,3}' scripts/a_cert/host_checks_e3code_r2/*   # must print nothing
+```
+
+Acceptance:
+- `selftest rc 0` with 67 `ok`;
+- `mutants rc 0` with `64/64 killed`;
+- `script_sha256` and `source_sha256` inside the records equal the sha of a_cert_e3.py in `SHA256SUMS_E3CODE`;
+- every line of the r2 `status.log` equals the laptop file (`sha256sum -c` from the tree paths).
+
+After that, append the five r2 record lines to `SHA256SUMS_E3CODE`. Everything runs CPU only, niced; never on a host GPU job's paths; no data, label, key, assignment or Open Images file in the tree.
+
+---
+
+## Round 2b (the round-2 host run failed acceptance; self-test fix only)
+
+### R2b.1 What failed
+
+The host records are in `host_checks_e3code_r2/` (h1, 2026-11-12T18:48Z, a_cert_e3.py `1fc818aa…`). They are the record of a failed run and stay as they are.
+- Self-test: rc 0, 67/67 ok.
+- Mutants: rc 1, 62/64 killed, 2 CRASH, 0 survived.
+
+### R2b.2 Diagnosis
+
+The evidence comes from the infra probe OPS-1113n (not a record). It ran on h1 in `/root/a_e3r2b_diag`, with numpy 2.5.4 and the failing `1fc818aa` source. It applied each crashed mutant and called `_selftest_checks` directly, so the traceback printed. Both raising frames are self-test lines; neither is in `score_e3_core` or `e2_rows`.
+
+- **`E2_02_certified_set_recomputed` (a round-1 mutant).**
+  - The mutant recomputes `cref` with `A.certify`. At w0 the mini world has no CERTIFIED pair, so `e2_rows` returns `Vc_minus_Vn_ci95 = None`, by design (`... if ce and ot else None`, l.258).
+  - The named check `E2_certified_set_from_freeze` (l.628) fails cleanly first; 22 checks were recorded.
+  - The new round-2 check `E2_interval_value_by_hand` (l.651) then passes that None to `np.allclose`. numpy raises `TypeError: unsupported operand type(s) for -: 'NoneType' and 'float'` in `isclose`.
+  - The selftest wrapper records this as `no_exception (TypeError…)`, and the runner counts any `no_exception` entry as a crash.
+  - Round 1 killed this mutant cleanly because l.651 did not exist then. The cause is the added check, not the numpy version: any numpy raises on `None - float`.
+- **`R2_N1b_kappa_text_dropped` (a round-2 mutant).**
+  - The mutant deletes the `"kappa"` key from the result.
+  - The named check itself (l.679) subscripted `res["kappa"]`, which raised `KeyError: 'kappa'`. 27 checks had been recorded and none had failed, so the named check never recorded a failure.
+
+### R2b.3 Change (a_cert_e3.py only, three lines inside `_selftest_checks`, line count unchanged)
+
+```
+-    ck["E2_interval_value_by_hand"] = np.allclose(rt["E2"]["cross"]["Vc_minus_Vn_ci95"], np.percentile(
+-        dd, [2.5, 97.5]), rtol=0, atol=1e-12) and np.allclose(np.percentile(dd, [2.5, 97.5]), [-1 / 3, 2 / 3])
++    ck["E2_interval_value_by_hand"] = (ci := rt["E2"]["cross"]["Vc_minus_Vn_ci95"]) is not None and np.allclose(ci,
++        np.percentile(dd, [2.5, 97.5]), rtol=0, atol=1e-12) and np.allclose(np.percentile(dd, [2.5, 97.5]), [-1 / 3, 2 / 3])
+-    ck["N1_disclosures_and_kappa_in_result"] = res["disclosures"] == DISCLOSE and res["kappa"] == KAPPA
++    ck["N1_disclosures_and_kappa_in_result"] = res.get("disclosures") == DISCLOSE and res.get("kappa") == KAPPA
+```
+
+- A None interval now fails `E2_interval_value_by_hand` cleanly, and the self-test goes on to the later checks.
+- A missing key now fails `N1_disclosures_and_kappa_in_result`, its named check.
+- On the unmutated source both checks have the same value as before: the interval is not None there, and both keys are present.
+
+`a_cert_e3_mutants.py` is unchanged (`9582998e…`). Its definitions were right; the crashes came from the self-test.
+
+### R2b.4 What did not change (laptop, no interpreter run of the self-test or the runner)
+
+- `head -n 545 a_cert_e3.py | sha256sum` is still `a06bd11eca5df9b2dff883c605e5bcb20d7d1fbf138e530b83d4d8c1f176be8d`, as in R2.3. Every FREEZE_E3-feeding function, `e3_freeze` and `e3_score` are byte-identical to 669251e.
+- The `def main` block to end of file hashes to `42c30e8a382911e9…`, both old and new.
+- `A_CERT_E3_R1_R2.diff` is regenerated with the R2 command (`git diff 669251e -- scripts/a_cert/a_cert_e3.py scripts/a_cert/a_cert_e3_mutants.py`). It is still 70 added, 0 removed, in 4 hunks. The R2.1 line references still hold (l.651, l.679; the file is 894 lines).
+- Mutant targets: all 65 patterns of the 64 mutants occur exactly once in the new a_cert_e3.py.
+  - Five patterns are multi-line, so `grep -c -F` cannot count them. They were counted with `str.count` on the file text: the module was loaded with `runpy`, and the runner was not called.
+  - The host runner's `BAD_TARGET` line is the authoritative count.
+- The source was compiled with `py_compile`: once into the git-ignored `scripts/a_cert/__pycache__/a_cert_e3.cpython-312.pyc` (harmless, left in place), then into a scratch `.pyc`.
+
+### R2b.5 Expected counts
+
+- Self-test: **67** checks, all ok (rc 0).
+- Mutants: **64/64 killed** (rc 0). In particular:
+  - `E2_02` is killed by `E2_certified_set_from_freeze`; `E2_interval_value_by_hand` also fails, with no `no_exception` entry. `E2_grid_secondary_by_hand` fails too, as it should: a recomputed `cref` ignores that check's w = 0.1 edit of the frozen set.
+  - `R2_N1b` is killed by `N1_disclosures_and_kappa_in_result`.
+
+### R2b.6 Host recipe (h1, new tree; `/root/a_e3r2` stays as the failed run's record)
+
+- Each launch is gated: `ssh -o BatchMode=yes h1 'test -e /root/CPU_WINDOW_OPEN && echo open' 2>/dev/null` must print `open` immediately before it.
+- Every job runs as `env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=2 nice -n 19 ionice -c3 taskset -c 16-31`, in tmux session `a_e3r2b`.
+- Layout: `/root/a_e3r2b/{tree,venv,out}`. The venv and the runner's scratch (`out/mut`) sit outside the tree, so `status.log` hashes code only.
+- The tree holds the 43 code-only paths of the round-1 `status.log`, with the two `a_cert_e3*.py` at the shas in `SHA256SUMS_E3CODE`. Nothing from `data/results/`, no label, key, assignment or Open Images file.
+
+```
+cd /mnt/d/vsps_image_captioning
+F=$(sed -n 's/^[0-9a-f]\{64\}  \.\///p' scripts/a_cert/host_checks_e3code/status.log)   # 43 paths
+tar cf - $F | ssh -o BatchMode=yes h1 'test -e /root/a_e3r2b && exit 1; mkdir -p /root/a_e3r2b/tree && tar xf - -C /root/a_e3r2b/tree' 2>&1 | grep -v -E '([0-9]{1,3}\.){3}[0-9]{1,3}'
+ssh -o BatchMode=yes h1 'cat > /root/a_e3r2b/run_r2b.sh' < run_r2b.sh 2>/dev/null       # script below
+# venv (window checked first)
+ssh -o BatchMode=yes h1 'test -e /root/CPU_WINDOW_OPEN || exit 1; D=/root/a_e3r2b; R="env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=2 nice -n 19 ionice -c3 taskset -c 16-31";
+ tmux new -d -s a_e3r2b "$R python3.12 -m venv $D/venv && $R $D/venv/bin/pip install -q numpy==2.5.4 && $D/venv/bin/pip freeze --all > $D/venv_freeze.txt; tmux wait-for -S a_e3r2b_done"; tmux wait-for a_e3r2b_done; cat $D/venv_freeze.txt' 2>/dev/null
+# run (window checked again)
+ssh -o BatchMode=yes h1 'test -e /root/CPU_WINDOW_OPEN || exit 1; tmux new -d -s a_e3r2b "bash /root/a_e3r2b/run_r2b.sh; tmux wait-for -S a_e3r2b_done"; tmux wait-for a_e3r2b_done; tail -4 /root/a_e3r2b/out/status.log; tail -1 /root/a_e3r2b/out/mutants_e3.log' 2>/dev/null
+# pull, mode a-w, digest both sides: cd <folder> && find . -type f | sort | xargs sha256sum | sha256sum
+mkdir -p scripts/a_cert/host_checks_e3code_r2b && ssh -o BatchMode=yes h1 'cd /root/a_e3r2b/out && tar cf - status.log selftest_e3.log selftest_e3.json mutants_e3.log mutants_result_e3.json venv_freeze.txt SHA256SUMS' 2>/dev/null | tar xf - -C scripts/a_cert/host_checks_e3code_r2b
+chmod a-w scripts/a_cert/host_checks_e3code_r2b/*; grep -lE '([0-9]{1,3}\.){3}[0-9]{1,3}' scripts/a_cert/host_checks_e3code_r2b/*   # must print nothing
+```
+
+`run_r2b.sh` (sha256 `defd1945…`, verbatim; kept on the host as `/root/a_e3r2b/run_r2b.sh`):
+
+```
+#!/bin/bash
+# Round-2b host records (CPU only). Layout: /root/a_e3r2b/{tree,venv,out}; scratch out/mut sits outside the tree.
+D=/root/a_e3r2b; T=$D/tree; O=$D/out; PY=$D/venv/bin/python
+R="env CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=2 nice -n 19 ionice -c3 taskset -c 16-31"
+mkdir -p "$O"
+cd "$T" || exit 1
+{ echo "start $(date -u +%FT%TZ) tree $T (code only) python $($PY -V 2>&1)"; find . -type f -not -path '*/__pycache__/*' | sort | xargs sha256sum; } > "$O/status.log"
+$R "$PY" -I -B scripts/a_cert/a_cert_e3.py selftest --out "$O/selftest_e3.json" > "$O/selftest_e3.log" 2>&1
+echo "selftest rc $? $(date -u +%FT%TZ)" >> "$O/status.log"
+$R "$PY" -I -B scripts/a_cert/a_cert_e3_mutants.py "$O/mut" > "$O/mutants_e3.log" 2>&1
+echo "mutants rc $? $(date -u +%FT%TZ)" >> "$O/status.log"
+cp "$O/mut/mutants_result.json" "$O/mutants_result_e3.json"
+cp "$D/venv_freeze.txt" "$O/venv_freeze.txt"
+echo "DONE $(date -u +%FT%TZ)" >> "$O/status.log"
+cd "$O" && sha256sum status.log selftest_e3.log selftest_e3.json mutants_e3.log mutants_result_e3.json venv_freeze.txt > SHA256SUMS
+```
+
+Acceptance is the same as R2.4, with the new shas:
+- `selftest rc 0` with 67 `ok`;
+- `mutants rc 0` with `64/64 killed`;
+- `script_sha256` / `source_sha256` equal the a_cert_e3.py line in `SHA256SUMS_E3CODE`;
+- every tree line of the r2b `status.log` equals the laptop file (`sha256sum -c`).
+
+Only after acceptance are the seven r2b record lines appended to `SHA256SUMS_E3CODE`.

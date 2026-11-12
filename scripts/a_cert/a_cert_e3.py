@@ -634,6 +634,49 @@ def _selftest_checks(ck: dict) -> None:
         near(e3[D]["w_hat"], 0.6) and near(e3[S]["w_hat"], 0.5) and res["E3"]["n_covered"] == 2
     ck["E3_covered_uses_x_hi_and_freeze_budget"] = rt["E3"]["systems"][D]["covered"] is False and \
         rt["E3"]["systems"][S]["covered"] is True and rt["E3"]["n_covered"] == 1
+    # ---- round 2 (CC-366 B1): E2 interval value, E2 grid secondary, E3 covered_by_w, guards l.302 and l.342
+    ro2 = np.random.default_rng(20261111)  # the H2a stream written out: row 0 = ones, then 2000 multinomial rows
+    Wr = np.array([np.ones(2)] + [np.bincount(ro2.integers(0, 2, 2), minlength=2) for _ in range(2000)], float)[1:]
+    pi = {"q": ([1, 1], [1, 1], [0, 0]), "r": ([1, 0], [2, 1], [0, 0]), D: ([3, 1], [4, 3], [1, 0]),
+          S: ([3, 1], [3, 2], [0, 0])}  # per image (i, j) by hand: pm + hy, pm + am + hy + hn, rem
+
+    def ends(s, Wm):
+        a, b, c = (Wm @ np.array(x, float) for x in pi[s])
+        with np.errstate(invalid="ignore", divide="ignore"):
+            return a / b, a / (b + c), (a + c) / (b + c)
+
+    conf = lambda hi_, lo_, Wm: np.all([x - y > 0 for x, y in zip(ends(hi_, Wm), ends(lo_, Wm))], axis=0)  # noqa: E731
+    Wj = Wr * np.array([0.0, 1.0])  # pairs with r are scored on image j only (O3)
+    dd = conf("q", S, Wr) - np.mean([conf("q", D, Wr), conf("r", D, Wj), conf("r", S, Wj)], 0)
+    ck["E2_interval_value_by_hand"] = (ci := rt["E2"]["cross"]["Vc_minus_Vn_ci95"]) is not None and np.allclose(ci,
+        np.percentile(dd, [2.5, 97.5]), rtol=0, atol=1e-12) and np.allclose(np.percentile(dd, [2.5, 97.5]), [-1 / 3, 2 / 3])
+    tg = json.loads(json.dumps(fz, default=float))
+    tg["pairs"][3]["cref"]["0.1"]["verdict"] = "CERTIFIED"  # (r,S), not confirmed, certified at w = 0.1 only
+    tg["budgets"][D]["beta"]["0.3"] = 1.5  # floor 1 < x_hi(D) = 2
+    rg = score_e3_core(w, tg, k0, a0, k1, a1)
+    ck["E2_grid_secondary_by_hand"] = rg["E2"]["cross"]["grid_secondary"]["0.1"] == {
+        "n_cert": 1, "n_other": 3, "n_excluded": 0, "n_cert_unconfirmed": 1, "V_c": 0.0, "V_n": 2 / 3} and \
+        rg["E2"]["cross"]["grid_secondary"]["0.3"]["n_cert"] == 0 and rg["E2"]["cross"]["w0"]["V_n"] == 0.5
+    ck["E3_covered_by_w_by_hand"] = rg["E3"]["systems"][D]["covered_by_w"] == {
+        "0.1": True, "0.2": True, "0.3": False, "0.5": True} and \
+        set(rg["E3"]["systems"][S]["covered_by_w"].values()) == {True}
+
+    def faults(fn) -> bool:  # True only for a Fault; another exception is a failed check, not a crash
+        try:
+            fn()
+            return False
+        except Fault:
+            return True
+        except Exception:  # noqa: BLE001
+            return False
+
+    tn = json.loads(json.dumps(fz, default=float))
+    tn["pairs"][2]["n_images"] = 2
+    ck["guard_image_set_differs_from_freeze_is_a_fault"] = faults(lambda: score_e3_core(w, tn, k0, a0, k1, a1))
+    ko = {**k1, _q("topup1|", 1, "i", "a"): {"image": "i", "class": "a", "part": 1, "role": "old_repeat"}}
+    ck["guard_old_repeat_not_a_base_target_is_a_fault"] = faults(lambda: score_e3_core(w, fz, k0, a0, ko, a1))
+    # ---- round 2, CC-366 N1 (separate; the judge may refuse it): result-level disclosures and kappa text
+    ck["N1_disclosures_and_kappa_in_result"] = res.get("disclosures") == DISCLOSE and res.get("kappa") == KAPPA
     e4 = res["E4"]
     ck["E4_by_hand_on_N_u_prime"] = (e4["phi1"], e4["phi2"], e4["f0_hat"], e4["X"], e4["X_hi"], e4["D"], e4["D_hi"],
                                      e4["N_u_prime"]) == (1.0, 1.0, 0.25, 1.0, 2.0, 0.75, 1.75, 4) and \
@@ -699,6 +742,9 @@ def _selftest_checks(ck: dict) -> None:
     (tmp / "BUILD_TOPUP1.json").write_text(json.dumps(rec), encoding="utf-8")
     (tmp / "BUILD_bad.json").write_text(json.dumps({**rec, "counts": {"new_systems": W["se"][:3]}}), encoding="utf-8")
     PF = {"freeze": str(tmp / "fz" / "FREEZE_E3.json"), "build": str(tmp / "BUILD_bad.json")}
+    bad_sha = {**rec, "inputs_sha256": {**rec["inputs_sha256"], str(paths[0]): "0" * 64}}  # CC-366 N1 (separate)
+    ck["N1_check_build_refuses_a_wrong_extra_sha"] = faults(lambda: check_build(W, bad_sha)) and \
+        not faults(lambda: check_build(W, rec))
 
     def quiet(fn):
         buf = io.StringIO()
@@ -791,6 +837,11 @@ def _selftest_checks(ck: dict) -> None:
     ck["x_refuses_base_copy_not_read_by_part1"] = run(
         [good[0], f"x OPS-a-cert-score: A_CERT_RESULT.json sha256 {A.sha(r1b)}"] + good[2:],
         P={**P, "part1": str(r1b)}) == nf
+    r1c = tmp / "A_CERT_RESULT_otherkey.json"  # round 2 (CC-366 B1): the part-1 run read another base key (l.454)
+    r1c.write_text(json.dumps({"provenance": {"labels_sha256": hs["labels"], "key_sha256": "0" * 64}}), encoding="utf-8")
+    ck["x_refuses_base_key_not_the_part1_key"] = run(
+        [good[0], f"x OPS-a-cert-score: A_CERT_RESULT.json sha256 {A.sha(r1c)}"] + good[2:],
+        P={**P, "part1": str(r1c)}) == nf
     ck["x_refuses_without_topup_session_end_line"] = run(good[:3]) == nf
     ck["x_refuses_unpinned_topup_key"] = run(good[:2] + good[3:]) == nf
     ck["x_refuses_label_sha_mismatch"] = run(good + ["x topup1 " + "1" * 64], a={"topup_labels_sha": "1" * 64}) == nf
