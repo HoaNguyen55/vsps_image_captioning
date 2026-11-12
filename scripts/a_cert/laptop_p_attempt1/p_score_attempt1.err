@@ -1,0 +1,31 @@
+Traceback (most recent call last):
+  File "/mnt/d/vsps_image_captioning/scripts/a_cert/a_cert_vp.py", line 1799, in <module>
+    sys.exit(main(sys.argv[1:]))
+             ^^^^^^^^^^^^^^^^^^
+  File "/mnt/d/vsps_image_captioning/scripts/a_cert/a_cert_vp.py", line 1771, in main
+    raise Fault(f"custody: {why} (argument)")
+a_cert.Fault: custody: OC1 raw logs (argument)
+Command exited with non-zero status 1
+	Command being timed: "/home/hoanguyen/.venvs/c_stage1_lists/bin/python -I -B scripts/a_cert/a_cert_vp.py p-score --logs /home/hoanguyen/a_cert_p_fetch --gt-cache .session_backup/2026-10-27/a1_precheck/raw/gt_cache.json --v-result data/results/a_cert_v/score/A_CERT_V_RESULT.json --selftest scripts/a_cert/host_checks_vp3/selftest_vp.json --mutants scripts/a_cert/host_checks_vp3/mutants_result_vp.json --allow-gt-cache"
+	User time (seconds): 0.27
+	System time (seconds): 0.06
+	Percent of CPU this job got: 51%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:00.67
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 50912
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 8997
+	Voluntary context switches: 570
+	Involuntary context switches: 1767
+	Swaps: 0
+	File system inputs: 915
+	File system outputs: 8
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

@@ -1,0 +1,3051 @@
+{
+ "schema": "vsps.a_cert_vp.p_result.v1",
+ "label": "POST HOC; truth already scored by the paper",
+ "methods_sentence": "POST HOC (released outputs the paper had already scored under the full gold)",
+ "matcher_gate": {
+  "label": "POST HOC; truth already scored by the paper",
+  "systems": {
+   "opera/instructblip__greedy": {
+    "recomputed": {
+     "P_cls": 71.02,
+     "M_cls": 3.075,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 71.02,
+     "M_cls": 3.075,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "opera/instructblip__beam5": {
+    "recomputed": {
+     "P_cls": 71.91,
+     "M_cls": 3.265,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 71.91,
+     "M_cls": 3.265,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "opera/instructblip__ours": {
+    "recomputed": {
+     "P_cls": 75.77,
+     "M_cls": 3.034,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 75.77,
+     "M_cls": 3.034,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "opera/llava-1.5__greedy": {
+    "recomputed": {
+     "P_cls": 76.34,
+     "M_cls": 3.226,
+     "n_img": 499
+    },
+    "stored": {
+     "P_cls": 76.34,
+     "M_cls": 3.226,
+     "n_img": 499
+    },
+    "equal": true
+   },
+   "opera/llava-1.5__beam5": {
+    "recomputed": {
+     "P_cls": 76.32,
+     "M_cls": 3.224,
+     "n_img": 499
+    },
+    "stored": {
+     "P_cls": 76.32,
+     "M_cls": 3.224,
+     "n_img": 499
+    },
+    "equal": true
+   },
+   "opera/llava-1.5__ours": {
+    "recomputed": {
+     "P_cls": 77.75,
+     "M_cls": 3.134,
+     "n_img": 499
+    },
+    "stored": {
+     "P_cls": 77.75,
+     "M_cls": 3.134,
+     "n_img": 499
+    },
+    "equal": true
+   },
+   "opera/minigpt4__greedy": {
+    "recomputed": {
+     "P_cls": 83.49,
+     "M_cls": 2.307,
+     "n_img": 499
+    },
+    "stored": {
+     "P_cls": 83.49,
+     "M_cls": 2.307,
+     "n_img": 499
+    },
+    "equal": true
+   },
+   "opera/minigpt4__beam5": {
+    "recomputed": {
+     "P_cls": 84.57,
+     "M_cls": 2.287,
+     "n_img": 499
+    },
+    "stored": {
+     "P_cls": 84.57,
+     "M_cls": 2.287,
+     "n_img": 499
+    },
+    "equal": true
+   },
+   "opera/minigpt4__ours": {
+    "recomputed": {
+     "P_cls": 86.32,
+     "M_cls": 2.182,
+     "n_img": 499
+    },
+    "stored": {
+     "P_cls": 86.32,
+     "M_cls": 2.182,
+     "n_img": 499
+    },
+    "equal": true
+   },
+   "opera/shikra__greedy": {
+    "recomputed": {
+     "P_cls": 72.81,
+     "M_cls": 3.295,
+     "n_img": 499
+    },
+    "stored": {
+     "P_cls": 72.81,
+     "M_cls": 3.295,
+     "n_img": 499
+    },
+    "equal": true
+   },
+   "opera/shikra__beam5": {
+    "recomputed": {
+     "P_cls": 76.06,
+     "M_cls": 3.164,
+     "n_img": 499
+    },
+    "stored": {
+     "P_cls": 76.06,
+     "M_cls": 3.164,
+     "n_img": 499
+    },
+    "equal": true
+   },
+   "opera/shikra__ours": {
+    "recomputed": {
+     "P_cls": 79.53,
+     "M_cls": 2.663,
+     "n_img": 499
+    },
+    "stored": {
+     "P_cls": 79.53,
+     "M_cls": 2.663,
+     "n_img": 499
+    },
+    "equal": true
+   },
+   "lim/r1-llava1.5-7b": {
+    "recomputed": {
+     "P_cls": 73.29,
+     "M_cls": 3.374,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 73.29,
+     "M_cls": 3.374,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r2-vcd": {
+    "recomputed": {
+     "P_cls": 73.8,
+     "M_cls": 3.354,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 73.8,
+     "M_cls": 3.354,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r3-opera": {
+    "recomputed": {
+     "P_cls": 74.78,
+     "M_cls": 3.285,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 74.78,
+     "M_cls": 3.285,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r4-opera-fast": {
+    "recomputed": {
+     "P_cls": 75.29,
+     "M_cls": 3.271,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 75.29,
+     "M_cls": 3.271,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r5-ours-inst": {
+    "recomputed": {
+     "P_cls": 81.2,
+     "M_cls": 2.933,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 81.2,
+     "M_cls": 2.933,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r7-llava1.5-13b": {
+    "recomputed": {
+     "P_cls": 76.54,
+     "M_cls": 3.238,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 76.54,
+     "M_cls": 3.238,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r8-ours-cap": {
+    "recomputed": {
+     "P_cls": 80.11,
+     "M_cls": 3.026,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 80.11,
+     "M_cls": 3.026,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r9-llava-7b": {
+    "recomputed": {
+     "P_cls": 79.29,
+     "M_cls": 2.614,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 79.29,
+     "M_cls": 2.614,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r10-ours-cap": {
+    "recomputed": {
+     "P_cls": 83.04,
+     "M_cls": 2.192,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 83.04,
+     "M_cls": 2.192,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r11-minigptv2": {
+    "recomputed": {
+     "P_cls": 78.45,
+     "M_cls": 2.691,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 78.45,
+     "M_cls": 2.691,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r12-ours-cap": {
+    "recomputed": {
+     "P_cls": 84.14,
+     "M_cls": 2.547,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 84.14,
+     "M_cls": 2.547,
+     "n_img": 495
+    },
+    "equal": true
+   },
+   "lim/r6-ours-cap": {
+    "recomputed": {
+     "P_cls": 81.2,
+     "M_cls": 2.933,
+     "n_img": 495
+    },
+    "stored": {
+     "P_cls": 81.2,
+     "M_cls": 2.933,
+     "n_img": 495
+    },
+    "equal": true
+   }
+  },
+  "passed": true
+ },
+ "KV1_w_star_only": false,
+ "P_a": {
+  "published": [
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/instructblip__ours vs opera/instructblip__greedy",
+    "k": 1,
+    "image_set": "F-A",
+    "n_images": 495,
+    "median_w_star": 0.5110694907116702,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its median break-down floor is w* = 0.5111; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/instructblip__ours vs opera/instructblip__greedy",
+    "k": 2,
+    "image_set": "F-A",
+    "n_images": 495,
+    "median_w_star": 0.3360057106348685,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 0.95
+    },
+    "sentence": "with 2 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its median break-down floor is w* = 0.3360; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/instructblip__ours vs opera/instructblip__greedy",
+    "k": 3,
+    "image_set": "F-A",
+    "n_images": 495,
+    "median_w_star": 0.26085081867873666,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 3 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its median break-down floor is w* = 0.2609; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/instructblip__ours vs opera/instructblip__greedy",
+    "k": 5,
+    "image_set": "F-A",
+    "n_images": 495,
+    "median_w_star": 0.16813000637292858,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 5 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its median break-down floor is w* = 0.1681"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/instructblip__ours vs opera/instructblip__beam5",
+    "k": 1,
+    "image_set": "F-A",
+    "n_images": 495,
+    "median_w_star": 0.3508617734238505,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its median break-down floor is w* = 0.3509; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/instructblip__ours vs opera/instructblip__beam5",
+    "k": 2,
+    "image_set": "F-A",
+    "n_images": 495,
+    "median_w_star": 0.21013823344418778,
+    "share_certified_w0": 0.35,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 7,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 7,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 1.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is certified in 7 and not certified in 13 of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its median break-down floor is w* = 0.2101; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/instructblip__ours vs opera/instructblip__beam5",
+    "k": 3,
+    "image_set": "F-A",
+    "n_images": 495,
+    "median_w_star": 0.16293755140993743,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 3 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its median break-down floor is w* = 0.1629"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/instructblip__ours vs opera/instructblip__beam5",
+    "k": 5,
+    "image_set": "F-A",
+    "n_images": 495,
+    "median_w_star": 0.10653897819481789,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 5 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its median break-down floor is w* = 0.1065"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__greedy",
+    "k": 1,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.6925546911861749,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.6926; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__greedy",
+    "k": 2,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.5178627061531879,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 0.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.5179; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__greedy",
+    "k": 3,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.4097351715527474,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 3 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.4097; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__greedy",
+    "k": 5,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.29529704383015626,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 5 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.2953; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__beam5",
+    "k": 1,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.6784408354582265,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.6784; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__beam5",
+    "k": 2,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.4772367492699996,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 0.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.4772; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__beam5",
+    "k": 3,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.33211468881601464,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 3 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.3321; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__beam5",
+    "k": 5,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.21309112269058822,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 5 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.2131; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/minigpt4__ours vs opera/minigpt4__greedy",
+    "k": 1,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.7718680543000809,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.7719; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/minigpt4__ours vs opera/minigpt4__greedy",
+    "k": 2,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.5027760468227789,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 0.35
+    },
+    "sentence": "with 2 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.5028; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/minigpt4__ours vs opera/minigpt4__greedy",
+    "k": 3,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.41843723211484035,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 3 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.4184; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/minigpt4__ours vs opera/minigpt4__greedy",
+    "k": 5,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.23199490611907092,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 5 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.2320; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/minigpt4__ours vs opera/minigpt4__beam5",
+    "k": 1,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.8534779742467218,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.8535; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/minigpt4__ours vs opera/minigpt4__beam5",
+    "k": 2,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.6786753480164334,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 0.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.6787; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/minigpt4__ours vs opera/minigpt4__beam5",
+    "k": 3,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.6220993854748085,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 3 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.6221; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/minigpt4__ours vs opera/minigpt4__beam5",
+    "k": 5,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.44609561809059234,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 5 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.4461; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/shikra__ours vs opera/shikra__greedy",
+    "k": 1,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.24449184093764048,
+    "share_certified_w0": 0.05,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 1,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 1,
+    "sentence": "with 1 references, the direction of this published comparison is certified in 1 and not certified in 19 of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.2445; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/shikra__ours vs opera/shikra__greedy",
+    "k": 2,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.13650056120567025,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 1.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.1365"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/shikra__ours vs opera/shikra__greedy",
+    "k": 3,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.10283510969346389,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 3 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.1028"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/shikra__ours vs opera/shikra__greedy",
+    "k": 5,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.07901640840806065,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 5 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.0790"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/shikra__ours vs opera/shikra__beam5",
+    "k": 1,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.33903190261684346,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.3390; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/shikra__ours vs opera/shikra__beam5",
+    "k": 2,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.2040454639871605,
+    "share_certified_w0": 0.5,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 10,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 10,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 1.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is certified in 10 and not certified in 10 of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.2040; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/shikra__ours vs opera/shikra__beam5",
+    "k": 3,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.14091950237238776,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 3 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.1409"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "opera/shikra__ours vs opera/shikra__beam5",
+    "k": 5,
+    "image_set": "F-B",
+    "n_images": 499,
+    "median_w_star": 0.10315310858469455,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 5 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its median break-down floor is w* = 0.1032"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r2-vcd vs lim/r1-llava1.5-7b",
+    "k": 1,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.877730071315542,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.8777; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r2-vcd vs lim/r1-llava1.5-7b",
+    "k": 2,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.7145517240809276,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 0.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.7146; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r2-vcd vs lim/r1-llava1.5-7b",
+    "k": 3,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.7384347437787798,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 3 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.7384; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r2-vcd vs lim/r1-llava1.5-7b",
+    "k": 5,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.5413116290178152,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 5 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.5413; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r3-opera vs lim/r1-llava1.5-7b",
+    "k": 1,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.6385687536727637,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.6386; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r3-opera vs lim/r1-llava1.5-7b",
+    "k": 2,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.504772679475136,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 0.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.5048; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r3-opera vs lim/r1-llava1.5-7b",
+    "k": 3,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.4927586674923077,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 3 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.4928; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r3-opera vs lim/r1-llava1.5-7b",
+    "k": 5,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.4431572024757042,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 5 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.4432; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r4-opera-fast vs lim/r1-llava1.5-7b",
+    "k": 1,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.7271907598813994,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.7272; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r4-opera-fast vs lim/r1-llava1.5-7b",
+    "k": 2,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.5806455813418141,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 0.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.5806; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r4-opera-fast vs lim/r1-llava1.5-7b",
+    "k": 3,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.5638692635791376,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 3 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.5639; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r4-opera-fast vs lim/r1-llava1.5-7b",
+    "k": 5,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.4102169197695329,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 5 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.4102; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r5-ours-inst vs lim/r1-llava1.5-7b",
+    "k": 1,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.23904732018988578,
+    "share_certified_w0": 0.15,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 3,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 3,
+    "sentence": "with 1 references, the direction of this published comparison is certified in 3 and not certified in 17 of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.2390; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r5-ours-inst vs lim/r1-llava1.5-7b",
+    "k": 2,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.1502963608233258,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 1.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.1503"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r5-ours-inst vs lim/r1-llava1.5-7b",
+    "k": 3,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.11197871207958086,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 3 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.1120"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r5-ours-inst vs lim/r1-llava1.5-7b",
+    "k": 5,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.0736769153419882,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 5 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.0737"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r8-ours-cap vs lim/r7-llava1.5-13b",
+    "k": 1,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.41958700822852557,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.4196; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r8-ours-cap vs lim/r7-llava1.5-13b",
+    "k": 2,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.24508020268799727,
+    "share_certified_w0": 0.1,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 2,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 2,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 1.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is certified in 2 and not certified in 18 of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.2451; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r8-ours-cap vs lim/r7-llava1.5-13b",
+    "k": 3,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.19071197113068772,
+    "share_certified_w0": 0.7,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 14,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 14,
+    "sentence": "with 3 references, the direction of this published comparison is certified in 14 and not certified in 6 of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.1907; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r8-ours-cap vs lim/r7-llava1.5-13b",
+    "k": 5,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.13746453586034474,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 5 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.1375"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r10-ours-cap vs lim/r9-llava-7b",
+    "k": 1,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.33836967850057403,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.3384; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r10-ours-cap vs lim/r9-llava-7b",
+    "k": 2,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.20294170642038806,
+    "share_certified_w0": 0.45,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 9,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 9,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 1.0
+    },
+    "sentence": "with 2 references, the direction of this published comparison is certified in 9 and not certified in 11 of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.2029; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r10-ours-cap vs lim/r9-llava-7b",
+    "k": 3,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.15036811120109633,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 3 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.1504"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r10-ours-cap vs lim/r9-llava-7b",
+    "k": 5,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.10110465872194616,
+    "share_certified_w0": 1.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 20,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 20,
+    "sentence": "with 5 references, the direction of this published comparison is certified in all 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.1011"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r12-ours-cap vs lim/r11-minigptv2",
+    "k": 1,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.5549172459640539,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 1 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.5549; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r12-ours-cap vs lim/r11-minigptv2",
+    "k": 2,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.4501955974111333,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "transported_margin_secondary": {
+     "tau_points": 2.343500536161087,
+     "share_of_draws_above": 0.95
+    },
+    "sentence": "with 2 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.4502; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r12-ours-cap vs lim/r11-minigptv2",
+    "k": 3,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.35181061526481056,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 3 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.3518; this does not say the published result is wrong"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "comparison": "lim/r12-ours-cap vs lim/r11-minigptv2",
+    "k": 5,
+    "image_set": "F-C",
+    "n_images": 495,
+    "median_w_star": 0.25605708846915515,
+    "share_certified_w0": 0.0,
+    "share_certified_w0_baseline_direction": 0.0,
+    "n_certified_method_direction": 0,
+    "n_certified_baseline_direction": 0,
+    "n_certified_equal_to_chair_gold_direction": 0,
+    "sentence": "with 5 references, the direction of this published comparison is not certified in any of the 20 reference draws against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its median break-down floor is w* = 0.2561; this does not say the published result is wrong"
+   }
+  ],
+  "aggregate": [
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "k": 1,
+    "text": "mean share of the 20 reference draws certified over the 15 published comparisons: 0.013 (k = 1, w0 = 0.2, image sets F-A, F-B and F-C as released, 495 to 499 images per comparison)"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "k": 2,
+    "text": "mean share of the 20 reference draws certified over the 15 published comparisons: 0.227 (k = 2, w0 = 0.2, image sets F-A, F-B and F-C as released, 495 to 499 images per comparison)"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "k": 3,
+    "text": "mean share of the 20 reference draws certified over the 15 published comparisons: 0.380 (k = 3, w0 = 0.2, image sets F-A, F-B and F-C as released, 495 to 499 images per comparison)"
+   },
+   {
+    "label": "POST HOC; truth already scored by the paper",
+    "k": 5,
+    "text": "mean share of the 20 reference draws certified over the 15 published comparisons: 0.467 (k = 5, w0 = 0.2, image sets F-A, F-B and F-C as released, 495 to 499 images per comparison)"
+   }
+  ],
+  "same_image_pairs": {
+   "label": "post hoc; truth already scored by the paper; other model families",
+   "n_pairs": 94,
+   "pairs": [
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/instructblip__greedy",
+     "B": "opera/instructblip__beam5",
+     "image_set": "F-A",
+     "n_images": 495,
+     "median_w_star_k1": 0.8685345624014735,
+     "median_w_star_k2": 0.7880292080664077,
+     "median_w_star_k3": 0.6875699386270717,
+     "median_w_star_k5": 0.6253872634870932,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/instructblip__greedy",
+     "B": "opera/instructblip__ours",
+     "image_set": "F-A",
+     "n_images": 495,
+     "median_w_star_k1": 0.5110694907116702,
+     "median_w_star_k2": 0.3360057106348685,
+     "median_w_star_k3": 0.26085081867873666,
+     "median_w_star_k5": 0.16813000637292858,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/instructblip__beam5",
+     "B": "opera/instructblip__ours",
+     "image_set": "F-A",
+     "n_images": 495,
+     "median_w_star_k1": 0.3508617734238505,
+     "median_w_star_k2": 0.21013823344418778,
+     "median_w_star_k3": 0.16293755140993743,
+     "median_w_star_k5": 0.10653897819481789,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.35,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__greedy",
+     "B": "opera/llava-1.5__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.9989860991551542,
+     "median_w_star_k2": "NI",
+     "median_w_star_k3": 0.9973654934312217,
+     "median_w_star_k5": 0.9956772915264591,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__greedy",
+     "B": "opera/llava-1.5__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.6925546911861749,
+     "median_w_star_k2": 0.5178627061531879,
+     "median_w_star_k3": 0.4097351715527474,
+     "median_w_star_k5": 0.29529704383015626,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__greedy",
+     "B": "opera/minigpt4__greedy",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.21038589243078604,
+     "median_w_star_k2": 0.1230417641857639,
+     "median_w_star_k3": 0.08881779461819678,
+     "median_w_star_k5": 0.06118776092026382,
+     "share_certified_w0_k1": 0.25,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__greedy",
+     "B": "opera/minigpt4__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.1967360744569451,
+     "median_w_star_k2": 0.11617105645686387,
+     "median_w_star_k3": 0.0807062938557938,
+     "median_w_star_k5": 0.05540219828113913,
+     "share_certified_w0_k1": 0.7,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__greedy",
+     "B": "opera/minigpt4__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.23055121894367037,
+     "median_w_star_k2": 0.1173260655561462,
+     "median_w_star_k3": 0.08047203389881177,
+     "median_w_star_k5": 0.05123296063579619,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__greedy",
+     "B": "opera/shikra__greedy",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.7440742475516162,
+     "median_w_star_k2": 0.550101333831437,
+     "median_w_star_k3": 0.4391120571591891,
+     "median_w_star_k5": 0.31258017780631775,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__greedy",
+     "B": "opera/shikra__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.7763674287209286,
+     "median_w_star_k2": 0.6675982665405609,
+     "median_w_star_k3": 0.5939960817503742,
+     "median_w_star_k5": 0.5470923433881253,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__greedy",
+     "B": "opera/shikra__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.31909902598476036,
+     "median_w_star_k2": 0.1913525194567628,
+     "median_w_star_k3": 0.13857192474417387,
+     "median_w_star_k5": 0.10210620722733438,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.7,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__beam5",
+     "B": "opera/llava-1.5__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.6784408354582265,
+     "median_w_star_k2": 0.4772367492699996,
+     "median_w_star_k3": 0.33211468881601464,
+     "median_w_star_k5": 0.21309112269058822,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__beam5",
+     "B": "opera/minigpt4__greedy",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.21881908480729909,
+     "median_w_star_k2": 0.12283057607105002,
+     "median_w_star_k3": 0.08598164481855927,
+     "median_w_star_k5": 0.05729086554143578,
+     "share_certified_w0_k1": 0.2,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__beam5",
+     "B": "opera/minigpt4__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.19651288150390608,
+     "median_w_star_k2": 0.11154328013490887,
+     "median_w_star_k3": 0.07721391584631057,
+     "median_w_star_k5": 0.050431970059871684,
+     "share_certified_w0_k1": 0.65,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__beam5",
+     "B": "opera/minigpt4__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.23430180145939813,
+     "median_w_star_k2": 0.11395918337069452,
+     "median_w_star_k3": 0.07584539125859738,
+     "median_w_star_k5": 0.04511037679109722,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__beam5",
+     "B": "opera/shikra__greedy",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.7140576919084414,
+     "median_w_star_k2": 0.5553859803332015,
+     "median_w_star_k3": 0.48539674667641514,
+     "median_w_star_k5": 0.39719191953167327,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__beam5",
+     "B": "opera/shikra__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.8247769025163725,
+     "median_w_star_k2": 0.6896139733181335,
+     "median_w_star_k3": 0.6087268831739203,
+     "median_w_star_k5": 0.4700131915891543,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__beam5",
+     "B": "opera/shikra__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.3225099389362149,
+     "median_w_star_k2": 0.1866534867947921,
+     "median_w_star_k3": 0.13379578869836406,
+     "median_w_star_k5": 0.09529964067135005,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.7,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__ours",
+     "B": "opera/minigpt4__greedy",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.23600528271449728,
+     "median_w_star_k2": 0.1346014330913312,
+     "median_w_star_k3": 0.10029028307227417,
+     "median_w_star_k5": 0.069966517820023,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__ours",
+     "B": "opera/minigpt4__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.21794630384678015,
+     "median_w_star_k2": 0.12017398294433948,
+     "median_w_star_k3": 0.08886931317299604,
+     "median_w_star_k5": 0.06135467962361873,
+     "share_certified_w0_k1": 0.15,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__ours",
+     "B": "opera/minigpt4__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.2512684823893942,
+     "median_w_star_k2": 0.1241681874790229,
+     "median_w_star_k3": 0.0900571078644134,
+     "median_w_star_k5": 0.05789923721645027,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__ours",
+     "B": "opera/shikra__greedy",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.5500192765793763,
+     "median_w_star_k2": 0.36664426958048724,
+     "median_w_star_k3": 0.2747795084048994,
+     "median_w_star_k5": 0.18815532621461895,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__ours",
+     "B": "opera/shikra__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.9686839631735347,
+     "median_w_star_k2": 0.9558815855588763,
+     "median_w_star_k3": 0.8442090286207385,
+     "median_w_star_k5": 0.6992024250691757,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/llava-1.5__ours",
+     "B": "opera/shikra__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.37465914688538765,
+     "median_w_star_k2": 0.22635786230070515,
+     "median_w_star_k3": 0.17055204553902142,
+     "median_w_star_k5": 0.13072747976519164,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.25,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__greedy",
+     "B": "opera/minigpt4__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.9109106791992672,
+     "median_w_star_k2": 0.7222979448642582,
+     "median_w_star_k3": 0.6299458694062197,
+     "median_w_star_k5": 0.4344376696310937,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__greedy",
+     "B": "opera/minigpt4__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.7718680543000809,
+     "median_w_star_k2": 0.5027760468227789,
+     "median_w_star_k3": 0.41843723211484035,
+     "median_w_star_k5": 0.23199490611907092,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__greedy",
+     "B": "opera/shikra__greedy",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.18594920992432162,
+     "median_w_star_k2": 0.10719287856575102,
+     "median_w_star_k3": 0.07765293026249856,
+     "median_w_star_k5": 0.05712840248178691,
+     "share_certified_w0_k1": 0.7,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__greedy",
+     "B": "opera/shikra__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.23187588628334924,
+     "median_w_star_k2": 0.12997999692056328,
+     "median_w_star_k3": 0.09377494479482992,
+     "median_w_star_k5": 0.06587779809441416,
+     "share_certified_w0_k1": 0.1,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__greedy",
+     "B": "opera/shikra__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.3994895542226732,
+     "median_w_star_k2": 0.25430583115806804,
+     "median_w_star_k3": 0.18232879193592813,
+     "median_w_star_k5": 0.1257965503400192,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.85,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__beam5",
+     "B": "opera/minigpt4__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.8534779742467218,
+     "median_w_star_k2": 0.6786753480164334,
+     "median_w_star_k3": 0.6220993854748085,
+     "median_w_star_k5": 0.44609561809059234,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__beam5",
+     "B": "opera/shikra__greedy",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.17847032543737443,
+     "median_w_star_k2": 0.09889192967582493,
+     "median_w_star_k3": 0.06823045286769047,
+     "median_w_star_k5": 0.04798957672435791,
+     "share_certified_w0_k1": 1.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__beam5",
+     "B": "opera/shikra__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.2079130850704387,
+     "median_w_star_k2": 0.11626760315708816,
+     "median_w_star_k3": 0.08338260615989565,
+     "median_w_star_k5": 0.055417265967465934,
+     "share_certified_w0_k1": 0.2,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__beam5",
+     "B": "opera/shikra__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.365644120383542,
+     "median_w_star_k2": 0.22072024396574125,
+     "median_w_star_k3": 0.1506415383038111,
+     "median_w_star_k5": 0.10291613328084348,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.1,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__ours",
+     "B": "opera/shikra__greedy",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.21341830035671588,
+     "median_w_star_k2": 0.10286137417331337,
+     "median_w_star_k3": 0.07151610212773084,
+     "median_w_star_k5": 0.04447902724333108,
+     "share_certified_w0_k1": 0.15,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__ours",
+     "B": "opera/shikra__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.2522784048812463,
+     "median_w_star_k2": 0.11935545263253153,
+     "median_w_star_k3": 0.08128459947230293,
+     "median_w_star_k5": 0.05076777989603579,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/minigpt4__ours",
+     "B": "opera/shikra__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.39275507670687515,
+     "median_w_star_k2": 0.21204013738082722,
+     "median_w_star_k3": 0.14536962932348252,
+     "median_w_star_k5": 0.08652274827565998,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.3,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/shikra__greedy",
+     "B": "opera/shikra__beam5",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.4742280872547998,
+     "median_w_star_k2": 0.35646393268741666,
+     "median_w_star_k3": 0.2802588709094561,
+     "median_w_star_k5": 0.20517940298095338,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/shikra__greedy",
+     "B": "opera/shikra__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.24449184093764048,
+     "median_w_star_k2": 0.13650056120567025,
+     "median_w_star_k3": 0.10283510969346389,
+     "median_w_star_k5": 0.07901640840806065,
+     "share_certified_w0_k1": 0.05,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "opera/shikra__beam5",
+     "B": "opera/shikra__ours",
+     "image_set": "F-B",
+     "n_images": 499,
+     "median_w_star_k1": 0.33903190261684346,
+     "median_w_star_k2": 0.2040454639871605,
+     "median_w_star_k3": 0.14091950237238776,
+     "median_w_star_k5": 0.10315310858469455,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.5,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r2-vcd",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.877730071315542,
+     "median_w_star_k2": 0.7145517240809276,
+     "median_w_star_k3": 0.7384347437787798,
+     "median_w_star_k5": 0.5413116290178152,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r3-opera",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.6385687536727637,
+     "median_w_star_k2": 0.504772679475136,
+     "median_w_star_k3": 0.4927586674923077,
+     "median_w_star_k5": 0.4431572024757042,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r4-opera-fast",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.7271907598813994,
+     "median_w_star_k2": 0.5806455813418141,
+     "median_w_star_k3": 0.5638692635791376,
+     "median_w_star_k5": 0.4102169197695329,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r5-ours-inst",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.23904732018988578,
+     "median_w_star_k2": 0.1502963608233258,
+     "median_w_star_k3": 0.11197871207958086,
+     "median_w_star_k5": 0.0736769153419882,
+     "share_certified_w0_k1": 0.15,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r7-llava1.5-13b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.5003925751652567,
+     "median_w_star_k2": 0.409411053478252,
+     "median_w_star_k3": 0.34840865267720067,
+     "median_w_star_k5": 0.2695274297837167,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r8-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.31466889314167196,
+     "median_w_star_k2": 0.20642316349735482,
+     "median_w_star_k3": 0.1596927774939686,
+     "median_w_star_k5": 0.11462489226739851,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.35,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r9-llava-7b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.32276634732214726,
+     "median_w_star_k2": 0.1852147586047649,
+     "median_w_star_k3": 0.12925865388335658,
+     "median_w_star_k5": 0.08795007917284967,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.85,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r10-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.2391517556775361,
+     "median_w_star_k2": 0.1323344245543704,
+     "median_w_star_k3": 0.09672857091110197,
+     "median_w_star_k5": 0.06354292449355126,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r11-minigptv2",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.2665130551662296,
+     "median_w_star_k2": 0.1686324083451181,
+     "median_w_star_k3": 0.12270714292442425,
+     "median_w_star_k5": 0.0857220656592399,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r1-llava1.5-7b",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.22572034332854674,
+     "median_w_star_k2": 0.14807913798745723,
+     "median_w_star_k3": 0.11181357926223426,
+     "median_w_star_k5": 0.07235818343330173,
+     "share_certified_w0_k1": 0.15,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r2-vcd",
+     "B": "lim/r3-opera",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.783265250842087,
+     "median_w_star_k2": 0.6662144067790359,
+     "median_w_star_k3": 0.6699917543251067,
+     "median_w_star_k5": 0.6352024232093245,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r2-vcd",
+     "B": "lim/r4-opera-fast",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.8431908563496545,
+     "median_w_star_k2": 0.7278726403736507,
+     "median_w_star_k3": 0.7226428260151297,
+     "median_w_star_k5": 0.5843901628339663,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r2-vcd",
+     "B": "lim/r5-ours-inst",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.2644826107001863,
+     "median_w_star_k2": 0.1616629912215285,
+     "median_w_star_k3": 0.12370608214754611,
+     "median_w_star_k5": 0.08069325535278767,
+     "share_certified_w0_k1": 0.1,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r2-vcd",
+     "B": "lim/r7-llava1.5-13b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.5833451436581089,
+     "median_w_star_k2": 0.45905188195314256,
+     "median_w_star_k3": 0.41769629085110505,
+     "median_w_star_k5": 0.332209727817215,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r2-vcd",
+     "B": "lim/r8-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.3514645697292871,
+     "median_w_star_k2": 0.22491146396519612,
+     "median_w_star_k3": 0.17161922337813298,
+     "median_w_star_k5": 0.12471882325969635,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.15,
+     "share_certified_w0_k3": 0.9,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r2-vcd",
+     "B": "lim/r9-llava-7b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.3328604308986105,
+     "median_w_star_k2": 0.19241087579121813,
+     "median_w_star_k3": 0.13411465750541535,
+     "median_w_star_k5": 0.09204934395290909,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.7,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r2-vcd",
+     "B": "lim/r10-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.2489636143716052,
+     "median_w_star_k2": 0.13498225665185598,
+     "median_w_star_k3": 0.09853166171442715,
+     "median_w_star_k5": 0.0651774228196591,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r2-vcd",
+     "B": "lim/r11-minigptv2",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.2884194772569463,
+     "median_w_star_k2": 0.1762304331534542,
+     "median_w_star_k3": 0.12518740830104796,
+     "median_w_star_k5": 0.08795578712318095,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r2-vcd",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.24029875643411647,
+     "median_w_star_k2": 0.14940492551820353,
+     "median_w_star_k3": 0.1123453169357963,
+     "median_w_star_k5": 0.07397399392072108,
+     "share_certified_w0_k1": 0.05,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r3-opera",
+     "B": "lim/r4-opera-fast",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.9988240315117873,
+     "median_w_star_k2": "NI",
+     "median_w_star_k3": "NI",
+     "median_w_star_k5": "NI",
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r3-opera",
+     "B": "lim/r5-ours-inst",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.28403345612389963,
+     "median_w_star_k2": 0.16539380897069347,
+     "median_w_star_k3": 0.1243890730617568,
+     "median_w_star_k5": 0.07766182480286805,
+     "share_certified_w0_k1": 0.05,
+     "share_certified_w0_k2": 0.9,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r3-opera",
+     "B": "lim/r7-llava1.5-13b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.814477141997777,
+     "median_w_star_k2": 0.733871379373595,
+     "median_w_star_k3": 0.6215047407923266,
+     "median_w_star_k5": 0.5247221854552627,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r3-opera",
+     "B": "lim/r8-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.4036506690871902,
+     "median_w_star_k2": 0.24982641176879408,
+     "median_w_star_k3": 0.18493467362225052,
+     "median_w_star_k5": 0.12721945722680544,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.05,
+     "share_certified_w0_k3": 0.8,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r3-opera",
+     "B": "lim/r9-llava-7b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.3570519339111633,
+     "median_w_star_k2": 0.2084511247491464,
+     "median_w_star_k3": 0.13993546755192798,
+     "median_w_star_k5": 0.09096030424535276,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.35,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r3-opera",
+     "B": "lim/r10-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.26394789251824835,
+     "median_w_star_k2": 0.1405993900974281,
+     "median_w_star_k3": 0.09856500554131344,
+     "median_w_star_k5": 0.06257691600359974,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r3-opera",
+     "B": "lim/r11-minigptv2",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.29891882995888586,
+     "median_w_star_k2": 0.18717365551833065,
+     "median_w_star_k3": 0.134409210071899,
+     "median_w_star_k5": 0.0909237984837964,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.65,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r3-opera",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.24155968266911804,
+     "median_w_star_k2": 0.15185469173919408,
+     "median_w_star_k3": 0.1114565541795455,
+     "median_w_star_k5": 0.07225133358035235,
+     "share_certified_w0_k1": 0.1,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r4-opera-fast",
+     "B": "lim/r5-ours-inst",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.2887078110883012,
+     "median_w_star_k2": 0.16848526324704285,
+     "median_w_star_k3": 0.11991913575492799,
+     "median_w_star_k5": 0.08641229129582642,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.95,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r4-opera-fast",
+     "B": "lim/r7-llava1.5-13b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.7945797639787198,
+     "median_w_star_k2": 0.6575787226548417,
+     "median_w_star_k3": 0.5770270669339224,
+     "median_w_star_k5": 0.5804398350855335,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r4-opera-fast",
+     "B": "lim/r8-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.3678904398102313,
+     "median_w_star_k2": 0.22854969150293614,
+     "median_w_star_k3": 0.17448670363798735,
+     "median_w_star_k5": 0.12912186450511215,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.15,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r4-opera-fast",
+     "B": "lim/r9-llava-7b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.35746923206513737,
+     "median_w_star_k2": 0.1916527892774902,
+     "median_w_star_k3": 0.1311229974599555,
+     "median_w_star_k5": 0.09300228323694316,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.65,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r4-opera-fast",
+     "B": "lim/r10-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.26115777661697936,
+     "median_w_star_k2": 0.13839938508206978,
+     "median_w_star_k3": 0.09661877357866612,
+     "median_w_star_k5": 0.06918027394544334,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r4-opera-fast",
+     "B": "lim/r11-minigptv2",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.29332440131623283,
+     "median_w_star_k2": 0.18573141556652262,
+     "median_w_star_k3": 0.13572805223194878,
+     "median_w_star_k5": 0.09905438157077877,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.8,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r4-opera-fast",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.2394070131694898,
+     "median_w_star_k2": 0.15311264537414535,
+     "median_w_star_k3": 0.11422319910069925,
+     "median_w_star_k5": 0.08173893696721642,
+     "share_certified_w0_k1": 0.1,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r5-ours-inst",
+     "B": "lim/r7-llava1.5-13b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.3382193016884848,
+     "median_w_star_k2": 0.19526555991498748,
+     "median_w_star_k3": 0.15509379026852546,
+     "median_w_star_k5": 0.10289069173205644,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.6,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r5-ours-inst",
+     "B": "lim/r8-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.6799751162254251,
+     "median_w_star_k2": 0.5039705863855777,
+     "median_w_star_k3": 0.4038178264359013,
+     "median_w_star_k5": 0.30224861000198877,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r5-ours-inst",
+     "B": "lim/r9-llava-7b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.6225620764875786,
+     "median_w_star_k2": 0.41131767915049566,
+     "median_w_star_k3": 0.31077069242391736,
+     "median_w_star_k5": 0.24367246908694506,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r5-ours-inst",
+     "B": "lim/r10-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.35258879636880014,
+     "median_w_star_k2": 0.20765990049019456,
+     "median_w_star_k3": 0.14706796970171854,
+     "median_w_star_k5": 0.10071045567002149,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.35,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r5-ours-inst",
+     "B": "lim/r11-minigptv2",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.5898951794817111,
+     "median_w_star_k2": 0.4272150539713911,
+     "median_w_star_k3": 0.3346582784820347,
+     "median_w_star_k5": 0.2624728265022858,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r5-ours-inst",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.4123351312987505,
+     "median_w_star_k2": 0.2832886160556227,
+     "median_w_star_k3": 0.21659247851045801,
+     "median_w_star_k5": 0.15495565694011745,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.3,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r7-llava1.5-13b",
+     "B": "lim/r8-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.41958700822852557,
+     "median_w_star_k2": 0.24508020268799727,
+     "median_w_star_k3": 0.19071197113068772,
+     "median_w_star_k5": 0.13746453586034474,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.1,
+     "share_certified_w0_k3": 0.7,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r7-llava1.5-13b",
+     "B": "lim/r9-llava-7b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.3802348695467226,
+     "median_w_star_k2": 0.20734993273625146,
+     "median_w_star_k3": 0.14509801229694855,
+     "median_w_star_k5": 0.09891342822648583,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.25,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r7-llava1.5-13b",
+     "B": "lim/r10-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.26857850048597903,
+     "median_w_star_k2": 0.14289740485325458,
+     "median_w_star_k3": 0.10138731809705495,
+     "median_w_star_k5": 0.06968192974384872,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r7-llava1.5-13b",
+     "B": "lim/r11-minigptv2",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.3365581592828966,
+     "median_w_star_k2": 0.20520232689101248,
+     "median_w_star_k3": 0.14352317577507348,
+     "median_w_star_k5": 0.09917271431256085,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.4,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r7-llava1.5-13b",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.25741234335163604,
+     "median_w_star_k2": 0.16710649691242724,
+     "median_w_star_k3": 0.1221206298614852,
+     "median_w_star_k5": 0.08096371636819093,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 1.0,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r8-ours-cap",
+     "B": "lim/r9-llava-7b",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.5256195110674016,
+     "median_w_star_k2": 0.32012440692726524,
+     "median_w_star_k3": 0.23233211758965627,
+     "median_w_star_k5": 0.16287909492757174,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.05,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r8-ours-cap",
+     "B": "lim/r10-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.3291989272977226,
+     "median_w_star_k2": 0.179720733134076,
+     "median_w_star_k3": 0.12799103487888353,
+     "median_w_star_k5": 0.08802358380332592,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.9,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r8-ours-cap",
+     "B": "lim/r11-minigptv2",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.47096182827884325,
+     "median_w_star_k2": 0.31194628131249913,
+     "median_w_star_k3": 0.2364973419923335,
+     "median_w_star_k5": 0.1675907478816807,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.05,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r8-ours-cap",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.3559566252273507,
+     "median_w_star_k2": 0.22561332367919384,
+     "median_w_star_k3": 0.16737381971813736,
+     "median_w_star_k5": 0.11408252533897756,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.05,
+     "share_certified_w0_k3": 0.95,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r9-llava-7b",
+     "B": "lim/r10-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.33836967850057403,
+     "median_w_star_k2": 0.20294170642038806,
+     "median_w_star_k3": 0.15036811120109633,
+     "median_w_star_k5": 0.10110465872194616,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.45,
+     "share_certified_w0_k3": 1.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r9-llava-7b",
+     "B": "lim/r11-minigptv2",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.9750192111986689,
+     "median_w_star_k2": 0.9651243857950904,
+     "median_w_star_k3": 0.9704322818438522,
+     "median_w_star_k5": 0.9369119015876204,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r9-llava-7b",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.6552008845163508,
+     "median_w_star_k2": 0.5331585179022514,
+     "median_w_star_k3": 0.43317890655575314,
+     "median_w_star_k5": 0.3307845126297325,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r10-ours-cap",
+     "B": "lim/r11-minigptv2",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.457029227187857,
+     "median_w_star_k2": 0.273897637521848,
+     "median_w_star_k3": 0.20132117326697335,
+     "median_w_star_k5": 0.1384733674684539,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.5,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r10-ours-cap",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.5763255351828411,
+     "median_w_star_k2": 0.3721693831444717,
+     "median_w_star_k3": 0.27379389703646295,
+     "median_w_star_k5": 0.19574454812612385,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 1.0
+    },
+    {
+     "label": "post hoc; truth already scored by the paper; other model families",
+     "A": "lim/r11-minigptv2",
+     "B": "lim/r12-ours-cap",
+     "image_set": "F-C",
+     "n_images": 495,
+     "median_w_star_k1": 0.5549172459640539,
+     "median_w_star_k2": 0.4501955974111333,
+     "median_w_star_k3": 0.35181061526481056,
+     "median_w_star_k5": 0.25605708846915515,
+     "share_certified_w0_k1": 0.0,
+     "share_certified_w0_k2": 0.0,
+     "share_certified_w0_k3": 0.0,
+     "share_certified_w0_k5": 0.0
+    }
+   ],
+   "V1_V3": {
+    "label": "post hoc; truth already scored by the paper; other model families",
+    "k": 2,
+    "w0": 0.2,
+    "V1": "PASS",
+    "V3": "DISCRIMINATING",
+    "n_cert": 851,
+    "n_pairs_cert": 57,
+    "n_other": 1029,
+    "n_excluded": 0,
+    "evaluable": true,
+    "n_cert_direction_fails": 0,
+    "e_c": 0.0,
+    "e_n": 0.18075801749271136,
+    "pairs_failing_in_most_certified_draws": [],
+    "e_n_minus_e_c_ci95": [
+     0.08582772177584316,
+     0.2832426835373902
+    ],
+    "n_replicates_empty_class": 0
+   },
+   "V2": {
+    "label": "post hoc; truth already scored by the paper; other model families",
+    "k": 2,
+    "w0": 0.2,
+    "V2": {
+     "label": "FLOOR REFUTED",
+     "n_cells": 3760,
+     "n_over_budget": 1323,
+     "share": 0.35186170212765955
+    }
+   }
+  }
+ },
+ "P_b": [
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "opera/instructblip__ours vs opera/instructblip__greedy",
+   "image_set": "F-A",
+   "n_images": 495,
+   "I0_by_cell": {
+    "A": 72,
+    "B": 53,
+    "S": 169
+   },
+   "w_star_cap_I0": 0.06634613565169276,
+   "w_star_cap_min_U_floor_beta": 0.11509968580957501,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "A",
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its break-down floor is w* = 0.0663; floor refuted by the instance labels in cell(s) A, B, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "opera/instructblip__ours vs opera/instructblip__beam5",
+   "image_set": "F-A",
+   "n_images": 495,
+   "I0_by_cell": {
+    "A": 41,
+    "B": 63,
+    "S": 200
+   },
+   "w_star_cap_I0": 0.05597068966552616,
+   "w_star_cap_min_U_floor_beta": 0.11344162160344423,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "A",
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-A (495 images); its break-down floor is w* = 0.0560; floor refuted by the instance labels in cell(s) A, B, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__greedy",
+   "image_set": "F-B",
+   "n_images": 499,
+   "I0_by_cell": {
+    "A": 44,
+    "B": 55,
+    "S": 266
+   },
+   "w_star_cap_I0": 0.09459700733702629,
+   "w_star_cap_min_U_floor_beta": 0.3195907121757045,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "NOT CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "A",
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its break-down floor is w* = 0.0946; floor refuted by the instance labels in cell(s) A, B, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "opera/llava-1.5__ours vs opera/llava-1.5__beam5",
+   "image_set": "F-B",
+   "n_images": 499,
+   "I0_by_cell": {
+    "A": 29,
+    "B": 42,
+    "S": 281
+   },
+   "w_star_cap_I0": 0.0890434144968167,
+   "w_star_cap_min_U_floor_beta": 0.26045428871829057,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "NOT CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its break-down floor is w* = 0.0890; floor refuted by the instance labels in cell(s) B, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "opera/minigpt4__ours vs opera/minigpt4__greedy",
+   "image_set": "F-B",
+   "n_images": 499,
+   "I0_by_cell": {
+    "A": 31,
+    "B": 34,
+    "S": 80
+   },
+   "w_star_cap_I0": 0.1026064674388617,
+   "w_star_cap_min_U_floor_beta": 0.2109044855367392,
+   "verdict_w0_cap_I0": "CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "NOT CERTIFIED",
+   "certified_direction": "opera/minigpt4__ours",
+   "cells_with_floor_refuted_at_w0": [],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is certified against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its break-down floor is w* = 0.1026"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "opera/minigpt4__ours vs opera/minigpt4__beam5",
+   "image_set": "F-B",
+   "n_images": 499,
+   "I0_by_cell": {
+    "A": 16,
+    "B": 16,
+    "S": 95
+   },
+   "w_star_cap_I0": 0.19321923739183694,
+   "w_star_cap_min_U_floor_beta": 0.3439361493512988,
+   "verdict_w0_cap_I0": "CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "NOT CERTIFIED",
+   "certified_direction": "opera/minigpt4__ours",
+   "cells_with_floor_refuted_at_w0": [],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is certified against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its break-down floor is w* = 0.1932"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "opera/shikra__ours vs opera/shikra__greedy",
+   "image_set": "F-B",
+   "n_images": 499,
+   "I0_by_cell": {
+    "A": 27,
+    "B": 131,
+    "S": 165
+   },
+   "w_star_cap_I0": 0.0556731133274734,
+   "w_star_cap_min_U_floor_beta": 0.12011719930544495,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its break-down floor is w* = 0.0557; floor refuted by the instance labels in cell(s) B, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "opera/shikra__ours vs opera/shikra__beam5",
+   "image_set": "F-B",
+   "n_images": 499,
+   "I0_by_cell": {
+    "A": 27,
+    "B": 131,
+    "S": 165
+   },
+   "w_star_cap_I0": 0.0685256441477686,
+   "w_star_cap_min_U_floor_beta": 0.22376363050844517,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "NOT CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-B (499 images); its break-down floor is w* = 0.0685; floor refuted by the instance labels in cell(s) B, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "lim/r2-vcd vs lim/r1-llava1.5-7b",
+   "image_set": "F-C",
+   "n_images": 495,
+   "I0_by_cell": {
+    "A": 7,
+    "B": 7,
+    "S": 326
+   },
+   "w_star_cap_I0": "NI (floor refuted by the instance labels)",
+   "w_star_cap_min_U_floor_beta": 0.41436117547936735,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "NOT CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its break-down floor is w* = NI (floor refuted by the instance labels); floor refuted by the instance labels in cell(s) S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "lim/r3-opera vs lim/r1-llava1.5-7b",
+   "image_set": "F-C",
+   "n_images": 495,
+   "I0_by_cell": {
+    "A": 25,
+    "B": 25,
+    "S": 308
+   },
+   "w_star_cap_I0": "NI (floor refuted by the instance labels)",
+   "w_star_cap_min_U_floor_beta": 0.29529704383015626,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "NOT CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "A",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its break-down floor is w* = NI (floor refuted by the instance labels); floor refuted by the instance labels in cell(s) A, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "lim/r4-opera-fast vs lim/r1-llava1.5-7b",
+   "image_set": "F-C",
+   "n_images": 495,
+   "I0_by_cell": {
+    "A": 55,
+    "B": 49,
+    "S": 284
+   },
+   "w_star_cap_I0": 0.08563195726647971,
+   "w_star_cap_min_U_floor_beta": 0.21181727192550898,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "NOT CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "A",
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its break-down floor is w* = 0.0856; floor refuted by the instance labels in cell(s) A, B, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "lim/r5-ours-inst vs lim/r1-llava1.5-7b",
+   "image_set": "F-C",
+   "n_images": 495,
+   "I0_by_cell": {
+    "A": 36,
+    "B": 66,
+    "S": 267
+   },
+   "w_star_cap_I0": 0.04311668975744397,
+   "w_star_cap_min_U_floor_beta": 0.06473911270964892,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "A",
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its break-down floor is w* = 0.0431; floor refuted by the instance labels in cell(s) A, B, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "lim/r8-ours-cap vs lim/r7-llava1.5-13b",
+   "image_set": "F-C",
+   "n_images": 495,
+   "I0_by_cell": {
+    "A": 36,
+    "B": 55,
+    "S": 288
+   },
+   "w_star_cap_I0": 0.06487922032829373,
+   "w_star_cap_min_U_floor_beta": 0.12785163854435083,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "A",
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its break-down floor is w* = 0.0649; floor refuted by the instance labels in cell(s) A, B, S at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "lim/r10-ours-cap vs lim/r9-llava-7b",
+   "image_set": "F-C",
+   "n_images": 495,
+   "I0_by_cell": {
+    "A": 24,
+    "B": 105,
+    "S": 95
+   },
+   "w_star_cap_I0": 0.07034212049003692,
+   "w_star_cap_min_U_floor_beta": 0.2166367925805971,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "NOT CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "B"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its break-down floor is w* = 0.0703; floor refuted by the instance labels in cell(s) B at w0; this does not say the published result is wrong"
+  },
+  {
+   "label": "POST HOC; truth already scored by the paper; secondary (P-b: the CHAIR gold itself, k = 5; no truth exists)",
+   "comparison": "lim/r12-ours-cap vs lim/r11-minigptv2",
+   "image_set": "F-C",
+   "n_images": 495,
+   "I0_by_cell": {
+    "A": 93,
+    "B": 70,
+    "S": 129
+   },
+   "w_star_cap_I0": 0.07419106536451726,
+   "w_star_cap_min_U_floor_beta": 0.14173851788323372,
+   "verdict_w0_cap_I0": "NOT CERTIFIED",
+   "verdict_w0_cap_min_U_floor_beta": "CERTIFIED",
+   "certified_direction": null,
+   "cells_with_floor_refuted_at_w0": [
+    "A",
+    "B",
+    "S"
+   ],
+   "sentence": "with 5 references and the instance labels, the direction of this published comparison is not certified against gold incompleteness at floor w0 = 0.2 on image set F-C (495 images); its break-down floor is w* = 0.0742; floor refuted by the instance labels in cell(s) A, B, S at w0; this does not say the published result is wrong"
+  }
+ ],
+ "provenance": {
+  "v_result_sha256": "2675cdcec0e2285158e4154ea384421ae50b3c0b7b3f3133983b77ad5040c410",
+  "script_sha256": "17507200acd540fb967c1e11883800b29e138c6509bf04417df5e9c462229ff1",
+  "kv0": {
+   "selftest_sha256": "b6a66abacdc4ec6a7f3ba1e85231f081d02f81b76a31ac67ad47e3b812c9f0f9",
+   "mutants_sha256": "92ab5b4cc69d4c886c686eb4e2149065ef0518d5b72d1971e04864fb9aa23437",
+   "a_cert_sha256": "2e872588baf6109fad20111aecd25e2504fd0096f9033a95649027a2eed46cf4"
+  },
+  "utc": "2026-11-12T10:44:41Z",
+  "release_sha256": {
+   "OPERA/instructblip/beam5.jsonl": "7f09f1a3a91b26bac7f88b7f02f786761a2bc4643165bf825ebbdc1e51907dad",
+   "OPERA/instructblip/greedy.jsonl": "b8885a2c69c974232076f0cbc4f7693358d5a340e126540f8a38a38ed7c79588",
+   "OPERA/instructblip/ours.jsonl": "b4b4287c1e8c01f83f6cfae1268edbf71d7201821637587c0b66b9d653dc064a",
+   "OPERA/llava-1.5/beam5.jsonl": "6e652d8790d4b7f1a1f6ae4c8c68c5b52199e6cf5510906407fa25bad623eb04",
+   "OPERA/llava-1.5/greedy.jsonl": "3d70bbefa95f1894a09e97e83f2a40531be39b12db50f4e2386c5bfc99842fdd",
+   "OPERA/llava-1.5/ours.jsonl": "63742c6032d28cfd0396afc24003900cef1aaf270ffef3f5ba3e10aaa7cde318",
+   "OPERA/minigpt4/beam5.jsonl": "f3ef58532c356c7dd0368dedeced593b8f671dce2ba94d4151791eeb132a131d",
+   "OPERA/minigpt4/greedy.jsonl": "e76ff7a33dc60da4e514623b44e7abe7dc7de269afd8400e23ef19eaa962dd00",
+   "OPERA/minigpt4/ours.jsonl": "320417cb9525ddab6a2cf3d9e3460e200c0a7271f5e1352dd9275b0be6698c6d",
+   "OPERA/shikra/beam5.jsonl": "1aa4f9558ed3597ffc2a1c4a7c633591e52cec8cf328c39a8e0e041d9fd57e11",
+   "OPERA/shikra/greedy.jsonl": "3de98f2257a7b06808702cbc843a66e1fbebcb21a4e06adacaabab1ae0ddf1b8",
+   "OPERA/shikra/ours.jsonl": "b21311809ac4bde55bc9a3bf73dbc7605b2d8c0ef5b603be304ab347ae01eb5d",
+   "less-is-more/Table1-results/r1-llava1.5-7b.jsonl": "f8fdd4dc8f594bd628722d8213e4248c27f6f1d3da73e8a77dbd63ae30adc275",
+   "less-is-more/Table1-results/r2-vcd.jsonl": "f7d6884333ae670b6cb215ca4a2b0ac30e4e9b28c23060b2d8fba1b234a9dbde",
+   "less-is-more/Table1-results/r3-opera.jsonl": "12879791b69bd66caf0296f7fc06abb622c5228d439490192587455bf1809220",
+   "less-is-more/Table1-results/r4-opera-fast.jsonl": "43394cfa07843bd2bd907d7bfc3d9654ed068777f692d9653dbd91e6dcf09276",
+   "less-is-more/Table1-results/r5-ours-inst.jsonl": "7a7e2775127249dc8f778cf518f5c5112e6aeb7e3badb90f1afdff8097eab72a",
+   "less-is-more/Table1-results/r6-ours-cap.jsonl": "7a7e2775127249dc8f778cf518f5c5112e6aeb7e3badb90f1afdff8097eab72a",
+   "less-is-more/Table1-results/r7-llava1.5-13b.jsonl": "ef618e6064333cac7fe88d1390c7c6bb180bc09dfb94fd33f7a2fc1793bcb988",
+   "less-is-more/Table1-results/r8-ours-cap.jsonl": "7690b61050ddc63cd62d69d85d7ce4eb98ce04bafee8f891c61d897befcb5d22",
+   "less-is-more/Table1-results/r9-llava-7b.jsonl": "c10d3d09d7c697a62c52a49af82c37cab725f503d5d98d62d857ace008fd644f",
+   "less-is-more/Table1-results/r10-ours-cap.jsonl": "49bfc8a481a11e43dd05db560c20c4e10bdde5863bf9301a4fd1bc57f5b5bb22",
+   "less-is-more/Table1-results/r11-minigptv2.jsonl": "3faa3ffc86a9241d62345033e393b02fbaa8ef8767f25fa57eaf08f20124702e",
+   "less-is-more/Table1-results/r12-ours-cap.jsonl": "c7c205bd4cb53335cdb47becadf98dc416f51bac31a895584aaecc9eae9d2c48",
+   "less-is-more/chair-500.jsonl": "d4002b206d2439d96c5955172551ee1129e179f17898f7248b8743ee98dbe32a"
+  }
+ }
+}
