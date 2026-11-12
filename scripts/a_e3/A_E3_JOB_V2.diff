@@ -1,0 +1,119 @@
+--- a_e3_job.sh (v1.1, b11a9f6b, 26574ef)
++++ a_e3_job.sh (v2, addendum)
+@@ -1,13 +1,17 @@
+ #!/usr/bin/env bash
+ # A-E3, Paper A other-family development arm on XM3600-600: decode only, batch size 1, no scoring.
+ # Run document: manuscript/prereg/2026-11-12_a_e3_arm/A_E3_ARM_RUN_DOC_v1_1.md (gates G1-G6, stop rules S1-S8).
+-# Every decode is one call of scripts/lb/decode_hf_vlm.py, which reads all settings from A_E3_REG_v1.json.
++# Every decode is one call of scripts/lb/decode_hf_vlm.py, which reads all settings from A_E3_REG_v1.json
++# (parts 7a, 7b) or A_E3_REG_v2.json (parts 7c, 7d).
+ # This file only orders the runs and applies the gates: Vietnamese/English share on the 50-image runs (G4),
+-# batch-1 determinism D1 (G5), and the 10 GPU-h hard cap over parts 7a + 7b (G6).
++# batch-1 determinism D1 (G5), and the 10 GPU-h hard cap over parts 7a + 7b + 7c + 7d (G6).
+ #   tmux, from the A-E3 tree on hc2 (then 7b, same line, after the 7a pull):
+ #   A_E3_PART=7a A_E3_SNAP_aya_vision_8b=/root/ncs-data/models/c_t1_aya_vision_8b bash scripts/a_e3/a_e3_job.sh
+ # Optional: A_E3_SNAP_<model>=<dir> reuses a pinned snapshot elsewhere on the host (pins are still checked).
+ # Aya is C's copy (CC-349 W7): a literal path, never $NCS_DATA/models/..., because NCS_DATA here is /dev/shm/a_e3.
++# Addendum (A_E3_ADDENDUM_MODELS_v1.md): parts 7c (Vietnamese) and 7d (English) decode the second batch with
++# A_E3_REG_v2.json in the second environment /root/venv-lb26; same $O, ledger, cap, gates and stop rules:
++#   A_E3_PART=7c A_E3_SNAP_gemma3_4b_lb26=/root/a_e3/models/gemma3_4b bash scripts/a_e3/a_e3_job.sh
+ set -euo pipefail
+ cd "$(dirname "$0")/../.."
+ PRE=manuscript/prereg/2026-11-12_a_e3_arm
+@@ -16,13 +20,15 @@
+ PY=${A_E3_PY:-/root/venv-lb/bin/python}
+ O=${A_E3_OUT:-/root/a_e3/out}
+ MOD=${A_E3_MODELS:-/root/a_e3/models}
+-PART=${A_E3_PART:?set A_E3_PART to 7a or 7b}
+-CAP_S=36000     # PI-1105k: 10 GPU-h for 7a and 7b together, load time included (S5)
+-NEED=4          # plan step 7: four models
++PART=${A_E3_PART:?set A_E3_PART to 7a, 7b, 7c or 7d}
++CAP_S=36000     # PI-1105k: 10 GPU-h for all parts together, load time included (S5)
++NEED=4          # plan step 7: four models (7c: four minus those in passed_7a.txt)
+ case $PART in
+   7a) MODES="short detailed"; LG=vi ;;
+   7b) MODES="short_en detailed_en"; LG=en ;;
+-  *) echo "A_E3_PART must be 7a or 7b"; exit 2 ;;
++  7c) MODES="short detailed"; LG=vi; REG=$PRE/A_E3_REG_v2.json; PY=${A_E3_PY:-/root/venv-lb26/bin/python} ;;
++  7d) MODES="short_en detailed_en"; LG=en; REG=$PRE/A_E3_REG_v2.json; PY=${A_E3_PY:-/root/venv-lb26/bin/python} ;;
++  *) echo "A_E3_PART must be 7a, 7b, 7c or 7d"; exit 2 ;;
+ esac
+ export NCS_DATA=${A_E3_DATA:-/dev/shm/a_e3} HF_HUB_OFFLINE=1
+ export VSPS_MACHINE_ID=${VSPS_MACHINE_ID:-$(cat /root/.vsps_machine_id)}
+@@ -35,20 +41,22 @@
+ stop() { log "JOB STOP: $*"; exit 1; }
+ [ ! -e "$O/RUNNING" ] || stop "another A-E3 job holds $O/RUNNING"
+ [ ! -e /root/outputs/c_attr_b1/RUNNING ] || stop "Paper C block 1b is RUNNING on this host (CC-346 R5)"
+-[ -z "$(nvidia-smi --query-compute-apps=pid --format=csv,noheader)" ] || stop "GPU busy"
++g=$(nvidia-smi --query-compute-apps=pid --format=csv,noheader) || stop "nvidia-smi failed (CC-351 N2')"
++[ -z "$g" ] || stop "GPU busy"
+ echo "$PART $$" > "$O/RUNNING"
+ trap 'rm -f "$O/RUNNING"' EXIT
+ git diff --quiet HEAD || stop "tree differs from HEAD"
+-sha256sum -c --quiet "$PRE/SHA256SUMS_E3" || stop "pins (SHA256SUMS_E3)"
++sha256sum -c --quiet "$PRE/SHA256SUMS_E3_V2" || stop "pins (SHA256SUMS_E3_V2)"
+ # Custody gate (CC-349 W4): no data/ in the A-E3 tree; the datasets dir holds only xm600, with exactly 600 regular
+-# *.jpg files and nothing else (find -type f excludes links).
++# *.jpg files and nothing else (find -type f excludes links). Addendum: no top-up question copy (topup1/) either.
+ [ ! -e data ] || stop "data/ exists in the A-E3 tree (W4)"
++[ ! -e "$PRE/topup1" ] || stop "$PRE/topup1 exists in the A-E3 tree (custody)"
+ [ "$(ls -A "$NCS_DATA/datasets")" = xm600 ] || stop "$NCS_DATA/datasets holds more or less than xm600 (W4)"
+ D=$NCS_DATA/datasets/xm600
+ [ "$(find "$D" -mindepth 1 | wc -l)" = 600 ] && [ "$(find "$D" -mindepth 1 -maxdepth 1 -type f -name '*.jpg' | wc -l)" = 600 ] \
+   || stop "$D is not exactly 600 regular *.jpg files (W4)"
+ $PY -I -B $DEC --selftest --prereg $REG > "$O/selftest_$PART.log" 2>&1 || stop "decoder selftest"
+-log "START $PART head $(git rev-parse HEAD) freeze $VSPS_VENV_FREEZE_SHA256 job $VSPS_JOB_SHA256"
++log "START $PART head $(git rev-parse HEAD) reg ${REG##*/} freeze $VSPS_VENV_FREEZE_SHA256 job $VSPS_JOB_SHA256"
+ 
+ spent() { awk -F'\t' '{s += $3} END {print s + 0}' "$L"; }
+ secs() { awk -F'\t' -v r="$1" '$1 == r {s += $3} END {print s + 0}' "$L"; }  # all attempts of a run
+@@ -59,11 +67,11 @@
+   for a in 1 2; do
+     rem=$((CAP_S - $(spent))); [ "$rem" -gt 0 ] || return 2; t=$(( $3 < rem ? $3 : rem ))
+     t0=$(date +%s); rc=0
+-    timeout "$t" $PY -I -B $DEC --prereg $REG --run-id "$1" --snapshot "$2" --out-dir "$O" >> "$O/decode.log" 2>&1 || rc=$?
++    timeout -k 120 "$t" $PY -I -B $DEC --prereg $REG --run-id "$1" --snapshot "$2" --out-dir "$O" >> "$O/decode.log" 2>&1 || rc=$?
+     printf '%s\t%s\t%s\t%s\n' "$1" "$PART" $(( $(date +%s) - t0 )) "$rc" >> "$L"
+     log "RUN $1 attempt $a rc $rc"
+     [ "$rc" = 0 ] && return 0
+-    [ "$rc" = 124 ] && [ "$t" -lt "$3" ] && return 2
++    { [ "$rc" = 124 ] || [ "$rc" = 137 ]; } && [ "$t" -lt "$3" ] && return 2  # 137: killed by -k (CC-351 N10)
+   done
+   return 1
+ }
+@@ -92,17 +100,29 @@
+ EOF
+ }
+ 
+-if [ "$PART" = 7a ]; then
+-  ORDER=$($PY -I -B $DEC --prereg $REG --models)
+-else
+-  [ -s "$O/passed_7a.txt" ] || stop "no model passed 7a"
+-  ORDER=$(cat "$O/passed_7a.txt")
++case $PART in
++  7a) ORDER=$($PY -I -B $DEC --prereg $REG --models) ;;
++  7b) [ -s "$O/passed_7a.txt" ] || stop "no model passed 7a"
++      ORDER=$(cat "$O/passed_7a.txt") ;;
++  7c) grep -q ' JOB DONE 7a ' "$O/job.log" || stop "7a has not finished (no JOB DONE 7a in job.log)"
++      NEED=$((NEED - $(wc -l < "$O/passed_7a.txt")))
++      ORDER=$($PY -I -B -c 'import json, sys; r = json.load(open(sys.argv[1]))
++print("\n".join(k for k in r["models"] if r["model_env"][k] == "lb26"))' $REG) || stop "7c order" ;;
++  7d) [ -s "$O/passed_7c.txt" ] || stop "no model passed 7c"
++      ORDER=$(cat "$O/passed_7c.txt") ;;
++esac
++if [ "$REG" != "$PRE/A_E3_REG_v1.json" ]; then  # addendum: each model runs only in its registered environment (S1)
++  for M in $ORDER; do
++    want=$($PY -I -B -c 'import json, sys; r = json.load(open(sys.argv[1]))
++print(r["venvs"][r["model_env"][sys.argv[2]]]["freeze_sha256"])' $REG "$M") || stop "$M: no registered environment"
++    [ "$want" = "$VSPS_VENV_FREEZE_SHA256" ] || stop "$M: venv freeze $VSPS_VENV_FREEZE_SHA256 is not its registered $want"
++  done
+ fi
+ : > "$O/passed_$PART.txt"
+ passed=0
+ d1f=0  # D1 failures in this part (CC-349 W2, S4)
+ for M in $ORDER; do
+-  if [ "$PART" = 7a ] && [ "$passed" -ge "$NEED" ]; then break; fi
++  if { [ "$PART" = 7a ] || [ "$PART" = 7c ]; } && [ "$passed" -ge "$NEED" ]; then break; fi
+   var=A_E3_SNAP_$M
+   W=${!var:-$MOD/$M}
+   if ! $PY -I -B $DEC --prereg $REG --check-snapshot "$M" --snapshot "$W" >> "$O/pins.log" 2>&1; then

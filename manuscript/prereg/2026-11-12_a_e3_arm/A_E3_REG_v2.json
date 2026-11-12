@@ -1,0 +1,1149 @@
+{
+ "prereg_id": "2026-11-12_a_e3_arm",
+ "schema": "vsps.lb_prereg.v1",
+ "title": "A-E3, Paper A other-family development arm on XM3600-600: decoding only, batch size 1; v2 adds the second batch (parts 7c/7d, second environment)",
+ "statement": "v2 = A_E3_REG_v1.json (sha256 26c677a2b4d50a02900b0526c98a85bd2dc326e76d5fd30995ae83f9ff0120b2) plus the addendum A_E3_ADDENDUM_MODELS_v1.md (sha256 27edf3c91ec8d65c42209fb7d3f323115dc9cfe6f18c7e1da67298d8a16db210). Differences from v1, nothing else: title, statement, built_utc, git_head_at_build; venv replaced by the venv-lb26 block (the decoder enforces it for every v2 run); new keys venvs (lb = v1 venv + its registered freeze, lb26) and model_env; models + gemma3_4b_lb26 (the v1 gemma3_4b block, byte-identical, under a new key so that its run ids are new) and granite_vision33_2b (Hub tree API pins at its revision); runs + 16; sources + 3 entries. The v1 statement follows. DEVELOPMENT / A-E3: new decodes on previously analysed images; decoding only, no hypothesis. Run document manuscript/prereg/2026-11-12_a_e3_arm/A_E3_ARM_RUN_DOC_v1_1.md (sha256 1df371cc5e3b0f84bea001e664e2aa2f4742fc4fd86921ee150f76f4f14dfb81; CC-349; v1 f0a375fb kept as a record). Model blocks copied from manuscript/prereg/2026-10-30_c_t1/c_t1_registry.json (aya_vision_8b), manuscript/prereg/2026-10-29_l1b/l1b_registry.json (gemma3_4b) and manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json (idefics3_8b, llava15_7b, smolvlm2_2b), unchanged except batch_size 1 (inherited role texts kept as in the source). The four null gemma3_4b LFS hashes (both safetensors, tokenizer.json, tokenizer.model) are the Hub's lfs.oid (sha256) from one authenticated POST https://huggingface.co/api/models/google/gemma-3-4b-it/paths-info/093f9f388b31de276ce2de164bdc2081324b9767 with those four paths at 2026-11-12T03:01:37Z (CC-349 W6), identical to the authenticated tree API (GET .../tree/093f9f388b31de276ce2de164bdc2081324b9767?recursive=1) at 2026-11-12T02:14Z; never by hashing fetched files; token read from its file inside the request header, never printed or stored. llava16_mistral_7b pins come from the unauthenticated tree API at its revision. Every pin of every model was compared with the tree API at its revision on the same date and is equal. Order of models = queue order (s2.1).",
+ "built_utc": "2026-11-12T09:24:34Z",
+ "git_head_at_build": "4605e74cb2ccbf73fa6fe001fec37eed83271160",
+ "venv": {
+  "packages": {
+   "torch": "2.6.0+cu124",
+   "torchvision": "0.21.0+cu124",
+   "transformers": "4.57.6",
+   "accelerate": "1.15.0"
+  },
+  "add_only": {
+   "num2words": "0.5.14"
+  },
+  "python": "/root/venv-lb26/bin/python",
+  "freeze_sha256": "396626b4c55db0deb5bd6b7738a4b0740ca0ae5d3ba5b77b5950de375580ed51",
+  "how": "/usr/bin/python3.10 -m venv /root/venv-lb26 (pip 23.0.1); pip install --no-cache-dir --no-deps -r rest.txt, where rest.txt = the venv-lb pip freeze minus the torch, torchvision, triton and nvidia-* lines (every other package == venv-lb); then pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu124 torch==2.6.0+cu124 torchvision==0.21.0+cu124 (adds only what torch pins: triton 3.2.0, nvidia-* cu12 wheels); pip check clean. Only torch, torchvision, triton and the nvidia-* CUDA wheels differ from venv-lb (addendum s3)",
+  "why": "transformers 4.57.6 masking_utils raises 'Using or_mask_function or and_mask_function arguments require torch>=2.6' for Gemma 3 under torch 2.5.1 (7a MODEL FAIL of gemma3_4b, twice)",
+  "source": "built on hc2 2026-11-12 (A_E3_ADDENDUM_BUILD_NOTE.md); freeze sha in the job's own form"
+ },
+ "venvs": {
+  "lb": {
+   "packages": {
+    "torch": "2.5.1+cu121",
+    "torchvision": "0.20.1+cu121",
+    "transformers": "4.57.6",
+    "accelerate": "1.15.0"
+   },
+   "add_only": {
+    "num2words": "0.5.14"
+   },
+   "how": "a copy of the G2-B venv (/root/venv-qwen3vl) as /root/venv-lb plus num2words 0.5.14, which SmolVLMProcessor needs; nothing else in the venv changes (PD-17 J5); package versions and the pip freeze sha256 are recorded in EVENTS before queueing",
+   "source": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json :: model.venv.packages; hf_api/pypi_num2words.json :: info.version",
+   "python": "/root/venv-lb/bin/python",
+   "freeze_sha256": "685ffe2a0100ce2489cccd77313d366fb1dce4455871a9d82f65aa139fa85784",
+   "freeze_source": "CC-351 LC1 (H_LB, the setup_gpu.sh pin; c_attr_job.sh l.67), job form `$PY -m pip freeze | sha256sum`"
+  },
+  "lb26": {
+   "packages": {
+    "torch": "2.6.0+cu124",
+    "torchvision": "0.21.0+cu124",
+    "transformers": "4.57.6",
+    "accelerate": "1.15.0"
+   },
+   "add_only": {
+    "num2words": "0.5.14"
+   },
+   "python": "/root/venv-lb26/bin/python",
+   "freeze_sha256": "396626b4c55db0deb5bd6b7738a4b0740ca0ae5d3ba5b77b5950de375580ed51",
+   "how": "/usr/bin/python3.10 -m venv /root/venv-lb26 (pip 23.0.1); pip install --no-cache-dir --no-deps -r rest.txt, where rest.txt = the venv-lb pip freeze minus the torch, torchvision, triton and nvidia-* lines (every other package == venv-lb); then pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cu124 torch==2.6.0+cu124 torchvision==0.21.0+cu124 (adds only what torch pins: triton 3.2.0, nvidia-* cu12 wheels); pip check clean. Only torch, torchvision, triton and the nvidia-* CUDA wheels differ from venv-lb (addendum s3)",
+   "why": "transformers 4.57.6 masking_utils raises 'Using or_mask_function or and_mask_function arguments require torch>=2.6' for Gemma 3 under torch 2.5.1 (7a MODEL FAIL of gemma3_4b, twice)",
+   "source": "built on hc2 2026-11-12 (A_E3_ADDENDUM_BUILD_NOTE.md); freeze sha in the job's own form"
+  }
+ },
+ "model_env": {
+  "aya_vision_8b": "lb",
+  "gemma3_4b": "lb",
+  "idefics3_8b": "lb",
+  "llava15_7b": "lb",
+  "smolvlm2_2b": "lb",
+  "llava16_mistral_7b": "lb",
+  "gemma3_4b_lb26": "lb26",
+  "granite_vision33_2b": "lb26"
+ },
+ "decoder": {
+  "path": "scripts/lb/decode_hf_vlm.py",
+  "sha256": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
+  "rule": "unchanged since A-N2 (its decoder.sha256); a run stops unless the decoder's own sha256 equals this pin"
+ },
+ "decode": {
+  "prompts": {
+   "short": {
+    "text_sha256": "8870589c4a32307cbbeb68e363490007682237c0b5a3a1ee7e21cb91fce93886"
+   },
+   "detailed": {
+    "text_sha256": "0addb5dd720e4f24ac912d6fede9cb718e4051bc6944a85d9e7a92b0abb7ed08"
+   },
+   "short_en": {
+    "text_sha256": "0cdbdf77fae4c04bdf4cd626a9eaf9adec5ef0411aac5d816f6c916a69604893"
+   },
+   "detailed_en": {
+    "text_sha256": "525a4e1bf5849e2c38e44cadceed724f66167ac95e621764c384865574913c4a"
+   }
+  },
+  "max_new_tokens": {
+   "short": 60,
+   "detailed": 160,
+   "short_en": 60,
+   "detailed_en": 160
+  },
+  "loader": "AutoProcessor.from_pretrained(snapshot, trust_remote_code=False, **processor_kwargs); tokenizer.padding_side='left'; AutoModelForImageTextToText.from_pretrained(snapshot, trust_remote_code=False, attn_implementation, device_map={'': 'cuda:0'}, dtype)",
+  "message": "[{'role': 'user', 'content': [{'type': 'image', 'image': PIL.Image.open(path).convert('RGB')}, {'type': 'text', 'text': PROMPTS[mode]}]}], one conversation per image; processor.apply_chat_template(batch, add_generation_prompt=True, tokenize=True, return_dict=True, return_tensors='pt', padding=True), cast to the model dtype",
+  "greedy": "model.generate(**inputs, max_new_tokens=n, do_sample=False, num_beams=1); every other setting from the snapshot's generation_config.json (recorded in each output)",
+  "text": "tokens up to and including the first EOS, decoded with skip_special_tokens=True, stripped; n_tokens and hit_max (no EOS within n) recorded per image",
+  "batching": "batch_size 1 for every model (the only setting chosen by this arm); parity_slice0 is empty at B = 1; D1 (G5) replaces it"
+ },
+ "models": {
+  "aya_vision_8b": {
+   "role": "third backbone, primary (non-Qwen LM: Command R7B; Vietnamese is one of its 23 listed languages)",
+   "hub_id": "CohereLabs/aya-vision-8b",
+   "revision": "d7601ac8fd3baf6f59c5fc9514c618ef0f24268f",
+   "licence": "cc-by-nc-4.0 (+ Cohere Labs acceptable-use policy); research, non-commercial",
+   "gated": "auto (HF click-to-accept)",
+   "lm_family": "cohere2 (Command R7B)",
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 1,
+   "processor_kwargs": {},
+   "image_input": "the snapshot's default tiling (disclosed); identical in every arm",
+   "transformers_min": "4.50 (AyaVisionForConditionalGeneration via AutoModelForImageTextToText; venv-lb has 4.57.6)",
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "ec34051f88a6506285ddc71b4ba884e9f0fd8bce"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "c9e9a42df738c71735f87217740f1319d1d625e0"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "b2af7da769d7f4683b0985d2584e18ffa6ae1df6"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "228d6ebb3b7dc645a50ce89fda9fdaed8fe853e1"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "42215345379cfd18557ccbe2c4273d04596e9de1"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "bc0c99ecbb4ef22cb7976680818bc302c72be599"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "cf33f2e5e3a66711d05c07c8047dcdb59005494e"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "7fff3b6e9069165a30ca99474b2a27f0b2d167db"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "9c512930122e19778049588afae30f92ef59d5dabdae9a4de295ce95353a0e2e"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "56b1ad53279adec4c4bbf438fd2de5463b7f8a506ba76cc1b05903a3136470ce"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "8e73ccc57f0cf5cee4cb4c8bfe5e24e79c51441988d822b6d4ccd6f836b4a303"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "23a828b046634d0f512b0f4dc7f0ccc94d76f4d5316113b047dbf194fdbe5105"
+    },
+    "tokenizer.json": {
+     "kind": "sha256",
+     "hash": "4e460757615246bc56832d97ee6d90a60cd58bf491b8c3fc1a1d72d437aab474"
+    }
+   }
+  },
+  "gemma3_4b": {
+   "role": "non-Qwen LM, primary (CC-165 r5). Run only when GATES G3_gemma is filled AND every hash below is set: the 4 null sha256 values (both safetensors, tokenizer.json, tokenizer.model) are hidden by the HF gate and are filled from the authenticated HF tree API at this revision in the same commit that fills G3_gemma (CC-168 W1); until then gemma is skipped, never fetched",
+   "hub_id": "google/gemma-3-4b-it",
+   "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+   "licence": "gemma (Gemma Terms of Use)",
+   "gated": "manual (HF click-to-accept on the account that already accepted the ViTextVQA gate; no agent account, no e-mail field)",
+   "lm_family": "gemma3",
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 1,
+   "processor_kwargs": {},
+   "image_input": "one 896 x 896 view, 256 image tokens (do_pan_and_scan off, the snapshot default; disclosed like InternVL's single tile)",
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "e17bde03d42feda32d1abfca6d3b598b9a020df7"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "719b0cd0d7a373a400b0c119ee0e051f41ea88d9"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "fcdc8a6cd637c7ae460065204e7fd0d8c00a38fc"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "37a4c871d263a349f50e4a313db3e72164950702"
+    },
+    "model-00001-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "eb5fd5e97ddd07b56778733e9653c07312529cb00980a318fc3e1c4e3b5a8f1f"
+    },
+    "model-00002-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "fdde0e5aa5ced0fa203b3d50f4ab78168b7e3a3e08c6349f5cc9326666e1bb13"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "4b95241f208f06d324d17c9675568ec58dafd9fb"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "b1e00fc184f61b698181821169c6374cd5813e5c"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "453c7966d4b5d0b4a317c585989f64c58c2a6bf0"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "1a6193244714d3d78be48666cb02cdbfac62ad86"
+    },
+    "tokenizer.json": {
+     "kind": "sha256",
+     "hash": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795"
+    },
+    "tokenizer.model": {
+     "kind": "sha256",
+     "hash": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "7bdd14f0eaec30c8d2c56bc9d543587676e19c0f"
+    }
+   }
+  },
+  "idefics3_8b": {
+   "hub_id": "HuggingFaceM4/Idefics3-8B-Llama3",
+   "revision": "fddb4ff79181e55a994674777e06cd5456ce3dc3",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 8462086384,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 1,
+   "processor_kwargs": {},
+   "files": {
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "00911fc317ce4e0c16d2047a51298f7bfcbef244"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "85d5cab0ae3aa514a23a550e63f2f9dbef7a56be"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "de0aafa3d30b6785a14a741114ee689c6918c5fe"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "ef19d72d25d0040a591043b47be6f46cc05d208eb3f9317581577e3723f5b1fc"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "8068f285e43b7278553738613a378718de214c2a43d019be1ba81586c0cd62b4"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "532b89a16785817830280bd198d93200fd1af082dedaa2b650c3c364716cb250"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "cda6d4ab485b2cbce9dfac23bc028757af9cd75fc715d1396085393ae9768204"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "3c6ef6a31793fb7593a3bd21042a83d87ea5f34c"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "1fbf22ae5a1007e24b06ffd88f1f710a7bba2dbf"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "ce4483dcd7fdb385039cd3262aa8e58a79767fcc"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "7d56ca39148be0911c7088aac61837758259e858"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "c21236688663320a9448dbfb7d36c3c7c4c2bcba"
+    }
+   },
+   "weights_gb_on_disk": 16.92,
+   "weights_gb_loaded": 16.92,
+   "chat_template_file": "chat_template.json",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": false,
+   "vietnamese_source": null,
+   "source": {
+    "info": "hf_api/HuggingFaceM4__Idefics3-8B-Llama3.info.json",
+    "info_sha256": "429c06cbf10728ab71be88d3533abe8242edde839ba6365a593327ba672befd1",
+    "tree": "hf_api/HuggingFaceM4__Idefics3-8B-Llama3.tree.json",
+    "tree_sha256": "61b33af5dfe4d7f351b52231f2d2cfa59d2c905fb8c47e00f931da68cf61795b"
+   }
+  },
+  "llava15_7b": {
+   "hub_id": "llava-hf/llava-1.5-7b-hf",
+   "revision": "b234b804b114d9e37bb655e11cbbb5f5e971b7a9",
+   "licence": "llama2",
+   "gated": false,
+   "params": 7063427072,
+   "checkpoint_dtype": [
+    "F16"
+   ],
+   "dtype": "float16",
+   "attn_implementation": "sdpa",
+   "batch_size": 1,
+   "processor_kwargs": {},
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "4bd5222947172917d6a7770e47e797f3253c669a"
+    },
+    "chat_template.jinja": {
+     "kind": "git_blob",
+     "hash": "b432799326738da5fedb3458dfd18ccf373554de"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "c998e15e4dfb9f8559cad83653555ccd696cd7ec"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "5de92935009a2c670e07576ed411be82fd58b2ee"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "8d7eb9299fc02285ea047807e43b0688944ff6d0"
+    },
+    "model-00001-of-00003.safetensors": {
+     "kind": "sha256",
+     "hash": "c11dbf016ee7d35ee130c19b67e20eb04873996006f424b7bcbd453b6517ee66"
+    },
+    "model-00002-of-00003.safetensors": {
+     "kind": "sha256",
+     "hash": "46df6c6e5fad297fe7fbca4963dcf180cb1d0528cabc884d1f603311fed01328"
+    },
+    "model-00003-of-00003.safetensors": {
+     "kind": "sha256",
+     "hash": "4f06177c37ca13944e73b57dd6d051767b950dffc12400c700dfa2509c24c697"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "695b1d57193f2740ecab31f39297a4fd2a2ed050"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "38f4d736a2e2b34af9eaef607847407c0efc7980"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "af0ccfc7718788d1bdd1b747d6298d91ed48ffa4"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "a782b2f1cdab4d0bacb2dc0f85d02c4b1e31f0bd"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "ed9b377d211618c8274de275f3d9d64257406615"
+    },
+    "tokenizer.model": {
+     "kind": "sha256",
+     "hash": "9e556afd44213b6bd1be2b850ebbbd98f5481437a8021afaf58ee7fb1818d347"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "04d334b028b1c479e0a1152eb71348ae509bb2d5"
+    }
+   },
+   "weights_gb_on_disk": 14.13,
+   "weights_gb_loaded": 14.13,
+   "chat_template_file": "chat_template.jinja",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": false,
+   "vietnamese_source": null,
+   "source": {
+    "info": "hf_api/llava-hf__llava-1.5-7b-hf.info.json",
+    "info_sha256": "2aae954650cade9d8d6049b8579c2b7ce63883623a340899cef0d1e849931b98",
+    "tree": "hf_api/llava-hf__llava-1.5-7b-hf.tree.json",
+    "tree_sha256": "5894b5e041c6f6565eac35af3c837141a1da608f960ca7b7f0192f3184b6eabc"
+   }
+  },
+  "smolvlm2_2b": {
+   "hub_id": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+   "revision": "482adb537c021c86670beed01cd58990d01e72e4",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 2246784880,
+   "checkpoint_dtype": [
+    "F32"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 1,
+   "processor_kwargs": {},
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "71dc811700b6aa9274d3697ee7d4fb2d5375e766"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "1d342e4f070c962a14ba4ece4e06212bc70d8e36"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "6a01472ec2a0595b85ac601a4e99efdcaa1ff108"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "eace9aa6d392fd94dbe0c90825074c53fd7ecd4a"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "69503b13f727ba3812b6803e97442a6de05ef5eb"
+    },
+    "model-00001-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "7c88a90e78f567460b2369a0369cc4dafbfda5607c9cb090b30fa4437b0282f2"
+    },
+    "model-00002-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "cf3d0958a8240f71054a6812038f2a6bfbe2e5124573a3b363f6b120c9a52657"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "9401d792de4308a3844189f61673670dc8c09349"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "9b5b2a5a98428bac8ba0257a59bc74da5d826e5c"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "093f7dbbd52805fca7e747f569d2c7906227499a"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "2b5aee28d56c0e9d89ff6bc70818fba986a90ca9"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "a4005d1cf3170a31600a5c96f95768166cbc2b28"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "d986ab355a4a4de5aa4485fdfba4625eb737928c"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "0ad5ecc2035b7031b88afb544ee95e2d49baa484"
+    }
+   },
+   "weights_gb_on_disk": 8.99,
+   "weights_gb_loaded": 4.49,
+   "chat_template_file": "chat_template.json",
+   "card_languages": [
+    "en"
+   ],
+   "vietnamese_documented": false,
+   "vietnamese_source": null,
+   "source": {
+    "info": "hf_api/HuggingFaceTB__SmolVLM2-2.2B-Instruct.info.json",
+    "info_sha256": "8e2e30701e7c625bdfd1e530648341ec2e6fd0ab1c8455a2e3bf9e13eca9afaf",
+    "tree": "hf_api/HuggingFaceTB__SmolVLM2-2.2B-Instruct.tree.json",
+    "tree_sha256": "92848655b3609167165ef0b31c89bbaac86d39ab46780b753f2d54744e6d25b3"
+   }
+  },
+  "llava16_mistral_7b": {
+   "hub_id": "llava-hf/llava-v1.6-mistral-7b-hf",
+   "revision": "2424fdd47412fccc66d91719126b420e9fbd7065",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 7566747648,
+   "checkpoint_dtype": [
+    "F16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 1,
+   "processor_kwargs": {},
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "4bd5222947172917d6a7770e47e797f3253c669a"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "744351d7d54cdf11b24361600eff7c66c49a8a69"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "bd0744cd0d0992372bce023bbebdda02ebf26040"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "d84663b8bd0a737e3299f3d2b4be2fe3cd2a0333"
+    },
+    "model-00001-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "2d7d9a865868c5f05d8e44b6218f43401a0456d875429d32fa5f947d5ca01a67"
+    },
+    "model-00002-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "02a36fb5d7b0574dc4c8da545089aac85b14a7972908293c11a63eca8ef46c0e"
+    },
+    "model-00003-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "9201eb56fd7d71e2e8dbc6ff7f856e81c6eddb5b4eb12e9acc760576b668948c"
+    },
+    "model-00004-of-00004.safetensors": {
+     "kind": "sha256",
+     "hash": "472780e31b22135a80dc7721cc0ab5665cf7cfc2348755816a2404484abe17dc"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "cf4389fee314605f3b5f75c77f54ce5da9f15cf3"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "a8248781bae1eb41389a649fbaf4f580aa40c814"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "4669db7aaac38b24b764a7851e9f8e6a193f96f7"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "a782b2f1cdab4d0bacb2dc0f85d02c4b1e31f0bd"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "6f43c1fabc73af13375a3b0c264656711228cd4a"
+    },
+    "tokenizer.model": {
+     "kind": "sha256",
+     "hash": "dadfd56d766715c61d2ef780a525ab43b8e6da4de6865bda3d95fdef5e134055"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "754adb1891a73bab3f53b94218e6665ec7fc583c"
+    }
+   },
+   "card_languages": [
+    "en"
+   ],
+   "source": {
+    "tree": "GET https://huggingface.co/api/models/llava-hf/llava-v1.6-mistral-7b-hf/tree/2424fdd47412fccc66d91719126b420e9fbd7065?recursive=1 (unauthenticated)",
+    "tree_sha256": "8fdf204321f939d8f30cc583da99646560952105e74fc46562018ccd88946728",
+    "info": "GET https://huggingface.co/api/models/llava-hf/llava-v1.6-mistral-7b-hf/revision/2424fdd47412fccc66d91719126b420e9fbd7065",
+    "info_sha256": "a24a2154635c0b2353d3a6e6a06e145de41a4f482056921b6c430121558d635e",
+    "fetched_utc": "2026-11-12T02:17:45Z",
+    "note": "dtype bfloat16 as the run document fixes (s3, s2.1 row 6); the checkpoint is F16"
+   }
+  },
+  "gemma3_4b_lb26": {
+   "role": "non-Qwen LM, primary (CC-165 r5). Run only when GATES G3_gemma is filled AND every hash below is set: the 4 null sha256 values (both safetensors, tokenizer.json, tokenizer.model) are hidden by the HF gate and are filled from the authenticated HF tree API at this revision in the same commit that fills G3_gemma (CC-168 W1); until then gemma is skipped, never fetched",
+   "hub_id": "google/gemma-3-4b-it",
+   "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+   "licence": "gemma (Gemma Terms of Use)",
+   "gated": "manual (HF click-to-accept on the account that already accepted the ViTextVQA gate; no agent account, no e-mail field)",
+   "lm_family": "gemma3",
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 1,
+   "processor_kwargs": {},
+   "image_input": "one 896 x 896 view, 256 image tokens (do_pan_and_scan off, the snapshot default; disclosed like InternVL's single tile)",
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "e17bde03d42feda32d1abfca6d3b598b9a020df7"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "719b0cd0d7a373a400b0c119ee0e051f41ea88d9"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "fcdc8a6cd637c7ae460065204e7fd0d8c00a38fc"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "37a4c871d263a349f50e4a313db3e72164950702"
+    },
+    "model-00001-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "eb5fd5e97ddd07b56778733e9653c07312529cb00980a318fc3e1c4e3b5a8f1f"
+    },
+    "model-00002-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "fdde0e5aa5ced0fa203b3d50f4ab78168b7e3a3e08c6349f5cc9326666e1bb13"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "4b95241f208f06d324d17c9675568ec58dafd9fb"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "b1e00fc184f61b698181821169c6374cd5813e5c"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "453c7966d4b5d0b4a317c585989f64c58c2a6bf0"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "1a6193244714d3d78be48666cb02cdbfac62ad86"
+    },
+    "tokenizer.json": {
+     "kind": "sha256",
+     "hash": "4667f2089529e8e7657cfb6d1c19910ae71ff5f28aa7ab2ff2763330affad795"
+    },
+    "tokenizer.model": {
+     "kind": "sha256",
+     "hash": "1299c11d7cf632ef3b4e11937501358ada021bbdf7c47638d13c0ee982f2e79c"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "7bdd14f0eaec30c8d2c56bc9d543587676e19c0f"
+    }
+   }
+  },
+  "granite_vision33_2b": {
+   "role": "addendum candidate (brief rules B1-B6 and rules R1-R7 of A_E3_ADDENDUM_MODELS_v1.md s2.1); language model Granite 3.1 2B Instruct",
+   "hub_id": "ibm-granite/granite-vision-3.3-2b",
+   "revision": "bf66a8244401a8e26d2ff429aa82df8550a289e5",
+   "licence": "apache-2.0",
+   "gated": false,
+   "params": 2975396928,
+   "checkpoint_dtype": [
+    "BF16"
+   ],
+   "dtype": "bfloat16",
+   "attn_implementation": "sdpa",
+   "batch_size": 1,
+   "processor_kwargs": {},
+   "files": {
+    "added_tokens.json": {
+     "kind": "git_blob",
+     "hash": "b9b40d35d47ce4ad23e61183ca944eed4f591fa0"
+    },
+    "chat_template.json": {
+     "kind": "git_blob",
+     "hash": "377bd173dff87b91babb9888f972736f0f523f74"
+    },
+    "config.json": {
+     "kind": "git_blob",
+     "hash": "acbdd7f141777542200dcdd3e9414acf18866834"
+    },
+    "generation_config.json": {
+     "kind": "git_blob",
+     "hash": "0f54e7e7c4d926d41ce312256bfbacfe87608514"
+    },
+    "merges.txt": {
+     "kind": "git_blob",
+     "hash": "f8479fb696fe07332c55300a6accf8cc191acc6a"
+    },
+    "model-00001-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "c4d07df4cdb4e85d36e1a751b5893cc539a7c96b85f2cdac44d396b7ed8b9d97"
+    },
+    "model-00002-of-00002.safetensors": {
+     "kind": "sha256",
+     "hash": "68c1ad6cbd0dc1cbcc108d45b62ff5d6df8bf2d7217f9a108f24cc28fe2c9e32"
+    },
+    "model.safetensors.index.json": {
+     "kind": "git_blob",
+     "hash": "a19ed0d8f8b4ad82b80ff85bd5d8be9bee3895ad"
+    },
+    "preprocessor_config.json": {
+     "kind": "git_blob",
+     "hash": "ae72da5533411f644fdb1534214c50ee40a26b6b"
+    },
+    "processor_config.json": {
+     "kind": "git_blob",
+     "hash": "b6a2e3b6fe957db9299d9325ca7fd0f9715fc64d"
+    },
+    "special_tokens_map.json": {
+     "kind": "git_blob",
+     "hash": "386500a5040da66c6db3d8b9c44ccd1ee202c744"
+    },
+    "tokenizer.json": {
+     "kind": "git_blob",
+     "hash": "bf5e8c1d3fbf461fe5a9d17c85e248de7a813f65"
+    },
+    "tokenizer_config.json": {
+     "kind": "git_blob",
+     "hash": "38a463e68d10c4b05b3f208290895f30a9ecd293"
+    },
+    "vocab.json": {
+     "kind": "git_blob",
+     "hash": "0a11f2016e660fd490f7bf168e6d1f9c86a8f744"
+    }
+   },
+   "lm_family": "granite (text_config.model_type; _name_or_path ibm-granite/granite-3.1-2b-instruct)",
+   "vision_encoder": "siglip_vision_model (hidden 1152, 27 layers, patch 14, 384 px: the SigLIP so400m shape)",
+   "card_languages": null,
+   "card_language_line": "README l.36: 'Currently the model supports English instructions and images (png, jpeg) as input format.'",
+   "lm_card_language_line": "ibm-granite/granite-3.1-2b-instruct README @ bbc2aed5 l.26-27: 'Supported Languages: English, German, Spanish, French, Japanese, Portuguese, Arabic, Czech, Italian, Korean, Dutch, and Chinese.'",
+   "vietnamese_documented": false,
+   "source": {
+    "tree": "GET https://huggingface.co/api/models/ibm-granite/granite-vision-3.3-2b/tree/bf66a8244401a8e26d2ff429aa82df8550a289e5?recursive=1 (unauthenticated)",
+    "tree_sha256": "04758dd8af3136056cd4aa1ff1c319d733af80accdd7d84714335a0d7bcab844",
+    "info": "GET https://huggingface.co/api/models/ibm-granite/granite-vision-3.3-2b/revision/bf66a8244401a8e26d2ff429aa82df8550a289e5",
+    "info_sha256": "da9a380612b10a7927e9d81e0e2ca225555c3b69cc2009926fc37ac691bef3b6",
+    "fetched_utc": "tree 2026-11-12 between 08:50:34Z and 08:56:50Z (no stamp of its own); revision info about 08:58Z",
+    "note": "pins from lfs.oid (sha256) and oid (git blob sha1) of the tree API; never by hashing fetched files; README.md, .gitattributes and example.png unpinned and not fetched"
+   }
+  }
+ },
+ "datasets": {
+  "xm600": {
+   "manifest": {
+    "path": "manuscript/prereg/2026-11-12_a_e3_arm/xm600.tsv",
+    "sha256": "d414e04edb097e4ab850f3189c15ceb5c37753e313bb4d58bcb60c0bb9e6ea33"
+   },
+   "n_images": 600,
+   "image_dir": "xm600"
+  },
+  "xm600f50": {
+   "manifest": {
+    "path": "manuscript/prereg/2026-11-12_a_e3_arm/xm600_f50.tsv",
+    "sha256": "a455a816272c34e45a16a06e26a2067fbb7c26f86674e208eb147973f21874ec"
+   },
+   "n_images": 50,
+   "image_dir": "xm600"
+  }
+ },
+ "runs": [
+  {
+   "run_id": "ae3_aya_vision_8b_xm600f50-short",
+   "model": "aya_vision_8b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_aya_vision_8b_xm600f50-detailed",
+   "model": "aya_vision_8b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_aya_vision_8b_xm600f50-short_en",
+   "model": "aya_vision_8b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_aya_vision_8b_xm600f50-detailed_en",
+   "model": "aya_vision_8b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_aya_vision_8b_xm600-short",
+   "model": "aya_vision_8b",
+   "dataset": "xm600",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_aya_vision_8b_xm600-detailed",
+   "model": "aya_vision_8b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_aya_vision_8b_xm600-short_en",
+   "model": "aya_vision_8b",
+   "dataset": "xm600",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_aya_vision_8b_xm600-detailed_en",
+   "model": "aya_vision_8b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_xm600f50-short",
+   "model": "gemma3_4b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_xm600f50-detailed",
+   "model": "gemma3_4b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_xm600f50-short_en",
+   "model": "gemma3_4b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_xm600f50-detailed_en",
+   "model": "gemma3_4b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_xm600-short",
+   "model": "gemma3_4b",
+   "dataset": "xm600",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_xm600-detailed",
+   "model": "gemma3_4b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_xm600-short_en",
+   "model": "gemma3_4b",
+   "dataset": "xm600",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_xm600-detailed_en",
+   "model": "gemma3_4b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_idefics3_8b_xm600f50-short",
+   "model": "idefics3_8b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_idefics3_8b_xm600f50-detailed",
+   "model": "idefics3_8b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_idefics3_8b_xm600f50-short_en",
+   "model": "idefics3_8b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_idefics3_8b_xm600f50-detailed_en",
+   "model": "idefics3_8b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_idefics3_8b_xm600-short",
+   "model": "idefics3_8b",
+   "dataset": "xm600",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_idefics3_8b_xm600-detailed",
+   "model": "idefics3_8b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_idefics3_8b_xm600-short_en",
+   "model": "idefics3_8b",
+   "dataset": "xm600",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_idefics3_8b_xm600-detailed_en",
+   "model": "idefics3_8b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_llava15_7b_xm600f50-short",
+   "model": "llava15_7b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_llava15_7b_xm600f50-detailed",
+   "model": "llava15_7b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_llava15_7b_xm600f50-short_en",
+   "model": "llava15_7b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_llava15_7b_xm600f50-detailed_en",
+   "model": "llava15_7b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_llava15_7b_xm600-short",
+   "model": "llava15_7b",
+   "dataset": "xm600",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_llava15_7b_xm600-detailed",
+   "model": "llava15_7b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_llava15_7b_xm600-short_en",
+   "model": "llava15_7b",
+   "dataset": "xm600",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_llava15_7b_xm600-detailed_en",
+   "model": "llava15_7b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_smolvlm2_2b_xm600f50-short",
+   "model": "smolvlm2_2b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_smolvlm2_2b_xm600f50-detailed",
+   "model": "smolvlm2_2b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_smolvlm2_2b_xm600f50-short_en",
+   "model": "smolvlm2_2b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_smolvlm2_2b_xm600f50-detailed_en",
+   "model": "smolvlm2_2b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_smolvlm2_2b_xm600-short",
+   "model": "smolvlm2_2b",
+   "dataset": "xm600",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_smolvlm2_2b_xm600-detailed",
+   "model": "smolvlm2_2b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_smolvlm2_2b_xm600-short_en",
+   "model": "smolvlm2_2b",
+   "dataset": "xm600",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_smolvlm2_2b_xm600-detailed_en",
+   "model": "smolvlm2_2b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_llava16_mistral_7b_xm600f50-short",
+   "model": "llava16_mistral_7b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_llava16_mistral_7b_xm600f50-detailed",
+   "model": "llava16_mistral_7b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_llava16_mistral_7b_xm600f50-short_en",
+   "model": "llava16_mistral_7b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_llava16_mistral_7b_xm600f50-detailed_en",
+   "model": "llava16_mistral_7b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_llava16_mistral_7b_xm600-short",
+   "model": "llava16_mistral_7b",
+   "dataset": "xm600",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_llava16_mistral_7b_xm600-detailed",
+   "model": "llava16_mistral_7b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_llava16_mistral_7b_xm600-short_en",
+   "model": "llava16_mistral_7b",
+   "dataset": "xm600",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_llava16_mistral_7b_xm600-detailed_en",
+   "model": "llava16_mistral_7b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_lb26_xm600f50-short",
+   "model": "gemma3_4b_lb26",
+   "dataset": "xm600f50",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_lb26_xm600-short",
+   "model": "gemma3_4b_lb26",
+   "dataset": "xm600",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_lb26_xm600f50-detailed",
+   "model": "gemma3_4b_lb26",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_lb26_xm600-detailed",
+   "model": "gemma3_4b_lb26",
+   "dataset": "xm600",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_lb26_xm600f50-short_en",
+   "model": "gemma3_4b_lb26",
+   "dataset": "xm600f50",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_lb26_xm600-short_en",
+   "model": "gemma3_4b_lb26",
+   "dataset": "xm600",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_lb26_xm600f50-detailed_en",
+   "model": "gemma3_4b_lb26",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_gemma3_4b_lb26_xm600-detailed_en",
+   "model": "gemma3_4b_lb26",
+   "dataset": "xm600",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_granite_vision33_2b_xm600f50-short",
+   "model": "granite_vision33_2b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_granite_vision33_2b_xm600-short",
+   "model": "granite_vision33_2b",
+   "dataset": "xm600",
+   "prompt_mode": "short"
+  },
+  {
+   "run_id": "ae3_granite_vision33_2b_xm600f50-detailed",
+   "model": "granite_vision33_2b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_granite_vision33_2b_xm600-detailed",
+   "model": "granite_vision33_2b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed"
+  },
+  {
+   "run_id": "ae3_granite_vision33_2b_xm600f50-short_en",
+   "model": "granite_vision33_2b",
+   "dataset": "xm600f50",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_granite_vision33_2b_xm600-short_en",
+   "model": "granite_vision33_2b",
+   "dataset": "xm600",
+   "prompt_mode": "short_en"
+  },
+  {
+   "run_id": "ae3_granite_vision33_2b_xm600f50-detailed_en",
+   "model": "granite_vision33_2b",
+   "dataset": "xm600f50",
+   "prompt_mode": "detailed_en"
+  },
+  {
+   "run_id": "ae3_granite_vision33_2b_xm600-detailed_en",
+   "model": "granite_vision33_2b",
+   "dataset": "xm600",
+   "prompt_mode": "detailed_en"
+  }
+ ],
+ "sources": {
+  "aya_vision_8b": "manuscript/prereg/2026-10-30_c_t1/c_t1_registry.json (sha256 09e6f90a09735125fed09620b6a1323ef12dafc6bf0a4a4bdf1a4af1087eba3c) models.aya_vision_8b",
+  "gemma3_4b": "manuscript/prereg/2026-10-29_l1b/l1b_registry.json (sha256 cd210a7ca0f85b10c6f9ee95f8b737284f5029ef5f05c84d1ee760d18e7b96e3) models.gemma3_4b; 4 hashes from the authenticated paths-info API (equal to the tree API)",
+  "idefics3_8b": "manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json (sha256 d5714e2b25e5f1d36fa42813cc5891a82d0b80a73e69fb08d940e05e2055f309) models.idefics3_8b (equal to manuscript/prereg/2026-10-29_l1b/l1b_registry.json files)",
+  "llava15_7b": "manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json models.llava15_7b",
+  "smolvlm2_2b": "manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json models.smolvlm2_2b",
+  "llava16_mistral_7b": "HF tree + revision API (models.llava16_mistral_7b.source)",
+  "prompts": "manuscript/prereg/2026-10-18_g2b_qwen3vl_ladder.json (sha256 c506bc777b483f5097561d2894a535f33e5e9e27745af07c0f979fbac5560055) decode.prompts.*.text_sha256; short_en/detailed_en equal manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json",
+  "venv": "manuscript/prereg/2026-10-19_a_n2_lvlm_gold_ladder.json venv (verbatim)",
+  "gemma3_4b_lb26": "A_E3_REG_v1.json models.gemma3_4b, verbatim",
+  "granite_vision33_2b": "HF tree + revision API (models.granite_vision33_2b.source)",
+  "venv_lb26": "built on hc2, A_E3_ADDENDUM_BUILD_NOTE.md (pip freeze in the build note)"
+ }
+}
