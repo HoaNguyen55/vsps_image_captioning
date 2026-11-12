@@ -1,0 +1,61 @@
+start_utc 2026-11-12T04:11:10Z
+tree: code only, files:
+./tools/obj_rater/build_assignment.py
+./tools/obj_rater/build_topup.py
+497e57479197fabaccdf0adea93269aa88d827f646e71ded17fe6b70a94bd8dd  tools/obj_rater/build_assignment.py
+954dd7b90d93c0d215eed450eab8cee42610e562a312fd72011630d92c4637b5  tools/obj_rater/build_topup.py
+cmd: TMPDIR=/root/outputs_topup_checks/tmp nice -n 19 /root/venv-lb/bin/python -I -B tools/obj_rater/build_topup.py --selftest (run 1 and run 2)
+== run 1
+ok  1 refuses an --out under /mnt
+ok  2 base-pin mismatch stops, nothing left
+ok  3 an --extra file missing an image stops, _base and out removed
+ok  4 _base deleted and the deletion logged
+ok  5 refuses to overwrite an existing --out
+ok  6 top-up qids disjoint from every base qid
+ok  7 qid = sha256(SEED|topup1|part|image|class)[:12]
+ok  8 no top-up target or repeat is in the base named set; each is named by a new system only
+ok  9 counts follow the formulas (t1 225: ctrl_present 25, foils 13, repeats 19)
+ok 10 BUILD_TOPUP1 counts by part and role equal key.json
+ok 11 old_repeat = 50 base part-1 targets, in part 1
+ok 12 foils: verified absent, unnamed by anyone, not a base foil
+ok 13 CC-327 L2 absent pairs never become controls or foils (excluded counts > 0 printed)
+ok 14 screen ids prefixed topup1-; served items carry no role or system
+ok 15 practice.json byte-equal to the base
+ok 16 overlap = base overlap images with a top-up target
+ok 17 public copy = all outputs except key.json, byte-equal
+ok 18 BUILD_TOPUP1 holds every --extra sha and the base check
+ok 19 no caption text in any output or in stdout
+ok 20 determinism: two builds byte-equal
+fixture sha256 assignment.json 92c806b6458a3d42c0af43d98d7345282f6a46fef6cfc4707535a120b71328de
+fixture sha256 key.json c9dc9f5c9961495a588672c36d53ae3f22192b91f8624181f37f3441b2fa2174
+fixture sha256 overlap_images_topup1.txt b38b2f1975c728e4aef38f99d398c9c8d3d250e88524e8af41d4de30b51a127c
+SELFTEST PASS 20/20
+exit 0
+== run 2
+ok  1 refuses an --out under /mnt
+ok  2 base-pin mismatch stops, nothing left
+ok  3 an --extra file missing an image stops, _base and out removed
+ok  4 _base deleted and the deletion logged
+ok  5 refuses to overwrite an existing --out
+ok  6 top-up qids disjoint from every base qid
+ok  7 qid = sha256(SEED|topup1|part|image|class)[:12]
+ok  8 no top-up target or repeat is in the base named set; each is named by a new system only
+ok  9 counts follow the formulas (t1 225: ctrl_present 25, foils 13, repeats 19)
+ok 10 BUILD_TOPUP1 counts by part and role equal key.json
+ok 11 old_repeat = 50 base part-1 targets, in part 1
+ok 12 foils: verified absent, unnamed by anyone, not a base foil
+ok 13 CC-327 L2 absent pairs never become controls or foils (excluded counts > 0 printed)
+ok 14 screen ids prefixed topup1-; served items carry no role or system
+ok 15 practice.json byte-equal to the base
+ok 16 overlap = base overlap images with a top-up target
+ok 17 public copy = all outputs except key.json, byte-equal
+ok 18 BUILD_TOPUP1 holds every --extra sha and the base check
+ok 19 no caption text in any output or in stdout
+ok 20 determinism: two builds byte-equal
+fixture sha256 assignment.json 92c806b6458a3d42c0af43d98d7345282f6a46fef6cfc4707535a120b71328de
+fixture sha256 key.json c9dc9f5c9961495a588672c36d53ae3f22192b91f8624181f37f3441b2fa2174
+fixture sha256 overlap_images_topup1.txt b38b2f1975c728e4aef38f99d398c9c8d3d250e88524e8af41d4de30b51a127c
+SELFTEST PASS 20/20
+exit 0
+tmp left: 0
+end_utc 2026-11-12T04:11:10Z
