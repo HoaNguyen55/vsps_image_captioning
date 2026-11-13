@@ -14,6 +14,9 @@ CC-338 S1-S5, CC-346 SC1-SC5. Label on every output: DEVELOPMENT / C-ATTR-DEV, N
   python -I -B scripts/c_attr/c_attr_score.py summary --ledger L ... [--nomination F] --parity P ... --out S
   python -I -B scripts/c_attr/c_attr_score.py copybound --set S --zs Z --ret R --rand D [--blind B] --kit-b K
                                                         --c-lists L --c2-ledger G --c2-run Q --out O     §8
+  python -I -B scripts/c_attr/c_attr_score.py stage b3verify --b3-sums SHA | b3k5|b3rest --prev SHA    block 3
+      (C_ATTR_BLOCK3_SCORING_RUN_DOC_v1.md, CC-368 ruling 12): its own work folder /root/c_attr_score_b3; the K5
+      verdict in its own file before any other block-3 row; refused at and after K7 (2026-11-16 12:00 VN)
 
 Outputs hold ids and numbers only; nothing prints a caption. lmcap_rand / lmcap_perm rows are a re-implementation of
 the LMCap recipe by this study; ret_img vs rand_img rows are an image-caption-pair prompt format, as used by RAGCap;
@@ -22,6 +25,7 @@ not RAGCap. No row says that a published system was tested.
 from __future__ import annotations
 
 import argparse
+import calendar
 import hashlib
 import importlib.metadata
 import json
@@ -29,6 +33,7 @@ import re
 import shutil
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
@@ -62,9 +67,49 @@ SRC = {"b1": Path("/root/outputs/c_attr_b1"), "b": Path("/root/outputs/c_attr")}
 CL = A.ROOT / "manuscript/prereg/2026-10-22_c_stage1/lists.json"
 KIT = A.ROOT / "scripts/kit_b"
 FILES = {"verify": "VERIFY.json", "ova": "c_attr_nomination.json", "close": "c_attr_nomination.json",
-         "ovb": "VERDICT.json", "rest": "SUMMARY.json", "posthoc": "POSTHOC.json"}
+         "ovb": "VERDICT.json", "rest": "SUMMARY.json", "posthoc": "POSTHOC.json",
+         "b3verify": "VERIFY.json", "b3k5": "K5.json", "b3rest": "B3_SUMMARY.json"}
 PREV = {"ova": "VERIFY.json", "close": "VERIFY.json", "ovb": "c_attr_nomination.json", "rest": "VERDICT.json",
-        "posthoc": "SUMMARY.json"}
+        "posthoc": "SUMMARY.json", "b3k5": "VERIFY.json", "b3rest": "K5.json"}
+#: block 3 (C_ATTR_BLOCK3_RUN_DOC_v1_1.md §8, CC-368 ruling 12 and N4): its own work folder, chain and strings
+B3_STAGES = ("b3verify", "b3k5", "b3rest")
+WORK_B3, SRC_B3 = Path("/root/c_attr_score_b3"), Path("/root/outputs/c_attr_b3")
+REG_B3 = ("C_ATTR_DEV_PREREG_v1_1.md §6.5, §7.10 with addendum v1.2 V8 (block 3, batch size 1); "
+          "C_ATTR_BLOCK3_RUN_DOC_v1_1.md (CC-368)")
+K7_UTC = "2026-11-16T05:00:00Z"  # v1.1 §10.1 K7 = 2026-11-16 12:00 VN, the only hard date (CC-368 ruling 6)
+K7_TS = calendar.timegm(time.strptime(K7_UTC, "%Y-%m-%dT%H:%M:%SZ"))
+CLOCK = time.time
+B3_RUNNERS = ("lmcap", "qwen25vl_7b")
+B3_NOM, B3_NOM_SHA256 = "c_attr_nomination.json", "559c18c1ba173cfbfed488d2bb7f7d797b66d681bd69aec51944f0c4e88ebdfa"
+B3_REFS = {"datasets/openviic/uit-openviic-annotation-dev.json":  # CC-362: hash only, never opened by anyone
+           "550cfe06b06084976e81286531f7f4e52bea717e29004c699ccaf1e48919bdff",
+           "datasets/c_xm_dev500/xm_dev500_data.json": "0da82355b65ab284fe55fc0d3c4101090301767347a02721890556618ca4905f"}
+B3_BATCH = "batch size 1 (addendum v1.2 V8)"  # CC-368 O9
+B3_DECODES = "all arms decoded on one host in block 3; stored decodes not used (CC-368)"  # CC-368 ruling 3, N1
+E6 = {"lmcap": "re-implementation of the LMCap recipe by this study; not the authors' code (no licence); "
+               "not a statement about the published numbers",
+      "qwen25vl_7b": "image-caption-pair prompt format, as used by RAGCap; not RAGCap"}  # erratum 1 E6
+B3_EST = (("lmcap", "tau_sel", "lmcap_ri|lmcap", "lmcap_rand|lmcap"),  # v1.1 §7.10
+          ("lmcap", "tau_pair", "lmcap_ri|lmcap", "lmcap_perm|lmcap"),
+          ("lmcap", "tau_marg", "lmcap_perm|lmcap", "lmcap_rand|lmcap"),
+          ("qwen25vl_7b", "tau_sel_img", "qwen25vl_7b|ret_img", "qwen25vl_7b|rand_d0_img"))
+B3_TIER = {  # OV-dev-B, CC-368 O8: no row carries "split of a known τ_sel"
+    "lmcap|tau_sel": "K5 positive control (v1.1 §7.10, §10.1): first look at the contrast; the lmcap_ri level was "
+                     "seen in C-T1 (ret - lmcap_ri)",
+    "lmcap|tau_pair": "first look (not a split of a known τ_sel: the sum was not known)",
+    "lmcap|tau_marg": "first look (not a split of a known τ_sel: the sum was not known)",
+    "qwen25vl_7b|tau_sel_img": "first look; its ret_img side was seen in C-T1"}
+B3_XM = "no rule (v1.1 §7.8)"
+TEXT_SEL = {"ov_dev_b": "VERDICT.json :: sets.ov_dev_b.rows.qwen25vl_7b|tau_sel (sha256 a69a0ec2…, CC-363; batch 1)",
+            "xm_dev500": "SUMMARY.json :: sets.xm_dev500.rows.qwen25vl_7b|tau_sel (sha256 1d78cd20…, CC-363; batch 1)"}
+K5_RULE = "LMCap τ_sel on OV-dev-B DETECTED iff θ̂ >= +2.0 and p <= 0.025, m = 1 (v1.1 §7.4, §7.10, §10.1 K5)"
+K5_OUT = {"DETECTED": "K5 not fired",
+          "NOT DETECTED": "K5 fired: the positive control failed; the word 'test' is dropped; third-party rows are "
+                          "printed without interpretation (v1.1 §10.1, §7.12)",
+          "NOT RUN": "K5 NOT RUN: the CC-363 ruling 5 line stands (no 'test': the positive control was not run); "
+                     "third-party rows are printed without interpretation (CC-368 ruling 6)"}
+UNINTERPRETED = "printed without interpretation (K5 not DETECTED)"
+TEST_NAME = re.compile(r"(?:^|[-_.])test(?:[-_.\d]|$)|" + "|".join(A.TEST_SETS))  # binding 1: refused by name
 
 
 def is_b1(run_id: str) -> bool:
@@ -621,6 +666,11 @@ def st_verify(a, w: Path, rec: dict) -> None:
     rec["prompts"] = {"b1_runs": len(b1), "pairs": len(pc["pairs"]), "unequal": pc["unequal"],
                       "no_reference": pc["no_reference"], "not_comparable": pc["not_comparable"]}
     prompt_gate(pc, len(b1))
+    parity_7_1(w, rec)
+
+
+def parity_7_1(w: Path, rec: dict) -> None:
+    """§7.1 scoring parity gate: C's six stage-2 OV-dev-B runs re-scored equal the pinned stage-2 ledger (1e-4)."""
     led = w / "led/parity_c2.jsonl"
     score_call("ov_dev_b", [Path(A.C2_DIR) / n for n in A.C2_RUNS], led)
     A.c2_parity(A.read_ledgers([led]), w / "in/stage2_ledger.jsonl")
@@ -727,20 +777,178 @@ def st_posthoc(a, w: Path, rec: dict) -> None:
                    "length": length_gaps([json.loads(p.read_text(encoding="utf-8")) for p in lruns])}
 
 
-STAGE = {"verify": st_verify, "ova": st_ova, "close": st_close, "ovb": st_ovb, "rest": st_rest, "posthoc": st_posthoc}
+# ------------------------------------------------------------------------------------------------ block 3
+def k7_open() -> None:
+    """K7 (v1.1 §10.1): at and after 2026-11-16 12:00 VN every unfinished step is NOT RUN (CC-368 ruling 6)."""
+    if CLOCK() >= K7_TS:
+        raise SystemExit(f"REFUSED: K7 ({K7_UTC} = 2026-11-16 12:00 VN) has passed: every unfinished step is NOT RUN")
+
+
+def test_named(paths) -> list[str]:
+    """Binding 1: paths whose file name names a test set ('test' between separators, or a registered test-set key)."""
+    return sorted(str(p) for p in paths if TEST_NAME.search(Path(p).name))
+
+
+def b3_id(s: dict) -> str:
+    """The run id the block3 job writes for one step of c_attr.b3_steps, from the decoder's own id functions."""
+    a = argparse.Namespace(set=s["set"], memory="vi", batch1=True, redecode=None, limit=None, variant=s["arm"],
+                           model=s["runner"], arm=s["arm"], k=8, order="first" if s["arm"] == "ret_img" else None,
+                           tpl="T1", draw=0)
+    return A.lmcap_run_id(a) if s["runner"] == "lmcap" else A.run_id_of(a)
+
+
+def b3_runs(w: Path, runner: str, ds: str, arms=None) -> list[Path]:
+    """The verified copy's block-3 runs of one runner and set that exist, in run order (D1 files are never scored)."""
+    return [p for s in A.b3_steps((runner,)) if s["set"] == ds and (arms is None or s["arm"] in arms)
+            for p in [w / "in/b3/out" / f"{b3_id(s)}.preds.json"] if p.is_file()]
+
+
+def full_set(ids, ds: str) -> None:
+    """Binding 4 and §10.2: rows come from full sets only."""
+    if ids is None or len(ids) != A.B3_N[ds]:
+        raise SystemExit(f"REFUSED: {ds} rows over {len(ids or [])} images, not the full set of {A.B3_N[ds]}")
+
+
+def b3_rows(per: dict, ds: str, idx: np.ndarray) -> dict[str, dict]:
+    """v1.1 §7.10 rows on one set, each a family of m = 1 (§7.4): LMCap τ_sel, τ_pair, τ_marg and the Qwen2.5-VL
+    image-caption-pair τ_sel (ret_img - rand_img d0). Labels of erratum E6 and CC-368 O8, O9, N1; no "split of a known
+    τ_sel" (O8). A row whose two arms are not both present is absent (§10.2). Masked3 columns never enter."""
+    rows = {}
+    for m, est, x, y in B3_EST:
+        if x in per and y in per:
+            r = {**pair(per[x], per[y], idx), "model": m, "estimand": est, "arms": f"{x} - {y}", "m": 1}
+            r["label"] = label(r, bool(detected({est: (r["d"], r["p"])})))
+            r.update(tier=B3_XM if ds == "xm_dev500" else B3_TIER[f"{m}|{est}"], wording=E6[m], decodes=B3_DECODES,
+                     batch=B3_BATCH, tag=A.LABEL)
+            if m != "lmcap":
+                r["beside"] = TEXT_SEL[ds]  # §7.10 "beside the text-only τ_sel": a pointer, no difference row
+            rows[f"{m}|{est}"] = r
+    return rows
+
+
+def k5_verdict(row: dict | None) -> str:
+    """K5 mechanically from the registered m = 1 rule (θ̂ >= +2.0 and p <= 0.025); NOT RUN without a row."""
+    if row is None:
+        return "NOT RUN"
+    return "DETECTED" if detected({"k5": (row["d"], row["p"])}) else "NOT DETECTED"
+
+
+def b3_pins(w: Path) -> dict[Path, str]:
+    """Scoring inputs with their pins: the two dev reference files (CC-362), the v1.2 nomination file (the V4 (1) gate
+    of `score` on OV-dev-B) and the two stored Qwen2.5-VL zs runs (score_set needs one zs per backbone and set)."""
+    st = stored_files()
+    return {**{A.lb.DATA / k: h for k, h in B3_REFS.items()}, w / "in" / B3_NOM: B3_NOM_SHA256,
+            **{p: st[p] for ds in A.B3_N for p in stored_of("qwen25vl_7b", ds) if is_zs(p)}}
+
+
+def d1_b3(w: Path) -> dict:
+    return parity(sorted((w / "in/b3/parity").glob("STEP3_*.json")))
+
+
+def st_b3verify(a, w: Path, rec: dict) -> None:
+    """Run doc §8 items 1 and 4: no test-set name, the read-only copy of /root/outputs/c_attr_b3 against the logged
+    sums, the pinned inputs, the environment, the D1 verdicts (STEP3) and the §7.1 parity gate. Scores no block-3 run."""
+    if (SRC_B3 / "RUNNING").exists():
+        raise SystemExit(f"REFUSED: {SRC_B3}/RUNNING exists: the block-3 decode job is still running (§6.7)")
+    pins = b3_pins(w)
+    tests = test_named([*SRC_B3.rglob("*"), *pins])
+    if tests:
+        raise SystemExit(f"REFUSED: {len(tests)} test-set names, e.g. {tests[:2]} (binding 1)")
+    freeze_copy(SRC_B3, w / "in/b3")
+    rec["trees"] = {"b3": {"sums_sha256": a.b3_sums, "files": tree_ok(w / "in/b3", a.b3_sums)}}
+    off = [p.name for p, h in pins.items() if not p.is_file() or A.sha(p) != h]
+    if off:
+        raise SystemExit(f"REFUSED: {len(off)} inputs missing or not as pinned: {off}")
+    rec["pins"] = {str(p): h for p, h in pins.items()}
+    rec["env"] = env_record()
+    rec["d1"] = d1_b3(w)
+    parity_7_1(w, rec)
+
+
+def st_b3k5(a, w: Path, rec: dict) -> None:
+    """CC-368 ruling 12: the K5 verdict in its own file, before any other block-3 row is computed. Only the two K5 arms
+    are scored (lmcap_ri, lmcap_rand on OV-dev-B). LMCap D1 not PASS: K5 NOT RUN (run doc §2), nothing scored. A K5 arm
+    missing beside a D1 PASS (a CAP STOP or JOB STOP before step 2): refused, no row until a judge line (run doc §4)."""
+    d1 = d1_b3(w)
+    res = {"label": A.LABEL, "registration": REG_B3, "rule": K5_RULE, "d1": d1, "row": None}
+    if d1.get("lmcap", {}).get("D1") == "PASS":
+        runs = b3_runs(w, "lmcap", "ov_dev_b", ("ri", "rand"))
+        if len(runs) != 2:
+            raise SystemExit(f"REFUSED: K5 NOT RUN: {len(runs)} of its 2 arms exist; no block-3 row is scored until a "
+                             "judge line (run doc §4)")
+        led = w / "led/k5.jsonl"
+        score_call("ov_dev_b", runs, led, nom=w / "in" / B3_NOM)
+        per, _p, ids = A.set_columns(A.read_ledgers([led]), "ov_dev_b", "vi")
+        full_set(ids, "ov_dev_b")
+        res["row"] = strip(b3_rows(per, "ov_dev_b", A.boot_idx(len(ids))).get("lmcap|tau_sel"))
+        res["inputs"] = {**{p.name: A.sha(p) for p in runs}, "k5.jsonl": A.sha(led)}
+    else:
+        res["reason"] = "LMCap D1 not PASS: its block-3 steps were NOT RUN (run doc §2; v1.2 V3)"
+    res["verdict"] = k5_verdict(res["row"])
+    res["consequence"] = K5_OUT[res["verdict"]]
+    (w / "res" / FILES["b3k5"]).write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    rec["k5"] = res["verdict"]
+
+
+def st_b3rest(a, w: Path, rec: dict) -> None:
+    """After the logged K5 file: the other registered rows (LMCap τ_pair, τ_marg on OV-dev-B, every row on XM-dev500,
+    the image-caption-pair τ_sel on both sets), each runner only with its D1 PASS. The OV-dev-B LMCap τ_sel is read
+    back from the K5 ledger and must equal the K5 file. K5 not DETECTED or NOT RUN: every row is stamped uninterpreted."""
+    kf = w / "res" / FILES["b3k5"]
+    k5 = json.loads(kf.read_text(encoding="utf-8"))
+    d1 = d1_b3(w)
+    ok = [r for r in B3_RUNNERS if d1.get(r, {}).get("D1") == "PASS"]
+    stray = [p.name for r in B3_RUNNERS if r not in ok for ds in A.B3_N for p in b3_runs(w, r, ds)]
+    if stray:
+        raise SystemExit(f"REFUSED: block-3 runs without a D1 PASS: {stray} (v1.2 V3, V8)")
+    res = {"label": A.LABEL, "registration": REG_B3, "k5": k5["verdict"], "k5_sha256": A.sha(kf),
+           "k5_consequence": k5["consequence"], "d1": d1, "alpha_one_sided": ALPHA, "sesoi": SESOI, "sets": {},
+           "not_run": []}
+    for ds in A.B3_N:
+        lm = b3_runs(w, "lmcap", ds, ("perm",) if ds == "ov_dev_b" else None) if "lmcap" in ok else []
+        qw = b3_runs(w, "qwen25vl_7b", ds) if "qwen25vl_7b" in ok else []
+        ledgers = [w / "led/k5.jsonl"] if ds == "ov_dev_b" and k5["row"] else []
+        if lm or qw:
+            led = w / f"led/b3_{ds}.jsonl"
+            score_call(ds, lm + (with_zs("qwen25vl_7b", ds, qw, stored_of("qwen25vl_7b", ds)) if qw else []), led,
+                       nom=w / "in" / B3_NOM if ds == "ov_dev_b" else None)
+            ledgers.append(led)
+        rows = {}
+        if ledgers:
+            per, _p, ids = A.set_columns(A.read_ledgers(ledgers), ds, "vi")
+            full_set(ids, ds)
+            rows = b3_rows(per, ds, A.boot_idx(len(ids)))
+        for r in rows.values():
+            if k5["verdict"] != "DETECTED":
+                r["interpretation"] = UNINTERPRETED
+        res["sets"][ds] = {"n": A.B3_N[ds] if rows else 0, "rows": strip(rows)}
+        res["not_run"] += [f"{ds}|{m}|{e}" for m, e, _x, _y in B3_EST if f"{m}|{e}" not in rows]
+    mine = res["sets"]["ov_dev_b"]["rows"].get("lmcap|tau_sel") or {}
+    if k5["row"] and any(mine.get(c) != k5["row"][c] for c in ("d", "p", "label")):
+        raise SystemExit("REFUSED: the OV-dev-B LMCap τ_sel differs from the logged K5 file")
+    (w / "res" / FILES["b3rest"]).write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    rec["rows"] = {ds: sorted(s["rows"]) for ds, s in res["sets"].items()}
+
+
+STAGE = {"verify": st_verify, "ova": st_ova, "close": st_close, "ovb": st_ovb, "rest": st_rest, "posthoc": st_posthoc,
+         "b3verify": st_b3verify, "b3k5": st_b3k5, "b3rest": st_b3rest}
 
 
 def cmd_stage(a) -> None:
     """S1 (CC-338, CC-346): the registered scoring order on the host, one stage per call. Every stage after verify
     needs --prev = the sha256 of the previous stage's file as logged by the operator; each writes one file, prints its
     sha256 and stops. Order: verify -> ova | close -> ovb -> rest -> posthoc; `rest` follows ovb's verdict or, when no
-    verdict exists, the empty v1.2 nomination file (the release clause; the score gate then checks it is empty)."""
-    w = Path(a.work)
+    verdict exists, the empty v1.2 nomination file (the release clause; the score gate then checks it is empty).
+    Block 3 (CC-368 ruling 12), in its own work folder: b3verify -> b3k5 -> b3rest, each refused at and after K7."""
+    b3 = a.stage in B3_STAGES
+    if b3:
+        k7_open()  # K7 binds every block-3 scoring stage
+    w = Path(a.work or (WORK_B3 if b3 else WORK))
     res = w / "res"
     out = res / FILES[a.stage]
     if out.exists():
         raise SystemExit(f"REFUSED: {out.name} exists; a stage runs once")
-    if a.stage != "verify":
+    if a.stage not in ("verify", "b3verify"):
         name = PREV[a.stage] if a.stage != "rest" or (res / PREV["rest"]).is_file() else FILES["ova"]
         prev = res / name
         if not prev.is_file() or A.sha(prev) != a.prev:
@@ -749,9 +957,10 @@ def cmd_stage(a) -> None:
             raise SystemExit("REFUSED: the scoring environment differs from the one recorded at verify")
     (w / "led").mkdir(parents=True, exist_ok=True)
     res.mkdir(exist_ok=True)
-    rec = {"label": A.LABEL, "registration": REG12, "stage": a.stage, "prev_sha256": a.prev, "utc": A.lb.utc()}
+    rec = {"label": A.LABEL, "registration": REG_B3 if b3 else REG12, "stage": a.stage, "prev_sha256": a.prev,
+           "utc": A.lb.utc()}
     STAGE[a.stage](a, w, rec)
-    rf = out if a.stage in ("verify", "posthoc") else res / f"STAGE_{a.stage}.json"
+    rf = out if a.stage in ("verify", "b3verify", "posthoc") else res / f"STAGE_{a.stage}.json"
     rf.write_text(json.dumps(rec, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"STAGE {a.stage} DONE: {out.name} sha256 {A.sha(out)}; record {rf.name} sha256 {A.sha(rf)}"
           f"{'; DFSENS.json sha256 ' + rec['dfsens_sha256'] if 'dfsens_sha256' in rec else ''}; write them to the LOG, then STOP")
@@ -984,6 +1193,7 @@ def selftest() -> None:
     ok.append("ANOVA: planted V_b recovered, omega = V_b / V_img, F quantile 0.178 at n = 925")
     selftest_copy(ok)
     selftest_score2(ok)
+    selftest_b3(ok)
     print("c_attr_score selftest ok: " + "; ".join(ok))
 
 
@@ -1232,6 +1442,9 @@ def selftest_score2(ok: list) -> None:
     ok.append("S1: 444 copy against the logged sums (job.log alone exempt, no unlisted file), stage order by the logged "
               "sha, once per stage, same environment, host placement allowed by the isolation hook; SC5 prompt hashes; "
               "SC1 gate in c_attr.cmd_score; the real score -> nominate -> summary chain ('_m3', dedup, one zs per call)")
+    ok.append("block 3 stages on a planted tree: verify (sums, RUNNING, test-set names, pins, parity), K5 first from "
+              "its two arms only, rest with the K5 row read back and checked, LMCap D1 FAIL gives K5 NOT RUN and "
+              "uninterpreted Qwen2.5-VL rows, a missing K5 arm and runs without a D1 PASS refused")
 
 
 def selftest_tree(t: Path) -> None:
@@ -1466,11 +1679,176 @@ def selftest_chain(t: Path, E4) -> None:
         ovb_runs[0].write_text(json.dumps(other))
         pc = prompt_check([ovb_runs[0]], [run(q, "ov_dev_b", "ret", 0, good, "stored", b1=False)])
         assert pc["unequal"] and list(pc["pairs"].values())[0]["equal"] == 23, "SC5: one prompt hash differs"
+        selftest_b3_chain(w, run, good, generic, zb, refused)
     finally:
         A.score_refs, A.C.memory_captions, S2s.kit2 = real
         stored_files, env_record = real_stored, real_env
         A.C2_DIR, A.C2_RUNS, A.C2_LEDGER_SHA256 = real_c2
         SRC.update(real_src)
+
+
+def selftest_b3(ok: list) -> None:
+    """Block-3 scoring (CC-368 ruling 12) on planted columns: run ids, rows and labels, the K5 rule, K7, names, sets."""
+    global CLOCK
+    import tempfile
+    ids = {s["name"]: b3_id(s) for s in A.b3_steps(B3_RUNNERS)}
+    assert len(ids) == 10 and ids["B3_lmcap_ov_dev_b_ri"] == "at_lmcap-ri_ov_dev_b-mvi-b1" \
+        and ids["B3_lmcap_xm_dev500_perm"] == "at_lmcap-perm_xm_dev500-mvi-b1" \
+        and ids["B3_qwen25vl_7b_ov_dev_b_ret_img"] == "at_qwen25vl_7b_ov_dev_b-ret_img-k8-first-T1-mvi-b1" \
+        and ids["B3_qwen25vl_7b_xm_dev500_rand_img"] == "at_qwen25vl_7b_xm_dev500-rand_img-k8--T1-d0-mvi-b1", \
+        "the scorer finds the run ids of run doc §2"
+    n = A.B3_N["ov_dev_b"]
+    two, zero = np.full(n, 2.0), np.zeros(n)
+    per = {"lmcap_ri|lmcap": two, "lmcap_rand|lmcap": zero, "lmcap_perm|lmcap": two, "lmcap_ri|lmcap_m3": zero + 50,
+           "qwen25vl_7b|ret_img": np.full(n, 1.5), "qwen25vl_7b|rand_d0_img": zero, "qwen25vl_7b|ret": two + 7,
+           "qwen25vl_7b|zs": zero - 9}
+    idx = A.boot_idx(n)
+    rows = b3_rows(per, "ov_dev_b", idx)
+    assert {k: (r["d"], r["label"]) for k, r in rows.items()} == {
+        "lmcap|tau_sel": (2.0, "DETECTED"), "lmcap|tau_pair": (0.0, "NEGLIGIBLE"), "lmcap|tau_marg": (2.0, "DETECTED"),
+        "qwen25vl_7b|tau_sel_img": (1.5, "NEGLIGIBLE")}, "ri - rand, ri - perm, perm - rand, ret_img - rand_img d0, m = 1"
+    r, q = rows["lmcap|tau_sel"], rows["qwen25vl_7b|tau_sel_img"]
+    assert r["m"] == 1 and r["wording"] == E6["lmcap"] and r["decodes"] == B3_DECODES and r["batch"] == B3_BATCH \
+        and r["tier"] == B3_TIER["lmcap|tau_sel"] and r["tag"] == A.LABEL and "beside" not in r
+    assert q["wording"] == E6["qwen25vl_7b"] and q["beside"] == TEXT_SEL["ov_dev_b"] and q["decodes"] == B3_DECODES
+    assert all("note" not in x for x in rows.values()), "CC-368 O8: no 'split of a known τ_sel' on block-3 rows"
+    xr = b3_rows(per, "xm_dev500", idx)
+    assert all(x["tier"] == B3_XM for x in xr.values()) and xr["qwen25vl_7b|tau_sel_img"]["beside"] == TEXT_SEL["xm_dev500"]
+    part = b3_rows({k: v for k, v in per.items() if k != "lmcap_perm|lmcap"}, "ov_dev_b", idx)
+    assert set(part) == {"lmcap|tau_sel", "qwen25vl_7b|tau_sel_img"}, "a row without both of its arms is absent"
+    assert k5_verdict({"d": 2.0, "p": ALPHA}) == "DETECTED" and k5_verdict({"d": 2.0, "p": 0.02500001}) == "NOT DETECTED" \
+        and k5_verdict({"d": 1.999, "p": 1 / 2001}) == "NOT DETECTED" and k5_verdict(None) == "NOT RUN"
+    names = ["uit-openviic-annotation-test.json", "test_data.json", "xm_test2500_x.jpg", "f30k_test.csv",
+             "nocaps_val.json", "selftest.log", "at_lmcap-ri_ov_dev_b-mvi-b1.preds.json", "STEP3_lmcap.json", "contest.txt"]
+    assert test_named(names) == sorted(names[:5]), "test-set file names are refused by name"
+    try:
+        full_set(["i1"], "xm_dev500")
+        raise AssertionError("rows over part of a set must be refused")
+    except SystemExit as e:
+        assert "full set" in str(e)
+    real = CLOCK
+    try:
+        CLOCK = lambda: K7_TS - 1  # noqa: E731
+        k7_open()
+        for at in (K7_TS, K7_TS + 3600):
+            CLOCK = lambda at=at: at  # noqa: E731
+            try:
+                k7_open()
+                raise AssertionError("K7 must refuse")
+            except SystemExit as e:
+                assert "K7" in str(e)
+        with tempfile.TemporaryDirectory() as tmp:
+            try:
+                cmd_stage(argparse.Namespace(stage="b3k5", work=Path(tmp), prev=None))
+                raise AssertionError("a block-3 stage after K7 must be refused")
+            except SystemExit as e:
+                assert "K7" in str(e), "cmd_stage checks K7 first for every block-3 stage"
+    finally:
+        CLOCK = real
+    ok.append("block 3: the decoder's run ids, LMCap τ_sel, τ_pair, τ_marg and the image-caption-pair τ_sel at m = 1 "
+              "with their labels and wording and no split note, absent rows, the K5 rule at its boundary, K7 at "
+              "2026-11-16T05:00Z, test-set names, full sets")
+
+
+def selftest_b3_chain(w: Path, run, good, generic, zb: Path, refused) -> None:
+    """The block-3 stages on a planted tree through the unstubbed c_attr.cmd_score. Called inside selftest_chain, whose
+    replaced references, memory captions, segmenter, environment and stage-2 runs it reuses."""
+    global stored_files, SRC_B3, B3_NOM_SHA256
+    ns, q, src, wb = argparse.Namespace, "qwen25vl_7b", w / "b3src", w / "wb3"
+    for d in ("b3src/out", "b3src/parity", "b3src/logs", "wb3/in", "wb3/led", "wb3/res"):
+        (w / d).mkdir(parents=True)
+    zx = run(q, "xm_dev500", "zs", 0, generic, "stored", b1=False)
+    cap_of = {"ri": good, "rand": generic, "perm": generic, "ret_img": good, "rand_img": generic}
+    for s in A.b3_steps(B3_RUNNERS):
+        lm = s["runner"] == "lmcap"
+        p = run(f"lmcap_{s['arm']}" if lm else q, s["set"], "lmcap" if lm else s["arm"][:-4], 0, cap_of[s["arm"]],
+                "b3src/out", rid=b3_id(s))
+        if not lm:
+            r = json.loads(p.read_text(encoding="utf-8"))
+            r["spec"]["img_examples"] = True
+            p.write_text(json.dumps(r, ensure_ascii=False), encoding="utf-8")
+    for r in B3_RUNNERS:
+        (src / f"parity/STEP3_{r}.json").write_text(json.dumps({"model": r, "D1": "PASS", "host": "h1", "block": 3}))
+    (src / "logs/job.log").write_text("JOB DONE\n")
+    fs = sorted(str(p.relative_to(src)) for d in ("out", "logs", "parity") for p in (src / d).rglob("*") if p.is_file())
+    (src / "SHA256SUMS").write_text("".join(f"{A.sha(src / f)}  {f}\n" for f in fs))
+    sums = A.sha(src / "SHA256SUMS")
+    shutil.copy(w / "c2/stage2_ledger.jsonl", wb / "in/stage2_ledger.jsonl")
+    shutil.copy(w / "res" / FILES["ova"], wb / "in" / B3_NOM)
+    saved = (stored_files, SRC_B3, B3_NOM_SHA256, dict(B3_REFS), A.lb.DATA, dict(A.B3_N), A.C2_LEDGER_SHA256)
+    try:
+        stored_files = lambda: {p: A.sha(p) for p in (zb, zx)}  # noqa: E731
+        SRC_B3, B3_NOM_SHA256, A.lb.DATA = src, A.sha(wb / "in" / B3_NOM), w / "ncs"
+        for k, txt in zip(sorted(B3_REFS), ("[]", "{}")):
+            (A.lb.DATA / k).parent.mkdir(parents=True, exist_ok=True)
+            (A.lb.DATA / k).write_text(txt)
+            B3_REFS[k] = A.sha(A.lb.DATA / k)
+        A.B3_N.update(ov_dev_b=24, xm_dev500=24)
+        A.C2_LEDGER_SHA256 = A.sha(w / "c2/stage2_ledger.jsonl")
+        (src / "RUNNING").write_text("")
+        assert "still running" in refused(st_b3verify, ns(b3_sums=sums), w / "wb3_r", {})
+        (src / "RUNNING").unlink()
+        (src / "out/xm_test2500_q.json").write_text("{}")
+        assert "test-set" in refused(st_b3verify, ns(b3_sums=sums), w / "wb3_n", {}), "a test-set name stops verify"
+        (src / "out/xm_test2500_q.json").unlink()
+        B3_NOM_SHA256 = "0" * 64
+        assert "pinned" in refused(st_b3verify, ns(b3_sums=sums), w / "wb3_p", {}), "verify checks every pin"
+        B3_NOM_SHA256 = A.sha(wb / "in" / B3_NOM)
+        rec = {}
+        st_b3verify(ns(b3_sums=sums), wb, rec)
+        assert rec["trees"]["b3"]["files"] == 13 and rec["d1"]["lmcap"]["D1"] == "PASS" \
+            and rec["parity_7_1"]["result"] == "ok" and len(rec["pins"]) == 5, f"b3verify ({rec['trees']})"
+        st_b3k5(ns(), wb, {})
+        k5 = json.loads((wb / "res/K5.json").read_text(encoding="utf-8"))
+        assert k5["verdict"] == "DETECTED" and k5["row"]["label"] == "DETECTED" and k5["consequence"] == K5_OUT["DETECTED"]
+        k5_ids = {b3_id(s) for s in A.b3_steps(("lmcap",)) if s["set"] == "ov_dev_b" and s["arm"] in ("ri", "rand")}
+        led = A.read_ledgers([wb / "led/k5.jsonl"])
+        assert len(led) == 4 and {x["run_id"] for x in led} == k5_ids, "K5 scores its two arms only (plain, masked3)"
+        shutil.copytree(wb, w / "wb3_t")
+        kt = json.loads((w / "wb3_t/res/K5.json").read_text(encoding="utf-8"))
+        kt["row"]["d"] += 1
+        (w / "wb3_t/res/K5.json").write_text(json.dumps(kt, ensure_ascii=False), encoding="utf-8")
+        assert "differs" in refused(st_b3rest, ns(), w / "wb3_t", {}), "rest's τ_sel must equal the logged K5 file"
+        st_b3rest(ns(), wb, {})
+        s = json.loads((wb / "res/B3_SUMMARY.json").read_text(encoding="utf-8"))
+        ov, xm = s["sets"]["ov_dev_b"]["rows"], s["sets"]["xm_dev500"]["rows"]
+        assert s["not_run"] == [] and set(ov) == set(xm) == {f"{m}|{e}" for m, e, _x, _y in B3_EST}
+        assert ov["lmcap|tau_sel"] == k5["row"] and ov["lmcap|tau_marg"]["d"] == 0.0 \
+            and ov["lmcap|tau_marg"]["label"] == "NEGLIGIBLE" and ov["qwen25vl_7b|tau_sel_img"]["label"] == "DETECTED"
+        assert not any("interpretation" in x for x in [*ov.values(), *xm.values()]), "K5 DETECTED: rows interpreted"
+        w2 = w / "wb3_d1"  # LMCap D1 FAIL: K5 NOT RUN, the Qwen2.5-VL rows printed without interpretation
+        shutil.copytree(src, w2 / "in/b3")
+        for d in ("led", "res"):
+            (w2 / d).mkdir()
+        shutil.copy(wb / "in" / B3_NOM, w2 / "in" / B3_NOM)
+        (w2 / "in/b3/parity/STEP3_lmcap.json").write_text(json.dumps({"model": "lmcap", "D1": "FAIL"}))
+        for p in (w2 / "in/b3/out").glob("at_lmcap-*"):
+            p.unlink()
+        st_b3k5(ns(), w2, {})
+        k2 = json.loads((w2 / "res/K5.json").read_text(encoding="utf-8"))
+        assert k2["verdict"] == "NOT RUN" and k2["row"] is None and not (w2 / "led/k5.jsonl").exists()
+        st_b3rest(ns(), w2, {})
+        s2 = json.loads((w2 / "res/B3_SUMMARY.json").read_text(encoding="utf-8"))
+        r2 = s2["sets"]["ov_dev_b"]["rows"]
+        assert set(r2) == {"qwen25vl_7b|tau_sel_img"} and r2["qwen25vl_7b|tau_sel_img"]["interpretation"] == UNINTERPRETED \
+            and len(s2["not_run"]) == 6 and s2["k5_consequence"] == K5_OUT["NOT RUN"]
+        stray = sorted(src.glob("out/at_lmcap-*"))[0]
+        shutil.copy(stray, w2 / "in/b3/out" / stray.name)
+        assert "without a D1 PASS" in refused(st_b3rest, ns(), w2, {}), "runs of a runner without a D1 PASS refused"
+        w3 = w / "wb3_cap"  # a CAP STOP or JOB STOP before step 2: K5 refused, no K5 file
+        shutil.copytree(src, w3 / "in/b3")
+        for d in ("led", "res"):
+            (w3 / d).mkdir()
+        (w3 / "in/b3/out" / f"{b3_id(A.b3_steps(('lmcap',))[1])}.preds.json").unlink()
+        assert "judge line" in refused(st_b3k5, ns(), w3, {}) and not (w3 / "res/K5.json").exists()
+    finally:
+        stored_files, SRC_B3, B3_NOM_SHA256 = saved[:3]
+        B3_REFS.clear()
+        B3_REFS.update(saved[3])
+        A.lb.DATA = saved[4]
+        A.B3_N.clear()
+        A.B3_N.update(saved[5])
+        A.C2_LEDGER_SHA256 = saved[6]
 
 
 def main() -> None:
@@ -1502,11 +1880,13 @@ def main() -> None:
     p.add_argument("--blind", type=Path, help="a stored image-blind run, admitted by the stage-2 ledger")
     p = sub.add_parser("stage")
     p.add_argument("stage", choices=sorted(STAGE))
-    p.add_argument("--work", type=Path, default=WORK)
+    p.add_argument("--work", type=Path, help="planted self-test trees only; the host default is /root/c_attr_score, "
+                                             "or /root/c_attr_score_b3 for the block-3 stages")
     p.add_argument("--prev", help="sha256 of the previous stage's file, as logged")
     p.add_argument("--b1-sums", help="verify: sha256 of the verified block-1b SHA256SUMS, as logged")
     p.add_argument("--b-sums", help="verify: sha256 of the verified block-1 SHA256SUMS, as logged")
     p.add_argument("--reason", help="close: the reason of the OPS line '1b closed: <reason>'")
+    p.add_argument("--b3-sums", help="b3verify: sha256 of the verified block-3 SHA256SUMS, as logged")
     a = ap.parse_args()
     if a.selftest:
         return selftest()

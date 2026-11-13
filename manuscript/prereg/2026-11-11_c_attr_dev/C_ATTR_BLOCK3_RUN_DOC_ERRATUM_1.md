@@ -1,0 +1,7 @@
+# C-ATTR-DEV block-3 run document v1.1: erratum 1 (CC-370)
+
+Amends `C_ATTR_BLOCK3_RUN_DOC_v1_1.md` (sha256 `e8ae45a59b0819aece1a4a8e8b5921bc3c0a1bc4d9bdb7255cd0d236ac575cba`, unchanged). Fixed by ruling CC-370 on 2026-11-12, before any block-3 decode output existed. No code, registry, threshold, SESOI or decision rule changes.
+
+§9 item 4 omits one staging step. After the `fetch` of `xglm_2_9b`, the operator places `model.safetensors` from `facebook/xglm-2.9B` refs/pr/2 (commit `e16cf0213968ba3cb613ec070a3cff7c1e5ffd8d`; sha256 `9e2926577049a20960ead82d1ebe5ce04d498f450ca53e5c1fb0993c4fc7d8de`, 5,883,096,008 bytes) in `$NCS_DATA/models/c_t1_xglm_2_9b`, beside the 7 pinned files, which stay untouched, `pytorch_model.bin` included. The file is mode 444. Its sha256 is printed in full before call 1, at PAUSE and after call 2. This is the C-T1 AMENDMENT_2 fix (sha256 `753cf15ba38996dc11f06aa06cfde858dafc0956d438c794dda224b683808c6f`; CC-185 r2(a), proof of bit-identical tensors in its §2). Without the file, transformers 4.57.6 refuses to load the `.bin` under torch 2.5.1 (CVE-2025-32434 guard). The registry (`09e6f90a…`) is not edited (CC-185 r3). The pin is enforced by the operator sha checks, not by `check_snapshot`.
+
+Disclosure: the first block-3 launch (2026-11-12, OPS-1113h) stopped at this load before generating any caption, with 73 GPU-seconds charged and no output. Block 3 was relaunched from its host gates after the fix (CC-370).

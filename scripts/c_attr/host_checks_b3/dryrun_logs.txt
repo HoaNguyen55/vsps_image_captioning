@@ -1,0 +1,90 @@
+DRY: snapshot checks of xglm_2_9b and mclip_h14 skipped
+DRY at_lmcap-perm_ov_dev_b-mvi-b1-smoke: 925 items, memory and lists checked; stop before the model load
+DRY: snapshot checks of xglm_2_9b and mclip_h14 skipped
+DRY at_lmcap-rand_ov_dev_b-mvi-b1-smoke: 925 items, memory and lists checked; stop before the model load
+DRY: snapshot checks of xglm_2_9b and mclip_h14 skipped
+DRY at_lmcap-ri_ov_dev_b-mvi-b1-smoke: 925 items, memory and lists checked; stop before the model load
+DRY: snapshot checks of xglm_2_9b and mclip_h14 skipped
+DRY at_lmcap-perm_xm_dev500-mvi-b1-smoke: 500 items, memory and lists checked; stop before the model load
+DRY: snapshot checks of xglm_2_9b and mclip_h14 skipped
+DRY at_lmcap-rand_xm_dev500-mvi-b1-smoke: 500 items, memory and lists checked; stop before the model load
+DRY: snapshot checks of xglm_2_9b and mclip_h14 skipped
+DRY at_lmcap-ri_xm_dev500-mvi-b1-smoke: 500 items, memory and lists checked; stop before the model load
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-rand_img-k8--T1-d0-mvi-b1-smoke: 2 items, examples and prompts built; stop before the model load
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-ret_img-k8-first-T1-mvi-b1-smoke: 2 items, examples and prompts built; stop before the model load
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-rand_img-k8--T1-d0-mvi-b1-smoke: 2 items, examples and prompts built; stop before the model load
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_xm_dev500-ret_img-k8-first-T1-mvi-b1-smoke: 2 items, examples and prompts built; stop before the model load
+DRY: snapshot checks of xglm_2_9b and mclip_h14 skipped
+DRY at_lmcap-ri_ov_dev_b-mvi-b1-fwd50-smoke: 925 items, memory and lists checked; stop before the model load
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-ret_img-k8-first-T1-mvi-b1-fwd50-smoke: 2 items, examples and prompts built; stop before the model load
+DRY: snapshot checks of xglm_2_9b and mclip_h14 skipped
+DRY at_lmcap-ri_ov_dev_b-mvi-rev50-smoke: 925 items, memory and lists checked; stop before the model load
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY at_qwen25vl_7b_ov_dev_b-ret_img-k8-first-T1-mvi-rev50-smoke: 2 items, examples and prompts built; stop before the model load
+DRY compare D1_lmcap: 50 ids; reference a host run; rc 3
+DRY compare D1_qwen25vl_7b: 50 ids; reference a host run; rc 3
+guard ok
+2026-11-12T19:43:21Z DRY RUN (laptop, PI-1109g): mode block3, decodes stop before the model load
+2026-11-12T19:43:21Z DRY: GPU-busy check skipped (no GPU)
+2026-11-12T19:43:21Z DRY: venv-lb freeze check skipped (laptop venv)
+2026-11-12T19:43:22Z DRY: venv-t1 freeze, LMCap pins and t1check skipped (no weights on the laptop)
+2026-11-12T19:43:25Z PREFLIGHT OK head 60358b2768cfa22912f4bb19b4c0bbfb80dd4c76 mode block3
+2026-11-12T19:43:25Z START D1r_lmcap attempt 1 (left 720 min)
+2026-11-12T19:43:26Z OK D1r_lmcap
+2026-11-12T19:43:26Z START D1_lmcap attempt 1 (left 719 min)
+2026-11-12T19:43:26Z OK D1_lmcap
+2026-11-12T19:43:26Z STEP 3.0 lmcap D1 PASS
+2026-11-12T19:43:26Z START D1r_qwen25vl_7b attempt 1 (left 719 min)
+2026-11-12T19:43:27Z OK D1r_qwen25vl_7b
+2026-11-12T19:43:27Z START D1_qwen25vl_7b attempt 1 (left 719 min)
+2026-11-12T19:43:27Z OK D1_qwen25vl_7b
+2026-11-12T19:43:27Z STEP 3.0 qwen25vl_7b D1 PASS
+2026-11-12T19:43:27Z PLAN 3: P3 4.14 GPU-h, cap 6.21 GPU-h, 10 runs, NOT RUN none
+2026-11-12T19:43:27Z BLOCK 3: 10 runs at batch size 1 under cap 22358 s
+2026-11-12T19:43:28Z START B3_lmcap_ov_dev_b_ri attempt 1 (left 372 min)
+2026-11-12T19:43:28Z OK B3_lmcap_ov_dev_b_ri
+2026-11-12T19:43:28Z START B3_lmcap_ov_dev_b_rand attempt 1 (left 372 min)
+2026-11-12T19:43:28Z OK B3_lmcap_ov_dev_b_rand
+2026-11-12T19:43:29Z START B3_lmcap_ov_dev_b_perm attempt 1 (left 372 min)
+2026-11-12T19:43:29Z OK B3_lmcap_ov_dev_b_perm
+2026-11-12T19:43:29Z START B3_lmcap_xm_dev500_ri attempt 1 (left 372 min)
+2026-11-12T19:43:30Z OK B3_lmcap_xm_dev500_ri
+2026-11-12T19:43:30Z START B3_lmcap_xm_dev500_rand attempt 1 (left 372 min)
+2026-11-12T19:43:30Z OK B3_lmcap_xm_dev500_rand
+2026-11-12T19:43:30Z START B3_lmcap_xm_dev500_perm attempt 1 (left 372 min)
+2026-11-12T19:43:31Z OK B3_lmcap_xm_dev500_perm
+2026-11-12T19:43:31Z START B3_qwen25vl_7b_ov_dev_b_ret_img attempt 1 (left 372 min)
+2026-11-12T19:43:31Z OK B3_qwen25vl_7b_ov_dev_b_ret_img
+2026-11-12T19:43:31Z START B3_qwen25vl_7b_ov_dev_b_rand_img attempt 1 (left 372 min)
+2026-11-12T19:43:32Z OK B3_qwen25vl_7b_ov_dev_b_rand_img
+2026-11-12T19:43:32Z START B3_qwen25vl_7b_xm_dev500_ret_img attempt 1 (left 372 min)
+2026-11-12T19:43:32Z OK B3_qwen25vl_7b_xm_dev500_ret_img
+2026-11-12T19:43:32Z START B3_qwen25vl_7b_xm_dev500_rand_img attempt 1 (left 372 min)
+2026-11-12T19:43:33Z OK B3_qwen25vl_7b_xm_dev500_rand_img
+2026-11-12T19:43:33Z JOB DONE gpu_h 0.00
+memcheck ok: 8190 images
+PLAN 3: P3 4.14 GPU-h, cap 6.21 GPU-h, 10 runs, NOT RUN none
+{"f30k_carve": {"qwen25vl_7b: ret-rand": "NOMINATE", "qwen25vl_7b: ret-rand (X1, 2 draws)": null, "qwen25vl_7b: ret_img-ret (RICES, descriptive)": null}}
+{"f30k_carve": {"qwen25vl_7b: ret-rand": "NOMINATE", "qwen25vl_7b: ret-rand (X1, 2 draws)": null, "qwen25vl_7b: ret_img-ret (RICES, descriptive)": null}}
+{"ov_dev_b": {"qwen25vl_7b: ret-rand": "DESCRIPTIVE"}}
+{}
+{"family": ["E1 aya_vision_8b: ret-rand", "E3 aya_vision_8b: ret-lmcap_ri", "E3 internvl3_8b: ret-lmcap_ri", "E3 qwen25vl_7b: ret-lmcap_ri"], "m_plan": 4, "status": {"E1 aya_vision_8b: ret-rand": "TIER-3 FAMILY", "E2 qwen25vl_7b: ret-rand": "VAL FAIL", "E3 aya_vision_8b: ret-lmcap_ri": "TIER-3 FAMILY", "E3 internvl3_8b: ret-lmcap_ri": "TIER-3 FAMILY", "E3 qwen25vl_7b: ret-lmcap_ri": "TIER-3 FAMILY"}}
+PLAN 3: P3 4.35 GPU-h, cap 6.52 GPU-h, 10 runs, NOT RUN none
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+selftest ok: split; X1 draws (draw-0 parity with C's rule); prompts (LMCap App. D, RICES interleave, C/C-EN templates unchanged); Vietnamese check; X2 masking; third-backbone selection (C's stage-A rule, W1); contrasts, X1 folding, X3 precision, advance labels, kill gate; budget, registry pins; summary end to end (dev299 skipped, VI descriptive), C2 pins, guard, store refusal; AMENDMENT_1 isolation (deny rules, symlink escape, datasets allow-list, open/os.open hook in a child); C-T2 admission: val admitted; test refused (names, extract, items_of, guard, hook), summary skips val; C-T2 decision (5 claims, val PASS, single-pass m, 0.98 margin, NOT RUN, W2 rows, W4), dupcheck, t2 CLI; v1.2: '-b1' ids, D1 reference, V5 steps and counts (37,213), V7 cap and Tier-A stop; block 3: step order and counts (7,125), cap min(12, 1.5 P3) from D1 timings, LMCap '-b1' ids and D1 reference, D1 slice, LMCap refusals before any model load, c_attr_b3 output folder; C-ATTR run ids, example ids (perm / fix / rand_img from the list file), lmcap_rand; A3 prompt shape: two arms differ only through the example block; refusals: test-set names and real test file names refused; real dev names pass; no name clash; comparator (ids only), pinned stored runs, tau -inf columns, decode refusals before the model load; v1.2 D1: compared with the rev50 decode only, fwd50 needs --batch1, no caption printed
+c_attr_lists selftest ok: Sattolo: one n-cycle, no fixed point, (set, p) only; toy (12 clusters, 6 images): donor, near cut on q, refill count, ret / rand d0 / f0 = C's rule, f1-f4; K0 comparator (counts and failing ids); inputs pinned in STORED_SHA256; manifests 911 / 500
+{"f30k_carve": {"qwen25vl_7b: ret-rand": "NOMINATE", "qwen25vl_7b: ret-rand (X1, 2 draws)": null, "qwen25vl_7b: ret_img-ret (RICES, descriptive)": null}}
+{"f30k_carve": {"qwen25vl_7b: ret-rand": "NOMINATE", "qwen25vl_7b: ret-rand (X1, 2 draws)": null, "qwen25vl_7b: ret_img-ret (RICES, descriptive)": null}}
+{"ov_dev_b": {"qwen25vl_7b: ret-rand": "DESCRIPTIVE"}}
+{}
+{"family": ["E1 aya_vision_8b: ret-rand", "E3 aya_vision_8b: ret-lmcap_ri", "E3 internvl3_8b: ret-lmcap_ri", "E3 qwen25vl_7b: ret-lmcap_ri"], "m_plan": 4, "status": {"E1 aya_vision_8b: ret-rand": "TIER-3 FAMILY", "E2 qwen25vl_7b: ret-rand": "VAL FAIL", "E3 aya_vision_8b: ret-lmcap_ri": "TIER-3 FAMILY", "E3 internvl3_8b: ret-lmcap_ri": "TIER-3 FAMILY", "E3 qwen25vl_7b: ret-lmcap_ri": "TIER-3 FAMILY"}}
+PLAN 3: P3 4.35 GPU-h, cap 6.52 GPU-h, 10 runs, NOT RUN none
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+DRY: snapshot check of qwen25vl_7b skipped (no weights on the laptop)
+selftest ok: split; X1 draws (draw-0 parity with C's rule); prompts (LMCap App. D, RICES interleave, C/C-EN templates unchanged); Vietnamese check; X2 masking; third-backbone selection (C's stage-A rule, W1); contrasts, X1 folding, X3 precision, advance labels, kill gate; budget, registry pins; summary end to end (dev299 skipped, VI descriptive), C2 pins, guard, store refusal; AMENDMENT_1 isolation (deny rules, symlink escape, datasets allow-list, open/os.open hook in a child); C-T2 admission: val admitted; test refused (names, extract, items_of, guard, hook), summary skips val; C-T2 decision (5 claims, val PASS, single-pass m, 0.98 margin, NOT RUN, W2 rows, W4), dupcheck, t2 CLI; v1.2: '-b1' ids, D1 reference, V5 steps and counts (37,213), V7 cap and Tier-A stop; block 3: step order and counts (7,125), cap min(12, 1.5 P3) from D1 timings, LMCap '-b1' ids and D1 reference, D1 slice, LMCap refusals before any model load, c_attr_b3 output folder; C-ATTR run ids, example ids (perm / fix / rand_img from the list file), lmcap_rand; A3 prompt shape: two arms differ only through the example block; refusals: test-set names and real test file names refused; real dev names pass; no name clash; comparator (ids only), pinned stored runs, tau -inf columns, decode refusals before the model load; v1.2 D1: compared with the rev50 decode only, fwd50 needs --batch1, no caption printed

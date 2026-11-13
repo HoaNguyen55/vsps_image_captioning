@@ -9,6 +9,9 @@
 #         bash scripts/c_attr/c_attr_score_job.sh <expected HEAD> verify --b1-sums <sha256> --b-sums <sha256>
 #         bash scripts/c_attr/c_attr_score_job.sh <expected HEAD> ova|ovb|rest|posthoc --prev <sha256>
 #         bash scripts/c_attr/c_attr_score_job.sh <expected HEAD> close --prev <sha256> --reason "<reason>"
+# Block 3 (C_ATTR_BLOCK3_SCORING_RUN_DOC_v1.md, CC-368 ruling 12), work folder /root/c_attr_score_b3:
+#         bash scripts/c_attr/c_attr_score_job.sh <expected HEAD> b3verify --b3-sums <sha256>
+#         bash scripts/c_attr/c_attr_score_job.sh <expected HEAD> b3k5|b3rest --prev <sha256>
 set -euo pipefail
 EXPECT=${1:?usage: c_attr_score_job.sh <expected HEAD> STAGE [args]}; STAGE=${2:?usage: c_attr_score_job.sh HEAD STAGE}
 shift 2
@@ -17,13 +20,14 @@ MID=$(cat /root/.vsps_machine_id 2>/dev/null || true)
 case "$MID" in h1|h2) ;; *) echo "REFUSED: /root/.vsps_machine_id is not h1 or h2 (scoring runs on the rented host)"; exit 1;; esac
 export NCS_DATA=/root/ncs-data HF_HUB_OFFLINE=1 VSPS_MACHINE_ID=$MID
 PY=/root/vsps/.venv/bin/python; W=/root/c_attr_score
+case "$STAGE" in b3*) W=/root/c_attr_score_b3;; esac
 mkdir -p $W/logs
 say() { echo "$(date -u +%FT%TZ) $*" | tee -a $W/logs/score.log; }
 stop() { say "SCORE STOP $*"; exit 1; }
 [ "$(git rev-parse HEAD)" = "$EXPECT" ] || stop "HEAD is not $EXPECT"
 git diff --quiet HEAD -- || stop "tracked files differ from HEAD"
 (cd scripts/c_attr && sha256sum --quiet -c SHA256SUMS) || stop "scripts/c_attr/SHA256SUMS"
-for d in /root/outputs/c_attr /root/outputs/c_attr_b1; do
+for d in /root/outputs/c_attr /root/outputs/c_attr_b1 /root/outputs/c_attr_b3; do
   if [ -e $d/RUNNING ]; then stop "$d/RUNNING exists: never beside a decode job (§6.7)"; fi
 done
 say "START $STAGE head $EXPECT"
