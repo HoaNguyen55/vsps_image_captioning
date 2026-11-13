@@ -1,0 +1,82 @@
+status.log B-FECERT round-2 host records (CC-361 D18)
+tree_pushed_utc 2026-11-13T03:08:25Z
+base_commit a4db071e6a270eefa77aefb2efcb2d055f67fc52
+diff-index --name-status HEAD:
+M	manuscript/prereg/2026-11-12_b_fecert/B_FECERT_PREREG_v1.md
+M	manuscript/prereg/2026-11-12_b_fecert/B_FECERT_PREREG_v1_1.md
+M	manuscript/prereg/2026-11-12_b_fecert/B_PREF_INSTRUCTIONS_VI_v1.md
+M	manuscript/prereg/2026-11-12_b_fecert/B_PREF_INSTRUCTIONS_VI_v1_BACKTRANSLATION.md
+M	manuscript/prereg/2026-11-12_b_fecert/B_PREF_LABELLING_PLAN_v1.md
+M	manuscript/prereg/2026-11-12_b_fecert/B_PREF_LABELLING_PLAN_v1_1.md
+M	manuscript/prereg/2026-11-12_b_fecert/SHA256SUMS_B_FECERT
+M	manuscript/prereg/2026-11-12_b_fecert/build/build_v1_1.py
+M	manuscript/prereg/2026-11-12_b_fecert/build/verify_v1_1.py
+M	rescap/__init__.py
+M	rescap/chair.py
+M	rescap/metrics.py
+M	rescap/metrics_svp.py
+M	rescap/repro.py
+M	rescap/svp/__init__.py
+M	rescap/svp/entailment.py
+M	rescap/svp/matching.py
+M	rescap/vi/__init__.py
+M	rescap/vi/classifier.py
+M	rescap/vi/color.py
+M	rescap/vi/lexicon.py
+M	rescap/viz.py
+M	rescap/vocab.py
+M	scripts/b2_external/b2.py
+M	scripts/b_pa1/b_pa1.py
+M	scripts/grl/common.py
+M	scripts/grl/id_counts.py
+M	scripts/kit_b/b2_controls.py
+M	scripts/kit_b/exchangeability_audit.py
+M	scripts/kit_b/protocol_pilot.py
+M	scripts/kit_b/ptb_protocol.py
+M	tools/obj_rater/build_assignment.py
+M	tools/obj_rater/build_overlap.py
+M	tools/obj_rater/build_topup.py
+M	tools/obj_rater/host_checks_topup/selftest.log
+M	tools/obj_rater/rater.html
+M	tools/obj_rater/server.py
+ls-files --others:
+manuscript/prereg/2026-11-12_b_fecert/B_PREF_PLAN_ADDENDUM_SALT_v1.md
+scripts/b_fecert/B_FECERT_R1_R2.diff
+scripts/b_fecert/READ_PACKAGE.md
+scripts/b_fecert/SHA256SUMS
+scripts/b_fecert/b_fecert.py
+scripts/b_fecert/family.py
+scripts/b_fecert/mutants.py
+tools/obj_rater/PAIR_R1_R2.diff
+tools/obj_rater/PAIR_READ_PACKAGE.md
+tools/obj_rater/PAIR_SHA256SUMS
+tools/obj_rater/build_pairs.py
+tools/obj_rater/pair.html
+tools/obj_rater/pair_server.py
+sha256sum -c scripts/b_fecert/SHA256SUMS:
+family.py: OK
+b_fecert.py: OK
+mutants.py: OK
+READ_PACKAGE.md: OK
+B_FECERT_R1_R2.diff: OK
+sha256sum -c tools/obj_rater/PAIR_SHA256SUMS:
+pair_server.py: OK
+pair.html: OK
+build_pairs.py: OK
+PAIR_READ_PACKAGE.md: OK
+PAIR_R1_R2.diff: OK
+the 13 files:
+7cb2c69b8b7840388568fd5f9b248e2cf25df28185386be875a65d921a9e4178  scripts/b_fecert/family.py
+a20585b19e3e6047cff49f079a54359d5092d62675f336f1d22df6b39ca8f6d3  scripts/b_fecert/b_fecert.py
+bde36a1526d80be015c9bcf8c358eb6700bd235d2e71e794886d91e5d0865eda  scripts/b_fecert/mutants.py
+b4edce3acb3c6214ff92e512bb0d4be4371796ada0c46def84e4f10d97b0b8f3  scripts/b_fecert/READ_PACKAGE.md
+8cb7a4d45123019db446dcb6e8353d3758c19d1c9a128a1abd0994a984c70311  scripts/b_fecert/B_FECERT_R1_R2.diff
+372b16c43963e8c66b285624075a0d634cdaba85f53f35e922f1ead84121f48b  scripts/b_fecert/SHA256SUMS
+da36692dc2037f2c06c62d365a92c2e8abf4d12ef759e7ad703e449fc9dbe32e  tools/obj_rater/pair_server.py
+1dde2ecf734a9adc59bb61c05ff5a8cea25257318c668e5cf18cfb15ed91b8d1  tools/obj_rater/pair.html
+1c56f8d117f701bafcef438b5fa80090e2108443e585acaa2bc427f750d1ce61  tools/obj_rater/build_pairs.py
+a16a937b2952eb6922f8cd8e4a450f018f8cec6c4aff0561e164b8f6d7bc4982  tools/obj_rater/PAIR_READ_PACKAGE.md
+963b7143774b36d05e8687c666988bdcd2cf081bbb84679bdc3bd824d6cd6f6e  tools/obj_rater/PAIR_R1_R2.diff
+d444c7f1aad73b6c67b6796d1c9b50cdac718bee8243c95b39513bd719707e0b  tools/obj_rater/PAIR_SHA256SUMS
+0305aed654c822c07f9c9afe1e49b76a7d3794c297e04992e89d41e11cf130ba  manuscript/prereg/2026-11-12_b_fecert/B_PREF_PLAN_ADDENDUM_SALT_v1.md
+filter: lines matching ([0-9]{1,3}\.){3}[0-9]{1,3} dropped: java_version.txt 3 lines (the java -version banner, version 21_0_13_0_3), versions.txt 1 line (java_version_line); apt.log not pulled (apt mirror and package lines)

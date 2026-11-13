@@ -1,0 +1,42 @@
+ok  1 display normalisation on toy strings (NFC, '_', 25 White_Space only, final run, first letter)
+ok  2 strata from d values at epsilon 10 (P, U, C, both flips, below margin)
+ok  3 refuses an --out under /mnt
+ok  4 refuses an --out under ~/vsps_labels/
+ok  5 refuses to overwrite an existing --out
+ok  6 stops when a stratum disagrees with its d values
+ok  7 stops on a file paired with itself
+ok  8 stops on a file that is not -short
+ok  9 stops on an image outside the test file
+ok 10 stops on a candidate field outside {a, b, stratum, d_syl, d_word, d_pk} (D3)
+ok 11 stops when PAIR_CANDIDATES.json differs from --candidates-sha (NB9)
+ok 12 stops when display texts differ in fewer than 2 tokens
+ok 13 key.json = {salt, items}; the injected salt (D15)
+ok 14 quotas P 100, U 160; C shortfall takes all ({'U': 160, 'P': 100, 'C': 20})
+ok 15 one pair per image; images disjoint across strata and practice
+ok 16 every pair is a candidate of its own stratum
+ok 17 left/right balance within 3 sd (140/280 with file a on the left)
+ok 18 30 repeats, sides swapped, each >= 100 screens after its first showing
+ok 19 qids unique across assignment and practice; qid = sha256(SALT|SEED|part|image|a|b)[:12], never unsalted (D15)
+ok 20 served files: no file name, stratum, score, role or reference; one q per screen
+ok 21 served captions = display text of the keyed left and right files
+ok 22 8 practice pairs from images not drawn for the main set
+ok 23 built with no images folder; every image path in the regex and in test_data.json; .jpg, .jpeg, .png drawn (D14)
+ok 24 no caption or reference text in key.json, BUILD.json, the manifest or stdout
+ok 25 the salt is only in key.json: not served, not in BUILD.json, the manifest or stdout (D15)
+ok 26 ITEMS_MANIFEST.tsv: qid and image id only, every qid
+ok 27 BUILD.json holds every input and output sha256
+ok 28 determinism: two builds with the same salt byte-equal
+ok 29 with no injected salt each build draws a fresh 128-bit secret (D15)
+ok 30 pair_server starts on the built fixture with the real pair.html (D16, D14, NB5)
+ok 31 pair_server: .png as image/png, .jpeg/.jpg as image/jpeg
+ok 32 pair.html carries the registered Vietnamese block byte for byte (45d59b54; D16)
+ok 33 pair_server refuses a page whose instruction block differs by one character ('Trước hét'; D16)
+ok 34 pair_server refuses a page whose instruction block differs by one character ('20 giay'; D16)
+ok 35 pair_server refuses ports 8790 and 8791
+ok 36 pair_server refuses a --dir under /mnt or ~/vsps_labels/, or outside ~/vsps_labels_b/ (NB5)
+ok 37 pair_server: --annotator PI or R2 only (NB5)
+ok 38 pair_server refuses to start when a served image is missing on the laptop (D14)
+ok 39 pair_server refuses to start when key.json differs from BUILD.json
+fixture sha256 assignment.json 3a97db6c898c6331c3bcea90e0642fc022eb259992fe051ca255f73839aa262e
+fixture sha256 key.json 4607d9bbe8709810353768176f464767f1c067be64eaa3a455de41c7a1dff9c8
+SELFTEST PASS 39/39

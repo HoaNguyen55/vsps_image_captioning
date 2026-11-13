@@ -1,0 +1,339 @@
+{
+ "schema": "vsps.b_fecert.printed.v1",
+ "registration": "manuscript/prereg/2026-11-12_b_fecert/B_FECERT_PREREG_v1_1.md sha256 736b7e6a8ea2007270a3329db7ad6a09197c4804c9bc3821ea6bd4ceb5a61aa0, section 5.2",
+ "status": "written, NOT judge-checked; sha256 to be logged after the judge check (section 5.2, K-print)",
+ "access_date_utc": "2026-11-12",
+ "method": "values copied from public pages only; each copied value checked by script against its source line; no fetched data file was opened for a value; nothing computed",
+ "sources": [
+  {
+   "id": "KTVIC",
+   "kind": "paper",
+   "url": "https://arxiv.org/abs/2401.08100",
+   "pdf": "https://arxiv.org/pdf/2401.08100v1",
+   "version": "v1 (submitted 16 Jan 2024; only version listed on the abs page at access)",
+   "title": "KTVIC: A Vietnamese Image Captioning Dataset on the Life Domain",
+   "table": "Table 3 (test split of KTVIC), PDF page 8",
+   "pdf_sha256": "75619eda7ed8ff11e995dfe443c47138934d5ee68529dcf9be729e738621f837",
+   "notes": [
+    "split as printed: test split of KTVIC",
+    "column printed as 'ROUGE'; section 5.1 names ROUGE-L",
+    "column printed as 'CIDEr'; section 5.1 names CIDEr [32]; the text says baselines were not CIDEr-D optimised",
+    "metrics in section 5.1: BLEU-1, BLEU-4, METEOR, ROUGE-L, CIDEr (no SPICE printed)",
+    "rows 1) and 2) are the two KTVIC baselines of thesis-code (footnote 3); row 3) GRIT has no released outputs here"
+   ],
+   "printed": true
+  },
+  {
+   "id": "K2",
+   "kind": "README",
+   "repo": "SuperCoolGuy855/CLIP_mT5_Image_captioning",
+   "commit": "d786f6d7f2a7149ff8ed18021d4fab30bec39f9a",
+   "url": "https://github.com/SuperCoolGuy855/CLIP_mT5_Image_captioning/blob/d786f6d7f2a7149ff8ed18021d4fab30bec39f9a/README.md",
+   "readme_sha256": "f7d42e5442c00c1fc9a4fb1fe6fe3e7c30355e7c8a7d7e43f3b530457165e3c5",
+   "location": "README.md lines 7-11, section 'Results'",
+   "notes": [
+    "split: the Results table (README lines 7-11) names none; README line 29 says the model is evaluated on the KTVIC test set after each epoch; which epoch the table reports is not stated",
+    "file side (schema print): results.xlsx has header-like rows naming BLEU-1, BLEU-4, CIDEr, METEOR, RougeL (5 header rows with an 'Epochs' column, 2 without); no xlsx value read"
+   ],
+   "printed": true
+  },
+  {
+   "id": "loc110504",
+   "kind": "README",
+   "repo": "loc110504/VietnameseSportImageCaptioning",
+   "commit": "6d8132e4ba809aaf0624d106f5ab3b6c1bba6af2",
+   "readme_sha256": "37461a97b923921c82abaa1a455c235fc9148a76e69c648c7a2d50320eb9103b",
+   "printed": false,
+   "notes": [
+    "README lines 47-51 list BLEU-{1-4}, ROUGE-L, BERTScore, CIDEr as metrics but print no value",
+    "no paper linked from the README"
+   ]
+  },
+  {
+   "id": "vanngthi",
+   "kind": "README",
+   "repo": "vanngthi/ViECAP-Image-Captioning-Vietnamese",
+   "commit": "fd71ca596aeb4ba21088cb3ddb450eee33d0c7cf",
+   "readme_sha256": "8e8e8afc306ed8a066e38861ea959b5f10cbbd1e2383e4322f28cb93a24b302b",
+   "printed": false,
+   "notes": [
+    "README prints dataset split sizes only, no metric value",
+    "no paper linked from the README"
+   ]
+  },
+  {
+   "id": "trannam710/NIC-with-Soft-Attention",
+   "kind": "README",
+   "commit": "06601183a2103544eb8a96ccda1ad1caac204526",
+   "printed": false,
+   "notes": [
+    "no README file in the tree at the pinned commit (raw README.md: HTTP 404; tree listing has none)",
+    "notebooks were not read: the registration names README or paper only"
+   ]
+  },
+  {
+   "id": "trannam710/Meshed-Memory-Transformer",
+   "kind": "README",
+   "commit": "610980129fef563917001ad239be03e8e3e188ed",
+   "readme_sha256": "90c65c95928fbb2851f29cc00594a2b9468c58e171d1f4f307ffab416758488f",
+   "printed": false,
+   "notes": [
+    "README is the upstream M2 (COCO) README; it prints no metric value; it links the original CVPR 2020 paper (COCO), not a paper of this group"
+   ]
+  }
+ ],
+ "values": {
+  "KTVIC": [
+   {
+    "system": "1) ResNet101 / LSTM",
+    "metric_as_printed": "BLEU-1",
+    "value_as_printed": "53.0",
+    "value": 53.0,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "1) ResNet101 / LSTM",
+    "metric_as_printed": "BLEU-4",
+    "value_as_printed": "15.5",
+    "value": 15.5,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "1) ResNet101 / LSTM",
+    "metric_as_printed": "METEOR",
+    "value_as_printed": "27.5",
+    "value": 27.5,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "1) ResNet101 / LSTM",
+    "metric_as_printed": "ROUGE",
+    "value_as_printed": "42.3",
+    "value": 42.3,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "1) ResNet101 / LSTM",
+    "metric_as_printed": "CIDEr",
+    "value_as_printed": "21.8",
+    "value": 21.8,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "2) ViT / Transformer",
+    "metric_as_printed": "BLEU-1",
+    "value_as_printed": "56.1",
+    "value": 56.1,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "2) ViT / Transformer",
+    "metric_as_printed": "BLEU-4",
+    "value_as_printed": "19.3",
+    "value": 19.3,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "2) ViT / Transformer",
+    "metric_as_printed": "METEOR",
+    "value_as_printed": "30.1",
+    "value": 30.1,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "2) ViT / Transformer",
+    "metric_as_printed": "ROUGE",
+    "value_as_printed": "44.7",
+    "value": 44.7,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "2) ViT / Transformer",
+    "metric_as_printed": "CIDEr",
+    "value_as_printed": "36.8",
+    "value": 36.8,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "3) GRIT / GRIT",
+    "metric_as_printed": "BLEU-1",
+    "value_as_printed": "74.7",
+    "value": 74.7,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "3) GRIT / GRIT",
+    "metric_as_printed": "BLEU-4",
+    "value_as_printed": "40.6",
+    "value": 40.6,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "3) GRIT / GRIT",
+    "metric_as_printed": "METEOR",
+    "value_as_printed": "36.6",
+    "value": 36.6,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "3) GRIT / GRIT",
+    "metric_as_printed": "ROUGE",
+    "value_as_printed": "59.7",
+    "value": 59.7,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   },
+   {
+    "system": "3) GRIT / GRIT",
+    "metric_as_printed": "CIDEr",
+    "value_as_printed": "136.0",
+    "value": 136.0,
+    "decimals": 1,
+    "location": "arXiv 2401.08100v1, Table 3, PDF page 8"
+   }
+  ],
+  "K2": [
+   {
+    "system": "b16-small",
+    "metric_as_printed": "BLEU-1",
+    "value_as_printed": "68.94",
+    "value": 68.94,
+    "decimals": 2,
+    "location": "README.md line 9 (header line 7)"
+   },
+   {
+    "system": "b16-small",
+    "metric_as_printed": "BLEU-4",
+    "value_as_printed": "34.81",
+    "value": 34.81,
+    "decimals": 2,
+    "location": "README.md line 9 (header line 7)"
+   },
+   {
+    "system": "b16-small",
+    "metric_as_printed": "CIDEr",
+    "value_as_printed": "98.50",
+    "value": 98.5,
+    "decimals": 2,
+    "location": "README.md line 9 (header line 7)"
+   },
+   {
+    "system": "b16-small",
+    "metric_as_printed": "METEOR",
+    "value_as_printed": "53.73",
+    "value": 53.73,
+    "decimals": 2,
+    "location": "README.md line 9 (header line 7)"
+   },
+   {
+    "system": "b16-small",
+    "metric_as_printed": "ROUGE-L",
+    "value_as_printed": "60.56",
+    "value": 60.56,
+    "decimals": 2,
+    "location": "README.md line 9 (header line 7)"
+   },
+   {
+    "system": "l14-large",
+    "metric_as_printed": "BLEU-1",
+    "value_as_printed": "69.98",
+    "value": 69.98,
+    "decimals": 2,
+    "location": "README.md line 10 (header line 7)"
+   },
+   {
+    "system": "l14-large",
+    "metric_as_printed": "BLEU-4",
+    "value_as_printed": "36.77",
+    "value": 36.77,
+    "decimals": 2,
+    "location": "README.md line 10 (header line 7)"
+   },
+   {
+    "system": "l14-large",
+    "metric_as_printed": "CIDEr",
+    "value_as_printed": "103.12",
+    "value": 103.12,
+    "decimals": 2,
+    "location": "README.md line 10 (header line 7)"
+   },
+   {
+    "system": "l14-large",
+    "metric_as_printed": "METEOR",
+    "value_as_printed": "55.19",
+    "value": 55.19,
+    "decimals": 2,
+    "location": "README.md line 10 (header line 7)"
+   },
+   {
+    "system": "l14-large",
+    "metric_as_printed": "ROUGE-L",
+    "value_as_printed": "62.19",
+    "value": 62.19,
+    "decimals": 2,
+    "location": "README.md line 10 (header line 7)"
+   },
+   {
+    "system": "h14-large",
+    "metric_as_printed": "BLEU-1",
+    "value_as_printed": "67.59",
+    "value": 67.59,
+    "decimals": 2,
+    "location": "README.md line 11 (header line 7)"
+   },
+   {
+    "system": "h14-large",
+    "metric_as_printed": "BLEU-4",
+    "value_as_printed": "30.07",
+    "value": 30.07,
+    "decimals": 2,
+    "location": "README.md line 11 (header line 7)"
+   },
+   {
+    "system": "h14-large",
+    "metric_as_printed": "CIDEr",
+    "value_as_printed": "68.55",
+    "value": 68.55,
+    "decimals": 2,
+    "location": "README.md line 11 (header line 7)"
+   },
+   {
+    "system": "h14-large",
+    "metric_as_printed": "METEOR",
+    "value_as_printed": "47.93",
+    "value": 47.93,
+    "decimals": 2,
+    "location": "README.md line 11 (header line 7)"
+   },
+   {
+    "system": "h14-large",
+    "metric_as_printed": "ROUGE-L",
+    "value_as_printed": "57.15",
+    "value": 57.15,
+    "decimals": 2,
+    "location": "README.md line 11 (header line 7)"
+   }
+  ]
+ },
+ "counts": {
+  "sources_with_printed_values": 2,
+  "systems": {
+   "KTVIC": 3,
+   "K2": 3
+  },
+  "values": 30
+ }
+}

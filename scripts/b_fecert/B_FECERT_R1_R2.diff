@@ -1,0 +1,1460 @@
+--- a/scripts/b_fecert/family.py
++++ b/scripts/b_fecert/family.py
+@@ -220,19 +220,18 @@
+ # ---------------------------------------------------------------------------------------------- §2.6 F1, F3
+ TOY = [("hoà", "hòa"), ("khoẻ", "khỏe"), ("thuỷ", "thủy"), ("uỷ", "ủy"), ("xoè", "xòe"),  # B_KAPPA §3.1 g2 row
+        ("hoà bình", "hòa bình"), ("toà nhà", "tòa nhà"), ("sức khoẻ", "sức khỏe"), ("thuỷ thủ", "thủy thủ")]  # O9
++TOY_B_KAPPA = 5  # TOY[:5] is the B_KAPPA §3.1 row; TOY[5:] are additions, labelled so in FAMILY.json (CC-361 NB7)
+ 
+ 
+ def f1(unit: str, refs: list[str], seg: dict | None = None) -> dict:
+-    """§2.6 F1 on the references (after N). A string fails when it raises, comes back empty from a non-empty input,
+-    or the batch loses alignment. 'Whitespace fallback' = no token of any reference holds '_' (a word segmenter that
+-    joins no syllable)."""
++    """§2.6 F1 on the references (after N). A string fails when it comes back empty from a non-empty input, or the
++    batch loses alignment. A unit that raises (absent, wrong release, crash) is not a string failure: the exception
++    goes up and stage F makes it a FAULT, never a K-unit drop (CC-361 D6). 'Whitespace fallback' = no token of any
++    reference holds '_' (a word segmenter that joins no syllable)."""
+     seg = seg or SEG
+     xs = [n_step(r) for r in refs]
+-    try:
+-        got = seg[unit](xs)
+-        aligned = len(got) == len(xs)
+-    except Exception:  # a crashed unit fails every string
+-        got, aligned = [], False
++    got = seg[unit](xs)
++    aligned = len(got) == len(xs)
+     failed = len(xs) if not aligned else sum(bool(x.strip()) and not g for x, g in zip(xs, got))
+     fallback = aligned and not any("_" in w for g in got for w in g)
+     share = failed / max(1, len(xs))
+@@ -247,7 +246,7 @@
+     """§2.6 F3: the unit's tokens for the tm and tf spellings of each toy string (registered toy strings, no data)."""
+     tk, m = Tok(seg), (unit, "tw", "pk", "ck")
+     out = []
+-    for a, b in TOY:
++    for k, (a, b) in enumerate(TOY):
+         tm, tf = tk.tokens(a, m), tk.tokens(b, m)
+-        out.append({"tm": tm, "tf": tf, "equal": tm == tf})
++        out.append({"tm": tm, "tf": tf, "equal": tm == tf, "addition": k >= TOY_B_KAPPA})
+     return out
+--- a/scripts/b_fecert/b_fecert.py
++++ b/scripts/b_fecert/b_fecert.py
+@@ -25,15 +25,19 @@
+ from __future__ import annotations
+ 
+ import argparse
++import contextlib
+ import functools
+ import hashlib
+ import importlib.metadata
++import inspect
++import io
+ import json
+ import os
+ import platform
+ import random
+ import re
+ import shutil
++import subprocess
+ import sys
+ import time
+ import unicodedata
+@@ -45,8 +49,10 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ ROOT = HERE.parents[1]
+-sys.path[:0] = [str(HERE), str(ROOT / "scripts/kit_b"), str(ROOT / "scripts/b2_external"), str(ROOT / "scripts/b_pa1")]
++sys.path[:0] = [str(HERE), str(ROOT / "scripts/kit_b"), str(ROOT / "scripts/b2_external"), str(ROOT / "scripts/b_pa1"),
++                str(ROOT / "tools/obj_rater")]
+ import family as FM  # noqa: E402
++from build_pairs import tok_diff  # noqa: E402  plan §2.1 token difference: one helper for both tools (CC-361 NB6)
+ import protocol_pilot as E4  # noqa: E402  rdr, Cider, bleu4, rouge_l, ngrams (§12: reused unchanged)
+ import ptb_protocol as PT  # noqa: E402  load_refs, load_preds (§12: reused unchanged)
+ import b2  # noqa: E402  parse, norm_id, sha_file, git_blob (B-2 parser and hashes)
+@@ -74,8 +80,26 @@
+ H_SEED, H_BOOT = 20261112, 2000  # plan §5.4
+ K_PRINT, K_TIME = "2026-11-15T05:00:00Z", "2026-11-16T05:00:00Z"  # §10: 12:00 VN
+ PYVI_VERSION, JAR_SHA, PILOT_SHA = "0.1.1", "9e2811cd", "6aee4282"  # §2.2
++# §2.2 l.114 "the release installed on the host before the code read": underthesea 9.5.0 from its wheel (round-2 host
++# record host_checks_r2/; CC-361 D6). A different release, no wheel record or no signature is a FAULT.
++UTS_VERSION, UTS_WHEEL_SHA = "9.5.0", "81400f41b75ceff6f80c52b4ad043806c80f5899ec555d8e6374d468a59bce56"
++# r* environment (§6.3, K-coco; CC-361 D7): pycocoevalcap 1.2 through rescap/metrics.py at this sha, Java at this version
++COCO_VERSION, RESCAP_SHA = "1.2", "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960"
++JAVA_VERSION = "21.0.13.0.3"  # `java -version` on the host of the round-2 records
+ P3_SCOPE = ("BLEU-1", "BLEU-2", "BLEU-3", "BLEU-4", "METEOR", "ROUGE-L", "CIDEr-D")  # §6.3
+-ID_METRICS = ("CIDEr-D", "BLEU-4", "ROUGE-L")  # §5.3: what PLANT_PRINTED holds; what every member of F+ computes
++# §5.1 "every printed metric m", as ruled by CC-361 1(e)/D12: a non-r* member is held to these four (BLEU-1 from the
++# per-image counts); METEOR has no member-specific scorer, so it is excluded for non-r* members (forced; disclosed).
++# r* is held to every printed metric. The planted check stays on the three metrics of §5.3.
++ID_METRICS = ("BLEU-1", "BLEU-4", "ROUGE-L", "CIDEr-D")
++PLANT_METRICS = ("CIDEr-D", "BLEU-4", "ROUGE-L")  # §5.3: what PLANT_PRINTED holds (one decimal)
++# §5.2 PRINTED.json, read in its pinned layout (CC-361 D1): PIN-1112-b-fecert-printed (CC-354).
++PRINTED_SHA = "2a962a2ba09403cd2444c28b428b9809072b6a9155b152d58706f9e860040c47"
++PRINTED_SYSTEMS = {  # (source, system as printed) -> file name here; None = no released output here (§4.1, §5.5)
++    ("KTVIC", "1) ResNet101 / LSTM"): "ktvic_resnetlstm", ("KTVIC", "2) ViT / Transformer"): "ktvic_vittrans",
++    ("KTVIC", "3) GRIT / GRIT"): None, ("K2", "b16-small"): None, ("K2", "l14-large"): None, ("K2", "h14-large"): None}
++# §6.3 scope names: the printed "CIDEr" is the in-scope CIDEr-D, "ROUGE" and "ROUGE-L" are ROUGE-L
++PRINTED_METRICS = {"BLEU-1": "BLEU-1", "BLEU-4": "BLEU-4", "METEOR": "METEOR", "ROUGE": "ROUGE-L", "ROUGE-L": "ROUGE-L",
++                   "CIDEr": "CIDEr-D"}
+ EXPECT = {"systems": 73, "families": 26, "scored": 67}  # B_KAPPA §4.1, §4.3, §5.1
+ S_FILES = [f"{s}-short" for s in (  # B_KAPPA §4.2, the E4 seen set S, in the registered order
+     "p1assist_s42 p1assist_s43 p1assist_s44 p1-gold p1_s43 p1_s44 p1mask_s42 mr5assist_s42 fuse2_s42 fuse2_s43 "
+@@ -105,6 +129,21 @@
+            "files": {"X1": "fetched/X1/caption_results.json", "X2": "fetched/X2/caption_results.json"}},
+     "G6": {"repo": "SuperCoolGuy855", "refs": "KTVIC", "files": {"K2": "fetched/K2/results.xlsx"}, "with_baselines": 1},
+ }
++# Provenance of every FL file (CC-361 D9), by its path under --fl: fetched/ files by the git blob pinned in b2.A_SYSTEMS
++# (the B-2 fetch), the other output files by ~/b_fecert_fetch/MANIFEST.tsv (ff1afb4e), the reference files by CC-354 3(d).
++FETCH_BLOBS = {f"fetched/{s['sid']}/{Path(r).name}": b for s in b2.A_SYSTEMS for r, b in s["files"].items()}
++MANIFEST_SHA = {
++    f"{GEN}/cnn_lstm/us_generated_captions.txt": "2620f0f0d61c0af8b33058be5bd96e2327e150200bc54b27258c26a0a83620f7",
++    f"{GEN}/cnn_lstm_attention/us_generated_captions.txt": "e41a994df7c0f53c44ab2df2a3b3e3481acc35e274626edf35d61e1895ed7e27",
++    f"{GEN}/cnn_t5/us_generated_captions.txt": "fd5673b996785515fdb558dd7925e4d8da969a3674e22c064554d33ff8324bc1",
++    f"{GEN}/qwen2/us_generated_captions.txt": "b335fd52b4a5840d04f24ca99b77db9d288f301d63075f464c63f5ff24425d36",
++    f"{GEN}/vit_t5/us_generated_captions.txt": "e0c36022118fa75a87c40bf66e1dfda432f22804b480cf3f1533f6128ec1baad",
++    f"{VAN}/flickr_original_pred.json": "51d58b2deb5ec33dc2149fe548792dbf722b189c26118a926c079dfc8b8a481f",
++    f"{VAN}/flickr_detect_pred.json": "f1b8a4b67ad36f23eee3342202c8134782106207bdd0105b3e7996c1fde04e2e"}
++REF_SHA = {"G1": "609af61acf511689c353dc66dd8bc2eee182cd0ea38315a74844e155f20536a2",
++           "G2": "ac9cab7dedc78f13294cc35a594cebc75a6de8cc17fdb43b77003b157454f33e",
++           "G3": "2acef66e45218cc200e0a950e488959bdeb8e3a8e44722e45370ef6dcdf9745a",
++           "G4": "f02cf2b91d6305d1d70c18ba5d5038af69fe178c0b89a67c3af1a9b950cf3502"}
+ 
+ 
+ class Fault(Exception):
+@@ -154,6 +193,16 @@
+         raise SystemExit(f"REFUSED: {path.name} has no LOG pin line with its sha256 (§9)")
+ 
+ 
++def inputs(work: Path, log: Path, names) -> dict:
++    """§9 l.333 (CC-361 D8): every work file a stage reads carries a LOG pin line with its current sha256, and
++    test_data.json still has the sha256 recorded in FAMILY.json. Returns {name: sha256} for the stage record."""
++    for n in names:
++        logged(log, work / n)
++    if sha(REFS) != jload(work / "FAMILY.json")["refs_sha256"]:
++        raise Fault("test_data.json differs from its sha256 in FAMILY.json (§9)")
++    return {n: sha(work / n) for n in names}
++
++
+ # ------------------------------------------------------------------------------------------------ systems and files
+ def names() -> list[str]:
+     return sorted(jload(SIDE)["systems"])
+@@ -174,6 +223,9 @@
+ 
+ 
+ def systems(work: Path) -> list[dict]:
++    """SYSTEMS.tsv, bound by the sha256 that CENSUS.json records (CENSUS.json itself is logged; CC-361 D8)."""
++    if sha(work / "SYSTEMS.tsv") != jload(work / "CENSUS.json")["systems_tsv_sha256"]:
++        raise Fault("SYSTEMS.tsv differs from its sha256 in CENSUS.json (§9)")
+     rows = [ln.split("\t") for ln in (work / "SYSTEMS.tsv").read_text(encoding="utf-8").splitlines()[1:]]
+     return [dict(zip(("name", "stratum", "family", "sha256", "git_blob", "role"), r)) for r in rows]
+ 
+@@ -195,7 +247,7 @@
+     """Image file per KTVIC test id from test_data.json :: images (plan §2.1, CC-350 W6): never '<id>.jpg'."""
+     out = {}
+     for im in jload(REFS)["images"]:
+-        fn = im.get("filename") or im.get("file_name")
++        fn = im.get("filename")  # the one key both tools read (build_pairs.load_inputs; CC-361 D3)
+         if not isinstance(fn, str) or not FN_RE.fullmatch(fn):
+             raise Fault("a KTVIC test image file name is outside the route regex")
+         out[str(im["id"])] = fn
+@@ -206,20 +258,31 @@
+     return b2.norm_id(str(x).split("#")[0])
+ 
+ 
+-def group_refs(g: str, fl: Path) -> dict[str, list[str]]:
+-    """The group's reference file by normalised id; {} when it is not on the host (then no file of the group is
+-    admitted)."""
++def provenance(rel: str, p: Path) -> None:
++    """CC-361 D9: an FL output file must equal its fetch record (git blob for fetched/, else MANIFEST.tsv sha256)."""
++    ok = b2.git_blob(p.read_bytes()) == FETCH_BLOBS[rel] if rel in FETCH_BLOBS else sha(p) == MANIFEST_SHA.get(rel)
++    if not ok:
++        raise Fault(f"{rel}: differs from its fetch record (CC-361 D9)")
++
++
++def group_refs(g: str, fl: Path) -> tuple[dict[str, list[str]], str | None]:
++    """The group's reference file by normalised id, and its sha256; ({}, None) when it is not on the host (then no
++    file of the group is admitted). G1-G4 must equal the reference file frozen by CC-354 3(d), else FAULT (CC-361 D9).
++    An id with more reference rows than the others (one uit_test id has 10, CC-354 N4) keeps all its rows, in file
++    order; no row is dropped or merged."""
+     src = GROUPS[g]["refs"]
+     p = {"KTVIC": REFS, "UIT": UIT}.get(src, fl / src)
+     if not p.is_file():
+-        return {}
++        return {}, None
++    if g in REF_SHA and sha(p) != REF_SHA[g]:
++        raise Fault(f"{g}: the reference file differs from CC-354 3(d) (CC-361 D9)")
+     if src in ("KTVIC", "UIT"):
+-        return {nid(k): v for k, v in PT.load_refs(p).items()}
++        return {nid(k): v for k, v in PT.load_refs(p).items()}, sha(p)
+     out: dict[str, list[str]] = {}
+     for i, c in b2.parse(p):
+         if c.strip():
+             out.setdefault(nid(i), []).append(c.strip())
+-    return out
++    return out, sha(p)
+ 
+ 
+ # ------------------------------------------------------------------------------------------------ §4.3 gate v2
+@@ -262,22 +325,31 @@
+ 
+ 
+ def fl_inputs(fl: Path, base: Path) -> dict:
+-    """Every FL file of §4.2 through the gate: {group: {"refs", "files": {name: (rec, preds, path)}}}."""
++    """Every FL file of §4.2 through the gate: {group: {"refs", "refs_sha256", "files": {name: (rec, preds, path)}}}.
++    Each output file is provenance-checked and parsed first; the group's references are loaded only when an output
++    parsed (so the UIT-ViIC test references of G5 are never opened for unparseable outputs; CC-361 NB3)."""
+     out = {}
+     for g, spec in GROUPS.items():
+-        refs = group_refs(g, fl)
+-        files = {}
++        rows = {}
+         for n, rel in spec["files"].items():
+             p = fl / rel
+-            rec, preds = gate2(parse_or_none(p) if p.is_file() and refs else None, refs)
+-            if not (p.is_file() and refs):
+-                rec["reasons"] = ["missing: the file or its reference file is not on the host"]
++            if p.is_file():
++                provenance(rel, p)
++            rows[n] = (parse_or_none(p) if p.is_file() else None, p)
++        parsed = spec.get("with_baselines") or any(r is not None for r, _ in rows.values())
++        refs, rsha = group_refs(g, fl) if parsed else ({}, None)
++        files = {}
++        for n, (r, p) in rows.items():
++            if not p.is_file() or (r is not None and not refs):
++                rec, preds = {"admitted": False, "reasons": ["missing: the file or its reference file is not on the host"]}, {}
++            else:
++                rec, preds = gate2(r, refs)
+             files[n] = (rec, preds, p)
+         if spec.get("with_baselines"):
+             for n in BASE:
+                 rec, preds = gate2(list(load_base(base, n).items()), refs)
+                 files[n] = (rec, preds, base / BASE[n])
+-        out[g] = {"refs": refs, "files": files}
++        out[g] = {"refs": refs, "refs_sha256": rsha, "files": files}
+     return out
+ 
+ 
+@@ -329,9 +401,10 @@
+     return corr + [max(0, len(h) - k) for k in range(4)] + [len(h), min((abs(x - len(h)), x) for x in lens)[1]]
+ 
+ 
+-def bleu_corpus(S: np.ndarray) -> np.ndarray:
++def bleu_corpus(S: np.ndarray, n: int = 4) -> np.ndarray:
++    """Corpus BLEU-n (n = 4, or n = 1 for the FE-ID BLEU-1 of CC-361 D12) from summed bleu_img counts."""
+     tiny, small = 1e-15, 1e-9
+-    b = np.prod((S[..., 0:4] + tiny) / (S[..., 4:8] + small), axis=-1) ** 0.25
++    b = np.prod((S[..., 0:n] + tiny) / (S[..., 4:4 + n] + small), axis=-1) ** (1 / n)
+     ratio = (S[..., 8] + tiny) / (S[..., 9] + small)
+     return 100 * np.where(ratio < 1, b * np.exp(1 - 1 / ratio), b)
+ 
+@@ -497,17 +570,20 @@
+ 
+ def identify(printed: dict, sc: dict, keys: dict) -> dict:
+     """§5.1: classes by token identity; IDENTIFIED (one reproducing class), AMBIGUOUS (two or more), OUTSIDE (none);
+-    margin = smallest max-metric distance between the reproducing class and any other class (printed scale)."""
+-    if not printed:
++    margin = smallest max-metric distance between the reproducing class and any other class (printed scale).
++    A non-r* class is held to the printed metrics of ID_METRICS, the r* class to every printed metric (CC-361 D12)."""
++    pm = {m: p for m, p in printed.items() if m in ID_METRICS}
++    if not pm:
+         return {"label": "no printed metric that the members compute", "classes": 0, "reproducing": [],
+                 "margin": None, "nearest_distance": None}
++    want = lambda c: printed if c[0] == FM.name(FM.RSTAR) else pm  # noqa: E731
+     cls = [sorted(c) for c in FM.classes(keys)]
+-    rep = [c for c in cls if reproduces(sc[c[0]], printed)]
++    rep = [c for c in cls if reproduces(sc[c[0]], want(c))]
+     gap = lambda x, y: float("inf") if x is None or y is None else abs(x - y)  # noqa: E731  r* may lack a metric
+-    dist = lambda x, y: max(gap(sc[x].get(m), sc[y].get(m)) for m in printed)  # noqa: E731
++    dist = lambda x, y: max(gap(sc[x].get(m), sc[y].get(m)) for m in pm)  # noqa: E731
+     lab = "IDENTIFIED" if len(rep) == 1 else "AMBIGUOUS" if rep else "OUTSIDE"
+     margin = min((dist(rep[0][0], c[0]) for c in cls if c is not rep[0]), default=None) if len(rep) == 1 else None
+-    nearest = min(max(gap(sc[c[0]].get(m), float(p)) for m, p in printed.items()) for c in cls)
++    nearest = min(max(gap(sc[c[0]].get(m), float(p)) for m, p in want(c).items()) for c in cls)
+     return {"label": lab, "classes": len(cls), "reproducing": rep, "margin": margin, "nearest_distance": nearest}
+ 
+ 
+@@ -539,7 +615,7 @@
+ 
+ 
+ def fe_table(tk: FM.Tok, refs: dict, ids: list[str], hyp: dict, pool: list) -> tuple[dict, dict]:
+-    """Scores (ID_METRICS, plus every r* metric) and token keys of one output file under each entry of F+ (§5.1)."""
++    """Scores (ID_METRICS for non-r* members, every r* metric for r*) and token keys of one output file under each entry of F+ (§5.1)."""
+     sc, keys, cid = {}, {}, {}
+     for e in pool:
+         n = FM.name(e)
+@@ -552,7 +628,9 @@
+         kr = FM.key(["\t".join(R[i]) for i in ids])
+         if kr not in cid:
+             cid[kr] = E4.Cider(R)
+-        sc[n] = {"CIDEr-D": float(cid[kr].per_image(H).mean()), "BLEU-4": E4.bleu4(R, H), "ROUGE-L": E4.rouge_l(R, H)}
++        S = np.array([bleu_img(R[i], H[i]) for i in ids], float).sum(0)  # BLEU-1 from the per-image counts (D12)
++        sc[n] = {"CIDEr-D": float(cid[kr].per_image(H).mean()), "BLEU-1": float(bleu_corpus(S, 1)),
++                 "BLEU-4": E4.bleu4(R, H), "ROUGE-L": E4.rouge_l(R, H)}
+         keys[n] = f"{FM.key([H[i] for i in ids])}|{kr}"
+     return sc, keys
+ 
+@@ -563,7 +641,9 @@
+     toy_r = {"1": ["a dog runs on the grass", "a dog on grass"], "2": ["two cats sit on a red sofa", "cats on a sofa"]}
+     try:
+         got = RSTAR(toy_r, {"1": "a dog runs on grass", "2": "two cats on a sofa"})
+-    except Exception:
++    except ImportError as e:  # an environment fault, never a K-coco drop (CC-361 D7)
++        raise Fault(f"r*: rescap or pycocoevalcap does not import ({type(e).__name__})") from None
++    except Exception:  # scorer-level failure on the toy fixture: K-coco
+         got = {}
+     dropped = [m for m in P3_SCOPE if got.get(m) is None]
+     return ("CIDEr-D" not in dropped and "BLEU-4" not in dropped), dropped, got
+@@ -595,11 +675,6 @@
+     return d[:1].upper() + d[1:] if d[:1].isalpha() else d
+ 
+ 
+-def syl_diff(x: str, y: str) -> int:
+-    cx, cy = Counter(x.lower().split()), Counter(y.lower().split())
+-    return sum(((cx - cy) + (cy - cx)).values())
+-
+-
+ def pair_stratum(ds: float, dw: float, dp: float) -> str | None:
+     """Plan §2.3 with ε = 10 (§2.2): P punctuation flip, U unit flip, C control; at most one."""
+     big = lambda *x: all(abs(v) >= EPS for v in x)  # noqa: E731
+@@ -617,32 +692,35 @@
+ M_SYL, M_WORD, M_PK = ("syl", "tw", "pa", "cf"), ("rdr", "tw", "pa", "cf"), FM.F0  # plan §2.2
+ 
+ 
+-def candidates(texts: dict, fams: dict, ids: list[str], per: dict, files: dict) -> dict:
+-    """Plan §2.1-§2.4 step 1: per image, candidates of each stratum by file names and the three d values; no text."""
++CAND_FIELDS = ("a", "b", "stratum", "d_syl", "d_word", "d_pk")  # the PAIR_CANDIDATES contract of build_pairs.py (D3)
++
++
++def candidates(texts: dict, fams: dict, ids: list[str], per: dict) -> dict:
++    """Plan §2.1-§2.4 step 1: per image, the candidates by file names and the three d values; no text. Written in the
++    contract build_pairs.load_inputs reads (CC-361 D3): {epsilon, eligible_images, images: {id: [{a, b, stratum, d_syl,
++    d_word, d_pk}]}}; image file names come from test_data.json :: images[].filename in both tools."""
+     short = sorted(n for n in texts if stratum(n) == "short")
+     disp = {n: {i: display(texts[n][i]) for i in ids} for n in short}
+-    rows, elig = [], Counter()
++    images, elig = {}, Counter()
+     for j, i in enumerate(ids):
+-        row = {"image": i, "filename": files[i], "P": [], "U": [], "C": []}
++        cs = []
+         for k, a in enumerate(short):
+             for b_ in short[k + 1:]:
+                 da, db = disp[a][i], disp[b_][i]
+-                if fams[a] == fams[b_] or not da or not db or syl_diff(da, db) < 2:
++                if fams[a] == fams[b_] or not da or not db or tok_diff(da, db) < 2:
+                     continue
+                 d = [float(per[m][a][j] - per[m][b_][j]) for m in (M_SYL, M_WORD, M_PK)]
+                 s = pair_stratum(*d)
+                 if s:
+-                    row[s].append([a, b_, *d])
+-        elig.update(s for s in "PUC" if row[s])
+-        rows.append(row)
+-    ext = Counter(files[i].rsplit(".", 1)[1] for i in ids)
+-    return {"label": "DEVELOPMENT (own -short files)", "eligible_images": {s: elig[s] for s in "PUC"},
+-            "image_extensions": dict(ext), "images": rows}
++                    cs.append(dict(zip(CAND_FIELDS, (a, b_, s, *d))))
++        elig.update({c["stratum"] for c in cs})
++        images[i] = cs
++    return {"epsilon": EPS, "eligible_images": {s: elig[s] for s in "PUC"}, "images": images}
+ 
+ 
+ # ------------------------------------------------------------------------------------------------ plan §5 human arm
+ def kappa(x: list, y: list) -> float | None:
+-    cats = sorted(set(x) | set(y))
++    cats = sorted(set(x) | set(y), key=str)
+     if not x:
+         return None
+     po = sum(a == b for a, b in zip(x, y)) / len(x)
+@@ -672,20 +750,38 @@
+     return out
+ 
+ 
++KEY_FIELDS = {"image", "part", "stratum", "a", "b", "file_left", "file_right", "d_syl", "d_word", "d_pk", "repeat_of"}
++
++
++def key_items(key: dict) -> dict:
++    """key.json as build_pairs.py writes it (CC-361 D4/D15): {"salt", "items": {qid: KEY_FIELDS}}; else FAULT."""
++    items = key.get("items") if isinstance(key, dict) else None
++    if not isinstance(items, dict) or any(set(k) != KEY_FIELDS for k in items.values()):
++        raise Fault("key.json is not in the build_pairs.py contract (CC-361 D4)")
++    return items
++
++
+ def ident(k: dict, lab: str | None) -> str | None:
+-    """Screen side -> caption identity (plan §5.1): A = left, B = right; T tie; X cannot."""
++    """Screen side -> caption identity (plan §5.1): A = file_left, B = file_right; T tie; X cannot."""
+     if lab in ("A", "B"):
+-        return "a" if (k["left"] if lab == "A" else k["right"]) == k["a"] else "b"
++        return "a" if (k["file_left"] if lab == "A" else k["file_right"]) == k["a"] else "b"
+     return {"T": "tie", "X": "cannot"}.get(lab)
+ 
+ 
++def rated_both(ans: dict, qs: list) -> list:
++    """Plan §5.4: the pairs both raters answered with neither choosing cannot; one definition for the kappa gate and
++    the agreement rows (CC-361 D11)."""
++    return [q for q in qs if all(ans[r][q] not in (None, "cannot") for r in ("PI", "R2"))]
++
++
+ def human(key: dict, labs: dict, elig: dict) -> dict:
+-    """Plan §5, §7: decisive consensus, H-P (one-sided) and H-U (two-sided) exact binomial, Holm at 0.05, kappa rule."""
+-    main = sorted(q for q, k in key.items() if not k.get("repeat_of"))
++    """Plan §5, §7: decisive consensus, H-P (one-sided) and H-U (two-sided) exact binomial, Holm at 0.05, kappa rule.
++    key = key_items(key.json): main = part 'main', repeats = part 'repeat', practice never used (CC-361 D4)."""
++    main = sorted(q for q, k in key.items() if k["part"] == "main")
+     two = "R2" in labs and all(q in labs["R2"] for q in main)
+     raters = ("PI", "R2") if two else ("PI",)
+     ans = {r: {q: ident(key[q], labs.get(r, {}).get(q)) for q in main} for r in raters}
+-    hi = {q: "a" if key[q]["d"]["m_word"] > 0 else "b" for q in main}
++    hi = {q: "a" if key[q]["d_word"] > 0 else "b" for q in main}
+     why, dec = Counter(), {}
+     for q in main:
+         a = [ans[r][q] for r in raters]
+@@ -704,7 +800,7 @@
+     if not two:
+         gate = "single rater"
+     else:
+-        both = [q for q in main if "cannot" not in (ans["PI"][q], ans["R2"][q])]
++        both = rated_both(ans, main)
+         kap = kappa([ans["PI"][q] for q in both], [ans["R2"][q] for q in both])
+         gate = ("labels" if kap is not None and kap >= KAPPA_LABEL else
+                 "low inter-rater agreement" if kap is not None and kap >= KAPPA_MIN else "NOT_EVALUABLE")
+@@ -740,7 +836,7 @@
+     out = {"tie_cannot_rates": {r: {x: sum(ans[r][q] == x for q in main) / max(1, len(main)) for x in ("tie", "cannot")}
+                                 for r in raters}}
+     if len(raters) == 2:
+-        both = [q for q in main if "cannot" not in (ans["PI"][q], ans["R2"][q]) and None not in (ans["PI"][q], ans["R2"][q])]
++        both = rated_both(ans, main)
+         x, y = [ans["PI"][q] for q in both], [ans["R2"][q] for q in both]
+         rng = np.random.default_rng(H_SEED)
+         bs = [kappa([x[j] for j in ix], [y[j] for j in ix]) for ix in rng.integers(0, len(both), (H_BOOT, len(both)))] if both else []
+@@ -751,7 +847,7 @@
+                               "kappa_two_category": kappa([x[j] for j in dd], [y[j] for j in dd]),
+                               "kappa_per_stratum": {s: kappa([x[j] for j, q in enumerate(both) if key[q]["stratum"] == s],
+                                                              [y[j] for j, q in enumerate(both) if key[q]["stratum"] == s]) for s in "PUC"}}
+-    reps = sorted(q for q, k in key.items() if k.get("repeat_of"))
++    reps = sorted(q for q, k in key.items() if k["part"] == "repeat")
+     within = {}
+     for r in raters:
+         pr = [(ident(key[q], labs[r].get(q)), ans[r].get(key[q]["repeat_of"])) for q in reps]
+@@ -772,9 +868,9 @@
+     for s in "PUC":
+         qs = [q for q in dec if key[q]["stratum"] == s]
+         if qs:
+-            med = float(np.median([abs(key[q]["d"]["m_word"]) for q in qs]))
+-            lo = [q for q in qs if abs(key[q]["d"]["m_word"]) <= med]
+-            up = [q for q in qs if abs(key[q]["d"]["m_word"]) > med]
++            med = float(np.median([abs(key[q]["d_word"]) for q in qs]))
++            lo = [q for q in qs if abs(key[q]["d_word"]) <= med]
++            up = [q for q in qs if abs(key[q]["d_word"]) > med]
+             bins[s] = {"below_or_at_median": [sum(dec[q] == hi[q] for q in lo), len(lo)],
+                        "above_median": [sum(dec[q] == hi[q] for q in up), len(up)]}
+     out["margin_bins"] = bins
+@@ -787,30 +883,68 @@
+     rec = {"python": platform.python_version(), "unidata_version": unicodedata.unidata_version,
+            "jar_sha256": sha(jar) if jar.is_file() else None,
+            "protocol_pilot_sha256": sha(Path(E4.__file__)), "numpy": np.__version__}
+-    for pkg, w in (("pyvi", a.pyvi_wheel), ("underthesea", a.uts_wheel)):
++    for pkg in ("pyvi", "underthesea", "pycocoevalcap"):
+         try:
+             rec[pkg] = importlib.metadata.version(pkg)
+         except importlib.metadata.PackageNotFoundError:
+             rec[pkg] = None
++    for pkg, w in (("pyvi", a.pyvi_wheel), ("underthesea", a.uts_wheel)):
+         rec[f"{pkg}_wheel"] = {"name": Path(w).name, "sha256": sha(w)} if w and Path(w).is_file() else None
++    try:  # §2.2 l.114: the call form is checked on the installed release (CC-361 D6)
++        from underthesea import word_tokenize
++        rec["underthesea_signature"] = str(inspect.signature(word_tokenize))
++    except Exception:  # noqa: BLE001  absent or broken: env_check makes it a FAULT
++        rec["underthesea_signature"] = None
++    try:  # r* (CC-361 D7)
++        import pycocoevalcap  # noqa: F401
++        import rescap.metrics as RM
++        rec["rstar_import"], rec["rescap_metrics_sha256"] = True, sha(Path(RM.__file__))
++    except ImportError:
++        rec["rstar_import"], rec["rescap_metrics_sha256"] = False, None
++    rec["java"] = java_version()
+     return rec
+ 
+ 
++def java_version() -> str | None:
++    try:
++        r = subprocess.run(["java", "-version"], capture_output=True, text=True, timeout=120)
++    except (OSError, subprocess.SubprocessError):
++        return None
++    m = re.search(r'version "([^"]+)"', r.stderr)
++    return m.group(1) if r.returncode == 0 and m else None
++
++
++def rstar_check(rec: dict) -> None:
++    """§6.3, §10 K-coco (CC-361 D7): a missing rescap or pycocoevalcap, pycocoevalcap other than 1.2, rescap/metrics.py
++    off its pin or Java off its pin is a FAULT before any score; only a scorer-level failure on the toy fixture
++    follows K-coco."""
++    if (not rec["rstar_import"] or rec["pycocoevalcap"] != COCO_VERSION or rec["rescap_metrics_sha256"] != RESCAP_SHA
++            or rec["java"] != JAVA_VERSION):
++        raise Fault("the r* environment differs from its pins: rescap/pycocoevalcap import, pycocoevalcap 1.2, "
++                    "rescap/metrics.py sha256, Java version (CC-361 D7)")
++
++
+ def env_check(rec: dict) -> None:
+-    """§2.2: the jar and protocol_pilot.py at their pins; pyvi equal to 0.1.1 (else FAULT); wheels named by version."""
++    """§2.2: the jar and protocol_pilot.py at their pins; pyvi equal to 0.1.1; underthesea present at the recorded
++    release with its wheel sha256 and signature (else FAULT, never a K-unit drop; CC-361 D6); wheels named by version;
++    the r* environment (rstar_check)."""
+     if not (rec["jar_sha256"] or "").startswith(JAR_SHA) or not rec["protocol_pilot_sha256"].startswith(PILOT_SHA):
+         raise Fault("the VnCoreNLP jar or protocol_pilot.py differs from its pin (§2.2)")
+     if rec["pyvi"] != PYVI_VERSION:
+         raise Fault(f"pyvi on the host is not {PYVI_VERSION} (§2.2)")
++    if (rec["underthesea"] != UTS_VERSION or (rec["underthesea_wheel"] or {}).get("sha256") != UTS_WHEEL_SHA
++            or not rec["underthesea_signature"]):
++        raise Fault(f"underthesea is absent, not {UTS_VERSION}, without its wheel record or without a signature (§2.2)")
+     for pkg in ("pyvi", "underthesea"):
+         w = rec[f"{pkg}_wheel"]
+-        if rec[pkg] and (not w or f"-{rec[pkg]}-" not in w["name"]):
++        if not w or f"-{rec[pkg]}-" not in w["name"]:
+             raise Fault(f"{pkg}: the wheel recorded is not the installed release (§2.2)")
++    rstar_check(rec)
+ 
+ 
+ def code_shas() -> dict:
+     mods = (Path(__file__), Path(FM.__file__), Path(E4.__file__), Path(PT.__file__), Path(b2.__file__), Path(BC.__file__),
+-            Path(sys.modules[pin_line.__module__].__file__))
++            Path(sys.modules[pin_line.__module__].__file__), Path(sys.modules[tok_diff.__module__].__file__))
+     return {str(p.resolve().relative_to(ROOT)) if ROOT in p.resolve().parents else p.name: sha(p) for p in mods}
+ 
+ 
+@@ -829,7 +963,9 @@
+ 
+ # ------------------------------------------------------------------------------------------------ stages
+ def grepro(got: dict, committed: dict) -> list[dict]:
+-    """§9 stage F: f0 reproduces the committed CIDEr-D within 0.01; a mismatch on a seen file is a FAULT."""
++    """§9 stage F: f0 reproduces the committed CIDEr-D within 0.01; a mismatch on a seen file is a FAULT. Coded reading
++    (a), all 67 are seen (§9 l.182, l.339, l.359): any mismatch is a FAULT. CC-361 D13 is open (PI Q2; default (a));
++    reading (b) of B_KAPPA §5.1 is not coded."""
+     rows = [{"name": n, "abs_diff": abs(got[n] - committed[n]), "ok": abs(got[n] - committed[n]) <= GREPRO_TOL}
+             for n in sorted(committed)]
+     if not all(r["ok"] for r in rows):
+@@ -843,7 +979,11 @@
+     refs = PT.load_refs(REFS)
+     ids = sorted(refs)
+     flat = [r for i in ids for r in refs[i]]
+-    f1 = {u: FM.f1(u, flat, SEG) for u in ("rdr", "pyvi", "uts")}
++    try:  # F3 on the toy strings first, then F1: a unit that raises is a FAULT, never a K-unit drop (CC-361 D6)
++        f3 = {u: FM.f3(u, SEG) for u in ("rdr", "pyvi", "uts")}
++        f1 = {u: FM.f1(u, flat, SEG) for u in ("rdr", "pyvi", "uts")}
++    except Exception as e:  # noqa: BLE001
++        raise Fault(f"a word unit raised in F3/F1 ({type(e).__name__}) (§2.6)") from None
+     if f1["rdr"]["dropped"]:
+         raise Fault("F1 fails for rdr (K-rdr)")
+     dropped = [u for u in ("pyvi", "uts") if f1[u]["dropped"]]  # K-unit, before any score
+@@ -858,8 +998,8 @@
+     cid = E4.Cider(R)
+     got = {n: float(cid.per_image({i: tk.side(h[i], "matched", FM.F0, False) for i in ids}).mean())
+            for n, h in hyps.items()}
+-    rec.update(env=env, F1=f1, units_dropped=dropped, F3={u: FM.f3(u, SEG) for u in ("rdr", "pyvi", "uts") if u not in dropped},
+-               G_repro=grepro(got, committed), refs_sha256=sha(REFS), n_images=len(ids), n_refs=len(flat),
++    rec.update(env=env, F1=f1, units_dropped=dropped, F3=f3, G_repro=grepro(got, committed),
++               no_committed_score=sorted(set(names()) - set(scored)), refs_sha256=sha(REFS), n_images=len(ids), n_refs=len(flat),
+                family={"F": len(FM.F), "F_dev": len(FM.F_DEV), "F_held": len(FM.F_HELD), "F_plus": len(FM.FPLUS)})
+     return {"FAMILY.json": rec}
+ 
+@@ -882,14 +1022,19 @@
+         elif isinstance(o, list):
+             for v in o:
+                 walk(v, acc)
+-    for p in sorted(b2dir.rglob("*.json")) if b2dir else []:
++    b2files = sorted(b2dir.rglob("*.json")) if b2dir is not None and b2dir.is_dir() else []
++    if not b2files:  # CC-361 D10: a file, a missing or an empty folder would skip the census silently
++        raise Fault("--b2-score must be a directory holding at least one *.json (stage C census)")
++    b2sha = {}
++    for p in b2files:
+         acc = set()
+         walk(jload(p), acc)
+         found[f"b2_external/{p.relative_to(b2dir)}"] = sorted(acc)
++        b2sha[f"b2_external/{p.relative_to(b2dir)}"] = sha(p)
+     toks = [(f, s.lower()) for f, ss in found.items() for s in ss]
+     uts = sorted({f for f, s in toks if "underthesea" in s or s.endswith("_uts")})
+     char = sorted({f for f, s in toks if "char" in s or s.endswith("_chr")})
+-    return {"segmenter_census": found, "underthesea_hits": uts, "uts_moved_to_dev": bool(uts),
++    return {"segmenter_census": found, "b2_score_sha256": b2sha, "underthesea_hits": uts, "uts_moved_to_dev": bool(uts),
+             "character_unit_hits_logged_only": char}
+ 
+ 
+@@ -912,9 +1057,10 @@
+     D = [f"D:{x}|{y}" for k, x in enumerate(ns) for y in ns[k + 1:] if stratum(x) == stratum(y) and fams[x] != fams[y]]
+     D.append("D:ktvic_resnetlstm|ktvic_vittrans")  # §4.1
+     cen = census({n: RES / f"{n}.json" for n in ns if (RES / f"{n}.json").is_file()}, Path(a.b2_score) if a.b2_score else None)
++    tsv = "\n".join(lines) + "\n"
+     rec.update(cen, value_types=types, D=D, D_size=len(D), strata=dict(Counter(stratum(n) for n in ns)),
+-               families=len(set(fams.values())))
+-    return {"SYSTEMS.tsv": "\n".join(lines) + "\n", "CENSUS.json": rec}
++               families=len(set(fams.values())), systems_tsv_sha256=hashlib.sha256(tsv.encode("utf-8")).hexdigest())
++    return {"SYSTEMS.tsv": tsv, "CENSUS.json": rec}
+ 
+ 
+ def st_G(a, rec: dict) -> dict:
+@@ -922,7 +1068,8 @@
+     files = {f"{g}/{n}": {**r, "sha256": sha(p) if p.is_file() else None, "group": g}
+              for g, d in fin.items() for n, (r, _, p) in d["files"].items()}
+     comps = [{k: v for k, v in c.items() if k != "classes"} for c in fl_comps(fin)]
+-    rec.update(files=files, comparisons=comps, formed=sum(c["formed"] for c in comps),
++    rec.update(files=files, refs_sha256={g: d["refs_sha256"] for g, d in fin.items()}, comparisons=comps,
++               formed=sum(c["formed"] for c in comps),
+                K_FL20=sum(c["formed"] for c in comps) < FL20, label="structure only; no score (§4.3)")
+     return {"GATE2.json": rec}
+ 
+@@ -949,7 +1096,8 @@
+     short = {n: t for n, t in texts.items() if n not in BASE and stratum(n) == "short"}
+     per = {m: {n: v["cider"] for n, v in scorer(tk, refs, ids, short)(m).items() if n != "_refs"} for m in (M_SYL, M_WORD, M_PK)}
+     fams = {s["name"]: s["family"] for s in systems(work)}
+-    pairs = candidates(short, fams, ids, per, image_files())
++    image_files()  # every KTVIC test image name inside the route regex (CC-350 W6), else FAULT
++    pairs = candidates(short, fams, ids, per)
+     dev_rec = {**rec, "label": "DEVELOPMENT", "units_dev": dev, "units_held": held, "members": sorted(G),
+                "counts_F_dev": counts(comps, G), "comparisons": comps}
+     nc = {**rec, "label": "SENSITIVITY CONTROL (§6.1 NC)", **nc_rule(comps, syl, other)}
+@@ -969,7 +1117,9 @@
+         os.chmod(pins / f, 0o444)
+         if sha(pins / f) != sha(work / f):
+             raise Fault(f"pin copy of {f} differs")
+-    print(f"PIN: log one line '<date -u> OPS-<id>-pin: DEV.json {a.prev} NC.json {a.nc}', then STOP")
++    pc = sha(work / "PAIR_CANDIDATES.json")  # logged at the pin; build_pairs --candidates-sha checks it (CC-361 NB9)
++    print(f"PIN: log one line '<date -u> OPS-<id>-pin: DEV.json {a.prev} NC.json {a.nc} PAIR_CANDIDATES.json {pc}', "
++          "then STOP")
+ 
+ 
+ def fl_texts(fin: dict, c: dict) -> tuple[list[str], dict, dict]:
+@@ -994,7 +1144,10 @@
+ 
+ 
+ def gate_files(fin: dict, gate: dict) -> None:
++    """2a, 2b, 3: every FL file and reference file still equals GATE2.json (CC-361 D9)."""
+     for g, d in fin.items():
++        if d["refs_sha256"] != gate["refs_sha256"][g]:
++            raise Fault(f"{g}: the reference file differs from GATE2.json")
+         for n, (r, _, p) in d["files"].items():
+             want = gate["files"][f"{g}/{n}"]
+             if (sha(p) if p.is_file() else None) != want["sha256"] or r["admitted"] != want["admitted"]:
+@@ -1078,8 +1231,10 @@
+                counts={"FL_over_F": counts(FL, GF), "FL_over_F_dev": counts(FL, Gd),
+                        "D_over_F_DEVELOPMENT": counts(D, GF), "D_over_F_dev_DEVELOPMENT": counts(D, Gd),
+                        "F_held_HELD-OUT_FRONT_END": counts(D + FL, Gh)},
+-               secondary={"FE_PRED_AUC": auc([z0[i] for i in sig0 if vF[i]["changed"]],
+-                                             [z0[i] for i in sig0 if not vF[i]["changed"]]),
++               secondary={"FE_PRED_AUC": auc([z0[i] for i in allc if vF[i]["changed"]],  # §6.6 as registered: D ∪ FL
++                                             [z0[i] for i in allc if not vF[i]["changed"]]),
++                          "FE_PRED_AUC_f0_significant_EXTRA": auc([z0[i] for i in sig0 if vF[i]["changed"]],
++                                                                  [z0[i] for i in sig0 if not vF[i]["changed"]]),
+                           "BLEU-4_over_F": counts(D + FL, GF, "bleu"), "ROUGE-L_over_F": counts(D + FL, GF, "rouge"),
+                           "F_without_ck": counts(D + FL, no_ck), "F_with_chr_DESCRIPTIVE": counts(D + FL, GF | Gc),
+                           "F_without_pk": counts(D + FL, no_pk),
+@@ -1096,11 +1251,13 @@
+     fam = jload(work / "FAMILY.json")
+     gate = jload(work / "GATE2.json")
+     res = jload(work / "RESULT.json")
++    env = env_record(a)
++    rstar_check(env)  # CC-361 D7: before K-coco and before any score
+     ok, dropped, _ = k_coco()  # before any baseline is scored (§6.3)
+     drop_units = set(fam["units_dropped"])
+     r_in = ok and not set(ID_METRICS) & set(dropped)  # r* enters F+ only if it computes every identification metric
+     pool = [e for e in FM.FPLUS if (e == FM.RSTAR and r_in) or (e != FM.RSTAR and e[1][0] not in drop_units)]
+-    printed = jload(a.printed)["entries"] if a.printed else []
++    printed = printed_entries(Path(a.printed)) if a.printed else []
+     by_file = {}
+     for e in printed:
+         if e.get("file") and e["file"] not in by_file:
+@@ -1130,7 +1287,7 @@
+     rng = random.Random(SEED_PLANT)
+     names_pool = sorted(FM.name(e) for e in pool)
+     key = {n: rng.choice(names_pool) for n in S_FILES}
+-    pp = {n: {m: f"{tab[n][0][key[n]][m]:.1f}" for m in ID_METRICS} for n in S_FILES}
++    pp = {n: {m: f"{tab[n][0][key[n]][m]:.1f}" for m in PLANT_METRICS} for n in S_FILES}
+     write_once(work / "PLANT_KEY.json", {**rec, "key": key})
+     write_once(work / "PLANT_PRINTED.json", {**rec, "printed": pp})
+     shown = jload(work / "PLANT_PRINTED.json")["printed"]
+@@ -1143,8 +1300,9 @@
+             out[f] = {"label": "not admitted (GATE2.json) or not released"}
+             continue
+         sc, keys = fe_table(tk, *targets[f], pool)
+-        pm = {m: p for m, p in by_file[f]["metrics"].items() if m in ID_METRICS}
+-        out[f] = {**identify(pm, sc, keys), "printed_used": sorted(pm)}
++        pm = {m: p for m, p in by_file[f]["metrics"].items() if m in P3_SCOPE}
++        out[f] = {**identify(pm, sc, keys), "printed_used": {"members": sorted(set(pm) & set(ID_METRICS)), "r*": sorted(pm)},
++                  "METEOR_excluded_for_members": "METEOR" in pm}  # forced: no member-specific METEOR (CC-361 D12, NB13)
+         if p4["identification"] != "evaluable":
+             out[f]["label"] = "NOT_EVALUABLE (K-plant): reproduction table only"
+         out[f]["P3b_matched_F_reproducing_CIDEr-D_POST_HOC"] = sorted(
+@@ -1159,12 +1317,34 @@
+         rs = {b: RSTAR({i: refs[i] for i in ids}, {i: own[b][i] for i in ids}) for b in pb}
+         p3 = {**p3_rule(pb, rs, dropped), "dropped_K_coco": dropped, "identification": {b: out[b]["label"] for b in pb},
+               "margin": {b: out[b]["margin"] for b in pb}}
+-    rec.update(P3=p3, P4=p4, plants={n: {k: v for k, v in r.items() if k != "reproducing"} for n, r in ident_p.items()},
++    rec.update(env_rstar={k: env[k] for k in ("python", "pycocoevalcap", "rescap_metrics_sha256", "java", "rstar_import")},
++               printed_sha256=sha(Path(a.printed)) if a.printed else None, P3=p3, P4=p4, plants={n: {k: v for k, v in r.items() if k != "reproducing"} for n, r in ident_p.items()},
+                fe_id=out, printed_comparisons=printed_census(printed, res["comparisons"], f0s, gate), pool=len(pool),
+                rstar_in_pool=r_in, label="FE-ID (§5); KTVIC CIDEr-D/BLEU-4 reproduction is POST HOC (O3)")
+     return {"FEID.json": rec}
+ 
+ 
++def printed_entries(p: Path) -> list[dict]:
++    """§5.2 PRINTED.json in its pinned layout (CC-361 D1): sha256 asserted (the file is never edited); values.{source}[]
++    {system, metric_as_printed, value_as_printed} mapped by PRINTED_SYSTEMS and PRINTED_METRICS; the decimals come from
++    value_as_printed (a string). An unmapped system or metric, or a metric printed twice for one system, is a FAULT.
++    Returns [{source, system, file, metrics: {in-scope name: value_as_printed}}] in file order."""
++    if sha(p) != PRINTED_SHA:
++        raise Fault("PRINTED.json differs from its pin (PIN-1112-b-fecert-printed)")
++    by: dict = {}
++    for src, rows in jload(p)["values"].items():
++        for r in rows:
++            k = (src, r["system"])
++            if k not in PRINTED_SYSTEMS or r["metric_as_printed"] not in PRINTED_METRICS:
++                raise Fault("PRINTED.json: a system or metric outside the registered map (CC-361 D1)")
++            e = by.setdefault(k, {"source": src, "system": r["system"], "file": PRINTED_SYSTEMS.get(k), "metrics": {}})
++            m = PRINTED_METRICS[r["metric_as_printed"]]
++            if m in e["metrics"] or not isinstance(r["value_as_printed"], str):
++                raise Fault("PRINTED.json: a metric printed twice for one system, or a value that is not a string")
++            e["metrics"][m] = r["value_as_printed"]
++    return list(by.values())
++
++
+ def printed_census(entries: list, comps: list, f0s: dict, gate: dict) -> dict:
+     """§5.5 (DESCRIPTIVE): every pair of systems one source prints side by side; re-scorable, one-sided or neither."""
+     adm = set(BASE) | {k.split("/")[1] for k, v in gate["files"].items() if v["admitted"]}
+@@ -1202,9 +1382,11 @@
+     also = [t for p in files[1:] for t in (sha(p), p.name)]
+     if not pin_line(Path(a.log), sha(files[0]), files[0].name, *also):
+         raise SystemExit("REFUSED: no closing LOG line with the hashes of key.json and the label files (plan §6)")
+-    key = jload(files[0])
++    key = key_items(jload(files[0]))
+     labs = {p.name[len("labels_"):-len(".jsonl")]: last_labels(p) for p in files[1:]}
+     elig = jload(work / "PAIR_CANDIDATES.json")["eligible_images"]
++    if set(elig) != set("PUC"):
++        raise Fault("PAIR_CANDIDATES.json is not in the build_pairs.py contract (CC-361 D3)")
+     rec.update(inputs={p.name: sha(p) for p in files}, **human(key, labs, elig),
+                label="new human judgements on previously analysed captions (plan §1)")
+     return {"HUMAN.json": rec}
+@@ -1212,6 +1394,11 @@
+ 
+ PREV = {"C": "FAMILY.json", "G": "CENSUS.json", "1": "GATE2.json", "2a": "DEV.json", "2b": "V.json",
+         "3": "RESULT.json", "H": "FEID.json"}
++INPUTS = {  # the other work files each stage reads (PREV is checked by prev_ok), each against its LOG pin line (CC-361 D8)
++    "C": (), "G": ("FAMILY.json",), "1": ("FAMILY.json", "CENSUS.json"),
++    "2a": ("FAMILY.json", "GATE2.json", "NC.json"),  # §4.3: GATE2.json logged before any FL score
++    "2b": ("FAMILY.json", "CENSUS.json", "GATE2.json", "DEV.json", "NC.json"),
++    "3": ("FAMILY.json", "CENSUS.json", "GATE2.json"), "H": ("FAMILY.json", "PAIR_CANDIDATES.json")}
+ 
+ 
+ def run(a) -> None:
+@@ -1227,7 +1414,6 @@
+     if a.stage == "2a":
+         if not pin_line(log, sha(work / "NC.json"), "NC.json", a.prev, "DEV.json"):
+             raise SystemExit("REFUSED: no pin line with DEV.json and NC.json (§9: held-out and FL only after the pin)")
+-        logged(log, work / "GATE2.json")  # §4.3: GATE2.json logged before any FL score
+         if any(work.glob("RESULT*.json")):
+             raise SystemExit("REFUSED: a RESULT*.json exists before stage 2a (§9)")
+     if a.stage == "3":
+@@ -1237,6 +1423,8 @@
+             raise SystemExit("REFUSED: PRINTED.json is not logged; --k-print only after 2026-11-15 12:00 VN (§10)")
+     rec = {"registration": REG, "registration_sha256": REG_SHA, "stage": a.stage, "prev_sha256": a.prev,
+            "utc_start": now(), "code_sha256": code_shas()}
++    if a.stage in INPUTS:
++        rec["inputs_sha256"] = {PREV[a.stage]: a.prev, **inputs(work, log, INPUTS[a.stage])}
+     fn = {"F": lambda: st_F(a, rec), "C": lambda: st_C(a, rec), "G": lambda: st_G(a, rec), "1": lambda: st_1(a, rec, work),
+           "2a": lambda: st_2a(a, rec, work), "2b": lambda: st_2b(a, rec, work), "3": lambda: st_3(a, rec, work),
+           "H": lambda: st_H(a, rec, work)}[a.stage]
+@@ -1296,9 +1484,11 @@
+ 
+ def _env_stub(a) -> dict:
+     return {"python": "3", "unidata_version": unicodedata.unidata_version, "jar_sha256": JAR_SHA + "0" * 56,
+-            "protocol_pilot_sha256": PILOT_SHA + "0" * 56, "pyvi": PYVI_VERSION, "underthesea": "6.8.4",
+-            "pyvi_wheel": {"name": "pyvi-0.1.1-py3-none-any.whl"},
+-            "underthesea_wheel": {"name": "underthesea-6.8.4-py3-none-any.whl"}}
++            "protocol_pilot_sha256": PILOT_SHA + "0" * 56, "pyvi": PYVI_VERSION, "underthesea": UTS_VERSION,
++            "pycocoevalcap": COCO_VERSION, "pyvi_wheel": {"name": "pyvi-0.1.1-py2.py3-none-any.whl", "sha256": "0" * 64},
++            "underthesea_wheel": {"name": f"underthesea-{UTS_VERSION}-py3-none-any.whl", "sha256": UTS_WHEEL_SHA},
++            "underthesea_signature": "(sentence, format=None)", "rstar_import": True,
++            "rescap_metrics_sha256": RESCAP_SHA, "java": JAVA_VERSION}
+ 
+ 
+ def _ref(i, j):
+@@ -1354,6 +1544,11 @@
+         _dump(fl / GROUPS["G3"]["files"][n], [{"image_id": v, "caption": f(i)} for i, v in zip(ids, vid)])
+     _dump(fl / GROUPS["G5"]["files"]["X1"], [{"Caption pred": f"{MARK} chó", "Caption": f"{MARK} chó"}])
+     _dump(b2d / "scores.json", {"rows": {"K1": {"CIDEr_P0": 1.0, "CIDEr_PYVI": 2.0}}})
++    # provenance pins of the synthetic FL files (the real ones are b2.A_SYSTEMS, MANIFEST.tsv and CC-354 3(d))
++    globals()["FETCH_BLOBS"] = {rel: b2.git_blob((fl / rel).read_bytes()) for g in GROUPS.values()
++                                for rel in g["files"].values() if rel.startswith("fetched/") and (fl / rel).is_file()}
++    globals()["MANIFEST_SHA"] = {}
++    globals()["REF_SHA"] = {"G1": sha(g1), "G3": sha(fl / GROUPS["G3"]["refs"])}
+ 
+ 
+ _W: dict = {}
+@@ -1364,8 +1559,6 @@
+     if "err" in _W:
+         raise _W["err"]
+     if "root" not in _W:
+-        import contextlib
+-        import io
+         import tempfile
+         _W.update(root=Path(tempfile.mkdtemp(prefix="b_fecert_selftest_")), refused={}, out=io.StringIO())
+         try:
+@@ -1432,41 +1625,60 @@
+     run(ns("1", prev=sha(W / "GATE2.json")))
+     dv, nc = sha(W / "DEV.json"), sha(W / "NC.json")
+     run(ns("pin", prev=dv, nc=nc))
+-    attempt("2a_no_pin", "2a", prev=dv, log=alt_log("NC.json", f"2026-11-13T01:00:00Z OPS-T2-pin: DEV.json {dv}\n"))
+-    pin(W / "DEV.json", W / "NC.json")
++    attempt("2a_no_pin", "2a", prev=dv, log=alt_log("NC.json", f"2026-11-13T01:00:00Z OPS-T2-pin: DEV.json {dv}\n"
++                                                    f"2026-11-13T01:00:00Z OPS-T3-pin: NC.json {nc}\n"))  # not one line
++    pin(W / "DEV.json", W / "NC.json", W / "PAIR_CANDIDATES.json")
+     attempt("2a_no_gate2_line", "2a", prev=dv, log=alt_log("GATE2.json"))
+     attempt("2a_result_exists", "2a", prev=dv, setup=lambda cp: (cp / "RESULT_old.json").write_text("{}"))
+     run(ns("2a", prev=dv))
+     attempt("2b_no_V_line", "2b", prev=sha(W / "V.json"))
+     pin(W / "V.json")
++    attempt("2b_dev_altered", "2b", prev=sha(W / "V.json"),  # D8: a work file changed after its pin line
++            setup=lambda cp: (cp / "DEV.json").write_text((W / "DEV.json").read_text(encoding="utf-8") + " ", encoding="utf-8"))
+     run(ns("2b", prev=sha(W / "V.json")))
+     pin(W / "RESULT.json")
+-    refs = PT.load_refs(REFS)
+-    ent = []
+-    for b in BASE:
+-        h = load_base(base, b)
+-        s = _rstar_stub(refs, {i: h[i] for i in sorted(refs)})
+-        ent.append({"source": "synthetic table", "system": b, "file": b,
+-                    "metrics": {**{m: f"{s[m]:.1f}" for m in ("CIDEr-D", "BLEU-4", "ROUGE-L", "BLEU-1")}, "SPICE": "1.0"}})
+-    ent.append({"source": "synthetic table", "system": "unreleased", "file": None, "metrics": {"CIDEr-D": "136.0"}})
+-    _dump(printed, {"entries": ent})
++    _dump(printed, _printed_fixture(base))  # D1: synthetic numbers in the pinned 2a962a2b layout
++    globals()["PRINTED_SHA"] = sha(printed)
+     attempt("3_no_printed", "3", prev=sha(W / "RESULT.json"))
+     pin(printed)
+     run(ns("3", prev=sha(W / "RESULT.json"), printed=str(printed)))
+     pin(W / "FEID.json")
+-    k = lambda img, s, dw, left="fa", right="fb", rep=None: {  # noqa: E731
+-        "image": img, "stratum": s, "left": left, "right": right, "a": "fa", "b": "fb",
+-        "d": {"m_syl": -dw, "m_word": dw, "m_pk": dw}, "repeat_of": rep}
+-    _dump(lab / "key.json", {"q1": k("1", "P", 12.0), "q2": k("2", "P", -12.0), "q3": k("3", "U", 12.0),
+-                             "q4": k("4", "C", 12.0), "q5": k("1", "P", 12.0, "fb", "fa", "q1")})
+-    for r, ans in (("PI", "AABTB"), ("R2", "ABBTB")):
+-        (lab / f"labels_{r}.jsonl").write_text("".join(json.dumps({"qid": f"q{j + 1}", "label": x}) + "\n"
+-                                                       for j, x in enumerate(ans)), encoding="utf-8")
++    # D5: the stage-1 PAIR_CANDIDATES.json -> build_pairs.build -> synthetic labels -> stage H
++    import build_pairs as BP
++    with contextlib.redirect_stdout(io.StringIO()):
++        BP.build(lab, W / "PAIR_CANDIDATES.json", data / "results", data / "datasets/ktvic/test_data.json",
++                 sha(W / "PAIR_CANDIDATES.json"), salt="5a17" * 8)
++    items = jload(lab / "key.json")["items"]
++    first = min((q for q, v in items.items() if v["part"] == "main"), default=None)
++    for r in ("PI", "R2"):
++        (lab / f"labels_{r}.jsonl").write_text("".join(
++            json.dumps({"qid": q, "label": "B" if r == "R2" and q == first else "A"}) + "\n"
++            for q, v in sorted(items.items()) if v["part"] != "practice"), encoding="utf-8")
+     attempt("H_no_closing", "H", prev=sha(W / "FEID.json"), labels=str(lab))
+     pin(lab / "key.json", lab / "labels_PI.jsonl", lab / "labels_R2.jsonl")
+     run(ns("H", prev=sha(W / "FEID.json"), labels=str(lab)))
+ 
+ 
++def _printed_fixture(base: Path) -> dict:
++    """PRINTED.json layout of the pin 2a962a2b (values.{KTVIC,K2}[] {system, metric_as_printed, value_as_printed}), with
++    the registered system and metric strings and synthetic numbers (the baselines' from the stub r*)."""
++    refs = PT.load_refs(REFS)
++    rows = {"KTVIC": [], "K2": []}
++    for (src, sysname), f in PRINTED_SYSTEMS.items():
++        if f:
++            h = load_base(base, f)
++            s = _rstar_stub(refs, {i: h[i] for i in sorted(refs)})
++            vals = {"BLEU-1": f"{s['BLEU-1']:.1f}", "BLEU-4": f"{s['BLEU-4']:.1f}", "METEOR": "27.5",
++                    "ROUGE": f"{s['ROUGE-L']:.1f}", "CIDEr": f"{s['CIDEr-D']:.1f}"}
++        elif src == "KTVIC":
++            vals = {"BLEU-1": "74.7", "BLEU-4": "40.6", "METEOR": "36.6", "ROUGE": "59.7", "CIDEr": "136.0"}
++        else:
++            vals = {"BLEU-1": "68.94", "BLEU-4": "34.81", "CIDEr": "98.50", "METEOR": "53.73", "ROUGE-L": "60.56"}
++        rows[src] += [{"system": sysname, "metric_as_printed": m, "value_as_printed": v, "value": float(v),
++                       "decimals": len(v.split(".")[1])} for m, v in vals.items()]
++    return {"schema": "vsps.b_fecert.printed.v1", "sources": [], "values": rows}
++
++
+ @check
+ def family_enumeration():
+     assert (len(FM.F_DEV), len(FM.F_HELD), len(FM.F), len(FM.FPLUS)) == (54, 18, 72, 271)
+@@ -1514,6 +1726,16 @@
+     assert FM.f1("rdr", refs, {"rdr": bad(2)})["dropped"]  # 1%: dropped
+     assert FM.f1("syl", refs, STUB)["whitespace_fallback"] and FM.f1("syl", refs, STUB)["dropped"]
+ 
++    def crash(ts):
++        raise OSError("unit down")
++    try:  # D6: a unit that raises is not a string failure (stage F makes it a FAULT)
++        FM.f1("uts", refs, {"uts": crash})
++    except OSError:
++        pass
++    else:
++        raise AssertionError("a raising unit must not come back as a K-unit drop (CC-361 D6)")
++    assert [x["addition"] for x in FM.f3("rdr", STUB)] == [False] * 5 + [True] * 4  # NB7
++
+ 
+ @check
+ def matched_scoring():
+@@ -1569,6 +1791,8 @@
+     H = {"1": "a b c d", "2": "p q r s t", "3": "x y"}
+     S = np.array([bleu_img(R[i], H[i]) for i in sorted(R)], float)
+     assert abs(float(bleu_corpus(S.sum(0))) - E4.bleu4(R, H)) < 1e-9
++    # BLEU-1 by hand (D12): 4 + 5 + 2 matched of 4 + 5 + 2 hypothesis words; 'closest' reference lengths 4 + 4 + 6 = 14
++    assert abs(float(bleu_corpus(S.sum(0), 1)) - 100 * np.exp(1 - 14 / 11)) < 1e-6
+ 
+ 
+ def _comp(cid, cls):
+@@ -1655,11 +1879,31 @@
+     assert unit_sets({"units_dropped": []}, c2) == (["syl", "rdr", "pyvi", "uts"], [])
+     assert unit_sets({"units_dropped": []}, c) == (["syl", "rdr", "pyvi"], ["uts"])
+     _dump(d / "b2/s2.json", {"rows": {"K9": {"CIDEr_UTS": 1.0}}})
+-    assert census({"a": d / "a.json"}, d / "b2")["uts_moved_to_dev"]
++    c3 = census({"a": d / "a.json"}, d / "b2")
++    assert c3["uts_moved_to_dev"] and c3["b2_score_sha256"]["b2_external/s2.json"] == sha(d / "b2/s2.json")
+     shutil.rmtree(d)
+ 
+ 
+ @check
++def census_b2dir():
++    """D10: --b2-score must be a directory holding at least one *.json; a file, an empty folder or none is a FAULT."""
++    import tempfile
++    d = Path(tempfile.mkdtemp(prefix="b_fecert_census_"))
++    try:
++        _dump(d / "a.json", {"results": [{"segmenter": "rdrsegmenter"}]})
++        _dump(d / "b2/scores.json", {"rows": {"K1": {"CIDEr_UTS": 1.0}}})
++        (d / "empty").mkdir()
++        for bad in (d / "b2/scores.json", d / "empty", None):
++            try:
++                census({"a": d / "a.json"}, bad)
++            except Fault:
++                continue
++            raise AssertionError(f"census accepted --b2-score {bad}")
++    finally:
++        shutil.rmtree(d)
++
++
++@check
+ def gate_rules():
+     refs = {str(k): [f"con chó số {k}"] for k in range(100)}
+     good = [(str(k), f"một con chó {k}") for k in range(100)]
+@@ -1694,6 +1938,13 @@
+     assert r["label"] == "IDENTIFIED" and r["reproducing"] == [["z"]] and abs(r["margin"] - 3.17) < 1e-9
+     r = identify({"CIDEr-D": "30.0"}, sc, keys)
+     assert r["label"] == "OUTSIDE" and abs(r["nearest_distance"] - 5.0) < 1e-9
++    # D12: BLEU-1 separates two classes that CIDEr-D, BLEU-4 and ROUGE-L cannot; METEOR binds r* only
++    s2 = {"x": {"CIDEr-D": 21.8, "BLEU-4": 15.5, "ROUGE-L": 42.3, "BLEU-1": 53.0},
++          "y": {"CIDEr-D": 21.8, "BLEU-4": 15.5, "ROUGE-L": 42.3, "BLEU-1": 49.0},
++          "r*": {"CIDEr-D": 21.8, "BLEU-4": 15.5, "ROUGE-L": 42.3, "BLEU-1": 53.0, "METEOR": 20.0}}
++    pr = {"CIDEr-D": "21.8", "BLEU-4": "15.5", "ROUGE-L": "42.3", "BLEU-1": "53.0", "METEOR": "27.5"}
++    r = identify(pr, s2, {"x": "k1", "y": "k2", "r*": "r*"})
++    assert r["label"] == "IDENTIFIED" and r["reproducing"] == [["x"]] and abs(r["margin"]) < 1e-9  # r* equal on the 4
+ 
+ 
+ @check
+@@ -1728,7 +1979,7 @@
+     got = [pair_stratum(*d) for d in ((12, -11, -15), (-13, -12, 12), (11, 11, 11), (12, -9.5, -15), (12, -12, 12))]
+     assert got == ["U", "P", "C", None, None]
+     assert display("  con chó chạy ... ") == "Con chó chạy" and display("đẹp.") == "Đẹp" and display("3 con.") == "3 con"
+-    assert syl_diff("Con chó chạy", "con chó nằm") == 2 and syl_diff("con chó", "Con Chó") == 0
++    assert tok_diff("Con chó chạy", "con chó nằm") == 2 and tok_diff("con chó", "Con Chó") == 0
+ 
+ 
+ @check
+@@ -1739,8 +1990,8 @@
+ 
+ 
+ def _hkey(rows):
+-    return {q: {"image": q, "stratum": s, "left": "fa", "right": "fb", "a": "fa", "b": "fb",
+-                "d": {"m_syl": -dw, "m_word": dw, "m_pk": dw}, "repeat_of": None} for q, s, dw in rows}
++    return {q: {"image": q, "part": "main", "stratum": s, "a": "fa", "b": "fb", "file_left": "fa", "file_right": "fb",
++                "d_syl": -dw, "d_word": dw, "d_pk": dw, "repeat_of": None} for q, s, dw in rows}
+ 
+ 
+ @check
+@@ -1758,13 +2009,27 @@
+ 
+ 
+ @check
++def kappa_gate():
++    """D11: the kappa gate and the inter-rater rows exclude cannot AND missing answers, by one definition."""
++    key = _hkey([(f"p{k}", "P", 12.0 if k % 2 else -12.0) for k in range(10)])
++    r2 = {q: "A" if int(q[1:]) % 3 else "B" for q in key}
++    pi = {q: v for q, v in r2.items() if q not in ("p0", "p1")}  # PI missed two screens; R2 answered all
++    r = human(key, {"PI": pi, "R2": r2}, {"P": 50, "U": 0, "C": 0})
++    assert r["raters"] == ["PI", "R2"] and r["gate"] == "labels"
++    assert r["inter_rater"]["n"] == 8 and abs(r["inter_rater"]["kappa"] - 1.0) < 1e-12
++
++
++@check
+ def g_repro():
++    """Coded reading (a) (CC-361 D13 open; PI Q2 default): any mismatch among the scored files is a FAULT, a file of the
++    seen set S or not."""
+     assert all(r["ok"] for r in grepro({"a": 149.795, "b": 10.0}, {"a": 149.79, "b": 10.0}))
+-    try:
+-        grepro({"a": 149.84}, {"a": 149.79})
+-    except Fault:
+-        return
+-    raise AssertionError("a G-repro mismatch of 0.05 must be a FAULT")
++    for n in ("a", S_FILES[0]):  # 'a' is not in S
++        try:
++            grepro({n: 149.84}, {n: 149.79})
++        except Fault:
++            continue
++        raise AssertionError(f"a G-repro mismatch of 0.05 on {n} must be a FAULT")
+ 
+ 
+ @check
+@@ -1772,7 +2037,14 @@
+     good = _env_stub(None)
+     env_check(good)
+     for bad in ({"pyvi": "0.1.2", "pyvi_wheel": {"name": "pyvi-0.1.2-py3-none-any.whl"}}, {"jar_sha256": "0" * 64},
+-                {"underthesea_wheel": {"name": "underthesea-6.9.0-py3-none-any.whl"}}):
++                {"underthesea_wheel": {"name": "underthesea-6.9.0-py3-none-any.whl"}},
++                {"underthesea": None, "underthesea_wheel": None},  # D6
++                {"underthesea": "9.4.0", "underthesea_wheel": {"name": "underthesea-9.4.0-py3-none-any.whl",
++                                                              "sha256": UTS_WHEEL_SHA}},
++                {"underthesea_wheel": {"name": f"underthesea-{UTS_VERSION}-py3-none-any.whl", "sha256": "0" * 64}},
++                {"underthesea_signature": None},
++                {"rstar_import": False}, {"pycocoevalcap": "1.3"}, {"pycocoevalcap": None},  # D7
++                {"rescap_metrics_sha256": "0" * 64}, {"java": None}, {"java": "17.0.1"}):
+         try:
+             env_check({**good, **bad})
+         except Fault:
+@@ -1793,7 +2065,7 @@
+     assert r["P1"]["label"] == "NOT_EVALUABLE" and r["P2"]["label"] == "NOT_EVALUABLE"
+     p3 = jload(w / "FEID.json")["P3"]
+     assert p3["label"] == "SUPPORTED" and p3["M_new"] == ["BLEU-1", "ROUGE-L"]
+-    assert abs(jload(w / "HUMAN.json")["inter_rater"]["kappa"] - 0.4375 / 0.6875) < 1e-9
++    assert jload(w / "FAMILY.json")["no_committed_score"] == ["p1_s42-detailed", "zeroshot-detailed"]
+     assert all(os.stat(p).st_mode & 0o777 == 0o444 for p in (world()["root"] / "pins").iterdir())
+ 
+ 
+@@ -1849,8 +2121,63 @@
+ def image_route():
+     world()
+     assert image_files() == {str(i): f"{i:011d}.{e}" for i, e in zip(range(1, 7), ["jpg", "png", "jpeg", "jpg", "jpg", "jpg"])}
+-    pc = jload(world()["root"] / "work/PAIR_CANDIDATES.json")
+-    assert pc["image_extensions"] == {"jpg": 4, "png": 1, "jpeg": 1}
++    assert not FN_RE.fullmatch("00000000001.gif") and not FN_RE.fullmatch("1.jpg")
++
++
++@check
++def pairs_integration():
++    """D3/D5: stage 1's PAIR_CANDIDATES.json -> build_pairs.build -> synthetic labels -> stage H, on the chain."""
++    w = world()["root"]
++    pc = jload(w / "work/PAIR_CANDIDATES.json")
++    assert pc["epsilon"] == EPS and set(pc["eligible_images"]) == set("PUC")
++    assert all(set(c) == set(CAND_FIELDS) for cs in pc["images"].values() for c in cs)
++    items = jload(w / "labels/key.json")["items"]
++    main = [q for q, v in items.items() if v["part"] == "main"]
++    h = jload(w / "work/HUMAN.json")
++    assert main and h["raters"] == ["PI", "R2"]
++    assert sum(r["n_dec"] for r in h["strata"].values()) + sum(h["not_decisive"].values()) == len(main)
++    assert h["not_decisive"] == {"split": 1} and h["inter_rater"]["n"] == len(main)
++
++
++@check
++def key_contract():
++    """D4/D15 on the 400-image fixture of build_pairs.py: main = part 'main' (practice never), repeats = part 'repeat',
++    sides from file_left/file_right, salted qids, and a FAULT on a key outside the contract."""
++    import tempfile
++    import build_pairs as BP
++    with tempfile.TemporaryDirectory() as td:
++        fx = Path(td)
++        BP._fixture(fx)
++        args = (fx / "cand.json", fx / "preds", fx / "ds" / "test_data.json", sha(fx / "cand.json"))
++        with contextlib.redirect_stdout(io.StringIO()):
++            BP.build(fx / "o1", *args, salt="5a17" * 8)
++            BP.build(fx / "o2", *args)
++            BP.build(fx / "o3", *args)
++        key = jload(fx / "o1/key.json")
++        k2, k3 = (jload(fx / f"{o}/key.json") for o in ("o2", "o3"))
++        elig = jload(fx / "cand.json")
++    items = key_items(key)
++    assert key["salt"] == "5a17" * 8 and all(q == BP.qid(key["salt"], v["part"], v["image"], v["a"], v["b"])
++                                              for q, v in items.items())
++    assert k2["salt"] != k3["salt"] and set(k2["items"]).isdisjoint(k3["items"])  # a fresh secret salt per build
++    parts = Counter(v["part"] for v in items.values())
++    assert parts["repeat"] == 30 and parts["practice"] == 8 and parts["main"] > 0
++    # both raters always pick the screen side that shows caption a: correct side mapping gives "a" on every pair, a
++    # swapped mapping gives "b" on every pair, so the word-agreement count tells the two apart whatever the side balance
++    labs = {r: {q: "A" if v["file_left"] == v["a"] else "B" for q, v in items.items() if v["part"] != "practice"}
++            for r in ("PI", "R2")}
++    r = human(items, labs, {s: sum(any(c["stratum"] == s for c in cs) for cs in elig["images"].values()) for s in "PUC"})
++    assert r["raters"] == ["PI", "R2"] and sum(x["n_dec"] for x in r["strata"].values()) == parts["main"]
++    pos = sum(v["d_word"] > 0 for v in items.values() if v["part"] == "main")
++    assert pos != parts["main"] - pos  # so that a swap (count = main - pos) cannot pass
++    assert sum(x["k_word"] for x in r["strata"].values()) == pos
++    assert r["within_rater"]["PI"]["n"] == 30 and r["within_rater"]["PI"]["raw"] == 1.0  # side swap undone
++    bad = {"salt": "x", "items": {q: {**v, "left": v["file_left"]} for q, v in items.items()}}
++    try:
++        key_items(bad)
++    except Fault:
++        return
++    raise AssertionError("a key.json with a field outside the contract must be a FAULT")
+ 
+ 
+ @check
+@@ -1863,6 +2190,129 @@
+     assert MARK not in w["out"].getvalue()
+ 
+ 
++@check
++def k_coco_import():
++    """D7: an ImportError of rescap or pycocoevalcap is a FAULT, not a K-coco drop."""
++    global RSTAR
++    keep = RSTAR
++
++    def gone(refs, hyps):
++        raise ImportError("pycocoevalcap")
++    RSTAR = gone
++    try:
++        k_coco()
++    except Fault:
++        return
++    finally:
++        RSTAR = keep
++    raise AssertionError("an r* ImportError must be a FAULT (CC-361 D7)")
++
++
++@check
++def printed_adapter():
++    """D1: the pinned layout read as is; registered maps; decimals as printed; unmapped system or metric = FAULT."""
++    import tempfile
++    world()
++    with tempfile.TemporaryDirectory() as td:
++        p = Path(td) / "PRINTED.json"
++        fx = _printed_fixture(world()["root"] / "base")
++        _dump(p, fx)
++        keep = globals()["PRINTED_SHA"]
++        globals()["PRINTED_SHA"] = sha(p)
++        try:
++            es = printed_entries(p)
++            assert [(e["source"], e["file"]) for e in es] == [
++                ("KTVIC", "ktvic_resnetlstm"), ("KTVIC", "ktvic_vittrans"), ("KTVIC", None), ("K2", None), ("K2", None),
++                ("K2", None)]
++            assert set(es[2]["metrics"]) == {"BLEU-1", "BLEU-4", "METEOR", "ROUGE-L", "CIDEr-D"}
++            assert es[3]["metrics"]["CIDEr-D"] == "98.50" and tol(es[3]["metrics"]["CIDEr-D"]) < 0.0051
++            for change in ({"system": "4) New / Model"}, {"metric_as_printed": "SPICE"}):
++                bad = json.loads(json.dumps(fx))
++                bad["values"]["KTVIC"][0].update(change)
++                _dump(p, bad)
++                globals()["PRINTED_SHA"] = sha(p)
++                try:
++                    printed_entries(p)
++                except Fault:
++                    continue
++                raise AssertionError(f"PRINTED.json with {change} must be a FAULT")
++            _dump(p, fx)
++            globals()["PRINTED_SHA"] = "0" * 64
++            try:
++                printed_entries(p)
++            except Fault:
++                return
++            raise AssertionError("a PRINTED.json off its pin must be a FAULT")
++        finally:
++            globals()["PRINTED_SHA"] = keep
++
++
++@check
++def inputs_logged():
++    """D8: a work file changed after its LOG line is refused in every stage; test_data.json is re-checked against
++    FAMILY.json; SYSTEMS.tsv is bound by CENSUS.json."""
++    import tempfile
++    assert world()["refused"]["2b_dev_altered"]
++    with tempfile.TemporaryDirectory() as td:
++        d = Path(td)
++        _dump(d / "FAMILY.json", {"refs_sha256": "0" * 64})
++        log = d / "LOG.md"
++        log.write_text(f"2026-11-13T01:00:00Z OPS-T9-pin: FAMILY.json {sha(d / 'FAMILY.json')}\n", encoding="utf-8")
++        try:
++            inputs(d, log, ("FAMILY.json",))
++        except Fault:
++            pass
++        else:
++            raise AssertionError("test_data.json off its FAMILY.json sha256 must be a FAULT")
++        (d / "SYSTEMS.tsv").write_text("name\n", encoding="utf-8")
++        _dump(d / "CENSUS.json", {"systems_tsv_sha256": "0" * 64})
++        try:
++            systems(d)
++        except Fault:
++            return
++        raise AssertionError("SYSTEMS.tsv off its CENSUS.json sha256 must be a FAULT")
++
++
++@check
++def fl_provenance():
++    """D9: an FL output off its fetch record, or a reference file off CC-354 3(d), is a FAULT; GATE2.json records the
++    reference shas and 2a/2b/3 re-check them."""
++    w = world()["root"]
++    g = jload(w / "work/GATE2.json")
++    assert g["refs_sha256"]["G1"] == REF_SHA["G1"] and g["refs_sha256"]["G5"] is None
++    rel = GROUPS["G1"]["files"]["X4a"]
++    keep = dict(FETCH_BLOBS)
++    try:
++        FETCH_BLOBS[rel] = "0" * 40
++        try:
++            provenance(rel, w / "fl" / rel)
++        except Fault:
++            pass
++        else:
++            raise AssertionError("an FL output off its fetch blob must be a FAULT")
++    finally:
++        FETCH_BLOBS.clear()
++        FETCH_BLOBS.update(keep)
++    keep = dict(REF_SHA)
++    try:
++        REF_SHA["G1"] = "0" * 64
++        try:
++            group_refs("G1", w / "fl")
++        except Fault:
++            pass
++        else:
++            raise AssertionError("a reference file off CC-354 3(d) must be a FAULT")
++    finally:
++        REF_SHA.update(keep)
++    fin = fl_inputs(w / "fl", w / "base")
++    gate_files(fin, g)
++    try:
++        gate_files(fin, {**g, "refs_sha256": {**g["refs_sha256"], "G3": "0" * 64}})
++    except Fault:
++        return
++    raise AssertionError("a reference file differing from GATE2.json must be a FAULT")
++
++
+ def selftest() -> int:
+     global SEG, RSTAR, env_record, now
+     SEG, RSTAR, env_record = STUB, _rstar_stub, _env_stub
+@@ -1904,6 +2354,9 @@
+     except Fault as e:
+         print(f"FAULT: {e}")
+         return 3
++    except Exception as e:  # noqa: BLE001  the type only, so no caption text can echo (CC-361 NB4)
++        print(f"ERROR: {type(e).__name__}")
++        return 4
+     return 0
+ 
+ 
+--- a/scripts/b_fecert/mutants.py
++++ b/scripts/b_fecert/mutants.py
+@@ -1,10 +1,12 @@
+ #!/usr/bin/env python3
+-"""Mutants of scripts/b_fecert (registration B_FECERT_PREREG_v1_1.md §12; CC-350 W1, W2; CC-353). Each mutant changes one
+-registered rule in a scratch copy of scripts/b_fecert/ (the rest of the repo mirrored by symlinks, as
+-scripts/c_attr/c_attr_mutants.py does) and runs `b_fecert.py selftest`. A mutant is KILLED only when the line
+-`SELFTEST FAIL <its named check>` is printed: a crash, or a failure of another check only, is SURVIVED. The unmutated
+-self-test must pass first. Exit 0 only if all are killed ("killed n of n"). Offline, CPU, on the host named at the code
+-read (PI-1111j; CC-353 4(e)):
++"""Mutants of scripts/b_fecert and of the pair tool (registration B_FECERT_PREREG_v1_1.md §12; CC-350 W1, W2; CC-353;
++CC-361 D5). Each mutant changes one registered rule in a scratch copy of the tree (scripts/b_fecert/ and
++tools/obj_rater/ are real copies, the rest of the repo is mirrored by symlinks, as scripts/c_attr/c_attr_mutants.py
++does) and runs one self-test:
++  - a check name: `b_fecert.py selftest`; KILLED only when the line `SELFTEST FAIL <check>` is printed;
++  - "bp:<text>": `build_pairs.py --selftest`; KILLED only when a line starting `SELFTEST FAIL: <text>` is printed.
++A crash, or a failure of another check only, is SURVIVED. Both unmutated self-tests must pass first. Exit 0 only if
++all are killed ("killed n of n"). Offline, CPU, on the host named at the code read (PI-1111j; CC-353 4(e)):
+     python3 -I -B scripts/b_fecert/mutants.py [--jobs 2]
+ """
+ import argparse
+@@ -18,7 +20,8 @@
+ 
+ HERE = Path(os.path.abspath(__file__)).parent
+ REPO = HERE.parents[1]
+-F, B = "family.py", "b_fecert.py"
++F, B = "scripts/b_fecert/family.py", "scripts/b_fecert/b_fecert.py"
++BP, PS, PH = "tools/obj_rater/build_pairs.py", "tools/obj_rater/pair_server.py", "tools/obj_rater/pair.html"
+ MUT = [  # (id, file, old, new, check): each old occurs exactly once in its file
+     ("M1 case applied before the unit (§2.1 order)", F, "return p_pre(tone(self.n[raw], t), p)",
+      "return p_pre(tone(self.n[raw], t), p).casefold()", "toy_tokens"),
+@@ -96,8 +99,8 @@
+     ("M40 held-out member scored before the V.json LOG line (§9; CC-350 W1)", B,
+      "if log is not None and not pin_line(log, prev, fname, *also):",
+      'if log is not None and fname != "V.json" and not pin_line(log, prev, fname, *also):', "gate_2b_V"),
+-    ("M41 FL scored before GATE2.json is logged (§4.3)", B, 'logged(log, work / "GATE2.json")  # §4.3', "pass  # §4.3",
+-     "gate_2a_gate2"),
++    ("M41 FL scored before GATE2.json is logged (§4.3)", B,
++     '"2a": ("FAMILY.json", "GATE2.json", "NC.json"),', '"2a": ("FAMILY.json", "NC.json"),', "gate_2a_gate2"),
+     ("M42 stage 2a without the DEV.json + NC.json pin line (§9)", B,
+      'if not pin_line(log, sha(work / "NC.json"), "NC.json", a.prev, "DEV.json"):', "if False:", "gate_2a_pin"),
+     ("M43 stage 2a with a RESULT*.json present (§9)", B, 'if any(work.glob("RESULT*.json")):', "if False:",
+@@ -114,8 +117,8 @@
+     ("M49 pyvi version not pinned (§2.2)", B, 'if rec["pyvi"] != PYVI_VERSION:', "if False:", "env_pins"),
+     ("M50 caption text written to GATE2.json (no caption text rule)", B, "v.update(admitted=not bad, reasons=bad)",
+      'v.update(admitted=not bad, reasons=bad, first=rows[0][1] if rows else "")', "no_text"),
+-    ("M51 image file taken as '<id>.jpg' (CC-350 W6)", B, 'fn = im.get("filename") or im.get("file_name")',
+-     "fn = f\"{int(im['id']):011d}.jpg\"", "image_route"),
++    ("M51 image file taken as '<id>.jpg' (CC-350 W6)", B, 'fn = im.get("filename")  # the one key',
++     "fn = f\"{int(im['id']):011d}.jpg\"  # the one key", "image_route"),
+     ("M52 image route regex .jpg only (plan §9 pair_server item 2)", B,
+      'FN_RE = re.compile(r"([0-9]{11})\\.(jpg|jpeg|png)")', 'FN_RE = re.compile(r"([0-9]{11})\\.jpg")', "image_route"),
+     ("M53 pair strata at ε = 9 (plan §2.2)", B, "EPS = 10.0  # plan §2.2", "EPS = 9.0  # plan §2.2", "pair_strata"),
+@@ -133,43 +136,126 @@
+      "pe = sum((x.count(c) / len(x)) * (y.count(c) / len(y)) for c in cats)", "pe = 0.0", "kappa_hand"),
+     ("M60 BLEU-4 with the average reference length (kit 'closest')", B,
+      "min((abs(x - len(h)), x) for x in lens)[1]]", "sum(lens) // len(lens)]", "bleu_counts"),
++    # ---------------------------------------------------------------------------------- round 2 (CC-361 D5)
++    ("R1 D1 printed ROUGE left unmapped", B, '"ROUGE": "ROUGE-L", "ROUGE-L": "ROUGE-L",', '"ROUGE-L": "ROUGE-L",',
++     "printed_adapter"),
++    ("R2 D1 an unmapped printed system accepted", B,
++     'if k not in PRINTED_SYSTEMS or r["metric_as_printed"] not in PRINTED_METRICS:',
++     'if r["metric_as_printed"] not in PRINTED_METRICS:', "printed_adapter"),
++    ("R3 D1 PRINTED.json sha not asserted", B, "if sha(p) != PRINTED_SHA:", "if False:", "printed_adapter"),
++    ("R4 D3 stage 1 writes a wrong field name", B, 'CAND_FIELDS = ("a", "b", "stratum", "d_syl", "d_word", "d_pk")',
++     'CAND_FIELDS = ("a", "b", "stratum", "d_syl", "dword", "d_pk")', "pairs_integration"),
++    ("R5 D3 build_pairs accepts a candidate field outside the contract", BP,
++     "if any(set(c) != CAND_FIELDS for cs in cand[\"images\"].values() for c in cs):", "if False:",
++     "bp:stops on a candidate field outside"),
++    ("R6 D4 practice counted as main", B, 'main = sorted(q for q, k in key.items() if k["part"] == "main")',
++     'main = sorted(q for q, k in key.items() if k["part"] != "repeat")', "key_contract"),
++    ("R7 D4 a wrong field name in the key contract", B, '"file_left", "file_right", "d_syl", "d_word", "d_pk", "repeat_of"}',
++     '"left", "file_right", "d_syl", "d_word", "d_pk", "repeat_of"}', "key_contract"),
++    ("R8 D4 screen sides read from the wrong field", B,
++     'return "a" if (k["file_left"] if lab == "A" else k["file_right"]) == k["a"] else "b"',
++     'return "a" if (k["file_right"] if lab == "A" else k["file_left"]) == k["a"] else "b"', "key_contract"),
++    ("R9 D6 a raising unit becomes a K-unit drop", F, "    got = seg[unit](xs)\n",
++     "    try:\n        got = seg[unit](xs)\n    except Exception:\n        got = []\n", "f1_rule"),
++    ("R10 D6 a different underthesea release accepted", B, 'if (rec["underthesea"] != UTS_VERSION or ', "if (",
++     "env_pins"),
++    ("R11 D6 underthesea without its wheel sha256 accepted", B,
++     '(rec["underthesea_wheel"] or {}).get("sha256") != UTS_WHEEL_SHA', "False", "env_pins"),
++    ("R12 D6 underthesea signature not required", B, '            or not rec["underthesea_signature"]):',
++     "            ):", "env_pins"),
++    ("R13 D7 pycocoevalcap version not checked", B, 'or rec["pycocoevalcap"] != COCO_VERSION ', "", "env_pins"),
++    ("R14 D7 Java version not checked", B, '            or rec["java"] != JAVA_VERSION):', "            ):",
++     "env_pins"),
++    ("R15 D7 an r* ImportError becomes a K-coco drop", B,
++     "except ImportError as e:  # an environment fault, never a K-coco drop (CC-361 D7)",
++     "except ArithmeticError as e:", "k_coco_import"),
++    ("R16 D8 a work file altered after its LOG line accepted", B, "    for n in names:\n        logged(log, work / n)",
++     "    for n in names:\n        pass", "inputs_logged"),
++    ("R17 D8 test_data.json not re-checked against FAMILY.json", B,
++     'if sha(REFS) != jload(work / "FAMILY.json")["refs_sha256"]:', "if False:", "inputs_logged"),
++    ("R18 D8 SYSTEMS.tsv not bound by CENSUS.json", B,
++     'if sha(work / "SYSTEMS.tsv") != jload(work / "CENSUS.json")["systems_tsv_sha256"]:', "if False:",
++     "inputs_logged"),
++    ("R19 D9 a reference sha mismatch accepted", B, "if g in REF_SHA and sha(p) != REF_SHA[g]:", "if False:",
++     "fl_provenance"),
++    ("R20 D9 an FL output off its fetch record accepted", B, "    if not ok:\n        raise Fault(f\"{rel}",
++     "    if False:\n        raise Fault(f\"{rel}", "fl_provenance"),
++    ("R21 D9 reference file not re-checked against GATE2.json", B,
++     'if d["refs_sha256"] != gate["refs_sha256"][g]:', "if False:", "fl_provenance"),
++    ("R22 D10 --b2-score given as a file", B,
++     'b2files = sorted(b2dir.rglob("*.json")) if b2dir is not None and b2dir.is_dir() else []',
++     'b2files = sorted(b2dir.rglob("*.json")) if b2dir is not None and b2dir.is_dir() else ([b2dir] if b2dir else [])',
++     "census_b2dir"),
++    ("R23 D11 missing answers kept in the kappa gate", B,
++     'all(ans[r][q] not in (None, "cannot") for r in ("PI", "R2"))', 'all(ans[r][q] != "cannot" for r in ("PI", "R2"))',
++     "kappa_gate"),
++    ("R24 D12 BLEU-1 dropped from FE-ID", B, 'ID_METRICS = ("BLEU-1", "BLEU-4", "ROUGE-L", "CIDEr-D")',
++     'ID_METRICS = ("BLEU-4", "ROUGE-L", "CIDEr-D")', "identify_labels"),
++    ("R25 D12 r* not held to every printed metric", B,
++     "want = lambda c: printed if c[0] == FM.name(FM.RSTAR) else pm", "want = lambda c: pm", "identify_labels"),
++    ("R26 D13 coded reading (a): a mismatch outside S not a FAULT", B, 'if not all(r["ok"] for r in rows):',
++     'if not all(r["ok"] for r in rows if r["name"] in S_FILES):', "g_repro"),
++    ("R27 D15 qid without the salt", BP, 'return hashlib.sha256(f"{salt}|{SEED}|{part}|{i}|{a}|{b}".encode())',
++     'return hashlib.sha256(f"{SEED}|{part}|{i}|{a}|{b}".encode())', "key_contract"),
++    ("R28 D15 a fixed salt on real builds", BP, "salt = salt or secrets.token_hex(16)", 'salt = salt or "0" * 32',
++     "key_contract"),
++    ("R29 D14 pair_server serves with a missing image", PS, "if fn not in names or not (images / fn).is_file():",
++     "if fn not in names:", "bp:pair_server refuses to start when a served image is missing"),
++    ("R30 D16 one character of the instruction block altered in pair.html", PH, "Trước hết", "Trước hét",
++     "bp:pair_server starts on the built fixture with the real pair.html"),
++    ("R31 D16 the instruction block not compared with the registration", PS,
++     "if block is None or hashlib.sha256(block).hexdigest() != INSTRUCTIONS_VI_SHA256:", "if block is None:",
++     "bp:pair_server refuses a page whose instruction block differs by one character"),
++    ("R32 NB5 any annotator code accepted", PS, "if annotator not in ANNOTATORS:", "if False:",
++     "bp:pair_server: --annotator PI or R2 only"),
++    ("R33 NB5 --dir outside ~/vsps_labels_b/ accepted", PS, "if not under(d.resolve(), labels_root.resolve()):",
++     "if False:", "bp:pair_server refuses a --dir under /mnt"),
++    ("R34 NB9 PAIR_CANDIDATES.json sha not checked", BP, "if sha(cand_path) != cand_sha:", "if False:",
++     "bp:stops when PAIR_CANDIDATES.json differs"),
+ ]
+ PY = sys.executable
+ 
+ 
+ def tree(root: Path) -> Path:
+-    """root mirrors the repo by symlinks; scripts/b_fecert is a real copy."""
+-    (root / "scripts").mkdir(parents=True)
++    """root mirrors the repo by symlinks; scripts/b_fecert (family.py, b_fecert.py) and tools/obj_rater are real
++    copies, so a mutant never writes through a symlink and every import resolves inside root."""
++    for top in ("scripts", "tools"):
++        (root / top).mkdir(parents=True)
+     for e in REPO.iterdir():
+-        if e.name not in ("scripts", ".git"):
++        if e.name not in ("scripts", "tools", ".git"):
+             (root / e.name).symlink_to(e)
+-    for e in (REPO / "scripts").iterdir():
+-        if e.name != "b_fecert":
+-            (root / "scripts" / e.name).symlink_to(e)
+-    d = root / "scripts" / "b_fecert"
+-    d.mkdir()
++    for top, real in (("scripts", "b_fecert"), ("tools", "obj_rater")):
++        for e in (REPO / top).iterdir():
++            if e.name != real:
++                (root / top / e.name).symlink_to(e)
++        (root / top / real).mkdir()
+     for f in (F, B):
+-        shutil.copy2(HERE / f, d / f)
+-    return d
++        shutil.copy2(REPO / f, root / f)
++    for e in (REPO / "tools/obj_rater").iterdir():
++        if e.is_file():
++            shutil.copy2(e, root / "tools/obj_rater" / e.name)
++    return root
+ 
+ 
+-def selftest(d: Path) -> tuple[int, str]:
+-    r = subprocess.run([PY, "-X", "utf8", "-I", "-B", str(d / B), "selftest"], capture_output=True, text=True,
+-                       timeout=3600)
+-    return r.returncode, r.stdout
++def selftest(root: Path, bp: bool = False) -> tuple[int, list[str]]:
++    cmd = [PY, "-X", "utf8", "-I", "-B", str(root / BP), "--selftest"] if bp else \
++        [PY, "-X", "utf8", "-I", "-B", str(root / B), "selftest"]
++    r = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
++    return r.returncode, (r.stdout + "\n" + r.stderr).splitlines()
+ 
+ 
+ def one(m) -> tuple[str, bool, str]:
+     mid, f, old, new, chk = m
+-    src = (HERE / f).read_text(encoding="utf-8")
++    src = (REPO / f).read_text(encoding="utf-8")
+     if src.count(old) != 1:
+         return mid, False, f"PATTERN NOT FOUND ONCE ({src.count(old)})"
+     root = Path(tempfile.mkdtemp(prefix="b_fecert_mut_"))
+     try:
+-        d = tree(root)
+-        (d / f).write_text(src.replace(old, new), encoding="utf-8")
+-        rc, out = selftest(d)
+-        killed = f"SELFTEST FAIL {chk}" in out.splitlines()
++        tree(root)
++        (root / f).write_text(src.replace(old, new), encoding="utf-8")
++        bp = chk.startswith("bp:")
++        rc, out = selftest(root, bp)
++        killed = any(ln.startswith(f"SELFTEST FAIL: {chk[3:]}") for ln in out) if bp else f"SELFTEST FAIL {chk}" in out
+         return mid, killed, f"rc {rc}; {chk} {'FAIL' if killed else 'not FAIL'}"
+     finally:
+         shutil.rmtree(root)  # copies and symlinks only; rmtree never follows symlinks
+@@ -179,15 +265,16 @@
+     ap = argparse.ArgumentParser()
+     ap.add_argument("--jobs", type=int, default=2)
+     a = ap.parse_args()
+-    root = Path(tempfile.mkdtemp(prefix="b_fecert_mut_"))
+-    try:
+-        rc, out = selftest(tree(root))
+-    finally:
+-        shutil.rmtree(root)
+-    if rc:
+-        print(out.strip().splitlines()[-1] if out.strip() else f"rc {rc}")
+-        print("the unmutated self-test does not pass: no mutant run")
+-        return 2
++    for bp in (False, True):
++        root = Path(tempfile.mkdtemp(prefix="b_fecert_mut_"))
++        try:
++            rc, out = selftest(tree(root), bp)
++        finally:
++            shutil.rmtree(root)
++        if rc:
++            print(out[-1] if out else f"rc {rc}")
++            print("an unmutated self-test does not pass: no mutant run")
++            return 2
+     with ThreadPoolExecutor(a.jobs) as ex:
+         res = list(ex.map(one, MUT))
+     for mid, killed, note in res:
