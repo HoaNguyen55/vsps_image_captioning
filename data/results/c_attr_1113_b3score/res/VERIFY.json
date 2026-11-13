@@ -1,0 +1,52 @@
+{
+ "label": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY",
+ "registration": "C_ATTR_DEV_PREREG_v1_1.md §6.5, §7.10 with addendum v1.2 V8 (block 3, batch size 1); C_ATTR_BLOCK3_RUN_DOC_v1_1.md (CC-368)",
+ "stage": "b3verify",
+ "prev_sha256": null,
+ "utc": "2026-11-13T00:22:10Z",
+ "trees": {
+  "b3": {
+   "sums_sha256": "e516d6cecd6448b6748152cbf8f951b78b04e8af17863b008edbf7861a3fb865",
+   "files": 72
+  }
+ },
+ "pins": {
+  "/root/ncs-data/datasets/openviic/uit-openviic-annotation-dev.json": "550cfe06b06084976e81286531f7f4e52bea717e29004c699ccaf1e48919bdff",
+  "/root/ncs-data/datasets/c_xm_dev500/xm_dev500_data.json": "0da82355b65ab284fe55fc0d3c4101090301767347a02721890556618ca4905f",
+  "/root/c_attr_score_b3/in/c_attr_nomination.json": "559c18c1ba173cfbfed488d2bb7f7d797b66d681bd69aec51944f0c4e88ebdfa",
+  "/root/outputs/c_stage2/runs/c2_qwen25vl_7b_ov_dev_b-zs.preds.json": "5bf37a77d9883f91441956a01042a69861d94d46a9daec3d479eb7f1ab7e3fc3",
+  "/root/outputs/c_stage2/runs/c2_qwen25vl_7b_xm_dev500-zs.preds.json": "d11b8f8a4da135b591d126814d72594315ec24ce9be2da42c9115210a9f591de"
+ },
+ "env": {
+  "python": "3.12.3",
+  "packages_sha256": "e95831b6f8c56dfe7f66d652420bd5cfc708c0cd2412f84bd4a632863703ee2d",
+  "java": "openjdk version \"21.0.13.0.3\" 2026-10-24\nOpenJDK Runtime Environment (build 21.0.13.0.3+1-1-24.04.1-Ubuntu)\nOpenJDK 64-Bit Server VM (build 21.0.13.0.3+1-1-24.04.1-Ubuntu, mixed mode, sharing)",
+  "jar_sha256": "9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793",
+  "kit_b": {
+   "b2_controls.py": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3",
+   "cay_audit.py": "7334ced30bde7be514765563a3628c56d2a4c4cc18537795a2770171139b871c",
+   "exchangeability_audit.py": "f30758e372061a15cbab30a568a397f57442f2701e0ffd9cc2372f20901d66a0",
+   "protocol_pilot.py": "6aee428207a2d1a045cd72d054e26a2e2ac8d9c2e414cb0c161e3b95dffd92bf",
+   "ptb_protocol.py": "ea5fbe6e1528e339abfcb9ba00bdd0c4d4e4bde07ae6edd30fffaa72d60754d2",
+   "punctuation_audit.py": "a7e8024030f56cbff07124278cd631964b7b1197607426d7212fd665b6c2f9b1",
+   "xm3600_period_audit.py": "145ab673b5c6f0211227158d79f513d96fffbffc68fd5ddecc38400c998843dd"
+  },
+  "vncorenlp_models": {
+   "models/wordsegmenter/vi-vocab": "0a47c5b55bbce163029d37730a67b9479740388695c29c106c112b815613eaa5",
+   "models/wordsegmenter/wordsegmenter.rdr": "9e62f96bd93e37a24f364238e8d8ae986fa5dad6dbc9f4eae622ab3651b7fa06"
+  }
+ },
+ "d1": {
+  "lmcap": {
+   "D1": "PASS"
+  },
+  "qwen25vl_7b": {
+   "D1": "PASS"
+  }
+ },
+ "parity_7_1": {
+  "ledger_sha256": "1a1b40d01685d0f870a7a4c3f1d31c5f9009c351958f9dd486818dcbee2a430d",
+  "stage2_ledger_sha256": "be716482c6f934e975bdbc58927cfc42a4c0ff589c9c5f95affd67c03eac0938",
+  "result": "ok"
+ }
+}

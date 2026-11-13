@@ -1,0 +1,91 @@
+{
+ "P_h": 3.6756979591647783,
+ "cap_h": 5.513546938747167,
+ "cap_s": 19848,
+ "steps": [
+  {
+   "name": "B3_lmcap_ov_dev_b_ri",
+   "runner": "lmcap",
+   "set": "ov_dev_b",
+   "arm": "ri",
+   "n": 925
+  },
+  {
+   "name": "B3_lmcap_ov_dev_b_rand",
+   "runner": "lmcap",
+   "set": "ov_dev_b",
+   "arm": "rand",
+   "n": 925
+  },
+  {
+   "name": "B3_lmcap_ov_dev_b_perm",
+   "runner": "lmcap",
+   "set": "ov_dev_b",
+   "arm": "perm",
+   "n": 925
+  },
+  {
+   "name": "B3_lmcap_xm_dev500_ri",
+   "runner": "lmcap",
+   "set": "xm_dev500",
+   "arm": "ri",
+   "n": 500
+  },
+  {
+   "name": "B3_lmcap_xm_dev500_rand",
+   "runner": "lmcap",
+   "set": "xm_dev500",
+   "arm": "rand",
+   "n": 500
+  },
+  {
+   "name": "B3_lmcap_xm_dev500_perm",
+   "runner": "lmcap",
+   "set": "xm_dev500",
+   "arm": "perm",
+   "n": 500
+  },
+  {
+   "name": "B3_qwen25vl_7b_ov_dev_b_ret_img",
+   "runner": "qwen25vl_7b",
+   "set": "ov_dev_b",
+   "arm": "ret_img",
+   "n": 925
+  },
+  {
+   "name": "B3_qwen25vl_7b_ov_dev_b_rand_img",
+   "runner": "qwen25vl_7b",
+   "set": "ov_dev_b",
+   "arm": "rand_img",
+   "n": 925
+  },
+  {
+   "name": "B3_qwen25vl_7b_xm_dev500_ret_img",
+   "runner": "qwen25vl_7b",
+   "set": "xm_dev500",
+   "arm": "ret_img",
+   "n": 500
+  },
+  {
+   "name": "B3_qwen25vl_7b_xm_dev500_rand_img",
+   "runner": "qwen25vl_7b",
+   "set": "xm_dev500",
+   "arm": "rand_img",
+   "n": 500
+  }
+ ],
+ "not_run": [],
+ "label": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY",
+ "rates_L_r": {
+  "lmcap": [
+   24.54790949821472,
+   0.9397109079360962
+  ],
+  "qwen25vl_7b": [
+   4.321260452270508,
+   3.175675797462463
+  ]
+ },
+ "dry_run": false,
+ "utc": "2026-11-12T19:52:37Z"
+}

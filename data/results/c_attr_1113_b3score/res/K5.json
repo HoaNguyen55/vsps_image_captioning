@@ -1,0 +1,38 @@
+{
+ "label": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY",
+ "registration": "C_ATTR_DEV_PREREG_v1_1.md §6.5, §7.10 with addendum v1.2 V8 (block 3, batch size 1); C_ATTR_BLOCK3_RUN_DOC_v1_1.md (CC-368)",
+ "rule": "LMCap τ_sel on OV-dev-B DETECTED iff θ̂ >= +2.0 and p <= 0.025, m = 1 (v1.1 §7.4, §7.10, §10.1 K5)",
+ "d1": {
+  "lmcap": {
+   "D1": "PASS"
+  },
+  "qwen25vl_7b": {
+   "D1": "PASS"
+  }
+ },
+ "row": {
+  "d": 16.92275945945946,
+  "lo": 15.002931970270268,
+  "hi": 19.055565594594594,
+  "lo90": 15.258390583783786,
+  "hi90": 18.6731716,
+  "p": 0.0004997501249375312,
+  "model": "lmcap",
+  "estimand": "tau_sel",
+  "arms": "lmcap_ri|lmcap - lmcap_rand|lmcap",
+  "m": 1,
+  "label": "DETECTED",
+  "tier": "K5 positive control (v1.1 §7.10, §10.1): first look at the contrast; the lmcap_ri level was seen in C-T1 (ret - lmcap_ri)",
+  "wording": "re-implementation of the LMCap recipe by this study; not the authors' code (no licence); not a statement about the published numbers",
+  "decodes": "all arms decoded on one host in block 3; stored decodes not used (CC-368)",
+  "batch": "batch size 1 (addendum v1.2 V8)",
+  "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+ },
+ "inputs": {
+  "at_lmcap-ri_ov_dev_b-mvi-b1.preds.json": "796425be7f11aa5b724ccbb87600d7c667d7e179422e1c297bea44c1fc679191",
+  "at_lmcap-rand_ov_dev_b-mvi-b1.preds.json": "b7e92f3286b40eafb4b34201e6c4c245f73aafa1fbdc066dc9df31a95321f183",
+  "k5.jsonl": "87c2ef2cf282e22d69361dd7fe3c18ce58c03f4f3cedd08e77a6f9eede8dc913"
+ },
+ "verdict": "DETECTED",
+ "consequence": "K5 not fired"
+}

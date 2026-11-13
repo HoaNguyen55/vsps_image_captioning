@@ -1,0 +1,176 @@
+{
+ "label": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY",
+ "registration": "C_ATTR_DEV_PREREG_v1_1.md §6.5, §7.10 with addendum v1.2 V8 (block 3, batch size 1); C_ATTR_BLOCK3_RUN_DOC_v1_1.md (CC-368)",
+ "k5": "DETECTED",
+ "k5_sha256": "bd9b0158e9d2fc9fddd6c90f616092e8adee929b63ce3fc5a5f9d12cb2ad9139",
+ "k5_consequence": "K5 not fired",
+ "d1": {
+  "lmcap": {
+   "D1": "PASS"
+  },
+  "qwen25vl_7b": {
+   "D1": "PASS"
+  }
+ },
+ "alpha_one_sided": 0.025,
+ "sesoi": 2.0,
+ "sets": {
+  "ov_dev_b": {
+   "n": 925,
+   "rows": {
+    "lmcap|tau_sel": {
+     "d": 16.92275945945946,
+     "lo": 15.002931970270268,
+     "hi": 19.055565594594594,
+     "lo90": 15.258390583783786,
+     "hi90": 18.6731716,
+     "p": 0.0004997501249375312,
+     "model": "lmcap",
+     "estimand": "tau_sel",
+     "arms": "lmcap_ri|lmcap - lmcap_rand|lmcap",
+     "m": 1,
+     "label": "DETECTED",
+     "tier": "K5 positive control (v1.1 §7.10, §10.1): first look at the contrast; the lmcap_ri level was seen in C-T1 (ret - lmcap_ri)",
+     "wording": "re-implementation of the LMCap recipe by this study; not the authors' code (no licence); not a statement about the published numbers",
+     "decodes": "all arms decoded on one host in block 3; stored decodes not used (CC-368)",
+     "batch": "batch size 1 (addendum v1.2 V8)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "lmcap|tau_pair": {
+     "d": 17.402667459459458,
+     "lo": 15.480765094594592,
+     "hi": 19.40936236486486,
+     "lo90": 15.772035556756757,
+     "hi90": 19.100091054054054,
+     "p": 0.0004997501249375312,
+     "model": "lmcap",
+     "estimand": "tau_pair",
+     "arms": "lmcap_ri|lmcap - lmcap_perm|lmcap",
+     "m": 1,
+     "label": "DETECTED",
+     "tier": "first look (not a split of a known τ_sel: the sum was not known)",
+     "wording": "re-implementation of the LMCap recipe by this study; not the authors' code (no licence); not a statement about the published numbers",
+     "decodes": "all arms decoded on one host in block 3; stored decodes not used (CC-368)",
+     "batch": "batch size 1 (addendum v1.2 V8)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "lmcap|tau_marg": {
+     "d": -0.479908,
+     "lo": -1.2730384864864874,
+     "hi": 0.2763620189189175,
+     "lo90": -1.1402483567567567,
+     "hi90": 0.1690337999999997,
+     "p": 0.8910544727636182,
+     "model": "lmcap",
+     "estimand": "tau_marg",
+     "arms": "lmcap_perm|lmcap - lmcap_rand|lmcap",
+     "m": 1,
+     "label": "NEGLIGIBLE",
+     "tier": "first look (not a split of a known τ_sel: the sum was not known)",
+     "wording": "re-implementation of the LMCap recipe by this study; not the authors' code (no licence); not a statement about the published numbers",
+     "decodes": "all arms decoded on one host in block 3; stored decodes not used (CC-368)",
+     "batch": "batch size 1 (addendum v1.2 V8)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "qwen25vl_7b|tau_sel_img": {
+     "d": 6.356164864864873,
+     "lo": 4.298073548648655,
+     "hi": 8.455595308108105,
+     "lo90": 4.618547945945941,
+     "hi90": 8.134904329729723,
+     "p": 0.0004997501249375312,
+     "model": "qwen25vl_7b",
+     "estimand": "tau_sel_img",
+     "arms": "qwen25vl_7b|ret_img - qwen25vl_7b|rand_d0_img",
+     "m": 1,
+     "label": "DETECTED",
+     "tier": "first look; its ret_img side was seen in C-T1",
+     "wording": "image-caption-pair prompt format, as used by RAGCap; not RAGCap",
+     "decodes": "all arms decoded on one host in block 3; stored decodes not used (CC-368)",
+     "batch": "batch size 1 (addendum v1.2 V8)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY",
+     "beside": "VERDICT.json :: sets.ov_dev_b.rows.qwen25vl_7b|tau_sel (sha256 a69a0ec2…, CC-363; batch 1)"
+    }
+   }
+  },
+  "xm_dev500": {
+   "n": 500,
+   "rows": {
+    "lmcap|tau_sel": {
+     "d": 16.577268000000004,
+     "lo": 13.90551453,
+     "hi": 19.185015064999998,
+     "lo90": 14.346199360000005,
+     "hi90": 18.747483289999998,
+     "p": 0.0004997501249375312,
+     "model": "lmcap",
+     "estimand": "tau_sel",
+     "arms": "lmcap_ri|lmcap - lmcap_rand|lmcap",
+     "m": 1,
+     "label": "DETECTED",
+     "tier": "no rule (v1.1 §7.8)",
+     "wording": "re-implementation of the LMCap recipe by this study; not the authors' code (no licence); not a statement about the published numbers",
+     "decodes": "all arms decoded on one host in block 3; stored decodes not used (CC-368)",
+     "batch": "batch size 1 (addendum v1.2 V8)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "lmcap|tau_pair": {
+     "d": 17.0192282,
+     "lo": 14.425659025,
+     "hi": 19.41988629,
+     "lo90": 14.84798128,
+     "hi90": 19.04603396,
+     "p": 0.0004997501249375312,
+     "model": "lmcap",
+     "estimand": "tau_pair",
+     "arms": "lmcap_ri|lmcap - lmcap_perm|lmcap",
+     "m": 1,
+     "label": "DETECTED",
+     "tier": "no rule (v1.1 §7.8)",
+     "wording": "re-implementation of the LMCap recipe by this study; not the authors' code (no licence); not a statement about the published numbers",
+     "decodes": "all arms decoded on one host in block 3; stored decodes not used (CC-368)",
+     "batch": "batch size 1 (addendum v1.2 V8)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "lmcap|tau_marg": {
+     "d": -0.4419601999999996,
+     "lo": -1.4987333349999996,
+     "hi": 0.48560778500000074,
+     "lo90": -1.3108209,
+     "hi90": 0.37888855999999904,
+     "p": 0.8095952023988006,
+     "model": "lmcap",
+     "estimand": "tau_marg",
+     "arms": "lmcap_perm|lmcap - lmcap_rand|lmcap",
+     "m": 1,
+     "label": "NEGLIGIBLE",
+     "tier": "no rule (v1.1 §7.8)",
+     "wording": "re-implementation of the LMCap recipe by this study; not the authors' code (no licence); not a statement about the published numbers",
+     "decodes": "all arms decoded on one host in block 3; stored decodes not used (CC-368)",
+     "batch": "batch size 1 (addendum v1.2 V8)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY"
+    },
+    "qwen25vl_7b|tau_sel_img": {
+     "d": 2.2654017999999994,
+     "lo": -1.191809400000005,
+     "hi": 5.916796775000008,
+     "lo90": -0.7396426999999974,
+     "hi90": 5.337669790000002,
+     "p": 0.10094952523738131,
+     "model": "qwen25vl_7b",
+     "estimand": "tau_sel_img",
+     "arms": "qwen25vl_7b|ret_img - qwen25vl_7b|rand_d0_img",
+     "m": 1,
+     "label": "UNRESOLVED",
+     "tier": "no rule (v1.1 §7.8)",
+     "wording": "image-caption-pair prompt format, as used by RAGCap; not RAGCap",
+     "decodes": "all arms decoded on one host in block 3; stored decodes not used (CC-368)",
+     "batch": "batch size 1 (addendum v1.2 V8)",
+     "tag": "DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY",
+     "beside": "SUMMARY.json :: sets.xm_dev500.rows.qwen25vl_7b|tau_sel (sha256 1d78cd20…, CC-363; batch 1)"
+    }
+   }
+  }
+ },
+ "not_run": []
+}
