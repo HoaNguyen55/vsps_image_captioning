@@ -1,0 +1,145 @@
+{
+ "registration": "manuscript/prereg/2026-11-12_b_fecert/B_FECERT_PREREG_v1_1.md",
+ "registration_sha256": "736b7e6a8ea2007270a3329db7ad6a09197c4804c9bc3821ea6bd4ceb5a61aa0",
+ "stage": "3",
+ "prev_sha256": "25614b469cf59dc61f15e839b89a8e78ca0b316905afc4bd2ae52eaa0d32b43a",
+ "utc_start": "2026-11-13T16:48:41Z",
+ "code_sha256": {
+  "scripts/b_fecert/b_fecert.py": "67e43dea1b37c3bbfaa3fe5081d6f3d36848397451ad0a24d67fa67389b06b59",
+  "scripts/b_fecert/family.py": "7cb2c69b8b7840388568fd5f9b248e2cf25df28185386be875a65d921a9e4178",
+  "scripts/kit_b/protocol_pilot.py": "6aee428207a2d1a045cd72d054e26a2e2ac8d9c2e414cb0c161e3b95dffd92bf",
+  "scripts/kit_b/ptb_protocol.py": "ea5fbe6e1528e339abfcb9ba00bdd0c4d4e4bde07ae6edd30fffaa72d60754d2",
+  "scripts/b2_external/b2.py": "52b8c145be0730f02f0ddd782c67dda26451063197ab19c6b723c54f5a783e6d",
+  "scripts/kit_b/b2_controls.py": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3",
+  "scripts/b_pa1/b_pa1.py": "c481fcf4811faf2d184e441f589b5f3c9e4206908dc2a42e1829a7215b8398ef",
+  "tools/obj_rater/build_pairs.py": "49692235207762fdea918155115f13b7baa81615635c99788986fa983e677087"
+ },
+ "inputs_sha256": {
+  "RESULT.json": "25614b469cf59dc61f15e839b89a8e78ca0b316905afc4bd2ae52eaa0d32b43a",
+  "FAMILY.json": "431d92a4a2eaf0516446c9f9aef453ee52d311b6e329d97cd1abb4c4e8017f77",
+  "CENSUS.json": "2252167b435890c5dbf70a97e0fc918bc6989c48acda636427d4dd2889599afa",
+  "GATE2.json": "26110b5f1d87a8369e54e0a696c171698cd980ee6ae1ef2153e8b93c5ee93c61"
+ },
+ "printed": {
+  "p1assist_s42-short": {
+   "CIDEr-D": "76.7",
+   "BLEU-4": "31.9",
+   "ROUGE-L": "55.1"
+  },
+  "p1assist_s43-short": {
+   "CIDEr-D": "190.5",
+   "BLEU-4": "74.7",
+   "ROUGE-L": "71.3"
+  },
+  "p1assist_s44-short": {
+   "CIDEr-D": "78.3",
+   "BLEU-4": "31.9",
+   "ROUGE-L": "55.2"
+  },
+  "p1-gold-short": {
+   "CIDEr-D": "77.2",
+   "BLEU-4": "29.7",
+   "ROUGE-L": "56.0"
+  },
+  "p1_s43-short": {
+   "CIDEr-D": "185.0",
+   "BLEU-4": "73.8",
+   "ROUGE-L": "70.6"
+  },
+  "p1_s44-short": {
+   "CIDEr-D": "71.4",
+   "BLEU-4": "28.7",
+   "ROUGE-L": "55.6"
+  },
+  "p1mask_s42-short": {
+   "CIDEr-D": "0.0",
+   "BLEU-4": "0.0",
+   "ROUGE-L": "3.2"
+  },
+  "mr5assist_s42-short": {
+   "CIDEr-D": "145.8",
+   "BLEU-4": "44.6",
+   "ROUGE-L": "64.1"
+  },
+  "fuse2_s42-short": {
+   "CIDEr-D": "73.6",
+   "BLEU-4": "29.4",
+   "ROUGE-L": "54.0"
+  },
+  "fuse2_s43-short": {
+   "CIDEr-D": "77.1",
+   "BLEU-4": "31.3",
+   "ROUGE-L": "54.8"
+  },
+  "fuse2_s44-short": {
+   "CIDEr-D": "0.0",
+   "BLEU-4": "0.0",
+   "ROUGE-L": "2.7"
+  },
+  "tags_fuse2_s42-short": {
+   "CIDEr-D": "160.7",
+   "BLEU-4": "46.6",
+   "ROUGE-L": "63.8"
+  },
+  "tags_p1_s43-short": {
+   "CIDEr-D": "0.0",
+   "BLEU-4": "0.0",
+   "ROUGE-L": "3.5"
+  },
+  "e5_s42-short": {
+   "CIDEr-D": "70.3",
+   "BLEU-4": "28.4",
+   "ROUGE-L": "53.2"
+  },
+  "e5dpo_s42-short": {
+   "CIDEr-D": "0.0",
+   "BLEU-4": "0.0",
+   "ROUGE-L": "2.7"
+  },
+  "p1_s43mbr-short": {
+   "CIDEr-D": "159.0",
+   "BLEU-4": "68.9",
+   "ROUGE-L": "68.3"
+  },
+  "fuse2_s42mbr-short": {
+   "CIDEr-D": "0.0",
+   "BLEU-4": "0.0",
+   "ROUGE-L": "2.1"
+  },
+  "zeroshot-short": {
+   "CIDEr-D": "33.1",
+   "BLEU-4": "5.8",
+   "ROUGE-L": "26.7"
+  },
+  "tags_zeroshot-short": {
+   "CIDEr-D": "23.8",
+   "BLEU-4": "35.7",
+   "ROUGE-L": "44.5"
+  },
+  "vcd-short": {
+   "CIDEr-D": "0.0",
+   "BLEU-4": "0.0",
+   "ROUGE-L": "0.2"
+  },
+  "main_s42-short": {
+   "CIDEr-D": "13.9",
+   "BLEU-4": "3.6",
+   "ROUGE-L": "23.8"
+  },
+  "vsps-short": {
+   "CIDEr-D": "8.9",
+   "BLEU-4": "3.1",
+   "ROUGE-L": "22.3"
+  },
+  "official-short": {
+   "CIDEr-D": "10.8",
+   "BLEU-4": "5.1",
+   "ROUGE-L": "27.7"
+  },
+  "p2-noverif4090-short": {
+   "CIDEr-D": "0.0",
+   "BLEU-4": "0.0",
+   "ROUGE-L": "0.4"
+  }
+ }
+}

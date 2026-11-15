@@ -1,0 +1,466 @@
+{
+ "registration": "manuscript/prereg/2026-11-12_b_fecert/B_FECERT_PREREG_v1_1.md",
+ "registration_sha256": "736b7e6a8ea2007270a3329db7ad6a09197c4804c9bc3821ea6bd4ceb5a61aa0",
+ "stage": "3",
+ "prev_sha256": "25614b469cf59dc61f15e839b89a8e78ca0b316905afc4bd2ae52eaa0d32b43a",
+ "utc_start": "2026-11-13T16:48:41Z",
+ "code_sha256": {
+  "scripts/b_fecert/b_fecert.py": "67e43dea1b37c3bbfaa3fe5081d6f3d36848397451ad0a24d67fa67389b06b59",
+  "scripts/b_fecert/family.py": "7cb2c69b8b7840388568fd5f9b248e2cf25df28185386be875a65d921a9e4178",
+  "scripts/kit_b/protocol_pilot.py": "6aee428207a2d1a045cd72d054e26a2e2ac8d9c2e414cb0c161e3b95dffd92bf",
+  "scripts/kit_b/ptb_protocol.py": "ea5fbe6e1528e339abfcb9ba00bdd0c4d4e4bde07ae6edd30fffaa72d60754d2",
+  "scripts/b2_external/b2.py": "52b8c145be0730f02f0ddd782c67dda26451063197ab19c6b723c54f5a783e6d",
+  "scripts/kit_b/b2_controls.py": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3",
+  "scripts/b_pa1/b_pa1.py": "c481fcf4811faf2d184e441f589b5f3c9e4206908dc2a42e1829a7215b8398ef",
+  "tools/obj_rater/build_pairs.py": "49692235207762fdea918155115f13b7baa81615635c99788986fa983e677087"
+ },
+ "inputs_sha256": {
+  "RESULT.json": "25614b469cf59dc61f15e839b89a8e78ca0b316905afc4bd2ae52eaa0d32b43a",
+  "FAMILY.json": "431d92a4a2eaf0516446c9f9aef453ee52d311b6e329d97cd1abb4c4e8017f77",
+  "CENSUS.json": "2252167b435890c5dbf70a97e0fc918bc6989c48acda636427d4dd2889599afa",
+  "GATE2.json": "26110b5f1d87a8369e54e0a696c171698cd980ee6ae1ef2153e8b93c5ee93c61"
+ },
+ "env_rstar": {
+  "python": "3.12.3",
+  "pycocoevalcap": "1.2",
+  "rescap_metrics_sha256": "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960",
+  "java": "21.0.13.0.3",
+  "rstar_import": true
+ },
+ "printed_sha256": "2a962a2ba09403cd2444c28b428b9809072b6a9155b152d58706f9e860040c47",
+ "P3": {
+  "label": "SUPPORTED",
+  "evidence": "REGISTERED PREDICTION, DEVELOPMENT DATA (M_new only)",
+  "M_new": [
+   "BLEU-1",
+   "METEOR",
+   "ROUGE-L"
+  ],
+  "M_new_rows": {
+   "ktvic_resnetlstm": {
+    "BLEU-1": {
+     "printed": "53.0",
+     "rstar": 52.96247049791305,
+     "reproduced": true,
+     "distance": 0.037529502086947275
+    },
+    "METEOR": {
+     "printed": "27.5",
+     "rstar": 27.520659917897234,
+     "reproduced": true,
+     "distance": 0.02065991789723398
+    },
+    "ROUGE-L": {
+     "printed": "42.3",
+     "rstar": 42.28984731645076,
+     "reproduced": true,
+     "distance": 0.010152683549236485
+    }
+   },
+   "ktvic_vittrans": {
+    "BLEU-1": {
+     "printed": "56.1",
+     "rstar": 56.11621876456202,
+     "reproduced": true,
+     "distance": 0.016218764562019317
+    },
+    "METEOR": {
+     "printed": "30.1",
+     "rstar": 30.1499830285999,
+     "reproduced": true,
+     "distance": 0.049983028599900337
+    },
+    "ROUGE-L": {
+     "printed": "44.7",
+     "rstar": 44.69437809001194,
+     "reproduced": true,
+     "distance": 0.005621909988064999
+    }
+   }
+  },
+  "cider_bleu4_POST_HOC": {
+   "ktvic_resnetlstm": {
+    "BLEU-4": {
+     "printed": "15.5",
+     "rstar": 15.468443151721303,
+     "reproduced": true,
+     "distance": 0.0315568482786972
+    },
+    "CIDEr-D": {
+     "printed": "21.8",
+     "rstar": 21.789915485782338,
+     "reproduced": true,
+     "distance": 0.010084514217663099
+    }
+   },
+   "ktvic_vittrans": {
+    "BLEU-4": {
+     "printed": "19.3",
+     "rstar": 19.33146749835939,
+     "reproduced": true,
+     "distance": 0.03146749835939033
+    },
+    "CIDEr-D": {
+     "printed": "36.8",
+     "rstar": 36.76816339336237,
+     "reproduced": true,
+     "distance": 0.031836606637625664
+    }
+   }
+  },
+  "not_used": {
+   "ktvic_resnetlstm": [],
+   "ktvic_vittrans": []
+  },
+  "dropped_K_coco": [],
+  "identification": {
+   "ktvic_resnetlstm": "NOT_EVALUABLE (K-plant): reproduction table only",
+   "ktvic_vittrans": "NOT_EVALUABLE (K-plant): reproduction table only"
+  },
+  "margin": {
+   "ktvic_resnetlstm": null,
+   "ktvic_vittrans": null
+  }
+ },
+ "P4": {
+  "IDENTIFIED": 9,
+  "AMBIGUOUS": 15,
+  "OUTSIDE": 0,
+  "margins": {
+   "p1assist_s42-short": null,
+   "p1assist_s43-short": null,
+   "p1assist_s44-short": null,
+   "p1-gold-short": 1.7428894041424314,
+   "p1_s43-short": 0.2051387194191534,
+   "p1_s44-short": 0.7814783693902854,
+   "p1mask_s42-short": null,
+   "mr5assist_s42-short": null,
+   "fuse2_s42-short": null,
+   "fuse2_s43-short": null,
+   "fuse2_s44-short": null,
+   "tags_fuse2_s42-short": 0.27590287172216676,
+   "tags_p1_s43-short": null,
+   "e5_s42-short": null,
+   "e5dpo_s42-short": null,
+   "p1_s43mbr-short": 0.16795545316088578,
+   "fuse2_s42mbr-short": null,
+   "zeroshot-short": 0.18343476024205074,
+   "tags_zeroshot-short": null,
+   "vcd-short": null,
+   "main_s42-short": 0.5055410621104297,
+   "vsps-short": 0.0751623757154114,
+   "official-short": 0.18015073330828812,
+   "p2-noverif4090-short": null
+  },
+  "identification": "NOT_EVALUABLE (K-plant)",
+  "label": "METHOD CHECK (§6.4)"
+ },
+ "plants": {
+  "p1assist_s42-short": {
+   "label": "AMBIGUOUS",
+   "classes": 48,
+   "margin": null,
+   "nearest_distance": 0.04330611647965554
+  },
+  "p1assist_s43-short": {
+   "label": "AMBIGUOUS",
+   "classes": 48,
+   "margin": null,
+   "nearest_distance": 0.014649015898882567
+  },
+  "p1assist_s44-short": {
+   "label": "AMBIGUOUS",
+   "classes": 48,
+   "margin": null,
+   "nearest_distance": 0.03714221175548005
+  },
+  "p1-gold-short": {
+   "label": "IDENTIFIED",
+   "classes": 48,
+   "margin": 1.7428894041424314,
+   "nearest_distance": 0.04840411530338429
+  },
+  "p1_s43-short": {
+   "label": "IDENTIFIED",
+   "classes": 28,
+   "margin": 0.2051387194191534,
+   "nearest_distance": 0.029751469963741783
+  },
+  "p1_s44-short": {
+   "label": "IDENTIFIED",
+   "classes": 28,
+   "margin": 0.7814783693902854,
+   "nearest_distance": 0.03924776109086281
+  },
+  "p1mask_s42-short": {
+   "label": "AMBIGUOUS",
+   "classes": 28,
+   "margin": null,
+   "nearest_distance": 0.014626805680276078
+  },
+  "mr5assist_s42-short": {
+   "label": "AMBIGUOUS",
+   "classes": 48,
+   "margin": null,
+   "nearest_distance": 0.027474118942478754
+  },
+  "fuse2_s42-short": {
+   "label": "AMBIGUOUS",
+   "classes": 38,
+   "margin": null,
+   "nearest_distance": 0.038768436626227754
+  },
+  "fuse2_s43-short": {
+   "label": "AMBIGUOUS",
+   "classes": 48,
+   "margin": null,
+   "nearest_distance": 0.031599805331310904
+  },
+  "fuse2_s44-short": {
+   "label": "AMBIGUOUS",
+   "classes": 48,
+   "margin": null,
+   "nearest_distance": 0.028243518553457303
+  },
+  "tags_fuse2_s42-short": {
+   "label": "IDENTIFIED",
+   "classes": 48,
+   "margin": 0.27590287172216676,
+   "nearest_distance": 0.022102910673659437
+  },
+  "tags_p1_s43-short": {
+   "label": "AMBIGUOUS",
+   "classes": 28,
+   "margin": null,
+   "nearest_distance": 0.00100885342448453
+  },
+  "e5_s42-short": {
+   "label": "AMBIGUOUS",
+   "classes": 88,
+   "margin": null,
+   "nearest_distance": 0.039621914616297715
+  },
+  "e5dpo_s42-short": {
+   "label": "AMBIGUOUS",
+   "classes": 88,
+   "margin": null,
+   "nearest_distance": 0.021403531987877145
+  },
+  "p1_s43mbr-short": {
+   "label": "IDENTIFIED",
+   "classes": 68,
+   "margin": 0.16795545316088578,
+   "nearest_distance": 0.035491904529635576
+  },
+  "fuse2_s42mbr-short": {
+   "label": "AMBIGUOUS",
+   "classes": 68,
+   "margin": null,
+   "nearest_distance": 0.04825586109231672
+  },
+  "zeroshot-short": {
+   "label": "IDENTIFIED",
+   "classes": 128,
+   "margin": 0.18343476024205074,
+   "nearest_distance": 0.00955390943131107
+  },
+  "tags_zeroshot-short": {
+   "label": "AMBIGUOUS",
+   "classes": 128,
+   "margin": null,
+   "nearest_distance": 0.02024863930039089
+  },
+  "vcd-short": {
+   "label": "AMBIGUOUS",
+   "classes": 109,
+   "margin": null,
+   "nearest_distance": 0.023730899110585152
+  },
+  "main_s42-short": {
+   "label": "IDENTIFIED",
+   "classes": 109,
+   "margin": 0.5055410621104297,
+   "nearest_distance": 0.04099923329085753
+  },
+  "vsps-short": {
+   "label": "IDENTIFIED",
+   "classes": 109,
+   "margin": 0.0751623757154114,
+   "nearest_distance": 0.02987371792460758
+  },
+  "official-short": {
+   "label": "IDENTIFIED",
+   "classes": 109,
+   "margin": 0.18015073330828812,
+   "nearest_distance": 0.028507681928916284
+  },
+  "p2-noverif4090-short": {
+   "label": "AMBIGUOUS",
+   "classes": 109,
+   "margin": null,
+   "nearest_distance": 0.00543849825459175
+  }
+ },
+ "fe_id": {
+  "ktvic_resnetlstm": {
+   "label": "NOT_EVALUABLE (K-plant): reproduction table only",
+   "classes": 23,
+   "reproducing": [
+    [
+     "out:rdr.tf.pa.cf",
+     "out:rdr.tf.pa.ck",
+     "out:rdr.tf.pf.cf",
+     "out:rdr.tf.pf.ck",
+     "out:rdr.tf.pk.cf",
+     "out:rdr.tf.pk.ck",
+     "out:rdr.tm.pa.cf",
+     "out:rdr.tm.pa.ck",
+     "out:rdr.tm.pf.cf",
+     "out:rdr.tm.pf.ck",
+     "out:rdr.tm.pk.cf",
+     "out:rdr.tm.pk.ck",
+     "out:rdr.tw.pa.cf",
+     "out:rdr.tw.pa.ck",
+     "out:rdr.tw.pf.cf",
+     "out:rdr.tw.pf.ck",
+     "out:rdr.tw.pk.cf",
+     "out:rdr.tw.pk.ck"
+    ],
+    [
+     "out:pyvi.tf.pa.cf",
+     "out:pyvi.tf.pa.ck",
+     "out:pyvi.tf.pf.cf",
+     "out:pyvi.tf.pf.ck",
+     "out:pyvi.tf.pk.cf",
+     "out:pyvi.tf.pk.ck"
+    ],
+    [
+     "r*"
+    ]
+   ],
+   "margin": null,
+   "nearest_distance": 0.037529502086947275,
+   "printed_used": {
+    "members": [
+     "BLEU-1",
+     "BLEU-4",
+     "CIDEr-D",
+     "ROUGE-L"
+    ],
+    "r*": [
+     "BLEU-1",
+     "BLEU-4",
+     "CIDEr-D",
+     "METEOR",
+     "ROUGE-L"
+    ]
+   },
+   "METEOR_excluded_for_members": true,
+   "P3b_matched_F_reproducing_CIDEr-D_POST_HOC": []
+  },
+  "ktvic_vittrans": {
+   "label": "NOT_EVALUABLE (K-plant): reproduction table only",
+   "classes": 23,
+   "reproducing": [
+    [
+     "out:rdr.tf.pa.cf",
+     "out:rdr.tf.pa.ck",
+     "out:rdr.tf.pf.cf",
+     "out:rdr.tf.pf.ck",
+     "out:rdr.tf.pk.cf",
+     "out:rdr.tf.pk.ck",
+     "out:rdr.tm.pa.cf",
+     "out:rdr.tm.pa.ck",
+     "out:rdr.tm.pf.cf",
+     "out:rdr.tm.pf.ck",
+     "out:rdr.tm.pk.cf",
+     "out:rdr.tm.pk.ck",
+     "out:rdr.tw.pa.cf",
+     "out:rdr.tw.pa.ck",
+     "out:rdr.tw.pf.cf",
+     "out:rdr.tw.pf.ck",
+     "out:rdr.tw.pk.cf",
+     "out:rdr.tw.pk.ck"
+    ],
+    [
+     "r*"
+    ]
+   ],
+   "margin": null,
+   "nearest_distance": 0.04382275678143799,
+   "printed_used": {
+    "members": [
+     "BLEU-1",
+     "BLEU-4",
+     "CIDEr-D",
+     "ROUGE-L"
+    ],
+    "r*": [
+     "BLEU-1",
+     "BLEU-4",
+     "CIDEr-D",
+     "METEOR",
+     "ROUGE-L"
+    ]
+   },
+   "METEOR_excluded_for_members": true,
+   "P3b_matched_F_reproducing_CIDEr-D_POST_HOC": []
+  }
+ },
+ "printed_comparisons": {
+  "label": "DESCRIPTIVE",
+  "n_rescorable": 1,
+  "order_changes_under_f0": 0,
+  "not_certified_over_F": 0,
+  "pairs": [
+   {
+    "source": "KTVIC",
+    "x": "1) ResNet101 / LSTM",
+    "y": "2) ViT / Transformer",
+    "kind": "re-scorable",
+    "printed_gap": -14.999999999999996,
+    "f0_gap": -24.021803977146778,
+    "order_changes": false,
+    "certificate_F": "CERTIFIED (b > a)"
+   },
+   {
+    "source": "KTVIC",
+    "x": "1) ResNet101 / LSTM",
+    "y": "3) GRIT / GRIT",
+    "kind": "one-sided",
+    "gap_released_f0_minus_other_printed": -87.15370965143708,
+    "note": "one side re-scored; the other side's pipeline unknown"
+   },
+   {
+    "source": "KTVIC",
+    "x": "2) ViT / Transformer",
+    "y": "3) GRIT / GRIT",
+    "kind": "one-sided",
+    "gap_released_f0_minus_other_printed": -63.131905674290294,
+    "note": "one side re-scored; the other side's pipeline unknown"
+   },
+   {
+    "source": "K2",
+    "x": "b16-small",
+    "y": "l14-large",
+    "kind": "neither"
+   },
+   {
+    "source": "K2",
+    "x": "b16-small",
+    "y": "h14-large",
+    "kind": "neither"
+   },
+   {
+    "source": "K2",
+    "x": "l14-large",
+    "y": "h14-large",
+    "kind": "neither"
+   }
+  ]
+ },
+ "pool": 271,
+ "rstar_in_pool": true,
+ "label": "FE-ID (§5); KTVIC CIDEr-D/BLEU-4 reproduction is POST HOC (O3)",
+ "utc_end": "2026-11-13T17:42:10Z"
+}
