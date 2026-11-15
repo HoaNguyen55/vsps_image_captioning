@@ -1,8 +1,8 @@
-# Host run plan: one CPU-only build session (host hD), five jobs K1 to K5
+# Host run plan: one CPU-only build session (host alias set in section 2), jobs K1b, K2, K4, K5 and, after the Paper C freeze commits, K3
 
 Written 2026-11-15T11:34Z (`date -u`; 18:34 VN) for the coordinator, at the team lead's request. A plan only: nothing was rented, run or contacted to write it. Binding for this session: no Artifact, document-connector, upload or publishing tool; outputs are local files only. Read first: skill `running-rented-gpu-jobs`, `manuscript/HOST_RUN_PLAN_2026-11-15.md` and the records of its jobs (`.session_backup/2026-11-15/host_prep_build/`, `c_tex_build/`, `taimma_build/`), rulings CC-410, CC-418, CC-420, CC-421, CC-422 and the LOG to line 2719 (OPS-1115ay).
 
-- **Names.** K1 to K5 are the job names of this plan only. They are not the stop rule K1 of Paper C's attribution study, not the K-time of stage H and not the freeze line of Paper C. The machine is **hD**; its alias lives only in `~/.ssh/config` (the old `hB hC` entry removed first). No ruled script of this session hard-codes an alias: every command takes `H=hD`. No host string or address goes into any repo file or LOG line.
+- **Names.** K1 to K5 are the job names of this plan only. They are not the stop rule K1 of Paper C's attribution study, not the K-time of stage H and not the freeze line of Paper C. The machine of 2026-11-15 was hD: it is deleted and its laptop files are cleaned up (PI-1115s); K1 ran on it and is not run again. The machine of the next session takes the alias that section 2 sets in one line (`H=hE`; a re-rental takes the next free name, set in that same line); the alias lives only in `~/.ssh/config`. No ruled script hard-codes an alias: every command takes `$H`. No host string or address goes into any repo file or LOG line.
 - **Outcome-free.** This file holds no result and no figure of any paper. The Paper A held zones (Section 6.7 of `sec7_verbosity_sign.md`, Supplementary S11) were not opened; K4 handles them by section 5.2.
 - **Every input of this session is prepared and hashed on the laptop before the rental** (section 2), so no host step waits for laptop text work. Builds take seconds to minutes.
 
@@ -28,10 +28,11 @@ Written 2026-11-15T11:34Z (`date -u`; 18:34 VN) for the coordinator, at the team
 |---|---|
 | Rental | D1 (coordinator line under PI-1115k), or the PI's yes |
 | K1 Paper B Table 6 and figures | CC-420 ruling 7 step 3 (Table 6 by the script of FIGURE_TABLE_SPEC A2 from HUMAN.json and BUILD.json; Fig. 3, Fig. 2, Fig. EF1, Fig. 1; outputs to `paper/rev_2026-11-15/figures/` with a sums file; a one-judge DIFF read before their commit). Custody of the Paper B results was released by CC-418 (from its LOG line) |
+| K1b Paper B Fig. EF1 and Fig. 1 | CC-428 ruling 4 (CC sha ab98dc743c8b2c92714bcc9745cf9cb21ea254dfe556f5b9ce9be16b88b2261e): 12-file allow-list (list sha 4559900b36be7a3d372fe36549da3fabccf03b8cab7fae2f133530ab3fea11e8), runner k1b_run.sh 8ed0cb65d480e634dbeba1124c9aca2590562ffffaec77aa63863ab3d0168e40; before the push W1 and W2 closed by sha match and the W3 coordinator line on the LOG. K1 itself is not run again: it ran on 2026-11-15 (venv, selftest and build rc 0; records and pulled outputs in `.session_backup/2026-11-15/host_session_hD/k1/`) |
 | K2 TAIMMA page measures | CC-421 Ruling 5 ("both layouts, and once more with the placeholders filled by dummy text"); CC-399 G1, Q3; CC-410 J3-1 to J3-5 and ruling 7 |
 | K3 Paper C journal tex/PDF | PI-1113h (the use); CC-410 J2-0 ("the commit of generated files waits for the rebuild after C2 + v2, with its own diff read"); tickets T1 of CC-400 and CC-401 |
 | K4 Paper A main and supplement PDFs | CC-422 (fix package v6, step B1 `build_A_supp.sh`); committed 95909d4 (OPS-1115aw) and a7f2b4e (condition W5, OPS-1115ax) |
-| K5 Paper B Springer build | CC-420 ruling 7 step 3 ("the build-script path fix; one build for the page count"); needs the adapted script (section 4.5) |
+| K5 Paper B Springer build | CC-420 ruling 7 step 3 (one build for the page count); CC-426 ruling 8 (CC sha 4aaddf05714c937e4205ee9e5f47637bf797af4ad220f830f0ae98bd0adb57d7: `build_B_rev.sh` SAFE and FIT FOR JOB K5, its inputs are the allow-list) and CC-425 addendum A3 (CC sha bf6eaf40c005fa0cadaebce5def7edb6629ca67218386e8ec08d9e54d701b87c: when and how it runs; conditions (1) to (4)) |
 
 ### 1.2 State of the inputs at 2026-11-15T11:34Z (re-check every line in section 2)
 
@@ -41,20 +42,20 @@ Written 2026-11-15T11:34Z (`date -u`; 18:34 VN) for the coordinator, at the team
 | K2 | **yes** | `manuscript/conf_taimma_2027/draft_v3_1/paper.md` b42eecb1c8e574af98ade56902fae0676a440f6cfd579dd8690984be5ee6692d (final for the provisional count, team lead 2026-11-15) and `check_draft.py` c07066475cfb703d1dbd1e4e4e8161aac8666cd7c5a4e580d465a0d8d70c8dc0 (OPS-1115as); `paperC.bib` a415c4da and `tex/strip_num.lua` 5a91751f at Paper C HEAD 55315ca; build files of 15 Nov: `host_prep_build/j3/build_lncs.sh` ef21d602 (CC-410 TARGET, = as run), `j3/lncs.lua` c8d597b4 (= as run), `taimma_build/in_as_run/lncs_preamble.tex` cdfe51a9 (as run, with the host change of HOST_CHANGES.diff 77e3e658) | restore texts r1 to r4 (no exact pairs exist); k0 and k3 (not mechanical, section 4.2) |
 | K3 | no | Paper C HEAD 55315cad9e57073a9ccd346597fae34e393db69a; tools package of 15 Nov (section 2, P2) | the freeze chain of the runbook `manuscript/fix_packages/2026-11-15_C/CHAIN_REHEARSAL_2026-11-15.md` (3f19f129e30dc862dc84d0d33a6020ef6cc9f6a46038b7a8d1c4bc7f3ec68ac8), steps 1 to 6: shell C2 (not before 2026-11-16T05:00:00Z), then v2 (CC-408), v4 (CC-413), v5 (CC-423), each with its gatekeeper commit line; K3 is its step 7 |
 | K4 | **yes** | Paper A HEAD a7f2b4ece3f6d2229f85494c2cd1e35080224ae2 (v6 in 95909d4, W5 in a7f2b4e); at HEAD: `paper/build/build_A_cas.sh` fa54fa4e2d57c985, `build_A_supp.sh` e3a4cab2a1d4a5d2 (= CC-422), `filter.lua` 89e187af95d4f70b, `prep.py` 9a08ef5a89627ef7, `shims.tex` 0d2622f6101aaedc, `cas.pandoc.tex` f6d20ce7bcd74265; pinned `cas-common.sty` e95a01f4b33531d01ade231669fcc1e42f52193dddcb22ead5b63240eb952f8f at `.session_backup/2026-10-27/builds/A_cas/cas-common.sty` | none |
-| K5 | no | Paper B HEAD 568eaec29f29a4eb7e9a2401c2e1709f9e72d503 (transfer; `paper/rev_2026-11-15/SNAPSHOT.sha256` c68d9beb, `paper.md` aeeaa016); `paper/build/build_B_springer.sh` 59e86b264cba0f5b | an adapted build script (section 4.5) and its read |
+| K5 | yes, once the A3 (3) line is on the LOG | Paper B HEAD 6356b995e0c9475fb8b12f075407ebedcf876301; `paper/build/build_B_rev.sh` d671b9d2c637d5dec5d4fe85e93e38275b2e92bc167fc3601435f7f88f25ed2a at that HEAD (equal to the sha CC-426 names, l.123; read with `git show 6356b99:paper/build/build_B_rev.sh`); the old `build_B_springer.sh` is not used (CC-426 N5) | the coordinator line of CC-425 addendum A3 (3) extending OPS-1115ba to K5 |
 
 ### 1.3 Money
 
 | Item | Value | Source |
 |---|---|---|
-| Last balance | **363,891 VND** (L-after of hC, two equal panel reads) | OPS-1115aq-hC-deleted |
-| Rate | **9,185 VND/h + 30 VND set-up fee; 9,215 VND/h used in the check** | OPS-1115aa-hC-rent (offer 84966) |
-| Cap of this session | **3 h** (expected use 0.5 to 1 h; 15 Nov: 3,107 VND for about 20 min) | this plan |
-| L-before | balance >= cap x rate + 3 x rate + other live rentals (none) = 6 x 9,215 = **55,290 VND** | skill l.19 |
+| Last balance | **362,570 VND** (L-after of hD, two equal panel reads) | OPS-1115bh-hD-deleted |
+| Rate | **9,224 VND/h + 30 VND set-up fee; 9,254 VND/h used in the check** | OPS-1115bc-hD-rent (offer 85425) |
+| Cap of this session | **3 h** (expected use 0.5 to 1 h; 15 Nov: 3,107 VND for about 20 min and 1,321 VND for about 8 min 30 s) | this plan; CC-431 ruling 5 |
+| L-before | balance >= cap x rate + 3 x rate + other live rentals (none) = 6 x 9,254 = **55,524 VND** | skill l.19 |
 
-- 363,891 >= 55,290: PASS. The check holds for any rate up to 60,648 VND/h; use the real rate of the chosen offer.
-- Expected spend 4,600 to 9,215 VND; at the full cap 27,645 VND, leaving 336,246 VND.
-- Warn the PI to top up at **50,000 VND** (PI-1108h); during a live rental warn at least 12 h before the balance runs out, that is at 110,580 VND at this rate (skill l.20). Neither level is reached by this session or by a second one of the same size.
+- 362,570 >= 55,524: PASS. The check holds for any rate up to 60,428 VND/h; use the real rate of the chosen offer.
+- Expected spend 4,627 to 9,254 VND; at the full cap 27,762 VND, leaving 334,808 VND.
+- Warn the PI to top up at **50,000 VND** (PI-1108h); during a live rental warn at least 12 h before the balance runs out, that is at 111,048 VND at this rate (skill l.20). Neither level is reached by this session or by a second one of the same size.
 - Fresh panel read just before renting; L-after with the panel's per-instance figure after the deletion (skill l.22).
 
 ---
@@ -64,10 +65,10 @@ Written 2026-11-15T11:34Z (`date -u`; 18:34 VN) for the coordinator, at the team
 Common lines for every block of this plan (the address filter and helpers of `J2_RUN.md`):
 
 ```bash
-H=hD
+H=hE   # the alias of this session; the only line that sets it
 REPO=/mnt/d/vsps_image_captioning
 PLAN=$REPO/manuscript/HOST_RUN_PLAN_2026-11-16.md
-HP=$REPO/.session_backup/$(date -u +%F)/host_prep_hD        # prep folder; name it in the prep OPS line
+HP=$REPO/.session_backup/$(date -u +%F)/host_prep_$H        # prep folder; name it in the prep OPS line
 PA=/mnt/d/vsps_papers/vsps-paperA-spic; PB=/mnt/d/vsps_papers/vsps-paperB-lre; PC=/mnt/d/vsps_papers/vsps-paperC-tallip
 F() { grep -v -E '([0-9]{1,3}\.){3}[0-9]{1,3}'; }
 S() { ssh -o BatchMode=yes "$H" "$@" 2>&1 | F; return "${PIPESTATUS[0]}"; }
@@ -199,16 +200,27 @@ The pinned `cas-common.sty` in `$OUT` makes `build_A_cas.sh` skip its fetch from
 
 **P6. K5**: nothing, unless section 4.5's precondition holds.
 
-**P7. Before renting.** `sha "$REPO/manuscript/conf_taimma_2027/draft_v3_1/paper.md"` equals `$HP/k2_draft_first.sha` and `$HP/k2/push/in_base/paper.md` (otherwise redo P3); `k1_list.py` of P2 run again with the same output; the D1 line is on the LOG; a fresh panel read; the newest STATE file shows no live rental; this plan's prep OPS line (section 7, line 1) is written. The 30-minute host backup loop is not started for hD (nothing on it needs it; the pulls of section 4 are the copies).
+**P7. Before renting.** `sha "$REPO/manuscript/conf_taimma_2027/draft_v3_1/paper.md"` equals `$HP/k2_draft_first.sha` and `$HP/k2/push/in_base/paper.md` (otherwise redo P3); `k1_list.py` of P2 run again with the same output; the D1 line is on the LOG; a fresh panel read; the newest STATE file shows no live rental; this plan's prep OPS line (section 7, line 1) is written. The 30-minute host backup loop is not started for this host (nothing on it needs it; the pulls of section 4 are the copies).
 
 ---
 
 ## 3. Host session start
 
 1. **Offer and rent** (skill l.13-25; GPU_RENTAL_SPEC): 1x RTX 3090 / 3090 Ti 24 GB; CPU at least Ryzen 7 5800XT class; RAM >= 32 GB; disk >= 200 GB at >= 1000 MB/s; network >= 400 Mbps; CUDA >= 12.4; uptime > 99 %; max rental time >= 3 h plus margin. Cheapest offer that passes every field (15 Nov: 84966 and 89528 with a 5950X at 9,185 VND/h; 76866 has a 3950X; 106263 is the FAULT machine of CC-302, excluded). Ubuntu 24.04 template; random password in a 0600 file; L-before (section 1.3); the `date -u` stamp of the click is **T0**.
-2. **Access.** `Host hD` in `~/.ssh/config` only; `ssh-copy-id` through an askpass script; BatchMode login works.
+2. **Access.** `Host hE` (the alias of section 2) in `~/.ssh/config` only; `ssh-copy-id` through an askpass script; BatchMode login works.
 3. **Facts** (skill l.27): nvidia-smi, lscpu, free, df of `/dev/shm` and home, 4 GB `dd` with direct I/O, OS version, clock skew < 60 s. A fact against the offer is a FAULT: delete; the money counts.
-4. **System packages, all before step 6** (CC-410 N3), the list that worked on 15 Nov minus Java: `apt-get install -y git tmux rsync util-linux python3.12 python3.12-venv python3 python3-venv time procps`; record the versions (dots as underscores). Then `pgrep -x apt-get; pgrep -x dpkg` print nothing. No apt call of any kind after step 6 starts (the private `apt-get download` of the setup script included, which runs inside step 6).
+4. **System packages, all before step 6** (CC-410 N3; PI-1115r: the host is a fresh image, so missing system libraries are expected): the install bundle `scripts/host_bundle/`, profile `pdf` (K2 to K5; it includes `base`, which covers K1b and every package of the 15 Nov list), no Java. Push its two files, check their shas, install, and read the verification table:
+
+```bash
+tar -C "$REPO/scripts" -cf - host_bundle/SYSTEM_PACKAGES.txt host_bundle/install_system.sh | ssh -o BatchMode=yes "$H" 'tar -xf - --no-same-owner -C /root'; echo "tar ${PIPESTATUS[0]} ssh ${PIPESTATUS[1]}"
+(cd "$REPO/scripts" && sha256sum host_bundle/SYSTEM_PACKAGES.txt host_bundle/install_system.sh) | ssh -o BatchMode=yes "$H" 'cd /root && sha256sum --quiet -c - && echo "bundle OK"' 2>&1 | F
+S 'bash /root/host_bundle/install_system.sh pdf > /root/bundle_install.txt 2>&1; echo "bundle rc $?"; sed -n "/^CHECK /,\$p" /root/bundle_install.txt | tr . _'
+```
+
+   - rc 0 (`VERIFY CLEAN`): go on to step 5. The private-tool rows say `skip` here (the setup has not run yet); that is expected.
+   - rc 1: install the packages that the `MISSING` lines name (`apt-get install -y --no-install-recommends <package>`), then `S 'bash /root/host_bundle/install_system.sh --verify pdf'` once. Still not clean: K2 to K5 drop out; K1b continues if every `base` row is clean; pull and delete.
+   - The table (dots as underscores) goes into the facts-and-packages OPS line; its `apt idle` row replaces the `pgrep` check. Every package added by hand is named in that line and goes into `SYSTEM_PACKAGES.txt` after the session (`scripts/host_bundle/README.md`).
+   - No apt call of any kind after step 6 starts (the private `apt-get download` of the setup script included, which runs inside step 6), except the one recovery install of section 6.4.
 5. **Push the tools** (form of `J2_RUN.md` §2):
 
 ```bash
@@ -225,10 +237,10 @@ S 'tmux new-session -d -s tools "bash /root/paperC_build/run_setup.sh" && echo s
 S 'echo "setup rc $(cat /root/paperC_build/rec/setup.rc)"; tail -n 25 /root/paperC_build/rec/setup_out.txt'
 ```
 
-   - rc 0: tools present for K2 to K5 ("SETUP OK (J2 and J3)"). rc 3: LNCS class missing: K2 only takes the fallback of CC-410 J3-4. rc 9: STOP line at the end of the output.
+   - rc 0: tools present for K2 to K5 ("SETUP OK (J2 and J3)"). rc 3: LNCS class missing: K2 only takes the fallback of CC-410 J3-4. rc 9: STOP line at the end of the output; if it names a missing library or package, section 6.4 allows one recovery install and one re-run of the unchanged setup.
    - Read every `DRIFT` line: the TinyTeX bundle is a daily release; drift is reported, never forced back (CC-410 J2-1). Addresses as CC-410 ruling 5: pandoc 3.5 (pinned a46b448a), installer READ only (sha da22ffb5 on 13 and 15 Nov), bundle at the address the installer names. Anything else: STOP; K2 to K5 drop out.
    - `bash /root/paperC_build/host_tex_setup.sh outside` must show 0 for `/var/cache/fontconfig`.
-7. **K1 runs beside step 6** (section 4.1): separate folder, CPU light.
+7. **K1b runs beside step 6** (section 4.1b): separate folder, CPU light. K1 (section 4.1) ran on 2026-11-15 and is not run again.
 
 OPS lines: rental (T0, offer, L-before numbers, spec facts, D1 line id; no host string); facts and packages; tools (setup rc, bundle sha and DRIFT lines, outside counts).
 
@@ -236,7 +248,7 @@ OPS lines: rental (T0, offer, L-before numbers, spec facts, D1 line id; no host 
 
 ## 4. The jobs
 
-Order on the host: K1 (beside the tool setup), **K2** (first after the setup: PI-1115a), K3, K4, K5. Each job ends with its pull before the next starts. Pull form for every job (sha on both sides, then an address and host-name count before anything is unpacked on the laptop; CC-410 N4 for hits in binary files):
+Order on the host: K1b (beside the tool setup), **K2** (first after the setup: PI-1115a), K4, K5, and K3 only when the precondition of section 4.3 holds. Each job ends with its pull before the next starts. Pull form for every job (sha on both sides, then an address and host-name count before anything is unpacked on the laptop; CC-410 N4 for hits in binary files):
 
 ```bash
 pull() {  # pull <host dir> <tar name> <laptop dir> <paths inside the host dir...>
@@ -248,7 +260,7 @@ pull() {  # pull <host dir> <tar name> <laptop dir> <paths inside the host dir..
 
 A non-zero address count: for each hit file, `for a in $(hostname -I); do grep -a -c -F "$a" FILE; done` on the host; all 0 means a version string or a DOI, not the host: say so in the record (CC-410 N4). A non-zero host-name count: STOP, read the hit on the host by counts, no pull until 0. The tar is unpacked on the laptop with `tar -xf ... --no-same-owner`, then `chmod -R a-w`.
 
-The laptop record folder of the session: `SB=$REPO/.session_backup/<UTC date of T0>/host_session_hD/` with one sub-folder per job.
+The laptop record folder of the session: `SB=$REPO/.session_backup/<UTC date of T0>/host_session_$H/` with one sub-folder per job.
 
 ### 4.1 K1: Paper B Table 6 and figures
 
@@ -275,6 +287,39 @@ pull /root/k1 k1.tar "$SB/k1" rec repo/scripts/b_figs/out
 - **After the pull (laptop):** copy the files of `out/` into `paper/rev_2026-11-15/figures/` of the Paper B repo with a sums file, unstaged (CC-420 ruling 7 step 3: the transfer commit 568eaec exists, so rule 7 of the specification no longer applies). Then the one-judge DIFF read; the gatekeeper commit only after it.
 - **Custody:** released (CC-418); the coordinator may view the outputs. No label, key, assignment, practice file, `PAIR_CANDIDATES.json` or caption text goes to the host (section 5.1).
 - OPS line: inputs list sha, script used, freeze and wheel-list sha, Python version, three rc values, output sha list, pull tar sha, where the copies went.
+
+### 4.1b K1b: Paper B Fig. EF1 and Fig. 1 (CC-428 ruling 4)
+
+| | |
+|---|---|
+| Ruling | CC-428 (CC sha ab98dc743c8b2c92714bcc9745cf9cb21ea254dfe556f5b9ce9be16b88b2261e), ruling 4 (a) to (f); W1, W2 and W3 close before the push |
+| Inputs | `$HP/k1b.sha256`: exactly the 12 files of ruling 4 (b), list sha 4559900b36be7a3d372fe36549da3fabccf03b8cab7fae2f133530ab3fea11e8; no other file of `b_work/`, no label, key or assignment file |
+| Runner | `k1b_run.sh` = `k1_run.sh` with the folder `/root/k1b`, sha 8ed0cb65d480e634dbeba1124c9aca2590562ffffaec77aa63863ab3d0168e40 |
+| K1 | not run again; its 2026-11-15 outputs (Fig. 2, Fig. 3, Table 6) are in `.session_backup/2026-11-15/host_session_hD/k1/` and stay the bytes of record for those three (ruling 4 (e)) |
+
+The commands of CC-428 ruling 4 (c), as ruled (copied from the ruling, unchanged):
+
+```bash
+K1S="build_all_v2.sh fig1_schematic.py fig2_breaking.py fig3_human.py figEF1.py table6_human.py"
+python3 -I "$HP/scripts/k1_list.py" "$REPO" $(for s in $K1S; do case $s in *.py) echo "$REPO/scripts/b_figs/$s";; esac; done) | sort -u > "$HP/k1b_inputs.sha256"; echo "k1_list rc ${PIPESTATUS[0]}"
+(cd "$REPO" && sha256sum $(for s in $K1S; do echo "scripts/b_figs/$s"; done)) > "$HP/k1b_scripts.sha256"
+cat "$HP/k1b_inputs.sha256" "$HP/k1b_scripts.sha256" > "$HP/k1b.sha256"; grep -c . "$HP/k1b.sha256"; sha "$HP/k1b.sha256"   # 12 and 4559900b..., else STOP
+sed 's#^K=/root/k1; #K=/root/k1b; #' "$HP/scripts/k1_run.sh" > "$HP/scripts/k1b_run.sh"; sha "$HP/scripts/k1b_run.sh"      # 8ed0cb65d480e634dbeba1124c9aca2590562ffffaec77aa63863ab3d0168e40 (one line differs: the folder)
+# the T6 check of P2 again, against Paper B HEAD (6356b99, paper.md bfce87e9): 29 and 29 rows, EQUAL, else STOP
+S 'test ! -e /root/k1b && mkdir -p /root/k1b/repo && echo "k1b folder made"' || echo "STOP: /root/k1b exists"
+(cd "$REPO" && tar -cf - $(cut -c67- "$HP/k1b.sha256")) | ssh -o BatchMode=yes "$H" 'tar -xf - --no-same-owner -C /root/k1b/repo'; echo "tar ${PIPESTATUS[0]} ssh ${PIPESTATUS[1]}"
+ssh -o BatchMode=yes "$H" 'cd /root/k1b/repo && sha256sum --quiet -c - && echo "k1b inputs OK: $(find . -type f | wc -l) files"' < "$HP/k1b.sha256" 2>&1 | F
+ssh -o BatchMode=yes "$H" 'cat > /root/k1b/k1b_run.sh' < "$HP/scripts/k1b_run.sh"; S "[ \"\$(sha256sum /root/k1b/k1b_run.sh | cut -c1-64)\" = $(sha "$HP/scripts/k1b_run.sh") ] && echo 'runner OK'"
+S 'tmux new-session -d -s k1b "bash /root/k1b/k1b_run.sh" && echo started'
+# wait for: ! tmux has-session -t k1b
+S 'cd /root/k1b/rec && for f in venv selftest build; do echo "$f rc $(cat $f.rc 2>/dev/null || echo none)"; done; cat build_script.txt python.txt; grep -E "^(input|output|ruled|check|text) " build.txt; grep -c "^plotted " build.txt; grep -c "^plotted .* changed_F=True " build.txt'
+pull /root/k1b k1b.tar "$SB/k1b" rec repo/scripts/b_figs/out
+```
+
+- **Pass:** CC-428 ruling 4 (d), every point.
+- **Fail:** any FAIL line or rc not 0: reported with the record, not patched on the host.
+- **After the pull:** CC-428 ruling 4 (e) and (f): the four new files into `paper/rev_2026-11-15/figures/` of the Paper B repo with the sums file, unstaged; the one-judge diff read before any commit; `build.txt` stays in the session record and is never committed to the paper repo.
+- OPS line: as section 4.1, plus the CC-428 sha, the W1 and W2 sha match, the list and runner shas, and whether the Fig. 2 and Fig. 3 bytes equal those of K1 (information, not a failure).
 
 ### 4.2 K2: TAIMMA page measures (PROVISIONAL)
 
@@ -360,11 +405,33 @@ KH=$HOME/k4_held_$(date -u +%F); pull /root/k4 k4_1.tar "$KH" rec_1 out_main_1 o
 - Time: 5 to 20 min (xelatex, about 200 pages in all, three to five passes each; no record of a host build exists).
 - OPS line: commit, tar sha (file count), helper shas, rc values, the counts of `K4_COUNTS_<n>.txt` (numbers only), the held folder and the pull tar sha. No text fragment of any log.
 
-### 4.5 K5: Paper B Springer build (NOT RUN with the present script)
+### 4.5 K5: Paper B Springer build (`build_B_rev.sh`, CC-426 ruling 8 and CC-425 addendum A3)
 
-`paper/build/build_B_springer.sh` (59e86b26) reads `manuscript/journal_draft_B/` of the run-repo layout (l.7), and from it `sec*.md`, `outline_B.md`, `title_page_B.md`, `citation_map_B.tsv` and `paperB.bib`. The transferred draft in `paper/rev_2026-11-15/` is one `paper.md` with `title_page.md`, `online_resource.md` and an unmerged `paperB_additions_PROPOSED.bib` (CC-420 ruling 6: not merged until each mark is read). CC-420 calls the change "the build-script path fix", but the layout differs, so a new script (or mode) is needed: single `paper.md`, its citation mapping, its bibliography rule.
+| | |
+|---|---|
+| Script | `paper/build/build_B_rev.sh` d671b9d2c637d5dec5d4fe85e93e38275b2e92bc167fc3601435f7f88f25ed2a at Paper B HEAD 6356b99 (equal to the sha CC-426 names) |
+| Runs only if | the four conditions of CC-425 addendum A3 hold at the push: (1) CC-426 on the LOG with GO or CONDITIONAL GO naming the script by sha, its blocking items on the script closed; (2) the script at HEAD has that sha; (3) the coordinator line extending OPS-1115ba to K5; (4) the host is inside its cap and K4 has been pulled. Otherwise one NOT RUN line |
+| Allow-list | the eight pathspecs of the `git archive` line below (CC-425 A3; the inputs CC-426 ruling 8 names) |
+| Needs | pandoc, latexmk with xelatex, pdfinfo, python3, the DejaVu Serif font (CC-426 ruling 8): the private tool tree of section 3 step 6 (TeX package `dejavu` is in its list) |
+| Return code | 0 also when a PDF fails: K5 reads `report.txt` (page lines, "NOT BUILT") |
 
-**Run only if:** that script exists in the Paper B repo or in a prep folder, with its sha and a one-judge read that names its inputs. Then: allow-list = the inputs the script names (from its header); push by `git archive` of HEAD with those pathspecs, as P5; run in tmux with all output to files; counts by `k_counts.sh` for `paperB_LRE` (the supplement is built by pandoc directly and keeps no log: its page count by `pdfinfo` only); pull to `$SB/k5`. Custody released (CC-418): the PDF may be viewed. Time 3 to 8 min. Otherwise one NOT RUN line.
+The commands of CC-425 addendum A3, as ruled (copied from the ruling, unchanged):
+
+```bash
+CB=$(git -C "$PB" rev-parse HEAD); T5=$HP/k5_src_$(echo $CB | cut -c1-7).tar
+git -C "$PB" archive --format=tar -o "$T5" "$CB" -- paper/build paper/paperB.bib paper/citation_map_B.tsv paper/supplementary_B.md paper/rev_2026-11-15/paper.md paper/rev_2026-11-15/online_resource.md paper/rev_2026-11-15/title_page.md paper/rev_2026-11-15/cover_letter.md
+[ "$(git get-tar-commit-id < "$T5")" = "$CB" ] && tar -xOf "$T5" paper/build/build_B_rev.sh | sha256sum | cut -c1-64     # must equal the sha named by CC-426, else K5 NOT RUN
+S 'test ! -e /root/k5 && mkdir -p /root/k5/src /root/k5/rec && echo "k5 folder made"' || echo "STOP: /root/k5 exists"
+ssh -o BatchMode=yes "$H" 'cat > /root/k5/src.tar' < "$T5"
+S "[ \"\$(sha256sum /root/k5/src.tar | cut -c1-64)\" = $(sha "$T5") ] && tar -xf /root/k5/src.tar --no-same-owner -C /root/k5/src && echo 'source OK'"
+S 'tmux new-session -d -s k5 ". /root/paperC_build/env.sh; OUT=/root/k5/out_1 nice -n 19 bash /root/k5/src/paper/build/build_B_rev.sh > /root/k5/rec/console.txt 2>&1; echo \$? > /root/k5/rec/k5.rc" && echo started'
+# wait for: ! tmux has-session -t k5
+S '. /root/paperC_build/env.sh; echo "k5 rc $(cat /root/k5/rec/k5.rc)"; bash /root/k4/k_counts.sh /root/k5/out_1 paperB_LRE; cd /root/k5/out_1 && for n in 1 2; do echo "ESM_$n: $(pdfinfo ESM_$n.pdf 2>/dev/null | grep ^Pages || echo NOT BUILT)"; done; tail -n 12 report.txt'
+pull /root/k5 k5.tar "$SB/k5" rec out_1
+```
+
+- A failure is reported with the record and not patched on the host, except one private TeX package with a record line and one rebuild into `out_2`.
+- The output is a working build for the page count: nothing of it is committed; the count goes to the diff read of CC-420 ruling 7 step 3 with the K1 and K1b bytes. Custody released (CC-418): `report.txt` and the PDFs may be read.
 
 ---
 
@@ -397,19 +464,20 @@ K1 and K5: Paper B custody released by CC-418. K2 and K3: Paper C and its confer
 
 ### 6.1 Order
 
-1. Laptop: P0 to P7 (section 2).
+1. Laptop: P0 to P7 (section 2), the K1b laptop lines of section 4.1b, and the bundle check: `bash "$REPO/scripts/host_bundle/install_system.sh" --selftest` passes every check, and the sha256 of `SYSTEM_PACKAGES.txt` and `install_system.sh` equal those named in the licence line of the session.
 2. Rent, access, facts, system packages (section 3 steps 1-4).
-3. Tools push and setup in tmux; **K1 beside it**.
-4. **K2**, then K3 (if eligible), K4, K5 (if eligible), one after the other, each pulled before the next.
-5. Leaving checks; delete; L-after (6.3).
+3. Tools push and setup in tmux; **K1b beside it** (K1 ran on 2026-11-15 and is not run again).
+4. **K2**, then K4, then K5 (section 4.5: `paper/build/build_B_rev.sh` at Paper B HEAD 6356b99, CC-426 ruling 8 and CC-425 addendum A3), one after the other, each pulled before the next; K3 only once the Paper C freeze commits exist (runbook steps 1 to 6), else it moves to a later session.
+   The session's job list is therefore K1b, K2, K4, K5, then K3 only after the Paper C freeze commits.
+5. Leaving checks; delete; L-after; host clean-up (6.3).
 
 ### 6.2 Parallel
 
 | At the same time | Allowed? |
 |---|---|
-| Tool setup + K1 venv and builds | yes: separate folders (`/root/paperC_build`, `/root/k1`), CPU only, no shared file |
+| Tool setup + K1b venv and builds | yes: separate folders (`/root/paperC_build`, `/root/k1b`), CPU only, no shared file |
 | Two TeX jobs (K2 to K5) | no: same tool tree and font cache; the time saved is minutes |
-| Any apt-get after step 6 started | no; only private `tlmgr install` into the private TinyTeX, each with a record line (CC-410 J3-5) |
+| Any apt-get after step 6 started | no, except the one recovery install of section 6.4; only private `tlmgr install` into the private TinyTeX, each with a record line (CC-410 J3-5) |
 
 ### 6.3 Leaving and deletion
 
@@ -417,7 +485,7 @@ K1 and K5: Paper B custody released by CC-418. K2 and K3: Paper C and its confer
 S 'bash /root/paperC_build/host_tex_setup.sh procs; bash /root/paperC_build/host_tex_setup.sh outside; tmux ls 2>&1 | head -3'
 ```
 
-Expected: 0 processes of the build folder, no tmux session. Every job's tar is on the laptop with equal shas. Then delete the instance on the panel as the next step, with no new job; check twice that the panel lists no instance and the host does not answer; L-after with the per-instance figure; remove the `Host hD` entry. No label, key or data file was ever on hD.
+Expected: 0 processes of the build folder, no tmux session. Every job's tar is on the laptop with equal shas. Then delete the instance on the panel as the next step, with no new job; check twice that the panel lists no instance and the host does not answer; L-after with the per-instance figure; then the laptop clean-up (PI-1115s): `bash "$REPO/scripts/host_bundle/cleanup_host.sh" "$H" --dry-run`, read the list, then the same command without `--dry-run`. It removes the alias's block in `~/.ssh/config`, its host keys (`ssh-keygen -R`) and any per-host known_hosts file, its control socket, and the askpass, password and pid files named after the alias; its last line is the text of the clean-up OPS line (names only, never an address). Kept: LOG lines and the session record folder (logs, sums, pulled results). No label, key or data file was ever on the host.
 
 ### 6.4 Stop rules
 
@@ -427,7 +495,8 @@ Expected: 0 processes of the build folder, no tmux session. Every job's tar is o
 | A host fact contradicts the offer | FAULT: delete; the money counts; a new rental needs its own L-before |
 | Annex or input sha mismatch on the laptop (P0 to P5) | that job (P0: the whole plan) stops before the rental |
 | Arrival check fails on the host | that job stops; the same file failing twice: STOP and read (skill l.39) |
-| Setup rc 9, or an address outside CC-410 ruling 5 | K2 to K5 drop out; K1 continues; pull and delete |
+| Setup rc 9 whose STOP line names a missing library or package ("a library is missing", `not found`) | one recovery install and one re-run of the unchanged setup, once per session (CC-431 ruling 3 is the judge line that CC-410 J3-5 asks for; never on a host that carries a stage-H job after its gate G0), with a DEVIATION line for each step: (1) wait until `tmux has-session -t tools` fails and `pgrep -x apt-get; pgrep -x dpkg` print nothing; (2) keep the first attempt's records: `S 'cd /root/paperC_build/rec && mv setup_out.txt setup_out_attempt1.txt && mv setup.rc setup_attempt1.rc && cp tl_pkgs_to_install.txt tl_pkgs_to_install_attempt1.txt && bash /root/paperC_build/host_tex_setup.sh outside > outside_attempt1.txt; cat outside_attempt1.txt'`; its line for `/var/cache/fontconfig` must say 0, else the first attempt itself wrote to the system font cache: no recovery, K2 to K5 drop out; (3) install: first `apt-get install -y --no-install-recommends` of each package the STOP output names that the list lacks (find the package on the laptop with `dpkg -S <library file>`; record each), then the install command of section 3 step 4 again with `/root/bundle_recovery.txt` as its output file; its table must say `VERIFY CLEAN` with every `private` and `TinyTeX` row `ok` (they are no longer `skip`: the first attempt unpacked the tools), else K2 to K5 drop out; (4) `S 'bash /root/paperC_build/host_tex_setup.sh outside > /root/paperC_build/rec/outside_after_install.txt; cat /root/paperC_build/rec/outside_after_install.txt; mv /root/paperC_build/marker_setup /root/paperC_build/marker_setup_attempt1'`: the counts since the first marker are on record and the re-run makes a new marker, so its font-cache check measures the re-run only; (5) re-run the unchanged setup once with the step 6 commands (`run_setup.sh` c4998685 and `host_tex_setup.sh` bf5294df, byte-equal); no `install_system.sh` call and no other system font lookup after this point. Setup rc 0 or 3: go on as section 3 step 6. Setup rc 9 again: K2 to K5 drop out; K1b continues; pull and delete |
+| Setup rc 9 for any other reason, or an address outside CC-410 ruling 5 | K2 to K5 drop out; K1b continues; pull and delete |
 | A job's rc is not 0 | report with the record; no patch on the host except a private TeX package; at most one rebuild in new folders; never a text change |
 | A push stream stalls (under 50 KB/s for 10 min while a fresh probe runs 10 times faster) | stop it by pid, top up from a stdout-only list, DEVIATION line (skill l.35-39) |
 | Expected wait for the next step > 10 min (D5) | pull what exists, delete |
@@ -443,12 +512,12 @@ Expected: 0 processes of the build folder, no tmux session. Every job's tar is o
 2. **rental**: T0, offer, rate, L-before with numbers, spec facts, D1 line id.
 3. **facts and packages**.
 4. **tools**: setup rc, bundle sha, DRIFT lines, outside counts.
-5. **K1** (section 4.1).
+5. **K1b** (section 4.1b; K1 ran on 2026-11-15).
 6. **K2 PROVISIONAL** (section 4.2).
 7. **K3** or **K3 NOT RUN** (which precondition failed).
 8. **K4** (numbers only).
 9. **K5 NOT RUN** (the script) or K5.
-10. **leaving and deletion**, with L-after, block spend and the 50,000 VND check.
+10. **leaving and deletion**, with L-after, block spend and the 50,000 VND check; then the host clean-up line (section 6.3, PI-1115s).
 11. A STATE block for this rental (also still owed for hC: OPS-1115aq).
 
 Never write, in any line, the literal string that the binding rules forbid in the LOG.

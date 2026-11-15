@@ -40,6 +40,22 @@ change how Qwen2.5-VL handles `cache_position`/M-RoPE and change the trainer sig
 the adapter still loads but inference goes wrong *silently*.
 `scripts/verify_environment.py` checks everything before any long run.
 
+### Fresh machines (rented hosts)
+
+Every rented host is a freshly rented image. Never assume that a system library or tool is
+present, even one an earlier image of the same offer had: on 2026-11-15 a host lacked base
+libraries (libfontconfig1, libfreetype6, libglib2.0-0t64, ...) and three of four jobs were lost.
+The install bundle in `scripts/host_bundle/` must be ready before renting. Its first step
+after access, before any job, is:
+
+```bash
+bash scripts/host_bundle/install_system.sh <profiles>   # base | figures | pdf | gpu | java | all
+```
+
+No job starts until its verification table is clean (`VERIFY CLEAN`, rc 0). After every
+session, add whatever was found missing to `scripts/host_bundle/SYSTEM_PACKAGES.txt`, with the
+date and the evidence (`scripts/host_bundle/README.md`).
+
 ## 2. Layout
 
 ```

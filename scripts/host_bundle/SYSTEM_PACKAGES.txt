@@ -1,0 +1,111 @@
+# System packages for a fresh Ubuntu 24.04 (noble, amd64) rented host. Read by install_system.sh.
+# Line form: <package> <profiles, comma-separated>  # <job that needs it>: <evidence>
+# Profiles: base (every job), figures, pdf, gpu, java. Every profile includes base; "all" = base,figures,pdf,gpu.
+# java is optional and is installed only when asked for by name (skill step 4: only if a host step segments Vietnamese).
+# figures has no package of its own: K1 (matplotlib 3.10.9, pillow 13.0.0 wheels) built with rc 0 on the hD image that
+#   lacked every pdf library below (.session_backup/2026-11-15/host_session_hD/k1/rec/{venv,selftest,build}.rc = 0).
+# Evidence keys:
+#   hD-missing = .session_backup/2026-11-15/host_session_hD/setup/rec/missing_libs.txt (setup rc 9, 2026-11-15T13:47Z)
+#   laptop-ldd = ldd of the same tool builds on the laptop (Ubuntu 24.04.1), each linked file mapped by dpkg -S
+#   apt-depends = apt-cache depends (Depends/PreDepends) on the laptop's noble archive lists
+# The private DEBS list of host_tex_setup.sh (rsvg, poppler, cairo, pango, pixman, X11/xcb, tiff, webp ...) is NOT
+# repeated here: those stay private (dpkg -x under /root/paperC_build/prefix). This file holds what they link against.
+# Refresh rule: README.md in this folder, section "After every session".
+
+## base: every host job (system tools named by the skill and the run docs)
+ca-certificates  base   # every https fetch (pip, Hugging Face, pandoc, TinyTeX): TLS roots
+curl             base   # host_tex_setup.sh fetch(); B_RUN_DOC_v1_9 ranged fetch (curl -r)
+wget             base   # host_tex_setup.sh fetch() fallback
+git              base   # skill step 5 (HEAD check, git diff --quiet); job.sh needs git (S11_RUN_DOC_v1_3 l.481)
+tmux             base   # every job runs in tmux (skill, Running and watching); missing on new hosts (B_RUN_DOC_v1_9 l.714)
+rsync            base   # pulls; missing on new hosts (B_RUN_DOC_v1_9 l.714)
+util-linux       base   # flock (job.sh, S11 l.481), setsid
+procps           base   # pgrep -x apt-get / dpkg check (HOST_RUN_PLAN_2026-11-16 section 3 step 4)
+time             base   # HOST_RUN_PLAN_2026-11-16 section 3 step 4 list
+xz-utils         base   # unpack of TinyTeX-1-linux-x86_64.tar.xz and .xz model archives
+tar              base   # every push and pull (tar -x --no-same-owner); Essential, listed so the check names it
+gzip             base   # pandoc-3.5 tar.gz, tar -z fetch streams; Essential
+coreutils        base   # sha256sum, dd, du; Essential
+findutils        base   # find in setup and outside() counts; Essential
+grep             base   # every check script; Essential
+sed              base   # every check script; Essential
+mawk             base   # awk in setup and pull scripts; Required priority
+
+## python: every venv (setup.sh, setup_host.sh, k1_run.sh)
+python3.12       base   # venvs; setup.sh accepts 3.10-3.12 only
+python3.12-venv  base   # venv + ensurepip; absent on fresh 24.04 (STATE 2026-11-13; PERANN_READ_PACKAGE step 0)
+python3          base   # HOST_RUN_PLAN_2026-11-16 section 3 step 4 list
+python3-venv     base   # HOST_RUN_PLAN_2026-11-16 section 3 step 4 list
+
+## build tools: GPU jobs (torch inductor compiles a kernel at the first forward)
+build-essential  gpu    # B_RUN_DOC_v1_9 l.717-723 (CC-303 W1-W3): selftest stop without a C compiler
+python3.12-dev   gpu    # Python.h for inductor (B_RUN_DOC_v1_9 l.719-720)
+libpython3.12-dev gpu   # version recorded by B_RUN_DOC_v1_9 l.723
+
+## pdf toolchain libraries: what the private rsvg-convert, pdfinfo/pdftotext/pdffonts and TinyTeX xetex link against
+# the seven base libraries whose absence stopped the 15 Nov hD setup (hD-missing; laptop-ldd)
+libfontconfig1     pdf  # rsvg-convert, poppler tools, xetex: libfontconfig.so.1 not found (hD-missing)
+libfreetype6       pdf  # rsvg-convert, poppler tools, xetex: libfreetype.so.6 (hD-missing)
+libglib2.0-0t64    pdf  # rsvg-convert: libglib/gio/gobject/gmodule-2.0.so.0 (hD-missing)
+libharfbuzz0b      pdf  # rsvg-convert: libharfbuzz.so.0 (hD-missing)
+libpng16-16t64     pdf  # rsvg-convert, poppler tools: libpng16.so.16 (hD-missing)
+libjpeg-turbo8     pdf  # rsvg-convert, poppler tools: libjpeg.so.8 (hD-missing; owner per laptop dpkg -S)
+libxml2            pdf  # rsvg-convert: libxml2.so.2 (hD-missing)
+# poppler tools, also not found on hD
+liblcms2-2         pdf  # pdfinfo/pdftotext/pdffonts: liblcms2.so.2 (hD-missing)
+libnss3            pdf  # poppler tools: libnss3.so, libsmime3.so, libnssutil3.so (hD-missing; laptop-ldd)
+libnspr4           pdf  # poppler tools: libnspr4.so, libplc4.so, libplds4.so (hD-missing; laptop-ldd)
+# the rest of the laptop-ldd closure of the private tools, outside the DEBS list (present on hD, absent on a smaller image)
+libcurl3t64-gnutls pdf  # libpoppler134 (laptop-ldd)
+libicu74           pdf  # libxml2 (laptop-ldd; apt-depends)
+libgraphite2-3     pdf  # libharfbuzz0b (laptop-ldd; apt-depends)
+libexpat1          pdf  # libfontconfig1 (laptop-ldd; apt-depends)
+libbrotli1         pdf  # libfreetype6, libcurl (laptop-ldd; apt-depends)
+libbz2-1.0         pdf  # libfreetype6 (laptop-ldd; apt-depends)
+zlib1g             pdf  # libpng, libfreetype, libxml2 (laptop-ldd)
+libffi8            pdf  # libglib2.0-0t64 (laptop-ldd; apt-depends)
+libmount1          pdf  # libglib2.0-0t64 (laptop-ldd; apt-depends)
+libblkid1          pdf  # libmount1 (laptop-ldd)
+libpcre2-8-0       pdf  # libglib2.0-0t64 (laptop-ldd; apt-depends)
+libselinux1        pdf  # libglib2.0-0t64 (laptop-ldd; apt-depends)
+liblzma5           pdf  # libxml2, libtiff6 (laptop-ldd; apt-depends)
+libzstd1           pdf  # libtiff6, libcurl (laptop-ldd)
+libgnutls30t64     pdf  # libcurl3t64-gnutls, libldap2 (laptop-ldd; apt-depends)
+libgssapi-krb5-2   pdf  # libcurl3t64-gnutls (laptop-ldd; apt-depends)
+libkrb5-3          pdf  # libgssapi-krb5-2 (laptop-ldd)
+libkrb5support0    pdf  # libkrb5-3 (laptop-ldd)
+libk5crypto3       pdf  # libkrb5-3 (laptop-ldd)
+libkeyutils1       pdf  # libkrb5-3 (laptop-ldd)
+libcom-err2        pdf  # libkrb5-3 (laptop-ldd)
+libidn2-0          pdf  # libcurl, libgnutls (laptop-ldd; apt-depends)
+libunistring5      pdf  # libidn2-0 (laptop-ldd)
+libldap2           pdf  # libcurl3t64-gnutls (laptop-ldd; apt-depends)
+libsasl2-2         pdf  # libldap2 (laptop-ldd; apt-depends)
+libsasl2-modules-db pdf # libsasl2-2 (apt-depends)
+libdb5.3t64        pdf  # libsasl2-modules-db (apt-depends)
+libnettle8t64      pdf  # libcurl, libgnutls (laptop-ldd; apt-depends)
+libhogweed6t64     pdf  # libgnutls30t64 (laptop-ldd)
+libgmp10           pdf  # libgnutls30t64 (laptop-ldd)
+libnghttp2-14      pdf  # libcurl3t64-gnutls (laptop-ldd; apt-depends)
+libpsl5t64         pdf  # libcurl3t64-gnutls (laptop-ldd; apt-depends)
+librtmp1           pdf  # libcurl3t64-gnutls (laptop-ldd; apt-depends)
+libssh-4           pdf  # libcurl3t64-gnutls (laptop-ldd; apt-depends)
+libssl3t64         pdf  # libssh-4, libsasl2-2 (laptop-ldd; apt-depends)
+libp11-kit0        pdf  # libgnutls30t64 (laptop-ldd)
+libtasn1-6         pdf  # libgnutls30t64 (laptop-ldd)
+libsqlite3-0       pdf  # libnss3 (apt-depends)
+libstdc++6         pdf  # rsvg-convert, libpoppler134 (laptop-ldd)
+libgcc-s1          pdf  # rsvg-convert, libpoppler134 (laptop-ldd)
+libc6              pdf  # every binary (laptop-ldd); Required
+gcc-14-base        pdf  # libgcc-s1, libstdc++6 (apt-depends)
+perl               pdf  # tlmgr of TinyTeX is a perl program (VERSIONS.txt of 15 Nov records perl v5.38.2)
+
+## fonts: font lookup for rsvg-convert and the verification (the build itself uses its private fonts.conf)
+fontconfig         pdf  # fc-match/fc-list/fc-cache for the font check of install_system.sh
+fontconfig-config  pdf  # Depends of libfontconfig1 (apt-depends); not installed on hD (hD-missing)
+fonts-dejavu-core  pdf  # first alternative of fontconfig-config (apt-depends); "DejaVu Sans" and "DejaVu Serif" (K5 mainfont) are the checked fonts
+fonts-dejavu-mono  pdf  # Depends of fonts-dejavu-core on noble (apt-depends)
+
+## java: optional, only when asked for (VnCoreNLP word segmentation or METEOR/SPICE on the host)
+default-jre-headless     java  # setup.sh VnCoreNLP smoke; METEOR (scripts/verify_environment.py l.206-211)
+openjdk-11-jre-headless  java  # SPICE 1.0 needs a JDK <= 15 (scripts/verify_environment.py l.214-235)
