@@ -1,0 +1,902 @@
+{
+ "source_sha256": "70efc01da36f856be437f97a4309a2b73c8b79fcd75d35eb0749521717f4bb03",
+ "n": 61,
+ "killed": 61,
+ "mutants": {
+  "W01_M_from_mapped_mentions": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "restricted_M_on_all_images_equals_context_M",
+    "restriction_on_all_images_reproduces_fam_slopes"
+   ],
+   "named_failed": [
+    "restricted_M_on_all_images_equals_context_M",
+    "restriction_on_all_images_reproduces_fam_slopes"
+   ],
+   "failed_checks": [
+    "restricted_M_on_all_images_equals_context_M",
+    "restriction_on_all_images_reproduces_fam_slopes",
+    "H1_all_images_equals_score_core_reg_lo_hi",
+    "score_writes_once_rows_equal_direct_compute",
+    "stdout_is_wrote_and_sha_only",
+    "result_and_stdout_hold_no_qid_image_or_class",
+    "after_labels_fault_prints_stage_and_writes_nothing",
+    "nonfinite_overlap_faults_label_free_before_key",
+    "refuses_key_sha_before_labels",
+    "refuses_label_sha_mismatch",
+    "refuses_row_of_other_annotator",
+    "refuses_R2_qid_outside_R2_assignment",
+    "refuses_PI_qid_outside_base",
+    "refuses_R2_part1_count_before_labels",
+    "refuses_overlap_targets_count_before_labels",
+    "refuses_PI_incomplete_on_overlap",
+    "refuses_R2_incomplete_on_overlap"
+   ]
+  },
+  "W02_Q3_not_within_I537": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "Q3_is_overlap_within_I537",
+    "H1_n_images_Q25_overlap_Q3_within_I537"
+   ],
+   "named_failed": [
+    "Q3_is_overlap_within_I537"
+   ],
+   "failed_checks": [
+    "Q3_is_overlap_within_I537",
+    "restriction_on_all_images_reproduces_fam_slopes",
+    "H1_all_images_equals_score_core_reg_lo_hi",
+    "score_writes_once_rows_equal_direct_compute",
+    "stdout_is_wrote_and_sha_only",
+    "result_and_stdout_hold_no_qid_image_or_class",
+    "after_labels_fault_prints_stage_and_writes_nothing",
+    "nonfinite_overlap_faults_label_free_before_key",
+    "refuses_key_sha_before_labels",
+    "refuses_label_sha_mismatch",
+    "refuses_row_of_other_annotator",
+    "refuses_R2_qid_outside_R2_assignment",
+    "refuses_PI_qid_outside_base",
+    "refuses_R2_part1_count_before_labels",
+    "refuses_overlap_targets_count_before_labels",
+    "refuses_PI_incomplete_on_overlap",
+    "refuses_R2_incomplete_on_overlap"
+   ]
+  },
+  "W03_s75_point_on_all_images": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "answers_outside_overlap_change_nothing"
+   ],
+   "named_failed": [
+    "answers_outside_overlap_change_nothing"
+   ],
+   "failed_checks": [
+    "answers_outside_overlap_change_nothing"
+   ]
+  },
+  "W04_xm600_index_not_restricted": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "answers_outside_overlap_change_nothing"
+   ],
+   "named_failed": [
+    "answers_outside_overlap_change_nothing"
+   ],
+   "failed_checks": [
+    "answers_outside_overlap_change_nothing"
+   ]
+  },
+  "W05_remainder_to_wrong_end": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H1_all_images_equals_score_core_reg_lo_hi"
+   ],
+   "named_failed": [
+    "H1_all_images_equals_score_core_reg_lo_hi"
+   ],
+   "failed_checks": [
+    "H1_all_images_equals_score_core_reg_lo_hi"
+   ]
+  },
+  "W06_human_N_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H1_all_images_equals_score_core_reg_lo_hi"
+   ],
+   "named_failed": [
+    "H1_all_images_equals_score_core_reg_lo_hi"
+   ],
+   "failed_checks": [
+    "H1_all_images_equals_score_core_reg_lo_hi"
+   ]
+  },
+  "W07_rows_on_all_images": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "overlap_rows_differ_from_all_image_rows",
+    "answers_outside_overlap_change_nothing"
+   ],
+   "named_failed": [
+    "overlap_rows_differ_from_all_image_rows",
+    "answers_outside_overlap_change_nothing"
+   ],
+   "failed_checks": [
+    "overlap_rows_differ_from_all_image_rows",
+    "answers_outside_overlap_change_nothing",
+    "H1_n_images_Q25_overlap_Q3_within_I537",
+    "nonfinite_overlap_faults_label_free_before_key"
+   ]
+  },
+  "W08_H3_stream_seed": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H3_stream_boot_weights_20_seed_20261111_rows_1_2000",
+    "H3_all_images_equals_score_core"
+   ],
+   "named_failed": [
+    "H3_stream_boot_weights_20_seed_20261111_rows_1_2000",
+    "H3_all_images_equals_score_core"
+   ],
+   "failed_checks": [
+    "H3_all_images_equals_score_core",
+    "H3_stream_boot_weights_20_seed_20261111_rows_1_2000"
+   ]
+  },
+  "W09_H3_universe_keeps_OI_pairs": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H3_overlap_wiring_by_hand",
+    "H3_all_images_equals_score_core"
+   ],
+   "named_failed": [
+    "H3_overlap_wiring_by_hand",
+    "H3_all_images_equals_score_core"
+   ],
+   "failed_checks": [
+    "H3_overlap_wiring_by_hand",
+    "H3_all_images_equals_score_core"
+   ]
+  },
+  "W10_H3_on_all_images": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H3_overlap_wiring_by_hand",
+    "answers_outside_overlap_change_nothing"
+   ],
+   "named_failed": [
+    "H3_overlap_wiring_by_hand",
+    "answers_outside_overlap_change_nothing"
+   ],
+   "failed_checks": [
+    "H3_overlap_wiring_by_hand",
+    "overlap_rows_differ_from_all_image_rows",
+    "answers_outside_overlap_change_nothing"
+   ]
+  },
+  "W11_completed_absent_needs_both": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H3_overlap_wiring_by_hand"
+   ],
+   "named_failed": [
+    "H3_overlap_wiring_by_hand"
+   ],
+   "failed_checks": [
+    "H3_overlap_wiring_by_hand",
+    "H3_all_images_equals_score_core"
+   ]
+  },
+  "W12_stop_guard_P_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "stop_guard_by_hand"
+   ],
+   "named_failed": [
+    "stop_guard_by_hand"
+   ],
+   "failed_checks": [
+    "stop_guard_by_hand"
+   ]
+  },
+  "W13_stop_guard_off": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "stop_guard_by_hand"
+   ],
+   "named_failed": [
+    "stop_guard_by_hand"
+   ],
+   "failed_checks": [
+    "stop_guard_by_hand"
+   ]
+  },
+  "W14_stamp_without_no_verdict": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "stamp_text"
+   ],
+   "named_failed": [
+    "stamp_text"
+   ],
+   "failed_checks": [
+    "stamp_text"
+   ]
+  },
+  "W15_H2d_reason_of_H2a": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "not_computable_rows_with_their_reasons"
+   ],
+   "named_failed": [
+    "not_computable_rows_with_their_reasons"
+   ],
+   "failed_checks": [
+    "not_computable_rows_with_their_reasons"
+   ]
+  },
+  "W16_H1_interval_reason_swapped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "not_computable_rows_with_their_reasons"
+   ],
+   "named_failed": [
+    "not_computable_rows_with_their_reasons"
+   ],
+   "failed_checks": [
+    "not_computable_rows_with_their_reasons"
+   ]
+  },
+  "W17_missing_overlap_id_allowed": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "positions_by_hand_and_missing_id_fault"
+   ],
+   "named_failed": [
+    "positions_by_hand_and_missing_id_fault"
+   ],
+   "failed_checks": [
+    "positions_by_hand_and_missing_id_fault"
+   ]
+  },
+  "W18_restriction_guard_off": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_restriction_not_reproducing_slopes"
+   ],
+   "named_failed": [
+    "refuses_restriction_not_reproducing_slopes"
+   ],
+   "failed_checks": [
+    "refuses_restriction_not_reproducing_slopes"
+   ]
+  },
+  "W19_label_sources_swapped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "score_writes_once_rows_equal_direct_compute"
+   ],
+   "named_failed": [
+    "score_writes_once_rows_equal_direct_compute"
+   ],
+   "failed_checks": [
+    "score_writes_once_rows_equal_direct_compute"
+   ]
+  },
+  "W20_annotator_names_swapped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "score_writes_once_rows_equal_direct_compute"
+   ],
+   "named_failed": [
+    "score_writes_once_rows_equal_direct_compute"
+   ],
+   "failed_checks": [
+    "score_writes_once_rows_equal_direct_compute",
+    "stdout_is_wrote_and_sha_only",
+    "result_and_stdout_hold_no_qid_image_or_class",
+    "second_run_refused_FAULT_type_label_free",
+    "refuses_R2_qid_outside_R2_assignment",
+    "refuses_PI_qid_outside_base",
+    "refuses_PI_incomplete_on_overlap",
+    "refuses_R2_incomplete_on_overlap"
+   ]
+  },
+  "W21_code_pins_never_checked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "code_pins_hold_and_other_sha_refused"
+   ],
+   "named_failed": [
+    "code_pins_hold_and_other_sha_refused"
+   ],
+   "failed_checks": [
+    "code_pins_hold_and_other_sha_refused"
+   ]
+  },
+  "H01_H2b_x_on_all_images": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "answers_outside_overlap_change_nothing"
+   ],
+   "named_failed": [
+    "answers_outside_overlap_change_nothing"
+   ],
+   "failed_checks": [
+    "answers_outside_overlap_change_nothing"
+   ]
+  },
+  "H02_H2b_budget_on_all_images": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "overlap_rows_differ_from_all_image_rows"
+   ],
+   "named_failed": [
+    "overlap_rows_differ_from_all_image_rows"
+   ],
+   "failed_checks": [
+    "overlap_rows_differ_from_all_image_rows"
+   ]
+  },
+  "H03_x_hi_without_remainder": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H2b_all_images_equals_score_core",
+    "H2b_counts_binding_and_word_by_hand"
+   ],
+   "named_failed": [
+    "H2b_all_images_equals_score_core",
+    "H2b_counts_binding_and_word_by_hand"
+   ],
+   "failed_checks": [
+    "H2b_counts_binding_and_word_by_hand",
+    "H2b_all_images_equals_score_core"
+   ]
+  },
+  "H04_covered_at_other_grid_w": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H2b_all_images_equals_score_core"
+   ],
+   "named_failed": [
+    "H2b_all_images_equals_score_core"
+   ],
+   "failed_checks": [
+    "H2b_all_images_equals_score_core"
+   ]
+  },
+  "H05_H2b_index_within_I537": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H2b_all_images_equals_score_core"
+   ],
+   "named_failed": [
+    "H2b_all_images_equals_score_core"
+   ],
+   "failed_checks": [
+    "H2b_all_images_equals_score_core"
+   ]
+  },
+  "H06_binding_from_x_not_U": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "H2b_counts_binding_and_word_by_hand"
+   ],
+   "named_failed": [
+    "H2b_counts_binding_and_word_by_hand"
+   ],
+   "failed_checks": [
+    "H2b_counts_binding_and_word_by_hand"
+   ]
+  },
+  "G01_line_content_untested": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_end_line_without_phrase",
+    "refuses_end_line_with_other_R2_sha",
+    "refuses_unsealing_line_without_token",
+    "refuses_unsealing_line_without_PI_sha",
+    "refuses_unsealing_line_without_R2_sha",
+    "refuses_unsealing_line_without_script_sha"
+   ],
+   "named_failed": [
+    "refuses_end_line_without_phrase",
+    "refuses_end_line_with_other_R2_sha",
+    "refuses_unsealing_line_without_token",
+    "refuses_unsealing_line_without_PI_sha",
+    "refuses_unsealing_line_without_R2_sha",
+    "refuses_unsealing_line_without_script_sha"
+   ],
+   "failed_checks": [
+    "refuses_end_line_without_phrase",
+    "refuses_end_line_with_other_R2_sha",
+    "refuses_unsealing_line_without_token",
+    "refuses_unsealing_line_without_PI_sha",
+    "refuses_unsealing_line_without_R2_sha",
+    "refuses_unsealing_line_without_script_sha"
+   ]
+  },
+  "G02_end_phrase_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_end_line_without_phrase"
+   ],
+   "named_failed": [
+    "refuses_end_line_without_phrase"
+   ],
+   "failed_checks": [
+    "refuses_end_line_without_phrase"
+   ]
+  },
+  "G03_end_R2_sha_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_end_line_with_other_R2_sha"
+   ],
+   "named_failed": [
+    "refuses_end_line_with_other_R2_sha"
+   ],
+   "failed_checks": [
+    "refuses_end_line_with_other_R2_sha"
+   ]
+  },
+  "G04_up_token_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_unsealing_line_without_token"
+   ],
+   "named_failed": [
+    "refuses_unsealing_line_without_token"
+   ],
+   "failed_checks": [
+    "refuses_unsealing_line_without_token"
+   ]
+  },
+  "G05_up_R2_sha_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_unsealing_line_without_R2_sha"
+   ],
+   "named_failed": [
+    "refuses_unsealing_line_without_R2_sha"
+   ],
+   "failed_checks": [
+    "refuses_unsealing_line_without_R2_sha"
+   ]
+  },
+  "G06_up_PI_sha_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_unsealing_line_without_PI_sha"
+   ],
+   "named_failed": [
+    "refuses_unsealing_line_without_PI_sha"
+   ],
+   "failed_checks": [
+    "refuses_unsealing_line_without_PI_sha"
+   ]
+  },
+  "G07_up_script_sha_dropped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_unsealing_line_without_script_sha"
+   ],
+   "named_failed": [
+    "refuses_unsealing_line_without_script_sha"
+   ],
+   "failed_checks": [
+    "refuses_unsealing_line_without_script_sha"
+   ]
+  },
+  "P01_construction_after_labels": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "nonfinite_overlap_faults_label_free_before_key"
+   ],
+   "named_failed": [
+    "nonfinite_overlap_faults_label_free_before_key"
+   ],
+   "failed_checks": [
+    "nonfinite_overlap_faults_label_free_before_key"
+   ]
+  },
+  "P02_finiteness_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "nonfinite_overlap_faults_label_free_before_key"
+   ],
+   "named_failed": [
+    "nonfinite_overlap_faults_label_free_before_key"
+   ],
+   "failed_checks": [
+    "nonfinite_overlap_faults_label_free_before_key"
+   ]
+  },
+  "S01_out_exists_allowed": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_out_exists_before_labels",
+    "second_run_refused_FAULT_type_label_free"
+   ],
+   "named_failed": [
+    "refuses_out_exists_before_labels",
+    "second_run_refused_FAULT_type_label_free"
+   ],
+   "failed_checks": [
+    "second_run_refused_FAULT_type_label_free",
+    "refuses_out_exists_before_labels"
+   ]
+  },
+  "S02_sha_argument_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_sha_argument_not_64_hex"
+   ],
+   "named_failed": [
+    "refuses_sha_argument_not_64_hex"
+   ],
+   "failed_checks": [
+    "refuses_sha_argument_not_64_hex"
+   ]
+  },
+  "S03_shas_not_distinct": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_sha_arguments_not_distinct"
+   ],
+   "named_failed": [
+    "refuses_sha_arguments_not_distinct"
+   ],
+   "failed_checks": [
+    "refuses_sha_arguments_not_distinct"
+   ]
+  },
+  "S04_pi_sha_not_PI1_SHA": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_pi_sha_not_PI1_SHA_before_labels",
+    "main_maps_score_argv_to_a_label_free_fault"
+   ],
+   "named_failed": [
+    "refuses_pi_sha_not_PI1_SHA_before_labels"
+   ],
+   "failed_checks": [
+    "refuses_pi_sha_not_PI1_SHA_before_labels"
+   ]
+  },
+  "S05_public_pins_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_base_assignment_pin",
+    "refuses_r2_assignment_pin",
+    "refuses_overlap_list_pin"
+   ],
+   "named_failed": [
+    "refuses_base_assignment_pin",
+    "refuses_r2_assignment_pin",
+    "refuses_overlap_list_pin"
+   ],
+   "failed_checks": [
+    "refuses_base_assignment_pin",
+    "refuses_r2_assignment_pin",
+    "refuses_overlap_list_pin"
+   ]
+  },
+  "S06_overlap_not_the_R2_screens": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_overlap_list_not_the_R2_screens"
+   ],
+   "named_failed": [
+    "refuses_overlap_list_not_the_R2_screens"
+   ],
+   "failed_checks": [
+    "refuses_overlap_list_not_the_R2_screens"
+   ]
+  },
+  "S07_R2_end_line_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_without_R2_session_end_line"
+   ],
+   "named_failed": [
+    "refuses_without_R2_session_end_line"
+   ],
+   "failed_checks": [
+    "refuses_without_R2_session_end_line",
+    "refuses_end_line_without_phrase",
+    "refuses_end_line_with_other_R2_sha"
+   ]
+  },
+  "S08_unsealing_line_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_without_unsealing_line",
+    "refuses_unsealing_line_before_R2_end"
+   ],
+   "named_failed": [
+    "refuses_without_unsealing_line",
+    "refuses_unsealing_line_before_R2_end"
+   ],
+   "failed_checks": [
+    "refuses_without_unsealing_line",
+    "refuses_unsealing_line_before_R2_end",
+    "refuses_unsealing_line_without_token",
+    "refuses_unsealing_line_without_PI_sha",
+    "refuses_unsealing_line_without_R2_sha",
+    "refuses_unsealing_line_without_script_sha"
+   ]
+  },
+  "S09_freeze_sha_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_freeze_sha_not_pinned"
+   ],
+   "named_failed": [
+    "refuses_freeze_sha_not_pinned"
+   ],
+   "failed_checks": [
+    "refuses_freeze_sha_not_pinned"
+   ]
+  },
+  "S10_world_pins_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_world_pins_not_FREEZE_pins"
+   ],
+   "named_failed": [
+    "refuses_world_pins_not_FREEZE_pins"
+   ],
+   "failed_checks": [
+    "refuses_world_pins_not_FREEZE_pins"
+   ]
+  },
+  "S11_key_sha_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_key_sha_before_labels"
+   ],
+   "named_failed": [
+    "refuses_key_sha_before_labels"
+   ],
+   "failed_checks": [
+    "refuses_key_sha_before_labels"
+   ]
+  },
+  "S12_label_sha_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_label_sha_mismatch"
+   ],
+   "named_failed": [
+    "refuses_label_sha_mismatch"
+   ],
+   "failed_checks": [
+    "refuses_label_sha_mismatch"
+   ]
+  },
+  "S13_PI_qid_outside_base": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_PI_qid_outside_base"
+   ],
+   "named_failed": [
+    "refuses_PI_qid_outside_base"
+   ],
+   "failed_checks": [
+    "refuses_PI_qid_outside_base"
+   ]
+  },
+  "S14_R2_qid_outside_r2": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_R2_qid_outside_R2_assignment"
+   ],
+   "named_failed": [
+    "refuses_R2_qid_outside_R2_assignment"
+   ],
+   "failed_checks": [
+    "refuses_R2_qid_outside_R2_assignment"
+   ]
+  },
+  "S15_R2_part1_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_R2_part1_count_before_labels"
+   ],
+   "named_failed": [
+    "refuses_R2_part1_count_before_labels"
+   ],
+   "failed_checks": [
+    "refuses_R2_part1_count_before_labels"
+   ]
+  },
+  "S16_target_count_unchecked": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_overlap_targets_count_before_labels"
+   ],
+   "named_failed": [
+    "refuses_overlap_targets_count_before_labels"
+   ],
+   "failed_checks": [
+    "refuses_overlap_targets_count_before_labels"
+   ]
+  },
+  "S17_PI_incomplete_allowed": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_PI_incomplete_on_overlap"
+   ],
+   "named_failed": [
+    "refuses_PI_incomplete_on_overlap"
+   ],
+   "failed_checks": [
+    "refuses_PI_incomplete_on_overlap"
+   ]
+  },
+  "S18_R2_incomplete_allowed": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "refuses_R2_incomplete_on_overlap",
+    "after_labels_fault_prints_stage_and_writes_nothing"
+   ],
+   "named_failed": [
+    "refuses_R2_incomplete_on_overlap",
+    "after_labels_fault_prints_stage_and_writes_nothing"
+   ],
+   "failed_checks": [
+    "after_labels_fault_prints_stage_and_writes_nothing",
+    "refuses_R2_incomplete_on_overlap"
+   ]
+  },
+  "S19_fault_prints_message": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "second_run_refused_FAULT_type_label_free"
+   ],
+   "named_failed": [
+    "second_run_refused_FAULT_type_label_free"
+   ],
+   "failed_checks": [
+    "second_run_refused_FAULT_type_label_free",
+    "after_labels_fault_prints_stage_and_writes_nothing",
+    "main_maps_score_argv_to_a_label_free_fault",
+    "nonfinite_overlap_faults_label_free_before_key"
+   ]
+  },
+  "S20_stage_never_after_labels": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "after_labels_fault_prints_stage_and_writes_nothing"
+   ],
+   "named_failed": [
+    "after_labels_fault_prints_stage_and_writes_nothing"
+   ],
+   "failed_checks": [
+    "after_labels_fault_prints_stage_and_writes_nothing"
+   ]
+  },
+  "S21_main_argv_keys_unmapped": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "main_maps_score_argv_to_a_label_free_fault"
+   ],
+   "named_failed": [
+    "main_maps_score_argv_to_a_label_free_fault"
+   ],
+   "failed_checks": [
+    "main_maps_score_argv_to_a_label_free_fault"
+   ]
+  },
+  "C01_part1_result_not_refused": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "custody_refuses_key_labels_and_part1_result"
+   ],
+   "named_failed": [
+    "custody_refuses_key_labels_and_part1_result"
+   ],
+   "failed_checks": [
+    "custody_refuses_key_labels_and_part1_result"
+   ]
+  },
+  "C02_ok_list_kept": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "ok_list_cleared_after_score"
+   ],
+   "named_failed": [
+    "ok_list_cleared_after_score"
+   ],
+   "failed_checks": [
+    "ok_list_cleared_after_score",
+    "ok_list_empty_after_key_fault"
+   ]
+  },
+  "C03_hook_off": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "custody_hook_blocks_open_of_key_json"
+   ],
+   "named_failed": [
+    "custody_hook_blocks_open_of_key_json"
+   ],
+   "failed_checks": [
+    "custody_hook_blocks_open_of_key_json"
+   ]
+  },
+  "C04_key_path_kept_after_key_read": {
+   "status": "KILLED",
+   "rc": 1,
+   "named_checks": [
+    "ok_list_empty_after_key_fault"
+   ],
+   "named_failed": [
+    "ok_list_empty_after_key_fault"
+   ],
+   "failed_checks": [
+    "ok_list_empty_after_key_fault"
+   ]
+  }
+ }
+}

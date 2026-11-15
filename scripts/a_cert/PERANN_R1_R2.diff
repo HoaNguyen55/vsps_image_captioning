@@ -1,0 +1,406 @@
+--- perann_r1_asread/a_cert_perann.py
++++ a_cert_perann.py
+@@ -12,10 +12,12 @@
+ Per annotator (PI: part-1 answers from L1, the scored copy ba362466; R2: from L3), on the overlap images only:
+   H1  b_F and b_P points at the registered value and both remainder ends, Q25 on the overlap and Q3 on the overlap
+       within I537, through a_cert.fam_slopes on a context restricted to those images;
++  H2b per system on the overlap images (CC-391 Q2): budgets from a_cert.sys_cell / beta_B, coverage from the answers;
+   H3  a_cert.h3_row on the H3 universe within the overlap, bootstrap a_m1.boot_weights(n_overlap, rng(20261111), 2000).
+-Rows that rest on a 600- or 537-image freeze or stream are printed "not computable on the overlap subset" with their
+-reason: the H1 intervals and rule words, H2a, H2b, H2d. Every row carries "descriptive; no verdict; <n> overlap images;
+-annotator <id>". No qid, image or class is printed or written.
++Every label-free overlap quantity is built before the key read (prepare; CC-391 B3). Rows that rest on a 600- or
++537-image freeze or fixed stream are printed "not computable on the overlap subset" with their reason: the H1 intervals
++and rule words, H2a, H2d. Every row carries "descriptive; no verdict; <n> overlap images; annotator <id>". No qid,
++image or class is printed or written.
+ """
+ from __future__ import annotations
+ 
+@@ -23,6 +25,7 @@
+ import hashlib
+ import io
+ import json
++import math
+ import os
+ import re
+ import sys
+@@ -61,17 +64,17 @@
+           "n_images": 150, "n_p1": 557, "n_target": 457}  # plan §4 l.37; BUILD_OVERLAP part 1 = 557
+ NC = "not computable on the overlap subset"
+ REASONS = {
+-    "H1_interval": "the registered bootstrap streams are defined on 600 images (Q25: the first 500 rows of "
+-                   "default_rng(0).integers(0, 600, (2000, 600))) and on the 537-image clean index (Q3: multinomial "
+-                   "over I537) (reg v1.1 §2 l.77); no stream on the overlap images is registered",
++    "H1_interval": "the registered H1 streams are fixed matrices on fixed image sets (Q25: the first 500 rows of "
++                   "default_rng(0).integers(0, 600, (2000, 600)); Q3: the G2-B design-constant multinomial W over "
++                   "I537) (reg v1.1 §2 l.77); a stream on the overlap images would be a new matrix. H3's stream, by "
++                   "contrast, is registered as a function call (B, seed, a_m1.boot_weights; reg l.199) and is applied "
++                   "to the overlap",
+     "H1_rule_words": "H1a needs the registered 95% interval, which is not computable here; H1b and H1c compare with "
+                      "the Table S7.2 ends, which are I600 and I537 values (reg v1.1 §2 l.78, §6 H1); the row is "
+                      "descriptive with no verdict (reg v1.1 §10 l.243)",
+     "H2a": "the certified set, its orientation and the null-rule selections were fixed by FREEZE.json on I600 (Q25) "
+            "and I537 (Q3) (reg v1.1 §6 H2a, §8); no certificate on the overlap images was frozen, and making one "
+            "after labels is the forbidden 'certified set recomputed after labels' (reg v1.1 §11)",
+-    "H2b": "the budgets beta(N_s; w0), the binding count and any H2b outcome were declared at the freeze for the "
+-           "twelve systems on I600 (reg v1.1 §6 H2b, §8); no budget on the overlap images was declared before labels",
+     "H2d": "the scores and exclusions come from FREEZE.json (I600/I537) and the replicate stream is "
+            "a_m1.boot_weights(600, ...) (v1.3 §2, §3)"}
+ SCORE_ARGS = ("--labels-pi", "--labels-pi-sha", "--labels-r2", "--labels-r2-sha", "--key", "--r2-end-line",
+@@ -159,11 +162,15 @@
+     return out
+ 
+ 
+-def h3_rows(w: dict, gr: list, h: dict, pos: np.ndarray, who: str, n: int) -> dict:
+-    """H3 universe N_u (a_cert.score_core l.840-841) on the overlap images; X, X_hi, phi, D through a_cert.h3_row."""
++def universe(w: dict) -> list:
++    """H3 universe N_u per image (a_cert.score_core l.840-841): pairs named by any system with no Open Images status."""
+     nm = [set().union(*(w["ms"][s][k] for s in w["sys"])) for k in range(len(w["ids"]))]
+     nu = [{c for c in nm[k] if c not in w["oi"][k]} for k in range(len(w["ids"]))]
+-    Wb = w["boot_weights"](len(pos), np.random.default_rng(ac.SEED), ac.B_TRUTH)
++    return nu
++
++
++def h3_rows(w: dict, gr: list, h: dict, nu: list, Wb: np.ndarray, pos: np.ndarray, who: str, n: int) -> dict:
++    """H3 on the overlap images through a_cert.h3_row; N_u and the stream Wb are built label-free by prepare()."""
+     row = ac.h3_row(w, gr, h, nu, Wb, pos)
+     n_abs = sum(1 for k in pos for c in gr[k]["kp"] if w["oi"][k].get(c) == "absent" or h.get((w["ids"][k], c)) == "N")
+     stream = {"call": f"a_m1.boot_weights({len(pos)}, numpy.random.default_rng({ac.SEED}), {ac.B_TRUTH})",
+@@ -172,17 +179,66 @@
+             "stream": stream}
+ 
+ 
+-def compute(w: dict, pos: np.ndarray, key: dict, ans_by: dict, n: int) -> dict:
+-    """Per annotator: a_cert.human -> a_cert.counts -> H1 and H3 on pos; H2a, H2b, H2d not computable."""
++def h2b_budgets(ws: dict, gr: list, pos: np.ndarray) -> dict:
++    """Label-free H2b budgets on the overlap (CC-391 Q2; = a_cert.score_core l.866, l.874 with i600 -> pos): per system,
++    the cell N_s of a_cert.sys_cell, beta_B at every grid w (None at w = 0), floor(beta(w0))."""
++    out = {}
++    for s in ws["sys"]:
++        c = ac.sys_cell(ws["ms"], s, gr, pos)
++        b = {str(wv): (None if wv == 0 else ac.beta_B(c, wv, ac.ALPHA_S)) for wv in ac.GRID}
++        out[s] = {"U": c["U"], "f1": c["f1"], "beta": b, "floor_beta_w0": math.floor(b[str(ac.W0)])}
++    return out
++
++
++def h2b_rows(ws: dict, gr: list, h: dict, pos: np.ndarray, bud: dict, who: str, n: int) -> dict:
++    """H2b per annotator (= a_cert.score_core l.866-881 with i600 -> pos): x_s, x_s_hi, covered, w_hat, counts; the
++    a_cert.h2b_rule word only as `reading_no_verdict` (CC-391 Q2, Q6). Not printed: low_44, P_c, any PASS/FAIL label."""
++    rows = {}
++    for s in ws["sys"]:
++        x = xh = 0
++        for k in pos:
++            i = ws["ids"][k]
++            for cc in ws["ms"][s][k] - gr[k]["kp"]:
++                st = ws["oi"][k].get(cc)
++                x += st == "present" or (st is None and h.get((i, cc)) == "Y")
++                xh += st == "present" or (st is None and h.get((i, cc)) in ("Y", None))
++        b = bud[s]
++        rows[s] = {"label": stamp(who, n), "x": int(x), "x_hi": int(xh), "U": b["U"], "f1": b["f1"], "beta": b["beta"],
++                   "floor_beta_w0": b["floor_beta_w0"], "covered": xh <= b["floor_beta_w0"],
++                   "w_hat": b["f1"] / (b["f1"] + 2 * x) if b["f1"] + x else None}
++    binds = sum(bud[s]["floor_beta_w0"] < bud[s]["U"] for s in bud)
++    return {"label": stamp(who, n), "n_images": len(pos), "systems": rows,
++            "n_covered": sum(r["covered"] for r in rows.values()), "n_binding": binds,
++            "reading_no_verdict": ac.h2b_rule([r["covered"] for r in rows.values()], binds)}
++
++
++def prepare(w: dict, pos: np.ndarray) -> dict:
++    """Every label-free overlap quantity, built BEFORE the key read (CC-391 B3): the restricted world, the STOP ranges,
++    the unlabelled point slopes, the golds, the H2b budgets, N_u and the H3 stream. A non-finite range, point slope or
++    budget is a label-free Fault."""
+     ws = sub_world(w, pos)
+     rngs = {fam: ac.clabel_slope(ws, fam) for fam in FAMS}
++    pts = {fam: ac.fam_slopes(ws, fam) for fam in FAMS}
+     gr = ac.gold_ref(ac.draw_two(w["refs_all"], w["ids"])[0], w["vm"])
++    bud = h2b_budgets(ws, gr, pos)
++    vals = [x for f in FAMS for k in ("F", "P") for x in (*rngs[f][k]["range"], pts[f][k][0])] + \
++        [v for r in bud.values() for v in r["beta"].values() if v is not None]
++    if not np.all(np.isfinite(np.asarray(vals, float))):
++        raise Fault("overlap construction is not finite")
++    return {"ws": ws, "pos": pos, "rngs": rngs, "gr": gr, "h2b": bud, "nu": universe(w),
++            "Wb": w["boot_weights"](len(pos), np.random.default_rng(ac.SEED), ac.B_TRUTH)}
++
++
++def compute(pre: dict, key: dict, ans_by: dict, n: int) -> dict:
++    """Per annotator: a_cert.human -> a_cert.counts -> H1, H2b and H3 on the overlap; H2a and H2d not computable."""
++    ws, gr, pos = pre["ws"], pre["gr"], pre["pos"]
+     out = {}
+     for who, ans in ans_by.items():
+-        h, _ = ac.human(key, ans, w["syn"])
++        h, _ = ac.human(key, ans, ws["syn"])
+         cn = {s: ac.counts(ws, s, h) for s in ws["sys"]}
+-        out[who] = {"H1": h1_rows(ws, cn, rngs, who, n), "H2a": nc(who, n, "H2a"), "H2b": nc(who, n, "H2b"),
+-                    "H2d": nc(who, n, "H2d"), "H3": h3_rows(ws, gr, h, ws["idx"]["Q25"], who, n)}
++        out[who] = {"H1": h1_rows(ws, cn, pre["rngs"], who, n), "H2a": nc(who, n, "H2a"),
++                    "H2b": h2b_rows(ws, gr, h, pos, pre["h2b"], who, n), "H2d": nc(who, n, "H2d"),
++                    "H3": h3_rows(ws, gr, h, pre["nu"], pre["Wb"], pos, who, n)}
+     return out
+ 
+ 
+@@ -223,11 +279,12 @@
+     """The R2 session-end line of this copy (CC-374 8(e)) and, after it, this row's own unsealing line (reg §12.7;
+     CC-374 ruling 6) naming both label copies and this script."""
+     lines = (ac.ROOT / P["log"]).read_text(encoding="utf-8").splitlines()
+-    end = log_hit(lines, a["r2_end_line"], ("R2 finished all screens yes", a["labels_r2_sha"]))
++    end_need = ("R2 finished all screens yes", a["labels_r2_sha"])
++    end = log_hit(lines, a["r2_end_line"], end_need)
+     if end < 0:
+         raise Fault("no R2 session-end line for this copy")
+-    un = log_hit(lines, a["unseal_line"], (UNSEAL_TOKEN, a["labels_r2_sha"], a["labels_pi_sha"],
+-                                           hx(Path(__file__).read_bytes())))
++    up_need = (UNSEAL_TOKEN, a["labels_r2_sha"], a["labels_pi_sha"], hx(Path(__file__).read_bytes()))
++    un = log_hit(lines, a["unseal_line"], up_need)
+     if un <= end:
+         raise Fault("no unsealing line after the R2 session-end line")
+ 
+@@ -282,8 +339,8 @@
+ 
+ 
+ def score(a: dict, P: dict = P_REAL, world_fn=None, seen: dict | None = None) -> dict:
+-    """Order: arguments -> public pins -> LOG gate lines -> FREEZE pin -> world -> key and its checks (all label-free)
+-    -> label bytes -> label checks -> statistics in memory."""
++    """Order: arguments -> public pins -> LOG gate lines -> FREEZE pin -> world -> every overlap construction ->
++    key and its checks (all label-free) -> label bytes -> label checks -> statistics in memory."""
+     seen = {} if seen is None else seen
+     check_args(a, P)
+     base, r2a, ov = public_inputs(P)
+@@ -298,11 +355,12 @@
+         raise Fault("the world is not the 600 images")
+     pos = positions(w["ids"], ov)
+     check_restriction(w)
++    pre = prepare(w, pos)
+     key = read_key(a, P)
+     t = key_targets(key, r2a, ov, P)
+     pi, r2 = read_labels(a, seen)
+     label_checks(pi, r2, base, r2a, t)
+-    rows = compute(w, pos, key, {"PI": {q: pi[q] for q in t}, "R2": {q: r2[q] for q in t}}, len(pos))
++    rows = compute(pre, key, {"PI": {q: pi[q] for q in t}, "R2": {q: r2[q] for q in t}}, len(pos))
+     return {"schema": "vsps.a_cert_perann.result.v1",
+             "row": "reg v1.1 §10 l.243: H1 to H3 on the 150 overlap images with each annotator's labels | "
+                    "descriptive; after the second annotator | plan §4",
+@@ -392,8 +450,11 @@
+             "pos": positions(w["ids"], ov), "fz": ac.freeze_core(w)}
+ 
+ 
+-def _files(d: Path, tag: str, fx: dict, r2_rows=None, pi_lines=None, ov=None, swap_log=False, **over) -> tuple:
+-    """Fixture files in d/tag (no labels_* or key.json names, so the hook lets them through); returns (args, P)."""
++def _files(d: Path, tag: str, fx: dict, r2_rows=None, pi_lines=None, ov=None, swap_log=False, end_edit=("", ""),
++           up_edit=("", ""), **over) -> tuple:
++    """Fixture files in d/tag (no labels_* or key.json names, so the hook lets them through); returns (args, P).
++    end_edit / up_edit = (old, new) applied to the gate-line templates before the shas are filled in (CC-391 B2); the
++    U-P line id carries no token, so the token is tested as line content."""
+     wd = d / tag
+     wd.mkdir()
+     scr = {}
+@@ -410,9 +471,9 @@
+         (wd / name).write_text(txt, encoding="utf-8")
+     sh = {k: hx(v.encode("utf-8")) for k, v in body.items()}
+     fsha = ac.write_atomic(wd / "FREEZE.json", fx["fz"])
+-    gl = [f"2026-01-01T00:00:01Z | OPS-fx-r2-end | labels_R2 copy {sh['r2.jsonl']}; R2 finished all screens yes",
+-          f"2026-01-01T00:00:02Z | OPS-fx-{UNSEAL_TOKEN} | R2 {sh['r2.jsonl']}; PI {sh['pi.jsonl']}; code "
+-          f"{hx(Path(__file__).read_bytes())}"]
++    tpl = ["2026-01-01T00:00:01Z | OPS-fx-r2-end | labels_R2 copy {r2}; R2 finished all screens yes".replace(*end_edit),
++           f"2026-01-01T00:00:02Z | OPS-fx-up | {UNSEAL_TOKEN} | R2 {{r2}}; PI {{pi}}; code {{code}}".replace(*up_edit)]
++    gl = [x.format(r2=sh["r2.jsonl"], pi=sh["pi.jsonl"], code=hx(Path(__file__).read_bytes())) for x in tpl]
+     log = [f"2026-01-01T00:00:00Z OPS-fx-freeze: FREEZE.json sha256 {fsha}"] + (gl[::-1] if swap_log else gl)
+     (wd / "LOG.md").write_text("\n".join(log) + "\n", encoding="utf-8")
+     n1 = sum(len(s["q"]) for s in r2a if s["part"] == 1)
+@@ -422,7 +483,7 @@
+          "pi1_sha": sh["pi.jsonl"], "n_images": len(fx["ov"]), "n_p1": n1, "n_target": len(fx["t"])}
+     a = {"labels_pi": str(wd / "pi.jsonl"), "labels_pi_sha": sh["pi.jsonl"], "labels_r2": str(wd / "r2.jsonl"),
+          "labels_r2_sha": sh["r2.jsonl"], "key": str(wd / "kx.json"), "r2_end_line": "OPS-fx-r2-end",
+-         "unseal_line": f"OPS-fx-{UNSEAL_TOKEN}", "out": str(wd / "out" / "RESULT.json")}
++         "unseal_line": "OPS-fx-up", "out": str(wd / "out" / "RESULT.json")}
+     for k, v in over.items():
+         (P if k in P else a)[k] = v
+     return a, P
+@@ -459,10 +520,22 @@
+     grm = [{"kp": {"b", "x"}, "once": {"x"}, "twice": {"b"}}, {"kp": {"a"}, "once": {"a"}, "twice": set()},
+            {"kp": {"d"}, "once": {"d"}, "twice": set()}]
+     hm = {("i", "e"): "Y", ("i", "x"): "N", ("j", "b"): "Y", ("k", "c"): None}
+-    r = _try(lambda: h3_rows(wm, grm, hm, np.array([0, 2]), "R2", 2)) or {}
++    two = np.array([0, 2])
++    r = _try(lambda: h3_rows(wm, grm, hm, universe(wm), wm["boot_weights"](2, np.random.default_rng(20261111), 2000),
++                             two, "R2", 2)) or {}
+     ck["H3_overlap_wiring_by_hand"] = [r.get(x) for x in ("phi1", "phi2", "f0_hat", "X", "X_hi", "D", "D_hi")] == \
+         [0, 1, 0, 1, 2, 1, 2] and r.get("n_ref_named_completed_absent") == 2 and \
+         r.get("reading_no_verdict") == "NOT EVALUABLE" and r.get("n_images") == 2
++    # H2b by hand on {i, k}, made-up budgets. s: i {a} OI present (x, x_hi); k {c} remainder (x_hi) -> x 1, x_hi 2.
++    # t: i {e} human Y -> x 1, x_hi 1; k {} . Budgets s U 5 floor 3 (binds), t U 2 floor 4 (does not) -> n_binding 1;
++    # covered 2 <= 3 and 1 <= 4; w_hat s 1/(1+2), t 0/(0+2); h2b_rule([True, True], 1) = "FAIL" (fewer than 11 of 12).
++    bud = {"s": {"U": 5, "f1": 1, "beta": {"0.2": 3.5}, "floor_beta_w0": 3},
++           "t": {"U": 2, "f1": 0, "beta": {"0.2": 4.5}, "floor_beta_w0": 4}}
++    r = _try(lambda: h2b_rows(wm, grm, hm, two, bud, "R2", 2)) or {}
++    ck["H2b_counts_binding_and_word_by_hand"] = _try(lambda: [
++        (r["systems"][s]["x"], r["systems"][s]["x_hi"], r["systems"][s]["covered"], r["systems"][s]["w_hat"])
++        for s in "st"] == [(1, 2, True, 1 / 3), (1, 1, True, 0.0)] and (
++        r["n_covered"], r["n_binding"], r["reading_no_verdict"], r["n_images"]) == (2, 1, "FAIL", 2)) is True
+ 
+ 
+ def _fixture_checks(ck: dict, fx: dict) -> None:
+@@ -475,8 +548,14 @@
+     ck["Q3_is_overlap_within_I537"] = set(map(int, so["idx"]["Q3"])) == set(map(int, pos)) & \
+         set(map(int, w["idx"]["Q3"])) and 0 < len(so["idx"]["Q3"]) < len(pos)
+     ck["restriction_on_all_images_reproduces_fam_slopes"] = _try(lambda: check_restriction(w) or True) is True
+-    full = _try(lambda: compute(w, allp, key, {"PI": pi}, 40)) or {}
++    full = _try(lambda: compute(prepare(w, allp), key, {"PI": pi}, 40)) or {}
+     ref = ac.score_core(w, fx["fz"], key, pi)
++    hb, rb = _get(full, "PI", "H2b") or {}, ref["H2b"]
++    ck["H2b_all_images_equals_score_core"] = bool(hb) and set(hb["systems"]) == set(rb["systems"]) and all(
++        hb["systems"][s][f] == rb["systems"][s][f] for s in rb["systems"]
++        for f in ("x", "x_hi", "U", "f1", "beta", "covered", "w_hat")) and all(
++        hb["systems"][s]["floor_beta_w0"] == math.floor(rb["systems"][s]["beta"][str(ac.W0)]) for s in rb["systems"]) \
++        and (hb["n_covered"], hb["n_binding"], hb["reading_no_verdict"]) == (rb["n_covered"], rb["n_binding"], rb["label"])
+     ck["H1_all_images_equals_score_core_reg_lo_hi"] = all(
+         abs(_get(full, "PI", "H1", f, b, m) - ref["H1"][f][b][m]) < 1e-9 for f in FAMS for b in ("b_F", "b_P")
+         for m in ("reg", "lo", "hi")) if full else False
+@@ -485,15 +564,18 @@
+         h3[x] == r3[x] for x in ("phi1", "phi2", "f0_hat", "X", "X_hi", "D", "D_hi", "D_ci95", "D_hi_ci95")) and \
+         h3["reading_no_verdict"] == r3["label"] and \
+         h3["n_ref_named_completed_absent"] == r3["n_ref_named_completed_absent"]
+-    sub = _try(lambda: compute(w, pos, key, {"PI": pi, "R2": fx["r2"]}, 20)) or {}
++    pre = _try(lambda: prepare(w, pos)) or {}
++    sub = _try(lambda: compute(pre, key, {"PI": pi, "R2": fx["r2"]}, 20)) or {}
++    s0 = w["sys"][0]
+     ck["overlap_rows_differ_from_all_image_rows"] = bool(sub) and \
+         _get(sub, "PI", "H1", "Q25", "b_F", "reg") != _get(full, "PI", "H1", "Q25", "b_F", "reg") and \
+-        _get(sub, "PI", "H3", "phi1") != _get(full, "PI", "H3", "phi1")
++        _get(sub, "PI", "H3", "phi1") != _get(full, "PI", "H3", "phi1") and \
++        _get(sub, "PI", "H2b", "systems", s0, "U") != _get(full, "PI", "H2b", "systems", s0, "U")
+     flip = {q: ({"Y": "N", "N": "Y"}.get(x, "Y") if key[q]["image"] not in fx["ov"] else x) for q, x in pi.items()}
+-    alt = _try(lambda: compute(w, pos, key, {"PI": flip}, 20)) or {}
++    alt = _try(lambda: compute(pre, key, {"PI": flip}, 20)) or {}
+     ck["answers_outside_overlap_change_nothing"] = bool(sub) and _norm(alt.get("PI")) == _norm(sub["PI"]) and \
+         any(flip[q] != pi[q] for q in pi if key[q]["part"] == 1 and key[q]["role"] == "target")
+-    only = _try(lambda: compute(w, pos, key, {"R2": fx["r2"]}, 20)) or {}
++    only = _try(lambda: compute(pre, key, {"R2": fx["r2"]}, 20)) or {}
+     ck["R2_rows_from_R2_answers_and_differ_from_PI"] = bool(sub) and _norm(only.get("R2")) == _norm(sub["R2"]) and \
+         _get(sub, "PI", "H1", "Q25", "b_F") != _get(sub, "R2", "H1", "Q25", "b_F")
+     ck["H1_n_images_Q25_overlap_Q3_within_I537"] = bool(sub) and \
+@@ -504,14 +586,14 @@
+     st = _get(sub, "R2", "H3", "stream") or {}
+     ck["H3_stream_boot_weights_20_seed_20261111_rows_1_2000"] = st.get("sha256_rows") == \
+         hashlib.sha256(orc.tobytes()).hexdigest() and st.get("rows") == "1..2000"
+-    want = {"H2a": "H2a", "H2b": "H2b", "H2d": "H2d"}
++    want = {"H2a": "H2a", "H2d": "H2d"}
+     ck["not_computable_rows_with_their_reasons"] = bool(sub) and all(
+         sub[a][r]["status"] == NC and sub[a][r]["reason"] == REASONS[x] for a in ("PI", "R2") for r, x in want.items()) \
+         and all(sub[a]["H1"][r]["status"] == NC and sub[a]["H1"][r]["reason"] == REASONS[x] for a in ("PI", "R2")
+                 for r, x in (("interval", "H1_interval"), ("rule_words", "H1_rule_words")))
+     def rows(a):
+         return [sub[a]["H1"][x] for x in ("Q25", "Q3", "interval", "rule_words")] + \
+-            [sub[a][x] for x in ("H2a", "H2b", "H2d", "H3")]
++            [sub[a][x] for x in ("H2a", "H2b", "H2d", "H3")] + list(sub[a]["H2b"]["systems"].values())
+     ck["every_row_carries_the_label"] = bool(sub) and all(
+         r["label"] == stamp(a, 20) for a in ("PI", "R2") for r in rows(a))
+ 
+@@ -525,8 +607,8 @@
+     res = json.loads(body)
+     ck["ok_list_cleared_after_score"] = not ak._OK
+     t = fx["t"]
+-    direct = _try(lambda: compute(fx["w"], fx["pos"], fx["key"], {"PI": {q: fx["pi"][q] for q in t},
+-                                                                    "R2": {q: fx["r2"][q] for q in t}}, 20))
++    direct = _try(lambda: compute(prepare(fx["w"], fx["pos"]), fx["key"], {"PI": {q: fx["pi"][q] for q in t},
++                                                                             "R2": {q: fx["r2"][q] for q in t}}, 20))
+     ck["score_writes_once_rows_equal_direct_compute"] = rc == 0 and direct is not None and \
+         res.get("annotators") == _norm(direct) and sorted(x.name for x in f.parent.iterdir()) == ["RESULT.json"]
+     ck["stdout_is_wrote_and_sha_only"] = rc == 0 and json.loads(so or "{}") == {"wrote": a["out"], "sha256": hx(
+@@ -579,6 +661,24 @@
+     ck["refuses_without_R2_session_end_line"] = refuses("session-end", r2_end_line="OPS-none")
+     ck["refuses_without_unsealing_line"] = refuses("unsealing", unseal_line="OPS-none-a-perann-unseal")
+     ck["refuses_unsealing_line_before_R2_end"] = refuses("unsealing", swap_log=True)
++    # CC-391 B2: each required item of the two gate lines, with the line id present
++    ck["refuses_end_line_without_phrase"] = refuses("session-end", end_edit=("R2 finished all screens yes", ""))
++    ck["refuses_end_line_with_other_R2_sha"] = refuses("session-end", end_edit=("{r2}", "0" * 64))
++    ck["refuses_unsealing_line_without_token"] = refuses("unsealing", up_edit=(UNSEAL_TOKEN, ""))
++    ck["refuses_unsealing_line_without_PI_sha"] = refuses("unsealing", up_edit=("{pi}", ""))
++    ck["refuses_unsealing_line_without_R2_sha"] = refuses("unsealing", up_edit=("{r2}", ""))
++    ck["refuses_unsealing_line_without_script_sha"] = refuses("unsealing", up_edit=("{code}", ""))
++    # CC-391 B3: a non-finite overlap construction is a label-free Fault, before the key read (key and labels absent).
++    # Made-up world: one Q25 system names nothing on the overlap images, so its overlap M is 0 and ln M is -inf there;
++    # its context M is reset to the mean over all images, so the all-image restriction check still holds.
++    q0, ovp = w["fam"]["Q25"][0], set(map(int, fx["pos"]))
++    ms0 = [set() if k in ovp else m for k, m in enumerate(w["ms_all"][q0])]
++    nf = {**w, "ms_all": {**w["ms_all"], q0: ms0}, "ctx": {**w["ctx"], "Q25": {**c75, "systems": {
++        **c75["systems"], q0: {**c75["systems"][q0], "M_pt": float(np.mean([len(m) for m in ms0]))}}}}}
++    a_nf, P_nf = _files(d, "nf", fx)
++    rc, so = _out(lambda: run_score({**a_nf, **gone}, P_nf, lambda: nf))
++    ck["nonfinite_overlap_faults_label_free_before_key"] = refuses("not finite", wf=lambda: nf) and \
++        rc == 2 and so == "FAULT Fault label-free\n"
+     ck["refuses_freeze_sha_not_pinned"] = refuses("pinned freeze", freeze_sha="0" * 64)
+     ck["refuses_world_pins_not_FREEZE_pins"] = refuses("FREEZE pins", wf=lambda: {**w, "pins": {"x": "y"}})
+     ck["refuses_restriction_not_reproducing_slopes"] = refuses("restriction", wf=lambda: bad_m)
+--- perann_r1_asread/a_cert_perann_mutants.py
++++ a_cert_perann_mutants.py
+@@ -1,5 +1,6 @@
+ #!/usr/bin/env python3
+-"""Mutant harness for scripts/a_cert/a_cert_perann.py (pattern of a_cert_kappa_mutants.py, CC-371 standard).
++"""Mutant harness for scripts/a_cert/a_cert_perann.py, round 2 (CC-391 B1-B3; pattern of a_cert_kappa_mutants.py,
++CC-371 standard). Several mutants may share one target (G02/G03, G04-G07, H02/H05); each target occurs once.
+ Usage: <venv python> -I -B a_cert_perann_mutants.py <scratch dir outside the repo>
+ Each mutant replaces one source line (its target must occur exactly once) and runs `selftest --out
+ <scratch>/<name>.json` on the mutated source, executed with __file__ = the original path (so a_cert.py and
+@@ -19,6 +20,10 @@
+ GUARD = "if False:"
+ OUT = "answers_outside_overlap_change_nothing"
+ H3 = "H3_overlap_wiring_by_hand"
++H2B = "H2b_all_images_equals_score_core"
++NONFIN = "nonfinite_overlap_faults_label_free_before_key"
++END_NEED = 'end_need = ("R2 finished all screens yes", a["labels_r2_sha"])'
++UP_NEED = 'up_need = (UNSEAL_TOKEN, a["labels_r2_sha"], a["labels_pi_sha"], hx(Path(__file__).read_bytes()))'
+ 
+ # name: (old, new, [checks that must catch it])
+ M = {
+@@ -55,7 +60,7 @@
+                            ["stop_guard_by_hand"]),
+     "W14_stamp_without_no_verdict": ('return f"descriptive; no verdict; {n} overlap images; annotator {who}"',
+                                      'return f"descriptive; {n} overlap images; annotator {who}"', ["stamp_text"]),
+-    "W15_H2b_reason_of_H2a": ('"H2b": nc(who, n, "H2b")', '"H2b": nc(who, n, "H2a")',
++    "W15_H2d_reason_of_H2a": ('"H2d": nc(who, n, "H2d")', '"H2d": nc(who, n, "H2a")',
+                               ["not_computable_rows_with_their_reasons"]),
+     "W16_H1_interval_reason_swapped": ('out["interval"] = nc(who, n, "H1_interval")',
+                                        'out["interval"] = nc(who, n, "H1_rule_words")',
+@@ -71,6 +76,42 @@
+                                     ["score_writes_once_rows_equal_direct_compute"]),
+     "W21_code_pins_never_checked": ("return [f for f, want in pins.items() if hashlib.sha256((HERE / f).read_bytes())"
+                                     ".hexdigest() != want]", "return []", ["code_pins_hold_and_other_sha_refused"]),
++    # H2b on the overlap (CC-391 B1)
++    "H01_H2b_x_on_all_images": ('"H2b": h2b_rows(ws, gr, h, pos, pre["h2b"], who, n)',
++                                '"H2b": h2b_rows(ws, gr, h, np.arange(len(ws["ids"])), pre["h2b"], who, n)', [OUT]),
++    "H02_H2b_budget_on_all_images": ("bud = h2b_budgets(ws, gr, pos)", 'bud = h2b_budgets(ws, gr, np.arange(len(w["ids"])))',
++                                     ["overlap_rows_differ_from_all_image_rows"]),
++    "H03_x_hi_without_remainder": ('h.get((i, cc)) in ("Y", None)', 'h.get((i, cc)) in ("Y",)',
++                                   [H2B, "H2b_counts_binding_and_word_by_hand"]),
++    "H04_covered_at_other_grid_w": ('"floor_beta_w0": math.floor(b[str(ac.W0)])',
++                                    '"floor_beta_w0": math.floor(b[str(ac.GRID[3])])', [H2B]),
++    "H05_H2b_index_within_I537": ("bud = h2b_budgets(ws, gr, pos)", 'bud = h2b_budgets(ws, gr, ws["idx"]["Q3"])', [H2B]),
++    "H06_binding_from_x_not_U": ('binds = sum(bud[s]["floor_beta_w0"] < bud[s]["U"] for s in bud)',
++                                 'binds = sum(bud[s]["floor_beta_w0"] < rows[s]["x"] for s in bud)',
++                                 ["H2b_counts_binding_and_word_by_hand"]),
++    # gate-line content (CC-391 B2)
++    "G01_line_content_untested": ("pat.search(ln) and all(x in ln for x in need)", "pat.search(ln)", [
++        "refuses_end_line_without_phrase", "refuses_end_line_with_other_R2_sha", "refuses_unsealing_line_without_token",
++        "refuses_unsealing_line_without_PI_sha", "refuses_unsealing_line_without_R2_sha",
++        "refuses_unsealing_line_without_script_sha"]),
++    "G02_end_phrase_dropped": (END_NEED, 'end_need = (a["labels_r2_sha"],)', ["refuses_end_line_without_phrase"]),
++    "G03_end_R2_sha_dropped": (END_NEED, 'end_need = ("R2 finished all screens yes",)',
++                               ["refuses_end_line_with_other_R2_sha"]),
++    "G04_up_token_dropped": (UP_NEED, 'up_need = (a["labels_r2_sha"], a["labels_pi_sha"], hx(Path(__file__).read_bytes()))',
++                             ["refuses_unsealing_line_without_token"]),
++    "G05_up_R2_sha_dropped": (UP_NEED, 'up_need = (UNSEAL_TOKEN, a["labels_pi_sha"], hx(Path(__file__).read_bytes()))',
++                              ["refuses_unsealing_line_without_R2_sha"]),
++    "G06_up_PI_sha_dropped": (UP_NEED, 'up_need = (UNSEAL_TOKEN, a["labels_r2_sha"], hx(Path(__file__).read_bytes()))',
++                              ["refuses_unsealing_line_without_PI_sha"]),
++    "G07_up_script_sha_dropped": (UP_NEED, 'up_need = (UNSEAL_TOKEN, a["labels_r2_sha"], a["labels_pi_sha"])',
++                                  ["refuses_unsealing_line_without_script_sha"]),
++    # label-free overlap construction before the key read (CC-391 B3)
++    "P01_construction_after_labels": (
++        "    pre = prepare(w, pos)\n    key = read_key(a, P)\n    t = key_targets(key, r2a, ov, P)\n"
++        "    pi, r2 = read_labels(a, seen)\n",
++        "    key = read_key(a, P)\n    t = key_targets(key, r2a, ov, P)\n    pi, r2 = read_labels(a, seen)\n"
++        "    pre = prepare(w, pos)\n", [NONFIN]),
++    "P02_finiteness_unchecked": ("if not np.all(np.isfinite(np.asarray(vals, float))):", GUARD, [NONFIN]),
+     # score refusals, gate conditions and the fault rule (kappa pattern; CC-372 rulings 1, 2, 4, 8; CC-374 ruling 6)
+     "S01_out_exists_allowed": ('if Path(a["out"]).exists():', GUARD,
+                                ["refuses_out_exists_before_labels", "second_run_refused_FAULT_type_label_free"]),
