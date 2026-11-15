@@ -1,0 +1,92 @@
+--- draft_v3_cut/paper.md	2026-11-15 15:41:57.555236700 +0700
++++ draft_v3_1/paper.md	2026-11-15 18:06:59.032955700 +0700
+@@ -69,7 +69,7 @@
+ 
+ <!-- p:S4-01 -->**Data.** The study uses only public data sets, with the references and labels their authors released; nothing was annotated for it, and gold never comes from a model output. The primary OpenViIC test set (OV-test primary, 1,941 images) is the full test split of 2,001 images minus 60 images that a pre-specified filter, fixed before any test output, matched to the KTVIC development carve. The 3,600 XM3600 images [@Thapliyal2022XM3600] were split before any output of this study existed: 600 were set aside as the evaluation subset of the companion manuscript, and the rest were ordered by a hash of their bytes. The first 500 form XM-dev500, a secondary set of stage B, and the other 2,500 form XM-test2500, with 5,108 Vietnamese references; no full-XM3600 result is therefore reported. The Vietnamese memory holds no XM3600 caption, so XM-test2500 lies outside the memory's source.
+ 
+-<!-- p:S4-02 -->**Three stages.** Each stage was committed before its data were decoded. Stage A, exploratory, chose the configurations of Sect. 3 on a KTVIC development carve and checked them on one half of the OpenViIC development set (OV-dev-A, 911 images; the halves follow a hash order and passed the same filter). Stage B gave one look at the other half (OV-dev-B, 925 images) under a gate: pooled `ret` − `rand` with a CI above zero and a point of at least +4.0. The gate returned PASS, with +6.04 [4.54, 7.58]; it is a development result and sets nothing at test. The test registration was committed after that result and before any test output existed. The English registration came later (Sect. 6).
++<!-- p:S4-02 -->**Three stages.** Each stage was committed before its data were decoded. Stage A, exploratory, chose the configurations of Sect. 3 on a KTVIC development carve and checked them on one half of the OpenViIC development set (OV-dev-A, 911 images; the halves follow a hash order and passed the filter of Sect. 3). Stage B gave one look at the other half (OV-dev-B, 925 images) under a gate: pooled `ret` − `rand` with a CI above zero and a point of at least +4.0. The gate returned PASS, with +6.04 [4.54, 7.58]; it is a development result and sets nothing at test. The test registration was committed after that result and before any test output existed. The English registration came later (Sect. 6).
+ 
+ <!-- p:S4-03 -->**Estimands and rules.** For backbone m and image i, Δ_m,i is the score of `ret` minus that of `rand`, each at m's frozen configuration, and the pooled Δ_i is the mean of the two backbones' differences. A pooled number is thus an average over two pairs of backbone and configuration, which differ in k, order, tail and τ. It does not estimate the effect for a typical model, and each pooled number is shown with its per-backbone rows. The smallest effect size of interest (SESOI) is +2.0 points, a planning value set before any stage-B output; it equals the stage-A value; the stage-B registration states that it was not derived from the stage-A pilot or any stage-A number, and no calibration is recorded. The floors of P2 and XM-b and the threshold of rule L were also fixed before any stage-B output, and no derivation of them is recorded. Table 1 lists each registered prediction with its rule. The scope sentence that accompanies pooled P1 numbers was selected, by a mapping fixed before the test, from the P1b outcome. The wording for a failed XM-a was also registered: "the gain was not detected out of domain (XM3600)".
+ 
+@@ -151,7 +151,7 @@
+ 
+ ## 6 English comparison
+ 
+-<!-- p:S6-01 -->A separate registration carried the design to English with no English tuning: the frozen configurations of Sect. 3 and the deletion step, with translated prompts and the arms `ret`, `rand` and `zs`. It was written after the Vietnamese verdicts were known and committed before any English image was decoded for this arm; the P1 rule was chosen for NoCaps after the XM-a result (Sect. 7). The decision column is PTB-tokenised CIDEr-D [@Chen2015COCOCaptions], a different scale from the Vietnamese column. The memory is COCO training data [@Lin2014COCO; @Karpathy2015Split], the Karpathy train and restval images after the same filter rules: 112,255 images in 111,927 clusters. The COCO Karpathy test (the full split, 5,000 images) therefore lies in the memory's source and NoCaps val (the full split, 4,500 images) [@Agrawal2019NoCaps] outside it.
++<!-- p:S6-01 -->A separate registration carried the design to English with no English tuning: the frozen configurations of Sect. 3 and the deletion step, with translated prompts and the arms `ret`, `rand` and `zs`. It was written after the Vietnamese verdicts were known and committed before any English image was decoded for this arm; the P1 rule was chosen for NoCaps after the XM-a result (Sect. 7). The decision column is PTB-tokenised CIDEr-D [@Chen2015COCOCaptions], a different scale from the Vietnamese column. The memory is COCO training data [@Lin2014COCO; @Karpathy2015Split], the Karpathy train and restval images after the filter rules of Sect. 3: 112,255 images in 111,927 clusters. The COCO Karpathy test (the full split, 5,000 images) therefore lies in the memory's source and NoCaps val (the full split, 4,500 images) [@Agrawal2019NoCaps] outside it.
+ 
+ <!-- p:T7 -->**Table 4.** Registered and reported English results: pooled and per-backbone `ret` − `rand` in PTB CIDEr-D points with CIs as in Sect. 4. "Reported" rows have no registered rule.
+ 
+--- draft_v3_cut/check_draft.py	2026-11-15 11:41:15.000000000 +0700
++++ draft_v3_1/check_draft.py	2026-11-15 18:06:59.022617800 +0700
+@@ -36,6 +36,10 @@
+ BUDGET = {"Abs": 200, "§1": 500, "§2": 330, "§3": 620, "§4": 560, "§5": 700, "§6": 380,
+           "§7": 540, "§8": 160, "Decl": 110}
+ 
++# Ruling CC-421 (Option B): claim-map rows cut for the page limit, and the table and figure counts.
++CUT_RULED = {"C27", "C28", "C41", "C42", "C43"}
++N_TABLES, N_FIGURES = 4, 0
++
+ # Plan section A.5: (name, CI triple, strings every unit with that triple must hold,
+ # sections that must each hold the triple with these further strings).
+ A5 = [
+@@ -279,8 +283,10 @@
+             bad.append(f"first six words differ for {uid}: {first!r}")
+     carried = {c for _, _, claims in sources.values() for c in claims}
+     absent = [f"C{i:02d}" for i in range(1, 55) if f"C{i:02d}" not in carried]
+-    bad += [f"claim-map row not carried: {c}" for c in absent]
+-    summary = f"{len(ids)} units, {len(sources)} rows, {54 - len(absent)} of 54 claim-map rows carried"
++    bad += [f"claim-map row not carried: {c}" for c in absent if c not in CUT_RULED]
++    bad += [f"claim-map row ruled cut but carried: {c}" for c in sorted(CUT_RULED & carried)]
++    summary = (f"{len(ids)} units, {len(sources)} rows, {54 - len(absent)} of 54 claim-map rows carried; "
++               f"cut by ruling CC-421: {', '.join(sorted(CUT_RULED))}")
+     return not bad, summary, bad
+ 
+ 
+@@ -312,14 +318,16 @@
+                "Counting rule: whitespace-separated tokens that hold a letter or a digit; a citation "
+                "group counts as one word; headings, the author line, keywords and comments are not "
+                "counted; table cells, captions and notes are counted apart from the running text."]
+-    ok = 150 <= text_words.get("Abs", 0) <= 250 and tables == 7 and figures == 1
++    ok = 150 <= text_words.get("Abs", 0) <= 250 and tables == N_TABLES and figures == N_FIGURES
+     over = [f"{s} {text_words.get(s, 0) - BUDGET[s]:+d}" for s in BUDGET if text_words.get(s, 0) > BUDGET[s]]
+     limits = (f"title {len(words(title))} words, abstract {text_words.get('Abs', 0)} words, "
+               f"{len(keywords)} keywords, {tables} tables, {figures} figure")
+     budgets = (f"running text {running} against {sum(BUDGET.values())} planned; sections over their "
+                f"budget: {', '.join(over) or 'none'}")
+-    return [("Limits known today (abstract 150 to 250 words, 7 tables, 1 figure)", ok, limits, []),
+-            ("Plan word budgets (every section at or under its planned words)", not over, budgets, detail)]
++    return [(f"Limits known today (abstract 150 to 250 words, {N_TABLES} tables, {N_FIGURES} figure)",
++             ok, limits, []),
++            ("Plan word counts (information only: the page count of the LNCS build decides, CC-414 Ruling 2)",
++             None, budgets, detail)]
+ 
+ 
+ def covering_rows(number, sec, claims, manifest):
+@@ -480,20 +488,21 @@
+                *check_patterns(units),
+                ("No data-set caption text", *check_captions(units))]
+     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+-    print(f"# CHECKS: TAIMMA draft v1 of Paper C\n\nWritten by `check_draft.py` at {stamp}. "
++    print(f"# CHECKS: TAIMMA draft v3 (cut) of Paper C\n\nWritten by `check_draft.py` at {stamp}. "
+           "Laptop text checks only: no template build, so no page count.\n")
+     print("Inputs (sha256):\n")
+     for path in (PAPER, MANIFEST, SOURCES, SRC_MANIFEST, BIB):
+         print(f"- `{path.name}` {sha(path)}")
+     print("\n## Summary\n\n| check | result | measured |\n|---|---|---|")
++    word = lambda ok: "INFO" if ok is None else "PASS" if ok else "FAIL"
+     for name, ok, summary, _ in results:
+-        print(f"| {name} | {'PASS' if ok else 'FAIL'} | {summary} |")
++        print(f"| {name} | {word(ok)} | {summary} |")
+     for name, ok, summary, detail in results:
+-        print(f"\n## {name}: {'PASS' if ok else 'FAIL'}\n\n{summary}\n")
++        print(f"\n## {name}: {word(ok)}\n\n{summary}\n")
+         print("\n".join(detail))
+     print("\n## Every sentence or table row that states a registered negative\n")
+     print("\n".join(negative_sentences(units)))
+-    return 0 if all(ok for _, ok, _, _ in results) else 1
++    return 0 if all(ok is not False for _, ok, _, _ in results) else 1
+ 
+ 
+ if __name__ == "__main__":

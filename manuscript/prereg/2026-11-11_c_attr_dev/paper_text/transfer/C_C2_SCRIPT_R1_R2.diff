@@ -1,0 +1,104 @@
+--- c_attr_c2_transfer.py@0bdf9721
++++ c_attr_c2_transfer.py@030c369d
+@@ -9,18 +9,21 @@
+ 
+ K7 LINE (written by the coordinator at or after 2026-11-16T05:00:00Z, stamp from date -u; the text below with
+ only <utc> and <id> filled; a line that differs gives no sentence and goes to a judge):
+-<utc> OPS-<id>-c-k7: DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY. K7 freeze (v1.1 §10.1, 2026-11-16 12:00 VN = 2026-11-16T05:00:00Z; CC-378 ruling 7): every unfinished step is NOT RUN. Block 4 (English, Flickr30K val): steps 4.1, 4.2, 4.3, 4.4 and 4.5, including the memory swap of §7.9, NOT RUN (no block-4 host, package, read or decode exists); K6 has no cell to build: swap NOT RUN. Block 2 NOT RUN since its cut-off (OPS-1114ap-c-b2-cutoff). Blocks 0, 1, 1b and 3 are complete (CC-363, CC-378).
++<utc> OPS-<id>-c-k7: DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY. K7 freeze (v1.1 §10.1, 2026-11-16 12:00 VN = 2026-11-16T05:00:00Z; CC-378 ruling 7): every unfinished step is NOT RUN. Block 4 (English, Flickr30K val): steps 4.1, 4.2, 4.3, 4.4 and 4.5, including the memory swap of §7.9, NOT RUN (no block-4 host, package, read or decode exists); K6 has no cell to build: swap NOT RUN. Block 2 NOT RUN since its cut-off (OPS-1114ap-c-b2-cutoff). The NOT RUN items of CC-363 ruling 2 (rule L on the four swap cells, the English copy bound, the blind companion for Aya-Vision-8B) stay NOT RUN. Blocks 1, 1b and 3 ended (CC-363, CC-378).
+ 
+-Fail-closed gates before any write: the package pin; shell C1 is in the paper (6.10.9 exists) and the five
+-files equal HEAD; exactly one K7 LOG line, stamped at or after 2026-11-16T05:00:00Z, equal as a string to the
+-template above; every literal below is the package's wording. Each OLD occurs exactly once before and each
+-NEW exactly once after. Reads no ledger, list, caption or test-set file. Never runs git add / commit.
+-Open point for the C2 read: the block-4 paragraph prints 40 and 8,190, which have manifest rows whose used_in
+-column does not yet name 06_results.md.
++Fail-closed gates before any write (CC-402 W1-W4, N2-N4): the package pin; the shell C1 commit 6a5d36a is an
++ancestor of HEAD, 6.10.9 exists and the five files equal HEAD; exactly one K7 LOG line, with a well-formed
++stamp at or after 2026-11-16T05:00:00Z and not in the future, equal as a string to the template above; every
++literal below is the package's wording. Each OLD occurs exactly once before and each NEW exactly once after.
++Two manifest rows are added: one for the K7 line, and one for the number 40 of the block-4 paragraph, keyed
++to the registered text v1.1 (8,190 already has a row that names 06_results.md). Reads no ledger, list,
++caption or test-set file. Never runs git add / commit.
+ Usage: python3 -I c_attr_c2_transfer.py
+ """
+ import hashlib
++import re
+ import subprocess
++import time
+ from pathlib import Path
+ 
+ RUN = Path('/mnt/d/vsps_image_captioning')
+@@ -30,6 +33,11 @@
+ LOG = RUN / '.session_backup/2026-10-13/decisions/LOG.md'
+ PKG_SHA = 'e3820d3bf93f4246913c6eb651373965303d4afb31fc51fc3db48687ab2904f6'
+ K7_NOT_BEFORE = '2026-11-16T05:00:00Z'
++C1_COMMIT = '6a5d36a'
++PREREG = RUN / 'manuscript/prereg/2026-11-11_c_attr_dev/C_ATTR_DEV_PREREG_v1_1.md'
++PREREG_SHA12 = '44f81329d418'
++K7_FACT = 'steps 4.1, 4.2, 4.3, 4.4 and 4.5, including the memory swap of §7.9, NOT RUN'
++FORTY_QUOTE = '40 hold only KTVIC images'
+ FILES = ['06_results.md', '05_preregistration_and_analysis.md', '07_disclosures.md', '03_method.md',
+          'number_manifest_C.tsv']
+ 
+@@ -41,7 +49,8 @@
+ C2B_NEW = 'A freeze at 2026-11-16 12:00 (UTC+7) ended every step not finished by then.'
+ C2C_ANCHOR = 'Block 2 was not run by its registered cut-off (Section 6.10.9).'
+ C2C_ADD = ' Block 4 was not run before the freeze (Section 6.10.9).'
+-C1B_ANCHOR = 'further backbones outside the Qwen language-model line.'
++C1B_ANCHOR = ('**Other registered arms.** The registration also names a memory swap on fixed English images and '
++              'further backbones outside the Qwen language-model line.')
+ C1B_ADD = ' Section 6.10.9 states whether they ran.'
+ 
+ 
+@@ -59,10 +68,13 @@
+ 
+ 
+ def k7_line() -> str:
+-    lines = [ln for ln in LOG.read_text(encoding='utf-8').splitlines() if '-c-k7:' in ln]
+-    assert len(lines) == 1, f'exactly one K7 line is needed, found {len(lines)}: nothing written'
++    quoted = [ln for ln in LOG.read_text(encoding='utf-8').splitlines() if '-c-k7:' in ln]
++    lines = [ln for ln in quoted if re.match(r'\S+ OPS-[0-9a-z]+-c-k7: ', ln)]
++    assert len(lines) == 1 and len(quoted) == 1, f'exactly one K7 line is needed, found {len(lines)} ({len(quoted)} mentions): nothing written'
+     utc, ident = lines[0].split(' ')[0], lines[0].split(' ')[1].removeprefix('OPS-').removesuffix('-c-k7:')
+-    assert utc >= K7_NOT_BEFORE, 'K7 line stamped before the freeze'
++    assert re.fullmatch(r'\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ', utc), 'K7 stamp malformed'
++    assert K7_NOT_BEFORE <= utc <= time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), 'K7 stamp before the freeze or in the future'
++    assert K7_FACT in lines[0], 'K7 line does not list the block-4 steps as NOT RUN'
+     assert lines[0] == k7_template().replace('<utc>', utc).replace('<id>', ident), 'K7 line differs from the template'
+     return lines[0]
+ 
+@@ -97,6 +109,7 @@
+               f'append `{C2C_ADD}`', f'append `{C1B_ADD}`'):
+         assert s in pkg, f'not the package wording: {s}'
+     assert git('status', '--porcelain', '--', *[f'paper_v1_analysis/{f}' for f in FILES]) == '', 'files differ from HEAD'
++    git('merge-base', '--is-ancestor', C1_COMMIT, 'HEAD')  # raises unless the shell C1 commit is in the history
+     read = {f: (PD / f).read_text(encoding='utf-8') for f in FILES}
+     assert read[FILES[0]].count('#### 6.10.9 What did not run') == 1, 'shell C1 is not in the paper'
+     line = k7_line()
+@@ -107,16 +120,20 @@
+     t07 = swap(read[FILES[2]], C2C_ANCHOR, C2C_ANCHOR + C2C_ADD)
+     t03 = swap(read[FILES[3]], C1B_ANCHOR, C1B_ANCHOR + C1B_ADD)
+     utc, ident = line.split(' ')[0], line.split(' ')[1].rstrip(':')
+-    row = '\t'.join(['NOT RUN', f'decisions LOG::{ident}', "'block 4 steps 4.1-4.5, including the memory swap: NOT RUN'",
+-                     sha(line.encode('utf-8'))[:12],
++    row = '\t'.join(['NOT RUN', f'decisions LOG::{ident}', f"'{K7_FACT}'", sha(line.encode('utf-8'))[:12],
+                      f'FACT_RECORDED (LOG line {ident}, {utc}; CC-378 ruling 7; shell C2)', '06_results.md'])
++    prereg = PREREG.read_bytes()
++    assert sha(prereg).startswith(PREREG_SHA12) and FORTY_QUOTE in prereg.decode('utf-8'), 'registration v1.1 pin or quote'
++    row40 = '\t'.join(['40', f'manuscript/prereg/2026-11-11_c_attr_dev/C_ATTR_DEV_PREREG_v1_1.md::§5 No Vietnamese '
++                        f'memory swap ({FORTY_QUOTE})', f"'{FORTY_QUOTE}'", PREREG_SHA12, 'registered text (v1.1)',
++                        '06_results.md'])
+     manifest = read[FILES[4]]
+-    assert manifest.endswith('\n') and row not in manifest
++    assert manifest.endswith('\n') and row not in manifest and row40 not in manifest
+     print('paper HEAD', git('rev-parse', '--short', 'HEAD').strip())
+-    for name, text in zip(FILES, (t06, t05, t07, t03, manifest + row + '\n')):
++    for name, text in zip(FILES, (t06, t05, t07, t03, manifest + row + '\n' + row40 + '\n')):
+         (PD / name).write_text(text, encoding='utf-8')
+         print(sha(text.encode('utf-8'))[:16], name)
+-    print('applied: C2-a (with the full B2 sentence), C2-b, C2-c, C1-b, one manifest row for the K7 line')
++    print('applied: C2-a (with the full B2 sentence), C2-b, C2-c, C1-b, manifest rows for the K7 line and for 40')
+ 
+ 
+ if __name__ == '__main__':

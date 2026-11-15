@@ -1,0 +1,220 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/H04x3I9K9F86K7CG/6F60qBS6bI</id>
+  <title>arXiv Query: search_query=abs:captioning AND abs:Vietnamese AND submittedDate:"202101010000 TO 202611152359"&amp;id_list=&amp;start=0&amp;max_results=200</title>
+  <updated>2026-11-15T02:25:46Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=abs:captioning+AND+(abs:Vietnamese+AND+submittedDate:%22202101010000+TO+202611152359%22)&amp;start=0&amp;max_results=200&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>200</opensearch:itemsPerPage>
+  <opensearch:totalResults>7</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2401.08100v1</id>
+    <title>KTVIC: A Vietnamese Image Captioning Dataset on the Life Domain</title>
+    <updated>2024-01-16T04:01:49Z</updated>
+    <link href="https://arxiv.org/abs/2401.08100v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2401.08100v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Image captioning is a crucial task with applications in a wide range of domains, including healthcare and education. Despite extensive research on English image captioning datasets, the availability of such datasets for Vietnamese remains limited, with only two existing datasets. In this study, we introduce KTVIC, a comprehensive Vietnamese Image Captioning dataset focused on the life domain, covering a wide range of daily activities. This dataset comprises 4,327 images and 21,635 Vietnamese captions, serving as a valuable resource for advancing image captioning in the Vietnamese language. We conduct experiments using various deep neural networks as the baselines on our dataset, evaluating them using the standard image captioning metrics, including BLEU, METEOR, CIDEr, and ROUGE. Our findings underscore the effectiveness of the proposed dataset and its potential contributions to the field of image captioning in the Vietnamese context.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-01-16T04:01:49Z</published>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Anh-Cuong Pham</name>
+    </author>
+    <author>
+      <name>Van-Quang Nguyen</name>
+    </author>
+    <author>
+      <name>Thi-Hong Vuong</name>
+    </author>
+    <author>
+      <name>Quang-Thuy Ha</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2305.04166v2</id>
+    <title>UIT-OpenViIC: A Novel Benchmark for Evaluating Image Captioning in Vietnamese</title>
+    <updated>2023-05-09T12:46:06Z</updated>
+    <link href="https://arxiv.org/abs/2305.04166v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2305.04166v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Image Captioning is one of the vision-language tasks that still interest the research community worldwide in the 2020s. MS-COCO Caption benchmark is commonly used to evaluate the performance of advanced captioning models, although it was published in 2015. Recent captioning models trained on the MS-COCO Caption dataset only have good performance in language patterns of English; they do not have such good performance in contexts captured in Vietnam or fluently caption images using Vietnamese. To contribute to the low-resources research community as in Vietnam, we introduce a novel image captioning dataset in Vietnamese, the Open-domain Vietnamese Image Captioning dataset (UIT-OpenViIC). The introduced dataset includes complex scenes captured in Vietnam and manually annotated by Vietnamese under strict rules and supervision. In this paper, we present in more detail the dataset creation process. From preliminary analysis, we show that our dataset is challenging to recent state-of-the-art (SOTA) Transformer-based baselines, which performed well on the MS COCO dataset. Then, the modest results prove that UIT-OpenViIC has room to grow, which can be one of the standard benchmarks in Vietnamese for the research community to evaluate their captioning models. Furthermore, we present a CAMO approach that effectively enhances the image representation ability by a multi-level encoder output fusion mechanism, which helps improve the quality of generated captions compared to previous captioning models.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-05-07T02:48:47Z</published>
+    <arxiv:comment>10 pages, 7 figures, submitted to Elsevier</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Doanh C. Bui</name>
+    </author>
+    <author>
+      <name>Nghia Hieu Nguyen</name>
+    </author>
+    <author>
+      <name>Khang Nguyen</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2604.27712v1</id>
+    <title>Linguistically Informed Multimodal Fusion for Vietnamese Scene-Text Image Captioning: Dataset, Graph Framework, and Phonological Attention</title>
+    <updated>2026-04-30T10:57:38Z</updated>
+    <link href="https://arxiv.org/abs/2604.27712v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2604.27712v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Scene-text image captioning requires fusing three information streams -- visual features, OCR-detected text, and linguistic knowledge -- to generate descriptions that faithfully integrate text visible in images. Existing fusion approaches treat text as language-agnostic, which fails for Vietnamese: a tonal language where diacritics alter word meaning, OCR errors are pervasive, and word boundaries are ambiguous. We argue that Vietnamese scene-text captioning demands \textit{linguistically informed multimodal fusion}, where language-specific structural knowledge is explicitly incorporated into the fusion mechanism. Motivated from these insights, we propose \textbf{HSTFG} (Heterogeneous Scene-Text Fusion Graph), a general-purpose graph fusion framework with learned spatial attention bias, and show through topology analysis that cross-modal graph edges are harmful for scene-text fusion. Building on this finding, we design \textbf{PhonoSTFG} (Phonological Scene-Text Fusion Graph) which specializes graph-level fusion for Vietnamese linguistic reasoning. To support evaluation, we introduce \textbf{ViTextCaps}, the first large-scale Vietnamese scene-text captioning dataset (\textbf{15{,}729} images with \textbf{74{,}970} captions), with comprehensive linguistic analysis showing that 52.8\% of the vocabulary is at risk of diacritic collision.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-04-30T10:57:38Z</published>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Nhi Ngoc-Yen Nguyen</name>
+    </author>
+    <author>
+      <name>Anh-Duc Nguyen</name>
+    </author>
+    <author>
+      <name>Nghia Hieu Nguyen</name>
+    </author>
+    <author>
+      <name>Kiet Van Nguyen</name>
+    </author>
+    <author>
+      <name>Ngan Luu-Thuy Nguyen</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2209.01304v1</id>
+    <title>vieCap4H-VLSP 2021: Vietnamese Image Captioning for Healthcare Domain using Swin Transformer and Attention-based LSTM</title>
+    <updated>2022-09-03T01:06:19Z</updated>
+    <link href="https://arxiv.org/abs/2209.01304v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2209.01304v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>This study presents our approach on the automatic Vietnamese image captioning for healthcare domain in text processing tasks of Vietnamese Language and Speech Processing (VLSP) Challenge 2021, as shown in Figure 1. In recent years, image captioning often employs a convolutional neural network-based architecture as an encoder and a long short-term memory (LSTM) as a decoder to generate sentences. These models perform remarkably well in different datasets. Our proposed model also has an encoder and a decoder, but we instead use a Swin Transformer in the encoder, and a LSTM combined with an attention module in the decoder. The study presents our training experiments and techniques used during the competition. Our model achieves a BLEU4 score of 0.293 on the vietCap4H dataset, and the score is ranked the 3$^{rd}$ place on the private leaderboard. Our code can be found at \url{https://git.io/JDdJm}.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2022-09-03T01:06:19Z</published>
+    <arxiv:comment>Accepted for publication in the VNU Journal of Science: Computer Science and Communication Engineering</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <arxiv:journal_ref>VNU Journal of Science: Computer Science and Communication Engineering, 38(2), 2022</arxiv:journal_ref>
+    <author>
+      <name>Thanh Tin Nguyen</name>
+    </author>
+    <author>
+      <name>Long H. Nguyen</name>
+    </author>
+    <author>
+      <name>Nhat Truong Pham</name>
+    </author>
+    <author>
+      <name>Liu Tai Nguyen</name>
+    </author>
+    <author>
+      <name>Van Huong Do</name>
+    </author>
+    <author>
+      <name>Hai Nguyen</name>
+    </author>
+    <author>
+      <name>Ngoc Duy Nguyen</name>
+    </author>
+    <arxiv:doi>10.25073/2588-1086/vnucsce.369</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.25073/2588-1086/vnucsce.369" title="doi"/>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2603.09689v2</id>
+    <title>AutoViVQA: A Large-Scale Automatically Constructed Dataset for Vietnamese Visual Question Answering</title>
+    <updated>2026-03-11T12:26:53Z</updated>
+    <link href="https://arxiv.org/abs/2603.09689v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2603.09689v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Visual Question Answering (VQA) is a fundamental multimodal task that requires models to jointly understand visual and textual information. Early VQA systems relied heavily on language biases, motivating subsequent work to emphasize visual grounding and balanced datasets. With the success of large-scale pre-trained transformers for both text and vision domains -- such as PhoBERT for Vietnamese language understanding and Vision Transformers (ViT) for image representation learning -- multimodal fusion has achieved remarkable progress.
+  For Vietnamese VQA, several datasets have been introduced to promote research in low-resource multimodal learning, including ViVQA, OpenViVQA, and the recently proposed ViTextVQA. These resources enable benchmarking of models that integrate linguistic and visual features in the Vietnamese context.
+  Evaluation of VQA systems often employs automatic metrics originally designed for image captioning or machine translation, such as BLEU, METEOR, CIDEr, Recall, Precision, and F1-score. However, recent research suggests that large language models can further improve the alignment between automatic evaluation and human judgment in VQA tasks.
+  In this work, we explore Vietnamese Visual Question Answering using transformer-based architectures, leveraging both textual and visual pre-training while systematically comparing automatic evaluation metrics under multilingual settings.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-03-10T13:57:52Z</published>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Nguyen Anh Tuong</name>
+    </author>
+    <author>
+      <name>Phan Ba Duc</name>
+    </author>
+    <author>
+      <name>Nguyen Trung Quoc</name>
+    </author>
+    <author>
+      <name>Tran Dac Thinh</name>
+    </author>
+    <author>
+      <name>Dang Duy Lan</name>
+    </author>
+    <author>
+      <name>Nguyen Quoc Thinh</name>
+    </author>
+    <author>
+      <name>Tung Le</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2511.01670v1</id>
+    <title>SeaLLMs-Audio: Large Audio-Language Models for Southeast Asia</title>
+    <updated>2025-11-03T15:32:58Z</updated>
+    <link href="https://arxiv.org/abs/2511.01670v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2511.01670v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>We introduce SeaLLMs-Audio, the first large audio-language model (LALM) tailored for multiple Southeast Asian (SEA) languages-Indonesian (id), Thai (th), and Vietnamese (vi)-alongside English (en) and Chinese (zh). Trained on a large-scale audio corpus, SeaLLMs-Audio exhibits strong performance across diverse audio-centric tasks, spanning fine-grained audio understanding and voice-based interaction. Its key features include: 1) Multilingual: the model primarily supports 5 languages, namely Indonesian, Thai, Vietnamese, English, and Chinese; 2) Multimodal: the model accepts flexible input modalities, including audio only, text only, as well as audio with text; 3) Multi-task: the model supports a wide range of tasks, including audio analysis tasks such as Audio Captioning, Automatic Speech Recognition, Speech-to-Text Translation, Speech Emotion Recognition, Speech Question Answering, and Speech Summarization. It also enables voice-based dialogue, including answering factual, mathematical, and general knowledge queries. As a significant step towards advancing audio LLMs in Southeast Asia, we expect SeaLLMs-Audio to benefit both the regional research community and industry. To automate LALM evaluation for Southeast Asia, we introduce SeaBench-Audio, a benchmark spanning multiple tasks. Experiments show that SeaLLMs-Audio achieves competitive performance compared with other LALMs on SEA languages.</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2025-11-03T15:32:58Z</published>
+    <arxiv:comment>10 pages</arxiv:comment>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Chaoqun Liu</name>
+    </author>
+    <author>
+      <name>Mahani Aljunied</name>
+    </author>
+    <author>
+      <name>Guizhen Chen</name>
+    </author>
+    <author>
+      <name>Hou Pong Chan</name>
+    </author>
+    <author>
+      <name>Weiwen Xu</name>
+    </author>
+    <author>
+      <name>Yu Rong</name>
+    </author>
+    <author>
+      <name>Wenxuan Zhang</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2606.13427v1</id>
+    <title>VietFashion: Benchmarking Sketch-Text Composed Image Retrieval for Cultural Outfits</title>
+    <updated>2026-06-11T14:54:54Z</updated>
+    <link href="https://arxiv.org/abs/2606.13427v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2606.13427v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Cultural garments pose a unique challenge for visual retrieval systems, as their identity often depends on subtle structural and symbolic details that are poorly captured by standard AI models. We introduce VietFashion, a new benchmark for sketch-text composed image retrieval centered on the Ao Dai, a traditional Vietnamese garment. VietFashion enables designers and researchers to retrieve culturally meaningful outfits using a combination of hand-drawn sketches, which convey garment structure, and textual descriptions, which encode cultural semantics. The dataset is initialized with 650 sketches and expanded using generative models to produce over 21,000 photorealistic images with aligned captions. Textual prompts that describe detailed outfit attributes, which are extracted from fashion magazines to ensure authenticity and diversity. To better reflect the inherent ambiguity of design intent, VietFashion adopts a multi-target retrieval setting, where a single query may correspond to multiple valid results. We establish standardized evaluation protocols and benchmark state-of-the-art composed image retrieval methods. Experimental results reveal significant performance gaps in modeling fine-grained cultural semantics and multi-modal composition, positioning VietFashion as a challenging benchmark for fine-grained fashion retrieval. The dataset is publicly available at: https://hng0303.github.io/VietFashion.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-06-11T14:54:54Z</published>
+    <arxiv:comment>ICMR 2026. Project page: https://hng0303.github.io/VietFashion</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Hoang-Nguyen Cao</name>
+    </author>
+    <author>
+      <name>Le-Hoang Bui</name>
+    </author>
+    <author>
+      <name>Dinh-Khoi Vo</name>
+    </author>
+    <author>
+      <name>Minh-Triet Tran</name>
+    </author>
+    <author>
+      <name>Trung-Nghia Le</name>
+    </author>
+    <arxiv:doi>10.1145/3805622.3810590</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.1145/3805622.3810590" title="doi"/>
+  </entry>
+</feed>

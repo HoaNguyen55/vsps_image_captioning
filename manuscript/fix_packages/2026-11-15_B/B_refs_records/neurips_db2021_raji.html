@@ -1,0 +1,217 @@
+
+
+
+
+<!doctype html>
+<html lang="en">
+<head>
+
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>AI and the Everything in the Whole Wide World Benchmark</title>
+    <link rel="stylesheet" href="/static/papers/css/papers.css">
+
+    
+
+    <meta name="citation_title" content="AI and the Everything in the Whole Wide World Benchmark">
+    
+        <meta name="citation_author" content="Raji, Deborah">
+    
+        <meta name="citation_author" content="Denton, Emily">
+    
+        <meta name="citation_author" content="Bender, Emily M.">
+    
+        <meta name="citation_author" content="Hanna, Alex">
+    
+        <meta name="citation_author" content="Paullada, Amandalynne">
+    
+    <meta name="citation_journal_title" content="Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks">
+    <meta name="citation_volume" content="1">
+    
+        
+        
+    
+    
+    <meta name="citation_pdf_url" content="https://datasets-benchmarks-proceedings.neurips.cc/paper_files/paper/2021/file/084b6fbb10729ed4da8c3d3f5a3ae7c9-Paper-round2.pdf">
+    <meta name="citation_publication_date" content="2021-12-06">
+
+
+
+
+    <!-- Bootstrap CSS -->
+    <!-- https://codepen.io/surjithctly/pen/PJqKzQ -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css"
+          integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+
+
+    <script type="text/javascript" async
+            src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+      "tex2jax": {
+        "inlineMath": [["$","$"], ["\\(","\\)"]],
+        "displayMath": [["\\[","\\]"]],
+        "processEscapes": true
+      }
+    }
+    );
+
+    </script>
+
+    <style>
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #333;
+                color: #eee;
+            }
+        }
+
+        .btn-spacer {
+            margin: 2px;
+        }
+
+        .footer {
+            position: fixed;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #eee;
+            color: black;
+        }
+
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<nav class="navbar navbar-expand-md bg-body-tertiary">
+    <div class="container-fluid">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <a class="navbar-brand" href="/">Datasets and Benchmarks Proceedings</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                <a class="nav-link" href="/admin/login/?next=/admin/"><i class="fas fa-sign-in-alt" title="Login"></i></a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/admin/logout/?nextp=/admin"><i class="fas fa-sign-out-alt" title="Logout"></i></a>
+            </li>
+
+            </ul>
+            <form class="d-flex" role="search" method="get" role="search" action="/papers/search">
+                <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search" name="q">
+                <button class="btn btn-outline-success" type="submit">Search</button>
+            </form>
+        </div>
+    </div>
+</nav>
+
+
+
+
+<div class="container-fluid">
+    <div class="col p-3">
+
+    
+
+        <h4>AI and the Everything in the Whole Wide World Benchmark</h4>
+
+        <p>
+            Part of
+            <a href="/paper_files/paper/2021">Proceedings of the Neural Information Processing Systems Track on Datasets and Benchmarks 1  (NeurIPS Datasets and Benchmarks 2021)
+            </a>
+            round2
+        </p>
+
+        <div><a href="/paper_files/paper/23-/bibtex" class="btn btn-light btn-spacer">Bibtex</a> <a class='btn btn-primary btn-spacer' href='/paper_files/paper/2021/file/084b6fbb10729ed4da8c3d3f5a3ae7c9-Paper-round2.pdf'>Paper</a> <a target="_blank" href='https://openreview.net/forum?id=j6NxpQbREA1' class='btn btn-light btn-spacer'>Reviews And Public Comment &raquo;</a> <a class='btn btn-light btn-spacer' href='/paper_files/paper/2021/file/084b6fbb10729ed4da8c3d3f5a3ae7c9-Supplemental-round2.zip'>Supplemental</a></div><br>
+
+                
+
+
+        <h4>Authors</h4>
+        <p><i>Deborah Raji, Emily Denton, Emily M. Bender, Alex Hanna, Amandalynne Paullada</i></p>
+
+        <h4>Abstract</h4>
+        <p><p>There is a tendency across different subfields in AI to see value in a small collection of influential benchmarks, which we term 'general' benchmarks. These benchmarks operate as stand-ins or abstractions for a range of anointed common problems that are frequently framed as foundational milestones on the path towards flexible and generalizable AI systems. State-of-the-art performance on these benchmarks is widely understood as indicative of progress towards these long-term goals. In this position paper, we explore how such benchmarks are designed, constructed and used in order to reveal key limitations of their framing as the functionally 'general' broad measures of progress they are set up to be.</p>
+</p>
+    
+
+
+    </div>
+</div>
+
+
+<script   src="https://code.jquery.com/jquery-3.7.1.min.js"
+          integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo="   crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"
+        integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"
+        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
+        crossorigin="anonymous"></script>
+<script>
+    $('.dropdown-menu a.dropdown-toggle').on('click', function (e) {
+        if (!$(this).next().hasClass('show')) {
+            $(this).parents('.dropdown-menu').first().find('.show').removeClass("show");
+        }
+        var $subMenu = $(this).next(".dropdown-menu");
+        $subMenu.toggleClass('show');
+
+
+        $(this).parents('li.nav-item.dropdown.show').on('hidden.bs.dropdown', function (e) {
+            $('.dropdown-submenu .show').removeClass("show");
+        });
+
+
+        return false;
+    });
+</script>
+
+
+
+
+<br> 
+        <div class="modal fade" id="myModal">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h4 class="modal-title">Name Change Policy</h4>
+                <button type="button pull-right" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+              </div>
+              <div class="modal-body">
+                <p>This venue has no name change policy. You may try reporting an issue.</p>
+
+              </div> 
+              <div class="modal-footer">
+
+
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+
+
+<footer class="footer">
+    <div class="btn-spacer">
+        <a href="https://neurips.cc/Help/Contact?select=Conference">Report an Issue</a> &nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;        <a href="#" class="modal-link" data-toggle="modal" data-target="#myModal">Name Change Policy</a>
+    </div>
+
+</footer>
+<div class='hidden'>Do not remove: This comment is monitored to verify that the site is working properly</div>
+<!-- Do not remove: This comment is monitored to verify that the site is working properly -->
+
+</body>
+</html>

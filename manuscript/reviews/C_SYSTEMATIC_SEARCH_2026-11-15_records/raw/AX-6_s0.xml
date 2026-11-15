@@ -1,0 +1,61 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/VyyNQcotjrjLe75EFvYx29/DWbk</id>
+  <title>arXiv Query: search_query=abs:"image captioning" AND (abs:"in-context" OR abs:"retrieval-augmented" OR abs:"few-shot") AND (abs:"confidence interval" OR abs:"confidence intervals" OR abs:bootstrap) AND submittedDate:"202101010000 TO 202611152359"&amp;id_list=&amp;start=0&amp;max_results=200</title>
+  <updated>2026-11-15T02:25:55Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=abs:%22image+captioning%22+AND+((abs:%22in-context%22+OR+(abs:%22retrieval-augmented%22+OR+abs:%22few-shot%22))+AND+((abs:%22confidence+interval%22+OR+(abs:%22confidence+intervals%22+OR+abs:bootstrap))+AND+submittedDate:%22202101010000+TO+202611152359%22))&amp;start=0&amp;max_results=200&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>200</opensearch:itemsPerPage>
+  <opensearch:totalResults>2</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2604.14373v2</id>
+    <title>SatBLIP: Context Understanding and Feature Identification from Satellite Imagery with Vision-Language Learning</title>
+    <updated>2026-04-17T02:00:12Z</updated>
+    <link href="https://arxiv.org/abs/2604.14373v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2604.14373v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Rural environmental risks are shaped by place-based conditions (e.g., housing quality, road access, land-surface patterns), yet standard vulnerability indices are coarse and provide limited insight into risk contexts. We propose SatBLIP, a satellite-specific vision-language framework for rural context understanding and feature identification that predicts county-level Social Vulnerability Index (SVI). SatBLIP addresses limitations of prior remote sensing pipelines-handcrafted features, manual virtual audits, and natural-image-trained VLMs-by coupling contrastive image-text alignment with bootstrapped captioning tailored to satellite semantics. We use GPT-4o to generate structured descriptions of satellite tiles (roof type/condition, house size, yard attributes, greenery, and road context), then fine-tune a satellite-adapted BLIP model to generate captions for unseen images. Captions are encoded with CLIP and fused with LLM-derived embeddings via attention for SVI estimation under spatial aggregation. Using SHAP, we identify salient attributes (e.g., roof form/condition, street width, vegetation, cars/open space) that consistently drive robust predictions, enabling interpretable mapping of rural risk environments.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.AI" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-04-15T19:43:20Z</published>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Xue Wu</name>
+    </author>
+    <author>
+      <name>Shengting Cao</name>
+    </author>
+    <author>
+      <name>Shenglin Li</name>
+    </author>
+    <author>
+      <name>Jiaqi Gong</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2305.18072v2</id>
+    <title>Image Captioning with Multi-Context Synthetic Data</title>
+    <updated>2023-12-19T14:17:57Z</updated>
+    <link href="https://arxiv.org/abs/2305.18072v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2305.18072v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Image captioning requires numerous annotated image-text pairs, resulting in substantial annotation costs. Recently, large models (e.g. diffusion models and large language models) have excelled in producing high-quality images and text. This potential can be harnessed to create synthetic image-text pairs for training captioning models. Synthetic data can improve cost and time efficiency in data collection, allow for customization to specific domains, bootstrap generalization capability for zero-shot performance, and circumvent privacy concerns associated with real-world data. However, existing methods struggle to attain satisfactory performance solely through synthetic data. We identify the issue as generated images from simple descriptions mostly capture a solitary perspective with limited context, failing to align with the intricate scenes prevalent in real-world imagery. To tackle this, we present an innovative pipeline that introduces multi-context data generation. Beginning with an initial text corpus, our approach employs a large language model to extract multiple sentences portraying the same scene from diverse viewpoints. These sentences are then condensed into a single sentence with multiple contexts. Subsequently, we generate intricate images using the condensed captions through diffusion models. Our model is exclusively trained on synthetic image-text pairs crafted through this process. The effectiveness of our pipeline is validated through experimental results in both the in-domain and cross-domain settings, where it achieves state-of-the-art performance on well-known datasets such as MSCOCO, Flickr30k, and NoCaps.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2023-05-29T13:18:59Z</published>
+    <arxiv:comment>Accepted by AAAI 2024</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Feipeng Ma</name>
+    </author>
+    <author>
+      <name>Yizhou Zhou</name>
+    </author>
+    <author>
+      <name>Fengyun Rao</name>
+    </author>
+    <author>
+      <name>Yueyi Zhang</name>
+    </author>
+    <author>
+      <name>Xiaoyan Sun</name>
+    </author>
+  </entry>
+</feed>

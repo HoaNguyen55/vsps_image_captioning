@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/yE2KUi+VlLwRVtCx0yo5ah7MyAU</id>
+  <title>arXiv Query: search_query=&amp;id_list=2405.10311,2609.27682,2403.13164&amp;start=0&amp;max_results=5</title>
+  <updated>2026-11-15T03:03:10Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=&amp;start=0&amp;max_results=5&amp;id_list=2405.10311,2609.27682,2403.13164" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>5</opensearch:itemsPerPage>
+  <opensearch:totalResults>3</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2405.10311v3</id>
+    <title>UniRAG: Universal Retrieval Augmentation for Large Vision Language Models</title>
+    <updated>2025-03-09T19:13:53Z</updated>
+    <link href="https://arxiv.org/abs/2405.10311v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2405.10311v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Recently, Large Vision Language Models (LVLMs) have unlocked many complex use cases that require Multi-Modal (MM) understanding (e.g., image captioning or visual question answering) and MM generation (e.g., text-guided image generation or editing) capabilities. To further improve the output fidelityof LVLMs we introduce UniRAG, a plug-and-play technique that adds relevant retrieved information to prompts as few-shot examples during inference. Unlike the common belief that Retrieval Augmentation (RA) mainly improves generation or understanding of uncommon entities, our evaluation results on the MSCOCO dataset with common entities show that both proprietary models like GPT-4o and Gemini-Pro and smaller open-source models like LLaVA, LaVIT, and Emu2 significantly enhance their generation quality when their input prompts are augmented with relevant information retrieved by Vision-Language (VL) retrievers like UniIR models. All the necessary code to reproduce our results is available at https://github.com/castorini/UniRAG</summary>
+    <category term="cs.IR" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-05-16T17:58:45Z</published>
+    <arxiv:comment>14 pages, 6 figures</arxiv:comment>
+    <arxiv:primary_category term="cs.IR"/>
+    <author>
+      <name>Sahel Sharifymoghaddam</name>
+    </author>
+    <author>
+      <name>Shivani Upadhyay</name>
+    </author>
+    <author>
+      <name>Wenhu Chen</name>
+    </author>
+    <author>
+      <name>Jimmy Lin</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2609.27682v2</id>
+    <title>Gender Bias in Vision-Language In-Context Learning</title>
+    <updated>2026-09-28T02:45:22Z</updated>
+    <link href="https://arxiv.org/abs/2609.27682v2" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2609.27682v2" rel="related" type="application/pdf" title="pdf"/>
+    <summary>In-context learning (ICL) enables large vision-language models (LVLMs) to perform tasks by following patterns from in-context examples, yet its potential to amplify societal biases remains underexplored. We systematically investigate how ICL influences gender bias in LVLMs through VL-BICLE, an evaluation framework comprising six ICL settings, three tasks, and four datasets. Our experiments on six LVLMs reveal that gendered ICL demonstrations act as a directional force, shifting model bias toward the demonstrated gender through a cross-gender mechanism that disproportionately degrades performance on the opposite gender. This effect appears in image captioning and pronoun prediction but not in visual question answering, indicating that gendered ICL influences bias only when the task output involves gendered language. Similarity-based retrieval methods inherit the training pool's gender imbalance and offer no debiasing advantage, while standard quality metrics remain blind to these bias shifts. To mitigate this bias, we replace real in-context images with synthetic ones from stable diffusion models while keeping captions unchanged. This simple intervention reduces gender bias without degrading caption quality.</summary>
+    <category term="cs.CV" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-09-23T11:00:05Z</published>
+    <arxiv:comment>ECCV 2026</arxiv:comment>
+    <arxiv:primary_category term="cs.CV"/>
+    <author>
+      <name>Tong Xiang</name>
+    </author>
+    <author>
+      <name>Yuta Nakashima</name>
+    </author>
+    <author>
+      <name>Noa Garcia</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2403.13164v4</id>
+    <title>VL-ICL Bench: The Devil in the Details of Multimodal In-Context Learning</title>
+    <updated>2025-03-31T20:03:34Z</updated>
+    <link href="https://arxiv.org/abs/2403.13164v4" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2403.13164v4" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Large language models (LLMs) famously exhibit emergent in-context learning (ICL) -- the ability to rapidly adapt to new tasks using few-shot examples provided as a prompt, without updating the model's weights. Built on top of LLMs, vision large language models (VLLMs) have advanced significantly in areas such as recognition, reasoning, and grounding. However, investigations into \emph{multimodal ICL} have predominantly focused on few-shot visual question answering (VQA), and image captioning, which we will show neither exploit the strengths of ICL, nor test its limitations. The broader capabilities and limitations of multimodal ICL remain under-explored. In this study, we introduce a comprehensive benchmark VL-ICL Bench for multimodal in-context learning, encompassing a broad spectrum of tasks that involve both images and text as inputs and outputs, and different types of challenges, from {perception to reasoning and long context length}. We evaluate the abilities of state-of-the-art VLLMs against this benchmark suite, revealing their diverse strengths and weaknesses, and showing that even the most advanced models, such as GPT-4, find the tasks challenging. By highlighting a range of new ICL tasks, and the associated strengths and limitations of existing models, we hope that our dataset will inspire future work on enhancing the in-context learning capabilities of VLLMs, as well as inspire new applications that leverage VLLM ICL. The code and dataset are available at https://github.com/ys-zong/VL-ICL.</summary>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2024-03-19T21:31:56Z</published>
+    <arxiv:comment>ICLR 2025</arxiv:comment>
+    <arxiv:primary_category term="cs.LG"/>
+    <author>
+      <name>Yongshuo Zong</name>
+    </author>
+    <author>
+      <name>Ondrej Bohdal</name>
+    </author>
+    <author>
+      <name>Timothy Hospedales</name>
+    </author>
+  </entry>
+</feed>

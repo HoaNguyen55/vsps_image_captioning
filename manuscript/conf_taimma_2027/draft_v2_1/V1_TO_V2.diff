@@ -1,0 +1,336 @@
+--- draft_v1/paper.md	2026-11-14 10:45:27.583728500 +0700
++++ draft_v2/paper.md	2026-11-15 11:07:17.861421100 +0700
+@@ -1,10 +1,11 @@
+ <!--
+-DRAFT v1: conference version of Paper C (scope S1 of WRITING_PLAN_C_TAIMMA_v1.md), for TAIMMA 2027, Springer LNCS format.
++DRAFT v2: conference version of Paper C (scope S1 of WRITING_PLAN_C_TAIMMA_v1.md), for TAIMMA 2027, Springer LNCS format.
++Revised from draft v1 after ruling CC-399 (round 1): text items B1 to B6 applied and the redundancy of ruling 6 cut; every change is listed in REVISION_NOTES.md.
+ LENGTH WARNING (plan item A16): the venue limit for a full paper is 12 to 15 pages. This is the page-budgeted draft (plan D10).
+-The measured words per section are in CHECKS.md and DRAFT_NOTES.md. Pages are NOT measured: no LNCS build was run in this step.
++The measured words per section are in CHECKS.md and REVISION_NOTES.md (DRAFT_NOTES.md is the record of draft v1). Pages are NOT measured: no LNCS build was run in this step.
+ The full explained text is Paper C itself; PARAGRAPH_SOURCES.tsv points each paragraph (marker "p:ID") to the lines it was condensed from.
+ Every number is keyed in number_manifest_TAIMMA.tsv. No data-set caption appears anywhere in this draft.
+-Sections 5 and 7: to re-check after 16 Nov 05:00Z (CC-392 N12).
++Sections 5 and 7: to re-check after 16 Nov 05:00Z (CC-392 N12). Two units wait for that re-check and were not edited in v2 beyond the one sentence ruled for B5: C26 (the Table 5 dagger note and S5-09) and C44 (S7-L06) (CC-399 G2).
+ -->
+ 
+ # Do Retrieved Examples Beat Random Ones? A Preregistered Test of In-Context Vietnamese Image Captioning
+@@ -13,7 +14,7 @@
+ 
+ ## Abstract
+ 
+-<!-- p:ABS-01 -->Retrieval in-context captioning places the captions of similar memory images in the prompt of a multimodal model. It needs no training, which suits low-resource languages such as Vietnamese, but a gain over zero-shot prompting may come from seeing any in-domain caption and not from retrieval. This preregistered study, with one look per test set, compares retrieved example captions with an equal number of random captions from the same memory, for two open models, each reported separately. On OpenViIC test, retrieved examples beat random ones by +4.49 [3.52, 5.57] stripped CIDEr-D points pooled (95% bootstrap CI; registered PASS: point above +2.0 and CI above zero). Under the registered scope sentence this gain is "carried mainly by Qwen2.5-VL; not detected for InternVL3". There, the change in count-matched object precision against each model's own zero-shot captions stayed above the registered floor for both models (PASS). On XM3600 Vietnamese, outside the memory's source, the gain was not detected: +0.70 [−0.45, 1.97], a registered FAIL under a rule that required a CI above zero. With the frozen configurations carried to English, the COCO Karpathy test passed (+3.08 [2.08, 4.03] PTB CIDEr-D points; PASS), although InternVL3's reported row there is below zero. On NoCaps the point, +1.73 [0.94, 2.50], lay below the registered +2.0 (FAIL). No transfer claim is made in either language. Crediting a gain to retrieval requires a random-example control at equal k and results per model.
++<!-- p:ABS-01 -->Retrieval in-context captioning places the captions of similar memory images in a multimodal model's prompt. It needs no training, which suits low-resource languages such as Vietnamese, but a gain over zero-shot prompting may come from any in-domain caption, not from retrieval. This preregistered study, with one look per test set, compares retrieved example captions with an equal number of random captions from the same memory, for two open models reported separately. On OpenViIC test, retrieved examples beat random ones by +4.49 [3.52, 5.57] stripped CIDEr-D points pooled (95% bootstrap CI; registered PASS), with the registered scope "carried mainly by Qwen2.5-VL; not detected for InternVL3". There, the change in count-matched object precision against zero-shot stayed above the registered floor for both models (PASS). On XM3600 Vietnamese, outside the memory's source, the gain was not detected: +0.70 [−0.45, 1.97], a registered FAIL under a rule that required a CI above zero. In English, with the frozen configurations, the COCO Karpathy test passed (+3.08 [2.08, 4.03] PTB CIDEr-D points; PASS), although InternVL3's reported row there is below zero. On NoCaps the point, +1.73 [0.94, 2.50], lay below the registered +2.0 (FAIL). No transfer claim is made in either language. Crediting a gain to retrieval requires a random-example control at equal k and results per model.
+ 
+ ## Keywords
+ 
+@@ -23,14 +24,14 @@
+ 
+ <!-- p:S1-01 -->Open multimodal large language models (MLLMs) can caption images in Vietnamese with no task training, but their zero-shot captions score far below fine-tuned systems: the best fine-tuned baseline in the UIT-OpenViIC data set paper reports 75.58 CIDEr on its test set [@Bui2023OpenViIC], a published number, not comparable with this study's scorer. Vietnamese captioning is low-resource in a concrete sense [@Joshi2020StateFate]. The public general-domain caption sets are few and far smaller than English sets such as COCO, and each has its own domain and reference style [@Pham2024KTVIC; @Bui2023OpenViIC]. A method that uses the little in-language data that exists, without training on it, is therefore attractive.
+ 
+-<!-- p:S1-02 -->Retrieval in-context captioning is such a method: the captions of a query image's nearest memory images are placed in the prompt as text examples. Method papers report large CIDEr gains from such examples [@Ramos2023LMCap; @Rebelo2025RSCap]. A gain over zero-shot prompting can, however, reflect two effects: *retrieval* (the examples describe similar images) or *in-domain style* (the examples merely show how the data set's captions are written). If only style matters, a cheaper prompt with random or fixed examples would do as well. Analyses of this question exist for English and for multilingual news captioning (Sect. 2). As far as those papers state, none preregisters its contrasts or reports confidence intervals on the captioning score, and none covers Vietnamese.
++<!-- p:S1-02 -->Retrieval in-context captioning is such a method: the captions of a query image's nearest memory images are placed in the prompt as text examples. Method papers report large CIDEr gains from such examples [@Ramos2023LMCap; @Rebelo2025RSCap]. A gain over zero-shot prompting can, however, reflect two effects: *retrieval* (the examples describe similar images) or *in-domain style* (the examples merely show how the data set's captions are written). If only style matters, a cheaper prompt with random or fixed examples would do as well. Analyses of this question exist for English and for multilingual news captioning (Sect. 2, Table 1). As far as those papers state, none preregisters its contrasts or reports confidence intervals on the captioning score, and none covers Vietnamese.
+ 
+ <!-- p:S1-03 -->This study measures the first effect against the second. Two open MLLMs caption each image under four prompts: retrieved examples (`ret`), the same number k of random examples from the same memory (`rand`), one fixed example set (`fix`) and zero-shot (`zs`). Configurations were frozen on development data in two registered stages. Each test set was then decoded, scored and decided once, under estimands, thresholds and failure wordings fixed in advance. A separately registered English arm repeated the test with the frozen configurations and no English tuning.
+ 
+ <!-- p:S1-04 -->The study proposes no new method. It contributes:
+ 
+ - <!-- p:S1-05 -->**A registered evaluation design** for Vietnamese captioning with training-free MLLMs and text-only example captions. Its random control uses the same k and the same memory as retrieval, results are given for each backbone, and each of the four test sets got a single look under rules written beforehand.
+-- <!-- p:S1-06 -->**In the memory's source, in two languages.** The registered primary passed on OpenViIC test (+4.49 [3.52, 5.57] stripped CIDEr-D points; P1 PASS) and on the COCO Karpathy test (+3.08 [2.08, 4.03] PTB CIDEr-D points; P1-EN PASS). Under the registered scope sentence the Vietnamese gain is "carried mainly by Qwen2.5-VL; not detected for InternVL3". On COCO, InternVL3's row is below zero (a reported row; no English scope sentence was registered). On OpenViIC test, the change in count-matched object precision against each model's own zero-shot captions stayed above the registered floor for both models (P2 PASS).
++- <!-- p:S1-06 -->**In the memory's source, in two languages.** The registered primary passed on OpenViIC test (+4.49 [3.52, 5.57] stripped CIDEr-D points; P1 PASS) and on the COCO Karpathy test (P1-EN PASS). Under the registered scope sentence the Vietnamese gain is "carried mainly by Qwen2.5-VL; not detected for InternVL3". On COCO, InternVL3's row is below zero (a reported row; no English scope sentence was registered). On OpenViIC test, the change in count-matched object precision against each model's own zero-shot captions stayed above the registered floor for both models (P2 PASS).
+ - <!-- p:S1-07 -->**Outside the memory's source.** On XM3600 Vietnamese the gain was not detected: +0.70 [−0.45, 1.97], a FAIL under a rule that required a CI above zero. On NoCaps val the interval clears zero, but the point, +1.73 [0.94, 2.50], falls short of the registered +2.0 (FAIL). No transfer claim is made in either language.
+ 
+ ## 2 Related work
+@@ -41,19 +42,19 @@
+ 
+ <!-- p:S2-03 -->**The English precedent.** OpenFlamingo reports that retrieved image-caption examples beat random ones on COCO, and that on Flickr30K they scored lower at the smaller shot counts it reports [@Awadalla2023OpenFlamingo]. Our COCO result therefore repeats a pattern already known for English, under other conditions (example captions as text only, configurations frozen in another language, a single look). It is not a new English finding.
+ 
+-<!-- p:S2-04 -->**Closest multilingual and Vietnamese work.** A training-free multilingual study for remote sensing retrieves in-context examples, with neither an equal-k random control nor a registered test [@Rebelo2025RSCap]. The news-captioning benchmark MUNIChus compares random with similarity-retrieved examples at equal k in several languages that do not include Vietnamese, and reports point scores [@Chen2026MUNIChus]. For Vietnamese, earlier work trains or adapts captioners [@Vu2025VELVET; @Vu2026ViG; @Nguyen2026FAIR]; this study trains nothing.
++<!-- p:S2-04 -->**Closest multilingual and Vietnamese work.** A training-free multilingual study for remote sensing retrieves in-context examples, with neither an equal-k random control nor a registered test [@Rebelo2025RSCap]. The news-captioning benchmark MUNIChus compares random with similarity-retrieved examples at equal k in several languages that do not include Vietnamese, and reports point scores [@Chen2026MUNIChus]. Two multilingual retrieval-augmented captioners list Vietnamese among their languages, one of them training-free, and neither has a random control [@Ramos2023LMCap; @Ibrahim2025CONCAP]. Other Vietnamese work trains or adapts captioners [@Vu2025VELVET; @Vu2026ViG; @Nguyen2026FAIR]; this study trains nothing.
+ 
+-<!-- p:S2-05 -->**What differs here.** Vietnamese captioning with training-free models; example captions shown as text only; an equal-k random control from the same memory, beside a fixed-example control; paired bootstrap CIs for every row, per backbone; and a preregistered test with one look per set. No priority claim is made for retrieval in-context captioning, for the random control or for the registered design.
++<!-- p:S2-05 -->**What differs here.** Vietnamese captioning with training-free models; an equal-k random control from the same memory, beside a fixed-example control; paired bootstrap CIs for every row, per backbone; and a preregistered test with one look per set. No priority claim is made for retrieval in-context captioning, for the random control or for the registered design.
+ 
+-<!-- p:T1 -->**Table 1.** This study among analyses of in-context captioning. Entries follow each paper's own statements. "Registered" means that contrasts and decision rules were fixed before the evaluation data were decoded.
++<!-- p:T1 -->**Table 1.** This study among analyses of in-context captioning. Entries follow each paper's own statements; a language cell gives the language of the caption data where a paper does not name it, and a cell that reads *no* means that a search of the paper's full text found no such statement. "Registered" means that contrasts and decision rules were fixed before the evaluation data were decoded.
+ 
+ | analysis | language(s) | examples shown | equal-k random control | registered one-look test; CIs on the captioning score |
+ |---|---|---|---|---|
+-| [@Yang2023ICLConfig] | English | image-caption pairs | yes, equal shots | no; no |
+-| [@Li2024RetrievalRobustness] | English | captions, to a trained captioner | yes, equal k | no; no |
+-| [@Baldassini2024MICL] | English | image-caption pairs | yes, equal shots | no; no |
+-| [@Li2025UnveilingICL] | English | image-caption pairs | yes, equal shots | no; no |
+-| [@Chen2026MUNIChus] | multilingual, no Vietnamese | image, article excerpt and caption | yes, equal k | not stated; no |
++| Yang et al. [@Yang2023ICLConfig] | English | image-caption pairs | yes, equal shots | no; no |
++| Li et al. [@Li2024RetrievalRobustness] | English | captions, to a trained captioner | yes, equal k | no; no |
++| Baldassini et al. [@Baldassini2024MICL] | English | image-caption pairs | yes, equal shots (IDEFICS) | no; no |
++| Li et al. [@Li2025UnveilingICL] | English | image-caption pairs | yes, equal shots | no; no |
++| Chen et al. [@Chen2026MUNIChus] | multilingual, no Vietnamese | image, article excerpt and caption | yes, equal k | no; no |
+ | **this study** | **Vietnamese, English** | **captions, as text** | **yes, equal k, same memory** | **yes, four test sets; paired bootstrap CIs** |
+ 
+ ## 3 Method
+@@ -71,9 +72,9 @@
+ 
+ <!-- p:S3-03 -->**Prompt and decoding.** The prompt follows the image: a fixed Vietnamese header saying that the captions below belong to other images and only show how to write, k numbered example lines, and a tail asking for one short Vietnamese sentence in the examples' style. Tail T1 also asks for only what is visible; tail T2 does not. "Order" places the most similar example first, or last, next to the instruction. The template contains no data-set caption. Decoding is greedy, with at most 60 new tokens, for Qwen2.5-VL-7B-Instruct [@Bai2025Qwen25VL] and InternVL3-8B [@Zhu2025InternVL3].
+ 
+-<!-- p:S3-04 -->**Neighbour-only objects and the deletion step.** An object class is *neighbour-only* when the object matcher finds it in the caption and in at least one shown example, but not in the same model's zero-shot caption. A second model, the verifier, scores each such class as the probability of "yes" to a yes/no question with the image minus that without it; a class scoring below τ is rejected. The caption is split at commas, conjunctions and locative words, and each part naming a rejected class is dropped; if the subject part is hit or the result is malformed, the zero-shot caption is used. At τ = −∞ nothing is rejected.
++<!-- p:S3-04 -->**Neighbour-only objects and the deletion step.** An object class is *neighbour-only* when the object matcher finds it in the caption and in at least one shown example, but not in the same model's zero-shot caption. A second model, the verifier, scores each such class as the probability of "yes" to a yes/no question with the image minus that without it; a class scoring below a threshold τ is rejected. The caption is split at commas, conjunctions and locative words, and each part naming a rejected class is dropped; if the subject part is hit or the result is malformed, the zero-shot caption is used. At τ = −∞ nothing is rejected.
+ 
+-<!-- p:S3-05 -->**Frozen configurations.** Development stage A chose one configuration per backbone by a rule written before any output (Table 2); nothing was changed for the test or for English. InternVL3's `ret`, `rand` and `fix` captions pass through the deletion step at τ = 0.10, so the step is part of InternVL3's registered estimand; Qwen2.5-VL's captions are scored as decoded. The step stayed, with τ as fixed at stage A, although at stage B the guard hypothesis H_G was not passed (pooled precision change +2.91 [0.46, 5.31] points, at a stripped CIDEr-D cost of −4.01). No guard claim is made.
++<!-- p:S3-05 -->**Frozen configurations.** Development stage A chose one configuration per backbone by a rule written before any output (Table 2); nothing was changed for the test or for English. InternVL3's `ret`, `rand` and `fix` captions pass through the deletion step at τ = 0.10, so the step is part of InternVL3's registered estimand; Qwen2.5-VL's captions are scored as decoded. The step stayed, with τ as fixed at stage A, although at stage B the guard hypothesis H_G was not passed: it needed a precision change with a CI above zero and a stripped CIDEr-D cost within a registered bound, and the cost, −4.01, lay outside that bound (pooled precision change +2.91 [0.46, 5.31] points). No guard claim is made.
+ 
+ <!-- p:T2 -->**Table 2.** Frozen configurations, unchanged from the development stages.
+ 
+@@ -87,11 +88,11 @@
+ 
+ <!-- p:S3-06 -->**Scoring.** Vietnamese candidates and references are lower-cased and segmented into words with RDRSegmenter [@Nguyen2018VnCoreNLP; @Vu2018VnCoreNLP]. CIDEr-D [@Vedantam2015CIDEr] takes its document frequencies from the references of the scored set and is given in points (the score times one hundred). Decisions use *stripped* CIDEr-D, computed after trailing punctuation tokens are dropped from both candidates and references; an arm can then gain nothing from a final period alone.
+ 
+-<!-- p:S3-07 -->**Count-matched object precision** is the instrument of a companion manuscript by the same group (the object-precision study, in preparation), defined here because P2 uses it. For image i, let M_i(run) and M_i(zs) be the distinct object classes matched, in order of first mention, in the run's caption and in the same model's zero-shot caption, and let k_i = min(|M_i(run)|, |M_i(zs)|). tp_cm counts how many of the first k_i classes of the run's caption the gold supports; tp_cm,zs counts the same for the zero-shot caption. Then ΔP_cm = (Σ tp_cm − Σ tp_cm,zs) / Σ k_i, in percentage points. The equal number of mentions keeps a longer caption from being penalised for naming more objects. The gold of an image is the union of the classes that the same manuscript's tone-normalised Vietnamese matcher finds in its references; CHAIR_i [@Rohrbach2018CHAIR] uses the same gold. Verified precision on XM3600 (XM-b) counts all mentions against the released human-verified Open Images labels [@Kuznetsova2020OpenImages].
++<!-- p:S3-07 -->**Count-matched object precision** is the instrument of a companion manuscript by the same group (the object-precision study, in preparation), defined here because the object-precision prediction P2 uses it. For image i, let M_i(run) and M_i(zs) be the distinct object classes matched, in order of first mention, in the run's caption and in the same model's zero-shot caption, and let k_i = min(|M_i(run)|, |M_i(zs)|). tp_cm counts how many of the first k_i classes of the run's caption the gold supports; tp_cm,zs counts the same for the zero-shot caption. Then ΔP_cm = (Σ tp_cm − Σ tp_cm,zs) / Σ k_i, in percentage points. The equal number of mentions keeps a longer caption from being penalised for naming more objects. The gold of an image is the union of the classes that the same manuscript's tone-normalised Vietnamese matcher finds in its references; CHAIR_i [@Rohrbach2018CHAIR] uses the same gold. Verified precision on XM3600 (XM-b) counts all mentions against the released human-verified Open Images labels [@Kuznetsova2020OpenImages].
+ 
+ ## 4 Data and registered plan
+ 
+-<!-- p:S4-01 -->**Data.** The study uses only public data sets, with the references and labels their authors released; nothing was annotated for it, and gold never comes from a model output (Table 3). The primary OpenViIC test set is the full test split of 2,001 images minus 60 images that a pre-specified filter, fixed before any test output, matched to the KTVIC development carve. The 3,600 XM3600 images [@Thapliyal2022XM3600] were split before any output of this study existed: 600 were set aside as the evaluation subset of the companion manuscript, and the rest were ordered by a hash of their bytes. The first 500 form XM-dev500 and the other 2,500 form XM-test2500, with 5,108 Vietnamese references; no full-XM3600 result is therefore reported. The Vietnamese memory holds no XM3600 caption, so XM-test2500 lies outside the memory's source. The English memory is built from COCO training data, and the English test sets are the COCO Karpathy test and NoCaps val.
++<!-- p:S4-01 -->**Data.** The study uses only public data sets, with the references and labels their authors released; nothing was annotated for it, and gold never comes from a model output (Table 3). The primary OpenViIC test set (OV-test primary) is the full test split of 2,001 images minus 60 images that a pre-specified filter, fixed before any test output, matched to the KTVIC development carve. The 3,600 XM3600 images [@Thapliyal2022XM3600] were split before any output of this study existed: 600 were set aside as the evaluation subset of the companion manuscript, and the rest were ordered by a hash of their bytes. The first 500 form XM-dev500 and the other 2,500 form XM-test2500, with 5,108 Vietnamese references; no full-XM3600 result is therefore reported. The Vietnamese memory holds no XM3600 caption, so XM-test2500 lies outside the memory's source.
+ 
+ <!-- p:T3 -->**Table 3.** Every set, with its size and how it was formed. "Filter" is the pre-specified filter of Sect. 3.
+ 
+@@ -108,9 +109,9 @@
+ | **COCO Karpathy test** | **test: P1-EN** | **5,000** | the full split |
+ | **NoCaps val** | **test: S-NC** | **4,500** | the full split; 417 in-domain, 2,670 near-domain and 1,413 out-domain images by the set's own label; registered sensitivity: 3,500 images, without those decoded earlier by another study of the group |
+ 
+-<!-- p:S4-02 -->**Three stages.** Each stage was committed before its data were decoded. Stage A, exploratory, chose the configurations of Table 2 on a KTVIC development carve and checked them on OV-dev-A. Stage B gave one look at OV-dev-B under a gate: pooled `ret` − `rand` with a CI above zero and a point of at least +4.0. The gate returned PASS, with +6.04 [4.54, 7.58]; it is a development result and sets nothing at test. The test registration was committed after that result and before any test output existed. The English registration came later (Sect. 6).
++<!-- p:S4-02 -->**Three stages.** Each stage was committed before its data were decoded. Stage A, exploratory, chose the configurations of Table 2 on a KTVIC development carve and checked them on one half of the OpenViIC development set (OV-dev-A). Stage B gave one look at the other half (OV-dev-B) under a gate: pooled `ret` − `rand` with a CI above zero and a point of at least +4.0. The gate returned PASS, with +6.04 [4.54, 7.58]; it is a development result and sets nothing at test. The test registration was committed after that result and before any test output existed. The English registration came later (Sect. 6).
+ 
+-<!-- p:S4-03 -->**Estimands and rules.** For backbone m and image i, Δ_m,i is the score of `ret` minus that of `rand`, each at m's frozen configuration, and the pooled Δ_i is the mean of the two backbones' differences. A pooled number is thus an average over two pairs of backbone and configuration, which differ in k, order, tail and τ. It does not estimate the effect for a typical model, and each pooled number is shown with its per-backbone rows. The smallest effect size of interest (SESOI) is +2.0 points, a planning value set before any stage-B output and derived from no earlier result. Table 4 lists each registered prediction with its rule. The scope sentence that accompanies pooled P1 numbers was selected, by a mapping fixed before the test, from the P1b outcome. The wording for a failed XM-a was also registered: "the gain was not detected out of domain (XM3600)".
++<!-- p:S4-03 -->**Estimands and rules.** For backbone m and image i, Δ_m,i is the score of `ret` minus that of `rand`, each at m's frozen configuration, and the pooled Δ_i is the mean of the two backbones' differences. A pooled number is thus an average over two pairs of backbone and configuration, which differ in k, order, tail and τ. It does not estimate the effect for a typical model, and each pooled number is shown with its per-backbone rows. The smallest effect size of interest (SESOI) is +2.0 points, a planning value set before any stage-B output; it equals the stage-one value (stages one and two are stages A and B in the registrations' numbering); the stage-two registration states that it was not derived from the stage-A pilot or any stage-one number, and no calibration is recorded. Table 4 lists each registered prediction with its rule. The scope sentence that accompanies pooled P1 numbers was selected, by a mapping fixed before the test, from the P1b outcome. The wording for a failed XM-a was also registered: "the gain was not detected out of domain (XM3600)".
+ 
+ <!-- p:T4 -->**Table 4.** Registered predictions and decision rules. Δ is `ret` − `rand`; "lower bound" is that of the CI of Sect. 4. Registered sensitivities are reported beside a prediction and never replace it: all 2,001 OpenViIC test images; XM-test2500 without the three-reference images (2,392); NoCaps val without the images decoded earlier (3,500).
+ 
+@@ -120,7 +121,7 @@
+ | rule L | per backbone, relative gap in mean caption length between `ret` and `rand` | OV-test primary; COCO Karpathy test | if above 0.10 for either backbone, a PASS is recorded as "not separated from length" |
+ | P1b (non-gating) | per-backbone mean Δ_m,i | OV-test primary | Qwen2.5-VL: "confirmed" if the point is above +2.0; InternVL3: reported only. P1b selects the scope sentence |
+ | **P2** | per backbone, ΔP_cm of `ret` against `zs` | OV-test primary | PASS if, for each backbone, the lower bound is above −1.0 |
+-| **XM-a** | mean pooled Δ_i, stripped CIDEr-D | XM-test2500 | PASS if the lower bound is above zero |
++| **XM-a** | mean pooled Δ_i, stripped CIDEr-D | XM-test2500 | PASS if the lower bound is above zero; a positive point with a CI that includes zero is printed as a descriptive number only |
+ | **XM-b** | change in verified object precision of `ret` against `zs`, pooled | XM-test2500 | PASS if the lower bound is above −1.0 |
+ | XM prediction | XM-a and XM-b | XM-test2500 | "confirmed" only if both pass; otherwise "not confirmed" |
+ | **P1-EN** (primary, English) | mean pooled Δ_i, PTB CIDEr-D | COCO Karpathy test | the P1 rule, with rule L |
+@@ -172,19 +173,19 @@
+ 
+ ### 5.1 In the memory's source: OpenViIC test
+ 
+-<!-- p:S5-02 -->**P1: PASS.** On the primary set, retrieved examples scored +4.49 [3.52, 5.57] points above random examples, pooled over the two backbones (Table 6), with the registered scope: "carried mainly by Qwen2.5-VL; not detected for InternVL3". Qwen2.5-VL's row is +8.33 [7.01, 9.76] (P1b: confirmed). InternVL3's row at its frozen τ = 0.10 is +0.66 [−0.68, 1.99]; the CI includes zero, and the row is reported only. Rule L does not fire (length gaps 0.074 and 0.039). The registered sensitivity on all 2,001 images gives the same reading for every row.
++<!-- p:S5-02 -->**P1: PASS.** On the primary set, retrieved examples scored +4.49 [3.52, 5.57] points above random examples, pooled over the two backbones (Table 6), with the registered scope: "carried mainly by Qwen2.5-VL; not detected for InternVL3". Qwen2.5-VL's row is +8.33 [7.01, 9.76] (P1b: confirmed). InternVL3's row at its frozen τ = 0.10 is +0.66 [−0.68, 1.99]; the CI includes zero, and the row is reported only. Rule L does not fire. The registered sensitivity on all 2,001 images gives the same reading for every row.
+ 
+ <!-- p:S5-03 -->**P2: PASS for both backbones.** Against each model's own zero-shot captions, the retrieval prompt changed count-matched object precision by +5.41 [3.88, 7.01] points for Qwen2.5-VL and by +1.57 [0.65, 2.51] for InternVL3; both lower bounds lie above the −1.0 floor. On OpenViIC test we therefore find no object-precision cost of the full in-context prompt relative to zero-shot. P2 does not compare `ret` with `rand`.
+ 
+ <!-- p:S5-04 -->**InternVL3 without the deletion step.** The registered secondary at τ = −∞ is +3.71 [2.29, 5.14] on the primary set and +3.68 [2.20, 5.05] on all 2,001 images, detected on both; it changes no verdict and no scope sentence. With the frozen step, a share 0.351 of InternVL3's `ret` captions on this set fell back to the zero-shot caption. Stripped CIDEr-D was 33.62, against 39.50 for the same decodes without the step; CHAIR_i was 0.254 against 0.237; the count-matched change against `zs` was +1.57 against +5.80. The step lowered CIDEr-D and improved neither object measure.
+ 
+-<!-- p:S5-05 -->*Post hoc (not registered; no verdict).* After the test, a broader image-similarity rule than the registered filter was applied to the examples shown. It flags 12 of the 1,941 primary queries as having a near-copy of the query image among their `ret` examples (9 of them at the first rank), and 0 queries in `rand`. Without the 12 queries the pooled difference is +4.47 [3.44, 5.41] on 1,929 queries, and the P2 rows are +5.34 [3.87, 6.82] for Qwen2.5-VL and +1.61 [0.68, 2.56] for InternVL3. P1 and P2 stand as registered.
++<!-- p:S5-05 -->*Post hoc (not registered; no verdict).* After the test, a broader image-similarity rule than the registered filter was applied to the examples shown. It flags 12 of the 1,941 primary queries as having a near-copy of the query image among their `ret` examples (9 of them at the first rank), and 0 queries in `rand`. Without the 12 queries the pooled difference is +4.47 [3.44, 5.41] on 1,929 queries (per-image scores as stored; document frequencies not recomputed), and the P2 rows are +5.34 [3.87, 6.82] for Qwen2.5-VL and +1.61 [0.68, 2.56] for InternVL3. P1 and P2 stand as registered.
+ 
+ ### 5.2 Outside the memory's source: XM3600 Vietnamese
+ 
+-<!-- p:S5-06 -->**XM-a: FAIL. The gain was not detected out of domain (XM3600).** The pooled difference is +0.70 [−0.45, 1.97]. The point is above zero, but the rule required a CI above zero and the CI includes zero. The registered sensitivity on 2,392 images is +0.82 [−0.45, 2.11]. Per backbone (reported rows, no registered rule), Qwen2.5-VL gave +3.15 [1.50, 4.93] and InternVL3 at τ = 0.10 gave −1.75 [−3.35, −0.09]. InternVL3 at τ = −∞ gave +0.18 [−1.36, 1.81], not detected (sensitivity +0.19 [−1.41, 1.79], not detected).
++<!-- p:S5-06 -->**XM-a: FAIL. The gain was not detected out of domain (XM3600).** The pooled difference is +0.70 [−0.45, 1.97]. The point is above zero, but the rule required a CI above zero and the CI includes zero. Under the registered rule this point is a descriptive number only. The registered sensitivity on 2,392 images is +0.82 [−0.45, 2.11]. Per backbone (reported rows, no registered rule), Qwen2.5-VL gave +3.15 [1.50, 4.93] and InternVL3 at τ = 0.10 gave −1.75 [−3.35, −0.09].
+ 
+-<!-- p:S5-07 -->**XM-b: PASS under its own rule.** Verified object precision of `ret` against `zs` changed by +0.59 [−0.31, 1.54] points (sensitivity +0.57 [−0.41, 1.56], PASS). The registered XM prediction needs both XM-a and XM-b, so it is **not confirmed**. We make no transfer claim, and no claim that retrieval keeps object precision on XM3600. The count-matched rows there, which no XM rule reads, are +0.12 [−1.20, 1.49] for Qwen2.5-VL and +0.13 [−0.83, 1.03] for InternVL3; the first lower bound is below the −1.0 used on OpenViIC.
++<!-- p:S5-07 -->**XM-b: PASS under its own rule.** Verified object precision of `ret` against `zs` changed by +0.59 [−0.31, 1.54] points. The registered XM prediction needs both XM-a and XM-b, so it is **not confirmed**. We make no transfer claim, and no claim that retrieval keeps object precision on XM3600. The count-matched rows there, which no XM rule reads, are +0.12 [−1.20, 1.49] for Qwen2.5-VL and +0.13 [−0.83, 1.03] for InternVL3; the first lower bound is below the −1.0 used on OpenViIC.
+ 
+ ### 5.3 Controls
+ 
+@@ -192,11 +193,11 @@
+ 
+ <!-- p:S5-09 -->**Fixed examples (†: conditional on the realised fixed set).** Pooled `ret` − `fix` is +3.47 [2.54, 4.41] on OV-test and +2.53 [1.32, 3.80] on XM-test2500. For Qwen2.5-VL it is +6.33 [5.02, 7.72] and +5.87 [4.14, 7.65]; for InternVL3 it is +0.61 [−0.68, 1.87] and −0.81 [−2.41, 0.76], two CIs that include zero.
+ 
+-<!-- p:S5-10 -->**Copy baselines and tokenisation.** On OV-test, pooled `ret` exceeds NN-top1 by +13.98 [12.63, 15.38] and NN-consensus by +9.15 [7.84, 10.47]; the near-verbatim share of `ret` captions is 0.015 for Qwen2.5-VL and 0.002 for InternVL3, so the models are not simply returning a neighbour's caption. In the PTB-tokenised column, pooled `ret` − `rand` is +4.91 [3.93, 6.00] on OV-test and +0.60 [−0.54, 1.85] on XM-test2500, the same sign and scope as the decision column.
++<!-- p:S5-10 -->**Copy baselines and tokenisation (registered secondaries, non-gating).** On OV-test, pooled `ret` exceeds NN-top1 by +13.98 [12.63, 15.38] and NN-consensus by +9.15 [7.84, 10.47]; the near-verbatim share of `ret` captions is 0.015 for Qwen2.5-VL and 0.002 for InternVL3, so the models are not simply returning a neighbour's whole caption. In the PTB-tokenised column, pooled `ret` − `rand` is +4.91 [3.93, 6.00] on OV-test and +0.60 [−0.54, 1.85] on XM-test2500, the same sign and scope as the decision column.
+ 
+ ## 6 English comparison
+ 
+-<!-- p:S6-01 -->A separate registration carried the design to English with no English tuning: the frozen configurations of Table 2 and the deletion step, with translated prompts and the arms `ret`, `rand` and `zs`. It was written after the Vietnamese verdicts were known and committed before any English image was decoded; the P1 rule was chosen for NoCaps after the XM-a result (Sect. 7). The decision column is PTB-tokenised CIDEr-D [@Chen2015COCOCaptions], a different scale from the Vietnamese column. The memory is COCO training data [@Lin2014COCO; @Karpathy2015Split], so the COCO Karpathy test lies in the memory's source and NoCaps val [@Agrawal2019NoCaps] outside it.
++<!-- p:S6-01 -->A separate registration carried the design to English with no English tuning: the frozen configurations of Table 2 and the deletion step, with translated prompts and the arms `ret`, `rand` and `zs`. It was written after the Vietnamese verdicts were known and committed before any English image was decoded for this arm; the P1 rule was chosen for NoCaps after the XM-a result (Sect. 7). The decision column is PTB-tokenised CIDEr-D [@Chen2015COCOCaptions], a different scale from the Vietnamese column. The memory is COCO training data [@Lin2014COCO; @Karpathy2015Split], so the COCO Karpathy test lies in the memory's source and NoCaps val [@Agrawal2019NoCaps] outside it.
+ 
+ <!-- p:T7 -->**Table 7.** Registered and reported English results: pooled and per-backbone `ret` − `rand` in PTB CIDEr-D points with CIs as in Sect. 4. "Reported" rows have no registered rule. The last three rows split NoCaps val by the set's own domain label (reported, non-gating).
+ 
+@@ -212,11 +213,11 @@
+ | NoCaps near-domain (2,670 images) | – | +1.96 [0.85, 2.99] | – |
+ | NoCaps out-domain (1,413 images) | – | +0.43 [−0.85, 1.73] | – |
+ 
+-<!-- p:S6-02 -->**P1-EN: PASS.** On the COCO Karpathy test, pooled `ret` − `rand` is +3.08 [2.08, 4.03] PTB CIDEr-D points (Table 7), and rule L does not fire (length gaps 0.019 and 0.019). Per backbone (reported rows, no registered rule), Qwen2.5-VL gave +7.80 [6.40, 9.17] and InternVL3 at τ = 0.10 gave −1.64 [−2.79, −0.49], a CI wholly below zero. Without the deletion step its row is −1.05 [−2.22, 0.08], not detected. *Post hoc (no verdict):* the broader similarity rule of Sect. 5.1 flags 1 of the 5,000 queries; without it the pooled difference is +3.07 [2.08, 4.06] on 4,999 queries. Random examples already score far above zero-shot on COCO: `rand` − `zs` is +29.50 [28.27, 30.79] for Qwen2.5-VL and +8.13 [7.03, 9.21] for InternVL3 (reported rows).
++<!-- p:S6-02 -->**P1-EN: PASS.** On the COCO Karpathy test, pooled `ret` − `rand` is +3.08 [2.08, 4.03] PTB CIDEr-D points (Table 7), and rule L does not fire. Per backbone (reported rows, no registered rule), Qwen2.5-VL gave +7.80 [6.40, 9.17] and InternVL3 at τ = 0.10 gave −1.64 [−2.79, −0.49], a CI wholly below zero. *Post hoc (no verdict):* the broader similarity rule of Sect. 5.1 flags 1 of the 5,000 queries; without it the pooled difference is +3.07 [2.08, 4.06] on 4,999 queries. Random examples already score far above zero-shot on COCO: `rand` − `zs` is +29.50 [28.27, 30.79] for Qwen2.5-VL and +8.13 [7.03, 9.21] for InternVL3 (descriptive rows).
+ 
+-<!-- p:S6-03 -->**S-NC: FAIL.** On NoCaps val, pooled `ret` − `rand` is +1.73 [0.94, 2.50]. The CI lies above zero, but the point is below the registered +2.0, so the rule fails. The claim that the gain transfers to NoCaps is not made. The registered sensitivity on 3,500 images, +1.62 [0.66, 2.52], is also a FAIL. Per backbone (reported rows), Qwen2.5-VL gave +2.83 [1.69, 3.98] and InternVL3 +0.62 [−0.37, 1.62]; InternVL3 at τ = −∞ is not detected on either NoCaps set. By the set's own domain label the pooled point falls from +4.64 [1.85, 7.36] for in-domain images, through +1.96 [0.85, 2.99], to +0.43 [−0.85, 1.73] for out-domain images. The intervals overlap, and no trend test was registered.
++<!-- p:S6-03 -->**S-NC: FAIL.** On NoCaps val, pooled `ret` − `rand` is +1.73 [0.94, 2.50]. The CI lies above zero, but the point is below the registered +2.0, so the rule fails. The claim that the gain transfers to NoCaps is not made. The registered sensitivity on 3,500 images, +1.62 [0.66, 2.52], is also a FAIL. By the set's own domain label the pooled point falls from +4.64 [1.85, 7.36] for in-domain images, through +1.96 [0.85, 2.99], to +0.43 [−0.85, 1.73] for out-domain images. The intervals overlap, and no trend test was registered.
+ 
+-<!-- p:F1 -->![**Fig. 1.** `ret` − `rand` on the four scored sets, per backbone and pooled, with the paired bootstrap CIs of Sect. 4. Pooled rows are the registered estimands (P1, XM-a, P1-EN, S-NC); per-backbone rows are reported rows, InternVL3 at its frozen τ. The Vietnamese panel is in stripped CIDEr-D and the English panel in PTB CIDEr-D; no cross-language difference is computed. Solid line: zero. Dashed line: the registered +2.0, which is a different quantity on each scale.](fig1_ret_minus_rand.svg)
++<!-- p:F1 -->![**Fig. 1.** `ret` − `rand` on the four scored sets, per backbone and pooled, with the paired bootstrap CIs of Sect. 4. Pooled rows are the registered estimands (P1, XM-a, P1-EN, S-NC); per-backbone rows are reported rows, InternVL3 at its frozen τ. The Vietnamese panel is in stripped CIDEr-D and the English panel in PTB CIDEr-D; no cross-language difference is computed. Solid line: zero. Dashed line: the registered +2.0, which is a different quantity on each scale; the XM-a rule had no point threshold.](fig1_ret_minus_rand.svg)
+ 
+ <!-- p:S6-04 -->**Both languages side by side (post hoc; no verdict).** In Fig. 1 the registered retrieved-against-random predictions passed only where the memory and the test set share a source. Memory source and test set changed together, and Qwen2.5-VL's out-of-source rows stayed above zero, so this is an observation and not a tested cause.
+ 
+@@ -225,17 +226,16 @@
+ <!-- p:S7-01 -->**Disclosures.** None of the following changed a configuration, threshold, metric, set or rule after a test output existed.
+ 
+ - <!-- p:S7-D01 -->*Exclusions.* The primary OpenViIC set leaves out 60 images by a pre-specified filter; the full set is printed beside it.
+-- <!-- p:S7-D02 -->*Earlier contact.* To pin lists, CPU scripts read test-image bytes, annotation keys and reference counts; no caption was used and no model output was computed. Another study had decoded some XM-dev500 images zero-shot (stage B only).
+-- <!-- p:S7-D03 -->*Timing of the English arm.* It was decided on the Vietnamese test day and registered after the Vietnamese verdicts were known, before any English decode. Its NoCaps rule, the P1 rule, was fixed after XM-a was known and is stricter than the XM-a rule, so the two out-of-source results answer different rules.
+-- <!-- p:S7-D04 -->*English SESOI.* The +2.0 was carried over numerically, without recalibration to the PTB scale.
++- <!-- p:S7-D02 -->*Earlier contact.* To pin lists, CPU scripts read test-image bytes, annotation keys and reference counts; no caption was used and no model output was computed. Another study had decoded some XM-dev500 images zero-shot (stage B only). In English, a companion study had scored on the COCO Karpathy test, part of that test had been decoded zero-shot earlier, and another study had decoded the NoCaps images that the registered 3,500-image sensitivity removes; none of those outputs is re-used, and no design choice follows from them.
++- <!-- p:S7-D03 -->*Timing of the English arm.* It was decided on the Vietnamese test day and registered after the Vietnamese verdicts were known, before any English image was decoded for this arm. Its NoCaps rule, the P1 rule, was fixed after XM-a was known and is stricter than the XM-a rule, so the two out-of-source results answer different rules.
++- <!-- p:S7-D04 -->*English SESOI.* The +2.0 was carried over numerically, without recalibration to the PTB scale; because English scores are higher, it is relatively more lenient on COCO.
+ - <!-- p:S7-D05 -->*English deletion step.* It is a port with another object matcher, and its calibration is untested in English; this is why every τ = −∞ row is printed.
+ - <!-- p:S7-D06 -->*NoCaps images* were fetched by their Open Images ids, so bytes or resolution may differ.
+ - <!-- p:S7-D07 -->*English per-backbone row.* The abstract and the contributions quote InternVL3's COCO row as a reported row. The English registration has no bar on this, and the pooled number alone would overstate the effect.
+ - <!-- p:S7-D08 -->*Post hoc rows.* The rows without the flagged queries (OpenViIC test, COCO) are labelled and carry no verdict.
+ - <!-- p:S7-D09 -->*Re-use after the look.* An exploratory filtering diagnostic of the same project later re-used test images in a development role; it produced exploratory rows only.
+ - <!-- p:S7-D10 -->*Operational deviations.* Those of the test runs (a parity check repeated before the test, a code copy pinned at the test commit, a fixed retry rule for truncated image files) changed no configuration, threshold, set or rule.
+-- <!-- p:S7-D11 -->*Registered secondaries not reported here:* the cosine dose-response, the style report, the source share of shown examples and neighbour-only object precision. None is a verdict.
+-- <!-- p:S7-D12 -->*Later registrations not reported here:* a Flickr30K baseline comparison, development ablations, a development attribution analysis, and an exploratory filtering diagnostic that ended by its registered stop rules.
++- <!-- p:S7-D12 -->*Not reported here.* Registered secondaries, none a verdict: the cosine dose-response, the style report, the source share of shown examples and neighbour-only object precision. Later registrations: a Flickr30K baseline comparison, development ablations, a development attribution analysis, and an exploratory filtering diagnostic that ended by its registered stop rules.
+ 
+ <!-- p:S7-02 -->**Limitations.**
+ 
+@@ -244,7 +244,7 @@
+ - <!-- p:S7-L03 -->*Reference-based metric.* CIDEr-D rewards the wording of the references, and the study has no human judgments.
+ - <!-- p:S7-L04 -->*Object gold.* On OpenViIC the gold is the union of the references, so a correct object that no reference names counts as an error; on XM3600 the verified labels cover the mapped classes only. No object-precision prediction was registered in English.
+ - <!-- p:S7-L05 -->*One look, one random draw.* Each test set was decoded once, greedily, with one `rand` draw per image.
+-- <!-- p:S7-L06 -->*Batch composition.* The results are results of the systems as run, in fixed batches. A check before the test re-decoded the same development images in the same batches and gave 52/52 identical captions per backbone; it shows run-to-run parity only. A later development check (development, non-confirmatory) decoded 50 items one at a time: 42/50 captions were identical for Qwen2.5-VL and 37/50 for InternVL3. That check rests on string identity; no score was compared.
++- <!-- p:S7-L06 -->*Batch composition.* The results are results of the systems as run, in fixed batches. A per-image difference between arms decoded in batches can contain a batch-mate term, and the image bootstrap does not model the coupling of images within a batch slice. A check before the test re-decoded the same development images in the same batches and gave 52/52 identical captions per backbone; it shows run-to-run parity only. A later development check (development, non-confirmatory) decoded 50 items one at a time: 42/50 captions were identical for Qwen2.5-VL and 37/50 for InternVL3. That check rests on string identity; no score was compared.
+ - <!-- p:S7-L07 -->*Training data.* The backbones' training data are not fully disclosed [@Bai2025Qwen25VL; @Zhu2025InternVL3; @Chen2024InternVL25], and COCO or Open Images data may have been seen. The equal-k `rand` control removes contamination shared by `ret` and `rand`, not contamination that interacts with retrieval.
+ 
+ <!-- p:S7-03 -->**Compute.** The Vietnamese test used 9.59 GPU-hours of a 20-hour cap and the English test 13.22 of a 25-hour cap, each on one 24 GB GPU.
+@@ -255,7 +255,7 @@
+ 
+ <!-- p:S8-02 -->Outside the memory's source the registered predictions failed. On XM3600 Vietnamese the gain was not detected: +0.70 [−0.45, 1.97], a FAIL under a rule that required a CI above zero, and the XM prediction is not confirmed. On NoCaps val the point, +1.73 [0.94, 2.50], is below the registered +2.0 (FAIL; the registered sensitivity also fails). No transfer claim is made.
+ 
+-<!-- p:S8-03 -->On OpenViIC test `ret` − `zs` is +14.30 [13.38, 15.24], and, descriptively, random in-domain examples already score well above zero-shot. Crediting such a gain to retrieval needs a random-example control at equal k from the same memory, the result for each backbone, and a check of whether the memory's captions share the target set's source. The predictions passed only there, but source and test set changed together and Qwen2.5-VL's out-of-source rows stayed above zero: an observation, not a tested cause.
++<!-- p:S8-03 -->Descriptively, random in-domain examples already score well above zero-shot (Sect. 5.3). Crediting a gain over zero-shot to retrieval needs a random-example control at equal k from the same memory, the result for each backbone, and a check of whether the memory's captions share the target set's source (here an observation, not a tested cause; Sect. 6).
+ 
+ ## Ethics and data statement
+ 
+--- draft_v1/number_manifest_TAIMMA.tsv	2026-11-14 10:55:09.460993800 +0700
++++ draft_v2/number_manifest_TAIMMA.tsv	2026-11-15 11:17:18.700978800 +0700
+@@ -28,7 +28,7 @@
+ -1.0	manuscript/prereg/2026-10-25_c_test/PREREG.md::§7.4 P2 floor	-1.0	acecd6527217	design	05_preregistration_and_analysis.md,06_results.md	§4, §5 (C04)
+ -1.0	manuscript/prereg/2026-10-25_c_test/PREREG.md::§7.5 XM-b floor	-1.0	acecd6527217	design	05_preregistration_and_analysis.md,06_results.md	§4 (C04)
+ 0.92	manuscript/prereg/2026-10-22_c_stage1/DESIGN.md::§3.2 near cut	0.92	eacc9a9c737c	design	03_method.md	§3 (C04)
+-60	manuscript/prereg/2026-10-22_c_stage1/DESIGN.md::§4.2 max new tokens	60	eacc9a9c737c	design	03_method.md,08_english_comparison.md	§3 (C04)
++60	manuscript/prereg/2026-10-22_c_stage1/DESIGN.md::§4.2 max new tokens	60	eacc9a9c737c	design	03_method.md,08_english_comparison.md,11_supplement_registered_rows.md	§3 (C04)
+ 4.0	.session_backup/2026-10-22/c_stage2/final/decide_final.json::gate	4.0	92a1f0e992cb	reader-reference	05_preregistration_and_analysis.md,11_supplement_registered_rows.md	§4 (C04)
+ 2.0	manuscript/prereg/2026-10-27_c_en/PREREG.md::§7 SESOI	'**+2.0**'	504018233074	prereg-quoted	01_introduction.md,05_preregistration_and_analysis.md,06_results.md,08_english_comparison.md|c-pass2,11_supplement_registered_rows.md	Abs, §1, §6, §7, §8 (C04)
+ PASS	.session_backup/2026-10-22/c_stage2/final/decide_final.json::ov_dev_b.gate.verdict	'PASS'	92a1f0e992cb	verdict	00_abstract.md,05_preregistration_and_analysis.md,06_results.md	§4 (C05)
+@@ -133,9 +133,9 @@
+ -0.83	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::sets.xm_test2500.detail.per_model.internvl3_8b.pcm_vs_zs.lo	-0.830405621207282	5606ad5df816	keyed	06_results.md	§5 (C23)
+ 1.03	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::sets.xm_test2500.detail.per_model.internvl3_8b.pcm_vs_zs.hi	1.0289886299598896	5606ad5df816	keyed	06_results.md	§5 (C23)
+ 10.0	.session_backup/machines/M3/root/outputs/c_test/decide_ov.json::S_zf.expected_vs_zs_pooled	10.0	9bcad4989adc	design	05_preregistration_and_analysis.md,06_results.md	§5 (C24)
+-14.30	.session_backup/machines/M3/root/outputs/c_test/decide_ov.json::S_zf.pooled_vs_zs.d	14.300996007212776	9bcad4989adc	keyed	06_results.md,10_conclusion.md	§5, §8 (C24)
+-13.38	.session_backup/machines/M3/root/outputs/c_test/decide_ov.json::S_zf.pooled_vs_zs.lo	13.378504115790829	9bcad4989adc	keyed	06_results.md,10_conclusion.md	§5, §8 (C24)
+-15.24	.session_backup/machines/M3/root/outputs/c_test/decide_ov.json::S_zf.pooled_vs_zs.hi	15.238285841061307	9bcad4989adc	keyed	06_results.md,10_conclusion.md	§5, §8 (C24)
++14.30	.session_backup/machines/M3/root/outputs/c_test/decide_ov.json::S_zf.pooled_vs_zs.d	14.300996007212776	9bcad4989adc	keyed	06_results.md,10_conclusion.md	§5 (C24)
++13.38	.session_backup/machines/M3/root/outputs/c_test/decide_ov.json::S_zf.pooled_vs_zs.lo	13.378504115790829	9bcad4989adc	keyed	06_results.md,10_conclusion.md	§5 (C24)
++15.24	.session_backup/machines/M3/root/outputs/c_test/decide_ov.json::S_zf.pooled_vs_zs.hi	15.238285841061307	9bcad4989adc	keyed	06_results.md,10_conclusion.md	§5 (C24)
+ 11.99	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::S_zf.pooled_vs_zs.d	11.9859419	5606ad5df816	keyed	06_results.md	§5 (C24)
+ 10.68	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::S_zf.pooled_vs_zs.lo	10.675888676	5606ad5df816	keyed	06_results.md	§5 (C24)
+ 13.34	.session_backup/machines/M3/root/outputs/c_test/decide_xm_m3.json::S_zf.pooled_vs_zs.hi	13.342335028499997	5606ad5df816	keyed	06_results.md	§5 (C24)
+@@ -202,16 +202,16 @@
+ 2.56	data/results/posthoc_1110/c1_ov_test_posthoc.json::estimate.P2.internvl3_8b.hi	2.5624810679798338	5624f33e480a	keyed (post hoc, CC-320)	06_results.md	§5 (C31)
+ 5000	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.n	5000	efc6eac7fe5d	structural	00_abstract.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2	§4, §6 (C32)
+ 4500	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_4500.n	4500	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2	§4, §6 (C32)
+-3500	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.n	3500	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2	§4, §6 (C32)
++3500	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::scored.nocaps_val_3500.n	3500	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2	§4, §6, §7 (C32)
+ 112255	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::kept	112255	babd1824339b	log	08_english_comparison.md|c-pass2,01_introduction.md,11_supplement_registered_rows.md	§4 (C32)
+ 111927	.session_backup/machines/M3/root/outputs/c_en/logs/build.log::clusters	111927	babd1824339b	log	08_english_comparison.md|c-pass2,11_supplement_registered_rows.md	§4 (C32)
+ 417	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.in-domain.n	417	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2	§4, §6 (C32)
+ 2670	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.near-domain.n	2670	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2	§4, §6 (C32)
+ 1413	.session_backup/machines/M3/root/outputs/c_en/decide_nocaps_val.json::per_domain.out-domain.n	1413	9b4d972a5e6b	structural	08_english_comparison.md,11_supplement_registered_rows.md|c-pass2	§4, §6 (C32)
+ PASS	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.verdict	'PASS'	efc6eac7fe5d	verdict	00_abstract.md,05_preregistration_and_analysis.md,06_results.md,07_disclosures.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2	Abs, §1, §6, §8 (C33)
+-3.08	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.d	3.0764343771	efc6eac7fe5d	c-en-registered	00_abstract.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2	Abs, §1, §6, §8 (C33)
+-2.08	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.lo	2.0840084127025	efc6eac7fe5d	c-en-registered	00_abstract.md,06_results.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2	Abs, §1, §6, §8 (C33)
+-4.03	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.hi	4.032914425455	efc6eac7fe5d	c-en-registered	00_abstract.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2	Abs, §1, §6, §8 (C33)
++3.08	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.d	3.0764343771	efc6eac7fe5d	c-en-registered	00_abstract.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2	Abs, §6, §8 (C33)
++2.08	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.lo	2.0840084127025	efc6eac7fe5d	c-en-registered	00_abstract.md,06_results.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2	Abs, §6, §8 (C33)
++4.03	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.hi	4.032914425455	efc6eac7fe5d	c-en-registered	00_abstract.md,08_english_comparison.md,10_conclusion.md,11_supplement_registered_rows.md,V2_PROGRESS_C.md|c-pass2	Abs, §6, §8 (C33)
+ does not fire	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::P1_EN.L	False	efc6eac7fe5d	verdict	06_results.md,08_english_comparison.md,11_supplement_registered_rows.md|c-pass2	§6 (C33)
+ 0.019	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.qwen25vl_7b.length_gap	0.0186498978824035	efc6eac7fe5d	c-en-reported	08_english_comparison.md,09_limitations.md,11_supplement_registered_rows.md|c-pass2	§6 (C33)
+ 0.019	.session_backup/machines/M3/root/outputs/c_en/decide_coco_test.json::scored.coco_test_5000.per_model.internvl3_8b.length_gap	0.019245585622415424	efc6eac7fe5d	c-en-reported	08_english_comparison.md,09_limitations.md,11_supplement_registered_rows.md|c-pass2	§6 (C33)
+--- draft_v1/PARAGRAPH_SOURCES.tsv	2026-11-14 10:55:09.126317800 +0700
++++ draft_v2/PARAGRAPH_SOURCES.tsv	2026-11-15 11:17:18.574081000 +0700
+@@ -12,22 +12,22 @@
+ S2-01	Work on retrieval for captioning is	02_related_work.md:5	-
+ S2-02	The random control exists. For trained	02_related_work.md:7; 02_related_work.md:20; 02_related_work.md:64	-
+ S2-03	The English precedent. OpenFlamingo reports that	02_related_work.md:20; 01_introduction.md:9	-
+-S2-04	Closest multilingual and Vietnamese work. A	02_related_work.md:11; 02_related_work.md:22; 02_related_work.md:69	-
++S2-04	Closest multilingual and Vietnamese work. A	02_related_work.md:11; 02_related_work.md:22; 02_related_work.md:69; 02_related_work.md:7; 02_related_work.md:37; 02_related_work.md:39	-
+ S2-05	What differs here. Vietnamese captioning with	02_related_work.md:11-16; 02_related_work.md:64-69	-
+-T1	Table 1. This study among analyses	02_related_work.md:52-62 (Table 1b)	-
++T1	Table 1. This study among analyses	02_related_work.md:52-62 (Table 1b); first-author names from the author fields of paperC.bib	-
+ S3-01	Memory. The Vietnamese memory joins the	03_method.md:5-9	C01
+ S3-02	Arms. Images are embedded with SigLIP2	03_method.md:11-22	C04
+ S3-02b	Two copy baselines use no model:	03_method.md:22; 02_related_work.md:7	-
+ S3-03	Prompt and decoding. The prompt follows	03_method.md:24-33	C04
+ S3-04	Neighbour-only objects and the deletion step.	03_method.md:35-51	-
+-S3-05	Frozen configurations. Development stage A chose	03_method.md:53-60; 03_method.md:72; 06_results.md:93; 09_limitations.md:18	C02, C06
++S3-05	Frozen configurations. Development stage A chose	03_method.md:53-60; 03_method.md:72; 06_results.md:93; 09_limitations.md:18; new (ruling CC-399 N4): the H_G rule in words, from section 7.5 of the stage-2 registration (run repo, manuscript/prereg/2026-10-22_c_stage2/PREREG.md:330-332); Paper C at d558df0 prints no rule sentence	C02, C06
+ T2	Table 2. Frozen configurations, unchanged from	03_method.md:62-70 (Table 2)	C02
+ S3-06	Scoring. Vietnamese candidates and references are	03_method.md:74-78; 11_supplement_registered_rows.md:786	-
+ S3-07	Count-matched object precision is the instrument	11_supplement_registered_rows.md:787-788; 05_preregistration_and_analysis.md:63-68; 03_method.md:80; 02_related_work.md:24	- (definitions; plan item A8, decision D8)
+-S4-01	Data. The study uses only public	04_data_and_splits.md:3; 04_data_and_splits.md:24-32; 06_results.md:65; 08_english_comparison.md:23	C03, C32
++S4-01	Data. The study uses only public	04_data_and_splits.md:3; 04_data_and_splits.md:24-32; 06_results.md:65	C03
+ T3	Table 3. Every set, with its	04_data_and_splits.md:5-17 (Table 3); 08_english_comparison.md:19-23	C01, C03, C32
+-S4-02	Three stages. Each stage was committed	05_preregistration_and_analysis.md:32-40	C04, C05
+-S4-03	Estimands and rules. For backbone m	05_preregistration_and_analysis.md:48-52; 05_preregistration_and_analysis.md:74-93	C04, C08, C17
++S4-02	Three stages. Each stage was committed	05_preregistration_and_analysis.md:32-40; 04_data_and_splits.md:11-12	C04, C05
++S4-03	Estimands and rules. For backbone m	05_preregistration_and_analysis.md:48-52; 05_preregistration_and_analysis.md:74-93; stage numbering: 05_preregistration_and_analysis.md:34-37 and the stage-2 registration (run repo, manuscript/prereg/2026-10-22_c_stage2/PREREG.md:1-3, 13, 68, 284-285)	C04, C08, C17
+ T4	Table 4. Registered predictions and decision	05_preregistration_and_analysis.md:56-72 (Table 4); 05_preregistration_and_analysis.md:106; 08_english_comparison.md:11-21 (Table 10)	C03, C04, C32
+ S4-04	Uncertainty. CIs come from a paired	05_preregistration_and_analysis.md:54; 05_preregistration_and_analysis.md:108-114	C04
+ S4-05	One look. Every test set went	05_preregistration_and_analysis.md:42	C47
+@@ -38,21 +38,21 @@
+ S5-03	P2: PASS for both backbones. Against	06_results.md:45	C04, C13, C14
+ S5-04	InternVL3 without the deletion step. The	06_results.md:43; 06_results.md:89; 06_results.md:104	C03, C15, C16
+ S5-05	Post hoc (not registered; no verdict).	06_results.md:41; 06_results.md:45	C03, C30, C31
+-S5-06	XM-a: FAIL. The gain was not	06_results.md:61	C02, C03, C17, C18, C19, C20
++S5-06	XM-a: FAIL. The gain was not	06_results.md:61	C02, C03, C17, C18, C19
+ S5-07	XM-b: PASS under its own rule.	06_results.md:63	C04, C21, C22, C23
+ S5-08	Zero-shot. The control S-zf, pooled ret	06_results.md:71	C24, C54
+ S5-09	Fixed examples conditional on the realised	06_results.md:73; 06_results.md:192	C25, C26
+-S5-10	Copy baselines and tokenisation. On OV-test,	06_results.md:75; 06_results.md:79	C27, C28
+-S6-01	A separate registration carried the design	08_english_comparison.md:3-11; 08_english_comparison.md:23; 07_disclosures.md:46	C32, C48
++S5-10	Copy baselines and tokenisation (registered secondaries,	06_results.md:75; 06_results.md:79; 05_preregistration_and_analysis.md:95-100	C27, C28
++S6-01	A separate registration carried the design	08_english_comparison.md:3-11; 08_english_comparison.md:23; 07_disclosures.md:46; 08_english_comparison.md:82; 08_english_comparison.md:86	C32, C48
+ T7	Table 7. Registered and reported English	08_english_comparison.md:27-37 (Table 11); 08_english_comparison.md:51-57 (Table 12)	C02, C32, C33, C34, C35, C37, C38, C39, C40, C41
+-S6-02	P1-EN: PASS. On the COCO Karpathy	08_english_comparison.md:39-45	C02, C32, C33, C34, C35, C36, C42
+-S6-03	S-NC: FAIL. On NoCaps val, pooled	08_english_comparison.md:49-59	C04, C32, C37, C38, C39, C40, C41
+-F1	![Fig. 1. ret rand on the	08_english_comparison.md:65 (Figure 1; file fig1_ret_minus_rand.svg)	C04, C53
++S6-02	P1-EN: PASS. On the COCO Karpathy	08_english_comparison.md:39-45	C02, C32, C33, C34, C36, C42
++S6-03	S-NC: FAIL. On NoCaps val, pooled	08_english_comparison.md:49-59	C04, C32, C37, C38, C41
++F1	![Fig. 1. ret rand on the	08_english_comparison.md:65 (Figure 1; file fig1_ret_minus_rand.svg); 05_preregistration_and_analysis.md:64; 08_english_comparison.md:11	C04, C53
+ S6-04	Both languages side by side (post	08_english_comparison.md:69-76; 10_conclusion.md:16	C53
+ S7-01	Disclosures. None of the following changed	07_disclosures.md:3	-
+ S7-D01	Exclusions. The primary OpenViIC set leaves	07_disclosures.md:12; 07_disclosures.md:32	C03
+-S7-D02	Earlier contact. To pin lists, CPU	07_disclosures.md:14-15; 07_disclosures.md:36	-
+-S7-D03	Timing of the English arm. It	07_disclosures.md:18; 07_disclosures.md:46; 08_english_comparison.md:11; 08_english_comparison.md:82	C48
++S7-D02	Earlier contact. To pin lists, CPU	07_disclosures.md:14-15; 07_disclosures.md:36; 08_english_comparison.md:86	C32
++S7-D03	Timing of the English arm. It	07_disclosures.md:18; 07_disclosures.md:46; 08_english_comparison.md:11; 08_english_comparison.md:82; 08_english_comparison.md:86	C48
+ S7-D04	English SESOI. The +2.0 was carried	05_preregistration_and_analysis.md:52; 08_english_comparison.md:11	C04
+ S7-D05	English deletion step. It is a	08_english_comparison.md:84	-
+ S7-D06	NoCaps images were fetched by their	08_english_comparison.md:86	-
+@@ -60,8 +60,7 @@
+ S7-D08	Post hoc rows. The rows without	07_disclosures.md:13; 06_results.md:41; 08_english_comparison.md:41	C30, C36
+ S7-D09	Re-use after the look. An exploratory	07_disclosures.md:21; 06_results.md:122	-
+ S7-D10	Operational deviations. Those of the test	07_disclosures.md:3; 07_disclosures.md:9-11; 11_supplement_registered_rows.md:741-766	-
+-S7-D11	Registered secondaries not reported here: the	new (plan item A15); the list is 05_preregistration_and_analysis.md:97-104	-
+-S7-D12	Later registrations not reported here: a	new (plan item A9); the registrations are named in 05_preregistration_and_analysis.md:122-128	-
++S7-D12	Not reported here. Registered secondaries, none	new (plan items A15 and A9; the v1 paragraph S7-D11 is merged here, ruling CC-399 item 6); the secondaries are listed in 05_preregistration_and_analysis.md:97-104 and the registrations are named in 05_preregistration_and_analysis.md:122-128	-
+ S7-02	Limitations.	09_limitations.md:1-3	-
+ S7-L01	Two backbones. The gain is carried	09_limitations.md:5	C08
+ S7-L02	Out of the memory's source both	09_limitations.md:6	C17, C37, C53
+@@ -73,7 +72,7 @@
+ S7-03	Compute. The Vietnamese test used 9.59	06_results.md:254; 08_english_comparison.md:88	C45
+ S8-01	In a preregistered one-look test, retrieved	10_conclusion.md:3-5	C07, C08, C13, C14, C33, C34, C50
+ S8-02	Outside the memory's source the registered	10_conclusion.md:7; 08_english_comparison.md:49	C04, C17, C22, C37, C38, C51
+-S8-03	On OpenViIC test ret zs is	10_conclusion.md:9; 10_conclusion.md:13-16	C24, C52, C53, C54
++S8-03	Descriptively, random in-domain examples already score	10_conclusion.md:9; 10_conclusion.md:13-16	C52, C53, C54
+ DECL-01	The study uses existing public data	04_data_and_splits.md:3; 10_conclusion.md:25; new (plan item A6)	-
+ DECL-02	Data sets, in short form (source;	new (plan item A6; ruling CC-392 note N11)	-
+ DECL-03	The registrations with their pinned lists,	10_conclusion.md:20-25; new (plan item A5; decision D9 default)	-

@@ -1,0 +1,145 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "underthesea"
+version = "9.5.0"
+description = "Vietnamese NLP Toolkit"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+authors = [{ name = "Vu Anh", email = "<email removed>" }]
+dependencies = [
+    'Click>=6.0',
+    'tqdm',
+    'requests',
+    'joblib',
+    'PyYAML',
+    'underthesea_core>=3.3.0',
+    'huggingface-hub'
+]
+classifiers=[
+    'Development Status :: 5 - Production/Stable',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'Operating System :: POSIX :: Linux',
+    'Operating System :: MacOS :: MacOS X',
+    'Operating System :: Microsoft :: Windows',
+    'Natural Language :: English',
+    'Programming Language :: Python :: 3',
+    'Programming Language :: Python :: 3.10',
+    'Programming Language :: Python :: 3.11',
+    'Programming Language :: Python :: 3.12',
+    'Programming Language :: Python :: 3.13',
+    'Programming Language :: Python :: 3.14',
+]
+[project.urls]
+Homepage = "https://undertheseanlp.com/"
+Repository = "https://github.com/undertheseanlp/underthesea"
+
+[project.scripts]
+underthesea = "underthesea.cli:main"
+
+[project.optional-dependencies]
+train = [
+    "seqeval"
+]
+deep = [
+    "torch>=2.0.0",
+    "transformers>=4.30.0"
+]
+voice = [
+    "jax>=0.4.25",
+    "jaxlib>=0.4.25",
+    "dm-haiku>=0.0.12",
+    "optax",
+    "soundfile",
+    "matplotlib",
+    "playsound3"
+]
+voice-vieneu = [
+    "vieneu",
+    "soundfile",
+    "playsound3"
+]
+prompt = [
+    "openai"
+]
+agent = []
+agent-server = [
+    "uvicorn>=0.34,<1",
+    "starlette>=0.49.1,<1",
+    "httpx>=0.27,<1",
+]
+assistant = [
+    "textual>=0.50",
+    "rich>=13.0",
+]
+trace = [
+    "langfuse>=2.0.0"
+]
+test = [
+    "nose==1.3.7"
+]
+test-tui = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "pytest-textual-snapshot>=1.0",
+]
+dev = [
+    "ruff>=0.9.0",
+    "tox"
+]
+docs = [
+    "mkdocs>=1.5.0",
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.24.0",
+    "pymdown-extensions>=10.0"
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+exclude = ["node_modules"]
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line-too-long (handled by formatter)
+    "W605",  # invalid-escape-sequence (many regex patterns)
+    "UP007", # non-pep604-annotation (Union[X, Y] -> X | Y, keep for compatibility)
+    "B905",  # zip-without-explicit-strict (strict= added in Python 3.10)
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+underthesea = [
+  "*.txt",
+  "*.yml",
+  "*.yaml",
+  "*.bin",
+  "**/*.bin",
+  "**/*.txt",
+  "**/*.pkl",
+  "**/*.json",
+  "agent/static/*.html",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["underthesea", "underthesea.*"]
+exclude = ["apps*", "datasets*", "img*", "extensions*", "contribute*", "tests*"]

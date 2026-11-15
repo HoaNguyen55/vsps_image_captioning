@@ -1,0 +1,33 @@
+utc_date	url	http_code	content_type	outcome	saved_as
+2026-11-15T11:13Z	https://export.arxiv.org/api/query?id_list=<id> (10 ids: 2406.10118 2410.02027 2504.14359 2402.17193 2402.02314 1612.07600 2604.27712 2401.08100 1504.00325 2111.15366)	200	application/atom+xml	read	arxiv_<id>.xml
+2026-11-15T11:14Z	https://api.crossref.org/works?query.bibliographic=<title> (12 searches)	200	application/json	read	crossref_search_*.json
+2026-11-15T11:15Z	https://api.crossref.org/works/<DOI> (4 ACL DOIs)	200	application/json	read	crossref_10.18653_*.json
+2026-11-15T11:15Z	https://doi.org/10.48550/arXiv.<id> (2402.17193 2402.02314 2406.10118)	302	-	redirect to arxiv.org/abs/<id>	(not saved; DataCite records below)
+2026-11-15T11:15Z	https://api.datacite.org/dois/10.48550/arXiv.<id>	200	application/json	read	datacite_arXiv.<id>.json
+2026-11-15T11:16Z	https://dblp.org/search/publ/api?q=...	200	text/html	BOT CHECK ("Making sure you're not a bot"); not worked around	(deleted)
+2026-11-15T11:17Z	https://proceedings.mlr.press/v235/	200	text/html	read (index, 2.5 MB; only the lin24j entry used)	(not saved, size)
+2026-11-15T11:17Z	https://proceedings.mlr.press/v235/lin24j.html	200	text/html	read	pmlr_v235_lin24j.html
+2026-11-15T11:17Z	https://api2.openreview.net/notes/search?term=<title of zhang2024scaling>	200	application/json	read	openreview_search_zhang2024.json
+2026-11-15T11:18Z	https://api.unpaywall.org/v2/<DOI>?email=vsps-research@example.org (Berger 1996, Berger 1982 both DOIs)	200	application/json	read: is_oa false, no OA location	unpaywall_*.json
+2026-11-15T11:18Z	https://api.openalex.org/works/doi:<DOI> (Berger 1996, Berger 1982)	200	application/json	read	openalex_10.*.json
+2026-11-15T11:19Z	http://www.lib.ncsu.edu/resolver/1840.4/234 (Berger and Hsu, report version, per OpenAlex)	000	-	no answer (connection failed); retried repository.lib.ncsu.edu handle and API with 60 s timeout: no answer	-
+2026-11-15T11:19Z	https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=10.1.1.18.648	429	text/html	redirected to web.archive.org, 429 Too Many Requests	-
+2026-11-15T11:19Z	https://apps.dtic.mil/sti/pdfs/ADA091607.pdf (Berger 1982, report version)	403	text/html	refused	-
+2026-11-15T11:19Z	https://projecteuclid.org/.../10.1214/ss/1032280304.pdf	200	text/html	BOT CHECK (Incapsula script page, no PDF); not worked around	-
+2026-11-15T11:20Z	https://projecteuclid.org/download/pdf_1/euclid.ss/1032280304	200	text/html	BOT CHECK (same); not worked around	-
+2026-11-15T11:20Z	https://typeset.io/pdf/bioequivalence-trials-intersection-union-tests-and-1arv3pnr9k.pdf	405	text/html	redirect to scispace.com "Human Verification"; not worked around	-
+2026-11-15T11:21Z	https://api.openalex.org/works?filter=title.search:...,publication_year:1979 (Holm)	200	application/json	read: volume 6, issue null, pp. 65-70; lists the string 10.2307/4615733 as DOI	openalex_holm1979.json
+2026-11-15T11:21Z	https://www.ime.usp.br/~abe/lista/pdf4R8xPVzCnX.pdf (Holm copy listed by OpenAlex)	403	text/html	refused	-
+2026-11-15T11:21Z	https://doi.org/10.2307/4615733	404	-	DOI not registered	-
+2026-11-15T11:21Z	https://doi.org/api/handles/10.2307/4615733	200	application/json	responseCode 100 = handle not found	doi_handle_10.2307_4615733.json
+2026-11-15T11:21Z	https://api.crossref.org/works/10.2307/4615733	404	-	no record	-
+2026-11-15T11:21Z	https://api.openalex.org/works/doi:<DOI> (Clopper-Pearson 1934, Cohen 1960)	200	application/json	read: both closed access, no OA copy	openalex_10.1093_*.json, openalex_10.1177_*.json
+2026-11-15T11:22Z	https://api.github.com/repos/undertheseanlp/underthesea, /contributors, https://api.github.com/users/rain1024, raw README.md, raw pyproject.toml	200	application/json, text/plain	read (e-mail addresses replaced by "<email removed>" before saving)	github_underthesea_*, github_user_rain1024.json
+2026-11-15T11:22Z	https://raw.githubusercontent.com/mjpost/sacrebleu/master/CHANGELOG.md; https://api.github.com/repos/mjpost/sacrebleu/releases/tags/v2.0.0; https://pypi.org/pypi/sacrebleu/2.0.0/json	200	text/plain, application/json	read (e-mail addresses removed)	github_sacrebleu_*, pypi_sacrebleu_2.0.0.json
+2026-11-15T11:23Z	https://api.crossref.org/works?filter=isbn:979-8-3195-1937-5 ; query.container-title FAIR 2026	200	application/json	read: 0 results for the ISBN	crossref_isbn_9798319519375.json, crossref_search_fair2026.json
+2026-11-15T11:23Z	https://api.semanticscholar.org/graph/v1/paper/DOI:<DOI> (Berger 1996, Berger 1982), through the project's queue script	200	application/json	read: openAccessPdf CLOSED for both; abstract of Berger 1982 present (index copy)	s2_10.*.json
+2026-11-15T11:24Z	https://ecommons.cornell.edu/server/api/core/bitstreams/43b4a0a3-1a16-4f88-8c44-63aa73e3a04c/content (search hit)	200	text/plain	a DIFFERENT work (Casella and Berger, encyclopedia article "Hypothesis Testing", 1999, Cornell BU-1454-M); not either cited work; not used, not saved	-
+2026-11-15T11:24Z	https://aclanthology.org/<id>.bib (2024.emnlp-main.296, 2024.emnlp-main.335, 2025.ijcnlp-long.108, E17-1019)	200	text/plain	read	acl_<id>.bib
+2026-11-15T11:24Z	https://api.crossref.org/works/<DOI> (Berger 1996, Berger 1982 both DOIs, Clopper-Pearson, Cohen)	200	application/json	read; Berger 1996 record carries the deposited abstract; Berger 1982 records carry none	crossref_10.1214_*, crossref_10.1080_*, crossref_10.2307_1267823.json, crossref_10.1093_*, crossref_10.1177_*
+2026-11-15T11:24Z	web search tool: 3 bibliographic queries (Berger and Hsu 1996 pdf; Berger 1982 pdf; NCSU mimeo version)	-	-	hits used only to find candidate copies; no hit used as evidence	-
+2026-11-15T11:35Z	https://datasets-benchmarks-proceedings.neurips.cc/paper/2021/hash/084b6fbb10729ed4da8c3d3f5a3ae7c9-Abstract-round2.html	200	text/html	read: title, authors, container	neurips_db2021_raji.html

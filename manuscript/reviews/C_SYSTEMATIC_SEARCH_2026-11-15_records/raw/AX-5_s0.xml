@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<feed xmlns:opensearch="http://a9.com/-/spec/opensearch/1.1/" xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns="http://www.w3.org/2005/Atom">
+  <id>https://arxiv.org/api/DTwfRW5tsrSjAU4814d8Y12Askk</id>
+  <title>arXiv Query: search_query=abs:captioning AND (abs:preregistered OR abs:"pre-registered" OR abs:preregistration) AND submittedDate:"202101010000 TO 202611152359"&amp;id_list=&amp;start=0&amp;max_results=200</title>
+  <updated>2026-11-15T02:25:50Z</updated>
+  <link href="https://arxiv.org/api/query?search_query=abs:captioning+AND+((abs:preregistered+OR+(abs:%22pre-registered%22+OR+abs:preregistration))+AND+submittedDate:%22202101010000+TO+202611152359%22)&amp;start=0&amp;max_results=200&amp;id_list=" type="application/atom+xml"/>
+  <opensearch:itemsPerPage>200</opensearch:itemsPerPage>
+  <opensearch:totalResults>4</opensearch:totalResults>
+  <opensearch:startIndex>0</opensearch:startIndex>
+  <entry>
+    <id>http://arxiv.org/abs/2104.08376v3</id>
+    <title>Concadia: Towards Image-Based Text Generation with a Purpose</title>
+    <updated>2022-10-27T22:22:13Z</updated>
+    <link href="https://arxiv.org/abs/2104.08376v3" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2104.08376v3" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Current deep learning models often achieve excellent results on benchmark image-to-text datasets but fail to generate texts that are useful in practice. We argue that to close this gap, it is vital to distinguish descriptions from captions based on their distinct communicative roles. Descriptions focus on visual features and are meant to replace an image (often to increase accessibility), whereas captions appear alongside an image to supply additional information. To motivate this distinction and help people put it into practice, we introduce the publicly available Wikipedia-based dataset Concadia consisting of 96,918 images with corresponding English-language descriptions, captions, and surrounding context. Using insights from Concadia, models trained on it, and a preregistered human-subjects experiment with human- and model-generated texts, we characterize the commonalities and differences between descriptions and captions. In addition, we show that, for generating both descriptions and captions, it is useful to augment image-to-text models with representations of the textual context in which the image appeared.</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2021-04-16T21:25:00Z</published>
+    <arxiv:comment>Proceedings of EMNLP 2022</arxiv:comment>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Elisa Kreiss</name>
+    </author>
+    <author>
+      <name>Fei Fang</name>
+    </author>
+    <author>
+      <name>Noah D. Goodman</name>
+    </author>
+    <author>
+      <name>Christopher Potts</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2608.03999v1</id>
+    <title>Agogic: Performance-Timed Music Tokens for LLM-Native Text-to-Symbolic-Music Generation</title>
+    <updated>2026-08-04T17:56:49Z</updated>
+    <link href="https://arxiv.org/abs/2608.03999v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2608.03999v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Text-to-music language models begin with a choice usually made by default: how to tokenize music. Normally entangled with backbone, data, and recipe, its effect has never been measured in isolation. We fix pretrained Qwen3.5 (0.8B-27B), data, budget, and decoding, and swap only the representation across seven tokenizations, anchoring texture metrics to each representation's model-free ceiling. The ordering is clean and surprising: representation, not model size, is the binding variable for distributional fidelity. Scaling the backbone 34x barely moves Frechet Music Distance (FMD), whereas switching representation halves it. PMT, a performance-resolution stream we release (10 ms timing, per-note velocity, multi-track texture; 609 symbols), reaches FMD 159 at 0.8B against 272-286 for beat grids (1.7-1.8x lower, up to 2.8x elsewhere; non-overlapping bootstrap CIs), so a 0.8B performance-resolution model beats a 27B beat grid. It reappears on a 26M from-scratch backbone and a second performance-resolution tokenizer: a property of the class, not one lucky vocabulary. Nor is it a finer-lattice artifact: snapping PMT's onsets to the beat grids' resolution still leaves it 67-129 FMD ahead of both (n=500). The effect is distributional; whether it is audible is a separate question, left open by our probe, with a human study pre-registered. Native caption adherence is weak but separable: a lightweight decode-time constraint doubles instrument-F1 (.28 to .60) and Correct-Key (.16 to .35) at no distributional cost. We release the harness, 25+ checkpoints, two corpora (86.6k aligned across caption/MIDI/ABC/audio; 6.25M captioned, the largest for music), and an imprinting diagnostic: published text-to-MIDI systems reproduce their training distribution near-invariant to the caption (72% vs. 71% chord-time on disjoint domains). The field's next representation claim can now be measured, not asserted.</summary>
+    <category term="cs.SD" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-08-04T17:56:49Z</published>
+    <arxiv:comment>Project Page: https://yisuanwang.github.io/Agogic</arxiv:comment>
+    <arxiv:primary_category term="cs.SD"/>
+    <author>
+      <name>Junhao Chen</name>
+    </author>
+    <author>
+      <name>Mingjin Chen</name>
+    </author>
+    <author>
+      <name>Jingjia Mao</name>
+    </author>
+    <author>
+      <name>Lin Chen</name>
+    </author>
+    <author>
+      <name>Saining Zhang</name>
+    </author>
+    <author>
+      <name>Minglin Chen</name>
+    </author>
+    <author>
+      <name>Ruocheng Wu</name>
+    </author>
+    <author>
+      <name>Liaoyuan Fan</name>
+    </author>
+    <author>
+      <name>Wenyi Li</name>
+    </author>
+    <author>
+      <name>Mingju Gao</name>
+    </author>
+    <author>
+      <name>Henghaofan Zhang</name>
+    </author>
+    <author>
+      <name>Zhihao Li</name>
+    </author>
+    <author>
+      <name>Hao Zhao</name>
+    </author>
+    <author>
+      <name>Yufei Wang</name>
+    </author>
+    <author>
+      <name>Ruqi Huang</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2611.06206v1</id>
+    <title>Loop Before You Leap: What Recurrent Depth Can and Cannot Buy in Data-Limited Pretraining</title>
+    <updated>2026-11-04T09:21:38Z</updated>
+    <link href="https://arxiv.org/abs/2611.06206v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2611.06206v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Multimodal models have often scored below text-only baselines in the BabyLM Challenge (Klerings et al., 2024; Takmaz et al., 2025). We test whether additional recurrent computation helps close this gap. Recurrence increases computation by reusing layers without adding parameters or training data. Using a single implementation, we compare standard and looped Transformers under a 100M-word budget, with three seeds per main condition. Each image is represented by one feature vector from a frozen DINOv2 encoder, used as a prefix token. Caption words count toward the budget, so multimodal training also changes the language data. In a pre-registered text-only comparison, a 12-layer stack repeated four times exceeds a standard 48-layer Transformer by 5.4 BLiMP percentage points at matched inference compute. However, multimodal training lowers BLiMP accuracy by about 3.8 points in both architectures, with no clear mitigation from recurrence. An exploratory loop-side no-image control, trained with the multimodal language data and batching schedule, scores 5.7 points below the text-only baseline. Adding the visual prefix raises accuracy by 1.85 points on average, but this contrast is uncertain with three seeds. These results suggest that changes in language data and its presentation are a major source of the drop. Diagnostic tests show that the models use visual information; its contribution to grammatical generalization remains uncertain under this single-vector interface.</summary>
+    <category term="cs.CL" scheme="http://arxiv.org/schemas/atom"/>
+    <category term="cs.LG" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-11-04T09:21:38Z</published>
+    <arxiv:comment>Accepted to the BabyLM Challenge 2026 (Strict track). 20 pages, 5 figures, 12 tables. This version no longer reports a training-time shuffled-feature control that appeared in the workshop version, because its execution could not be verified (see Limitations)</arxiv:comment>
+    <arxiv:primary_category term="cs.CL"/>
+    <author>
+      <name>Daichi Hotta</name>
+    </author>
+    <author>
+      <name>Yohei Kobashi</name>
+    </author>
+    <author>
+      <name>Takeshi Kojima</name>
+    </author>
+    <author>
+      <name>Yusuke Iwasawa</name>
+    </author>
+    <author>
+      <name>Yutaka Matsuo</name>
+    </author>
+  </entry>
+  <entry>
+    <id>http://arxiv.org/abs/2605.19017v1</id>
+    <title>Guardrail Selection in Line Charts to Contextualize Persuasive Visualizations</title>
+    <updated>2026-05-18T18:38:49Z</updated>
+    <link href="https://arxiv.org/abs/2605.19017v1" rel="alternate" type="text/html"/>
+    <link href="https://arxiv.org/pdf/2605.19017v1" rel="related" type="application/pdf" title="pdf"/>
+    <summary>Charts used for persuasion can easily veer into being outright misleading when, for instance, cherry-picked data is paired with a deceptive caption, as is commonly encountered on social media. The rise of interactive time-series data explorers for hotly debated topics makes such framing easy to produce and spread. Post-hoc interventions like fact-checking often arrive too late and suffer from persistence of belief. Prior work suggests that guardrails, in the form of contextual comparison lines embedded directly into charts, can reduce these effects. We propose and evaluate a practical set of guardrail sampling strategies for implementing such contextual lines in real systems. In a preregistered mixed-design study with two real-world scenarios (COVID-19 and Stocks), participants viewed persuasive charts with different sets of guardrails and reported trust, estimated rank in the dataset, expressed their perceived completeness of context, as well as subjective preference for different tasks. Across scenarios, guardrails improved trust, accuracy of performance judgments, and perceived completeness of context compared to the control. Taken together, the study offers practical guardrail sampling methods, evidence of their contextual benefits, and insights into participants' preferences.</summary>
+    <category term="cs.HC" scheme="http://arxiv.org/schemas/atom"/>
+    <published>2026-05-18T18:38:49Z</published>
+    <arxiv:primary_category term="cs.HC"/>
+    <arxiv:journal_ref>Computer Graphics Forum (EuroVis), 45(3), 2026</arxiv:journal_ref>
+    <author>
+      <name>Khandaker Abrar Nadib</name>
+    </author>
+    <author>
+      <name>Marina Kogan</name>
+    </author>
+    <author>
+      <name>Alexander Lex</name>
+    </author>
+    <author>
+      <name>Maxim Lisnic</name>
+    </author>
+    <arxiv:doi>10.1111/cgf.70460</arxiv:doi>
+    <link rel="related" href="https://doi.org/10.1111/cgf.70460" title="doi"/>
+  </entry>
+</feed>

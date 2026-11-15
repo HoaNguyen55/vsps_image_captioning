@@ -1,0 +1,65 @@
+diff --git a/paper_v1_analysis/05_preregistration_and_analysis.md b/paper_v1_analysis/05_preregistration_and_analysis.md
+index 876c3e5..82df983 100644
+--- a/paper_v1_analysis/05_preregistration_and_analysis.md
++++ b/paper_v1_analysis/05_preregistration_and_analysis.md
+@@ -155,7 +155,7 @@ For m = 1 this matches the form of the registered P1 rule (a point at the SESOI
+ 5. If nothing is nominated, there is no registered claim, and the OV-dev-B rows are reported with their labels and the sentence "no claim was nominated on OV-dev-A".
+ 6. Components that were not nominated, and Aya-Vision-8B's τ_pair and τ_marg (it has no OV-dev-A decodes), are descriptive rows with labels.
+ 
+-**Multiplicity.** One registered family: the nominated claims. One secondary family: τ_sel of each backbone first decoded under this registration outside the Qwen line (S-BB). Everything else is reported with an unadjusted interval and a label, with no family-wise statement. No post hoc statistic replaces a failed rule; a post hoc row may stand beside it, labelled post hoc.
++**Multiplicity.** One registered family: the nominated claims. One secondary family: τ_sel of each backbone first decoded under this registration outside the Qwen line (S-BB; Section 6.10.9). Everything else is reported with an unadjusted interval and a label, with no family-wise statement. No post hoc statistic replaces a failed rule; a post hoc row may stand beside it, labelled post hoc.
+ 
+ **Failure wording, fixed in the registration.** A nominated claim that is not DETECTED on OV-dev-B is reported in the main text as "FAIL: the claim nominated on OV-dev-A did not hold on OV-dev-B", with its interval. Nothing nominated gives the sentence of item 5. Under either outcome the study keeps τ_any, τ_sel, the variance terms and the copy bound, and makes no registered claim about the split.
+ 
+diff --git a/paper_v1_analysis/06_results.md b/paper_v1_analysis/06_results.md
+index 037c6cd..31d8e2e 100644
+--- a/paper_v1_analysis/06_results.md
++++ b/paper_v1_analysis/06_results.md
+@@ -125,7 +125,9 @@ Retrieved captions describe other images and can bring in objects that the query
+ 
+ > **Development data only (OV-dev-A, OV-dev-B, XM-dev500): DEVELOPMENT / C-ATTR-DEV, NON-CONFIRMATORY.** This study was registered after every test set of this paper had been decided. It changes no verdict of Sections 6.2–6.9 or 8 and enters neither the abstract nor the contributions. OV-dev-A and OV-dev-B are re-used development sets on which the retrieval contrast τ_sel was already known (Section 5.7).
+ 
+-**6.10.1 What ran.** Block 1 decoded the `perm`, `fix` and extra `rand` arms, and Aya-Vision-8B's `zs`, `ret` and `rand` d0 on XM-dev500, in batches, as registered; it ended with all its registered steps complete, in 6.41 GPU-hours of its 12-hour cap, and carries no registered claim (Section 6.10.2). Block 1b re-decoded every arm that enters an attribution contrast at batch size 1 under the hard cap of 17.95 GPU-hours fixed after D1, and used 12.27 GPU-hours. All 50 registered batch-size-1 runs (Tiers A, B and C) finished, with no cap stop and no job stop. Scoring followed the registered order (Section 5.7); its verification stage passed, with the per-image prompt hashes of 50 batch-size-1 runs compared in 50 pairs and 0 unequal pairs, and the scoring parity gate passed (ok). Block 3 (Section 6.10.8) decoded its arms at batch size 1 on another rented machine, under the hard cap of 5.51 GPU-hours fixed after its D1 check, and used 3.72 GPU-hours, the D1 check and a first launch that stopped at the model load included. All ten steps of its run document finished, with no cap stop, no job stop and no step NOT RUN. Its scoring passed its verification stage, with the scoring parity gate passed (ok).
++#### 6.10.1 What ran
++
++Block 1 decoded the `perm`, `fix` and extra `rand` arms, and Aya-Vision-8B's `zs`, `ret` and `rand` d0 on XM-dev500, in batches, as registered; it ended with all its registered steps complete, in 6.41 GPU-hours of its 12-hour cap, and carries no registered claim (Section 6.10.2). Block 1b re-decoded every arm that enters an attribution contrast at batch size 1 under the hard cap of 17.95 GPU-hours fixed after D1, and used 12.27 GPU-hours. All 50 registered batch-size-1 runs (Tiers A, B and C) finished, with no cap stop and no job stop. Scoring followed the registered order (Section 5.7); its verification stage passed, with the per-image prompt hashes of 50 batch-size-1 runs compared in 50 pairs and 0 unequal pairs, and the scoring parity gate passed (ok). Block 3 (Section 6.10.8) decoded its arms at batch size 1 on another rented machine, under the hard cap of 5.51 GPU-hours fixed after its D1 check, and used 3.72 GPU-hours, the D1 check and a first launch that stopped at the model load included. All ten steps of its run document finished, with no cap stop, no job stop and no step NOT RUN. Its scoring passed its verification stage, with the scoring parity gate passed (ok).
+ 
+ #### 6.10.2 Batch composition changed greedy captions (kill gate K1)
+ 
+@@ -249,6 +251,14 @@ Table S22 prints the batched block-1 rows beside the batch-size-1 rows as a desc
+ 
+ **XM-dev500.** Every XM-dev500 row of Table 18 has no registered rule (registration §7.8): its label is printed and no conclusion is drawn, for the DETECTED rows as well. Qwen2.5-VL-7B's image-format row there is UNRESOLVED: the data neither establish an effect of at least +2.0 nor bound it inside ±2.0. Beside it, the text-example row of Table S21 is printed with its own label; no difference is computed.
+ 
++#### 6.10.9 What did not run
++
++Block 2, which would have added backbones outside the Qwen language-model line, was not run by its registered cut-off (2026-11-14 18:00, UTC+7); the secondary family S-BB is empty.
++
++Scope (registration §7.6), counting the non-Qwen backbones whose τ_sel on OV-dev-B is DETECTED: the retrieval-specific effect was seen for one backbone outside the Qwen line. This count rests on one backbone, Aya-Vision-8B, whose row is post hoc (its τ_sel on this set was known before the registration) and a batch-1 re-decode of a known τ_sel; no backbone first decoded under this registration was run. Aya-Vision-8B's row (DETECTED, Table 16) also carries the placebo flag of Section 6.10.5. InternVL3-8B runs on a Qwen2.5 language model and is not counted.
++
++Block 3 ran (Section 6.10.8).
++
+ ### 6.11 Compute
+ 
+ The test used 9.59 GPU-hours of the 20 GPU-hour cap on one 24 GB GPU (OpenViIC block 4.61, XM3600 block 4.90, pre-test decode-parity checks 0.08). Verified precision and all decision steps ran on CPU. The development stages used 6.84 and 4.91 GPU-hours under a separate cap. The attribution study used 6.41 GPU-hours in block 1 (cap 12), 12.27 in block 1b (cap 17.95) and 3.72 in block 3 (cap 5.51; 0.02 of them in a first launch that stopped at the model load, Section 3.8), on one 24 GB GPU; its scoring ran on CPU.
+diff --git a/paper_v1_analysis/07_disclosures.md b/paper_v1_analysis/07_disclosures.md
+index e1537a7..cfc8d5a 100644
+--- a/paper_v1_analysis/07_disclosures.md
++++ b/paper_v1_analysis/07_disclosures.md
+@@ -51,7 +51,7 @@ A third registration, for Flickr30K (Section 8.6), was written after the four te
+ 
+ The attribution study of Sections 3.8, 5.7 and 6.10 uses development sets only. It was registered after every test set of this paper had been decided, so its design could take their results into account; OV-dev-A and OV-dev-B had already carried the stage-A and stage-B rows, the ablations of Section 6.8 and earlier masked rows, and on both the sum τ_sel was known before the split was looked at (Section 5.7). The following were disclosed in its records.
+ 
+-- **Block order.** Block 0 (CPU: list construction, the `perm` list check and the refill gate) ran before any decode. Block 1 decoded the new arms in batches; kill gate K1 fired at its first step (Section 6.10.2), and the block was left running as registered and ended by itself with all its steps complete. The addendum for block 1b was written after K1 fired and before any block-1 output was scored or opened; the only block-1 information seen then was the identity counts, the ids of the differing items, the timing lines and the verdict-file hashes, none of which carries a score. Block 1b re-decoded every contrast arm at batch size 1. Scoring followed in the registered order (Section 5.7). After block 1b had been scored, block 3 decoded the third-party arms at batch size 1 on another rented machine and was scored in its own registered order, the positive control first (Sections 3.8 and 5.7).
++- **Block order.** Block 0 (CPU: list construction, the `perm` list check and the refill gate) ran before any decode. Block 1 decoded the new arms in batches; kill gate K1 fired at its first step (Section 6.10.2), and the block was left running as registered and ended by itself with all its steps complete. The addendum for block 1b was written after K1 fired and before any block-1 output was scored or opened; the only block-1 information seen then was the identity counts, the ids of the differing items, the timing lines and the verdict-file hashes, none of which carries a score. Block 1b re-decoded every contrast arm at batch size 1. Scoring followed in the registered order (Section 5.7). After block 1b had been scored, block 3 decoded the third-party arms at batch size 1 on another rented machine and was scored in its own registered order, the positive control first (Sections 3.8 and 5.7). Block 2 was not run by its registered cut-off (Section 6.10.9).
+ - **Mutant check on the rented machine.** The block-1 run document required the code's mutant tests to run on the rented machine before any decode. The machine's container refused the user namespaces that the mutant runner used for network isolation, so that check was not run there. A recorded review accepted, as a deviation, the record of the same mutant run made earlier on the authors' laptop on byte-identical code (22 of 22 mutants killed), together with the self-tests that passed on the rented machine. The later mutant runs for the block-1b code (33 of 33 killed) and for the scoring code (73 of 73 killed) ran on the rented machine with an option that drops the network isolation, and are recorded as not network-isolated.
+ - **Checksum lists of the output trees.** The decode job writes the checksum list of its output tree before its last log lines, so a check of the pulled tree against that list reports one mismatch, the job's own log file. The whole-tree digest of the pulled copy was compared with the machine's instead, and matched; the scoring stage exempts only that log file and refuses any unlisted file.
+ - **Software environment.** The decode environment's Python was 3.10.22 where the earlier record names 3.10.12, with the package freeze equal to its pin; the CPU environment was built from a committed freeze that adds scipy. Host parity (Section 6.10.2) and the scoring parity gate (Section 5.7) are the checks that bind these differences. The model download used a fixed address of the model host's content network, with TLS verification on and every model file accepted only on its pinned hash.
+diff --git a/paper_v1_analysis/number_manifest_C.tsv b/paper_v1_analysis/number_manifest_C.tsv
+index a8ddad7..8ec72b2 100644
+--- a/paper_v1_analysis/number_manifest_C.tsv
++++ b/paper_v1_analysis/number_manifest_C.tsv
+@@ -5659,3 +5659,4 @@ about ±0.3	manuscript/prereg/2026-11-11_c_attr_dev/C_ATTR_DEV_PREREG_v1_1.md::
+ 50	manuscript/prereg/2026-11-11_c_attr_dev/C_ATTR_BLOCK3_RUN_DOC_v1_1.md::§2 D1 (first 50 OV-dev-B items per runner)	50	e8ae45a59b08	registered text (run doc v1.1)	03_method.md,11_supplement_registered_rows.md
+ 4	manuscript/prereg/2026-11-11_c_attr_dev/C_ATTR_DEV_PREREG_v1_1.md::§2 lmcap_rand / lmcap_perm (K = 4)	4	44f81329d418	registered text (v1.1)	03_method.md
+ 3	manuscript/prereg/2026-11-11_c_attr_dev/C_ATTR_DEV_PREREG_v1_1.md::§2 lmcap_rand (N = 3 shots)	3	44f81329d418	registered text (v1.1)	03_method.md
++one	decisions LOG::OPS-1114ap-c-b2-cutoff	'non-Qwen backbones with tau_sel DETECTED on OV-dev-B: 1'	69e7b9a735f4	FACT_RECORDED (LOG line OPS-1114ap-c-b2-cutoff, 2026-11-14T18:18:20Z); the count is derived from the Aya-Vision-8B label row and this line (CC-378 ruling 7; shell C1)	06_results.md

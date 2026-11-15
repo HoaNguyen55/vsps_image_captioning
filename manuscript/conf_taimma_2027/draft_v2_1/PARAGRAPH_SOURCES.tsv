@@ -1,0 +1,80 @@
+paragraph_id	first_six_words	source_in_paper_C_at_d558df0 (file:lines under paper_v1_analysis/)	claim_map_rows
+AUTH	[AUTHORS: to be set by the	new (placeholder; plan decision D1)	-
+ABS-01	Retrieval in-context captioning places the captions	00_abstract.md:7	C04, C07, C08, C13, C14, C17, C33, C34, C37, C49, C50, C51, C52
+KW	Image captioning In-context examples Retrieval augmentation	new (plan item A3)	-
+S1-01	Open multimodal large language models (MLLMs)	01_introduction.md:3-5	C46
+S1-02	Retrieval in-context captioning is such a	01_introduction.md:7-12	-
+S1-03	This study measures the first effect	01_introduction.md:14-26	C49
+S1-04	The study proposes no new method.	01_introduction.md:28	-
+S1-05	A registered evaluation design for Vietnamese	01_introduction.md:30	C49
+S1-06	In the memory's source, in two	01_introduction.md:31	C07, C08, C13, C14, C33, C34, C50
+S1-07	Outside the memory's source. On XM3600	01_introduction.md:32	C04, C17, C37, C51
+S2-01	Work on retrieval for captioning is	02_related_work.md:5	-
+S2-02	The random control exists. For trained	02_related_work.md:7; 02_related_work.md:20; 02_related_work.md:64	-
+S2-03	The English precedent. OpenFlamingo reports that	02_related_work.md:20; 01_introduction.md:9	-
+S2-04	Closest multilingual and Vietnamese work. A	02_related_work.md:11; 02_related_work.md:22; 02_related_work.md:69; 02_related_work.md:7; 02_related_work.md:37; 02_related_work.md:39	-
+S2-05	What differs here. An analysis of	02_related_work.md:11-16; 02_related_work.md:64-69	-
+T1	Table 1. This study among analyses	02_related_work.md:52-62 (Table 1b); first-author names from the author fields of paperC.bib	-
+S3-01	Memory. The Vietnamese memory joins the	03_method.md:5-9	C01
+S3-02	Arms. Images are embedded with SigLIP2	03_method.md:11-22	C04
+S3-02b	Two copy baselines use no model:	03_method.md:22; 02_related_work.md:7	-
+S3-03	Prompt and decoding. The prompt follows	03_method.md:24-33	C04
+S3-04	Neighbour-only objects and the deletion step.	03_method.md:35-51	-
+S3-05	Frozen configurations. Development stage A chose	03_method.md:53-60; 03_method.md:72; 06_results.md:93; 09_limitations.md:18; new (ruling CC-399 N4): the H_G rule in words, from section 7.5 of the stage-2 registration (run repo, manuscript/prereg/2026-10-22_c_stage2/PREREG.md:330-332); Paper C at d558df0 prints no rule sentence	C02, C06
+T2	Table 2. Frozen configurations, unchanged from	03_method.md:62-70 (Table 2)	C02
+S3-06	Scoring. Vietnamese candidates and references are	03_method.md:74-78; 11_supplement_registered_rows.md:786	-
+S3-07	Count-matched object precision is the instrument	11_supplement_registered_rows.md:787-788; 05_preregistration_and_analysis.md:63-68; 03_method.md:80; 02_related_work.md:24	- (definitions; plan item A8, decision D8)
+S4-01	Data. The study uses only public	04_data_and_splits.md:3; 04_data_and_splits.md:24-32; 06_results.md:65	C03
+T3	Table 3. Every set, with its	04_data_and_splits.md:5-17 (Table 3); 08_english_comparison.md:19-23	C01, C03, C32
+S4-02	Three stages. Each stage was committed	05_preregistration_and_analysis.md:32-40; 04_data_and_splits.md:11-12	C04, C05
+S4-03	Estimands and rules. For backbone m	05_preregistration_and_analysis.md:48-52; 05_preregistration_and_analysis.md:74-93; stage numbering: 05_preregistration_and_analysis.md:34-37 and the stage-2 registration (run repo, manuscript/prereg/2026-10-22_c_stage2/PREREG.md:1-3, 13, 68, 284-285)	C04, C08, C17
+T4	Table 4. Registered predictions and decision	05_preregistration_and_analysis.md:56-72 (Table 4); 05_preregistration_and_analysis.md:106; 08_english_comparison.md:11-21 (Table 10)	C03, C04, C32
+S4-04	Uncertainty. CIs come from a paired	05_preregistration_and_analysis.md:54; 05_preregistration_and_analysis.md:108-114	C04
+S4-05	One look. Every test set went	05_preregistration_and_analysis.md:42	C47
+S5-01	All differences are paired, with the	06_results.md:3-6	-
+T5	Table 5. CIDEr-D per arm, each	06_results.md:10-19 (Table 6); 11_supplement_registered_rows.md:809-840 (Table S15, block B)	C02, C26, C29, C43
+T6	Table 6. Registered Vietnamese results: estimate	06_results.md:25-37 (Table 7); 06_results.md:49-59 (Table 8); 06_results.md:95-102 (Table 9)	C02, C03, C04, C07, C08, C09, C10, C11, C12, C13, C14, C15, C17, C18, C19, C20, C21, C22
+S5-02	P1: PASS. On the primary set,	06_results.md:39; 06_results.md:43	C02, C03, C07, C08, C09, C10, C11, C12
+S5-03	P2: PASS for both backbones. Against	06_results.md:45	C04, C13, C14
+S5-04	InternVL3 without the deletion step. The	06_results.md:43; 06_results.md:89; 06_results.md:104	C03, C15, C16
+S5-05	Post hoc (not registered; no verdict).	06_results.md:41; 06_results.md:45	C03, C30, C31
+S5-06	XM-a: FAIL. The gain was not	06_results.md:61	C02, C03, C17, C18, C19
+S5-07	XM-b: PASS under its own rule.	06_results.md:63	C04, C21, C22, C23
+S5-08	Zero-shot. The control S-zf, pooled ret	06_results.md:71	C24, C54
+S5-09	Fixed examples conditional on the realised	06_results.md:73; 06_results.md:192	C25, C26
+S5-10	Copy baselines and tokenisation (registered secondaries,	06_results.md:75; 06_results.md:79; 05_preregistration_and_analysis.md:95-100	C27, C28
+S6-01	A separate registration carried the design	08_english_comparison.md:3-11; 08_english_comparison.md:23; 07_disclosures.md:46; 08_english_comparison.md:82; 08_english_comparison.md:86	C32, C48
+T7	Table 7. Registered and reported English	08_english_comparison.md:27-37 (Table 11); 08_english_comparison.md:51-57 (Table 12)	C02, C32, C33, C34, C35, C37, C38, C39, C40, C41
+S6-02	P1-EN: PASS. On the COCO Karpathy	08_english_comparison.md:39-45	C02, C32, C33, C34, C36, C42
+S6-03	S-NC: FAIL. On NoCaps val, pooled	08_english_comparison.md:49-59	C04, C32, C37, C38, C41
+F1	![Fig. 1. ret rand on the	08_english_comparison.md:65 (Figure 1; file fig1_ret_minus_rand.svg); 05_preregistration_and_analysis.md:64; 08_english_comparison.md:11	C04, C53
+S6-04	Both languages side by side (post	08_english_comparison.md:69-76; 10_conclusion.md:16	C53
+S7-01	Disclosures. None of the following changed	07_disclosures.md:3	-
+S7-D01	Exclusions. The primary OpenViIC set leaves	07_disclosures.md:12; 07_disclosures.md:32	C03
+S7-D02	Earlier contact. To pin lists, CPU	07_disclosures.md:14-15; 07_disclosures.md:36; 08_english_comparison.md:86	C32
+S7-D03	Timing of the English arm. It	07_disclosures.md:18; 07_disclosures.md:46; 08_english_comparison.md:11; 08_english_comparison.md:82; 08_english_comparison.md:86	C48
+S7-D04	English SESOI. The +2.0 was carried	05_preregistration_and_analysis.md:52; 08_english_comparison.md:11	C04
+S7-D05	English deletion step. It is a	08_english_comparison.md:84	-
+S7-D06	NoCaps images were fetched by their	08_english_comparison.md:86	-
+S7-D07	English per-backbone row. The abstract and	07_disclosures.md:17; 07_disclosures.md:28	C34, C50
+S7-D08	Post hoc rows. The rows without	07_disclosures.md:13; 06_results.md:41; 08_english_comparison.md:41	C30, C36
+S7-D09	Re-use after the look. An exploratory	07_disclosures.md:21; 06_results.md:122	-
+S7-D10	Operational deviations. Those of the test	07_disclosures.md:3; 07_disclosures.md:9-11; 11_supplement_registered_rows.md:741-766	-
+S7-D12	Not reported here. Registered secondaries, none	new (plan items A15 and A9; the v1 paragraph S7-D11 is merged here, ruling CC-399 item 6); the secondaries are listed in 05_preregistration_and_analysis.md:97-104 and the registrations are named in 05_preregistration_and_analysis.md:122-128	-
+S7-02	Limitations.	09_limitations.md:1-3	-
+S7-L01	Two backbones. The gain is carried	09_limitations.md:5	C08
+S7-L02	Out of the memory's source both	09_limitations.md:6	C17, C37, C53
+S7-L03	Reference-based metric. CIDEr-D rewards the wording	09_limitations.md:7	-
+S7-L04	Object gold. On OpenViIC the gold	09_limitations.md:8	-
+S7-L05	One look, one random draw. Each	09_limitations.md:9	C47
+S7-L06	Batch composition. The results are results	09_limitations.md:9; 09_limitations.md:11; 06_results.md:130-140	C44
+S7-L07	Training data. The backbones' training data	09_limitations.md:12	-
+S7-03	Compute. The Vietnamese test used 9.59	06_results.md:254; 08_english_comparison.md:88	C45
+S8-01	In a preregistered one-look test, retrieved	10_conclusion.md:3-5	C07, C08, C13, C14, C33, C34, C50
+S8-02	Outside the memory's source the registered	10_conclusion.md:7; 08_english_comparison.md:49	C04, C17, C22, C37, C38, C51
+S8-03	Descriptively, random in-domain examples already score	10_conclusion.md:9; 10_conclusion.md:13-16	C52, C53, C54
+DECL-01	The study uses existing public data	04_data_and_splits.md:3; 10_conclusion.md:25; new (plan item A6)	-
+DECL-02	Data sets, in short form (source;	new (plan item A6; ruling CC-392 note N11)	-
+DECL-03	The registrations with their pinned lists,	10_conclusion.md:20-25; new (plan item A5; decision D9 default)	-
+DECL-04	[PI: acknowledgments and funding sentence.]	new (placeholder; plan item A4)	-
+DECL-05	[PI: statement of the authors' competing	new (placeholder; plan item A4)	-

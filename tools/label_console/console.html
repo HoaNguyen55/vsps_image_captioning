@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gán nhãn bài A</title>
+<style>
+  :root { --bg:#fff; --fg:#1a1a1a; --mute:#666; --line:#ddd; --ok:#0a7a3d; --bad:#b3261e; --card:#f6f7f8; --link:#0b57d0; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181b; --fg:#e8e8e8; --mute:#9aa0a6; --line:#3a3d41; --ok:#5bd08a; --bad:#ff8a80; --card:#1f2226; --link:#8ab4f8; } }
+  body { margin:0; padding:16px; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; }
+  main { max-width:1000px; margin:0 auto; }
+  h1 { font-size:22px; margin:0 0 4px; } h2 { font-size:17px; margin:28px 0 8px; }
+  .mute { color:var(--mute); } .ok { color:var(--ok); } .bad { color:var(--bad); font-weight:600; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin:10px 0; }
+  .row { display:flex; flex-wrap:wrap; gap:6px 18px; align-items:baseline; }
+  .title { font-weight:600; font-size:16px; }
+  progress { width:100%; height:10px; }
+  a { color:var(--link); } code { font-size:13px; word-break:break-all; }
+  button { font:inherit; padding:7px 14px; border-radius:6px; border:1px solid var(--line); background:var(--bg); color:var(--fg); cursor:pointer; }
+  ul, ol { margin:6px 0; padding-left:22px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Gán nhãn bài A: bộ nhãn hiện diện đối tượng trên XM3600</h1>
+  <div class="mute">Cập nhật lúc <span id="now">…</span> (giờ Việt Nam), tự làm mới mỗi 5 giây.</div>
+
+  <h2>Các phiên gán nhãn</h2>
+  <div id="sessions"></div>
+
+  <h2>Kiểm tra mã của trang gán nhãn</h2>
+  <div class="card" id="code"></div>
+
+  <h2>Người gán nhãn thứ hai</h2>
+  <div class="card">
+    <div id="agree"></div>
+    <ol>
+      <li>Claude mở phiên từ xa: một máy chủ riêng cho người gán nhãn thứ hai, một khóa mới, cổng kiểm soát và đường dẫn riêng; ghi dòng bắt đầu vào nhật ký.</li>
+      <li>Anh gửi đường dẫn kèm tin nhắn mẫu thứ nhất. Anh không mở đường dẫn, không xem màn hình và không giải thích câu hỏi.</li>
+      <li>Người gán nhãn thứ hai làm vòng làm quen. Khi đủ số câu, anh gửi tin nhắn mẫu thứ hai.</li>
+      <li>Người gán nhãn thứ hai trả lời phần chung trên đúng trang và đúng hướng dẫn anh đã dùng.</li>
+      <li>Claude đóng phiên, tạo bản sao chỉ đọc và ghi dòng kết thúc.</li>
+    </ol>
+    <div class="mute">Tính độc lập: mỗi người có thư mục, bản phân công và tệp nhãn riêng; trang của người này không đọc và không hiện câu trả lời của người kia. Độ đồng thuận chỉ được tính một lần, bằng mã đã đăng ký, sau phiên cuối của người gán nhãn thứ hai; ứng dụng này không tính.</div>
+  </div>
+
+  <h2>Xuất dữ liệu</h2>
+  <div class="card">
+    <button id="export">Tạo bản xuất chỉ đọc</button>
+    <div class="mute">Sao mọi tệp nhãn hiện có sang một thư mục mới, kiểm từng bản sao bằng sha256 và ghi bảng kê. Tệp gốc không bị sửa; bản xuất cũ không bị ghi đè.</div>
+    <div id="exported"></div>
+  </div>
+
+  <p class="mute">Ứng dụng này chỉ đọc kích thước, số dòng, thời điểm ghi và mã sha256 của tệp nhãn. Nó không hiện giá trị nhãn và không tính số liệu nào từ nhãn. Việc trả lời câu hỏi diễn ra trên trang gán nhãn đã đăng ký, được giữ nguyên từng byte.</p>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const mark = ok => ok ? '<span class="ok">đạt</span>' : '<span class="bad">KHÔNG ĐẠT</span>';
+const checks = list => "<ul>" + list.map(c => `<li>${esc(c.name)}: ${mark(c.ok)}</li>`).join("") + "</ul>";
+
+function bar(label, file, total) {
+  if (!total) return "";
+  const n = file ? file.lines : 0, pct = Math.min(100, Math.round(100 * n / total.questions));
+  const when = file ? `, ghi lần cuối ${esc(file.modified_vn)}` : "";
+  return `<div>${label}: <b>${n}</b> câu trả lời đã lưu trên ${total.questions} câu hỏi (${total.screens} màn hình)${when}
+          <progress max="${total.questions}" value="${Math.min(n, total.questions)}"></progress>
+          <span class="mute">${pct}% theo số dòng đã lưu; một câu được sửa lại thì thêm một dòng.</span></div>`;
+}
+
+function session(s) {
+  if (!s.exists) return `<div class="card"><div class="title">${esc(s.title)}</div><div class="mute">Chưa có thư mục của phiên này.</div></div>`;
+  const page = s.page_up
+    ? `<a href="http://localhost:${s.port}/" target="_blank" rel="noopener">Mở trang gán nhãn (cổng ${s.port})</a>`
+    : `<span class="mute">Trang gán nhãn đang đóng. Báo Claude để mở phiên (mỗi lúc chỉ một trang).</span>`;
+  const sha = s.labels ? `<div class="mute">Tệp nhãn: <code>${esc(s.labels.sha256)}</code>; bản sao chỉ đọc: ${s.copies.length}</div>` : "";
+  return `<div class="card"><div class="row"><span class="title">${esc(s.title)}</span><span class="mute">người gán nhãn: ${esc(s.annotator)}</span>${page}</div>
+    ${bar("Vòng làm quen", s.practice, s.practice_total)}${bar("Bộ câu hỏi", s.labels, s.total)}${sha}${checks(s.checks)}</div>`;
+}
+
+async function refresh() {
+  try {
+    const d = await (await fetch("/api/status")).json();
+    $("now").textContent = d.now_vn;
+    $("sessions").innerHTML = d.sessions.map(session).join("");
+    $("code").innerHTML = checks(d.code_checks);
+    $("agree").innerHTML = "Dữ liệu cho phép tính độ đồng thuận: " + (d.agreement_data_ready
+      ? '<span class="ok">đã đủ hai tệp nhãn</span>' : '<span class="mute">chưa đủ (cần tệp nhãn của bộ chính và phần chung đã trả lời hết)</span>');
+  } catch (e) { $("now").textContent = "mất kết nối với ứng dụng"; }
+}
+
+$("export").onclick = async () => {
+  const r = await fetch("/api/export", {method: "POST", headers: {"X-Console": "1"}});
+  const d = await r.json();
+  $("exported").innerHTML = d.error ? `<span class="bad">${esc(d.error)}</span>`
+    : `<div>Đã xuất ${d.files.length} tệp vào <code>${esc(d.folder)}</code></div><ul>` +
+      d.files.map(f => `<li>${esc(f.file)}: ${f.lines} dòng, <code>${esc(f.sha256)}</code></li>`).join("") + "</ul>";
+};
+refresh(); setInterval(refresh, 5000);
+</script>
+</body>
+</html>
