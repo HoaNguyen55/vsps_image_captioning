@@ -1,0 +1,203 @@
+{
+ "label": "ViHal set plan v1.1 §2: pool, near-duplicate pass, pilot draw (ids and counts only)",
+ "rule": "W25 RULE §3 C1|C2|C3 via w25.rule + build_memory.near, unchanged; order = sha256('vihal-set-v1|' + file)",
+ "id_steps": {
+  "any_ov_train_copy_v1_figure": 2459,
+  "train_only": 2335,
+  "dev300_in_train_only": 181,
+  "minus_dev300": 2154,
+  "shared_ov_file_with_ktvic_test_in_train_only": 2,
+  "of_which_left_after_dev300": 1,
+  "minus_shared_file": 2153
+ },
+ "feature_steps": {
+  "unreadable_pool_image": {
+   "hit": 0,
+   "new": 0,
+   "left": 2153
+  },
+  "exclusion_json_sha256": {
+   "hit": 0,
+   "new": 0,
+   "left": 2153
+  },
+  "byte_twins_3589_7511_4487": {
+   "hit": 1,
+   "new": 1,
+   "left": 2152
+  },
+  "w25_ktvic_test_558": {
+   "hit": 0,
+   "new": 0,
+   "left": 2152
+  },
+  "w25_openviic_test_2001": {
+   "hit": 12,
+   "new": 12,
+   "left": 2140
+  },
+  "w25_xm3600_all_3600": {
+   "hit": 0,
+   "new": 0,
+   "left": 2140
+  },
+  "w25_uitviic_test_231": {
+   "hit": 0,
+   "new": 0,
+   "left": 2140
+  },
+  "w25_bdt1_h_t2_739": {
+   "hit": 3,
+   "new": 3,
+   "left": 2137
+  },
+  "w25_ktvic_dev299": {
+   "hit": 4,
+   "new": 3,
+   "left": 2134
+  },
+  "w25_ktvic_dev300_refused_dup_1": {
+   "hit": 0,
+   "new": 0,
+   "left": 2134
+  },
+  "w25_openviic_dev_all": {
+   "hit": 4,
+   "new": 1,
+   "left": 2133
+  },
+  "w25_vitextvqa_dev": {
+   "hit": 163,
+   "new": 155,
+   "left": 1978
+  },
+  "w25_vitextvqa_test_by_complement": {
+   "hit": 315,
+   "new": 282,
+   "left": 1696
+  },
+  "pool_internal_later_copy": {
+   "hit": 11,
+   "new": 11,
+   "left": 1685
+  }
+ },
+ "w25_per_set": {
+  "ktvic_test_558": {
+   "n": 558,
+   "unreadable": 0,
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 0,
+   "excluded": 0,
+   "report_sscd_0.5": 1
+  },
+  "openviic_test_2001": {
+   "n": 2001,
+   "unreadable": 0,
+   "C1_C2_registered": 2,
+   "C3_sscd_0.75": 12,
+   "excluded": 12,
+   "report_sscd_0.5": 32
+  },
+  "xm3600_all_3600": {
+   "n": 3600,
+   "unreadable": 0,
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 0,
+   "excluded": 0,
+   "report_sscd_0.5": 0
+  },
+  "uitviic_test_231": {
+   "n": 231,
+   "unreadable": 0,
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 0,
+   "excluded": 0,
+   "report_sscd_0.5": 0
+  },
+  "bdt1_h_t2_739": {
+   "n": 739,
+   "unreadable": 0,
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 3,
+   "excluded": 3,
+   "report_sscd_0.5": 6
+  },
+  "ktvic_dev299": {
+   "n": 299,
+   "unreadable": 0,
+   "C1_C2_registered": 4,
+   "C3_sscd_0.75": 4,
+   "excluded": 4,
+   "report_sscd_0.5": 6
+  },
+  "ktvic_dev300_refused_dup_1": {
+   "n": 1,
+   "unreadable": 0,
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 0,
+   "excluded": 0,
+   "report_sscd_0.5": 0
+  },
+  "openviic_dev_all": {
+   "n": 2011,
+   "unreadable": 0,
+   "C1_C2_registered": 0,
+   "C3_sscd_0.75": 4,
+   "excluded": 4,
+   "report_sscd_0.5": 14
+  },
+  "vitextvqa_dev": {
+   "n": 1676,
+   "unreadable": 0,
+   "C1_C2_registered": 158,
+   "C3_sscd_0.75": 163,
+   "excluded": 163,
+   "report_sscd_0.5": 172
+  },
+  "vitextvqa_test_by_complement": {
+   "n": 3353,
+   "unreadable": 0,
+   "C1_C2_registered": 310,
+   "C3_sscd_0.75": 314,
+   "excluded": 315,
+   "report_sscd_0.5": 331
+  }
+ },
+ "w25_removed_union": 456,
+ "survivors": 1685,
+ "k1_min": 1000,
+ "positions_1_based": {
+  "pilot": "1-20",
+  "training": "21-30",
+  "second_pilot": "31-50",
+  "main_frame": "51-end"
+ },
+ "main_frame": {
+  "n": 1635,
+  "stratum_C": 213,
+  "stratum_O": 1422
+ },
+ "lexicon_terms": 48,
+ "cached_feature_sha256": {
+  "ktvic_test_558": "cd985050fd2042b87049410334a05a6406b4363d69c05a45e6ed28ccae86702d",
+  "openviic_test_2001": "f4c79b825a1b62256dfac15b6ce59bce1054b83386ab4d5d932ac3c4e73d360e",
+  "xm3600_all_3600": "10de1a60700574812f188b89ffdeb800092cd8f068cd508cd496f961d619e01f",
+  "uitviic_test_231": "4f4784903fb0164309a3b1b6b3ba4fbaa9c09da6c4be5294a6c43f75581ff95f",
+  "bdt1_h_t2_739": "10a49f179a9e86b638964a2b94d7f87d7d84fc65504b56ac71a236257fd93775",
+  "ktvic_dev299": "be2b121bf795b1b1aac9ef0d948a21754aad45f1e72b24d6f55c1a1ede9c5604",
+  "ktvic_dev300_refused_dup_1": "be9aebfbb99a29bf8f74ca6aa392e98710eaa37f38f10fbe97871ffab90502d9"
+ },
+ "code_sha256": {
+  "build_memory.py": "e771b92df9096e286e8d5de207d3adafe49c8e5e59eab276978b0236cc0eeab9",
+  "w25.py": "d6d127807929c0534e6140d77831b682e3a7202484fa074d56229e0d091316c0",
+  "match_openviic.py": "c0d9dd30e3222ab6542a7e1acfbb9bd3899e4b6db5c896b0adc4d805c1005a8b",
+  "sscd": "9f26bd4c848cc19b73d2ae92eea6e04886f61a7b764ceb7a13aeee62e6a6db56"
+ },
+ "input_sha256": {
+  "ktvic_openviic_refs.json": "4eb02cc43841bae4f844ee74d4c01b58e677dc8d6abafdd998c9f5b5706f725d",
+  "ktvic_dev300.txt": "cee024f8bb76846b1623e36d1861caccc4d13874db87544213a1f18f3de6898c",
+  "exclusion.json": "c52a96d18925b974878ae1a970c3f9133fb3482216676fd41871eeabb68cc77f",
+  "LEXICON_v1.txt": "8890e38f3bc1fa7cce9156bf80988bc96b39c2cb9d1df3e939fa6ef83f15e572"
+ }
+}
