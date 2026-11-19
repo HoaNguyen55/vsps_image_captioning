@@ -1,0 +1,349 @@
+{
+ "C-M1": {
+  "case": "K4",
+  "kappa_minus": {
+   "A1-A7": {
+    "ci": [
+     0.10698985529057407,
+     0.18006489715789523
+    ],
+    "den": 702.0,
+    "den_ci": [
+     628.975,
+     777.0
+    ],
+    "dropped": 0,
+    "gate": null,
+    "kappa": 0.14387464387464388,
+    "label": "IDENTIFIED",
+    "num": 101.0,
+    "num_ci": [
+     73.0,
+     129.0
+    ],
+    "zero_den_share": 0.0
+   },
+   "A1-PVR": {
+    "ci": [
+     0.1028975155279503,
+     0.17503592259935494
+    ],
+    "den": 704.0,
+    "den_ci": [
+     631.0,
+     778.0
+    ],
+    "dropped": 0,
+    "gate": null,
+    "kappa": 0.13920454545454544,
+    "label": "IDENTIFIED",
+    "num": 98.0,
+    "num_ci": [
+     70.0,
+     126.0
+    ],
+    "zero_den_share": 0.0
+   },
+   "A7-PVR": {
+    "ci": null,
+    "den": 2.0,
+    "den_ci": [
+     -2.0,
+     6.0
+    ],
+    "dropped": 1309,
+    "gate": "G1",
+    "kappa": null,
+    "label": "NOT_IDENTIFIED (G1)",
+    "num": -3.0,
+    "num_ci": [
+     -7.0,
+     0.0
+    ],
+    "zero_den_share": 0.1309
+   }
+  },
+  "kappa_plus": {
+   "A1-A7": {
+    "ci": [
+     -0.027863987557168204,
+     0.008859289687652216
+    ],
+    "den": 3020.0,
+    "den_ci": [
+     2849.0,
+     3190.0
+    ],
+    "dropped": 0,
+    "gate": null,
+    "kappa": -0.009602649006622516,
+    "label": "IDENTIFIED",
+    "num": -29.0,
+    "num_ci": [
+     -84.0,
+     27.0
+    ],
+    "zero_den_share": 0.0
+   },
+   "A1-PVR": {
+    "ci": [
+     -0.03150172555225594,
+     0.00500550802058339
+    ],
+    "den": 3000.0,
+    "den_ci": [
+     2829.0,
+     3169.0
+    ],
+    "dropped": 0,
+    "gate": null,
+    "kappa": -0.013333333333333334,
+    "label": "IDENTIFIED",
+    "num": -40.0,
+    "num_ci": [
+     -95.0,
+     15.0
+    ],
+    "zero_den_share": 0.0
+   },
+   "A7-PVR": {
+    "ci": [
+     0.25,
+     1.0
+    ],
+    "den": -20.0,
+    "den_ci": [
+     -31.0,
+     -10.0
+    ],
+    "dropped": 0,
+    "gate": null,
+    "kappa": 0.55,
+    "label": "IDENTIFIED",
+    "num": -11.0,
+    "num_ci": [
+     -19.0,
+     -4.0
+    ],
+    "zero_den_share": 0.0
+   }
+  },
+  "label": "NOT_IDENTIFIED (G1)",
+  "overid": {
+   "failing": [
+    "A7-PVR: G1"
+   ],
+   "verdict": "OVERID_NOT_RUN"
+  },
+  "placebo": "PLACEBO_CONSISTENT",
+  "strata": {
+   "1": {
+    "ci": null,
+    "den": 1.0,
+    "den_ci": [
+     0.0,
+     3.0
+    ],
+    "dropped": 3702,
+    "gate": "G2",
+    "kappa": null,
+    "num": -2.0
+   },
+   "2": {
+    "ci": null,
+    "den": 1.0,
+    "den_ci": [
+     -2.0,
+     5.0
+    ],
+    "dropped": 2136,
+    "gate": "G2",
+    "kappa": null,
+    "num": -1.0
+   },
+   "3": {
+    "ci": null,
+    "den": 0.0,
+    "den_ci": [
+     0.0,
+     0.0
+    ],
+    "dropped": 10000,
+    "gate": "G2",
+    "kappa": null,
+    "num": 0.0
+   },
+   "placebo": {
+    "ci": [
+     0.0,
+     0.0
+    ],
+    "dropped": 0,
+    "label": "PLACEBO_CONSISTENT",
+    "mean": 0.0,
+    "n_images": 3184.0
+   }
+  },
+  "verdict": "OVERID_NOT_RUN"
+ },
+ "C-M2": {
+  "MA_outer": [
+   -68.5980685980686,
+   52.869565217391305
+  ],
+  "fallback": true,
+  "label": "SIGN_NOT_IDENTIFIED",
+  "per_arm": {
+   "A0": {
+    "L": 30.914467697907188,
+    "P_obj": 90.72096128170895,
+    "U": 96.83803457688808,
+    "unknown": 2898.0,
+    "unknown_share": 65.92356687898089
+   },
+   "A1": {
+    "L": 24.326508620689655,
+    "P_obj": 83.37950138504155,
+    "U": 95.15086206896552,
+    "unknown": 2629.0,
+    "unknown_share": 70.82435344827586
+   },
+   "A10": {
+    "L": 30.422468727873497,
+    "P_obj": 90.90267983074753,
+    "U": 96.95539296672173,
+    "unknown": 2819.0,
+    "unknown_share": 66.53292423884824
+   },
+   "A11": {
+    "L": 24.284170718530525,
+    "P_obj": 83.70577281191807,
+    "U": 95.27282549972988,
+    "unknown": 2628.0,
+    "unknown_share": 70.98865478119936
+   },
+   "A12": {
+    "L": 25.499445061043286,
+    "P_obj": 94.25641025641026,
+    "U": 98.44617092119867,
+    "unknown": 2629.0,
+    "unknown_share": 72.94672586015538
+   },
+   "A2": {
+    "L": 9.40646528881823,
+    "P_obj": 68.13819577735124,
+    "U": 95.60148383677796,
+    "unknown": 3253.0,
+    "unknown_share": 86.19501854795972
+   },
+   "A3": {
+    "L": 22.992210582863283,
+    "P_obj": 85.77154308617234,
+    "U": 96.18587160891754,
+    "unknown": 2725.0,
+    "unknown_share": 73.19366102605426
+   },
+   "A4": {
+    "L": 31.853088480801336,
+    "P_obj": 92.26305609284333,
+    "U": 97.32888146911519,
+    "unknown": 1961.0,
+    "unknown_share": 65.47579298831386
+   },
+   "A5": {
+    "L": 6.916724019270475,
+    "P_obj": 55.98885793871866,
+    "U": 94.56297315898142,
+    "unknown": 5094.0,
+    "unknown_share": 87.64624913971095
+   },
+   "A6": {
+    "L": 24.326508620689655,
+    "P_obj": 83.37950138504155,
+    "U": 95.15086206896552,
+    "unknown": 2629.0,
+    "unknown_share": 70.82435344827586
+   },
+   "A7": {
+    "L": 31.20187479075996,
+    "P_obj": 92.18595450049456,
+    "U": 97.35520589219954,
+    "unknown": 1976.0,
+    "unknown_share": 66.15333110143958
+   },
+   "A8": {
+    "L": 39.130434782608695,
+    "P_obj": 100.0,
+    "U": 100.0,
+    "unknown": 28.0,
+    "unknown_share": 60.869565217391305
+   },
+   "A9": {
+    "L": 26.495248742314143,
+    "P_obj": 87.61552680221811,
+    "U": 96.25489100055897,
+    "unknown": 2496.0,
+    "unknown_share": 69.75964225824482
+   },
+   "PVR-drop": {
+    "L": 31.401931401931403,
+    "P_obj": 92.0,
+    "U": 97.26939726939727,
+    "unknown": 1978.0,
+    "unknown_share": 65.86746586746587
+   },
+   "PVR-keep": {
+    "L": 31.391478029294273,
+    "P_obj": 92.0,
+    "U": 97.27030625832224,
+    "unknown": 1979.0,
+    "unknown_share": 65.87882822902796
+   }
+  },
+  "per_arm_combination": [
+   -68.5980685980686,
+   58.13896248678858
+  ],
+  "pvr": "PVR-drop",
+  "variants": {
+   "PVR-drop": {
+    "band": [
+     -69.93338187702265,
+     71.67424951352169
+    ],
+    "hi": 57.67276202058811,
+    "label": "SIGN_NOT_IDENTIFIED",
+    "lo": -68.13186813186813
+   },
+   "PVR-keep": {
+    "band": [
+     -69.94957983193277,
+     71.67528619020204
+    ],
+    "hi": 57.67382620274417,
+    "label": "SIGN_NOT_IDENTIFIED",
+    "lo": -68.14247669773637
+   }
+  }
+ },
+ "appendix_sha256": "59b6eae5ea6c105fe0f78677a6bec1becad7ee7c48f6d075545bd17ff53e5634",
+ "label": "dev, in-sample (XM3600-vi); re-run after FAULT OPS-1108c-s16-fault1, code 7f3522762aa9a751f9234fcdaa6edae0ff737fa96508a5ee027dc3fda5fb2e65",
+ "main_text": [
+  {
+   "case": "K4",
+   "id": "M1-M3",
+   "label": "dev, in-sample (XM3600-vi); re-run after FAULT OPS-1108c-s16-fault1, code 7f3522762aa9a751f9234fcdaa6edae0ff737fa96508a5ee027dc3fda5fb2e65",
+   "sentence": "On the development set, filtering (PVR-drop) did not remove absent-object propositions at a rate distinguishable from count-matched random removal (OR_PVR-drop / OR_A7 = 0.429 [0.000, 1.301]), so this design does not identify the copy channel and no rate is reported."
+  },
+  {
+   "id": "M4",
+   "label": "dev, in-sample (XM3600-vi); re-run after FAULT OPS-1108c-s16-fault1, code 7f3522762aa9a751f9234fcdaa6edae0ff737fa96508a5ee027dc3fda5fb2e65",
+   "sentence": "With no assumption about mentions whose status the existing labels leave unknown, the sign of the PVR − A8 difference in all-mention object precision is not identified on the development set (sharp bounds [-68.13, 57.67]; 95% band [-69.93, 71.67]); the primary rule excludes those mentions (unknown share 65.9% PVR, 60.9% A8).",
+   "usable_as_claim": true
+  }
+ ],
+ "post_hoc": false,
+ "rerun": "re-run after FAULT OPS-1108c-s16-fault1, code 7f3522762aa9a751f9234fcdaa6edae0ff737fa96508a5ee027dc3fda5fb2e65",
+ "supplement_lines": [],
+ "sys_version": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]"
+}
