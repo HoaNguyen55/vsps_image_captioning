@@ -1,0 +1,78 @@
+tag	printed	source	source_value	recompute	recompute_value	in_text	check	label
+alt_imgs	558	S1B.json::images	558	ABSENT		True	OK	DEVELOPMENT
+alt_halfB	279	RESULT_ALT.json::half_B_images	279	ABSENT		True	OK	DEVELOPMENT
+alt_units	19,818	RESULT_ALT.json::units	19818	ABSENT		True	OK	DEVELOPMENT
+alt_ncmp	1,101	G0_ALT.json::comparisons	1101	ABSENT		True	OK	DEVELOPMENT
+alt_pairs	18	derived: units / comparisons (prereg s3.1: 18 pairs)	18.0	ABSENT		True	OK	DEVELOPMENT
+alt_floor_pct	1%	prereg s4 (iv): '0.01' (x100)	1	ABSENT		True	OK	REGISTERED floor
+alt_floor_thr	0.01	prereg s4 (iv): '0.01'	0.01	ABSENT		True	OK	REGISTERED floor
+alt_sumshift	7,806.7	RESULT_ALT.json::DESCRIPTIVE.floor_iv.sum_abs_shift	7806.71382154907	recompute_out.json::floor_iv.sum_abs_shift	7806.71382154907	True	OK	DEVELOPMENT; floor (iv)
+alt_sumD	1,341,296.2	RESULT_ALT.json::DESCRIPTIVE.floor_iv.sum_abs_D_r	1341296.1658085203	recompute_out.json::floor_iv.sum_abs_D_r	1341296.1658085203	True	OK	DEVELOPMENT; floor (iv)
+alt_ratio	0.0058	derived: sum_abs_shift / sum_abs_D_r	0.005820275954373775	recompute_out.json::floor_iv.ratio	0.005820275954373775	True	OK	DEVELOPMENT; floor (iv)
+alt_minimum	13,413.0	derived: 0.01 x sum_abs_D_r	13412.961658085203	ABSENT		True	OK	DEVELOPMENT; floor (iv)
+alt_lab_L1	NOT_EVALUABLE	RESULT_ALT.json::H-L1.label	NOT_EVALUABLE (iv): sum |delta| < 0.01 sum |D_r| on half B	recompute_out.json::registered_label	NOT_EVALUABLE (iv)	True	OK	REGISTERED PREDICTION; DEVELOPMENT
+alt_lab_L2	NOT_EVALUABLE	RESULT_ALT.json::H-L2.label	NOT_EVALUABLE (iv): sum |delta| < 0.01 sum |D_r| on half B	recompute_out.json::registered_label	NOT_EVALUABLE (iv)	True	OK	REGISTERED PREDICTION; DEVELOPMENT
+alt_cpuh	0.41	derived: sum of user+system over the five .time records / 3600	0.4107444444444444	ABSENT		True	OK	run record
+alt_cpu_tot	1,479	derived: sum of user+system over the five .time records	1478.6799999999998	ABSENT		True	OK	run record
+alt_cpu_s0	199	s0.20261127T150831Z.time::User time + System time	199.09	ABSENT		True	OK	run record
+alt_cpu_s1a	2	s1a.20261127T151703Z.time::User time + System time	1.94	ABSENT		True	OK	run record
+alt_cpu_s1b	1,207	s1b.20261127T151759Z.time::User time + System time	1206.85	ABSENT		True	OK	run record
+alt_cpu_g0	32	g0.20261127T153847Z.time::User time + System time	31.87	ABSENT		True	OK	run record
+alt_cpu_s2	39	s2.20261127T153932Z.time::User time + System time	38.93	ABSENT		True	OK	run record
+alt_cpu_stop	8	ERRATUM_B_ALT_1 H4 / prereg s5: hard stop at 8 CPU-h	8	ABSENT		True	OK	REGISTERED stop
+alt_g0_max	2.8 × 10⁻¹⁴	G0_ALT.json::max_abs_diff	2.842170943040401e-14	ABSENT		True	OK	G0 gate
+alt_g0_tol	10⁻⁶	G0_ALT.json::tolerance	1e-06	ABSENT		True	OK	G0 gate
+alt_unal_A	2	recompute_out.json::half_A_ref_unaligned	2	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; recomputed from the stored image counts (recompute_out.json only)
+alt_strings_A	1,395	recompute_out.json::half_A_ref_strings	1395	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; recomputed from the stored image counts (recompute_out.json only)
+alt_unal_A_pct	0.14%	derived: 100 x 2 / 1395	0.14336917562724014	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; recomputed from the stored image counts (recompute_out.json only)
+alt_unal_bound	0.5%	prereg s3.2 step 2 / s4 (ii): '0.5%'	0.5	ABSENT		True	OK	REGISTERED floor
+alt_types	45	RESULT_ALT.json::DESCRIPTIVE.types_all	45	ABSENT		True	OK	DEVELOPMENT; floor (iii)
+alt_types_min	30	prereg s4 (iii): 'fewer than 30'	30	ABSENT		True	OK	REGISTERED floor
+alt_head	15	RESULT_ALT.json::DESCRIPTIVE.head_size	15	ABSENT		True	OK	DEVELOPMENT; floor (iii)
+alt_occA	185	recompute_out.json::half_A_ref_occ_all	185	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; recomputed from the stored image counts (recompute_out.json only)
+alt_occA_head	148	derived: half_A_coverage_head x half_A_ref_occ_all	148.0	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; recomputed from the stored image counts (recompute_out.json only)
+alt_covA	0.80	recompute_out.json::half_A_coverage_head	0.8	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; recomputed from the stored image counts (recompute_out.json only)
+alt_cover_reg	0.80	prereg s3.2 step 5: '0.80'	0.8	ABSENT		True	OK	REGISTERED construction
+alt_B	10,000	prereg s3.4: 'B = 10,000'	10000	ABSENT		True	OK	REGISTERED
+alt_gw	36	prereg s3.1: '36 word-unit members'	36	ABSENT		True	OK	REGISTERED
+alt_files	75	S1B.json::files	75	ABSENT		True	OK	DEVELOPMENT
+alt_own	73	prereg s6: '73 own KTVIC-test files'	73	ABSENT		True	OK	REGISTERED data
+alt_refs	2,790	prereg s6: '2,790 spent references'	2790	ABSENT		True	OK	REGISTERED data
+alt_malf_h	0	S1B.json::malformed_pinned_strings.h	0	ABSENT		True	OK	DEVELOPMENT; coded reading 5
+alt_malf_a	0	S1B.json::malformed_pinned_strings.a	0	ABSENT		True	OK	DEVELOPMENT; coded reading 5
+alt_rcmp_max	2.7 × 10⁻¹⁵	recompute_out.json::max_abs_diff_vs_RESULT_ALT	2.6645352591003757e-15	ABSENT		True	OK	judge recomputation
+alt_kap	0.480	RESULT_ALT.json::H-L1.kappa_head	0.4802301179828421	recompute_out.json::kappa_head.point	0.48023011798284265	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_kap_lo	−0.743	RESULT_ALT.json::H-L1.kappa_head_95.[0]	-0.7427700568136342	recompute_out.json::kappa_head.ci95[0]	-0.7427700568136327	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_kap_hi	0.891	RESULT_ALT.json::H-L1.kappa_head_95.[1]	0.8913325765640978	recompute_out.json::kappa_head.ci95[1]	0.8913325765640978	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rhoh	0.313	RESULT_ALT.json::H-L2.rho_head	0.3128213009116705	recompute_out.json::rho_head.point	0.3128213009116708	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rhoh_lo	−0.946	RESULT_ALT.json::H-L2.rho_head_95.[0]	-0.9457711814244749	recompute_out.json::rho_head.ci95[0]	-0.9457711814244748	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rhoh_hi	2.109	RESULT_ALT.json::H-L2.rho_head_95.[1]	2.1093763905673706	recompute_out.json::rho_head.ci95[1]	2.1093763905673706	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rhoa	0.651	RESULT_ALT.json::DESCRIPTIVE.rho_all	0.651398754883689	recompute_out.json::rho_all.point	0.6513987548836891	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rhoa_lo	−1.906	RESULT_ALT.json::DESCRIPTIVE.rho_all_95.[0]	-1.9060279672577736	recompute_out.json::rho_all.ci95[0]	-1.9060279672577736	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rhoa_hi	3.885	RESULT_ALT.json::DESCRIPTIVE.rho_all_95.[1]	3.884831994500163	recompute_out.json::rho_all.ci95[1]	3.884831994500163	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_cref	0.786	RESULT_ALT.json::DESCRIPTIVE.c_ref_B	0.7857142857142857	recompute_out.json::c_ref.point	0.7857142857142857	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_cref_lo	0.687	RESULT_ALT.json::DESCRIPTIVE.c_ref_B_95.[0]	0.6870735317027574	recompute_out.json::c_ref.ci95[0]	0.6870735317027574	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_cref_hi	0.875	RESULT_ALT.json::DESCRIPTIVE.c_ref_B_95.[1]	0.875	recompute_out.json::c_ref.ci95[1]	0.875	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_cout	0.772	RESULT_ALT.json::DESCRIPTIVE.c_out_B	0.7724637681159421	recompute_out.json::c_out.point	0.7724637681159421	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_cout_lo	0.693	RESULT_ALT.json::DESCRIPTIVE.c_out_B_95.[0]	0.6934507821723731	recompute_out.json::c_out.ci95[0]	0.6934507821723731	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_cout_hi	0.836	RESULT_ALT.json::DESCRIPTIVE.c_out_B_95.[1]	0.8364454584519916	recompute_out.json::c_out.ci95[1]	0.8364454584519916	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rtw	0.626	RESULT_ALT.json::DESCRIPTIVE.rho_all_tw_pairs	0.626130603519597	recompute_out.json::rho_tw.point	0.6261306035195972	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rtw_lo	−1.842	RESULT_ALT.json::DESCRIPTIVE.rho_all_tw_pairs_95.[0]	-1.8423082623300675	recompute_out.json::rho_tw.ci95[0]	-1.8423082623300673	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rtw_hi	3.919	RESULT_ALT.json::DESCRIPTIVE.rho_all_tw_pairs_95.[1]	3.918736719695951	recompute_out.json::rho_tw.ci95[1]	3.918736719695951	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rtmf	0.665	RESULT_ALT.json::DESCRIPTIVE.rho_all_tm_tf_pairs	0.6648243974602973	recompute_out.json::rho_tmf.point	0.6648243974602972	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rtmf_lo	−1.917	RESULT_ALT.json::DESCRIPTIVE.rho_all_tm_tf_pairs_95.[0]	-1.9172785214018417	recompute_out.json::rho_tmf.ci95[0]	-1.9172785214018413	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_rtmf_hi	3.912	RESULT_ALT.json::DESCRIPTIVE.rho_all_tm_tf_pairs_95.[1]	3.91207482848165	recompute_out.json::rho_tmf.ci95[1]	3.9120748284816473	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_out_all	1,380	RESULT_ALT.json::DESCRIPTIVE.output_occurrences_of_Pi_all_types_half_B	1380	recompute_out.json::half_B_out_occ[1]	1380	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_out_only	8,704	RESULT_ALT.json::DESCRIPTIVE.output_only_occurrences_half_B	8704	recompute_out.json::half_B_out_occ[2]	8704	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_out_unal	417	RESULT_ALT.json::DESCRIPTIVE.unaligned_strings_half_B.outputs	417	recompute_out.json::half_B_out_occ[3]	417	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_ref_all	140	recompute_out.json::half_B_ref_occ[1]	140	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; recomputed from the stored image counts (recompute_out.json only)
+alt_ref_oth	24	recompute_out.json::half_B_ref_occ[2]	24	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; recomputed from the stored image counts (recompute_out.json only)
+alt_ref_unal	0	RESULT_ALT.json::DESCRIPTIVE.unaligned_strings_half_B.references	0	recompute_out.json::half_B_ref_occ[3]	0	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_pin_h	3.6 × 10⁻⁵	RESULT_ALT.json::DESCRIPTIVE.pin_moves_reference_member.head	3.608087274442601e-05	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_pin_a	8.5 × 10⁻⁵	RESULT_ALT.json::DESCRIPTIVE.pin_moves_reference_member.all	8.494773725429727e-05	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_fr_raw	47	RESULT_ALT.json::DESCRIPTIVE.fragile_over_G_w.raw.fragile	47	recompute_out.json::fragile_over_G_w.raw.fragile	47	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_ch_raw	28	RESULT_ALT.json::DESCRIPTIVE.fragile_over_G_w.raw.changed	28	recompute_out.json::fragile_over_G_w.raw.changed	28	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_fr_pin	43	RESULT_ALT.json::DESCRIPTIVE.fragile_over_G_w.pinned_head.fragile	43	recompute_out.json::fragile_over_G_w.pinned_head.fragile	43	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_ch_pin	24	RESULT_ALT.json::DESCRIPTIVE.fragile_over_G_w.pinned_head.changed	24	recompute_out.json::fragile_over_G_w.pinned_head.changed	24	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_sig0	0	RESULT_ALT.json::DESCRIPTIVE.sigma_zero_units	0	recompute_out.json::sigma_zero	0	True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired
+alt_zden	0	RESULT_ALT.json::DESCRIPTIVE.zero_denominator_draws	0	ABSENT		True	OK	DEVELOPMENT; DESCRIPTIVE; not interpreted, because floor (iv) fired

@@ -1,0 +1,128 @@
+{
+ "registration": "manuscript/prereg/2026-11-27_b_alt/PREREG_DRAFT_B_ALT_v2.md",
+ "registration_sha256": "ed05acdb7682b516738b00d2741fd87d0220e30eec9aa38ae5a2a92c3014f352",
+ "stage": "s2",
+ "code_sha256": {
+  "scripts/b_alt/b_alt.py": "7dc734c8d150b10b303c291990bf06fc48b1b6aacbb4f927cccccb2092a49602",
+  "scripts/b_alt/cpu_guard.py": "3b93047d1258dec5c42015776db94d78de8ea89d15d6cabbed1824de7b5e391b",
+  "scripts/b_alt/mutants_b_alt.py": "ad566e0187027a465720d39ffb7d606f5cde14750ffec0ddb6f7f443597e2a26",
+  "scripts/b_alt/test_b_alt.py": "02414e8cbdeb1274cdeb3868c142499f162511e05adb78726a14c798b75f73cc",
+  "scripts/b_fecert/b_fecert.py": "67e43dea1b37c3bbfaa3fe5081d6f3d36848397451ad0a24d67fa67389b06b59",
+  "scripts/b_fecert/family.py": "7cb2c69b8b7840388568fd5f9b248e2cf25df28185386be875a65d921a9e4178",
+  "scripts/kit_b/protocol_pilot.py": "6aee428207a2d1a045cd72d054e26a2e2ac8d9c2e414cb0c161e3b95dffd92bf",
+  "scripts/kit_b/ptb_protocol.py": "ea5fbe6e1528e339abfcb9ba00bdd0c4d4e4bde07ae6edd30fffaa72d60754d2",
+  "scripts/kit_b/b2_controls.py": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3",
+  "scripts/kit_b/exchangeability_audit.py": "f30758e372061a15cbab30a568a397f57442f2701e0ffd9cc2372f20901d66a0",
+  "scripts/b2_external/b2.py": "52b8c145be0730f02f0ddd782c67dda26451063197ab19c6b723c54f5a783e6d",
+  "scripts/b_pa1/b_pa1.py": "c481fcf4811faf2d184e441f589b5f3c9e4206908dc2a42e1829a7215b8398ef",
+  "scripts/grl/common.py": "bbe7ee61f659b1a7bfc3cab418d83ed779b76187107708fef2d8ab44df0ad23a",
+  "scripts/grl/id_counts.py": "0c590058a908c0683366e385b70c68ca77b4ff80902b7a1398f216ce6e55d859",
+  "tools/obj_rater/build_pairs.py": "49692235207762fdea918155115f13b7baa81615635c99788986fa983e677087",
+  "tools/obj_rater/pair_server.py": "da36692dc2037f2c06c62d365a92c2e8abf4d12ef759e7ad703e449fc9dbe32e",
+  "tools/obj_rater/pair.html": "1dde2ecf734a9adc59bb61c05ff5a8cea25257318c668e5cf18cfb15ed91b8d1",
+  "rescap/__init__.py": "b712bea4d66e5e2e0f0cec1624ab244a025560ecc5d86f96cada2e0160a4890f",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "rescap/metrics.py": "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960",
+  "rescap/repro.py": "723200190818cd61a56527e6a0a1596b95f9d1ed1ebc0cabe1b29135cf03b70d",
+  "rescap/vocab.py": "c9143b2d973fc48a2231335844cd91ab702329c0b1aabb802884225e155967ec",
+  "rescap/svp/__init__.py": "5b7f52920de75cf59bde0ae657e292a876efc63292ca6db6a4d085bb9fec1424",
+  "rescap/svp/entailment.py": "4462f44df80faa0adc620d98aa5d8bbb307243d450e9aee4801bb17a3a06db23",
+  "rescap/svp/matching.py": "a9253060131aacfca8eaab9a4b2c473c487db96a7c1222f0b8e31f9f61b24003",
+  "rescap/vi/__init__.py": "f898963e95fec7d9fb236295649404815634a1d949bfd74cd7c3b90ed493bf6c",
+  "rescap/vi/classifier.py": "966cdab1fed8471ac57d225698e63f1e2a055435a5d669e9cca10eed703fed16",
+  "rescap/vi/color.py": "242fc46f68ecb06c8eefde23350481d99e60566b3da64ab90cfa79db38fd3875",
+  "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+  "scripts/b_d1/b_d1.py": "4e044401361fae00f289ec67ed0ba2afa5f5730fd7384df10357ccff87c65f33"
+ },
+ "inputs_sha256": {
+  "DEV.json": "88ff39aa9552b671a0e439aec961d0fefe02df1f52a2a5df9765a9d8226f7e8d",
+  "CENSUS_ALT.json": "2b84084abae052abe61ceea38359a2374509c4d6404945c878905be97ff78de0",
+  "PER_IMAGE_ALT.npz": "32da6dd0f3c896f10a40aac3636df278f5930b15e23bbd13707b6e1d7493ea97",
+  "G0_ALT.json": "e18992c9406c44ae6cdd9ec3f05e27cb1da2646e87eead86d8e6d75432e75e22"
+ },
+ "label": "DEVELOPMENT; REGISTERED PREDICTION (H-L1, H-L2); every interval is nominal",
+ "half_B_images": 279,
+ "units": 19818,
+ "floor": "NOT_EVALUABLE (iv): sum |delta| < 0.01 sum |D_r| on half B",
+ "H-L1": {
+  "label": "NOT_EVALUABLE (iv): sum |delta| < 0.01 sum |D_r| on half B",
+  "kappa_head": 0.4802301179828421,
+  "kappa_head_95": [
+   -0.7427700568136342,
+   0.8913325765640978
+  ],
+  "d_lo_95": [
+   -1.5021547880839377,
+   0.11815823683846867
+  ],
+  "d_hi_95": [
+   -1.5324698852775724,
+   0.05586376620442263
+  ]
+ },
+ "H-L2": {
+  "label": "NOT_EVALUABLE (iv): sum |delta| < 0.01 sum |D_r| on half B",
+  "rho_head": 0.3128213009116705,
+  "rho_head_95": [
+   -0.9457711814244749,
+   2.1093763905673706
+  ]
+ },
+ "DESCRIPTIVE": {
+  "rho_all": 0.651398754883689,
+  "rho_all_95": [
+   -1.9060279672577736,
+   3.884831994500163
+  ],
+  "c_ref_B": 0.7857142857142857,
+  "c_ref_B_95": [
+   0.6870735317027574,
+   0.875
+  ],
+  "c_out_B": 0.7724637681159421,
+  "c_out_B_95": [
+   0.6934507821723731,
+   0.8364454584519916
+  ],
+  "rho_all_tw_pairs": 0.626130603519597,
+  "rho_all_tw_pairs_95": [
+   -1.8423082623300675,
+   3.918736719695951
+  ],
+  "rho_all_tm_tf_pairs": 0.6648243974602973,
+  "rho_all_tm_tf_pairs_95": [
+   -1.9172785214018417,
+   3.91207482848165
+  ],
+  "output_only_occurrences_half_B": 8704,
+  "output_occurrences_of_Pi_all_types_half_B": 1380,
+  "unaligned_strings_half_B": {
+   "references": 0,
+   "outputs": 417
+  },
+  "pin_moves_reference_member": {
+   "head": 3.608087274442601e-05,
+   "all": 8.494773725429727e-05
+  },
+  "floor_iv": {
+   "sum_abs_shift": 7806.71382154907,
+   "sum_abs_D_r": 1341296.1658085203
+  },
+  "sigma_zero_units": 0,
+  "zero_denominator_draws": 0,
+  "head_size": 15,
+  "types_all": 45,
+  "fragile_over_G_w": {
+   "raw": {
+    "fragile": 47,
+    "changed": 28,
+    "comparisons": 1101
+   },
+   "pinned_head": {
+    "fragile": 43,
+    "changed": 24,
+    "comparisons": 1101
+   }
+  }
+ }
+}

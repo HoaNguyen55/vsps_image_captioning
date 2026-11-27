@@ -1,0 +1,75 @@
+{
+ "registration": "manuscript/prereg/2026-11-27_b_alt/PREREG_DRAFT_B_ALT_v2.md",
+ "registration_sha256": "ed05acdb7682b516738b00d2741fd87d0220e30eec9aa38ae5a2a92c3014f352",
+ "stage": "s1b",
+ "code_sha256": {
+  "scripts/b_alt/b_alt.py": "7dc734c8d150b10b303c291990bf06fc48b1b6aacbb4f927cccccb2092a49602",
+  "scripts/b_alt/cpu_guard.py": "3b93047d1258dec5c42015776db94d78de8ea89d15d6cabbed1824de7b5e391b",
+  "scripts/b_alt/mutants_b_alt.py": "ad566e0187027a465720d39ffb7d606f5cde14750ffec0ddb6f7f443597e2a26",
+  "scripts/b_alt/test_b_alt.py": "02414e8cbdeb1274cdeb3868c142499f162511e05adb78726a14c798b75f73cc",
+  "scripts/b_fecert/b_fecert.py": "67e43dea1b37c3bbfaa3fe5081d6f3d36848397451ad0a24d67fa67389b06b59",
+  "scripts/b_fecert/family.py": "7cb2c69b8b7840388568fd5f9b248e2cf25df28185386be875a65d921a9e4178",
+  "scripts/kit_b/protocol_pilot.py": "6aee428207a2d1a045cd72d054e26a2e2ac8d9c2e414cb0c161e3b95dffd92bf",
+  "scripts/kit_b/ptb_protocol.py": "ea5fbe6e1528e339abfcb9ba00bdd0c4d4e4bde07ae6edd30fffaa72d60754d2",
+  "scripts/kit_b/b2_controls.py": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3",
+  "scripts/kit_b/exchangeability_audit.py": "f30758e372061a15cbab30a568a397f57442f2701e0ffd9cc2372f20901d66a0",
+  "scripts/b2_external/b2.py": "52b8c145be0730f02f0ddd782c67dda26451063197ab19c6b723c54f5a783e6d",
+  "scripts/b_pa1/b_pa1.py": "c481fcf4811faf2d184e441f589b5f3c9e4206908dc2a42e1829a7215b8398ef",
+  "scripts/grl/common.py": "bbe7ee61f659b1a7bfc3cab418d83ed779b76187107708fef2d8ab44df0ad23a",
+  "scripts/grl/id_counts.py": "0c590058a908c0683366e385b70c68ca77b4ff80902b7a1398f216ce6e55d859",
+  "tools/obj_rater/build_pairs.py": "49692235207762fdea918155115f13b7baa81615635c99788986fa983e677087",
+  "tools/obj_rater/pair_server.py": "da36692dc2037f2c06c62d365a92c2e8abf4d12ef759e7ad703e449fc9dbe32e",
+  "tools/obj_rater/pair.html": "1dde2ecf734a9adc59bb61c05ff5a8cea25257318c668e5cf18cfb15ed91b8d1",
+  "rescap/__init__.py": "b712bea4d66e5e2e0f0cec1624ab244a025560ecc5d86f96cada2e0160a4890f",
+  "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
+  "rescap/metrics.py": "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960",
+  "rescap/repro.py": "723200190818cd61a56527e6a0a1596b95f9d1ed1ebc0cabe1b29135cf03b70d",
+  "rescap/vocab.py": "c9143b2d973fc48a2231335844cd91ab702329c0b1aabb802884225e155967ec",
+  "rescap/svp/__init__.py": "5b7f52920de75cf59bde0ae657e292a876efc63292ca6db6a4d085bb9fec1424",
+  "rescap/svp/entailment.py": "4462f44df80faa0adc620d98aa5d8bbb307243d450e9aee4801bb17a3a06db23",
+  "rescap/svp/matching.py": "a9253060131aacfca8eaab9a4b2c473c487db96a7c1222f0b8e31f9f61b24003",
+  "rescap/vi/__init__.py": "f898963e95fec7d9fb236295649404815634a1d949bfd74cd7c3b90ed493bf6c",
+  "rescap/vi/classifier.py": "966cdab1fed8471ac57d225698e63f1e2a055435a5d669e9cca10eed703fed16",
+  "rescap/vi/color.py": "242fc46f68ecb06c8eefde23350481d99e60566b3da64ab90cfa79db38fd3875",
+  "rescap/vi/lexicon.py": "fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9",
+  "scripts/b_d1/b_d1.py": "4e044401361fae00f289ec67ed0ba2afa5f5730fd7384df10357ccff87c65f33"
+ },
+ "inputs_sha256": {
+  "FAMILY.json": "431d92a4a2eaf0516446c9f9aef453ee52d311b6e329d97cd1abb4c4e8017f77",
+  "CENSUS.json": "2252167b435890c5dbf70a97e0fc918bc6989c48acda636427d4dd2889599afa",
+  "SYSTEMS.tsv": "30ac9555cd6cdc8fd50f47e637e734fac564c692605f590ba213a60a3be6e1a0",
+  "test_data.json": "cc22ec6a8883773cb23c87ad5b64925f5a53c21982117274b53621f454e7ebbf",
+  "CENSUS_ALT.json": "2b84084abae052abe61ceea38359a2374509c4d6404945c878905be97ff78de0"
+ },
+ "env": {
+  "python": "3.12.3",
+  "unidata_version": "15.0.0",
+  "jar_sha256": "9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793",
+  "protocol_pilot_sha256": "6aee428207a2d1a045cd72d054e26a2e2ac8d9c2e414cb0c161e3b95dffd92bf",
+  "numpy": "2.5.4",
+  "pyvi": "0.1.1",
+  "underthesea": "9.5.0",
+  "pycocoevalcap": "1.2",
+  "pyvi_wheel": {
+   "name": "pyvi-0.1.1-py2.py3-none-any.whl",
+   "sha256": "e5e9e0e40ea1a556af12646c6b754f065342c86f1dfe84785ba926e1190c0bb7"
+  },
+  "underthesea_wheel": {
+   "name": "underthesea-9.5.0-py3-none-any.whl",
+   "sha256": "81400f41b75ceff6f80c52b4ad043806c80f5899ec555d8e6374d468a59bce56"
+  },
+  "underthesea_signature": "(sentence, format=None, use_token_normalize=True, fixed_words=None)",
+  "rstar_import": true,
+  "rescap_metrics_sha256": "e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960",
+  "java": "21.0.13.0.3"
+ },
+ "members": 108,
+ "files": 75,
+ "images": 558,
+ "malformed_pinned_strings": {
+  "h": 0,
+  "a": 0
+ },
+ "PER_IMAGE_ALT.npz": "32da6dd0f3c896f10a40aac3636df278f5930b15e23bbd13707b6e1d7493ea97",
+ "label": "DEVELOPMENT"
+}
