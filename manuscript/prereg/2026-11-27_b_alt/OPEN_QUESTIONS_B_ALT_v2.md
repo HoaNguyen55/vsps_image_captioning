@@ -1,0 +1,15 @@
+# Open questions, B-ALT v2 (2026-11-27; agent b-alt; after CC-510)
+
+Each question carries a recommendation and a default. "Who" says who decides: a reversible technical item goes to the coordinator on judge advice, and a direction item goes to the PI.
+
+| # | question | who | recommendation | default if no answer |
+|---|---|---|---|---|
+| 1 | English outputs for a control arm. | closed | Closed by CC-510 ruling 4. The stored lbA decodes sit on one-look sets (UIT-ViIC test; the A-T3 cv295 images), so the English control stays NOT RUN (`paper.md:444`). A matched arm would need new English decodes on a spent set that no other paper owns, which means GPU and the PI. It is not proposed here. | NOT RUN |
+| 2 | Register FE-LOCUS (v2) and run it beside D1? | PI | D1 §9 requires the PI before any further Paper B study if H3 is not SUPPORTED. Before D1's result, this registration is a new Paper B direction item, which the coordinator's reading of PI-1127i does not cover. It is committed only after the PI's yes to the question in CC-510. Recommended answer: yes, after the round-2 judge read. | no registration; FE-LOCUS goes to the D1 pivot review as option 5 |
+| 3 | Run N2-R (more unseen segmenters) together with ALT-3? | PI, with the same pivot answer | Only if the project-wide census (Papers A, B and C, `/mnt/d` scripts, score files) finds 2 or more admissible segmenters never run on an output. Draft its prereg after the census. | not run |
+| 4 | May the pin list be printed and released as **type strings**? These are Vietnamese word types counted from KTVIC test references, not sentences. | coordinator, after a check of the KTVIC licence | Yes if the licence allows derived word lists. Otherwise release counts and the census code only, so that users rebuild the list on their own references. | counts and code only |
+| 5 | Derive the census from the KTVIC **training** references instead of the test references, so that the list is independent of the scored references? | coordinator on judge advice | No. The memory notes that the dataset-acceptance record does not cover KTVIC-training. The list uses references only, never outputs or verdicts, and that reference-only use is stated. | test references, as drafted |
+| 6 | Coverage cut for Π_head: 0.80. | coordinator on judge advice | Keep it. It is fixed before any count, and H-L2 compares ρ_head with the realised coverage. | 0.80 |
+| 7 | Bootstrap: B = 10,000 with FE-CERT's W, or B = 2,000 to save CPU? | coordinator | 10,000, the same draws as every FE-CERT number. Chunked matrix products keep it to minutes. | 10,000 |
+| 8 | N1-R (lexical axis): drop it, or keep it as a DESCRIPTIVE row? | coordinator on judge advice | Drop it for now. It fails FE-CERT's admissibility rule (`paper.md:114`), it needs Paper A's lexicon (tool only), and OIWER 2026 already shows the effect in kind. | dropped |
+| 9 | Full-text reads owed before any claim sentence: OIWER (ICASSP 2026) and Aepli et al. (WMT 2023). | coordinator | Assign them to the next novelty or K3 pass. Two PDFs; the ACL Anthology one is open, and the IEEE one may need the PI's browser. | queued |

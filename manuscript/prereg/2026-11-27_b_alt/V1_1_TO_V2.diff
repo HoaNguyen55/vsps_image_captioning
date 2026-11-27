@@ -1,0 +1,273 @@
+# V1_1_TO_V2.diff: PREREG_DRAFT_B_ALT_v1_1.md -> v2, and OPEN_QUESTIONS_B_ALT_v1.md -> v2 (ruling CC-510)
+# Hunk -> W map (hunks numbered in order of appearance below):
+#  H1 @@ -1,12 +1,18 @@    title v2; change note; PI gate in ruling words            -> W3 (+ N1, N6 noted)
+#  H2 @@ -16,17 +22,22 @@   s0 full paths and full sha256 values                        -> W4
+#  H3 @@ -78,7 +89,7 @@     s3.2 step 0, exact split code                              -> N4
+#  H4 @@ -101,15 +112,26 @@ s3.4 IDF sentence; kappa_head; c_ref^B, c_out^B per draw; Delta_lo/Delta_hi -> W1, N5
+#  H5 @@ -118,14 +140,18 @@ s4 floor (v) L(rho_all) >= 0.20; proportional band; H-L1 on kappa_head -> W1
+#  H6 @@ -134,72 +160,46 @@ H-L2 stays on rho_head; descriptive rows (W1); s4b English arm struck (W2); host = D1 host after RESULT_D1 pinned, own 8 CPU-h stop (ruling 6); self-tests incl. constant non-removable shift (W1) -> W1, W2, ruling 6
+#  H7 @@ -208,7 +208,9 @@   mutants M9, M10                                             -> W1
+#  H8 @@ -239,14 +241,16 @@ s7 TAIL sentence on the boundary-removable part (W1); PRACTICAL release wording (N2); no qualification of D1 H3 (N3) -> W1, N2, N3
+#  H9 @@ -1,11 +1,11 @@ (OPEN_QUESTIONS) Q1 closed by CC-510 ruling 4 (W2); Q2 gate words (W3) -> W2, W3
+--- PREREG_DRAFT_B_ALT_v1_1.md	2026-11-27 19:18:14.792181954 +0700
++++ PREREG_DRAFT_B_ALT_v2.md	2026-11-27 19:27:19.016699266 +0700
+@@ -1,12 +1,18 @@
+-# B-ALT preregistration DRAFT v1 (Paper B, LRE; RQ9 / Objective 3.3): FE-LOCUS. Is the CIDEr-D shift caused by changing the Vietnamese word segmenter carried by a short, reference-derived list of frequent disagreement types, or by the long tail?
++# B-ALT preregistration DRAFT v2 (Paper B, LRE; RQ9 / Objective 3.3): FE-LOCUS. Is the CIDEr-D shift caused by changing the Vietnamese word segmenter carried by a short, reference-derived list of frequent disagreement types, or by the long tail?
+ 
+-Drafted 2026-11-27 by agent b-alt. **Status: DRAFT v1.1. Not registered. Not runnable.**
++Drafted 2026-11-27 by agent b-alt. **Status: DRAFT v2. Not registered. Not runnable.**
+ 
+-**Change from v1** (2026-11-27, after the lead's Q1 answer): §4b adds a DESCRIPTIVE English control arm (EN-FE). It is a single `find` pass by file name under `/mnt/d/vsps_image_captioning/data` and `.session_backup`, with no output file opened. Nothing else changes; v1 stays as `PREREG_DRAFT_B_ALT_v1.md`.
++**Changes from v1.1 (ruling CC-510, NEXT_ROUND 72, 2026-11-27T12:24:40Z).** The hunk map is in `V1_1_TO_V2.diff`.
++- W1: the primary estimand is now κ_head, tested per draw against the band [min, max] of c_ref^B and c_out^B. Floor (v) is added, and so are mutants M9 and M10.
++- W2: the English arm is struck.
++- W3: the PI gate is stated as the ruling words it.
++- W4: full paths and full sha256 values are given.
++- Non-blocking items N2–N5 are applied in this file.
++- N1 and N6 (corrections to ALTERNATIVES, which stays unchanged as an older file):
++  - the English NOT RUN line is `paper.md:444`, not `:294`;
++  - ALT-3's expected rubric gain is about +0.8, not +1.3, because its C9 step overlaps the benchmark's A2 item (CC-510 ruling 5).
+ 
+-**Why it cannot run yet.**
+-- The D1 registration (`manuscript/prereg/2026-11-27_b_d1/PREREG_DRAFT_B_D1_A3_v3.md` §9) bars any further Paper B study from being registered without the PI.
+-- This draft is offered as a fifth option for the PI pivot review (`OPEN_QUESTIONS_B_ALT_v1.md` Q2). It needs a judge GO and the PI's answer before a commit.
++**PI gate (CC-510 W3, ruling words).** "D1 §9 requires the PI before any further Paper B study if H3 is not SUPPORTED. Before D1's result, this registration is a new Paper B direction item, which the coordinator's reading of PI-1127i does not cover. It is committed only after the PI's yes to the question in CC-510."
+ 
+ **What happens before the registration commit.**
+ - Nobody computes, prints or opens any quantity defined below.
+@@ -16,17 +22,22 @@
+ 
+ ## 0. Sources (read-only)
+ 
+-| item | path | sha256 |
++| item | path (repository-relative unless stated) | sha256 |
+ |---|---|---|
+-| Paper B text of record | `paper/rev_2026-11-15/paper.md`, B repo at 13549e5 (copy in `~/vsps_ro3/b_now3/`) | `e8d94fbe…` (as recorded by D1, CC-505 SUBJECT); re-read at the commit |
++| Paper B text of record | `paper/rev_2026-11-15/paper.md`, B repo at 13549e5 (copy `~/vsps_ro3/b_now3/`) | `e8d94fbe219efab4fbb09cc92a6e3af6209bba6fb1b13fec02c19b5f3f44d0a9` |
+ | FE-CERT registration v1.1 | `manuscript/prereg/2026-11-12_b_fecert/B_FECERT_PREREG_v1_1.md` | `736b7e6a8ea2007270a3329db7ad6a09197c4804c9bc3821ea6bd4ceb5a61aa0` |
+-| FE-CERT code | `scripts/b_fecert/b_fecert.py` / `family.py` | `67e43dea…` / `7cb2c69b…` |
+-| CIDEr-D | `scripts/kit_b/protocol_pilot.py` (`Cider`) | `6aee4282…` |
+-| stage-1 output, used for G0 only | `…/b_work/DEV.json` | `88ff39aa9552b671a0e439aec961d0fefe02df1f52a2a5df9765a9d8226f7e8d` |
+-| family, systems | `FAMILY.json` / `SYSTEMS.tsv` | `431d92a4…` / `30ac9555…` |
+-| D1 registration (neighbour) | `manuscript/prereg/2026-11-27_b_d1/PREREG_DRAFT_B_D1_A3_v3.md` | `bf3a55f7…` |
+-
+-The hashes are copied from the D1 draft §0 and the commit message adebac7. At the commit they are re-read by `sha256sum`.
++| FE-CERT code | `scripts/b_fecert/b_fecert.py` | `67e43dea1b37c3bbfaa3fe5081d6f3d36848397451ad0a24d67fa67389b06b59` |
++| family code | `scripts/b_fecert/family.py` | `7cb2c69b8b7840388568fd5f9b248e2cf25df28185386be875a65d921a9e4178` |
++| CIDEr-D | `scripts/kit_b/protocol_pilot.py` (`Cider`) | `6aee428207a2d1a045cd72d054e26a2e2ac8d9c2e414cb0c161e3b95dffd92bf` |
++| stage-1 output (G0 only) | `manuscript/prereg/2026-11-12_b_fecert/results/b_work/DEV.json` | `88ff39aa9552b671a0e439aec961d0fefe02df1f52a2a5df9765a9d8226f7e8d` |
++| family | `manuscript/prereg/2026-11-12_b_fecert/results/b_work/FAMILY.json` | `431d92a4a2eaf0516446c9f9aef453ee52d311b6e329d97cd1abb4c4e8017f77` |
++| systems | `manuscript/prereg/2026-11-12_b_fecert/results/b_work/SYSTEMS.tsv` | `30ac9555cd6cdc8fd50f47e637e734fac564c692605f590ba213a60a3be6e1a0` |
++| D1 registration (neighbour) | `manuscript/prereg/2026-11-27_b_d1/PREREG_DRAFT_B_D1_A3_v3.md` (commit adebac7) | `bf3a55f7641cc91b7ba99b5e4ef9d8623d857a2b594bfb7471636f9cf9f939e9` |
++
++Where the hashes come from:
++- paper.md and the D1 file: computed by `sha256sum` on 2026-11-27.
++- The other rows: copied in full from D1 v3 §0 and from the FE-CERT result-file hash listing (`b_work/FAMILY.json`, `b_work/SYSTEMS.tsv`).
++- At the commit, the coordinator checks every row by `sha256sum`.
+ 
+ ## 1. Question and idea provenance
+ 
+@@ -78,7 +89,7 @@
+ 
+ ### 3.2 Image split and disagreement census (half A references only)
+ 
+-0. **Split (fixed now).** Sort the 558 image ids in ascending code-point order, then shuffle them with `numpy.random.default_rng(20261127).permutation`. The first 279 ids form half A and the rest half B. The census and the dictionary use **half A's references only**. Every estimand of §3.4 uses **half B only**. The pin list is therefore tested on images whose references never shaped it.
++0. **Split (fixed now; CC-510 N4).** `ids = sorted(ids)`; `perm = numpy.random.default_rng(20261127).permutation(558)`; half A = `[ids[k] for k in perm[:279]]`; half B = the rest. The census and the dictionary use **half A's references only**. Every estimand of §3.4 uses **half B only**. The pin list is therefore tested on images whose references never shaped it.
+ 1. Apply `rdr.tw.pk.cf` and `pyvi.tw.pk.cf` to each half-A reference (279 × 5 = 1,395 strings).
+ 2. **Syllable alignment.** Split every token at `_` and spaces into syllables. Map each syllable to its key: NFC, lower case, and the tone mark moved by the `tm` rule. A string is aligned if the two key sequences are equal.
+    - Unaligned strings are counted and left out of the census.
+@@ -101,15 +112,26 @@
+ ### 3.4 Estimands
+ 
+ - All D below are means over the **279 half-B images**. Document frequencies stay those of the scorer, unchanged: the full reference list under each member, pinned or not.
++- IDF uses the references of all 558 images, half A included. That is the scorer's constant, not a leak of the pin list (CC-510 N5).
+ - Shift: δ_{c,ℓ} = D_{c,p_ℓ} − D_{c,r_ℓ}.
+ - Pinned shift: δ^Π_{c,ℓ} = D_{c,p_ℓ^Π} − D_{c,r_ℓ^Π}.
+ - Sign: σ_{c,ℓ} = sign(δ_{c,ℓ}) on the full half B, held fixed across resamples, with zero for an exact 0. This keeps the estimator linear and avoids the upward bias of |·| under resampling.
+-- **Primary:** ρ_head = 1 − Σ σ δ^{Π_head} / Σ σ δ, summed over the 1,101 × 18 units (c, ℓ).
+-- Secondary: ρ_all, the same with Π_all.
+-- **c_Π^B**: the share of half-B reference disagreement occurrences, counted as in §3.2 step 4, whose type is in Π_head. This is the out-of-sample coverage.
++- ρ_head = 1 − Σ σ δ^{Π_head} / Σ σ δ, summed over the 1,101 × 18 units (c, ℓ). ρ_all is the same with Π_all.
++- **Primary (CC-510 W1):**
++  - κ_head = ρ_head / ρ_all = Σ σ (δ − δ^{Π_head}) / Σ σ (δ − δ^{Π_all}).
++  - Why the ratio: two parts of δ cannot be removed by any boundary pin.
++    - RDRSegmenter rewrites tone placement itself after the T step (`family.py` applies T before the segmenter; `paper.md:219`).
++    - Some disagreement types occur only in outputs.
++  - Both parts would lower ρ_head with no IDF effect. κ_head keeps only the boundary-removable part.
++  - κ_head can fall outside [0, 1], because CIDEr-D is not additive over types: the length penalty works on token counts, and n-grams cross span ends. It is printed as computed.
++- **Proportional reference values:**
++  - c_ref^B: the share of half-B reference occurrences of Π_all types whose type is in Π_head.
++  - c_out^B: the same share over the half-B outputs of the 75 files. It is counted at S2, after `CENSUS_ALT.json` is pinned, with the §3.2 alignment and span rules applied to output strings.
++  - Both are recomputed in every bootstrap draw from image-level counts, with the same W_B: c = Σ_i w_i n_head,i / Σ_i w_i n_all,i.
+ - Interval: W_B = `boot_W(279, seed 20261128)`, B = 10,000, over half-B images. G0 alone uses the FE-CERT draws on all 558.
+-  - In each draw, the numerator and the denominator are recomputed from `W @ d / n`.
+-  - [L, U] are the 2.5th and 97.5th percentiles of ρ over the draws.
++  - In each draw, every numerator and denominator is recomputed from `W_B @ d / n`, and c_ref^B and c_out^B from the weighted counts.
++  - Per draw: Δ_lo = κ_head − min(c_ref^B, c_out^B) and Δ_hi = κ_head − max(c_ref^B, c_out^B).
++  - L(·) and U(·) are the 2.5th and 97.5th percentiles over the draws.
+ - Units share files and images, so the interval is **nominal**.
+ 
+ ## 4. Hypotheses and rules (fixed here before any quantity exists)
+@@ -118,14 +140,18 @@
+ - (i) a G0 FAULT;
+ - (ii) unaligned > 0.5% (FAULT);
+ - (iii) fewer than 30 disagreement types in the half-A census;
+-- (iv) on half B, Σ|δ| < 0.01 · Σ|D_{c,r_ℓ}|, meaning pyvi barely moves the comparisons.
+-
+-**What the construction implies (stated before any number).** If every disagreement occurrence moved the shift by the same amount, ρ_head would be close to c_Π^B, the out-of-sample coverage, which is about 0.80 by construction. A bar at 0.50 would then be passed almost by construction. So the primary label compares ρ_head with c_Π^B, and the 0.50 bar is a secondary, practical row. This follows the CC-505 lesson on bands chosen with the expected value in view.
++- (iv) on half B, Σ|δ| < 0.01 · Σ|D_{c,r_ℓ}|, meaning pyvi barely moves the comparisons;
++- (v) checked after (iv): L(ρ_all) < 0.20, meaning the boundary-removable part is too small to split.
+ 
+-**H-L1 (primary): IDF weighting, against the proportional null.**
+-1. U(ρ_head) < c_Π^B: **TAIL-WEIGHTED**. Rare, high-IDF types carry more of the shift than their share of occurrences, so a frequency list under-removes.
+-2. L(ρ_head) > c_Π^B: **HEAD-WEIGHTED**. Frequent types carry more than their share.
+-3. Otherwise: **PROPORTIONAL**. The shift follows the occurrences.
++**What the construction implies (stated before any number).**
++- Under a proportional null, where every disagreement occurrence moves the shift equally, κ_head lies near the occurrence coverage of Π_head among the removable types. That coverage is about 0.80 by construction.
++- The proportional value is not known in advance, because references and outputs may differ. So the null is a band, [min, max] of c_ref^B and c_out^B, recomputed in each draw.
++- The 0.50 bar is a secondary, practical row (H-L2).
++
++**H-L1 (primary): IDF weighting of the boundary-removable shift, against the proportional band.**
++1. U(Δ_lo) < 0: **TAIL-WEIGHTED**. In the boundary-removable part of the shift, the frequent types carry less than their share of occurrences, so rarer types carry more.
++2. L(Δ_hi) > 0: **HEAD-WEIGHTED**.
++3. Otherwise: **PROPORTIONAL**.
+ 
+ No outcome is predicted. The tf-idf argument points to TAIL-WEIGHTED. The concentration of frequent compounds in short captions points the other way.
+ 
+@@ -134,72 +160,46 @@
+ 2. U(ρ_head) < 0.50: **NOT PRACTICAL**.
+ 3. Otherwise: **INCONCLUSIVE**.
+ 
+-- H-L1 and H-L2 read the same interval. They are not combined, and each is printed with "nominal".
++- H-L2 stays on ρ_head: the practical question is about the whole shift (CC-510 W1).
++- H-L1 and H-L2 are not combined, and each is printed with "nominal".
+ - The resource claim (§8) needs PRACTICAL. Because the list was built on half A and tested on half B, PRACTICAL is an out-of-sample result, not in-sample coverage.
+ 
+ **DESCRIPTIVE rows (no label):**
+-- ρ_all with its interval. The remainder 1 − ρ_all is split by T level: the `tw` pairs against the `tm`/`tf` pairs, which bounds the part of RDRSegmenter's own tone rewriting.
++- ρ_head and ρ_all with their intervals; c_ref^B and c_out^B. The remainder 1 − ρ_all is split by T level: the `tw` pairs against the `tm`/`tf` pairs, which bounds the part of RDRSegmenter's own tone rewriting.
+ - The occurrences in outputs of types outside Π_all (output-only disagreement).
+ - FRAGILE over G_w, raw against pinned, with CHANGED defined against `f0` and `f0^Π` respectively.
+ - How far the pin moves the reference member: Σ|D_{c,r^Π} − D_{c,r}| / Σ|D_{c,r}|.
+ - |Π_head|, c_Π (half A), c_Π^B, and the 20 most frequent types. The types are printed only if OPEN_QUESTIONS Q4 is answered yes; otherwise counts only.
+ 
+-## 4b. English control arm EN-FE (DESCRIPTIVE; no label)
+-
+-**What exists, by file name only.** One `find` pass, 2026-11-27T12:17Z, gave sizes, names and `.sha256` sidecars. No output file was opened.
+-- `.session_backup/2026-10-20/a_n2_run/outputs/lbA_<model>_{cv295,uv231en}-{short,detailed}_en.preds.json`, each with a `.sha256` sidecar.
+-  - The models are `idefics3_8b`, `internvl3_8b`, `llava15_7b`, `llava_ov_7b`, `qwen25vl_3b`, `qwen25vl_7b` and `qwen3vl_8b`. An eighth model has to be confirmed from the listing; it was cut off at 80 lines.
+-  - These are zero-shot public models from Paper A's leaderboard run, with English decodes on two image sets named `cv295` and `uv231en`.
+-- `data/results/p50/ngram_p50_*_en.preds.json` (about 110 bytes each, probably pointers) and `data/results/xm3600/*.preds.json` (Vietnamese) are not used.
+-- `data/datasets/nocaps/nocaps_val_4500_captions.json` is references only and is not used.
+-
+-**Why it is DESCRIPTIVE, not a registered rule.**
+-1. The split status of `cv295` and `uv231en` (development, test or one-look) is unknown to the drafter.
+-2. Whether their English references are stored is unknown.
+-3. The systems are not the 75 files of D, so no matched Vietnamese-against-English contrast on the same comparisons exists. Whether Vietnamese decodes of the same lbA models on the same images exist was not checked (one pass only).
+-4. 7–8 models × 2 prompts give about 2 × 2 × C(8,2) = 112 comparisons, too few and too unlike D for a band fixed now.
+-
+-**Precondition E0, checked by the coordinator from run records, never from output files.** Both sets are non-test and DEVELOPMENT-eligible, and their English references are stored with a hash. If either fails, that set is dropped, and with no set left the arm is **NOT RUN**, reported as such.
++## 4b. English arm: not run (CC-510 W2)
+ 
+-**Family E (18 members), the English analogue of G_w.**
+-- Tokenizer: PTB (pycocoevalcap 1.2) or sacreBLEU `13a`.
+-- Punctuation P: {`pk`, `pf`, `pa`}, as in Table 1.
+-- Case C: {`cf`, `ck`}.
+-- `whitespace` is a third tokenizer level, giving 3 × 3 × 2 = 18.
+-- The reference member is `e0` = PTB.pk.cf, the COCO convention.
++E0 fails on the record before any output file is opened.
++- uv231 is UIT-ViIC test, which CC-505 W5 removed from Paper B as a one-look set.
++- cv295 is part of Paper A's A-T3 images. A fixed rule excludes it from Paper A's own development checks (CC-266 ruling 2) and from Paper C's KT-C (PORTFOLIO_3Y l.193).
++- Paper A's registered English-arm claims rest on both sets.
+ 
+-**Comparisons.** Every pair of the same set and the same prompt style. The CIDEr-D scorer and statistics are those of §3, unchanged. W_E = `boot_W(n_set, seed 20261129)`, B = 10,000.
++B's English control stays NOT RUN (paper.md:444).
+ 
+-**Rows (no label):**
+-- CERTIFIED, FRAGILE, REVERSED and NULL-STABLE over E;
+-- the CHANGED share against `e0`;
+-- point-sign flips.
+-- Beside them, the same rows over a size-matched Vietnamese family: the 18 `rdr` members of G_w, on D. That is a reference row from different systems and images, **not a contrast**.
+-
+-**Allowed sentence.** "On English decodes of n public models, a family of 18 English front ends left k of m comparisons significant under the COCO convention not certified (DESCRIPTIVE; different systems and images from the Vietnamese pool)."
+-
+-**Not allowed.** "Vietnamese is more front-end-sensitive than English." This claim needs a matched arm on the same systems and images, which is a later registration if E0 and a Vietnamese counterpart allow it.
+-
+-**Seen numbers.** None. No English score from these files under any member of E is known to the drafter. Paper A may have printed leaderboard scores from them under its own protocol; these are listed at the commit if so.
+-
+-**Cost.** Under 0.5 CPU-h, inside the 8 CPU-h hard stop.
++**English control: NOT RUN, no admissible stored set.**
+ 
+ ## 5. Stages, gates and order
+ 
+-**Host.** A rented host only, like D1 (CC-505 ruling 9). The laptop writes files only. **Hard stop at 8 CPU-h.**
++**Host (CC-510 ruling 6).** The D1 rented host, used only after D1's `RESULT_D1.json` is pinned on the LOG. Not pipc, not the laptop; the laptop writes files only. This study has its own S0 judge code read, its own `env_check`, and **its own hard stop at 8 CPU-h**, separate from D1's 8 CPU-h.
+ 
+ **S0, on the host, before any data:**
+ - **Code read** by a judge.
+ - **Self-tests** on invented-syllable stub data:
+   - the split: half sizes 279 and 279, disjoint, reproducible from the seed; the census reads no half-B id (mutant M8: the census reads all 558);
+-  - head-only world: ρ_head = 1 within 1e-9;
++  - head-only world: ρ_head = κ_head = 1 within 1e-9;
+   - tail-only world: ρ_head = 0;
+   - a known mixed world;
+   - with Π empty, δ^Π = δ exactly;
++  - adding a constant non-removable shift (a tone-rewrite or output-only component planted on every unit) leaves κ_head unchanged and lowers ρ_head;
++  - per-draw recomputation of c_ref^B and c_out^B from weighted image counts.
+   - the pin is idempotent;
+   - census tie-breaks;
+   - the alignment counter;
+-  - the label boundaries at c_Π^B and at 0.50, both > and <.
++  - the label boundaries: Δ_lo and Δ_hi at 0, ρ_head at 0.50, and L(ρ_all) at 0.20, each both > and <.
+ - **Mutants to kill:**
+   - M1: the census is fed an output file;
+   - M2: the pin is applied to `pyvi` only;
+@@ -208,7 +208,9 @@
+   - M5: W is reseeded;
+   - M6: ≥ is used in place of > at a label boundary;
+   - M7: the tone key is not applied in alignment;
+-  - M8: the census uses half-B references, or the estimands use half-A images.
++  - M8: the census uses half-B references, or the estimands use half-A images;
++  - M9: the H-L1 label read from ρ_head instead of κ_head;
++  - M10: c_ref^B or c_out^B held at its full-sample value in every draw.
+ - `env_check` passes in the FE-CERT segmenter environment: VnCoreNLP 1.2 jar sha `9e2811cd…`, pyvi 0.1.1.
+ 
+ **S1, on the host.**
+@@ -239,14 +241,16 @@
+ 
+ | outcome | allowed sentence (template) | not allowed |
+ |---|---|---|
+-| H-L1 TAIL-WEIGHTED | "A list of the most frequent disagreement types, built from the references of half of the images and covering c_Π^B of disagreement occurrences on the other half, removed only ρ_head [L, U] of the CIDEr-D shift between RDRSegmenter and pyvi there; rarer types carry more of the shift than their share (REGISTERED, DEVELOPMENT; nominal)." | "certificates are necessary" in general; causal IDF language beyond the label |
+-| H-L1 HEAD-WEIGHTED / PROPORTIONAL | the same template with "more than" or "in proportion to their share" | |
+-| H-L2 PRACTICAL | "… removed more than half of the shift on images whose references were not used to build it. The list is released as a normal form for these two segmenters." | "segmentation instability is solved"; any claim for other segmenters, metrics or data |
++| H-L1 TAIL-WEIGHTED | "In the boundary-removable part of the CIDEr-D shift between RDRSegmenter and pyvi, a list of the most frequent disagreement types, built from the references of half of the images, removed κ_head [L, U] of that part on the other half, less than their share of disagreement occurrences there; rarer types carry more of the boundary-removable part (REGISTERED, DEVELOPMENT; nominal)." | "certificates are necessary" in general; causal IDF language beyond the label; any statement about the non-removable part beyond the ρ_all row |
++| H-L1 HEAD-WEIGHTED / PROPORTIONAL | the same template with "more than" or "in proportion to" their share | |
++| H-L2 PRACTICAL | "… removed more than half of the whole shift (ρ_head) on images whose references were not used to build it. The list is released as a normal form, as type strings if OQ4 is answered yes, otherwise as counts and census code." | "segmentation instability is solved"; any claim for other segmenters, metrics or data |
+ | H-L2 NOT PRACTICAL / INCONCLUSIVE | the estimate and interval; no release sentence | |
+ | NOT_EVALUABLE | the failing floor and its count | |
+ 
+ Every label is printed whichever way it falls. None of them changes a FE-CERT label, F, or a D1 label.
+ 
++No FE-LOCUS row, including the T-level split of 1 − ρ_all, is used to qualify D1's H3 label. H3 sentences come from D1 alone (CC-510 N3).
++
+ ## 8. After the result
+ 
+ - **H-L2 PRACTICAL.** The pin list is released, as types or as counts only (Q4), together with the census code. That release is the C8 resource claim.
+--- OPEN_QUESTIONS_B_ALT_v1.md	2026-11-27 19:14:47.740516088 +0700
++++ OPEN_QUESTIONS_B_ALT_v2.md	2026-11-27 19:27:31.003979708 +0700
+@@ -1,11 +1,11 @@
+-# Open questions, B-ALT v1 (2026-11-27; agent b-alt)
++# Open questions, B-ALT v2 (2026-11-27; agent b-alt; after CC-510)
+ 
+ Each question carries a recommendation and a default. "Who" says who decides: a reversible technical item goes to the coordinator on judge advice, and a direction item goes to the PI.
+ 
+ | # | question | who | recommendation | default if no answer |
+ |---|---|---|---|---|
+-| 1 | Do stored **English** caption outputs of two or more systems exist on a spent set with English references, for example XM3600-en or COCO in Paper A's runs? I could not list `/mnt/d`. | coordinator (file listing only, no scoring) | Check by name listing. If they exist, draft EN-CONTRAST, a matched English front-end family on the same comparisons: PTB, 13a or whitespace × punctuation × case. It tests `paper.md:27` and closes the NOT RUN control (`:294`). If they do not exist, it needs decodes, and that goes to the PI. | treat as not existing; EN-CONTRAST not drafted |
+-| 2 | Put FE-LOCUS (ALT-3) to the PI as a **fifth option** of the D1 pivot review (`PIVOT_REVIEW_B_vi_v2.md`), beside options 1–4. | PI (D1 §9 bars any B registration without him) | Yes, as "option 1 plus FE-LOCUS". Submit at the current scope, and run FE-LOCUS on the same host session after D1 S1: 3–4 CPU-h, no new data, no labels, and both outcomes give a paper sentence. | option 1 alone (the D1 default) |
++| 1 | English outputs for a control arm. | closed | Closed by CC-510 ruling 4. The stored lbA decodes sit on one-look sets (UIT-ViIC test; the A-T3 cv295 images), so the English control stays NOT RUN (`paper.md:444`). A matched arm would need new English decodes on a spent set that no other paper owns, which means GPU and the PI. It is not proposed here. | NOT RUN |
++| 2 | Register FE-LOCUS (v2) and run it beside D1? | PI | D1 §9 requires the PI before any further Paper B study if H3 is not SUPPORTED. Before D1's result, this registration is a new Paper B direction item, which the coordinator's reading of PI-1127i does not cover. It is committed only after the PI's yes to the question in CC-510. Recommended answer: yes, after the round-2 judge read. | no registration; FE-LOCUS goes to the D1 pivot review as option 5 |
+ | 3 | Run N2-R (more unseen segmenters) together with ALT-3? | PI, with the same pivot answer | Only if the project-wide census (Papers A, B and C, `/mnt/d` scripts, score files) finds 2 or more admissible segmenters never run on an output. Draft its prereg after the census. | not run |
+ | 4 | May the pin list be printed and released as **type strings**? These are Vietnamese word types counted from KTVIC test references, not sentences. | coordinator, after a check of the KTVIC licence | Yes if the licence allows derived word lists. Otherwise release counts and the census code only, so that users rebuild the list on their own references. | counts and code only |
+ | 5 | Derive the census from the KTVIC **training** references instead of the test references, so that the list is independent of the scored references? | coordinator on judge advice | No. The memory notes that the dataset-acceptance record does not cover KTVIC-training. The list uses references only, never outputs or verdicts, and that reference-only use is stated. | test references, as drafted |
