@@ -1,0 +1,128 @@
+LAPTOP DEBUG RUN v3 (FE-LOCUS, round 3 after CC-512r2): synthetic fixtures only; record of authority = host run via host_selftest.sh
+utc 2026-11-27T14:47:45Z; python 3.12.3 numpy 2.5.4 scipy 1.18.1; NCS_DATA=empty dir; tree built by make_tree.sh (mode 444)
+code sha256:
+7dc734c8d150b10b303c291990bf06fc48b1b6aacbb4f927cccccb2092a49602  b_alt.py
+3b93047d1258dec5c42015776db94d78de8ea89d15d6cabbed1824de7b5e391b  cpu_guard.py
+02414e8cbdeb1274cdeb3868c142499f162511e05adb78726a14c798b75f73cc  test_b_alt.py
+ad566e0187027a465720d39ffb7d606f5cde14750ffec0ddb6f7f443597e2a26  mutants_b_alt.py
+a2de9993a116ad80f7421319b05c640a13e8813b4b8926becaad1e946f05497a  run_tests.sh
+2beca85408bafa1ed05d4245215ce779b59fd4d4fb41644a6264e5f82e7a6d05  run_stage.sh
+37578da01d84e983a8b0406733b42f89d288032c64b1981b4946f729870ffe5e  host_selftest.sh
+a8292ef2425c78c565f15f760c1695c374962dacb4876b1296c337663c435737  make_tree.sh
+7d13302e25c7d0a283f9b4fe02cc72a287317312d46757edb7e123484d99cc7a  PUSH_LIST.txt
+
+== make_tree.sh: imported 27 tree modules, all in the push list; CLOSURE PASS; alias count 0
+
+== run_tests.sh (JOBS=4)
+SELFTEST ok pins_and_closure
+SELFTEST ok jar_full_pin
+SELFTEST ok member_sets
+SELFTEST ok pairs_same_levels
+SELFTEST ok split_exact
+SELFTEST ok tone_key_and_explode
+SELFTEST ok spans_rule
+SELFTEST ok census_counts_and_tone_merge
+SELFTEST ok pin_list_rules
+SELFTEST ok pin_rule
+SELFTEST ok pin_tok_both_units
+SELFTEST ok census_reads_half_a_references_only
+SELFTEST ok s1b_matches_fecert_scorer
+SELFTEST ok s1b_pinned_members_and_counts
+SELFTEST ok g0_pass_on_fecert_world
+SELFTEST ok g0_tolerance_and_sig
+SELFTEST ok g0_membership_and_keys
+SELFTEST ok stage_guards
+SELFTEST ok census_floor_iii_stops_chain
+SELFTEST ok census_floor_ii_unaligned
+SELFTEST ok sigma_fixed_unit_sums
+SELFTEST ok head_only_tail_only_worlds
+SELFTEST ok nonremovable_shift_leaves_kappa
+SELFTEST ok empty_pin_is_identity
+SELFTEST ok kappa_label_reads_kappa_not_rho
+SELFTEST ok coverage_recomputed_per_draw
+SELFTEST ok bootstrap_draws_registered_seed
+SELFTEST ok hl1_boundaries
+SELFTEST ok hl2_boundaries
+SELFTEST ok floors_order_and_boundaries
+SELFTEST ok result_record_end_to_end
+SELFTEST ok no_text_in_outputs
+SELFTEST ok cpu_guard_kills_tree
+SELFTEST ok run_stage_refuses_d1_records
+SELFTEST ok changed_needs_significance_under_f0
+SELFTEST ok registered_literals
+SELFTEST ok registration_and_erratum_checked
+SELFTEST ok pin_overlapping_types
+SELFTEST ok pinned_member_uses_its_own_list
+SELFTEST ok references_are_pinned
+SELFTEST ok disagreement_counts_literal
+SELFTEST ok band_uses_min_and_max
+SELFTEST ok floor_iv_reads_shift_not_pin_move
+SELFTEST ok tripped_floor_replaces_both_labels
+SELFTEST ok coverage_from_the_right_counts
+SELFTEST ok g0_failure_exits_3
+SELFTEST ok outputs_read_only
+SELFTEST ok t_split_by_tone_level
+selftest: 48 ok of 48 checks
+MUTANT KILLED: M1 census fed outputs
+MUTANT KILLED: M2 pin applied to pyvi only
+MUTANT KILLED: M3 T/P/C mismatched in a pair
+MUTANT KILLED: M4 sigma recomputed per resampled image
+MUTANT KILLED: M5 W_B reseeded
+MUTANT KILLED: M5b W_B with the FE-CERT seed in s2
+MUTANT KILLED: M6a >= at the TAIL boundary
+MUTANT KILLED: M6b >= at the HEAD boundary
+MUTANT KILLED: M6c >= at PRACTICAL
+MUTANT KILLED: M6d <= at NOT PRACTICAL
+MUTANT KILLED: M6e <= at floor (iv)
+MUTANT KILLED: M6f <= at floor (v)
+MUTANT KILLED: M7 tone key not applied
+MUTANT KILLED: M8a census on all images
+MUTANT KILLED: M8b estimands on half A
+MUTANT KILLED: M9 H-L1 read from rho_head
+MUTANT KILLED: M10a c_ref held at its full-sample value
+MUTANT KILLED: M10b c_out held at its full-sample value
+MUTANT KILLED: E1 kappa denominator rho_head's
+MUTANT KILLED: E2 rho_head not complemented
+MUTANT KILLED: E3 rho_all not complemented
+MUTANT KILLED: E4 Pi_all shift from Pi_head members
+MUTANT KILLED: E5 shift without the rdr side
+MUTANT KILLED: E6 zero-denominator draws ignored
+MUTANT KILLED: P1 coverage strictly above 0.80
+MUTANT KILLED: P2 ties not by code point
+MUTANT KILLED: P3 tie to more tokens
+MUTANT KILLED: P4 tie to the largest vector
+MUTANT KILLED: P5 start boundary not forced
+MUTANT KILLED: P6 end boundary not forced
+MUTANT KILLED: P7 shortest match first
+MUTANT KILLED: P8 spans without the difference test
+MUTANT KILLED: P9 common boundary = either
+MUTANT KILLED: P10 unaligned keys accepted
+MUTANT KILLED: P11 malformed tokens accepted
+MUTANT KILLED: P12 halves swapped
+MUTANT KILLED: P13 split seed
+MUTANT KILLED: F1 floor (iii) <=
+MUTANT KILLED: F2 floor (ii) >=
+MUTANT KILLED: F3 s1b runs after a floor
+MUTANT KILLED: F4 MIN_TYPES 29
+MUTANT KILLED: F5 SHIFT_FLOOR 0.02
+MUTANT KILLED: F6 RHO_ALL_FLOOR 0.10
+MUTANT KILLED: F7 PRACTICAL 0.40
+MUTANT KILLED: G1 G0 tolerance 1e-5
+MUTANT KILLED: G2 G0 sig gate dropped
+MUTANT KILLED: G3 G0 ignores membership
+MUTANT KILLED: G4 G0 ignores keys
+MUTANT KILLED: G5 G0 ignores the comparison count
+MUTANT KILLED: G6 class key without references
+MUTANT KILLED: G7 G0 keeps syl members
+MUTANT KILLED: G8 s2 runs on a failed G0
+MUTANT KILLED: G9 s2 G0 binding dropped
+MUTANT KILLED: G10 a json stage runs twice
+MUTANT KILLED: G11 s1b overwrites its matrix
+MUTANT KILLED: G12 jar prefix only
+MUTANT KILLED: G13 pin check skipped
+MUTANT KILLED: C1 guard limit x100
+MUTANT KILLED: C2 guard ignores descendants
+MUTANT KILLED: C3 guard ignores reaped children
+killed 60 of 60
+run_tests: selftest rc=0 mutants rc=0 env rc=0
+cpu 293.48+54.08 wall 149.35
