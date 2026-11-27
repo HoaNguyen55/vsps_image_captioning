@@ -168,7 +168,7 @@ Its layout is the one `host_selftest.sh` uses:
 - `$B/venv-bd1` and `$B/bd1-wheels`;
 - `$B/b_alt_records`, `$B/b_alt_out` and `$B/outputs_b_alt_checks`.
 
-**Host preconditions** (`host_selftest.sh` fails closed without them): Python 3.12.3 at `/usr/bin/python3`, openjdk 21.0.13.0.3, GNU `time`, `prlimit`.
+**Host preconditions** (`host_selftest.sh` fails closed without them): `PY3` set to a CPython 3.12.3 interpreter inside `$B` (CC-512e1; for example python-build-standalone 3.12.3 unpacked into `$B`, as D1 did; the host's system python is never used or changed), `java` on `PATH` reporting 21.0.13.0.3, GNU `time`, `prlimit`. The S0 record carries `interpreter.txt` (path, sha256, `sys.version`) and `java_path.txt` (path, sha256).
 
 **Record checks.** Each record is written to the session record before the step it guards (E1). The coordinator runs them. The commands below run on the host unless they say laptop.
 

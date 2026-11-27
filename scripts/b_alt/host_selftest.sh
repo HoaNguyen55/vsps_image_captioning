@@ -3,12 +3,14 @@
 # D1 rented host if still running under its existing payment, else host (b) the PI's PC in one own folder (H1).
 # Run ON the host from the pushed tree:  BALT_BASE=<own folder> bash <own folder>/b_alt_tree/scripts/b_alt/host_selftest.sh
 # BALT_BASE defaults to /root (host a). On host b every path below lives under BALT_BASE (H1); push by tar (H2).
-# Expects: $BALT_BASE/b_alt_tree (exactly PUSH_LIST.txt), Python 3.12.3 at /usr/bin/python3, openjdk 21.0.13.0.3, and the
+# Expects: $BALT_BASE/b_alt_tree (exactly PUSH_LIST.txt), PY3 = a CPython 3.12.3 interpreter inside $BALT_BASE (CC-512e1;
+# the host's system python is never used), `java` on PATH reporting 21.0.13.0.3, and the
 # VnCoreNLP 1.2 jar + models at $NCS_DATA/vncorenlp (default $BALT_BASE/ncs-data). Reuses $BALT_BASE/venv-bd1 and
 # $BALT_BASE/bd1-wheels when present (the D1 set-up, same wheel list), else builds them the same way. Writes only those,
 # $BALT_BASE/outputs_b_alt_checks and $BALT_BASE/b_alt_records (its own 8 CPU-h budget). No host name, IP or port is written.
 set -u
 B=${BALT_BASE:?set BALT_BASE to the own folder of erratum H1 (host (a) no longer exists)}
+P3=${PY3:?set PY3 to the CPython 3.12.3 interpreter inside BALT_BASE (CC-512e1)}
 TREE=$B/b_alt_tree; V=$B/venv-bd1; WH=$B/bd1-wheels; O=$B/outputs_b_alt_checks; R=$B/b_alt_records
 export NCS_DATA=${NCS_DATA:-$B/ncs-data} CUDA_VISIBLE_DEVICES= OMP_NUM_THREADS=2
 N="nice -n 19 ionice -c3"
@@ -30,7 +32,13 @@ sha256sum manuscript/prereg/2026-11-27_b_alt/ERRATUM_B_ALT_1.md | grep -q '^8367
 [ -z "$(find "$TREE" -name .git)" ] || fail "a .git directory is in the tree (H2)"
 [ -e "$R/STOP" ] && fail "a STOP marker exists in $R"
 # 2. interpreter and Java at their pins; the jar at its FULL sha256 (CC-510r2 N8)
-[ "$(/usr/bin/python3 -c 'import platform; print(platform.python_version())')" = 3.12.3 ] || fail "python is not 3.12.3"
+P3R=$(readlink -f "$P3") || fail "PY3 not found"
+case $P3R in "$(readlink -f "$B")"/*) ;; *) fail "PY3 is not inside BALT_BASE (H1)";; esac
+[ "$("$P3R" -c 'import platform; print(platform.python_implementation(), platform.python_version())')" = "CPython 3.12.3" ] \
+  || fail "PY3 is not CPython 3.12.3"
+{ echo "PY3 $P3R"; sha256sum "$P3R"; "$P3R" -c 'import sys; print(sys.version)'; } > "$O/interpreter.txt" 2>&1 || fail "interpreter record"
+JR=$(readlink -f "$(command -v java)") || fail "java not on PATH"
+{ echo "java $JR"; sha256sum "$JR"; } > "$O/java_path.txt" 2>&1 || fail "java record"
 java -version > "$O/java_version.txt" 2>&1
 grep -q 'version "21.0.13.0.3"' "$O/java_version.txt" || fail "java is not 21.0.13.0.3"
 sha256sum "$NCS_DATA/vncorenlp/VnCoreNLP-1.2.jar" > "$O/jar_sha256.txt" 2>&1 \
@@ -38,7 +46,7 @@ sha256sum "$NCS_DATA/vncorenlp/VnCoreNLP-1.2.jar" > "$O/jar_sha256.txt" 2>&1 \
 # 3. venv from the FE-CERT wheel set (WHEELS_SHA256.txt = byte copy of scripts/b_d1/WHEELS_SHA256.txt)
 sha256sum scripts/b_alt/WHEELS_SHA256.txt | grep -q '^51cc87787787c8f81cf9801464e25c3696179a4214ed3a2242fa9d64042f615a ' || fail "wheel list sha"
 if [ ! -x "$V/bin/python" ]; then
-  $N /usr/bin/python3 -m venv "$V" || fail venv
+  $N "$P3R" -m venv "$V" || fail venv
   $N "$V/bin/python" -m pip install -q pip==24.3.1 || fail "pip 24.3.1"
   mkdir -p "$WH"
   while read -r _h f; do
