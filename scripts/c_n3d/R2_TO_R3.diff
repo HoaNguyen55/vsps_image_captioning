@@ -1,0 +1,36 @@
+# R2 -> R3 (CC-511r2 n-gram fix): probe.py synthetic strings replaced by invented ones; ERRATUM_C_N3D_1.md and R1_TO_R2.diff removed from the code folder; nothing else changed; removed lines show their string literals withheld (they matched captions); the r2 text is ~/vsps_out/c_n3d_code_r2/probe.py (sha in its CODE.sha256 f3f9ab44)
+--- /home/hoanguyen/vsps_out/c_n3d_code_r2/probe.py	2026-11-27 20:23:53.789773871 +0700
++++ probe.py	2026-11-27 20:35:52.549488738 +0700
+@@ -49,25 +49,25 @@
+ import xm3600_oiv7 as XO  # noqa: E402
+ from rescap import chair as CH  # noqa: E402
+ 
+-vi = ["<r2 literal withheld: n-gram scan>", "<r2 literal withheld: n-gram scan>", "<r2 literal withheld: n-gram scan>"]
++vi = ["chó tím xổm ghế sofa đỏ rực lúc trưa", "ba ông lão dắt xe máy cũ qua kênh xanh", "mèo mướp chó con chơi đàn"]
+ out = {"classes": [G.classes(t) for t in vi], "key": [G.key(o) for t in vi for o in G.classes(t)],
+-       "<r2 literal withheld: n-gram scan>": G.neighbour_only(vi[2], vi[0], [vi[1], "<r2 literal withheld: n-gram scan>"]),
++       "neighbour_only": G.neighbour_only(vi[2], vi[0], [vi[1], "mèo mướp lim dim"]),
+        "syllables": R.syllables(vi[1]), "copy_stat": R.copy_stat(R.syllables(vi[0]), [R.syllables(vi[2])])[0],
+        "gold": sorted(CH._gold_objects(vi)), "shown": C.shown({"openviic": "a", "ktvic": "b"}, "openviic"),
+-       "<r2 literal withheld: n-gram scan>": sorted(SC.en_classes("<r2 literal withheld: n-gram scan>", SC.load_synonyms())),
++       "en_classes": sorted(SC.en_classes("purple dog couch cat sky", SC.load_synonyms())),
+        "vmap_size": len(XO.resolve_map(ROOT / "data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv"))}
+ import c_n3d as N  # noqa: E402  CC-511 W6: the run's neighbour-only rule equals guard.neighbour_only
+ vin = N.vi_instruments()
+-cases = [(vi[2], vi[0], [vi[1], "<r2 literal withheld: n-gram scan>"]), (vi[1], vi[2], [vi[0]]), (vi[0], "<r2 literal withheld: n-gram scan>", [vi[0], vi[2]]),
+-         ("<r2 literal withheld: n-gram scan>", "<r2 literal withheld: n-gram scan>", ["<r2 literal withheld: n-gram scan>", "<r2 literal withheld: n-gram scan>", "<r2 literal withheld: n-gram scan>"])]
++cases = [(vi[2], vi[0], [vi[1], "mèo mướp lim dim"]), (vi[1], vi[2], [vi[0]]), (vi[0], "", [vi[0], vi[2]]),
++         ("chó mèo xe máy tím rịm", "chó tím", ["mèo mướp", "xe máy cũ", "chó tím"])]
+ if [vin.neighbour_only(*c) for c in cases] != [G.neighbour_only(*c) for c in cases]:
+     raise SystemExit("STOP: Instruments.neighbour_only differs from guard.neighbour_only")
+ out["neighbour_only_equal"] = len(cases)
+ score = CS.kit_scorer(CS.KIT)
+ out["kit_cider"] = score({"a": vi[0], "b": vi[1]}, {"a": [vi[0], vi[2]], "b": [vi[1], vi[2]]}).round(3).tolist()
+ tok, cider = CE.ptb_cider()
+-g = tok({"<r2 literal withheld: n-gram scan>": ["<r2 literal withheld: n-gram scan>", "<r2 literal withheld: n-gram scan>"], "<r2 literal withheld: n-gram scan>": ["<r2 literal withheld: n-gram scan>", "<r2 literal withheld: n-gram scan>"]})
+-out["<r2 literal withheld: n-gram scan>"] = cider(g, tok({"<r2 literal withheld: n-gram scan>": ["<r2 literal withheld: n-gram scan>"], "<r2 literal withheld: n-gram scan>": ["<r2 literal withheld: n-gram scan>"]})).round(3).tolist()
++g = tok({"a": ["purple dog couch sky", "dog sky"], "b": ["three bikes grass hum", "grass hum"]})
++out["ptb_cider"] = cider(g, tok({"a": ["purple dog couch sky"], "b": ["cat hum"]})).round(3).tolist()
+ mods = sorted({str(Path(m.__file__).resolve()) for m in list(sys.modules.values())
+                if getattr(m, "__file__", None) and str(Path(m.__file__).resolve()).startswith(str(ROOT))})
+ if MODE == "--pins":

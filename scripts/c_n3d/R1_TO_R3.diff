@@ -1,0 +1,1546 @@
+# R1_TO_R3.diff: C-N3D code r1 (c_n3d_code, CODE.sha256 7ef8d969) -> r3; r2 hunk map applies (R1_TO_R2 in c_n3d_code_r2) with probe.py strings replaced (R2_TO_R3.diff)
+--- /home/hoanguyen/vsps_out/c_n3d_code/c_n3d.py	2026-11-27 19:39:13.906093422 +0700
++++ c_n3d.py	2026-11-27 20:35:35.332434133 +0700
+@@ -4,7 +4,7 @@
+ aggregate (counts, shares, CIs, p-like statistics, labels); no caption and no per-image row is ever written.
+ 
+   python3 c_n3d.py selftest                      synthetic only; opens no input (laptop allowed, CC-509 r2 §10 step 1)
+-  python3 c_n3d.py custody --root R              host step 2a: id/sha256 intersections, counts only, STOP if any > 0
++  python3 c_n3d.py custody --root R --data D     host step 2 (all pins) + 2a: id/sha256 intersections, counts only
+   python3 c_n3d.py run --root R --data D --out J host step 4: the one run (refuses unless custody and selftest passed)
+ """
+ from __future__ import annotations
+@@ -14,6 +14,7 @@
+ import json
+ import math
+ import os
++import re
+ import sys
+ from dataclasses import dataclass
+ from pathlib import Path
+@@ -40,7 +41,10 @@
+ PREC_REV = ("LN", "ZL", "BO", "CP")        # SR6
+ OTHER = 4
+ LABEL = "DEVELOPMENT / C-N3D, NON-CONFIRMATORY; rule-based categories, no human labels"
+-EN_LABEL = "not placebo-differenced; coupled by construction (prereg §6)"
++EN_LABEL = "not placebo-differenced; coupled by construction (prereg §6); length counted in words"
++EN_NOT_RUN = "NOT RUN (no COCO-memory shown captions; erratum 1 E3)"
++EN_CATS = "categories ZL > LN > OTHER only; BO and CP not run"
++EN_NOT_RUN_KEY = re.compile(r"(?:^|_)(?:BO|CP)(?:_|$)")
+ H_NOTE = "335 of the 925 OV-dev-B images are OpenViIC-dev copies of Paper B's BD-T1 set H; none is a memory member (CC-493e1)"
+ AYA_FLAG = "placebo flagged on this set (Section 6.10.5)"
+ #: parity gate: mean per-image contrast must equal the printed value of the text of record (2 dp)
+@@ -99,14 +103,19 @@
+         return [o for o in self.classes(cap) if self.key(o) not in z and self.key(o) in ex]
+ 
+ 
++def flags_zl_ln(inst: Instruments, cap: str, zs: str, status: Callable[[str], str], med_len: float,
++                ln_rel: float = LN_REL) -> dict[str, bool]:
++    """ZL and LN: the two flags that need no shown list (the only ones run in English, erratum 1 E3)."""
++    have = {inst.key(o) for o in inst.classes(cap)}
++    return {"ZL": any(status(o) == "present" and inst.key(o) not in have for o in inst.classes(zs)),
++            "LN": abs(inst.length(cap) - med_len) >= ln_rel * med_len}
++
++
+ def flags_of(inst: Instruments, cap: str, zs: str, shown: list[str], status: Callable[[str], str],
+              med_len: float, ln_rel: float = LN_REL) -> dict[str, bool]:
+     """BO, CP, ZL, LN of one caption against its own shown list (prereg §5). status(o) -> 'present' | 'absent'."""
+-    have = {inst.key(o) for o in inst.classes(cap)}
+     return {"BO": any(status(o) == "absent" for o in inst.neighbour_only(cap, zs, shown)),
+-            "CP": inst.copy_m(cap, shown) >= CP_M,
+-            "ZL": any(status(o) == "present" and inst.key(o) not in have for o in inst.classes(zs)),
+-            "LN": abs(inst.length(cap) - med_len) >= ln_rel * med_len}
++            "CP": inst.copy_m(cap, shown) >= CP_M, **flags_zl_ln(inst, cap, zs, status, med_len, ln_rel)}
+ 
+ 
+ def category(fl: dict[str, np.ndarray], prec=PREC) -> np.ndarray:
+@@ -240,6 +249,20 @@
+     return {k: v for k, v in a.items() if not k.startswith("_")}
+ 
+ 
++def english_public(a: dict) -> dict:
++    """English rows (erratum 1 E3): every BO / CP statistic is the NOT RUN string, never a number; S3 shares and
++    C_L, C_W, C_all carry the reduced-category label."""
++    rows = {}
++    for k, v in a["rows"].items():
++        if EN_NOT_RUN_KEY.search(k):
++            rows[k] = EN_NOT_RUN
++        elif k.startswith(("share_", "C_")):
++            rows[k] = {**v, "label": EN_CATS}
++        else:
++            rows[k] = v
++    return {**public(a), "rows": rows, "label": EN_LABEL}
++
++
+ # ------------------------------------------------------------------------------------------------ custody (step 2a)
+ def custody_counts(lists: dict, ov_test_tsv: str, carve_order: list, f30k: dict) -> dict[str, int]:
+     """R2 check: counts only, no image file read. lists = stage-1 lists.json; f30k = c_t1_f30k_lists.json."""
+@@ -335,7 +358,8 @@
+     sub = ap.add_subparsers(dest="cmd", required=True)
+     sub.add_parser("selftest")
+     c = sub.add_parser("custody")
+-    c.add_argument("--root", type=Path, required=True)
++    for k in ("root", "data"):
++        c.add_argument(f"--{k}", type=Path, required=True)
+     r = sub.add_parser("run")
+     for k in ("root", "data", "out"):
+         r.add_argument(f"--{k}", type=Path, required=True)
+@@ -346,7 +370,7 @@
+         return
+     if a.cmd == "custody":
+         import c_n3d_host as H
+-        H.custody(a.root)
++        H.custody(a.root, a.data)
+         return
+     import c_n3d_host as H
+     H.run(a.root, a.data, a.out)
+--- /home/hoanguyen/vsps_out/c_n3d_code/c_n3d_host.py	2026-11-27 19:47:05.198887610 +0700
++++ c_n3d_host.py	2026-11-27 20:35:35.332582839 +0700
+@@ -1,8 +1,8 @@
+-"""C-N3D host side: the pinned inputs, the custody check (step 2a) and the one run (step 4). Rented host only.
++"""C-N3D host side: pins (step 2), the custody check (step 2a) and the one run (step 4). Rented host only.
+ 
+-Layout: --root holds the PUSH LIST at its repository-relative paths (COMPUTE v3 §2.1) plus scripts/ (the import
+-closure of CLOSURE.sha256); --data is $NCS_DATA (the ncs-data tree with the pinned reference and memory files).
+-Nothing here runs on the laptop: every entry point refuses unless VSPS_MACHINE_ID is set.
++Layout: --root holds the PUSH LIST at its repository-relative paths (PUSH_LIST.sha256: the 62 data and list files of
++COMPUTE v3 §2.1, then the CODE and RESOURCES of CLOSURE.sha256, erratum 1 E2); --data is $NCS_DATA with the pinned
++reference, memory, Flickr30K and VnCoreNLP files. Every host entry point refuses unless VSPS_MACHINE_ID is set.
+ """
+ from __future__ import annotations
+ 
+@@ -20,6 +20,7 @@
+ import c_n3d as N
+ 
+ HERE = Path(__file__).resolve().parent
++PUSH = HERE / "PUSH_LIST.sha256"
+ ATTR_OUT = ".session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out"
+ C2_OUT = ".session_backup/machines/M3/root/outputs/c_stage2/runs"
+ T1_OUT = ".session_backup/machines/M1/root/outputs/c_t1/out"
+@@ -31,23 +32,28 @@
+                "8e11bad51c77adc54c05b91a86f7b6f5a1f2d0e9032f06faf80f05e438d42850")
+ F30K_LISTS = ("manuscript/prereg/2026-10-30_c_t1/c_t1_f30k_lists.json",
+               "eebcd95b78b1dc98398550b1f89fea5622e8cbd9f20ad6b07b0d9292ba745968")
+-ATTR_LISTS = ("scripts/c_attr/c_attr_lists.json", "8a2b977f")  # full sha256 in PUSH_LIST.sha256
+-DATA_PINS = {  # $NCS_DATA-relative (prereg v3 §4)
++ATTR_LISTS = "scripts/c_attr/c_attr_lists.json"
++JAR = ("vncorenlp/VnCoreNLP-1.2.jar", "9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793")
++F30K_CSV = ("data/flickr30k/flickr_annotations_30k.csv",
++            "395990db603ab8bafd5c7ab2746b22058bb1e75b78b3eb56ad755931364ac137")       # erratum 1 E4
++DATA_PINS = {  # $NCS_DATA-relative (prereg v3 §4; erratum 1 E1, E4); every one checked at step 2 [CC-511 W2]
+     "datasets/openviic/uit-openviic-annotation-dev.json":
+         "550cfe06b06084976e81286531f7f4e52bea717e29004c699ccaf1e48919bdff",
+     "datasets/c_xm_dev500/xm_dev500_data.json": "0da82355b65ab284fe55fc0d3c4101090301767347a02721890556618ca4905f",
+-    "datasets/ktvic/train_data.json": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f",      # erratum 1
++    "datasets/ktvic/train_data.json": "72ee9b57c350fb5f215e1f04701c515a51e5e415240e51a77c8ce00ce6316a0f",
+     "datasets/openviic/uit-openviic-annotation-train.json":
+-        "d757520e76b8490df6c7275c2beb8b3ecef0342635a436bea8c3cfd07eb49df0",                                   # erratum 1
++        "d757520e76b8490df6c7275c2beb8b3ecef0342635a436bea8c3cfd07eb49df0",
++    F30K_CSV[0]: F30K_CSV[1],
++    JAR[0]: JAR[1],
+ }
+ OIV7 = {"labels": ("data/xm3600/oiv7_labels.json", "bac3953a511a9793c22e928a29b68ae05dbf9654502abcbe7b64fd9f6d74c8b2"),
+         "desc": ("data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv",
+-                 "84a4373a0efb7fd6d93fe19b0e7ceb6c1b855c233d13b9b78a9a33655c9fdce3"),
+-        "map": ("data/xm3600/vi_oiv7_map.json", "27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a")}
+-F30K_CSV = ("data/flickr30k/flickr_annotations_30k.csv",
+-            "395990db603ab8bafd5c7ab2746b22058bb1e75b78b3eb56ad755931364ac137")   # $NCS_DATA-relative name: code read
+-ARM_GLOB = {"zs": "{m}_{s}-zs-b1", "ret": "{m}_{s}-ret-", "rand_d0": "-d0-", "rand_d1": "-d1-", "rand_d2": "-d2-"}
++                 "84a4373a0efb7fd6d93fe19b0e7ceb6c1b855c233d13b9b78a9a33655c9fdce3")}
+ SRC = {"ov_dev_b": "openviic", "xm_dev500": "xm3600"}
++WALL_CAP_H = 4.0   # COMPUTE v3 §1 "4.0 CPU-h wall"; host_selftest.sh also kills at 4 h [CC-511 W4]
++SR3_LABEL = "A1 not met; batched decode; descriptive; zero-shot reference = the batched stage-2 zs caption (erratum 1 E6)"
++SEARCH = (".", "scripts", "scripts/lb", "scripts/c_attr", "scripts/c_stage1", "scripts/c_stage2", "scripts/c_en",
++          "scripts/kit_b")   # probe.py and closure.py use the same order
+ 
+ 
+ def host_only() -> None:
+@@ -56,49 +62,100 @@
+ 
+ 
+ def paths(root: Path) -> None:
+-    for p in (".", "scripts", "scripts/lb", "scripts/c_attr", "scripts/c_stage1", "scripts/c_stage2", "scripts/c_en",
+-              "scripts/kit_b"):  # the CLOSURE.sha256 search order (closure.DIRS)
++    for p in SEARCH:
+         sys.path.insert(0, str(root / p))
+ 
+ 
++class Clock:
++    """Wall clock from the start of the run; a STOP past the cap (the 4 h kill in host_selftest.sh is the backstop)."""
++
++    def __init__(self, cap_h: float = WALL_CAP_H, now=time.monotonic):
++        self.now, self.t0, self.cap = now, now(), cap_h * 3600
++
++    def check(self, where: str) -> float:
++        h = (self.now() - self.t0) / 3600
++        if h * 3600 > self.cap:
++            raise SystemExit(f"STOP: the 4.0 h wall cap passed at {where}")
++        return h
++
++
+ # ------------------------------------------------------------------------------------------------ step 2 + 2a
+ def pinned_json(root: Path, rel_sha: tuple[str, str]):
+     return json.loads(N.read_pinned(root / rel_sha[0], rel_sha[1]))
+ 
+ 
+-def custody(root: Path) -> dict:
+-    """Step 2 (per-file sha256 of the PUSH LIST) then 2a (R2 intersections, counts only)."""
++def data_pins(data: Path) -> dict:
++    """Every $NCS_DATA pin, the jar included; the segmenter model files are recorded (CC-511 W2)."""
++    bad = [r for r, h in DATA_PINS.items() if not (data / r).is_file() or N.sha(data / r) != h]
++    if bad:
++        raise SystemExit(f"STOP: $NCS_DATA pins missing or not as pinned: {bad}")
++    seg = data / "vncorenlp/models/wordsegmenter"
++    return {"data_pins": "ok", "segmenter_models": {p.name: N.sha(p) for p in sorted(seg.iterdir()) if p.is_file()}}
++
++
++def jar_constant(root: Path) -> None:
++    """The stage-1 scorer's own jar constant equals the registered jar pin."""
++    paths(root)
++    import score as S
++    if S.JAR_SHA256 != JAR[1]:
++        raise SystemExit("STOP: score.JAR_SHA256 is not the registered VnCoreNLP-1.2 jar pin")
++
++
++def custody(root: Path, data: Path) -> dict:
++    """Step 2 (PUSH LIST and every $NCS_DATA pin), then 2a (R2 intersections, counts only)."""
+     host_only()
+-    N.check_push(root, N.push_list(HERE / "PUSH_LIST.sha256"))
++    N.check_push(root, N.push_list(PUSH))
++    rec = data_pins(data)
++    jar_constant(root)
+     lists = pinned_json(root, LISTS)
+     tsv = N.read_pinned(root / OV_TSV[0], OV_TSV[1]).decode("utf-8")
+-    order = pinned_json(root, CARVE_ORDER)
+-    f30k = pinned_json(root, F30K_LISTS)
+-    counts = N.custody_counts(lists, tsv, order, f30k)
+-    print(json.dumps({"custody_counts": counts}, sort_keys=True))
++    counts = N.custody_counts(lists, tsv, pinned_json(root, CARVE_ORDER), pinned_json(root, F30K_LISTS))
++    print(json.dumps({"custody_counts": counts, **rec}, sort_keys=True))
+     N.custody_gate(counts)
+     print("custody: all counts 0")
+-    return counts
++    return {"custody_counts": counts, **rec}
++
+ 
++def module_pin_check(root: Path, push: Path = PUSH) -> int:
++    """Every loaded module file under --root is on the PUSH LIST with an equal sha256 (erratum 1 E2)."""
++    pins, rootr = N.push_list(push), str(root.resolve())
++    files = {str(Path(m.__file__).resolve()) for m in list(sys.modules.values()) if getattr(m, "__file__", None)}
++    bad = []
++    for f in sorted(x for x in files if x.startswith(rootr + os.sep)):
++        rel = os.path.relpath(f, rootr)
++        if pins.get(rel) != N.sha(Path(f)):
++            bad.append(rel)
++    if bad:
++        raise SystemExit(f"STOP: {len(bad)} loaded modules not on the PUSH LIST as pinned, e.g. {bad[:3]}")
++    return len([x for x in files if x.startswith(rootr + os.sep)])
+ 
+-# ------------------------------------------------------------------------------------------------ loaders
++
++# ------------------------------------------------------------------------------------------------ loaders and wiring
+ def load_run(p: Path) -> dict:
+     r = json.loads(p.read_text(encoding="utf-8"))
+     r["_sha256"] = N.sha(p)
+     return r
+ 
+ 
++def arm_of(name: str) -> str | None:
++    """Arm of a batch-1 file name; perm and re-decode files are never matched (hash-only, never pushed)."""
++    if "-perm-" in name or "fwd50" in name or not name.endswith("-b1.preds.json"):
++        return None
++    if "-zs-" in name:
++        return "zs"
++    if "-ret-" in name:
++        return "ret"
++    return next((f"rand_d{d}" for d in range(3) if "-rand-" in name and f"-d{d}-" in name), None)
++
++
+ def b1_runs(root: Path, m: str, s: str) -> dict[str, dict]:
+-    """The five batch-1 arms of one backbone and set; perm is never matched (hash-only)."""
+-    files = sorted((root / ATTR_OUT).glob(f"at_{m}_{s}-*-b1.preds.json"))
+-    files = [p for p in files if "-perm-" not in p.name and "fwd50" not in p.name]
+     out = {}
+-    for p in files:
+-        n = p.name
+-        arm = ("zs" if "-zs-" in n else "ret" if "-ret-" in n else
+-               next((f"rand_d{d}" for d in range(3) if f"-d{d}-" in n), None))
+-        if arm is None or arm in out:
+-            raise SystemExit(f"STOP: unexpected or duplicate batch-1 file {n}")
++    for p in sorted((root / ATTR_OUT).glob(f"at_{m}_{s}-*.preds.json")):
++        arm = arm_of(p.name)
++        if arm is None:
++            continue
++        if arm in out:
++            raise SystemExit(f"STOP: duplicate batch-1 arm {arm} ({m} {s})")
+         out[arm] = load_run(p)
+     if set(out) != {"zs", "ret", "rand_d0", "rand_d1", "rand_d2"}:
+         raise SystemExit(f"STOP: {m} {s}: arms {sorted(out)}")
+@@ -116,19 +173,22 @@
+             raise SystemExit(f"STOP: {r['run_id']}: {bad} shown lists differ from c_attr_lists.json")
+ 
+ 
+-def status_fn(inst: N.Instruments, gold: set, verified: dict | None, tally: dict):
+-    """'present' / 'absent' of a class: verified OIV7 status where it decides (XM), else the reference union."""
++def status_fn(key, gold: set, verified: dict | None, tally: dict | None):
++    """'present' / 'absent' of a class: the verified OIV7 status where it decides (XM-dev500), else the reference
++    union. tally counts class decisions of the primary flag pass only (N1); None for recomputations."""
+     def st(o: str) -> str:
+-        v = verified.get(o, verified.get(inst.key(o))) if verified is not None else None
+-        if v in ("present", "absent"):
+-            tally["verified"] += 1
++        v = None if verified is None else verified.get(o, verified.get(key(o)))
++        how = "verified" if v in ("present", "absent") else "reference"
++        if tally is not None:
++            tally[how] += 1
++        if how == "verified":
+             return v
+-        tally["reference"] += 1
+-        return "present" if inst.key(o) in gold else "absent"
++        return "present" if key(o) in gold else "absent"
+     return st
+ 
+ 
+ def flag_arrays(inst, ids, runs, zs, shown, statuses, med, ln_rel=N.LN_REL) -> dict[str, dict]:
++    """Flags of every arm: its own shown list (shown(run, id)), the same backbone's zs caption."""
+     out = {}
+     for arm, r in runs.items():
+         fl = [N.flags_of(inst, r["predictions"][i], zs["predictions"][i], shown(r, i), statuses[i], med[i], ln_rel)
+@@ -137,14 +197,47 @@
+     return out
+ 
+ 
++def cell_of(sc: dict, fl: dict, rand: str = "d0") -> N.Cell:
++    """d = ret - rand d0 (or the R = 3 mean, SR1); e = rand d1 - rand d2; f_d1 from rand d1 (prereg §5)."""
++    base = sc["rand_d0"] if rand == "d0" else np.mean([sc[f"rand_d{d}"] for d in range(3)], 0)
++    return N.Cell(d=sc["ret"] - base, e=sc["rand_d1"] - sc["rand_d2"], f_ret=fl["ret"], f_d0=fl["rand_d0"],
++                  f_d1=fl["rand_d1"], f_d2=fl["rand_d2"])
++
++
++def family_rows(analyses: dict) -> list[dict]:
++    """The six primary rows: OV-dev-B, Qwen2.5-VL-7B then InternVL3-8B, H1-H3 each (prereg §6)."""
++    rows = []
++    for m in N.FAMILY_MODELS:
++        a = analyses[("ov_dev_b", m)]
++        rows += [N.h_row(h, a["_pt"], a["_boot"]) | {"model": m, "set": "ov_dev_b"} for h in ("H1", "H2", "H3")]
++    return rows
++
++
+ def parity(key, value: float, table: dict, what: str) -> None:
+-    want = table[key]
+-    if abs(value - want) > N.PARITY_TOL:
+-        raise SystemExit(f"STOP: parity {what} {key}: {value:.4f} against the printed {want:+.2f}")
++    """E5 gate: prints the cell only, never a value (CC-511 N2)."""
++    if abs(value - table[key]) > N.PARITY_TOL:
++        raise SystemExit(f"STOP: parity {what} {key[0]} {key[1]}")
++
++
++def t8_length(inst, runs: dict, ids: list, fl: dict) -> dict:
++    """SR5: T8's rule |len(treatment) - len(comparison)| / len(comparison) > 0.10 as the LN flag."""
++    ln = {a: np.array([inst.length(r["predictions"][i]) for i in ids], float) for a, r in runs.items()}
++
++    def rel(a, b):
++        return np.abs(ln[a] - ln[b]) / np.maximum(ln[b], 1) > 0.10
++    out = {a: dict(v) for a, v in fl.items()}
++    out["ret"]["LN"], out["rand_d0"]["LN"] = rel("ret", "rand_d0"), rel("rand_d0", "ret")
++    out["rand_d1"]["LN"], out["rand_d2"]["LN"] = rel("rand_d1", "rand_d2"), rel("rand_d2", "rand_d1")
++    return out
++
++
++def flagged(rows: dict, s: str, m: str) -> dict:
++    """CC-511 N4: every Aya-Vision OV-dev-B row carries the placebo flag."""
++    return {**rows, "flag": N.AYA_FLAG} if (s, m) == ("ov_dev_b", "aya_vision_8b") else rows
+ 
+ 
+ # ------------------------------------------------------------------------------------------------ Vietnamese cells
+-def vi_cells(root: Path, data: Path) -> tuple[dict, dict, dict]:
++def vi_cells(root: Path, data: Path, clock: Clock) -> tuple[dict, dict, dict]:
+     import c_attr as A
+     import c_attr_score as CS
+     import decode_icl as C
+@@ -152,31 +245,29 @@
+     import xm3600_oiv7 as XO
+     from rescap import chair as CH
+ 
+-    for rel, h in DATA_PINS.items():
+-        N.read_pinned(data / rel, h)
++    module_pin_check(root)
+     clists = pinned_json(root, LISTS)
+-    exs = json.loads((root / ATTR_LISTS[0]).read_text(encoding="utf-8"))["sets"]
++    exs = json.loads((root / ATTR_LISTS).read_text(encoding="utf-8"))["sets"]
+     caps = C.memory_captions(clists, data)
+     score = CS.kit_scorer(CS.KIT)
+     inst = N.vi_instruments()
+     vmap = XO.resolve_map(root / OIV7["desc"][0])
+     labels = json.loads(N.read_pinned(root / OIV7["labels"][0], OIV7["labels"][1]))
+-    N.read_pinned(root / OIV7["map"][0], OIV7["map"][1])
+     xm_test = {r[0] for r in clists["sets"]["xm_test2500"]}
+-    cells, sr3, meta = {}, {}, {"gold_decided": {}}
++    cells, sr3, meta = {}, {}, {"gold_decided_class_level": {}}
+     for s in ("ov_dev_b", "xm_dev500"):
+         refs = ST2.references2(s, clists, data)
+         ids = sorted(refs)
+         if len(ids) != N.SET_N[s]:
+-            raise SystemExit(f"STOP: {s} has {len(ids)} reference keys")
++            raise SystemExit(f"STOP: {s} reference keys are not the set")
+         N.row_guard(ids, xm_test, "XM-test2500")
+-        verified = None
+-        if s == "xm_dev500":
+-            verified = XO.statuses(vmap, {i: labels[i] for i in ids if i in labels})  # R1/N5: dev ids only
++        verified = XO.statuses(vmap, {i: labels[i] for i in ids if i in labels}) if s == "xm_dev500" else None
+         gold = {i: CH._gold_objects(refs[i]) for i in ids}
+         med = {i: statistics.median(inst.length(x) for x in refs[i]) for i in ids}
+         tally = {"verified": 0, "reference": 0}
+-        stt = {i: status_fn(inst, gold[i], (verified or {}).get(i) if verified is not None else None, tally) for i in ids}
++
++        def statuses(t, gold=gold, verified=verified):
++            return {i: status_fn(inst.key, gold[i], None if verified is None else verified.get(i, {}), t) for i in ids}
+ 
+         def shown(r, i, s=s):
+             return [C.shown(caps[x], SRC[s]) for x in r["exemplars"][i]]
+@@ -188,16 +279,18 @@
+             sc = {a: score({i: r["predictions"][i] for i in ids}, refs) for a, r in runs.items()}
+             parity((s, m), float(np.mean(sc["ret"] - np.mean([sc[f"rand_d{d}"] for d in range(3)], 0))),
+                    N.PARITY, "tau_sel b1")
+-            fl = flag_arrays(inst, ids, runs, runs["zs"], shown, stt, med)
+-            cells[(s, m)] = {"sc": sc, "fl": fl, "runs": runs, "ids": ids, "refs": refs, "med": med, "stt": stt,
+-                             "shown": shown}
+-        meta["gold_decided"][s] = tally
+-        sr3.update(stage2_cells(root, s, ids, refs, score, inst, shown, stt, med, clists))
++            cells[(s, m)] = {"sc": sc, "fl": flag_arrays(inst, ids, runs, runs["zs"], shown, statuses(tally), med),
++                             "runs": runs, "ids": ids, "med": med, "statuses": statuses, "shown": shown}
++            clock.check(f"flags {s} {m}")
++        n = tally["verified"] + tally["reference"]
++        meta["gold_decided_class_level"][s] = {**tally, "share_verified": tally["verified"] / n if n else None}
++        sr3.update(stage2_cells(root, s, ids, refs, score, inst, shown, statuses(None), med))
+     return cells, sr3, meta
+ 
+ 
+-def stage2_cells(root, s, ids, refs, score, inst, shown, stt, med, clists) -> dict:
+-    """SR3: the stored batched stage-2 zs / ret / rand d0 (Qwen2.5-VL, InternVL3 at tau = -inf, as written)."""
++def stage2_cells(root, s, ids, refs, score, inst, shown, stt, med) -> dict:
++    """SR3: stored batched stage-2 zs / ret / rand d0 (Qwen2.5-VL, InternVL3 as written); a parity miss makes the
++    cell NOT RUN instead of stopping the primary rows (CC-511 N3)."""
+     import decode_icl as C
+     ex = json.loads((root / f".session_backup/machines/M3/root/outputs/c_stage2/ex_{s}.json").read_text(encoding="utf-8"))
+     out = {}
+@@ -205,7 +298,7 @@
+         runs = {}
+         for p in sorted((root / C2_OUT).glob(f"c2_{m}_{s}-*.preds.json")):
+             arm = next((a for a in ("zs", "ret", "rand") if f"-{a}" in p.name), None)
+-            if arm:
++            if arm and "-blind-" not in p.name and "-fix-" not in p.name:
+                 runs[arm] = load_run(p)
+         if set(runs) != {"zs", "ret", "rand"}:
+             raise SystemExit(f"STOP: SR3 {m} {s}: arms {sorted(runs)}")
+@@ -213,48 +306,41 @@
+             if "exemplars" not in r and r["spec"]["arm"] != "zs":
+                 r["exemplars"] = {q: C.exemplar_ids({**r["spec"], "dataset": s}, q, ex) for q in ids}
+         sc = {a: score({i: r["predictions"][i] for i in ids}, refs) for a, r in runs.items()}
+-        parity((s, m), float(np.mean(sc["ret"] - sc["rand"])), N.PARITY_SR3, "SR3 stage-2 d0")
++        try:
++            parity((s, m), float(np.mean(sc["ret"] - sc["rand"])), N.PARITY_SR3, "SR3 stage-2 d0")
++        except SystemExit as e:
++            out[(s, m)] = f"NOT RUN (parity): {e}"
++            continue
+         fl = flag_arrays(inst, ids, {"ret": runs["ret"], "rand_d0": runs["rand"]}, runs["zs"], shown, stt, med)
+         out[(s, m)] = N.Cell(d=sc["ret"] - sc["rand"], e=None, f_ret=fl["ret"], f_d0=fl["rand_d0"], f_d1=None, f_d2=None)
+     return out
+ 
+ 
+-def cell_of(c: dict, rand="d0", fl=None) -> N.Cell:
+-    sc, fl = c["sc"], fl or c["fl"]
+-    base = sc["rand_d0"] if rand == "d0" else np.mean([sc[f"rand_d{d}"] for d in range(3)], 0)
+-    return N.Cell(d=sc["ret"] - base, e=sc["rand_d1"] - sc["rand_d2"], f_ret=fl["ret"], f_d0=fl["rand_d0"],
+-                  f_d1=fl["rand_d1"], f_d2=fl["rand_d2"])
+-
+-
+-def t8_length(c: dict) -> dict:
+-    """SR5: T8's own rule, |len(treatment) - len(comparison)| / len(comparison) > 0.10, as the LN flag."""
+-    inst = N.vi_instruments()
+-    ln = {a: np.array([inst.length(r["predictions"][i]) for i in c["ids"]], float) for a, r in c["runs"].items()}
+-
+-    def rel(a, b):
+-        return np.abs(ln[a] - ln[b]) / np.maximum(ln[b], 1) > 0.10
+-    fl = {a: dict(v) for a, v in c["fl"].items()}
+-    fl["ret"]["LN"], fl["rand_d0"]["LN"] = rel("ret", "rand_d0"), rel("rand_d0", "ret")
+-    fl["rand_d1"]["LN"], fl["rand_d2"]["LN"] = rel("rand_d1", "rand_d2"), rel("rand_d2", "rand_d1")
+-    return fl
++# ------------------------------------------------------------------------------------------------ English (carve)
++def en_flags(inst, runs: dict, ids: list, gold: dict, med: dict) -> dict:
++    """ZL and LN only (erratum 1 E3): no copy statistic and no shown list; BO and CP are placeholders printed as
++    NOT RUN by english_public, never as numbers."""
++    out = {}
++    for a in ("ret", "rand_d0"):
++        rows = [N.flags_zl_ln(inst, runs[a]["predictions"][i], runs["zs"]["predictions"][i],
++                              lambda o, i=i: "present" if inst.key(o) in gold[i] else "absent", med[i]) for i in ids]
++        z = np.zeros(len(ids), bool)
++        out[a] = {"BO": z, "CP": z, "ZL": np.array([x["ZL"] for x in rows]), "LN": np.array([x["LN"] for x in rows])}
++    return out
+ 
+ 
+-# ------------------------------------------------------------------------------------------------ English (carve)
+ def en_cells(root: Path, data: Path) -> dict:
+-    """Flickr30K carve, `zs` / `ret` / `rand` d0, PTB CIDEr-D. BO and CP need the COCO memory's shown captions, which
+-    are not on the PUSH LIST: they are NOT RUN unless erratum 1 item E3 is accepted (all False, labelled)."""
+     import cen_score as CE
+     f30k = pinned_json(root, F30K_LISTS)
+     keep, refused = set(f30k["carve"]), set(f30k["refuse"]["val"]) | set(f30k["refuse"]["test"])
+-    N.read_pinned(data / F30K_CSV[0], F30K_CSV[1])
+     refs = {}
+     with open(data / F30K_CSV[0], newline="", encoding="utf-8") as f:
+         for r in csv.DictReader(f):
+             if r["split"] == "train" and r["filename"] in keep:   # R1: no other row is parsed into a row
+                 refs[r["filename"]] = json.loads(r["raw"])
+     ids = sorted(refs)
+-    if len(ids) != 1000:
+-        raise SystemExit(f"STOP: carve references {len(ids)}")
++    if len(ids) != N.SET_N["f30k_carve"]:
++        raise SystemExit("STOP: carve references are not the 1,000 carve images")
+     N.row_guard(ids, refused, "Flickr30K val/test")
+     tokenize, cider = CE.ptb_cider()
+     gts = tokenize({i: refs[i] for i in ids})
+@@ -280,13 +366,7 @@
+             res = tokenize({i: [r["predictions"][i]] for i in ids})
+             sc[a] = np.asarray(cider(gts, {i: res[i] for i in ids}), float)
+         parity(("f30k_carve", m), float(np.mean(sc["ret"] - sc["rand_d0"])), N.PARITY, "English carve d0")
+-        fl = {}
+-        for a in ("ret", "rand_d0"):
+-            rows = [N.flags_of(inst, runs[a]["predictions"][i], runs["zs"]["predictions"][i], [],
+-                               lambda o, i=i: "present" if o in gold[i] else "absent", med[i]) for i in ids]
+-            fl[a] = {f: np.array([x[f] for x in rows]) for f in N.FLAGS}
+-            fl[a]["BO"] = np.zeros(len(ids), bool)
+-            fl[a]["CP"] = np.zeros(len(ids), bool)
++        fl = en_flags(inst, runs, ids, gold, med)
+         out[m] = N.Cell(d=sc["ret"] - sc["rand_d0"], e=None, f_ret=fl["ret"], f_d0=fl["rand_d0"], f_d1=None, f_d2=None)
+     return out
+ 
+@@ -296,45 +376,48 @@
+     host_only()
+     if out.exists():
+         raise SystemExit(f"REFUSED: {out} exists; the run is made once")
+-    t0 = time.process_time()
+-    counts = custody(root)
+-    st = subprocess.run([sys.executable, "-I", str(HERE / "test_c_n3d.py")], capture_output=True, text=True)
++    clock, t_cpu = Clock(), time.process_time()
++    rec0 = custody(root, data)
++    st = subprocess.run([sys.executable, "-I", "-B", str(HERE / "test_c_n3d.py")], capture_output=True, text=True)
+     if st.returncode:
+         raise SystemExit(f"STOP: selftests or mutants failed\n{st.stdout[-2000:]}{st.stderr[-2000:]}")
+     paths(root)
+     os.environ["NCS_DATA"] = str(data)
+     idx = N.index_matrices()
+-    cells, sr3, meta = vi_cells(root, data)
+-    rows, fam, sens = {}, [], {}
++    cells, sr3, meta = vi_cells(root, data, clock)
++    analyses, rows, sens = {}, {}, {}
+     for (s, m), c in cells.items():
+-        a = N.analyse(cell_of(c), idx[s])
+-        rows[f"{s}|{m}"] = N.public(a)
+-        if s == "ov_dev_b" and m in N.FAMILY_MODELS:
+-            fam += [N.h_row(h, a["_pt"], a["_boot"]) | {"model": m} for h in ("H1", "H2", "H3")]
+-        elif a["decidable"]:
+-            rows[f"{s}|{m}"]["h_rows_no_rule"] = [N.h_row(h, a["_pt"], a["_boot"]) for h in ("H1", "H2", "H3")]
+-        sens[f"{s}|{m}"] = {
+-            "SR1_rand_mean_d0_d2": N.public(N.analyse(cell_of(c, rand="mean"), idx[s])),
+-            "SR2_M5": N.public(N.analyse(cell_of(c), idx[s], m=5.0)),
+-            "SR2_M15": N.public(N.analyse(cell_of(c), idx[s], m=15.0)),
+-            "SR5_T8_length": N.public(N.analyse(cell_of(c, fl=t8_length(c)), idx[s])),
+-            "SR6_reversed_precedence": N.public(N.analyse(cell_of(c), idx[s], prec=N.PREC_REV)),
+-        }
++        a = analyses[(s, m)] = N.analyse(cell_of(c["sc"], c["fl"]), idx[s])
++        rows[f"{s}|{m}"] = flagged(N.public(a), s, m)
++        if s != "ov_dev_b" or m not in N.FAMILY_MODELS:
++            if a["decidable"]:
++                rows[f"{s}|{m}"]["h_rows_no_rule"] = [N.h_row(h, a["_pt"], a["_boot"]) for h in ("H1", "H2", "H3")]
++        inst = N.vi_instruments()
++        sv = {"SR1_rand_mean_d0_d2": N.analyse(cell_of(c["sc"], c["fl"], rand="mean"), idx[s]),
++              "SR2_M5": N.analyse(cell_of(c["sc"], c["fl"]), idx[s], m=5.0),
++              "SR2_M15": N.analyse(cell_of(c["sc"], c["fl"]), idx[s], m=15.0),
++              "SR5_T8_length": N.analyse(cell_of(c["sc"], t8_length(inst, c["runs"], c["ids"], c["fl"])), idx[s]),
++              "SR6_reversed_precedence": N.analyse(cell_of(c["sc"], c["fl"]), idx[s], prec=N.PREC_REV)}
+         for rel in (0.10, 0.40):
+-            fl = flag_arrays(N.vi_instruments(), c["ids"], c["runs"], c["runs"]["zs"], c["shown"], c["stt"], c["med"], rel)
+-            sens[f"{s}|{m}"][f"SR4_LN_{rel:.2f}"] = N.public(N.analyse(cell_of(c, fl=fl), idx[s]))
+-        if (time.process_time() - t0) / 3600 > 4.0:
+-            raise SystemExit("STOP: the 4.0 CPU-h cap")
+-    verdicts = N.family_verdicts(fam)
+-    for k, c in sr3.items():
+-        sens[f"{k[0]}|{k[1]}"]["SR3_stored_batched"] = N.public(N.analyse(c, idx[k[0]])) | {"label": "A1 not met; batched decode; descriptive"}
+-    en = {m: N.public(N.analyse(c, idx["f30k_carve"])) | {"label": N.EN_LABEL,
+-          "BO_CP": "NOT RUN: no shown-caption store of the COCO memory on the PUSH LIST (erratum 1 E3)"}
+-          for m, c in en_cells(root, data).items()}
+-    rec = {"label": N.LABEL, "set_note_ov_dev_b": N.H_NOTE, "aya_ov_dev_b": N.AYA_FLAG, "custody_counts": counts,
+-           "parity": "ok", "family": verdicts, "rows": rows, "sensitivity": sens, "english": en, **meta,
+-           "inputs": N.push_list(HERE / "PUSH_LIST.sha256"),
++            fl = flag_arrays(inst, c["ids"], c["runs"], c["runs"]["zs"], c["shown"], c["statuses"](None), c["med"], rel)
++            sv[f"SR4_LN_{rel:.2f}"] = N.analyse(cell_of(c["sc"], fl), idx[s])
++        sens[f"{s}|{m}"] = {k: flagged(N.public(v), s, m) for k, v in sv.items()}
++        clock.check(f"sensitivity {s} {m}")
++    verdicts = N.family_verdicts(family_rows(analyses))
++    for (s, m), c in sr3.items():
++        sens[f"{s}|{m}"]["SR3_stored_batched"] = c if isinstance(c, str) else \
++            N.public(N.analyse(c, idx[s])) | {"label": SR3_LABEL}
++    clock.check("SR3")
++    en = {m: N.english_public(N.analyse(c, idx["f30k_carve"])) for m, c in en_cells(root, data).items()}
++    wall_h = clock.check("English")
++    n_mod = module_pin_check(root)
++    rec = {"label": N.LABEL, "set_note_ov_dev_b": N.H_NOTE, **rec0, "parity": "ok", "family": verdicts,
++           "rows": rows, "sensitivity": sens, "english": en, **meta, "modules_checked": n_mod,
++           "inputs": N.push_list(PUSH), "data_pins": DATA_PINS,
+            "code": {p.name: N.sha(p) for p in sorted(HERE.glob("*.py"))}, "seed": N.SEED, "B": N.B,
+-           "cpu_h": (time.process_time() - t0) / 3600, "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+-    out.write_text(json.dumps(rec, ensure_ascii=False, indent=1, default=float) + "\n", encoding="utf-8")
++           "cpu_h_parent": (time.process_time() - t_cpu) / 3600, "wall_h": wall_h,
++           "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
++    tmp = out.with_name(out.name + ".partial")
++    tmp.write_text(json.dumps(rec, ensure_ascii=False, indent=1, default=float) + "\n", encoding="utf-8")
++    os.replace(tmp, out)
+     print(f"wrote {out.name} sha256 {N.sha(out)}")
+--- /home/hoanguyen/vsps_out/c_n3d_code/test_c_n3d.py	2026-11-27 19:44:45.045507611 +0700
++++ test_c_n3d.py	2026-11-27 20:35:35.332651507 +0700
+@@ -12,6 +12,7 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ SRC = (HERE / "c_n3d.py").read_text(encoding="utf-8")
++HSRC = (HERE / "c_n3d_host.py").read_text(encoding="utf-8")
+ 
+ 
+ def load(src: str = SRC) -> types.ModuleType:
+@@ -22,6 +23,15 @@
+     return mod
+ 
+ 
++def load_host(src: str = HSRC) -> types.ModuleType:
++    """c_n3d_host bound to the c_n3d now in sys.modules (its instrument imports are inside functions)."""
++    mod = types.ModuleType("c_n3d_host")
++    mod.__file__ = str(HERE / "c_n3d_host.py")
++    sys.modules["c_n3d_host"] = mod
++    exec(compile(src, "c_n3d_host.py", "exec"), mod.__dict__)
++    return mod
++
++
+ # ------------------------------------------------------------------------------------------------ planted cells
+ def first(n: int, idx, p: float) -> np.ndarray:
+     """bool[n], True on the first round(p * len(idx)) members of idx."""
+@@ -64,9 +74,10 @@
+ 
+ 
+ # ------------------------------------------------------------------------------------------------ tests
+-def suite(N) -> list[str]:
++def suite(N, H=None) -> list[str]:
+     """Every check; returns the names of the failed ones (empty = all pass)."""
+     bad: list[str] = []
++    H = H or load_host()
+ 
+     def check(name: str, cond) -> None:
+         try:
+@@ -191,6 +202,36 @@
+     check("s_label", lambda: (N.s_label([0.1, 0.2]), N.s_label([-0.2, -0.1]), N.s_label([-0.1, 0.1]))
+           == ("DETECTED", "REVERSED", "UNRESOLVED"))
+ 
++    # CC-511 W5 (a): a class in both zs and shown is not neighbour-only; (b) decidability at 30, not 29
++    check("neighbour_only_zs_excluded", lambda: inst.neighbour_only("near dog cat", "near cat", ["a cat"]) == [])
++
++    def dec(npp):
++        pt = {"nL": 99, "nW": 99, "nPm": 99, "nPp": npp, "Delta_BO": 0.5, "Delta_ZL": 0.5, "SR7_BO": 1, "SR7_ZL": 1}
++        return N.h_row("H1", pt, {"Delta_BO": np.full(2000, 0.5)})["decidable"]
++    check("decidable_30", lambda: dec(30) and not dec(29))
++
++    # CC-511 N5: S1 rows on L, G0 E with P-
++    def s1_g0():
++        c = planted(N, sizes=(L_IDX, W_IDX, PM_IDX, range(400, 650)))
++        c.f_d0["BO"] = first(N_OV, W_IDX, 1.0)
++        pt = N.stats(c, np.arange(N_OV))
++        return abs(pt["S_BO"] - 0.6) < 1e-9 and pt["E"] == (200 - 300) / N_OV
++    check("s1_g0", s1_g0)
++
++    # English output (erratum 1 E3, CC-511 W3): BO / CP rows are the NOT RUN string; reduced-category label
++    def en_out():
++        c = planted(N)
++        c.e, c.f_d1, c.f_d2 = None, None, None
++        a = N.english_public(N.analyse(c, N.index_matrices()["ov_dev_b"]))
++        r = a["rows"]
++        return (r["D_BO_ret"] == N.EN_NOT_RUN and r["S_CP"] == N.EN_NOT_RUN and r["share_BO_L"] == N.EN_NOT_RUN
++                and r["C_L"]["label"] == N.EN_CATS and isinstance(r["D_ZL_ret"]["point"], float)
++                and "words" in a["label"])
++    check("english_not_run", en_out)
++    check("flags_zl_ln", lambda: N.flags_zl_ln(inst, "copy dog cat x", "copy dog tree", st, 4.0) == {"ZL": True, "LN": False})
++
++    host_checks(N, H, inst, st, check)
++
+     # custody counts (R2): planted overlaps in every key, then a clean set
+     def lists_(ov, xm, xmt):
+         return {"sets": {"ov_dev_b": ov, "xm_dev500": xm, "xm_test2500": xmt}}
+@@ -227,6 +268,152 @@
+     return bad
+ 
+ 
++# ------------------------------------------------------------------------------------------------ host wiring (W6)
++def host_checks(N, H, inst, st, check) -> None:
++    import json
++    import tempfile
++
++    def raises(fn) -> bool:
++        try:
++            fn()
++        except SystemExit:
++            return True
++        return False
++
++    # cell_of: d = ret - rand d0 (SR1: R = 3 mean), e = d1 - d2, flags of each arm in its slot
++    sc = {"ret": np.array([10.0, 0.0]), "rand_d0": np.array([1.0, 2.0]), "rand_d1": np.array([4.0, 8.0]),
++          "rand_d2": np.array([16.0, 32.0])}
++    fl = {a: {"BO": np.array([a == "ret", a == "rand_d1"])} for a in sc}
++
++    def cell_ok():
++        c, m = H.cell_of(sc, fl), H.cell_of(sc, fl, rand="mean")
++        return (c.d.tolist() == [9.0, -2.0] and c.e.tolist() == [-12.0, -24.0] and c.f_ret is fl["ret"]
++                and c.f_d0 is fl["rand_d0"] and c.f_d1 is fl["rand_d1"] and c.f_d2 is fl["rand_d2"]
++                and np.allclose(m.d, [10 - 7.0, 0 - 14.0]))
++    check("host_cell_of", cell_ok)
++
++    # arm parsing: five planted batch-1 names; perm and fwd50 never matched
++    names = {"at_q_s-zs-b1.preds.json": "zs", "at_q_s-ret-k8-first-T1-mvi-b1.preds.json": "ret",
++             "at_q_s-rand-k8--T1-d0-mvi-b1.preds.json": "rand_d0", "at_q_s-rand-k8--T1-d1-mvi-b1.preds.json": "rand_d1",
++             "at_q_s-rand-k8--T1-d2-mvi-b1.preds.json": "rand_d2", "at_q_s-perm-k8-first-T1-p1-mvi-b1.preds.json": None,
++             "at_q_s-ret-k8-first-T1-mvi-b1-fwd50.preds.json": None, "at_q_s-ret-k8-first-T1-mvi.preds.json": None,
++             "at_q_s-ret_img-k8-first-T1-b1.preds.json": None}
++    check("host_arm_of", lambda: all(H.arm_of(n) == a for n, a in names.items()))
++
++    def b1_ok():
++        with tempfile.TemporaryDirectory() as t:
++            d = Path(t) / H.ATTR_OUT
++            d.mkdir(parents=True)
++            for n, a in names.items():
++                (d / n).write_text(json.dumps({"tag": a or "never"}))
++            got = H.b1_runs(Path(t), "q", "s")
++            ok = {k: v["tag"] for k, v in got.items()} == {a: a for a in names.values() if a}
++            (d / "at_q_s-rand-k8--T1-d2-mvi-b1.preds.json").unlink()
++            return ok and raises(lambda: H.b1_runs(Path(t), "q", "s"))
++    check("host_b1_runs", b1_ok)
++
++    # status: verified first (through key), then the reference union; tally counts classes; None does not count
++    def status_ok():
++        tally = {"verified": 0, "reference": 0}
++        f = H.status_fn(lambda o: o.lower(), {"cho", "meo"}, {"cho": "absent", "xe": "present"}, tally)
++        r = [f("CHO"), f("MEO"), f("xe"), f("cay")]
++        g = H.status_fn(lambda o: o, {"a"}, None, None)
++        return r == ["absent", "present", "present", "absent"] and tally == {"verified": 2, "reference": 2} \
++            and g("a") == "present" and g("b") == "absent"
++    check("host_status_fn", status_ok)
++
++    # flag arrays: each arm's own shown list, the same zs caption
++    def flags_ok():
++        runs = {"ret": {"predictions": {"i": "near dog cat"}, "ex": ["a cat"]},
++                "rand_d0": {"predictions": {"i": "near dog cat"}, "ex": ["a tree"]}}
++        zs = {"predictions": {"i": "near dog tree"}}
++        out = H.flag_arrays(inst, ["i"], runs, zs, lambda r, i: r["ex"], {"i": st}, {"i": 3.0})
++        return out["ret"]["BO"].tolist() == [True] and out["rand_d0"]["BO"].tolist() == [False] \
++            and out["ret"]["ZL"].tolist() == [True]
++    check("host_flag_arrays", flags_ok)
++
++    # English flags: no copy statistic, no shown list; BO / CP placeholders
++    def en_ok():
++        boom = N.Instruments(classes=inst.classes, key=inst.key, copy_m=lambda *_: 1 / 0, length=inst.length)
++        runs = {"zs": {"predictions": {"i": "near dog tree"}}, "ret": {"predictions": {"i": "near dog cat"}},
++                "rand_d0": {"predictions": {"i": "near dog tree"}}}
++        out = H.en_flags(boom, runs, ["i"], {"i": {"tree", "dog"}}, {"i": 3.0})
++        return out["ret"]["ZL"].tolist() == [True] and out["rand_d0"]["ZL"].tolist() == [False] \
++            and not out["ret"]["BO"].any() and not out["ret"]["CP"].any()
++    check("host_en_flags", en_ok)
++
++    # family assembly: six rows, OV-dev-B, Qwen then InternVL3, H1-H3
++    def fake(v):
++        pt = {"nL": 99, "nW": 99, "nPm": 99, "nPp": 99, "Delta_BO": v, "Delta_ZL": v, "SR7_BO": 1, "SR7_ZL": 1,
++              "C_L": v, "C_W": 0.0, "H3_gap_minus_plac": 0.0}
++        return {"_pt": pt, "_boot": {"Delta_BO": np.full(2000, v), "Delta_ZL": np.full(2000, v), "C_L": np.full(2000, v)}}
++    an = {(s, m): fake(0.11 * (k + 1) + (0.5 if s == "xm_dev500" else 0)) for s in ("ov_dev_b", "xm_dev500")
++          for k, m in enumerate(N.MODELS)}
++
++    def fam_ok():
++        rows = H.family_rows(an)
++        return ([(r["model"], r["h"], r["set"]) for r in rows] == [(m, h, "ov_dev_b") for m in N.FAMILY_MODELS
++                                                                     for h in ("H1", "H2", "H3")]
++                and [round(r["point"], 2) for r in rows] == [0.11, 0.11, 0.11, 0.22, 0.22, 0.22])
++    check("host_family_rows", fam_ok)
++
++    # parity: within tolerance passes; a miss STOPs naming the cell and no value
++    def parity_ok():
++        H.parity(("ov_dev_b", "q"), 8.2749, {("ov_dev_b", "q"): 8.27}, "w")
++        try:
++            H.parity(("ov_dev_b", "q"), 8.2853, {("ov_dev_b", "q"): 8.27}, "w")
++        except SystemExit as e:
++            return "8.2" not in str(e) and "ov_dev_b q" in str(e)
++        return False
++    check("host_parity", parity_ok)
++
++    # wall clock: a STOP past the cap
++    def clock_ok():
++        t = [0.0]
++        c = H.Clock(cap_h=1.0, now=lambda: t[0])
++        t[0] = 3599.0
++        c.check("a")
++        t[0] = 3601.0
++        return raises(lambda: c.check("b"))
++    check("host_clock", clock_ok)
++    check("host_aya_flag", lambda: H.flagged({}, "ov_dev_b", "aya_vision_8b") == {"flag": N.AYA_FLAG}
++          and H.flagged({}, "xm_dev500", "aya_vision_8b") == {} and H.flagged({}, "ov_dev_b", "qwen25vl_7b") == {})
++
++    # module pin check and $NCS_DATA pins on a planted tree
++    def pins_ok():
++        import hashlib
++        import importlib.util
++        with tempfile.TemporaryDirectory() as t:
++            root = Path(t)
++            (root / "pkgm").mkdir()
++            f = root / "pkgm" / "n3d_probe_mod.py"
++            f.write_text("X = 1\n")
++            spec = importlib.util.spec_from_file_location("n3d_probe_mod", f)
++            m = importlib.util.module_from_spec(spec)
++            sys.modules["n3d_probe_mod"] = m
++            spec.loader.exec_module(m)
++            good, bad_ = root / "good.sha256", root / "bad.sha256"
++            good.write_text(f"{hashlib.sha256(f.read_bytes()).hexdigest()}  pkgm/n3d_probe_mod.py\n")
++            bad_.write_text(f"{'0' * 64}  pkgm/n3d_probe_mod.py\n")
++            ok = H.module_pin_check(root, good) == 1 and raises(lambda: H.module_pin_check(root, bad_))
++            del sys.modules["n3d_probe_mod"]
++            (root / "d").mkdir()
++            (root / "d" / "x.txt").write_text("x")
++            saved = dict(H.DATA_PINS)
++            try:
++                H.DATA_PINS.clear()
++                H.DATA_PINS["d/x.txt"] = hashlib.sha256(b"x").hexdigest()
++                (root / "vncorenlp/models/wordsegmenter").mkdir(parents=True)
++                ok = ok and H.data_pins(root)["data_pins"] == "ok"
++                H.DATA_PINS["d/x.txt"] = "0" * 64
++                ok = ok and raises(lambda: H.data_pins(root))
++            finally:
++                H.DATA_PINS.clear()
++                H.DATA_PINS.update(saved)
++            return ok and len(H.DATA_PINS) == 6
++    check("host_pins", pins_ok)
++
++
+ # ------------------------------------------------------------------------------------------------ mutants
+ MUTANTS = [  # (old, new): each old text occurs once in c_n3d.py; every mutant must make the suite fail
+     ("SEED = 1127001", "SEED = 1127002"),
+@@ -293,25 +480,113 @@
+ ]
+ 
+ 
++#: CC-511 judge mutants on verdict lines of c_n3d.py, byte for byte from expected_fixes/JUDGE_MUTANTS_CC511.py (8d410a7d)
++JUDGE_MUTANTS = [
++ ("L, W = d < -m, d > m", "L, W = d > m, d < -m"),
++ ('out[f"D_{f}_ret"] = out[f"Pr_{f}_L"] - out[f"Pr_{f}_W"]', 'out[f"D_{f}_ret"] = out[f"Pr_{f}_W"] - out[f"Pr_{f}_L"]'),
++ ("cat_d1 = category(c.f_d1, prec)[rows]", "cat_d1 = category(c.f_ret, prec)[rows]"),
++ ("f1 = c.f_d1[f][rows]", "f1 = c.f_d2[f][rows]"),
++ ("fr = c.f_ret[f][rows]", "fr = c.f_d0[f][rows]"),
++ ('out["H3_gap_minus_plac"] = (out["C_L"] - out["C_W"]) - (out["C_Pm"] - out["C_Pp"])', 'out["H3_gap_minus_plac"] = (out["C_L"] - out["C_W"]) + (out["C_Pm"] - out["C_Pp"])'),
++ ('out["H3_gap_minus_plac"] = (out["C_L"] - out["C_W"]) - (out["C_Pm"] - out["C_Pp"])', 'out["H3_gap_minus_plac"] = (out["C_L"] - out["C_W"]) - (out["C_Pp"] - out["C_Pm"])'),
++ ('"p": ptilde(boot[f"Delta_{f}"], 0.0)', '"p": ptilde(boot[f"Delta_{f}"], D_MIN)'),
++ ('"p": ptilde(boot[f"Delta_{f}"], 0.0)', '"p": ptilde(boot[f"D_{f}_ret"], 0.0)'),
++ ('"p": ptilde(boot["C_L"], C_TEST)', '"p": ptilde(boot["C_W"], C_TEST)'),
++ ('gap = pt["C_L"] - pt["C_W"]', 'gap = pt["C_L"] - pt["C_Pm"]'),
++ ('adj = holm([r["p"] for r in rows])', 'adj = [r["p"] for r in rows]'),
++ ("run = max(run, min(1.0, (m - j) * ps[k]))", "run = max(run, min(1.0, m * ps[k]))"),
++ ('order = np.argsort(ps, kind="stable")', 'order = np.argsort(ps, kind="stable")[::-1]'),
++ ("/ (s.size + 1))", "/ (s.size))"),
++ ("e = c.e[rows]", "e = c.d[rows]"),
++ ('if not r["decidable"]:', "if False:"),
++ ('"sr7": pt[f"SR7_{f}"]', '"sr7": 1.0'),
++ ('np.log(out[f"Pr_{f}_L"] / out[f"Pr_{f}_W"]) - np.log(a / b)', 'np.log(out[f"Pr_{f}_L"] / out[f"Pr_{f}_W"]) - np.log(b / a)'),
++ ('out[f"Pr_{f}_L"], out[f"Pr_{f}_W"] = _rate(fr, L), _rate(fr, W)', 'out[f"Pr_{f}_L"], out[f"Pr_{f}_W"] = _rate(fr, W), _rate(fr, L)'),
++ ("return (f & g).sum(-1) / g.sum(-1)", "return (f & g).sum(-1) / g.shape[-1]"),
++ ('"ZL": any(status(o) == "present"', '"ZL": any(status(o) == "absent"'),
++ ("z = {self.key(o) for o in self.classes(zs)}", "z = set()"),
++ ('out[f"share_{name}_{g}"] = _rate(cat_ret == j, gm)', 'out[f"share_{name}_{g}"] = _rate(cat_ret != j, gm)'),
++ ("out = np.where(fl[prec[j]], PREC.index(prec[j]), out)", "out = np.where(fl[prec[j]], j, out)"),
++ ('pt.get("nPp", 0)) >= MIN_N', 'pt.get("nPp", 0)) > MIN_N'),
++ ("return {s: rng.integers(0, n, (B, n)) for s, n in SET_N.items()}", "return {s: np.random.default_rng(SEED).integers(0, n, (B, n)) for s, n in SET_N.items()}"),
++ ('"conds": pt[f"Delta_{f}"] >= D_MIN', '"conds": pt[f"D_{f}_ret"] >= D_MIN'),
++ ("t_ids, t_sha = {r[0] for r in tsv}, {r[1] for r in tsv}", "t_ids, t_sha = {r[1] for r in tsv}, {r[0] for r in tsv}"),
++ ("o_ids, o_sha = {r[1] for r in carve_order}, {r[2] for r in carve_order}", "o_ids, o_sha = {r[0] for r in carve_order}, {r[2] for r in carve_order}"),
++ ('xm_test = {r[0] for r in lists["sets"]["xm_test2500"]}', 'xm_test = {r[1] for r in lists["sets"]["xm_test2500"]}'),
++ ('elif a < ALPHA and r["conds"]:', 'elif a <= ALPHA and r["conds"]:'),
++ ("np.sum(np.isnan(s) | (s <= thr))", "np.sum(np.isnan(s) & (s <= thr))"),
++ ('out[f"S_{f}"] = _rate(c.f_ret[f][rows], L) - _rate(c.f_d0[f][rows], L)', 'out[f"S_{f}"] = _rate(c.f_ret[f][rows], W) - _rate(c.f_d0[f][rows], W)'),
++ ('"E": (L.sum(-1) - Pm.sum(-1)) / L.shape[-1]', '"E": (L.sum(-1) - Pp.sum(-1)) / L.shape[-1]'),
++ ('return "DETECTED" if lo > 0 else "REVERSED" if hi < 0 else "UNRESOLVED"', 'return "DETECTED" if lo > 0 else "UNRESOLVED"'),
++]
++#: equivalent mutants, excluded with the reason (CC-511 C5 (c))
++EQUIVALENT = {('elif a < ALPHA and r["conds"]:', 'elif a <= ALPHA and r["conds"]:'):
++              "Holm p = (k / 2001) x j, j = 1..6, never equals 0.025 (CC-511 C5 (c))"}
++#: CC-511 W6: mutants on the host wiring lines of c_n3d_host.py
++HOST_MUTANTS = [
++    ('e=sc["rand_d1"] - sc["rand_d2"]', 'e=sc["rand_d2"] - sc["rand_d1"]'),
++    ('f_d1=fl["rand_d1"], f_d2=fl["rand_d2"])', 'f_d1=fl["rand_d2"], f_d2=fl["rand_d1"])'),
++    ('base = sc["rand_d0"] if rand == "d0" else', 'base = sc["rand_d1"] if rand == "d0" else'),
++    ('np.mean([sc[f"rand_d{d}"] for d in range(3)], 0)\n    return N.Cell', 'np.mean([sc[f"rand_d{d}"] for d in range(2)], 0)\n    return N.Cell'),
++    ('f_ret=fl["ret"], f_d0=fl["rand_d0"],\n                  f_d1', 'f_ret=fl["rand_d0"], f_d0=fl["ret"],\n                  f_d1'),
++    ('if "-zs-" in name:\n        return "zs"', 'if "-zs-" in name:\n        return "ret"'),
++    ('for d in range(3) if "-rand-" in name and f"-d{d}-" in name), None)', 'for d in range(2) if "-rand-" in name and f"-d{d}-" in name), None)'),
++    ('if "-ret-" in name:\n        return "ret"', 'if "-ret" in name:\n        return "ret"'),
++    ('if set(out) != {"zs", "ret", "rand_d0", "rand_d1", "rand_d2"}:', 'if not out:'),
++    ('v = None if verified is None else verified.get(o, verified.get(key(o)))', 'v = None if verified is None else verified.get(o)'),
++    ('how = "verified" if v in ("present", "absent") else "reference"', 'how = "reference"'),
++    ('return "present" if key(o) in gold else "absent"', 'return "present" if o in gold else "absent"'),
++    ('if tally is not None:\n            tally[how] += 1', 'if tally is not None:\n            tally["verified"] += 1'),
++    ('N.flags_of(inst, r["predictions"][i], zs["predictions"][i], shown(r, i)', 'N.flags_of(inst, r["predictions"][i], zs["predictions"][i], shown(zs, i)'),
++    ('N.flags_of(inst, r["predictions"][i], zs["predictions"][i], shown(r, i)', 'N.flags_of(inst, r["predictions"][i], r["predictions"][i], shown(r, i)'),
++    ('    for m in N.FAMILY_MODELS:\n        a = analyses[("ov_dev_b", m)]', '    for m in N.MODELS[1:]:\n        a = analyses[("ov_dev_b", m)]'),
++    ('a = analyses[("ov_dev_b", m)]', 'a = analyses[("xm_dev500", m)]'),
++    ('if abs(value - table[key]) > N.PARITY_TOL:', 'if abs(value - table[key]) > 0.02:'),
++    ('raise SystemExit(f"STOP: parity {what} {key[0]} {key[1]}")', 'raise SystemExit(f"STOP: parity {what} {key[0]} {key[1]} {value}")'),
++    ('if h * 3600 > self.cap:', 'if h * 3600 > 2 * self.cap:'),
++    ('if pins.get(rel) != N.sha(Path(f)):', 'if rel not in pins:'),
++    ('bad = [r for r, h in DATA_PINS.items() if not (data / r).is_file() or N.sha(data / r) != h]', 'bad = [r for r, h in DATA_PINS.items() if not (data / r).is_file()]'),
++    ('return {**rows, "flag": N.AYA_FLAG} if (s, m) == ("ov_dev_b", "aya_vision_8b") else rows', 'return {**rows, "flag": N.AYA_FLAG} if m == "aya_vision_8b" else rows'),
++    ('rows = [N.flags_zl_ln(inst, runs[a]["predictions"][i], runs["zs"]["predictions"][i],', 'rows = [N.flags_zl_ln(inst, runs[a]["predictions"][i], runs["ret"]["predictions"][i],'),
++]
++
++
++def kill(src_n: str, src_h: str) -> bool:
++    """True if the suite fails on this pair of sources (the mutant is killed)."""
++    n = load(src_n)
++    return bool(suite(n, load_host(src_h)))
++
++
+ def main() -> None:
+-    bad = suite(load())
++    bad = suite(load(), load_host())
+     if bad:
+         print(f"SELFTEST FAIL: {bad}")
+         sys.exit(1)
+     print("selftest: all checks pass")
+-    alive = []
+-    for old, new in MUTANTS:
+-        n = SRC.count(old)
+-        if n != 1:
+-            print(f"MUTANT TEXT NOT UNIQUE ({n}): {old[:70]}")
+-            sys.exit(1)
+-        if not suite(load(SRC.replace(old, new))):
+-            alive.append(old[:70])
++    groups = (("own", MUTANTS, SRC, True), ("judge CC-511", JUDGE_MUTANTS, SRC, True),
++              ("host", HOST_MUTANTS, HSRC, False))
++    failed = False
++    for name, muts, src, on_core in groups:
++        alive, run_n, equiv = [], 0, 0
++        for old, new in muts:
++            if (old, new) in EQUIVALENT:
++                equiv += 1
++                continue
++            if src.count(old) != 1:
++                print(f"MUTANT TEXT NOT UNIQUE ({src.count(old)}): {old[:70]}")
++                sys.exit(1)
++            mut = src.replace(old, new)
++            run_n += 1
++            if not (kill(mut, HSRC) if on_core else kill(SRC, mut)):
++                alive.append(old[:70] + " -> " + new[:40])
++        print(f"mutants {name}: {run_n - len(alive)}/{run_n} killed" + (f"; {equiv} equivalent excluded" if equiv else ""))
++        for a in alive:
++            print(f"  ALIVE: {a}")
++        failed |= bool(alive)
+     load()
+-    if alive:
+-        print(f"MUTANTS ALIVE {len(alive)}/{len(MUTANTS)}: {alive}")
++    load_host()
++    if failed:
+         sys.exit(1)
+-    print(f"mutants: {len(MUTANTS)}/{len(MUTANTS)} killed")
+ 
+ 
+ if __name__ == "__main__":
+--- /home/hoanguyen/vsps_out/c_n3d_code/closure.py	2026-11-27 19:46:43.828276801 +0700
++++ closure.py	2026-11-27 20:35:35.332604335 +0700
+@@ -1,62 +1,164 @@
+-"""Static import closure of c_n3d_host.py inside the run repository's scripts/ tree (AST only, nothing imported or run).
++"""The code closure of the C-N3D run (erratum 1 E2, CC-511 W1): every module the run imports and every non-code file
++those modules read at import or call time, with sha256. Nothing of the study's data is read.
+ 
+-  python3 -I closure.py /mnt/d/vsps_image_captioning > CLOSURE.sha256
++  python3 -I -B closure.py REPO NCS_DATA > CLOSURE.sha256
++
++Two passes, united:
++  static  - AST imports of every closure file, absolute and relative, dotted names to any depth, searched in the
++            importing file's directory, its package, and every directory that the closure modules put on sys.path;
++            an unresolved name that is neither stdlib nor installed is an error (exit 1), unless named in ALLOW.
++  traced  - probe.py imports every instrument module and calls each instrument on synthetic strings under an audit
++            hook; every file under REPO that it opens is listed.
++RESOURCES add the registration files that the modules pin and read on the run's call path (PIN_FILES) and the
++scripts/c_stage1 files that stage2.check_stage1 hashes at import. A resource that names a test set is an error
++unless it is one of the two id lists admitted by CC-483r2 ruling 5 (erratum 1 E2).
+ """
+ from __future__ import annotations
+ 
+ import ast
+ import hashlib
++import importlib.util
++import json
++import re
++import subprocess
+ import sys
++import tempfile
+ from pathlib import Path
+ 
+-ENTRY = ("guard", "rl_reward", "score_coco_probe", "c_attr", "c_attr_score", "decode_icl", "stage2", "xm3600_oiv7",
+-         "cen_score", "score2", "score")
+-DIRS = (".", "scripts", "scripts/lb", "scripts/c_attr", "scripts/c_stage1", "scripts/c_stage2", "scripts/c_en",
+-        "scripts/kit_b")
+-
+-
+-def index(root: Path) -> dict[str, Path]:
+-    """Module name -> file, the first match in DIRS order (the order c_n3d_host.paths puts on sys.path, reversed)."""
+-    out: dict[str, Path] = {}
+-    for d in reversed(DIRS):
+-        for p in sorted((root / d).glob("*.py")):
+-            out.setdefault(p.stem, p)
+-        for p in sorted((root / d).glob("*/__init__.py")):
+-            out.setdefault(p.parent.name, p)
+-    return out
+-
+-
+-def imports(p: Path) -> set[str]:
+-    names = set()
+-    for node in ast.walk(ast.parse(p.read_text(encoding="utf-8"))):
+-        if isinstance(node, ast.Import):
+-            names |= {a.name.split(".")[0] for a in node.names}
+-        elif isinstance(node, ast.ImportFrom) and node.module and not node.level:
+-            names.add(node.module.split(".")[0])
+-            names |= {f"{node.module.split('.')[0]}/{a.name}" for a in node.names}
+-    return names
++HERE = Path(__file__).resolve().parent
++ENTRY = ("scripts/c_attr/c_attr.py", "scripts/c_attr/c_attr_score.py", "scripts/c_en/cen_score.py",
++         "scripts/c_stage1/decode_icl.py", "scripts/c_stage1/guard.py", "scripts/c_stage1/score.py",
++         "scripts/c_stage2/score2.py", "scripts/c_stage2/stage2.py", "scripts/rl_reward.py",
++         "scripts/score_coco_probe.py", "scripts/xm3600_oiv7.py", "rescap/chair.py")
++SEARCH = (".", "scripts", "scripts/lb", "scripts/g2b", "scripts/b1_scaling", "scripts/c_attr", "scripts/c_stage1",
++          "scripts/c_stage2", "scripts/c_en", "scripts/kit_b", "scripts/grl")   # every sys.path entry they make
++PIN_FILES = (  # pinned registration and id-list files read on the run's call path (decode_icl, stage2, guard PINS)
++    "manuscript/prereg/2026-10-22_c_stage1/DESIGN.md",
++    "manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json",
++    "manuscript/prereg/2026-10-21_dev_pools/exclusion.json",
++    "manuscript/prereg/2026-10-21_dev_pools/ktvic_dev299.tsv",
++    "manuscript/prereg/2026-10-22_c_stage1/SHA256SUMS",
++    "manuscript/prereg/2026-10-22_c_stage2/PREREG.md",
++    "manuscript/prereg/2026-10-22_c_stage2/frozen_config.json",
++    "manuscript/prereg/2026-10-22_c_stage2/ov_test_dev299_neardup_files.txt",
++    "manuscript/prereg/2026-10-18_tier3_S2.json",
++    "data/coco_probe/chair_synonyms.txt",
++    "scripts/evaluate.py")    # the ROOT marker of decode_hf_vlm and decode_qwen3vl
++ID_LISTS_OK = {"manuscript/prereg/2026-10-21_dev_pools/exclusion.json",
++               "manuscript/prereg/2026-10-22_c_stage2/ov_test_dev299_neardup_files.txt"}
++TEST_NAME = re.compile(r"(?:^|[-_./])test(?:[-_.\d/]|$)|nocaps|karpathy", re.I)
++#: third-party packages of the host venv that are not installed in the laptop venv used to build the list; every one
++#: is imported inside functions the N3D run does not call (decoding, training, image work). The host `closure` mode
++#: imports every ENTRY module with python -I, so an import-time need of any of them fails there.
++ALLOW = {n: "host venv package, lazy import off the N3D call path" for n in (
++    "torch", "torchvision", "transformers", "PIL", "huggingface_hub", "open_clip", "accelerate", "tokenizers", "peft",
++    "trl", "datasets", "yaml", "pyvi", "py_vncorenlp", "imagehash", "flash_attn", "qwen_vl_utils", "sklearn")}
++
++
++def sha(p: Path) -> str:
++    return hashlib.sha256(p.read_bytes()).hexdigest()
++
++
++def installed(name: str) -> bool:
++    if name in sys.stdlib_module_names or name == "__future__":
++        return True
++    try:
++        return importlib.util.find_spec(name) is not None
++    except (ImportError, ValueError):
++        return False
++
++
++def resolve(repo: Path, src: Path, dotted: str, level: int) -> Path | None:
++    """The file of a module named from src: relative (level > 0) or searched in src's dir and SEARCH."""
++    parts = dotted.split(".") if dotted else []
++    if level:
++        base = src.parent
++        for _ in range(level - 1):
++            base = base.parent
++        bases = [base]
++    else:
++        bases = [src.parent] + [repo / d for d in SEARCH]
++    for b in bases:
++        p = b.joinpath(*parts) if parts else b
++        for cand in (p.with_suffix(".py") if parts else None, p / "__init__.py"):
++            if cand is not None and cand.is_file() and cand.resolve().is_relative_to(repo):
++                return cand.resolve()
++    return None
+ 
+ 
+-def closure(root: Path) -> list[Path]:
+-    idx, seen, todo = index(root), {}, list(ENTRY)
++def static(repo: Path, files: set[Path]) -> tuple[set[Path], list[str]]:
++    todo, seen, missing = sorted(files), set(files), []
+     while todo:
+-        n = todo.pop()
+-        pkg, _, sub = n.partition("/")
+-        hits = [idx.get(pkg)]
+-        if sub and idx.get(pkg) and idx[pkg].name == "__init__.py":
+-            hits.append(idx[pkg].parent / f"{sub}.py")
+-        for p in hits:
+-            if p and p.is_file() and p not in seen.values():
+-                seen[str(p)] = p
+-                todo += sorted(imports(p))
+-    kit = sorted((root / "scripts/kit_b").glob("*.py"))  # score2.kit2 loads these by file path
+-    return sorted(set(seen.values()) | set(kit))
++        src = todo.pop()
++        for node in ast.walk(ast.parse(src.read_text(encoding="utf-8"))):
++            names: list[tuple[str, int]] = []
++            if isinstance(node, ast.Import):
++                names = [(a.name, 0) for a in node.names]
++            elif isinstance(node, ast.ImportFrom):
++                mod = node.module or ""
++                names = [(mod, node.level)] + [(f"{mod}.{a.name}" if mod else a.name, node.level) for a in node.names]
++            for dotted, level in names:
++                hits = []
++                parts = dotted.split(".") if dotted else [""]
++                for k in range(1, len(parts) + 1):   # every package on the way down, then the module
++                    hits.append(resolve(repo, src, ".".join(parts[:k]), level))
++                if hits[0] is None and not level and installed(parts[0]):
++                    continue
++                if hits[0] is None and not (isinstance(node, ast.ImportFrom) and dotted != (node.module or "")):
++                    if dotted.split(".")[0] not in ALLOW:
++                        missing.append(f"{src.relative_to(repo)}: {'.' * level}{dotted}")
++                    continue
++                for h in hits:
++                    if h is not None and h not in seen:
++                        seen.add(h)
++                        todo.append(h)
++                        init = h.parent / "__init__.py"   # a package's __init__ runs on import
++                        if init.is_file() and init.resolve() not in seen and h.parent != repo:
++                            seen.add(init.resolve())
++                            todo.append(init.resolve())
++    return seen, sorted(set(missing))
++
++
++def traced(repo: Path, data: Path) -> tuple[set[Path], set[Path]]:
++    with tempfile.TemporaryDirectory() as t:
++        out = Path(t) / "trace.json"
++        r = subprocess.run([sys.executable, "-I", "-B", str(HERE / "probe.py"), str(repo), str(data), "--trace", str(out)],
++                           capture_output=True, text=True)
++        if r.returncode:
++            raise SystemExit(f"probe failed:\n{r.stdout[-1500:]}{r.stderr[-1500:]}")
++        tr = json.loads(out.read_text())
++    mods = {Path(p) for p in tr["modules"]}
++    res = {Path(p) for p in tr["opened"] if not p.endswith((".py", ".pyc")) and "/__pycache__/" not in p}
++    return mods | {Path(p) for p in tr["opened"] if p.endswith(".py")}, res
++
++
++def stage1_sums(repo: Path) -> set[Path]:
++    rows = (repo / "manuscript/prereg/2026-10-22_c_stage1/SHA256SUMS").read_text(encoding="utf-8").splitlines()
++    return {(repo / r.split(maxsplit=1)[1]).resolve() for r in rows if r.split(maxsplit=1)[1].startswith("scripts/c_stage1/")}
+ 
+ 
+ def main() -> None:
+-    root = Path(sys.argv[1]).resolve()
+-    for p in closure(root):
+-        print(f"{hashlib.sha256(p.read_bytes()).hexdigest()}  {p.relative_to(root)}")
++    repo, data = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve()
++    t_code, t_res = traced(repo, data)
++    code, missing = static(repo, {(repo / e).resolve() for e in ENTRY} | t_code | stage1_sums(repo))
++    code |= {(repo / "scripts/kit_b" / p.name).resolve() for p in (repo / "scripts/kit_b").glob("*.py")}
++    if missing:
++        sys.stderr.write("UNRESOLVED imports (not stdlib, not installed, not in the repository):\n  "
++                         + "\n  ".join(missing) + "\n")
++        sys.exit(1)
++    res = {p.resolve() for p in t_res} | {(repo / p).resolve() for p in PIN_FILES}
++    res -= code
++    bad = [str(p.relative_to(repo)) for p in res if TEST_NAME.search(str(p.relative_to(repo)))
++           and str(p.relative_to(repo)) not in ID_LISTS_OK]
++    if bad:
++        sys.stderr.write(f"test-named resources refused: {bad}\n")
++        sys.exit(1)
++    print("# CODE")
++    for p in sorted(code):
++        print(f"{sha(p)}  {p.relative_to(repo)}")
++    print("# RESOURCES")
++    for p in sorted(res):
++        print(f"{sha(p)}  {p.relative_to(repo)}")
+ 
+ 
+ if __name__ == "__main__":
+--- /home/hoanguyen/vsps_out/c_n3d_code/host_selftest.sh	2026-11-27 19:47:16.283365556 +0700
++++ host_selftest.sh	2026-11-27 20:35:35.332621837 +0700
+@@ -1,23 +1,52 @@
+ #!/usr/bin/env bash
+ # C-N3D host steps (rented host only; never a host that holds an OV-test byte, the C-CONF token or a C-CONF output).
+-#   host_selftest.sh selftest            synthetic self-tests + 51 mutants, byte-compile; opens no input
+-#   host_selftest.sh custody ROOT        step 2 (per-file sha256 of PUSH_LIST.sha256) + 2a (R2 counts; STOP if any > 0)
+-#   host_selftest.sh run ROOT DATA OUT   step 4: custody again, selftests again, then the one run
++#   host_selftest.sh selftest              synthetic self-tests + all mutants, byte-compile; opens no input
++#   host_selftest.sh closure ROOT DATA     imports every instrument module from ROOT (PUSH LIST only) with python -I,
++#                                          calls each instrument on synthetic strings, checks every loaded module pin
++#   host_selftest.sh s0 ROOT DATA          the S0 record (W8 (i)): versions, pins, selftest, closure, listings
++#   host_selftest.sh custody ROOT DATA     step 2 (PUSH LIST + every $NCS_DATA pin) + 2a (R2 counts; STOP if any > 0)
++#   host_selftest.sh run ROOT DATA OUT     step 4 under a hard 4 h kill (CC-511 W4)
+ set -euo pipefail
+ HERE="$(cd "$(dirname "$0")" && pwd)"
+ PY="${PY:-python3}"
+ cd "$HERE"
+ sha256sum -c --quiet CODE.sha256          # the code read's hashes; any change is a STOP
++need_host() { : "${VSPS_MACHINE_ID:?set VSPS_MACHINE_ID on the rented host}"; }
+ case "${1:-}" in
+   selftest)
+-    "$PY" -I test_c_n3d.py
+-    "$PY" -I -m py_compile c_n3d.py c_n3d_host.py test_c_n3d.py closure.py
++    "$PY" -I -B test_c_n3d.py
++    "$PY" -I -B -c "import ast, sys; [ast.parse(open(f).read()) for f in sys.argv[1:]]" \
++      c_n3d.py c_n3d_host.py test_c_n3d.py closure.py probe.py
+     echo "selftest: ok" ;;
++  closure)
++    "$PY" -I -B probe.py "$2" "$3" --pins "$HERE/PUSH_LIST.sha256"
++    echo "closure: ok" ;;
++  s0)
++    need_host
++    {
++      echo "S0 RECORD C-N3D  utc $(date -u +%Y-%m-%dT%H:%M:%SZ)  machine ${VSPS_MACHINE_ID}"
++      echo "python: $("$PY" -c 'import sys; print(sys.version.split()[0])')  numpy: $("$PY" -c 'import numpy; print(numpy.__version__)')"
++      echo "java: $(java -version 2>&1 | head -1)"
++      echo "pip-freeze sha256: $("$PY" -m pip freeze 2>/dev/null | sha256sum | cut -c1-64)"
++      echo "jar and segmenter models:"; sha256sum "$3"/vncorenlp/VnCoreNLP-1.2.jar "$3"/vncorenlp/models/wordsegmenter/*
++      echo "CODE.sha256: ok ($(sha256sum CODE.sha256 | cut -c1-64))"
++      "$PY" -I -B test_c_n3d.py
++      "$PY" -I -B probe.py "$2" "$3" --pins "$HERE/PUSH_LIST.sha256" && echo "closure: ok"
++      echo "files under ROOT not on the PUSH LIST (must be none):"
++      comm -23 <(cd "$2" && find . -type f | sed 's#^\./##' | sort) <(grep -v '^#' PUSH_LIST.sha256 | awk '{print $2}' | sort)
++      echo "forbidden names under ROOT and DATA (must be none):"
++      { find "$2" "$3" -type f; } | grep -Ei 'c_t2/|c_t3/|CONF_H1|c_conf_r|/c_en/(runs|out)/|ledger|ov_test|xm_test|_test[_.]|nocaps|karpathy_test|f30k_val|f30k_test|/led/' \
++        | grep -vxF "$2/manuscript/prereg/2026-10-25_c_test/ov_test_files.tsv" \
++        | grep -vxF "$2/manuscript/prereg/2026-10-22_c_stage2/ov_test_dev299_neardup_files.txt" || true
++      echo "statement: this host has never held an OV-test byte, the C-CONF token or a C-CONF output (operator to sign)"
++    } 2>&1 | tee "S0_RECORD_${VSPS_MACHINE_ID}.txt"
++    sha256sum "S0_RECORD_${VSPS_MACHINE_ID}.txt" ;;
+   custody)
+-    : "${VSPS_MACHINE_ID:?set VSPS_MACHINE_ID on the rented host}"
+-    "$PY" -I -c "import sys; sys.path.insert(0, '$HERE'); import c_n3d_host as H; from pathlib import Path; H.custody(Path('$2'))" ;;
++    need_host
++    "$PY" -I -B "$HERE/c_n3d.py" custody --root "$2" --data "$3" 2>&1 | tee "CUSTODY_RECORD_${VSPS_MACHINE_ID}.txt"
++    sha256sum "CUSTODY_RECORD_${VSPS_MACHINE_ID}.txt" ;;
+   run)
+-    : "${VSPS_MACHINE_ID:?set VSPS_MACHINE_ID on the rented host}"
+-    "$PY" -I "$HERE/c_n3d.py" run --root "$2" --data "$3" --out "$4" ;;
+-  *) echo "usage: $0 selftest | custody ROOT | run ROOT DATA OUT" >&2; exit 2 ;;
++    need_host
++    timeout --signal=KILL 4h "$PY" -I -B "$HERE/c_n3d.py" run --root "$2" --data "$3" --out "$4" ;;
++  *) echo "usage: $0 selftest | closure ROOT DATA | s0 ROOT DATA | custody ROOT DATA | run ROOT DATA OUT" >&2; exit 2 ;;
+ esac
+--- /home/hoanguyen/vsps_out/c_n3d_code/PUSH_LIST.sha256	2026-11-27 19:47:05.204863054 +0700
++++ PUSH_LIST.sha256	2026-11-27 20:35:35.332315691 +0700
+@@ -1,4 +1,4 @@
+-# C-N3D PUSH LIST (COMPUTE v3 §2.1 + erratum 1 code closure); paths relative to the host --root
++# C-N3D PUSH LIST r2: 62 data and list files of COMPUTE v3 §2.1, then CLOSURE.sha256 CODE and RESOURCES (erratum 1 E2); paths relative to the host --root
+ 10e3aa226b624286d0b980c04ad201b7da8293fe1135a765ee8586742616fcfd  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-rand-k4--T1-d0-mvi-b1.preds.json
+ 3b6f81e451b6ced65ffd2439d6447a787964263ef884d320153ebc0c61cde5ae  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-rand-k4--T1-d1-mvi-b1.preds.json
+ 42f42f902957a342bd5edd716b5f284112eb7f1be933b76aff49803e09b14f4b  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-rand-k4--T1-d2-mvi-b1.preds.json
+@@ -63,7 +63,24 @@
+ 263015f9dc46ebe2cea80055e04ed39baf80a356f4e027cd3756464279135bef  data/xm3600/manifest.json
+ b712bea4d66e5e2e0f0cec1624ab244a025560ecc5d86f96cada2e0160a4890f  rescap/__init__.py
+ e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3  rescap/chair.py
++e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960  rescap/metrics.py
++723200190818cd61a56527e6a0a1596b95f9d1ed1ebc0cabe1b29135cf03b70d  rescap/repro.py
++5b7f52920de75cf59bde0ae657e292a876efc63292ca6db6a4d085bb9fec1424  rescap/svp/__init__.py
++4462f44df80faa0adc620d98aa5d8bbb307243d450e9aee4801bb17a3a06db23  rescap/svp/entailment.py
++a9253060131aacfca8eaab9a4b2c473c487db96a7c1222f0b8e31f9f61b24003  rescap/svp/matching.py
++f898963e95fec7d9fb236295649404815634a1d949bfd74cd7c3b90ed493bf6c  rescap/vi/__init__.py
++966cdab1fed8471ac57d225698e63f1e2a055435a5d669e9cca10eed703fed16  rescap/vi/classifier.py
++242fc46f68ecb06c8eefde23350481d99e60566b3da64ab90cfa79db38fd3875  rescap/vi/color.py
++fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9  rescap/vi/lexicon.py
++13de9854599acedd32ea1798ea1acc475703fcd3aa4eb4dd715dc8eadcd632cd  rescap/vlm/__init__.py
++e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93  rescap/vlm/base.py
++33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7  rescap/vlm/mock.py
++0990c54a930337a6f4e7ac38a9cc2d32259f60caf868417776b18ad3ed3930a7  rescap/vlm/qwen_vl.py
++6c261406bde3d34a73f77ce961aff7d241e2a440ba75e154fccf3ae8d4a70297  rescap/vlm/registry.py
++dbde92aae0d73275c347e76ce045285c9ad5862e64d84564eb73a223b8cf1096  rescap/vlm/vintern.py
++c9143b2d973fc48a2231335844cd91ab702329c0b1aabb802884225e155967ec  rescap/vocab.py
+ 76819c8e1c439cce2c5651e50e2a86d28078c2cbb67db22bc6327401bbcfc481  scripts/abs_halluc.py
++e747205ead426fb0747be3e8aa60649b0e05e139e4d75a53827f049a6aa2d19a  scripts/b1_scaling/b1.py
+ a3bd7b93bdcc85cc6ce34a0676796cafd4e23497f3deae17b3f6ff60f2e31dc0  scripts/c_attr/c_attr.py
+ cca5e3270a4699672b06f1580d08af265dc55b447cd3b241233d6ec8611d99c0  scripts/c_attr/c_attr_score.py
+ 777a5af03e9f1f61d5de638747c8e18cd5b4e528de0bdba745a621f2903a3885  scripts/c_en/cen_decode.py
+@@ -80,6 +97,8 @@
+ 05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895  scripts/checkpoint_resume_hook.py
+ 01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231  scripts/clean_supervision.py
+ a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236  scripts/evaluate.py
++8a855ef483c933621776099b6f9de3b60c4fbfaaf706bb40c74e7d84d9dfb5e5  scripts/g2b/decode_qwen3vl.py
++bbe7ee61f659b1a7bfc3cab418d83ed779b76187107708fef2d8ab44df0ad23a  scripts/grl/common.py
+ 6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3  scripts/kit_b/b2_controls.py
+ 7334ced30bde7be514765563a3628c56d2a4c4cc18537795a2770171139b871c  scripts/kit_b/cay_audit.py
+ f30758e372061a15cbab30a568a397f57442f2701e0ffd9cc2372f20901d66a0  scripts/kit_b/exchangeability_audit.py
+@@ -95,9 +114,24 @@
+ d16b19f6597f84597db7865dea4058f0bb1fecf914d71d34d6406d66283fa5bb  scripts/person_uncap.py
+ b06a25dc7cecae168d4f7229c3be15702789ec61d51a2f240a3abb431a962bcc  scripts/plan_f1.py
+ 279942468d879c93ca4c5c8767b829397b58cebedd73d845496f6ead22616d19  scripts/prereg_ladder_check.py
++7644e5676064c4495462a60d3dabc4c62933d019bcc201492120f2d9e6b51b56  scripts/rl_policy.py
++f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5  scripts/rl_report.py
+ 3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b  scripts/rl_reward.py
++0342f6e59a6c6d1a89be0fac3ad87bafff76648415c9cf532b5eddc405abac28  scripts/scaling_probe.py
+ d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070  scripts/score_coco_probe.py
+ 7dc60e0569d5b8e5ebffee4fac3992bd83a1f7c42b4267ef46106079e35faeba  scripts/second_panel.py
++bd5743bb2c3a5e3e96cfb65011249471cb40658064db59cbc2d9a02432f8acc5  scripts/train_rl.py
++29312ef765e3e49e5e1efefc5ad8b88fcf33c991b1a5f3a266a910ada3d1cab4  scripts/train_stage2.py
+ 4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b  scripts/upe_mbr.py
+ 9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0  scripts/xm3600_oiv7.py
+ c3c34667cfd0fe2f7798c81f09b3fb3019647ef60a29dc20e0aa55f0725c5e0e  scripts/xv_ef1.py
++b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2  data/coco_probe/chair_synonyms.txt
++ac6404b6a0715deb351eae8fdeb9aea990415298ea3c8beaab2ab5d109a73db3  manuscript/prereg/2026-10-18_tier3_S2.json
++9ff02dc259258de1add426abd02131f2122e3476a81f9a076066ed6d74906134  manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json
++c52a96d18925b974878ae1a970c3f9133fb3482216676fd41871eeabb68cc77f  manuscript/prereg/2026-10-21_dev_pools/exclusion.json
++a4ac7fdbd904f2205845705f5235b9748225a83a07854b58e59a755b85e4186e  manuscript/prereg/2026-10-21_dev_pools/ktvic_dev299.tsv
++eacc9a9c737cec278c77ce5acd3b07422c9b0f7e661624ec42ba0454050ed53f  manuscript/prereg/2026-10-22_c_stage1/DESIGN.md
++32317953c53cb7f9821f3ef03872df6fa9686b89218f4dfff99c48a5f180d0b7  manuscript/prereg/2026-10-22_c_stage1/SHA256SUMS
++6d039398c88ab00c5c303b671552b3f7c550d4d1a0c55e388ce7c03b249570b6  manuscript/prereg/2026-10-22_c_stage2/PREREG.md
++2f0c32be7720b672f6e4aae229aba69da8742e0f9e32d34c5137e985ea36aa16  manuscript/prereg/2026-10-22_c_stage2/frozen_config.json
++737e617a966478d9bcadb0c932d72a6f8de7dd5c7e83c98730e1a88720f2f41f  manuscript/prereg/2026-10-22_c_stage2/ov_test_dev299_neardup_files.txt
+--- /home/hoanguyen/vsps_out/c_n3d_code/CLOSURE.sha256	2026-11-27 19:46:44.893458755 +0700
++++ CLOSURE.sha256	2026-11-27 20:35:35.332188249 +0700
+@@ -1,6 +1,24 @@
++# CODE
+ b712bea4d66e5e2e0f0cec1624ab244a025560ecc5d86f96cada2e0160a4890f  rescap/__init__.py
+ e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3  rescap/chair.py
++e0296ec528b87f4d1b31165cbb45deee5453783fd7dad783f248869e596bf960  rescap/metrics.py
++723200190818cd61a56527e6a0a1596b95f9d1ed1ebc0cabe1b29135cf03b70d  rescap/repro.py
++5b7f52920de75cf59bde0ae657e292a876efc63292ca6db6a4d085bb9fec1424  rescap/svp/__init__.py
++4462f44df80faa0adc620d98aa5d8bbb307243d450e9aee4801bb17a3a06db23  rescap/svp/entailment.py
++a9253060131aacfca8eaab9a4b2c473c487db96a7c1222f0b8e31f9f61b24003  rescap/svp/matching.py
++f898963e95fec7d9fb236295649404815634a1d949bfd74cd7c3b90ed493bf6c  rescap/vi/__init__.py
++966cdab1fed8471ac57d225698e63f1e2a055435a5d669e9cca10eed703fed16  rescap/vi/classifier.py
++242fc46f68ecb06c8eefde23350481d99e60566b3da64ab90cfa79db38fd3875  rescap/vi/color.py
++fbc945f2247418275144ac75b893f7c51f8951b9ea42018680d433775dd79eb9  rescap/vi/lexicon.py
++13de9854599acedd32ea1798ea1acc475703fcd3aa4eb4dd715dc8eadcd632cd  rescap/vlm/__init__.py
++e8fee5bc5b729534af67c6e462a27f0d83ba611f18ff8e3f2717b11eb393ae93  rescap/vlm/base.py
++33793de01b4f2790964342b1af2d4c2de18d793ae4693608283992475ed62ce7  rescap/vlm/mock.py
++0990c54a930337a6f4e7ac38a9cc2d32259f60caf868417776b18ad3ed3930a7  rescap/vlm/qwen_vl.py
++6c261406bde3d34a73f77ce961aff7d241e2a440ba75e154fccf3ae8d4a70297  rescap/vlm/registry.py
++dbde92aae0d73275c347e76ce045285c9ad5862e64d84564eb73a223b8cf1096  rescap/vlm/vintern.py
++c9143b2d973fc48a2231335844cd91ab702329c0b1aabb802884225e155967ec  rescap/vocab.py
+ 76819c8e1c439cce2c5651e50e2a86d28078c2cbb67db22bc6327401bbcfc481  scripts/abs_halluc.py
++e747205ead426fb0747be3e8aa60649b0e05e139e4d75a53827f049a6aa2d19a  scripts/b1_scaling/b1.py
+ a3bd7b93bdcc85cc6ce34a0676796cafd4e23497f3deae17b3f6ff60f2e31dc0  scripts/c_attr/c_attr.py
+ cca5e3270a4699672b06f1580d08af265dc55b447cd3b241233d6ec8611d99c0  scripts/c_attr/c_attr_score.py
+ 777a5af03e9f1f61d5de638747c8e18cd5b4e528de0bdba745a621f2903a3885  scripts/c_en/cen_decode.py
+@@ -17,6 +35,8 @@
+ 05466ef5ed3bef2b732ccd01f530a8c977c4c822ef8619b0238f562fb11e5895  scripts/checkpoint_resume_hook.py
+ 01f172002a607ba9ee55bccb332439f10650832cae1f64a9b74b35c48cd9c231  scripts/clean_supervision.py
+ a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236  scripts/evaluate.py
++8a855ef483c933621776099b6f9de3b60c4fbfaaf706bb40c74e7d84d9dfb5e5  scripts/g2b/decode_qwen3vl.py
++bbe7ee61f659b1a7bfc3cab418d83ed779b76187107708fef2d8ab44df0ad23a  scripts/grl/common.py
+ 6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3  scripts/kit_b/b2_controls.py
+ 7334ced30bde7be514765563a3628c56d2a4c4cc18537795a2770171139b871c  scripts/kit_b/cay_audit.py
+ f30758e372061a15cbab30a568a397f57442f2701e0ffd9cc2372f20901d66a0  scripts/kit_b/exchangeability_audit.py
+@@ -32,9 +52,27 @@
+ d16b19f6597f84597db7865dea4058f0bb1fecf914d71d34d6406d66283fa5bb  scripts/person_uncap.py
+ b06a25dc7cecae168d4f7229c3be15702789ec61d51a2f240a3abb431a962bcc  scripts/plan_f1.py
+ 279942468d879c93ca4c5c8767b829397b58cebedd73d845496f6ead22616d19  scripts/prereg_ladder_check.py
++7644e5676064c4495462a60d3dabc4c62933d019bcc201492120f2d9e6b51b56  scripts/rl_policy.py
++f92faa61965348fc5296f7e97399a82086a125c1b936b9dfb4494cda266997c5  scripts/rl_report.py
+ 3b18b7a3620c2511d4d13caea62f204534783e3024cac188da78d957e6a0a74b  scripts/rl_reward.py
++0342f6e59a6c6d1a89be0fac3ad87bafff76648415c9cf532b5eddc405abac28  scripts/scaling_probe.py
+ d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070  scripts/score_coco_probe.py
+ 7dc60e0569d5b8e5ebffee4fac3992bd83a1f7c42b4267ef46106079e35faeba  scripts/second_panel.py
++bd5743bb2c3a5e3e96cfb65011249471cb40658064db59cbc2d9a02432f8acc5  scripts/train_rl.py
++29312ef765e3e49e5e1efefc5ad8b88fcf33c991b1a5f3a266a910ada3d1cab4  scripts/train_stage2.py
+ 4a65d3a910029ceb21d8b9625f5f9832e1a27e289748f1354ce5555d4abca19b  scripts/upe_mbr.py
+ 9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0  scripts/xm3600_oiv7.py
+ c3c34667cfd0fe2f7798c81f09b3fb3019647ef60a29dc20e0aa55f0725c5e0e  scripts/xv_ef1.py
++# RESOURCES
++b685537b36fe21b791c87151b96a991ceb582edff19f3da204dcc7a7905502f2  data/coco_probe/chair_synonyms.txt
++84a4373a0efb7fd6d93fe19b0e7ceb6c1b855c233d13b9b78a9a33655c9fdce3  data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv
++27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a  data/xm3600/vi_oiv7_map.json
++ac6404b6a0715deb351eae8fdeb9aea990415298ea3c8beaab2ab5d109a73db3  manuscript/prereg/2026-10-18_tier3_S2.json
++9ff02dc259258de1add426abd02131f2122e3476a81f9a076066ed6d74906134  manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json
++c52a96d18925b974878ae1a970c3f9133fb3482216676fd41871eeabb68cc77f  manuscript/prereg/2026-10-21_dev_pools/exclusion.json
++a4ac7fdbd904f2205845705f5235b9748225a83a07854b58e59a755b85e4186e  manuscript/prereg/2026-10-21_dev_pools/ktvic_dev299.tsv
++eacc9a9c737cec278c77ce5acd3b07422c9b0f7e661624ec42ba0454050ed53f  manuscript/prereg/2026-10-22_c_stage1/DESIGN.md
++32317953c53cb7f9821f3ef03872df6fa9686b89218f4dfff99c48a5f180d0b7  manuscript/prereg/2026-10-22_c_stage1/SHA256SUMS
++6d039398c88ab00c5c303b671552b3f7c550d4d1a0c55e388ce7c03b249570b6  manuscript/prereg/2026-10-22_c_stage2/PREREG.md
++2f0c32be7720b672f6e4aae229aba69da8742e0f9e32d34c5137e985ea36aa16  manuscript/prereg/2026-10-22_c_stage2/frozen_config.json
++737e617a966478d9bcadb0c932d72a6f8de7dd5c7e83c98730e1a88720f2f41f  manuscript/prereg/2026-10-22_c_stage2/ov_test_dev299_neardup_files.txt
+--- /dev/null	2026-11-26 23:38:49.848412331 +0700
++++ probe.py
+@@ -0,0 +1,80 @@
++"""Import every instrument module of the run from ROOT and call each instrument on synthetic strings (no input data).
++
++  python3 -I -B probe.py ROOT NCS_DATA --trace OUT      (closure.py: audit hook, list opened and loaded files)
++  python3 -I -B probe.py ROOT NCS_DATA --pins PUSH_LIST  (host `closure` mode: every loaded module under ROOT on it)
++
++Used twice: by closure.py on the run repository with an audit hook (TRACE_OUT lists every file under ROOT that was
++opened and every module file loaded), and by `host_selftest.sh closure ROOT` on a tree built from the PUSH LIST only.
++NCS_DATA must hold only vncorenlp/ (the pinned jar and segmenter models): the toy scorer needs them.
++"""
++from __future__ import annotations
++
++import json
++import os
++import sys
++from pathlib import Path
++
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++
++ROOT, DATA = Path(sys.argv[1]).resolve(), Path(sys.argv[2]).resolve()
++OPENED: set[str] = set()
++
++
++def hook(event, args):
++    if event == "open" and args and isinstance(args[0], (str, bytes, os.PathLike)):
++        p = os.fsdecode(args[0])
++        if p.startswith(str(ROOT)):
++            OPENED.add(p)
++
++
++MODE, ARG = (sys.argv[3], Path(sys.argv[4])) if len(sys.argv) > 4 else (None, None)
++if MODE == "--trace":
++    sys.addaudithook(hook)
++os.environ["NCS_DATA"] = str(DATA)
++os.chdir(ROOT)
++for d in (".", "scripts", "scripts/lb", "scripts/c_attr", "scripts/c_stage1", "scripts/c_stage2", "scripts/c_en",
++          "scripts/kit_b"):  # c_n3d_host.paths order
++    sys.path.insert(0, str(ROOT / d))
++
++import c_attr  # noqa: E402,F401
++import c_attr_score as CS  # noqa: E402
++import cen_score as CE  # noqa: E402
++import decode_icl as C  # noqa: E402
++import guard as G  # noqa: E402
++import rl_reward as R  # noqa: E402
++import score as S1  # noqa: E402,F401
++import score2  # noqa: E402,F401
++import score_coco_probe as SC  # noqa: E402
++import stage2  # noqa: E402,F401
++import xm3600_oiv7 as XO  # noqa: E402
++from rescap import chair as CH  # noqa: E402
++
++vi = ["chó tím xổm ghế sofa đỏ rực lúc trưa", "ba ông lão dắt xe máy cũ qua kênh xanh", "mèo mướp chó con chơi đàn"]
++out = {"classes": [G.classes(t) for t in vi], "key": [G.key(o) for t in vi for o in G.classes(t)],
++       "neighbour_only": G.neighbour_only(vi[2], vi[0], [vi[1], "mèo mướp lim dim"]),
++       "syllables": R.syllables(vi[1]), "copy_stat": R.copy_stat(R.syllables(vi[0]), [R.syllables(vi[2])])[0],
++       "gold": sorted(CH._gold_objects(vi)), "shown": C.shown({"openviic": "a", "ktvic": "b"}, "openviic"),
++       "en_classes": sorted(SC.en_classes("purple dog couch cat sky", SC.load_synonyms())),
++       "vmap_size": len(XO.resolve_map(ROOT / "data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv"))}
++import c_n3d as N  # noqa: E402  CC-511 W6: the run's neighbour-only rule equals guard.neighbour_only
++vin = N.vi_instruments()
++cases = [(vi[2], vi[0], [vi[1], "mèo mướp lim dim"]), (vi[1], vi[2], [vi[0]]), (vi[0], "", [vi[0], vi[2]]),
++         ("chó mèo xe máy tím rịm", "chó tím", ["mèo mướp", "xe máy cũ", "chó tím"])]
++if [vin.neighbour_only(*c) for c in cases] != [G.neighbour_only(*c) for c in cases]:
++    raise SystemExit("STOP: Instruments.neighbour_only differs from guard.neighbour_only")
++out["neighbour_only_equal"] = len(cases)
++score = CS.kit_scorer(CS.KIT)
++out["kit_cider"] = score({"a": vi[0], "b": vi[1]}, {"a": [vi[0], vi[2]], "b": [vi[1], vi[2]]}).round(3).tolist()
++tok, cider = CE.ptb_cider()
++g = tok({"a": ["purple dog couch sky", "dog sky"], "b": ["three bikes grass hum", "grass hum"]})
++out["ptb_cider"] = cider(g, tok({"a": ["purple dog couch sky"], "b": ["cat hum"]})).round(3).tolist()
++mods = sorted({str(Path(m.__file__).resolve()) for m in list(sys.modules.values())
++               if getattr(m, "__file__", None) and str(Path(m.__file__).resolve()).startswith(str(ROOT))})
++if MODE == "--pins":
++    import c_n3d_host as H
++    out["modules_pinned"] = H.module_pin_check(ROOT, ARG)
++if MODE == "--trace":
++    ARG.write_text(json.dumps({"opened": sorted(OPENED), "modules": mods}, indent=0) + "\n")
++print(json.dumps({k: (v if k in ("kit_cider", "ptb_cider", "vmap_size", "copy_stat", "modules_pinned") else "ok")
++                  for k, v in out.items()}))
++print("probe: ok")
+--- /dev/null	2026-11-26 23:38:49.848412331 +0700
++++ RECORDS_W8.md
+@@ -0,0 +1,41 @@
++# C-N3D host records that close the run (CC-511 W8, modelled on CC-506 W5)
++
++Each record is a text file written on the rented host and pulled to the laptop. Its sha256 is entered in a LOG line. No record holds a caption, a per-image row or a study number. The only exception is the decision file of record (iii), which holds aggregates only.
++
++| # | record | made by | when | must show |
++|---|---|---|---|---|
++| (i) | `S0_RECORD_<machine>.txt` | `host_selftest.sh s0 ROOT DATA` | after the code, the CODE and RESOURCES files of the PUSH LIST and `$NCS_DATA/vncorenlp/` are pushed, **before** any decode file, list file or `$NCS_DATA` caption or reference file is pushed | see the S0 list below |
++| (ii) | `CUSTODY_RECORD_<machine>.txt` | `host_selftest.sh custody ROOT DATA` | after the data push; the first data step | `data_pins: ok`; the sha256 of the segmenter model files; the 11 custody counts, all 0; `custody: all counts 0`. Anything else is a STOP and ends the run. |
++| (iii) | `RUN_RECORD_<machine>.txt` (the operator writes it from the console) | `host_selftest.sh run ROOT DATA OUT` | after the decision file is written | see the run list below |
++| (iv) | LOG line | coordinator | after (iii) | the decision file name and sha256, and the sha256 of records (i)–(iii) |
++
++**The S0 record must show:**
++- the machine id;
++- the python, numpy and java versions;
++- the pip-freeze sha256;
++- the jar and segmenter model sha256, with the jar at `9e2811cd…`;
++- `CODE.sha256` OK;
++- the selftest output with every group of mutants killed;
++- `closure: ok`, with the pinned module count;
++- an empty "not on the PUSH LIST" list;
++- an empty "forbidden names" list, covering no OV-test, C-CONF, `c_t2`, `c_t3`, `c_en` output or ledger file;
++- the signed statement that the host was never a C-CONF host.
++
++**The run record must show:**
++- `custody: all counts 0`;
++- `parity: ok` (each gate passed; no value is printed);
++- the decision file name and its sha256 from the host;
++- `cpu_h_parent`, `wall_h` and `utc` from the decision file;
++- the decision file pulled and re-hashed on the laptop, with the sha equal;
++- the per-image intermediates and the `$NCS_DATA` caption and reference files deleted on the host, shown by a listing after deletion;
++- the host files cleaned after the machine is deleted (PI-1115s).
++
++The order is fixed:
++1. Push the code and the PUSH LIST.
++2. Make the S0 record.
++3. Push the data.
++4. Make the custody record.
++5. Make the run record.
++6. Pull, re-hash and clean the host.
++
++A STOP at any step ends the work on that host. No re-run follows without a judge ruling.
+--- /dev/null	2026-11-26 23:38:49.848412331 +0700
++++ JUDGE_MUTANTS_CC511.py
+@@ -0,0 +1,56 @@
++"""Judge CC-511 mutants on verdict-deciding lines of c_n3d.py (scratch copy; synthetic suite only)."""
++import sys
++from pathlib import Path
++W = Path(sys.argv[1]); sys.path.insert(0, str(W))
++import test_c_n3d as T
++SRC = T.SRC
++M = [
++ ("L, W = d < -m, d > m", "L, W = d > m, d < -m"),
++ ('out[f"D_{f}_ret"] = out[f"Pr_{f}_L"] - out[f"Pr_{f}_W"]', 'out[f"D_{f}_ret"] = out[f"Pr_{f}_W"] - out[f"Pr_{f}_L"]'),
++ ("cat_d1 = category(c.f_d1, prec)[rows]", "cat_d1 = category(c.f_ret, prec)[rows]"),
++ ("f1 = c.f_d1[f][rows]", "f1 = c.f_d2[f][rows]"),
++ ("fr = c.f_ret[f][rows]", "fr = c.f_d0[f][rows]"),
++ ('out["H3_gap_minus_plac"] = (out["C_L"] - out["C_W"]) - (out["C_Pm"] - out["C_Pp"])', 'out["H3_gap_minus_plac"] = (out["C_L"] - out["C_W"]) + (out["C_Pm"] - out["C_Pp"])'),
++ ('out["H3_gap_minus_plac"] = (out["C_L"] - out["C_W"]) - (out["C_Pm"] - out["C_Pp"])', 'out["H3_gap_minus_plac"] = (out["C_L"] - out["C_W"]) - (out["C_Pp"] - out["C_Pm"])'),
++ ('"p": ptilde(boot[f"Delta_{f}"], 0.0)', '"p": ptilde(boot[f"Delta_{f}"], D_MIN)'),
++ ('"p": ptilde(boot[f"Delta_{f}"], 0.0)', '"p": ptilde(boot[f"D_{f}_ret"], 0.0)'),
++ ('"p": ptilde(boot["C_L"], C_TEST)', '"p": ptilde(boot["C_W"], C_TEST)'),
++ ('gap = pt["C_L"] - pt["C_W"]', 'gap = pt["C_L"] - pt["C_Pm"]'),
++ ('adj = holm([r["p"] for r in rows])', 'adj = [r["p"] for r in rows]'),
++ ("run = max(run, min(1.0, (m - j) * ps[k]))", "run = max(run, min(1.0, m * ps[k]))"),
++ ('order = np.argsort(ps, kind="stable")', 'order = np.argsort(ps, kind="stable")[::-1]'),
++ ("/ (s.size + 1))", "/ (s.size))"),
++ ("e = c.e[rows]", "e = c.d[rows]"),
++ ('if not r["decidable"]:', "if False:"),
++ ('"sr7": pt[f"SR7_{f}"]', '"sr7": 1.0'),
++ ('np.log(out[f"Pr_{f}_L"] / out[f"Pr_{f}_W"]) - np.log(a / b)', 'np.log(out[f"Pr_{f}_L"] / out[f"Pr_{f}_W"]) - np.log(b / a)'),
++ ('out[f"Pr_{f}_L"], out[f"Pr_{f}_W"] = _rate(fr, L), _rate(fr, W)', 'out[f"Pr_{f}_L"], out[f"Pr_{f}_W"] = _rate(fr, W), _rate(fr, L)'),
++ ("return (f & g).sum(-1) / g.sum(-1)", "return (f & g).sum(-1) / g.shape[-1]"),
++ ('"ZL": any(status(o) == "present"', '"ZL": any(status(o) == "absent"'),
++ ("z = {self.key(o) for o in self.classes(zs)}", "z = set()"),
++ ('out[f"share_{name}_{g}"] = _rate(cat_ret == j, gm)', 'out[f"share_{name}_{g}"] = _rate(cat_ret != j, gm)'),
++ ("out = np.where(fl[prec[j]], PREC.index(prec[j]), out)", "out = np.where(fl[prec[j]], j, out)"),
++ ('pt.get("nPp", 0)) >= MIN_N', 'pt.get("nPp", 0)) > MIN_N'),
++ ("return {s: rng.integers(0, n, (B, n)) for s, n in SET_N.items()}", "return {s: np.random.default_rng(SEED).integers(0, n, (B, n)) for s, n in SET_N.items()}"),
++ ('"conds": pt[f"Delta_{f}"] >= D_MIN', '"conds": pt[f"D_{f}_ret"] >= D_MIN'),
++ ("t_ids, t_sha = {r[0] for r in tsv}, {r[1] for r in tsv}", "t_ids, t_sha = {r[1] for r in tsv}, {r[0] for r in tsv}"),
++ ("o_ids, o_sha = {r[1] for r in carve_order}, {r[2] for r in carve_order}", "o_ids, o_sha = {r[0] for r in carve_order}, {r[2] for r in carve_order}"),
++ ('xm_test = {r[0] for r in lists["sets"]["xm_test2500"]}', 'xm_test = {r[1] for r in lists["sets"]["xm_test2500"]}'),
++ ('elif a < ALPHA and r["conds"]:', 'elif a <= ALPHA and r["conds"]:'),
++ ("np.sum(np.isnan(s) | (s <= thr))", "np.sum(np.isnan(s) & (s <= thr))"),
++ ('out[f"S_{f}"] = _rate(c.f_ret[f][rows], L) - _rate(c.f_d0[f][rows], L)', 'out[f"S_{f}"] = _rate(c.f_ret[f][rows], W) - _rate(c.f_d0[f][rows], W)'),
++ ('"E": (L.sum(-1) - Pm.sum(-1)) / L.shape[-1]', '"E": (L.sum(-1) - Pp.sum(-1)) / L.shape[-1]'),
++ ('return "DETECTED" if lo > 0 else "REVERSED" if hi < 0 else "UNRESOLVED"', 'return "DETECTED" if lo > 0 else "UNRESOLVED"'),
++]
++alive, killed = [], 0
++for old, new in M:
++    n = SRC.count(old)
++    if n != 1:
++        print("NOT UNIQUE", n, old[:60]); continue
++    if T.suite(T.load(SRC.replace(old, new))):
++        killed += 1
++    else:
++        alive.append(old[:90] + "  ->  " + new[:60])
++T.load()
++print(f"judge mutants: {killed}/{len(M)} killed")
++for a in alive: print("ALIVE:", a)
