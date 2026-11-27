@@ -1,0 +1,19 @@
+check_cc506.py (3e51147b) run 2026-11-27T10:50:55Z on ~/vsps_out/b_d1_code_v2 (= scripts/b_d1 v2); expected_fixes SHA256SUMS:
+3e51147bfb949240a7a344b7c3f21cd30ba04de51362fbbc6170b5ecf334bb7a  check_cc506.py
+aec19f6cb13a43e55abda3b8f6b4f96268fb59ab44b4c22c11088e86a08dd519  SHA256SUMS
+b_d1.py: OK
+host_selftest.sh: OK
+b_d1_30f8e1f3_to_v2.diff: OK
+host_selftest_c483220a_to_v2.diff: OK
+JUDGE_MUTANTS_CC506.py: OK
+check_cc506.py: OK
+mutants_b_d1_v1.py: OK
+
+ok  b_d1.py byte match 4e044401
+ok  host_selftest.sh byte match 602626b5
+ok  v1 mutants kept verbatim: 38 of 38 []
+ok  mutants in v2: 84 (>= 84)
+ok  judge pairs in mutants_b_d1.py: 46 of 46 []
+ok  every mutant old string once in b_d1.py (84 mutants) []
+CC506 CHECK PASS
+rc=0

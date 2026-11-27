@@ -1,0 +1,139 @@
+LAPTOP DEBUG RUN v2 (OPS-1127x): synthetic fixtures only; record of authority = host re-run via host_selftest.sh
+utc 2026-11-27T10:48:56Z; python 3.12.3 numpy 2.5.4 scipy 1.18.1; NCS_DATA=empty dir; tree = scratch ext4 copy
+code sha256:
+4e044401361fae00f289ec67ed0ba2afa5f5730fd7384df10357ccff87c65f33  b_d1.py
+deba7403de328f268fead8ffd8d8365091e6fa1eb8231e77dd26ee7788b50585  test_b_d1.py
+578858e7cb79894c902980c66fa78fdc6e2b6b9a912eabec5b37d864e665c5e2  mutants_b_d1.py
+
+== test_b_d1.py
+SELFTEST ok pins_and_closure
+SELFTEST ok member_sets
+SELFTEST ok fold_construction
+SELFTEST ok h3_grid_membership
+SELFTEST ok swap_identity
+SELFTEST ok s1_matrix
+SELFTEST ok s1_matches_fecert_scorer
+SELFTEST ok g0_pass_on_fecert_world
+SELFTEST ok g0_tolerance
+SELFTEST ok g0_membership_and_keys
+SELFTEST ok g0_verdict_and_df0
+SELFTEST ok g0_fault_stops
+SELFTEST ok stage_guards
+SELFTEST ok union_of_ties_cases
+SELFTEST ok union_of_ties_touching
+SELFTEST ok identity_m1_m1prime
+SELFTEST ok margin_from_f0
+SELFTEST ok top_k_order
+SELFTEST ok aer_hand_toy
+SELFTEST ok aer_weighting
+SELFTEST ok aer_claims_direction
+SELFTEST ok held_break_and_discordant
+SELFTEST ok binomial_and_holm
+SELFTEST ok contrast_labels
+SELFTEST ok h1_h2_pooling
+SELFTEST ok h3_counts
+SELFTEST ok h3_trip_points
+SELFTEST ok a3_trip_points
+SELFTEST ok a3_draws_rule
+SELFTEST ok a3_rule_on_f0
+SELFTEST ok a3_null_stats
+SELFTEST ok cpu_budget
+SELFTEST ok no_text_in_outputs
+SELFTEST ok result_record
+SELFTEST ok fe_claims
+SELFTEST ok h1_h2_tests_and_holm
+SELFTEST ok h1_h2_fixture_k
+SELFTEST ok h2_descriptive_rows
+SELFTEST ok g0_verdict_over_F
+SELFTEST ok g0_sig_gate
+SELFTEST ok a3_counts_by_family
+selftest: 41 ok of 41 checks
+rc=0
+
+== mutants_b_d1.py --jobs 4
+MUTANT KILLED: R1 union-of-ties without the mixed-direction convention
+MUTANT KILLED: R2 sigma_c recomputed per resample
+MUTANT KILLED: R3 margin taken from the wrong member
+MUTANT KILLED: R4 rdr held out
+MUTANT KILLED: R5 touching counted as significant
+MUTANT KILLED: R6 tw excluded from G_caption
+MUTANT KILLED: R7 A3 rule placed on r_A3
+MUTANT KILLED: R8 a unit missing from G_contract
+MUTANT KILLED: M9 G0 tolerance 1e-5
+MUTANT KILLED: M10 G0 ignores class membership
+MUTANT KILLED: M11 G0 ignores the RESULT.json verdict
+MUTANT KILLED: M12 G0 ignores D_f0
+MUTANT KILLED: M13 s2 runs on a failed G0
+MUTANT KILLED: M14 class key without the references
+MUTANT KILLED: M15 pin check skipped
+MUTANT KILLED: M16 s1 overwrites its matrix
+MUTANT KILLED: M17 M1 != M1' does not FAULT
+MUTANT KILLED: M18 floor n <= 10
+MUTANT KILLED: M19 floor 9
+MUTANT KILLED: M20 two-sided binomial
+MUTANT KILLED: M21 n = 0 gives p = 0
+MUTANT KILLED: M22 ties broken by id descending
+MUTANT KILLED: M23 discordance by id, direction ignored
+MUTANT KILLED: M24 AER weighted per class
+MUTANT KILLED: M25 AER sigma with ddof 0
+MUTANT KILLED: M26 uts fold without syl
+MUTANT KILLED: M27 H3 floor 50
+MUTANT KILLED: M28 H3 NULL bar 0.06
+MUTANT KILLED: M29 H3 SUPPORTED bar 0.04
+MUTANT KILLED: M30 H3 grid on CIDEr-D only
+MUTANT KILLED: M31 k_T not counted
+MUTANT KILLED: M32 A3 one-sided 95% bounds
+MUTANT KILLED: M33 A3 pass bar 0.045
+MUTANT KILLED: M34 A3 draws with replacement
+MUTANT KILLED: M35 A3 swap seed shifted
+MUTANT KILLED: M36 A3 swap on f0 only
+MUTANT KILLED: M37 budget 28,900 s
+MUTANT KILLED: M38 STOP marker ignored
+MUTANT KILLED: J01 tied contract ignored in M1'
+MUTANT KILLED: J02 FE claims on FRAGILE
+MUTANT KILLED: J03 FE margin sign flipped
+MUTANT KILLED: J04 f0 claims without significance
+MUTANT KILLED: J05 f0 direction flipped
+MUTANT KILLED: J06 sigma_c unstandardised
+MUTANT KILLED: J07 AER multiplies by sigma
+MUTANT KILLED: J08 AER direction fixed +1
+MUTANT KILLED: J09 H1 K = |f0|
+MUTANT KILLED: J10 H2 K = |AER|
+MUTANT KILLED: J11 pooled b_X takes b_FE
+MUTANT KILLED: J12 H1 p-values swapped
+MUTANT KILLED: J13 label branches swapped
+MUTANT KILLED: J14 shared claims counted
+MUTANT KILLED: J15 breaks judged on F_dev, not H
+MUTANT KILLED: J16 pyvi fold breaks on syl
+MUTANT KILLED: J17 H3 n over the syl grid
+MUTANT KILLED: J18 grid certified on any contract
+MUTANT KILLED: J19 H3 floor <= 59
+MUTANT KILLED: J20 H3 split on agreeing classes
+MUTANT KILLED: J21 k_U against G_caption
+MUTANT KILLED: J22 CP97 lower shape
+MUTANT KILLED: J23 CP97 upper shape
+MUTANT KILLED: J24 A3 pass on either direction
+MUTANT KILLED: J25 A3 ABOVE needs both directions
+MUTANT KILLED: J26 A3 directions pooled
+MUTANT KILLED: J27 A3_F over F_dev
+MUTANT KILLED: J28 A3 no swap applied
+MUTANT KILLED: J29 A3 pick seed shifted
+MUTANT KILLED: J30 G0 keeps uts members in F_dev classes
+MUTANT KILLED: J31 G0 tolerance not applied
+MUTANT KILLED: J32 G0 key mismatch ignored
+MUTANT KILLED: J33 G0 verdict over F_dev
+MUTANT KILLED: J34 budget ignores records
+MUTANT KILLED: J35 budget counts user time only
+MUTANT KILLED: J36 top_k one extra
+MUTANT KILLED: J37 coverage counts claimed units
+MUTANT KILLED: J38 Holm at 0.10
+MUTANT KILLED: J39 H2 p-values swapped
+MUTANT KILLED: J40 uts fold breaks on tw only
+MUTANT KILLED: J41 identity check over F_ALL
+MUTANT KILLED: J42 s2 G0 npz binding dropped
+MUTANT KILLED: J43 G0 D_f0 tolerance 1e-3
+MUTANT KILLED: J44 AER per-class used as primary
+MUTANT KILLED: J45 G0 sig gate dropped (v2)
+MUTANT KILLED: J46 A3 max member rate over F (v2)
+killed 84 of 84
+rc=0
