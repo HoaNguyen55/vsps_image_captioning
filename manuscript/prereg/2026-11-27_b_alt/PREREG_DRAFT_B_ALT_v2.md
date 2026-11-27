@@ -184,7 +184,7 @@ B's English control stays NOT RUN (paper.md:444).
 
 ## 5. Stages, gates and order
 
-**Host (CC-510 ruling 6).** The D1 rented host, used only after D1's `RESULT_D1.json` is pinned on the LOG. Not pipc, not the laptop; the laptop writes files only. This study has its own S0 judge code read, its own `env_check`, and **its own hard stop at 8 CPU-h**, separate from D1's 8 CPU-h.
+**Host (CC-510 ruling 6).** The D1 rented host, used only after D1's `RESULT_D1.json` is pinned on the LOG. Not the PI's PC, not the laptop; the laptop writes files only. This study has its own S0 judge code read, its own `env_check`, and **its own hard stop at 8 CPU-h**, separate from D1's 8 CPU-h.
 
 **S0, on the host, before any data:**
 - **Code read** by a judge.
