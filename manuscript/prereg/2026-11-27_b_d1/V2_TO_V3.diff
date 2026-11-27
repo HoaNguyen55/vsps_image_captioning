@@ -1,0 +1,30 @@
+V2_TO_V3.diff: CC-505r2 R1a-R1d, R2 and R5 (prereg v2 -> v3); R3 (line 13) and R4 (line 21) (PIVOT_REVIEW_B_vi.md 10b6cb0b -> PIVOT_REVIEW_B_vi_v2.md). Made with diff -U0. No other change.
+--- PREREG_DRAFT_B_D1_A3_v2.md	2026-11-27 16:41:44.934592095 +0700
++++ PREREG_DRAFT_B_D1_A3_v3.md	2026-11-27 16:48:55.311333137 +0700
+@@ -3 +3 @@
+-Drafted 2026-11-27 (v1 at 09:22Z; v2 after ruling CC-505, 2026-11-27T09:36:27Z, NEXT_ROUND 74) by agent b-d1. Status: **DRAFT. Not registered.** This becomes the registration once committed with a judge GO.
++Drafted 2026-11-27 (v1 at 09:22Z; v2 after ruling CC-505, 2026-11-27T09:36:27Z, NEXT_ROUND 74; v3 after ruling CC-505r2, 2026-11-27T09:46:59Z, CONDITIONAL GO 87) by agent b-d1. Status: **DRAFT v3. Not registered.** This becomes the registration once committed after the CC-505r2 record checks. The title line is unchanged from v2, because CC-505r2 R5 allows only this status line and the changes line.
+@@ -9,0 +10 @@
++- v3 after CC-505r2: only R1a–R1d (the wording of the 0.05 bar) and R2 (the pivot rule id) changed. The hunks are in `V2_TO_V3.diff`.
+@@ -180 +181 @@
+-- The bands reuse the two constants that the FE-CERT registration fixed on 2026-11-12, before its stage 1 ran on 2026-11-13: R_MAX = 0.05, the break rate it called material for a front-end change (v1.1 l.277, l.364; code l.70), and N_MIN = 59 (code l.69).
++- The bands reuse the two constants that the FE-CERT registration fixed on 2026-11-12, before its stage 1 ran on 2026-11-13: R_MAX = 0.05, the bar of its held-out rule P1 (PASS at a one-sided 95% Clopper–Pearson upper bound <= 0.05, FAIL at a lower bound > 0.05) (v1.1 l.277, l.364; code l.70), and N_MIN = 59 (code l.69).
+@@ -186 +187 @@
+-2. Lower bound > 0.05: **SUPPORTED**. Tone placement overturns a material share of the certificates of a scorer-and-tokenizer grid.
++2. Lower bound > 0.05: **SUPPORTED**. Tone placement overturns more than 5% of the certificates of a scorer-and-tokenizer grid.
+@@ -278,2 +279,2 @@
+-| H3 SUPPORTED | "Adding tone-placement levels to a grid of three scorers, three segmentation units, punctuation and case overturned k_T of its n certificates, more than the 5% that the FE-CERT registration called material (one-sided 95% Clopper–Pearson lower bound, nominal; REGISTERED, DEVELOPMENT)." | "contract grids are insufficient" in general |
+-| H3 NULL | "Tone placement overturned at most 5% of the certificates of a scorer-and-tokenizer grid (k_T of n; NULL). Beyond such a grid, the Vietnamese-specific part of the family added no material change on these comparisons." This goes into the abstract and the contributions paragraph, and "axes that come from the written language" is qualified there. | keeping the axes as an unqualified contribution |
++| H3 SUPPORTED | "Adding tone-placement levels to a grid of three scorers, three segmentation units, punctuation and case overturned k_T of its n certificates, more than 5%, the bar of the FE-CERT registration's held-out rule (one-sided 95% Clopper–Pearson lower bound, nominal; REGISTERED, DEVELOPMENT)." | "contract grids are insufficient" in general |
++| H3 NULL | "Tone placement overturned at most 5% of the certificates of a scorer-and-tokenizer grid (k_T of n; NULL). Beyond such a grid, the Vietnamese-specific part of the family changed at most 5% of the grid's certificates on these comparisons (one-sided upper bound)." This goes into the abstract and the contributions paragraph, and "axes that come from the written language" is qualified there. | keeping the axes as an unqualified contribution |
+@@ -288 +289 @@
+-## 9. After the result (pre-written path rule; CC-505 B7, pivot rule PI-1027)
++## 9. After the result (pre-written path rule; CC-505 B7, pivot rule PI-1026z)
+--- PIVOT_REVIEW_B_vi.md	2026-11-27 16:43:02.595786703 +0700
++++ PIVOT_REVIEW_B_vi_v2.md	2026-11-27 16:48:55.311488959 +0700
+@@ -13 +13 @@
+-Ngày 27/11 tôi tìm thấy bài của Lu và cộng sự (arXiv, tháng 11/2026), công bố trước ngày bài B đăng ký trước. Bài này dùng đúng quy tắc quyết định của bài B: một kết luận "hệ thống A tốt hơn hệ thống B" chỉ được chấp nhận khi nó giữ nguyên dưới mọi cách chấm trong danh sách đã khai báo. Họ áp dụng quy tắc này cho dịch máy, với danh sách gồm các hàm chấm điểm và các cách tách văn bản thành đơn vị từ.
++Bài của Lu và cộng sự (arXiv 2611.04099, bản 1 ngày 3/11/2026) công bố trước ngày bài B đăng ký trước (12/11/2026). Bài này đã có trong danh sách đọc của bài A từ ngày 5/11, nhưng đến ngày 27/11 mới được đối chiếu với bài B. Cách đọc chính của họ lấy trung bình kết quả trên các cách chấm đã khai báo. Bên cạnh đó, họ báo cáo một quy tắc có cùng dạng với quy tắc quyết định của bài B: hai hệ thống bị coi là hòa nếu có bất kỳ cách chấm nào trong danh sách cho kết quả hòa, nên kết luận "hệ thống A tốt hơn hệ thống B" chỉ được giữ khi nó đúng dưới mọi cách chấm. Họ đo quy tắc này trên dịch máy, với danh sách các hàm chấm điểm; cách tách văn bản thành đơn vị từ là một trục khác mà họ cũng đo.
+@@ -21 +21 @@
+-Ngưỡng là 5%. Con số này lấy từ bản đăng ký trước của bài B ngày 12/11, tức là có trước mọi kết quả, nên không được chọn theo số liệu.
++Ngưỡng là 5%. Con số này đã được cố định trong bản đăng ký trước của bài B ngày 12/11, trước khi có bất kỳ kết quả nào. Tuy vậy, quyết định dùng lại con số này cho thử nghiệm mới được đưa ra ngày 27/11, sau khi một số kết quả liên quan đã được in; bản đăng ký ghi rõ điều đó. Ngưỡng 5% làm cho kết quả "vượt ngưỡng" khó đạt hơn so với ngưỡng cũ (0,5% đến 1%) đã bị bỏ.
