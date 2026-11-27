@@ -361,6 +361,17 @@ def host_checks(N, H, inst, st, check) -> None:
         return False
     check("host_refs_nonempty", refs_stop)
 
+    # CC-511e6: statuses are bound to their own set at creation (the late-bound ids of the SR4 fault)
+    def statuses_bound():
+        ids_a = ["a1", "a2"]
+        sa = H.make_statuses(lambda o: o, ids_a, {"a1": {"dog"}, "a2": set()}, None)
+        sb = H.make_statuses(lambda o: o, ["b1", "b2"], {"b1": {"cat"}, "b2": {"cat"}}, {"b1": {"cat": "absent"}})
+        ids_a.append("zz")                      # the caller's list changes after creation
+        ra, rb = sa(None), sb(None)
+        return (sorted(ra) == ["a1", "a2"] and sorted(rb) == ["b1", "b2"] and ra["a1"]("dog") == "present" and rb["b2"]("cat") == "present"
+                and ra["a2"]("dog") == "absent" and rb["b1"]("cat") == "absent")
+    check("host_make_statuses_bound", statuses_bound)
+
     # English flags: no copy statistic, no shown list; BO / CP placeholders
     def en_ok():
         boom = N.Instruments(classes=inst.classes, key=inst.key, copy_m=lambda *_: 1 / 0, length=inst.length)
@@ -553,6 +564,9 @@ EQUIVALENT = {('elif a < ALPHA and r["conds"]:', 'elif a <= ALPHA and r["conds"]
               "Holm p = (k / 2001) x j, j = 1..6, never equals 0.025 (CC-511 C5 (c))"}
 #: CC-511 W6: mutants on the host wiring lines of c_n3d_host.py
 HOST_MUTANTS = [
+    ("    ids = list(ids)\n\n    def statuses(t):", "    def statuses(t):"),                          # CC-511e6
+    ("status_fn(key, gold[i], None if verified", "status_fn(key, gold[ids[0]], None if verified"),         # CC-511e6
+    ("verified.get(i, {}), t) for i in ids}", "verified.get(ids[0], {}), t) for i in ids}"),               # CC-511e6
     ('if arm == "zs":\n            continue\n        if any(not shown(r, i)',
      'if arm == "none":\n            continue\n        if any(not shown(r, i)'),                     # CC-511e5
     ('if any(not shown(r, i) for i in ids):', 'if False:'),                                      # CC-511e5

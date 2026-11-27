@@ -187,6 +187,16 @@ def status_fn(key, gold: set, verified: dict | None, tally: dict | None):
     return st
 
 
+def make_statuses(key, ids: list, gold: dict, verified: dict | None):
+    """status_fn of every image of ONE set, bound at creation to that set's ids, gold and verified labels. CC-511e6:
+    a closure that read the loop variable `ids` late made SR4 of OV-dev-B use the XM-dev500 ids."""
+    ids = list(ids)
+
+    def statuses(t):
+        return {i: status_fn(key, gold[i], None if verified is None else verified.get(i, {}), t) for i in ids}
+    return statuses
+
+
 def flag_arrays(inst, ids, runs, zs, shown, statuses, med, ln_rel=N.LN_REL) -> dict[str, dict]:
     """Flags of the flagged arms only (prereg v3 §5: `ret`, `rand` d0, d1, d2; the zs caption is the zero-shot
     reference and is never flagged), each against its own shown list (shown(run, id)) and the same backbone's zs
@@ -280,8 +290,7 @@ def vi_cells(root: Path, data: Path, clock: Clock) -> tuple[dict, dict, dict]:
         med = {i: statistics.median(inst.length(x) for x in refs[i]) for i in ids}
         tally = {"verified": 0, "reference": 0}
 
-        def statuses(t, gold=gold, verified=verified):
-            return {i: status_fn(inst.key, gold[i], None if verified is None else verified.get(i, {}), t) for i in ids}
+        statuses = make_statuses(inst.key, ids, gold, verified)
 
         def shown(r, i, s=s):
             return [C.shown(caps[x], SRC[s]) for x in r["exemplars"][i]]
