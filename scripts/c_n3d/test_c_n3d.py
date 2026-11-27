@@ -332,6 +332,35 @@ def host_checks(N, H, inst, st, check) -> None:
             and out["ret"]["ZL"].tolist() == [True]
     check("host_flag_arrays", flags_ok)
 
+    # CC-511e5: the zs arm is never flagged; an empty shown list of a flagged arm is a STOP; refs must be non-empty
+    real = N.Instruments(classes=inst.classes, key=inst.key, length=inst.length,
+                         copy_m=lambda cap, shown: max(0.0 for _ in shown))   # raises on [] like rl_reward.copy_stat
+    def zs_skipped():
+        runs = {"ret": {"predictions": {"i": "near dog cat", "j": "near cat"}, "ex": ["a cat"]},
+                "zs": {"predictions": {"i": "near dog tree", "j": "near tree"}, "ex": []}}
+        out = H.flag_arrays(real, ["i", "j"], runs, runs["zs"], lambda r, i: r["ex"], {"i": st, "j": st},
+                            {"i": 3.0, "j": 2.0})
+        return set(out) == {"ret"} and out["ret"]["BO"].tolist() == [True, True]
+    check("host_flag_arrays_zs_not_flagged", zs_skipped)
+
+    def empty_stops():
+        runs = {"ret": {"predictions": {"i": "near dog cat", "j": "near cat"}, "ex": {"i": ["a cat"], "j": []}}}
+        try:
+            H.flag_arrays(real, ["i", "j"], runs, {"predictions": {"i": "x", "j": "x"}},
+                          lambda r, i: r["ex"][i], {"i": st, "j": st}, {"i": 3.0, "j": 2.0})
+        except SystemExit:
+            return True
+        return False
+    check("host_flag_arrays_empty_shown_stops", empty_stops)
+
+    def refs_stop():
+        try:
+            H.refs_nonempty({"i": ["a"], "j": []}, ["i", "j"])
+        except SystemExit:
+            return H.refs_nonempty({"i": ["a"], "j": ["b"]}, ["i", "j"]) is None
+        return False
+    check("host_refs_nonempty", refs_stop)
+
     # English flags: no copy statistic, no shown list; BO / CP placeholders
     def en_ok():
         boom = N.Instruments(classes=inst.classes, key=inst.key, copy_m=lambda *_: 1 / 0, length=inst.length)
@@ -524,6 +553,12 @@ EQUIVALENT = {('elif a < ALPHA and r["conds"]:', 'elif a <= ALPHA and r["conds"]
               "Holm p = (k / 2001) x j, j = 1..6, never equals 0.025 (CC-511 C5 (c))"}
 #: CC-511 W6: mutants on the host wiring lines of c_n3d_host.py
 HOST_MUTANTS = [
+    ('if arm == "zs":\n            continue\n        if any(not shown(r, i)',
+     'if arm == "none":\n            continue\n        if any(not shown(r, i)'),                     # CC-511e5
+    ('if any(not shown(r, i) for i in ids):', 'if False:'),                                      # CC-511e5
+    ('if any(not shown(r, i) for i in ids):', 'if all(not shown(r, i) for i in ids):'),          # CC-511e5
+    ('if any(not refs[i] for i in ids):', 'if False:'),                                          # CC-511e5
+    ('if any(not refs[i] for i in ids):', 'if all(not refs[i] for i in ids):'),                  # CC-511e5
     ('e=sc["rand_d1"] - sc["rand_d2"]', 'e=sc["rand_d2"] - sc["rand_d1"]'),
     ('f_d1=fl["rand_d1"], f_d2=fl["rand_d2"])', 'f_d1=fl["rand_d2"], f_d2=fl["rand_d1"])'),
     ('base = sc["rand_d0"] if rand == "d0" else', 'base = sc["rand_d1"] if rand == "d0" else'),

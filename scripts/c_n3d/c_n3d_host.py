@@ -188,13 +188,26 @@ def status_fn(key, gold: set, verified: dict | None, tally: dict | None):
 
 
 def flag_arrays(inst, ids, runs, zs, shown, statuses, med, ln_rel=N.LN_REL) -> dict[str, dict]:
-    """Flags of every arm: its own shown list (shown(run, id)), the same backbone's zs caption."""
+    """Flags of the flagged arms only (prereg v3 §5: `ret`, `rand` d0, d1, d2; the zs caption is the zero-shot
+    reference and is never flagged), each against its own shown list (shown(run, id)) and the same backbone's zs
+    caption. An empty shown list of a flagged arm is a STOP: §5 defines BO and CP on its k >= 1 shown captions
+    (CC-511e5)."""
     out = {}
     for arm, r in runs.items():
+        if arm == "zs":
+            continue
+        if any(not shown(r, i) for i in ids):
+            raise SystemExit(f"STOP: {arm}: an empty shown list (prereg v3 §5; CC-511e5)")
         fl = [N.flags_of(inst, r["predictions"][i], zs["predictions"][i], shown(r, i), statuses[i], med[i], ln_rel)
               for i in ids]
         out[arm] = {f: np.array([x[f] for x in fl]) for f in N.FLAGS}
     return out
+
+
+def refs_nonempty(refs: dict, ids: list) -> None:
+    """Every set image has at least one reference: med_i and the gold union need one (prereg v3 §5; CC-511e5)."""
+    if any(not refs[i] for i in ids):
+        raise SystemExit("STOP: an image without references (prereg v3 §5; CC-511e5)")
 
 
 def cell_of(sc: dict, fl: dict, rand: str = "d0") -> N.Cell:
@@ -261,6 +274,7 @@ def vi_cells(root: Path, data: Path, clock: Clock) -> tuple[dict, dict, dict]:
         if len(ids) != N.SET_N[s]:
             raise SystemExit(f"STOP: {s} reference keys are not the set")
         N.row_guard(ids, xm_test, "XM-test2500")
+        refs_nonempty(refs, ids)
         verified = XO.statuses(vmap, {i: labels[i] for i in ids if i in labels}) if s == "xm_dev500" else None
         gold = {i: CH._gold_objects(refs[i]) for i in ids}
         med = {i: statistics.median(inst.length(x) for x in refs[i]) for i in ids}
@@ -342,6 +356,7 @@ def en_cells(root: Path, data: Path) -> dict:
     if len(ids) != N.SET_N["f30k_carve"]:
         raise SystemExit("STOP: carve references are not the 1,000 carve images")
     N.row_guard(ids, refused, "Flickr30K val/test")
+    refs_nonempty(refs, ids)
     tokenize, cider = CE.ptb_cider()
     gts = tokenize({i: refs[i] for i in ids})
     inst = N.en_instruments()
