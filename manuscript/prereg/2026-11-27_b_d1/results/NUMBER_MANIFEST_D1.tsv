@@ -1,0 +1,122 @@
+tag	printed	source	source_value	out_json	out_json_value	check	label
+d1_ncmp	1101	RESULT_D1.json::identity_M1_M1prime_F_dev.comparisons	1101	ABSENT		OK	DEVELOPMENT; METHOD CHECK
+d1_ideq	1101	RESULT_D1.json::identity_M1_M1prime_F_dev.equal	1101	ABSENT		OK	DEVELOPMENT; METHOD CHECK
+d1_mixed	0	RESULT_D1.json::identity_M1_M1prime_F_dev.mixed_all_significant	0	out.json::identity_mixed	0	OK	DEVELOPMENT; METHOD CHECK
+d1_g0n	1101	G0.json::comparisons	1101	ABSENT		OK	G0 gate
+d1_g0pass	True	G0.json::pass	True	ABSENT		OK	G0 gate
+d1_g0diff	2.8e-14	G0.json::max_abs_diff	2.842170943040401e-14	ABSENT		OK	G0 gate
+d1_g0tol	1e-6	G0.json::tolerance (registration §6 G0)	1e-06	ABSENT		OK	G0 gate
+d1_env_py	3.12.3	S1.json::env.python	'3.12.3'	ABSENT		OK	environment
+d1_env_java	21.0.13.0.3	S1.json::env.java	'21.0.13.0.3'	ABSENT		OK	environment
+d1_g0vm	0	G0.json::verdict_mismatch	0	ABSENT		OK	G0 gate
+d1_h1_bfe	3	RESULT_D1.json::H1.b_FE	3	out.json::pool.H1.0	3	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_bmg	34	RESULT_D1.json::H1.b_MG	34	out.json::pool.H1.1	34	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_n	37	RESULT_D1.json::H1.n	37	derived	37	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_p	6.2e-8	RESULT_D1.json::p_one_sided_exact_nominal.H1_FE_fewer	6.165646482259035e-08	out.json::p.H1_FE_fewer	6.165646482259035e-08	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_holm	True	RESULT_D1.json::holm_reject_at_0.05.H1_FE_fewer	True	out.json::holm.H1_FE_fewer	True	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_lab	SUPPORTED	RESULT_D1.json::H1.label	'SUPPORTED'	ABSENT		OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_bfe	3	RESULT_D1.json::H2.b_FE	3	out.json::pool.H2.0	3	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_baer	11	RESULT_D1.json::H2.b_AER	11	out.json::pool.H2.1	11	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_n	14	RESULT_D1.json::H2.n	14	derived	14	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_p	0.029	RESULT_D1.json::p_one_sided_exact_nominal.H2_FE_fewer	0.0286865234375	out.json::p.H2_FE_fewer	0.0286865234375	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_prev	0.994	RESULT_D1.json::p_one_sided_exact_nominal.H2_AER_fewer	0.9935302734375	out.json::p.H2_X_fewer	0.9935302734375	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_holm	False	RESULT_D1.json::holm_reject_at_0.05.H2_FE_fewer	False	out.json::holm.H2_FE_fewer	False	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_lab	NOT SUPPORTED	RESULT_D1.json::H2.label	'NOT SUPPORTED'	ABSENT		OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_alpha	0.05	registration §5 (Holm at 0.05 over four one-sided p-values)	0.05	not applicable		OK	REGISTERED CONSTANT
+d1_holm_step	0.0167	derived: 0.05/3, Holm step of the second-smallest of the four p-values (registration §5)	0.016666666666666666	not applicable		OK	DERIVED FROM REGISTERED CONSTANT
+d1_k_syl	918	RESULT_D1.json::folds.syl.K_H1	918	out.json::folds.syl.FE	918	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_syl_fe	1	RESULT_D1.json::folds.syl.H1_b_FE	1	out.json::folds.syl.H1.0	1	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_syl_mg	12	RESULT_D1.json::folds.syl.H1_b_MG	12	out.json::folds.syl.H1.1	12	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_syl_fe	1	RESULT_D1.json::folds.syl.H2_b_FE	1	out.json::folds.syl.H2.0	1	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_syl_aer	5	RESULT_D1.json::folds.syl.H2_b_AER	5	out.json::folds.syl.H2.1	5	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_g_syl	36	RESULT_D1.json::folds.syl.G_members	36	ABSENT		OK	DESCRIPTIVE (design)
+d1_hm_syl	18	RESULT_D1.json::folds.syl.H_members	18	ABSENT		OK	DESCRIPTIVE (design)
+d1_k_pyvi	910	RESULT_D1.json::folds.pyvi.K_H1	910	out.json::folds.pyvi.FE	910	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_pyvi_fe	1	RESULT_D1.json::folds.pyvi.H1_b_FE	1	out.json::folds.pyvi.H1.0	1	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_pyvi_mg	12	RESULT_D1.json::folds.pyvi.H1_b_MG	12	out.json::folds.pyvi.H1.1	12	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_pyvi_fe	1	RESULT_D1.json::folds.pyvi.H2_b_FE	1	out.json::folds.pyvi.H2.0	1	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_pyvi_aer	4	RESULT_D1.json::folds.pyvi.H2_b_AER	4	out.json::folds.pyvi.H2.1	4	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_g_pyvi	36	RESULT_D1.json::folds.pyvi.G_members	36	ABSENT		OK	DESCRIPTIVE (design)
+d1_hm_pyvi	18	RESULT_D1.json::folds.pyvi.H_members	18	ABSENT		OK	DESCRIPTIVE (design)
+d1_k_uts	909	RESULT_D1.json::folds.uts.K_H1	909	out.json::folds.uts.FE	909	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_uts_fe	1	RESULT_D1.json::folds.uts.H1_b_FE	1	out.json::folds.uts.H1.0	1	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h1_uts_mg	10	RESULT_D1.json::folds.uts.H1_b_MG	10	out.json::folds.uts.H1.1	10	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_uts_fe	1	RESULT_D1.json::folds.uts.H2_b_FE	1	out.json::folds.uts.H2.0	1	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h2_uts_aer	2	RESULT_D1.json::folds.uts.H2_b_AER	2	out.json::folds.uts.H2.1	2	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_g_uts	54	RESULT_D1.json::folds.uts.G_members	54	ABSENT		OK	DESCRIPTIVE (design)
+d1_hm_uts	18	RESULT_D1.json::folds.uts.H_members	18	ABSENT		OK	DESCRIPTIVE (design)
+d1_h3_n	782	RESULT_D1.json::H3.n	782	out.json::H3.n	782	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h3_k	0	RESULT_D1.json::H3.k_T	0	out.json::H3.k_T	0	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h3_up	0.0038	RESULT_D1.json::H3.cp_upper_95	0.003823531302876829	out.json::H3.up	0.003823531302876829	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h3_lab	NULL	RESULT_D1.json::H3.label	'NULL'	ABSENT		OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h3_k_syl	0	RESULT_D1.json::H3.k_T_by_unit_of_breaking_class.syl	0	ABSENT		OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h3_k_rdr	0	RESULT_D1.json::H3.k_T_by_unit_of_breaking_class.rdr	0	ABSENT		OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h3_k_pyvi	0	RESULT_D1.json::H3.k_T_by_unit_of_breaking_class.pyvi	0	ABSENT		OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_h3_nsyl	796	RESULT_D1.json::H3.DESCRIPTIVE.n_syl_grid	796	out.json::H3.n_syl	796	OK	DESCRIPTIVE
+d1_h3_ku	14	RESULT_D1.json::H3.DESCRIPTIVE.k_U	14	out.json::H3.k_U	14	OK	DESCRIPTIVE
+d1_h3_ktu	14	RESULT_D1.json::H3.DESCRIPTIVE.k_TU	14	out.json::H3.k_TU	14	OK	DESCRIPTIVE
+d1_h3_bar	0.05	registration §5 H3 (R_MAX of the earlier registration; also printed as 5%)	0.05	not applicable		OK	REGISTERED CONSTANT
+d1_a3_nulls	1000	RESULT_D1.json::A3.nulls	1000	ABSENT		OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_pos	22	RESULT_D1.json::A3.f0.pos	22	out.json::A3.f0.pos	22	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_neg	24	RESULT_D1.json::A3.f0.neg	24	out.json::A3.f0.neg	24	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_rpos	0.022	RESULT_D1.json::A3.f0.r_pos	0.022	derived	0.022	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_rneg	0.024	RESULT_D1.json::A3.f0.r_neg	0.024	derived	0.024	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_pos_lo	0.014	RESULT_D1.json::A3.f0.cp97_pos.0	0.013837414172073854	out.json::A3.f0.cp_pos.0	0.013837414172073854	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_pos_up	0.033	RESULT_D1.json::A3.f0.cp97_pos.1	0.03311966451498779	out.json::A3.f0.cp_pos.1	0.03311966451498779	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_neg_lo	0.015	RESULT_D1.json::A3.f0.cp97_neg.0	0.01543638323350848	out.json::A3.f0.cp_neg.0	0.01543638323350848	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_neg_up	0.036	RESULT_D1.json::A3.f0.cp97_neg.1	0.03550063853135918	out.json::A3.f0.cp_neg.1	0.03550063853135918	OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_lab	AT OR BELOW NOMINAL	RESULT_D1.json::A3.label	'AT OR BELOW NOMINAL'	ABSENT		OK	REGISTERED PREDICTION; DEVELOPMENT
+d1_a3_fdev_pos	0.015	RESULT_D1.json::A3.A3_F_dev.r_pos	0.015	derived	0.015	OK	DESCRIPTIVE
+d1_a3_fdev_neg	0.014	RESULT_D1.json::A3.A3_F_dev.r_neg	0.014	derived	0.014	OK	DESCRIPTIVE
+d1_a3_f_pos	0.015	RESULT_D1.json::A3.A3_F.r_pos	0.015	derived	0.015	OK	DESCRIPTIVE
+d1_a3_f_neg	0.013	RESULT_D1.json::A3.A3_F.r_neg	0.013	derived	0.013	OK	DESCRIPTIVE
+d1_a3_max_pos	0.025	RESULT_D1.json::A3.max_member_rate_F_dev_DESCRIPTIVE.pos	0.025	ABSENT		OK	DESCRIPTIVE
+d1_a3_max_neg	0.030	RESULT_D1.json::A3.max_member_rate_F_dev_DESCRIPTIVE.neg	0.03	ABSENT		OK	DESCRIPTIVE
+d1_a3_bar	0.040	registration §5 A3 (rule on both one-sided 97.5% Clopper-Pearson upper bounds)	0.04	not applicable		OK	REGISTERED CONSTANT
+d1_cp975	97.5	registration §5 A3 (one-sided 97.5% Clopper-Pearson per direction)	97.5	not applicable		OK	REGISTERED CONSTANT
+d1_cp95	95	registration §5 H3 (one-sided 95% Clopper-Pearson)	95	not applicable		OK	REGISTERED CONSTANT
+d1_a3_nom	0.025	registration §5 A3 (one-sided 2.5% per direction of paper §4.4)	0.025	not applicable		OK	REGISTERED CONSTANT
+d1_d_syl_cfe	918	RESULT_D1.json::H2_descriptive.syl.FE.claims	918	out.json::folds.syl.FE	918	OK	DESCRIPTIVE
+d1_d_syl_caer	931	RESULT_D1.json::H2_descriptive.syl.AER.claims	931	out.json::folds.syl.AER	931	OK	DESCRIPTIVE
+d1_d_syl_cpc	933	RESULT_D1.json::H2_descriptive.syl.AER_per_class.claims	933	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_cf0	936	RESULT_D1.json::H2_descriptive.syl.f0.claims	936	out.json::folds.syl.f0	936	OK	DESCRIPTIVE
+d1_d_syl_flip	25	RESULT_D1.json::H2_descriptive.syl.flip_units	25	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_frag	44	RESULT_D1.json::H2_descriptive.syl.flip_incidence_fragile_over_G.fragile	44	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_cov_fe	0.64	RESULT_D1.json::H2_descriptive.syl.FE.coverage	0.64	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_ft_fe	0.002	RESULT_D1.json::H2_descriptive.syl.FE.false_tie_analogue	0.0021953896816684962	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_cov_aer	0.44	RESULT_D1.json::H2_descriptive.syl.AER.coverage	0.44	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_ft_aer	0.000	RESULT_D1.json::H2_descriptive.syl.AER.false_tie_analogue	0.0	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_cov_pc	0.48	RESULT_D1.json::H2_descriptive.syl.AER_per_class.coverage	0.48	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_ft_pc	0.000	RESULT_D1.json::H2_descriptive.syl.AER_per_class.false_tie_analogue	0.0	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_cov_f0	0.00	RESULT_D1.json::H2_descriptive.syl.f0.coverage	0.0	ABSENT		OK	DESCRIPTIVE
+d1_d_syl_ft_f0	0.000	RESULT_D1.json::H2_descriptive.syl.f0.false_tie_analogue	0.0	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_cfe	910	RESULT_D1.json::H2_descriptive.pyvi.FE.claims	910	out.json::folds.pyvi.FE	910	OK	DESCRIPTIVE
+d1_d_pyvi_caer	933	RESULT_D1.json::H2_descriptive.pyvi.AER.claims	933	out.json::folds.pyvi.AER	933	OK	DESCRIPTIVE
+d1_d_pyvi_cpc	934	RESULT_D1.json::H2_descriptive.pyvi.AER_per_class.claims	934	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_cf0	936	RESULT_D1.json::H2_descriptive.pyvi.f0.claims	936	out.json::folds.pyvi.f0	936	OK	DESCRIPTIVE
+d1_d_pyvi_flip	18	RESULT_D1.json::H2_descriptive.pyvi.flip_units	18	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_frag	52	RESULT_D1.json::H2_descriptive.pyvi.flip_incidence_fragile_over_G.fragile	52	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_cov_fe	0.94	RESULT_D1.json::H2_descriptive.pyvi.FE.coverage	0.9444444444444444	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_ft_fe	0.010	RESULT_D1.json::H2_descriptive.pyvi.FE.false_tie_analogue	0.00980392156862745	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_cov_aer	0.61	RESULT_D1.json::H2_descriptive.pyvi.AER.coverage	0.6111111111111112	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_ft_aer	0.000	RESULT_D1.json::H2_descriptive.pyvi.AER.false_tie_analogue	0.0	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_cov_pc	0.61	RESULT_D1.json::H2_descriptive.pyvi.AER_per_class.coverage	0.6111111111111112	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_ft_pc	0.001	RESULT_D1.json::H2_descriptive.pyvi.AER_per_class.false_tie_analogue	0.0010893246187363835	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_cov_f0	0.00	RESULT_D1.json::H2_descriptive.pyvi.f0.coverage	0.0	ABSENT		OK	DESCRIPTIVE
+d1_d_pyvi_ft_f0	0.000	RESULT_D1.json::H2_descriptive.pyvi.f0.false_tie_analogue	0.0	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_cfe	909	RESULT_D1.json::H2_descriptive.uts.FE.claims	909	out.json::folds.uts.FE	909	OK	DESCRIPTIVE
+d1_d_uts_caer	931	RESULT_D1.json::H2_descriptive.uts.AER.claims	931	out.json::folds.uts.AER	931	OK	DESCRIPTIVE
+d1_d_uts_cpc	933	RESULT_D1.json::H2_descriptive.uts.AER_per_class.claims	933	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_cf0	936	RESULT_D1.json::H2_descriptive.uts.f0.claims	936	out.json::folds.uts.f0	936	OK	DESCRIPTIVE
+d1_d_uts_flip	16	RESULT_D1.json::H2_descriptive.uts.flip_units	16	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_frag	59	RESULT_D1.json::H2_descriptive.uts.flip_incidence_fragile_over_G.fragile	59	ABSENT		OK	DESCRIPTIVE; POST HOC (registration §2)
+d1_d_uts_cov_fe	0.94	RESULT_D1.json::H2_descriptive.uts.FE.coverage	0.9375	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_ft_fe	0.013	RESULT_D1.json::H2_descriptive.uts.FE.false_tie_analogue	0.013043478260869565	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_cov_aer	0.75	RESULT_D1.json::H2_descriptive.uts.AER.coverage	0.75	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_ft_aer	0.000	RESULT_D1.json::H2_descriptive.uts.AER.false_tie_analogue	0.0	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_cov_pc	0.75	RESULT_D1.json::H2_descriptive.uts.AER_per_class.coverage	0.75	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_ft_pc	0.001	RESULT_D1.json::H2_descriptive.uts.AER_per_class.false_tie_analogue	0.0010869565217391304	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_cov_f0	0.00	RESULT_D1.json::H2_descriptive.uts.f0.coverage	0.0	ABSENT		OK	DESCRIPTIVE
+d1_d_uts_ft_f0	0.000	RESULT_D1.json::H2_descriptive.uts.f0.false_tie_analogue	0.0	ABSENT		OK	DESCRIPTIVE
+d1_lu_R	2,000	registration §3 M2 (Lu et al. R = 2,000)	2000	not applicable		OK	REGISTRATION TEXT
+d1_B	10,000	registration §3 (B = 10,000); RESULT_D1 has no key; already printed in the paper as c_b	10000	not applicable		OK	REGISTRATION TEXT
