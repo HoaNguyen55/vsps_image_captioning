@@ -1,0 +1,678 @@
+# V1_TO_V2.diff: C-N3D v1 -> v2 under CC-509 (NEXT_ROUND 72)
+# Hunk -> item map (tags taken from the [Wn]/[Nn] marks on the added lines; untagged hunks classed by content):
+# hunk  1  PREREG_DRAFT_C_N3D_v1.md  @@ -1,8 +1,17 @@  ->  N1, N2, N3, OQ-1 ruled, CC-509 ruling 3, W1, W7
+# hunk  2  PREREG_DRAFT_C_N3D_v1.md  @@ -12,10 +21,21 @@  ->  N1, W1, W2, W3
+# hunk  3  PREREG_DRAFT_C_N3D_v1.md  @@ -25,33 +45,62 @@  ->  W1, W3, W6, W7
+# hunk  4  PREREG_DRAFT_C_N3D_v1.md  @@ -59,126 +108,165 @@  ->  N1, W2, W3, W4, W5, W6, W7
+# hunk  5  COMPUTE_C_N3D_v1.md  @@ -1,72 +1,61 @@  ->  W1, W2
+# hunk  6  COMPUTE_C_N3D_v1.md  @@ -96,6 +85,48 @@  ->  W6c (pin check, OQ-11)
+# hunk  7  COMPUTE_C_N3D_v1.md  @@ -104,38 +135,35 @@  ->  N1, W1, W2, W3
+# hunk  8  OPEN_QUESTIONS_C_N3D_v1.md  @@ -1,16 +1,17 @@  ->  N1, W1, W2, W6
+# hunk  9  RUBRIC_NOTE_C_N3D_v1.md  @@ -1,33 +1,44 @@  ->  N2, N3
+
+--- PREREG_DRAFT_C_N3D_v1.md	2026-11-27 19:16:32.643088127 +0700
++++ PREREG_DRAFT_C_N3D_v2.md	2026-11-27 19:27:37.056183956 +0700
+@@ -1,8 +1,17 @@
+-# PREREG DRAFT C-N3D v1: rule-based failure categories of the retrieval contrast on stored development decodes (Paper C, RQ3)
++# PREREG DRAFT C-N3D v2: rule-based failure categories of the retrieval contrast on stored development decodes (Paper C, RQ3)
+ 
+-Drafted 2026-11-27T12:14Z (UTC, from `date -u`). DRAFT. It licenses nothing until a judge ruling (GO) and a commit. **No study number has been computed.** No stored per-image file was opened to write this draft. Every input file named in section 4 was listed and hashed only, and each hash matched its `.sha256` sidecar or `scripts/c_attr/STORED_SHA256` (see COMPUTE_C_N3D_v1.md).
++Drafted 2026-11-27T12:14Z (v1). Revised 2026-11-27 (v2) under ruling CC-509 (NEXT_ROUND 72). Each change is tagged [W1]…[W7] or [N1]…[N3]; the hunk-to-item map is in `V1_TO_V2.diff`.
+ 
+-Text of record for Paper C: `~/vsps_ro3/c_now/paper_v1_analysis/` 00–11 at HEAD 9bf8f89. Origin: benchmark `BENCH_C_2026-11-27.md` §5, NEW CONTRIBUTION rank 1, "N3(d) failure categories" (C9 4 → 5, +1.6, P about 0.4 alone). Lineage: this draft is the full-analysis form of C-RAA step T8 (`NOVELTY90_C_PILOT_PLAN_v2_2026-11-26.md:160`, `:177`). It reuses T8's margin, which NOTE1 W7-b fixed before any output (`NOTE1:122`): 10.0 points of per-image stripped CIDEr-D × 100. How N3D relates to T8 is open question OQ-1.
++DRAFT. It licenses nothing until a round-2 judge ruling (GO) and a commit through the gatekeeper. **No study number has been computed.** No stored per-image file was opened to write v1 or v2. Every input file named in section 4 was listed and hashed only. Each hash matched its `.sha256` sidecar, `scripts/c_attr/STORED_SHA256`, or a pin in code or a registration (see COMPUTE_C_N3D_v2.md).
++
++**Text of record.** Paper C: `~/vsps_ro3/c_now/paper_v1_analysis/` 00–11 at HEAD 9bf8f89.
++
++**Origin.** Benchmark `BENCH_C_2026-11-27.md` §5, NEW CONTRIBUTION rank 1, "N3(d) failure categories". The benchmark puts it at C9 4 → 5, +1.6 points, with P about 0.4 for this item alone (BENCH l.120). The route K1 + K2 + N3(d) = 81.4 has P(all three) about 0.3–0.35 (BENCH l.105). [N2]
++
++**Lineage. [OQ-1 ruled, CC-509 ruling 3]**
++- **N3D supersedes C-RAA step T8.** T8 is defined at `NOVELTY90_C_PILOT_PLAN_v2_2026-11-26.md:160`, `:177`. T8 is withdrawn from the C-RAA run order, and only one of the two runs. C-RAA's steps T1–T7 are unchanged.
++- **Margin.** N3D reuses T8's margin, which NOTE1 W7-b fixed before any output (`NOTE1:122`): 10.0 points of per-image stripped CIDEr-D × 100. It does not reuse T8's other rules (length shift above 10%, seed 1126001, B 10,000).
++- **C-RAA tier 2.** If tier 2 later inherits N3D's rules, it needs its own code, or code adapted from `raa_failcat.py` (tested tree c2add164, which implements T8's rules and not N3D's), and its own code read.
+ 
+ ## 1. Question
+ 
+@@ -12,10 +21,21 @@
+ 
+ ## 2. What this study is not
+ 
+-- It makes no new gold labels and uses no human rating. No model output serves as gold, and no AI-silver label counts as evidence. The VLM verifier of Section 3.4 (its yes/no scores) is **not** used in any category or row.
+-- It uses no test set. The following are never opened: OV-test (both files), KTVIC test, XM-test2500, COCO Karpathy test, NoCaps val, Flickr30K test, every C-CONF output (`.session_backup/machines/CONF_H1/**`, the OV carve and confirm halves of registration 2), and every C-RAA tier-1 or tier-2 output.
+-- It decodes nothing and needs no GPU. All work is CPU work on stored decodes, done on a rented host only (COMPUTE).
+-- It changes no registered result, verdict or scope sentence of Paper C. Every row is labelled **"DEVELOPMENT / C-N3D, NON-CONFIRMATORY; rule-based categories, no human labels"**.
++- **No new labels.** It makes no new gold labels and uses no human rating. No model output serves as gold, and no AI-silver label counts as evidence. The VLM verifier of Section 3.4 (its yes/no scores) is **not** used in any category or row.
++- **No test set, and no contact with these files.** The following are never opened, pushed or staged:
++  - OV-test (both files);
++  - KTVIC test;
++  - XM-test2500;
++  - COCO Karpathy test;
++  - NoCaps val;
++  - Flickr30K test;
++  - **Flickr30K val (`c_t2/**`, the rehearsal used once)** [W1];
++  - every C-CONF output (`.session_backup/machines/CONF_H1/**`, and the OV carve and confirm halves of registration 2);
++  - every C-RAA tier-1 or tier-2 output;
++  - **the per-image ledgers of the C-ATTR scoring (`.session_backup/machines/ATTR_H1/root/c_attr_score/led/*`), which are hash-only** [N1].
++- **Id lists only.** `ov_test_files.tsv` and `c_conf_carve_order.json` are used only as id and sha256 lists in the custody check of section 10, step 2a. No OV-test or carve image byte, caption or output is read. [W3]
++- **No GPU.** It decodes nothing. All work is CPU work on stored decodes, done on a rented host that has never held, and will never hold, an OV-test byte, the C-CONF token or a C-CONF output. [W2]
++- **No change to Paper C's registered results.** It changes no registered result, verdict or scope sentence of Paper C. Every row is labelled **"DEVELOPMENT / C-N3D, NON-CONFIRMATORY; rule-based categories, no human labels"**.
+ 
+ ## 3. Sets, backbones, decodes
+ 
+@@ -25,33 +45,62 @@
+ | secondary, rows with labels, no rule | XM-dev500 | 500 | the same |
+ | English comparison, descriptive | Flickr30K carve (Karpathy train, 1,000) | 1,000 | Flickr30K registration exploration: `zs`, `ret`, `rand` d0 (COCO memory) |
+ 
+-- **Backbones:** Qwen2.5-VL-7B (k 8, first, T1); InternVL3-8B (k 4, last, T2, τ = −∞, no deletion step, as in the attribution study); Aya-Vision-8B (k 4, last, T1).
+-- **Aya-Vision-8B on OV-dev-B** carries the placebo flag of Section 6.10.5 (`rand` d1 − d2 = −2.03 [−3.42, −0.74]) on every row. It is outside the family.
+-- **Why batch size 1 is primary.** K1 fired (Section 6.10.2): batched per-image differences can contain a batch-mate term. The block-1b set is complete for all three backbones on both sets. The stored batched stage-2 decodes are sensitivity row SR3 only, labelled "A1 not met; batched decode; descriptive".
+-- **The `rand` arm.** `rand` d0 is the arm for group membership and for the categories. This matches T8 and the copy bound. The mean over R = 3 draws is sensitivity row SR1.
+-- **Not used:**
++- **Overlap with Paper B's set H. [W7]** OV-dev-B's 925 images include 335 OpenViIC-dev copies of Paper B's BD-T1 held-out set H. None of them is a memory member (CC-493e1). They stay in the set, and the count is printed in every OV-dev-B table note.
++- **Backbones.**
++  - Qwen2.5-VL-7B: k 8, first, T1.
++  - InternVL3-8B: k 4, last, T2, τ = −∞, with no deletion step, as in the attribution study.
++  - Aya-Vision-8B: k 4, last, T1.
++- **Aya-Vision-8B on OV-dev-B** carries the placebo flag of Section 6.10.5 (`rand` d1 − d2 = −2.03 [−3.42, −0.74]) on every row. Its placebo-differenced rows (section 6) use that same flagged contrast. It is outside the family.
++- **Why batch size 1 is primary.** K1 fired (Section 6.10.2), so batched per-image differences can contain a batch-mate term. The block-1b set is complete for all three backbones on both sets. The stored batched stage-2 decodes are sensitivity row SR3 only, labelled "A1 not met; batched decode; descriptive".
++- **The `rand` arms.**
++  - `rand` d0 is the comparison arm for the retrieval split.
++  - `rand` d1 and d2 form the placebo split (section 5).
++  - The mean over R = 3 draws is sensitivity row SR1.
++- **Not used.**
+   - OV-dev-A, which has no batch-1 `zs` (OQ-2).
+-  - `perm`: τ_pair is not split by category in v1. OQ-5 covers adding it.
++  - `perm` (hash-only, never pushed; OQ-5) [W1].
+   - `fix`, which was batched only.
+-  - Flickr30K val, the rehearsal that was used once (OQ-3).
++  - Flickr30K val (hash-only, never pushed) [W1].
+ 
+ ## 4. Inputs (sha256; listed and hashed 2026-11-27, contents not opened)
+ 
+-Full paths and full hashes are in `COMPUTE_C_N3D_v1.md` §2. In summary:
++Full paths and full hashes are in `COMPUTE_C_N3D_v2.md` §2. That section is split into a **PUSH LIST** and a **HASH-ONLY LIST** [W1].
+ 
+-- **42 batch-1 decode files** under `.session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/`: `at_{qwen25vl_7b,internvl3_8b,aya_vision_8b}_{ov_dev_b,xm_dev500}-{zs-b1, ret-…-b1, rand…d0/d1/d2…-b1, perm…p1/p2…-b1}`. 42/42 match their sidecars. `perm` is hashed for completeness and not read in v1.
+-- **Shown lists:** `scripts/c_attr/c_attr_lists.json` 8a2b977f… (sidecar ok), which holds the per-draw `rand` lists. Also `c_stage2/ex_ov_dev_b.json` 072b17d1… and `ex_xm_dev500.json` 9a79b97d…, which match `STORED_SHA256`.
+-- **SR3:** 12 stored stage-2 batched decodes (`zs`, `ret`, `rand` × Qwen, InternVL3 × two sets). All match `STORED_SHA256` and their sidecars.
+-- **English:** 9 Flickr30K-carve decodes (`t1_*_f30k_carve-{zs,ret,rand d0}-mcoco`), all matching their sidecars.
+-- **Code, loaded unchanged and pinned:**
+-  - `c_attr_score.py` cca5e327… and `c_attr.py` a3bd7b93…, for the stripped CIDEr-D scorer, segmentation and the copy statistic. Both equal `scripts/c_attr/SHA256SUMS`.
+-  - The Vietnamese object matcher `match_openviic.py` c0d9dd30….
+-  - The English COCO-80 matcher `score_coco_probe.py` d11db7e1….
+-- **References and labels,** loaded by the kit's own loaders and pinned at code time (OQ-6):
+-  - OpenViIC dev references;
+-  - XM3600 Vietnamese references;
+-  - the released human-verified Open Images labels for XM-dev500 (existing labels, offline only);
+-  - Flickr30K train references.
++**PUSH LIST**
++- 30 batch-1 decode files (`zs`, `ret`, `rand` d0–d2 × 3 backbones × 2 sets) under `.session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/`. Each matches its sidecar.
++- Shown lists:
++  - `scripts/c_attr/c_attr_lists.json` 8a2b977f…, which holds the per-draw `rand` lists;
++  - `c_stage2/ex_ov_dev_b.json` 072b17d1…;
++  - `c_stage2/ex_xm_dev500.json` 9a79b97d…;
++  - `manuscript/prereg/2026-10-30_c_t1/c_t1_f30k_lists.json` eebcd95b…, the carve's shown lists and ids.
++- SR3: 12 stored stage-2 batched decodes.
++- English: 9 Flickr30K-carve decodes.
++- Code: `c_attr_score.py` cca5e327…, `c_attr.py` a3bd7b93…, `match_openviic.py` c0d9dd30…, `score_coco_probe.py` d11db7e1….
++- Gold, label and loader pins, all fixed now [W6c]:
++
++| item | file | sha256 | loader (file:function) |
++|---|---|---|---|
++| OpenViIC dev references | `ncs-data/datasets/openviic/uit-openviic-annotation-dev.json` (host data folder, fetched from Drive) | `550cfe06b06084976e81286531f7f4e52bea717e29004c699ccaf1e48919bdff` | `c_attr_score.py`, the reference loader of `score_call` (l.647), with the pin `B3_REFS` at l.84–85 |
++| XM3600 Vietnamese references (XM-dev500) | `datasets/c_xm_dev500/xm_dev500_data.json` (host data folder) | `0da82355b65ab284fe55fc0d3c4101090301767347a02721890556618ca4905f` | `c_attr_score.py`, the same loader, with the pin `B3_REFS` at l.86 |
++| Flickr30K train references (carve) | Flickr30K CSV, `nlphuji/flickr30k` @2b239bef | `395990db603ab8bafd5c7ab2746b22058bb1e75b78b3eb56ad755931364ac137` | `c_attr.py`: `f30k_rows` / `f30k_split` (l.149), sha check `F30K_CSV_SHA256` (l.81, l.181) |
++| Open Images human-verified labels for XM3600 | `data/xm3600/oiv7_labels.json` | `bac3953a511a9793c22e928a29b68ae05dbf9654502abcbe7b64fd9f6d74c8b2` | `scripts/xm3600_oiv7.py` 9a79403f… (`resolve_map`, `statuses`, `caption_rows`), as called by `scripts/c_stage2/score2.py` 0f99e36e… `cmd_verified` (l.192–226) |
++| OIV7 class descriptions | `data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv` | `84a4373a0efb7fd6d93fe19b0e7ceb6c1b855c233d13b9b78a9a33655c9fdce3` | `xm3600_oiv7.resolve_map` |
++| Vietnamese-to-OIV7 class map | `data/xm3600/vi_oiv7_map.json` | `27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a` | the same, via `score2.cmd_verified` |
++| label provenance record | `data/xm3600/manifest.json` | `263015f9dc46ebe2cea80055e04ed39baf80a356f4e027cd3756464279135bef` | read at the code read only |
++| VnCoreNLP 1.2 jar (RDRSegmenter) | `VnCoreNLP-1.2.jar` | `9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793` | `score2.py` l.153, check against `S.JAR_SHA256` |
++
++- **The verified labels.** They are the public Open Images V7 human-verified image labels for XM3600 images, as used offline for Paper C's verified precision (Section 3.6). They are **not** Paper A's XM600 gold. XM-dev500 is disjoint from XM600 (`04_data_and_splits.md` l.13, l.16, l.32). The code read confirms this provenance from `manifest.json`. [W6c]
++- **A mismatch the judge should see.** The laptop copy `data/datasets/openviic/uit-openviic-annotation-dev.json` hashes to `2a68a3eb…`, **not** to the pin `550cfe06…`. It is not opened, not pushed and not used. The host takes the file from the data folder that gave the pin, and STOPs if its hash differs. Why the two differ is open question OQ-11.
++- **Custody-check lists (ids and sha256 only, read in section 10 step 2a)** [W3]:
++  - `manuscript/prereg/2026-10-22_c_stage1/lists.json` `5c479f03e8be544f4cd12b5d997b5dc92b6c622df061760cd02f6ba82f6b4371` (keys `ov_dev_b`, `xm_dev500`, `xm_test2500`, `image_sha256`);
++  - `manuscript/prereg/2026-10-25_c_test/ov_test_files.tsv` `99d4fc49cc8283d1555d37b975cca5a32598ea0ec571d8bef8cf811df2c33695`;
++  - `manuscript/prereg/2026-11-18_c_conf/c_conf_carve_order.json` `8e11bad51c77adc54c05b91a86f7b6f5a1f2d0e9032f06faf80f05e438d42850`;
++  - the carve ids of `c_t1_f30k_lists.json` (above).
++
++**HASH-ONLY LIST (never pushed, never opened)** [W1, N1]
++- 12 `perm` p1/p2 batch-1 decode files.
++- 8 `t2_*_f30k_val` decode files.
++- 5 C-ATTR per-image ledgers under `ATTR_H1/root/c_attr_score/led/`: `ovb.jsonl` f79ea6a9…, `xm_b1.jsonl` f8e375a3…, `ova.jsonl` 324550c3…, `bat_ov_dev_b.jsonl` ca675471…, `bat_xm_dev500.jsonl` 00310e59….
+ 
+ ## 5. Definitions (fixed before any output)
+ 
+@@ -59,126 +108,165 @@
+ 
+ **Per-image score.** s_i(a) is stripped CIDEr-D × 100 of arm a, computed as in Section 3.6. Document frequencies come from S's own references and are computed once per set. English uses the PTB-tokenised CIDEr-D of Section 8.1.
+ 
+-**Difference.** d_i = s_i(`ret`) − s_i(`rand` d0).
++**Differences.**
++- The retrieval split uses d_i = s_i(`ret`) − s_i(`rand` d0).
++- The placebo split uses e_i = s_i(`rand` d1) − s_i(`rand` d2). [W4]
+ 
+ **Groups.** The margin is M = 10.0 (T8, NOTE1 W7-b).
+ - Losers: L = {i : d_i < −M}.
+ - Winners: W = {i : d_i > +M}.
+-- Placebo losers, the noise floor: P = {i : s_i(`rand` d1) − s_i(`rand` d2) < −M}.
++- Placebo losers: P− = {i : e_i < −M}.
++- Placebo winners: P+ = {i : e_i > +M}. [W4]
+ 
+ **Object sets.**
+ - Classes are found with the matcher of Section 3.6 (English: the COCO-80 matcher).
+-- G_i is the gold class set: the union of image i's references.
+-- On XM-dev500, the released verified labels decide classes they cover, and a class they do not cover is decided by the reference union. The share decided each way is printed.
+-- A class is **unsupported** when it is absent from G_i (OV, English) or is verified absent (XM).
++- G_i is the gold class set, the union of image i's references.
++- On XM-dev500, the verified labels decide the classes they cover, through the `statuses` rule of `xm3600_oiv7.py` unchanged. A class they do not cover is decided by the reference union. The share decided each way is printed.
++- A class is **unsupported** when it is absent from G_i (OV, English) or verified absent (XM).
+ 
+-**Flags.** Each flag is computed for every image on the caption y_a of arm a ∈ {`ret`, `rand` d0}, each against that arm's own shown list S_a,i. The flags are multi-label.
++**Flags.** Each flag is computed on the caption y_a of arm a ∈ {`ret`, `rand` d0, `rand` d1, `rand` d2}, each against that arm's own shown list S_a,i. The flags are multi-label.
+ 
+ | flag | rule | instrument (existing) |
+ |---|---|---|
+ | **BO** (borrowed unsupported object) | at least one neighbour-only class of y_a (Section 3.4: in y_a, absent from the same backbone's batch-1 `zs` caption, present in a caption of S_a,i) that is unsupported | matcher, Section 3.4 rule, references / verified labels |
+-| **CP** (near-verbatim copy) | m(y_a, S_a,i) ≥ 0.90, where m is the near-verbatim copy statistic of supplement line 791 (maximum over shown captions of the larger of 1 − normalised edit distance and single-reference BLEU-4, on syllables) | copy statistic |
++| **CP** (near-verbatim copy) | m(y_a, S_a,i) ≥ 0.90, with m the near-verbatim copy statistic of supplement l.791 | copy statistic |
+ | **ZL** (zero-shot content lost) | at least one class in the `zs` caption that is supported (in G_i, or verified present) and absent from y_a | matcher, references / verified labels |
+-| **LN** (length off) | \|len(y_a) − med_i\| ≥ 0.25 · med_i, where len is syllables (Section 3.6) and med_i is the median syllable length of image i's references | lengths |
++| **LN** (length off) | \|len(y_a) − med_i\| ≥ 0.25 · med_i, with len in syllables and med_i the median syllable length of image i's references | lengths |
+ 
+-**Exclusive category** of a loser image, read from the `ret` caption and assigned by fixed precedence: **CP > BO > ZL > LN > OTHER**. Shares of the exclusive categories sum to 1 over L.
+-- Precedence follows directness of attribution to the prompt. CP and BO need the shown list; ZL and LN do not.
++**Exclusive category of an image** in a group: it is read from the caption on the "treatment" side of that split (`ret` for L and W; `rand` d1 for P− and P+). It is assigned by fixed precedence **CP > BO > ZL > LN > OTHER**. Precedence follows how directly a category can be attributed to the prompt.
+ 
+ **Sensitivity rows** (descriptive, no label):
+-- SR1: `rand` = mean over d0–d2.
++- SR1: `rand` = mean over d0–d2, in the retrieval split only.
+ - SR2: M ∈ {5.0, 15.0}.
+-- SR3: stored batched stage-2 decodes.
++- SR3: stored batched stage-2 decodes. These have no d1 or d2 for Qwen and InternVL3 on XM, so the rows are not placebo-differenced.
+ - SR4: LN at 0.10 and 0.40.
+-- SR5: T8's own length rule, ret-versus-rand length shift above 10%.
++- SR5: T8's own length rule (ret-versus-rand length shift above 10%).
+ - SR6: exclusive categories under the reversed precedence LN > ZL > BO > CP > OTHER.
++- SR7: the relative-risk form of the H1 and H2 estimands, log[Pr(f | L)/Pr(f | W)] − log[Pr(f | P−)/Pr(f | P+)], for the base-rate confound of section 6. [W4]
+ 
+ ## 6. Estimands, hypotheses and thresholds
+ 
+-**Bootstrap.** Images are resampled within a set, with B = 2,000, one index matrix per set and seed 1127001. L, W and P are recomputed inside each replicate. Numerator and denominator are resampled together. p̃ = (1 + #{b : statistic_b ≤ threshold}) / (B + 1), one-sided.
++**Bootstrap. [W6b]**
++- The index matrix is `numpy.random.default_rng(1127001).integers(0, n, (2000, n))`. One generator is created once and called once per set, in the order OV-dev-B (n = 925), XM-dev500 (n = 500), Flickr30K carve (n = 1,000). All backbones and rows of a set share that set's matrix.
++- L, W, P− and P+ are recomputed inside each replicate. Numerator and denominator are resampled together.
++- p̃ = (1 + #{b : statistic_b ≤ threshold}) / (2000 + 1), one-sided.
++
++**Why the verdict uses a placebo-differenced contrast. [W4]** The difference d_i is stripped CIDEr-D against the references. BO needs a class absent from the references, and ZL needs a dropped class that is present in them. Either one can lower the flagged caption's own score mechanically. So "Pr(flag | L) > Pr(flag | W)" follows in part from how d_i and the flags are defined, whether or not retrieval matters.
+ 
+-**G0, the noise floor (descriptive, gates the wording only).** The estimand is the excess loser rate E = (|L| − |P|) / n. If its 95% upper bound is ≤ 0, every row on that set carries "losers not more frequent than between two random draws", and the H rows are read as describing noise-level losses (section 8).
++The placebo split d1 − d2 has the same coupling. Its "treatment" caption (d1) is flagged against its own shown list in the same way. But its two arms differ only by a random draw, and no retrieval is involved. Subtracting the placebo enrichment removes the part that the score definition alone produces.
+ 
+-**Decidability.** A hypothesis row is decided only if |L| ≥ 30 and |W| ≥ 30 on the full sample. Otherwise it is printed as **NOT DECIDABLE (n)** with no verdict.
++**Residual confound, stated.** Neighbour-only classes are more frequent with retrieved examples than with random ones. On OV-dev-B, InternVL3 batched, the share of classes was 0.340 against 0.152 (Section 6.8). The mechanical coupling grows with the base rate of the flag, so a positive difference can still arise from the higher base rate under `ret` without any retrieval-specific harm. SR7 (relative-risk form) and the printed base rates Pr(f | all) per arm are there to read this. A PASS is worded as an association beyond the placebo, never as a cause (section 8).
++
++**G0, the noise floor (descriptive only; it no longer gates wording). [W4]** It prints |L|, |W|, |P−| and |P+|, with E = (|L| − |P−|)/n and its CI.
++- v1 made G0 gate the wording. That was ill-posed. d has a positive mean (τ_sel > 0), while e is centred near 0. So |L| < |P−| is expected even when retrieval has a real failure mode, and E ≤ 0 says nothing about whether losers are noise.
++- G0 is therefore printed with this sentence and no reading rule.
++
++**Decidability.** A row is decided only if each of L, W, P− and P+ holds at least 30 images on the full sample. Otherwise it is **NOT DECIDABLE (counts)**. **A NOT DECIDABLE row enters Holm with p̃ = 1; m stays 6.** [W6a]
+ 
+ **Primary family** (Holm, one-sided family-wise α = 0.025, m = 6): H1–H3 × {Qwen2.5-VL-7B, InternVL3-8B} on OV-dev-B.
+ 
++For flag f, let D_f^ret = Pr(f(`ret`) | L) − Pr(f(`ret`) | W) and D_f^plac = Pr(f(`rand` d1) | P−) − Pr(f(`rand` d1) | P+).
++
+ | id | estimand | PASS if | reading if PASS |
+ |---|---|---|---|
+-| **H1** borrowed-object enrichment | D_BO = Pr(BO(`ret`) \| L) − Pr(BO(`ret`) \| W) | point ≥ +0.10 **and** Holm-adjusted p̃ (statistic ≤ 0) < α | where retrieved examples cost the caption more than 10 points, the caption more often carries an unsupported object that only the shown captions contain |
+-| **H2** zero-shot content lost enrichment | D_ZL = Pr(ZL(`ret`) \| L) − Pr(ZL(`ret`) \| W) | point ≥ +0.10 **and** Holm-adjusted p̃ < α | such failures more often drop a supported object that the zero-shot caption had |
+-| **H3** coverage | C = 1 − Pr(OTHER \| L) | point ≥ 0.60 **and** Holm-adjusted p̃ (statistic ≤ 0.50) < α | the four pre-written rules account for most failures |
+-
+-Anything other than PASS is FAIL; there is no third verdict apart from NOT DECIDABLE.
++| **H1** borrowed-object enrichment beyond the placebo [W4] | Δ_BO = D_BO^ret − D_BO^plac | point ≥ +0.10 **and** Holm-adjusted p̃ (Δ_BO ≤ 0) < α | the images that retrieved examples cost more than 10 points carry an unsupported borrowed object more often than the images they helped, by more than two random draws produce between their own losers and winners |
++| **H2** zero-shot-content-lost enrichment beyond the placebo [W4] | Δ_ZL = D_ZL^ret − D_ZL^plac | point ≥ +0.10 **and** Holm-adjusted p̃ (Δ_ZL ≤ 0) < α | the same for dropped supported zero-shot content |
++| **H3** coverage compared with winners [W5] | C_L = 1 − Pr(OTHER \| L); C_W, C_P−, C_P+ likewise | C_L point ≥ 0.60 **and** Holm-adjusted p̃ (C_L ≤ 0.50) < α **and** point of C_L − C_W ≥ +0.10 **and** point of (C_L − C_W) − (C_P− − C_P+) ≥ 0 | "the rules flagged more of the images retrieval hurt than of those it helped" (no wider reading) |
++
++- C_W, C_all, C_P− and C_P+ are printed with CIs on every H3 row. [W5]
++- The last point condition of H3 (≥ 0 beyond the placebo) is added in v2 for the same coupling reason as W4. It makes H3 stricter than the form CC-509 suggested.
++- Anything other than PASS is FAIL. There is no third verdict apart from NOT DECIDABLE.
++
++**Power, corrected. [W4]** The printed CIs imply the following. These are planning values, derived from the CIs and not from data.
++- **Qwen2.5-VL on OV-dev-B, retrieval split.** τ_sel = +8.27 [6.54, 10.11] at n = 925 gives an SE of about 0.91, so the per-image SD of d is about 28. Under a normal approximation, that implies about 0.26 · 925 ≈ 240 losers and about 0.48 · 925 ≈ 440 winners.
++- **Placebo split.** e has mean near 0 and a similar SD, which implies about 300–330 images in each of P− and P+.
++- **InternVL3.** τ_sel = +5.22 implies about 270 losers and about 400 winners.
++- **Standard errors.** At a flag rate near 0.3, the SE of each D is about 0.04, so the SE of Δ is about 0.05–0.06 (the two splits share images, and the correlation is ignored). A true Δ of +0.10 then has power of about 0.4–0.5 at the Holm level.
++- **Caveat.** Per-image CIDEr-D is skewed, so the realised counts may differ. The +0.10 threshold is kept and not tuned.
+ 
+ **Thresholds, with reasons.**
+-- +0.10 is the smallest difference in share that a reader would call a different failure profile. At \|L\| = \|W\| = 60 its standard error is about 0.08, so a true +0.10 is detected only with low power. This is stated in the text, not used to shrink the threshold.
+-- 0.60 and 0.50 make "most" strict: a coverage of one half does not pass.
++- +0.10 is the smallest difference in share that a reader would call a different failure profile.
++- 0.60 and 0.50 make "most" strict.
+ 
+ **Secondary rows** (labels printed, no family, no conclusion beyond the row):
+-- **S1, the retrieval-specific share among losers:** within L, Pr(BO(`ret`)) − Pr(BO(`rand` d0)), paired on the same images. It is labelled DETECTED (95% lower bound > 0), REVERSED (upper bound < 0) or UNRESOLVED.
+-- **S2:** the same for CP.
+-- **S3:** shares of every exclusive category in L, with 95% CIs, per backbone and set.
++- **S1:** within L, Pr(BO(`ret`)) − Pr(BO(`rand` d0)), paired. Labels are DETECTED, REVERSED or UNRESOLVED. **The coupling is stated:** L is selected on `ret` < `rand`, and BO lowers the flagged caption's score, so S1 is biased towards DETECTED by construction. Its placebo twin, within P−, Pr(BO(d1)) − Pr(BO(d2)), is printed beside it. [W4]
++- **S2:** the same for CP, with its twin.
++- **S3:** shares of every exclusive category in L, W, P− and P+, with 95% CIs, per backbone and set.
+ - **S4:** H1–H3 estimands for Aya-Vision-8B on OV-dev-B, with the placebo flag.
+ - **S5:** every H and S row on XM-dev500 (all three backbones; BO on verified labels).
+ - **S6:** G0 on each set.
+ 
+-**English comparison** (descriptive, no label, no placebo, since only `rand` d0 exists on the carve):
+-- H1–H3 estimands and S3 on the Flickr30K carve for the three backbones, with the COCO-80 matcher and Flickr30K references as gold.
+-- The decode policy is the Flickr30K registration's as stored (OQ-4).
+-- Each English row sits beside the matching OV-dev-B row. No Vietnamese-minus-English difference is computed.
++**English comparison** (descriptive, no label):
++- Only `rand` d0 exists on the carve, so there is no placebo split. The English rows print D_f^ret and S3, labelled "**not placebo-differenced; coupled by construction (section 6)**".
++- They use the COCO-80 matcher, with Flickr30K references as gold.
++- The decode policy is the Flickr30K registration's, as stored (OQ-4).
++- Each English row sits beside the matching OV-dev-B D_f^ret row. No Vietnamese-minus-English difference is computed.
+ 
+ ## 7. Numbers already seen (all from the text of record; none is a category share)
+ 
+-To the drafter's knowledge, no per-image count of `ret` < `rand` − 10, and no category share, has been printed or logged for any set. The judge should confirm this by a LOG grep (OQ-7). Already seen:
+-
+-- **Groups depend on these.** Table 11 and Table S21 give the batch-1 τ_sel, τ_any, τ_pair and τ_marg values on OV-dev-B and XM-dev500 for all three backbones.
+-  - Qwen τ_sel +8.27 [6.54, 10.11]; InternVL3 +5.22 [3.67, 6.81]; Aya +6.25 [4.87, 7.69] (OV-dev-B).
+-  - +1.79 / +0.11 / +1.74 (XM-dev500).
+-  - Also seen: Table 10 (OV-dev-A); Table S22 (batched, including Qwen OV-dev-B +9.25); Tables S16 and S17 (stage B, d0 batched: Qwen +9.67, InternVL3 τ = −∞ +5.36 OV-dev-B, +1.54 XM); the placebo d1 − d2 of Section 6.10.5 and Table S23a (Aya −2.03 flagged; Qwen XM +3.21, InternVL3 XM −1.49).
+-- **BO depends on these.** Section 6.8 (batched, OV-dev-B, InternVL3): neighbour-only share of classes 0.340 (`ret`) against 0.152 (`rand`); reference-gold precision of those objects 77.31 (714 mentions). Section 6.6 (test, not used here): 73.41 / 77.44 / 92.82. The BO flag's design is therefore shaped by aggregates already seen, and is labelled so.
+-- **CP depends on these.** Table S11, the stage-B near-verbatim share:
+-  - OV-dev-B, τ = −∞: Qwen `ret` 0.026 and `rand` 0.001; InternVL3 `ret` 0.003 and `rand` 0.000.
+-  - The XM-dev500 rows of Table S11 were also seen.
+-  - Test: 0.015 / 0.002.
+-  - So CP is expected to be rare, and no hypothesis rests on it.
+-- **LN depends on these.** Table S11 mean syllables (Qwen `ret` 18.23 and `rand` 17.46; InternVL3 19.25 and 19.23, OV-dev-B, τ = −∞) and Table S6 (test). Reference median lengths have not been seen by the drafter. LN is labelled "shaped by length aggregates already seen".
+-- **Copy bound.** Table 12 (κ, K_ret, L_cp, K_nc on both sets), and Table S19 English carve rows: `ret` − `rand` +6.12 / −1.00 / +5.04 (Aya / InternVL3 / Qwen); masked rows −3.58 / −10.37 / −14.33.
+-- **Margin.** M = 10.0 was fixed by C-RAA NOTE1 W7-b before any output, and is reused unchanged.
++**What is known about per-image values.**
++- No per-image count of `ret` < `rand` − 10, and no category share, has been printed or logged for any set. The CC-509 judge grep of LOG.md, the paper text and `manuscript/reviews` found none.
++- **Ledgers [N1].** The C-ATTR block-1b scoring computed per-image differences internally and wrote per-image ledgers. They are at `.session_backup/machines/ATTR_H1/root/c_attr_score/led/` (`ovb.jsonl`, `xm_b1.jsonl`, `ova.jsonl`, `bat_ov_dev_b.jsonl`, `bat_xm_dev500.jsonl`, `parity_c2.jsonl`). As far as the drafter knows, none of them has been opened by a person or an agent since it was written. They are on the HASH-ONLY LIST.
++- **SD of d [W4].** When v1 set M = 10.0 (reused from T8) and the "≥ 30" rule, the per-image SD of d (about 28 on OV-dev-B) could be derived from the printed CIs of Tables 11 and S21. v1's power line ignored it. v2 corrects that line in section 6. M is unchanged, because NOTE1 W7-b fixed it before any output.
++
++**Numbers already seen.**
++- **Groups depend on these.** Table 11 and Table S21 give batch-1 τ_sel, τ_any, τ_pair and τ_marg on OV-dev-B and XM-dev500 for all three backbones.
++  - OV-dev-B τ_sel: Qwen +8.27 [6.54, 10.11]; InternVL3 +5.22 [3.67, 6.81]; Aya +6.25 [4.87, 7.69].
++  - XM-dev500 τ_sel: +1.79 / +0.11 / +1.74.
++  - Also seen: Table 10 (OV-dev-A); Table S22 (batched, including Qwen OV-dev-B +9.25); Tables S16 and S17 (stage B, d0 batched: Qwen +9.67; InternVL3 τ = −∞ +5.36 on OV-dev-B and +1.54 on XM).
++- **The placebo split depends on these.** The `rand` d1 − d2 placebo of Section 6.10.5 and Table S23a: Aya OV-dev-B −2.03 [−3.42, −0.74], flagged; Qwen XM +3.21; InternVL3 XM −1.49. Section 6.10.5 also gives the variance shares of the random draw: 0.089 / 0.163 / 0.149 on OV-dev-B and 0.160 / 0.192 / 0.203 on XM-dev500.
++- **BO depends on these.**
++  - Section 6.8 (batched, OV-dev-B, InternVL3): neighbour-only share of classes 0.340 (`ret`) against 0.152 (`rand`), and a reference-gold precision of 77.31 (714 mentions) (supplement l.722–723).
++  - Section 6.6 (test, not used): 73.41 / 77.44 / 92.82.
++  - BO is labelled "shaped by aggregates already seen".
++- **CP depends on these.** Table S11, stage-B near-verbatim share on OV-dev-B, τ = −∞: Qwen `ret` 0.026 and `rand` 0.001; InternVL3 0.003 and 0.000. The XM-dev500 rows were also seen. The test figures were 0.015 / 0.002. CP is expected to be rare, and no hypothesis rests on it.
++- **LN depends on these.** Table S11 mean syllables (Qwen `ret` 18.23 and `rand` 17.46; InternVL3 19.25 and 19.23) and Table S6 (test). Reference median lengths have not been seen. LN is labelled "shaped by length aggregates already seen".
++- **Copy bound.** Table 12, all rows, and Table S19 English carve rows: `ret` − `rand` +6.12 / −1.00 / +5.04; masked rows −3.58 / −10.37 / −14.33.
++- **Margin.** M = 10.0 was fixed by C-RAA NOTE1 W7-b before any output.
++- **Set H [W7].** 335 of OV-dev-B's images are copies of Paper B's BD-T1 set H (CC-493e1, LOG l.3156). That is a count only. No Paper B label enters this study.
+ 
+ ## 8. Falsifiers and what the paper may say
+ 
+-Every sentence carries "development data, re-used sets, non-confirmatory; rule-based categories from existing instruments, no human labels".
++Every sentence carries "development data, re-used sets, non-confirmatory; rule-based categories from existing instruments, no human labels". [W4: the sentences below follow the placebo-differenced estimands.]
+ 
+ | outcome | the paper may say | the paper may not say |
+ |---|---|---|
+-| H1 PASS for both backbones | "On OV-dev-B, images where retrieved examples lowered the score by more than 10 points carried an unsupported object found only in the shown captions more often than images where they raised it (Qwen +x [CI], InternVL3 +y [CI])." | that borrowed objects *cause* the loss; anything about test sets |
++| H1 PASS for both backbones | "On OV-dev-B, the images where retrieved examples lowered the score by more than 10 points carried an unsupported object found only in the shown captions more often than the images where they raised it, and this difference exceeded the one between the losers and winners of two random draws (Qwen Δ +x [CI], InternVL3 +y [CI]). Part of it may reflect the higher rate of borrowed objects under retrieved examples (SR7)." | that borrowed objects *cause* the loss; that the score definition plays no part; anything about test sets |
+ | H1 PASS for one backbone | the same sentence for that backbone, with the other row printed as FAIL | a general statement across backbones |
+-| H1 FAIL (both) | "Unsupported borrowed objects were not more frequent among the images retrieval hurt than among those it helped (rows)." | that borrowing is harmless (BO is one rule) |
++| H1 FAIL (both) | "Beyond what two random draws show, unsupported borrowed objects were not more frequent among the images retrieval hurt than among those it helped (rows)." | that borrowing is harmless (BO is one rule) |
+ | H2 PASS / FAIL | the same pattern for dropped zero-shot content | – |
+-| H3 PASS | "Four pre-written rules covered at least x of the failures." | that the rules explain *why* |
+-| H3 FAIL | "Most failures fell outside the four rule-based categories; the failures are not characterised by these mechanisms." | – |
+-| **NULL** (H1, H2, H3 all FAIL, or NOT DECIDABLE) | the category table (S3) with intervals, the G0 row, and one sentence: "The rule-based categories do not separate the images retrieval hurt from those it helped." This is still printed in Section 6.10 and the supplement. | any mechanism claim; no C9 credit argued in the cover letter |
+-| G0 upper bound ≤ 0 on a set | every row there carries "losers not more frequent than between two random draws"; H rows are read as describing noise-level losses | that retrieval has a failure mode on that set |
+-| S1 DETECTED | "Among losers, the `ret` caption carried a borrowed unsupported object more often than the `rand` caption of the same image." | that the difference is the cause of the loss |
+-| XM-dev500 / English rows | label printed, no conclusion (n = 500; English has no placebo) | a transfer or language claim |
++| H3 PASS | "The rules flagged more of the images retrieval hurt than of those it helped (C_L x, C_W y)." | that the rules explain *why*; "most failures are explained" |
++| H3 FAIL | "The four rule-based categories did not separate the images retrieval hurt from those it helped (C_L, C_W rows)." | – |
++| **NULL** (H1, H2, H3 all FAIL, or NOT DECIDABLE) | the category table (S3) with intervals, the G0 row and the placebo rows, and one sentence: "Beyond the placebo, the rule-based categories do not separate the images retrieval hurt from those it helped." This is still printed in Section 6.10 and the supplement. | any mechanism claim; no C9 credit argued in the cover letter |
++| D_f^ret > 0 but Δ_f ≤ 0 | "The enrichment seen between losers and winners is matched by two random draws, consistent with the score definition alone." | any retrieval-specific reading of D_f^ret |
++| S1 DETECTED | the row with its stated coupling and its placebo twin beside it, and no sentence beyond the row | that the difference is retrieval-specific |
++| XM-dev500 / English rows | label printed, no conclusion (n = 500; English has no placebo split) | a transfer or language claim |
+ 
+ **Falsifiers** (each named before any output):
+-1. D_BO ≤ 0, with its CI including 0 or below it: refutes "failures are marked by borrowed objects".
+-2. C < 0.5: refutes "the rules characterise failures".
+-3. E ≤ 0: losers are indistinguishable from draw noise.
+-4. SR6 (the reversed precedence) changes which category is the largest in L: the exclusive shares are precedence-driven. The text then reports the multi-label flags (S1, S2) and not the exclusive ranking.
++1. Δ_BO ≤ 0, with its CI including 0 or below it: refutes "failures are marked by borrowed objects beyond what the score definition produces".
++2. The same for Δ_ZL.
++3. C_L − C_W < +0.10, or below its placebo twin: refutes "the rules pick out failures".
++4. SR6 (the reversed precedence) changes which category is the largest in L: the exclusive shares are precedence-driven. The text then reports the multi-label flags and not the exclusive ranking.
++5. SR7 has the opposite sign to Δ for a PASS row: the PASS is attributed to the base-rate confound, and section 8 row 1 is replaced by the D_f^ret > 0, Δ ≤ 0 sentence.
+ 
+ ## 9. Where the rows go in the paper
+ 
+-- A new subsection, 6.10.10 "Failure categories on development data", with one table (OV-dev-B primary; XM-dev500 and Flickr30K carve beside it).
+-- Supplement tables for SR1–SR6.
+-- One limitation bullet in Section 9: rule-based categories, matcher recall, reference-union gold is incomplete, re-used development sets.
++- A new subsection, 6.10.10 "Failure categories on development data", with one table (OV-dev-B primary; XM-dev500 and the Flickr30K carve beside it). The table note carries the W7 count.
++- Supplement tables for SR1–SR7 and the placebo rows.
++- One limitation bullet in Section 9: rule-based categories, matcher recall, incomplete reference-union gold, the coupling of flags with the score, and re-used development sets.
+ 
+ Nothing is added to the abstract, the contributions list or the conclusion unless the PI decides otherwise after the PI rewrite.
+ 
+-## 10. Order of work (after GO and commit)
++## 10. Order of work (after a round-2 GO and the commit)
+ 
+-1. **Code.** Write `c_n3d.py`, which imports `c_attr_score` unchanged for scoring and the copy statistic, plus a self-test with planted cells: a hand-built toy set where each flag and the precedence are known. Then a judge's code read. **No input is opened before that read.**
+-2. **Host.** On the rented host: per-file sha256 STOP checks against section 4, then the self-tests and mutants.
+-3. **Run once,** in order: G0 → S3 → H1–H3 → S1, S2, S4, S5 → SR1–SR6 → English. Every output is an aggregate (counts, shares and CIs). The output never holds captions or per-image rows.
+-4. **Decision file,** hashed and then logged. Scoring and the decision run once.
++1. **Code.** Write `c_n3d.py`, which imports `c_attr_score` unchanged for scoring and the copy statistic, and `xm3600_oiv7` unchanged for verified statuses. Add a self-test with planted cells: a hand-built toy set where each flag, the precedence, the placebo difference and Holm with a NOT DECIDABLE row are known. Then a judge's code read. **No input is opened before that read.**
++2. **Host.** Use a rented host that has never held an OV-test byte, the C-CONF token or a C-CONF output [W2]. Push the PUSH LIST only, then run a per-file sha256 STOP check against section 4.
++   - **2a. Custody check [W3].** Before any decode file is opened:
++     - intersect the image ids and image sha256 values of OV-dev-B (925), XM-dev500 (500) and the Flickr30K carve (1,000) with `ov_test_files.tsv` (`99d4fc49cc8283d1555d37b975cca5a32598ea0ec571d8bef8cf811df2c33695`);
++     - intersect the same with `c_conf_carve_order.json` (`8e11bad51c77adc54c05b91a86f7b6f5a1f2d0e9032f06faf80f05e438d42850`);
++     - intersect the XM-dev500 ids with the XM-test2500 ids of `lists.json` (`5c479f03…`).
++     - Image sha256 values come from `lists.json` `image_sha256` where present. Otherwise they come from the query image files on the host, which are read for hashing only.
++     - Only counts are printed. **Any count above 0 is a STOP.**
++   - **2b.** Self-tests and mutants.
++3. **Run once,** in order: G0 → S3 → H1–H3 → S1, S2, S4, S5 → SR1–SR7 → English. Every output is an aggregate (counts, shares, CIs). The output never holds captions or per-image rows.
++4. **Decision file.** Hash it, then log it. Scoring and the decision run once.
+--- COMPUTE_C_N3D_v1.md	2026-11-27 19:16:04.045421980 +0700
++++ COMPUTE_C_N3D_v2.md	2026-11-27 19:28:27.294345710 +0700
+@@ -1,72 +1,61 @@
+-# COMPUTE C-N3D v1 (draft, 2026-11-27T12:14Z)
++# COMPUTE C-N3D v2 (draft; v1 2026-11-27T12:14Z, revised under CC-509)
+ 
+ ## 1. Resources
+ 
+ | item | value |
+ |---|---|
+ | GPU | **none** (no decode; every input is a stored decode) |
+-| where | **a rented host only** (PI 11-11, tests-on-rented-host). The laptop writes files and computes nothing. The PI's PC is not used. |
+-| CPU estimate | about 0.6 CPU-h in total: scoring 6 arms × 3 backbones × 2 sets plus the English arms (about 0.2 h, mostly RDRSegmenter); matcher and copy statistic over about 25k captions (about 0.1 h); bootstrap B = 2,000 for the main rows plus SR1–SR6 (about 0.2 h); self-tests and mutants (about 0.1 h) |
+-| hard stop | **4.0 CPU-h** wall on the host. Reaching it is a STOP, with no partial output used. |
+-| host share | can run on any host already rented for another job (for example the C-CONF or B-D1 rental), as a separate job after that host's registered job ends. No rental is made for this study alone unless one is idle. |
+-| memory, disk | under 4 GB RAM; under 200 MB of inputs (pushed to tmpfs on the host) |
+-| outputs | aggregates only: counts, shares, CIs, p̃ and labels in one JSON decision file plus its sha256. No captions and no per-image rows leave the host. Host-side per-image intermediates are deleted after the decision file is hashed (session record keeps their sha256). |
++| where | **a rented host only** (PI 11-11, tests on the rented host). The laptop writes files and computes nothing. The PI's PC is not used. |
++| CPU estimate | about 0.7 CPU-h in total: scoring of 6 arms × 3 backbones × 2 sets plus the English arms (about 0.2 h, mostly RDRSegmenter); matcher and copy statistic over about 25k captions (about 0.1 h); bootstrap B = 2,000 for the main rows, the placebo split and SR1–SR7 (about 0.3 h); self-tests, mutants and the custody check (about 0.1 h) |
++| hard stop | **4.0 CPU-h** wall on the host. Reaching it is a STOP, and no partial output is used. |
++| host share [W2] | a rented host only: a dedicated rental, or a host rented for a non-C-CONF job (for example B-D1) after its registered job ends. Never a host that holds, or will hold, any OV-test byte, the C-CONF token or a C-CONF output. |
++| memory, disk | under 4 GB RAM; under 250 MB of inputs, pushed to tmpfs on the host |
++| outputs | aggregates only: counts, shares, CIs, p̃ and labels, in one JSON decision file plus its sha256. No captions and no per-image rows leave the host. Per-image intermediates on the host are deleted after the decision file is hashed; the session record keeps their sha256. |
+ 
+-## 2. Inputs by sha256
++## 2. Inputs by sha256 [W1, W3, W6c, N1]
+ 
+-All under `/mnt/d/vsps_image_captioning/` unless marked "(paper repo)", which means `/mnt/d/vsps_papers/vsps-paperC-tallip` at 9bf8f89 (read via `~/vsps_ro3/c_now`).
++All paths are under `/mnt/d/vsps_image_captioning/` unless marked "(paper repo)", which means `/mnt/d/vsps_papers/vsps-paperC-tallip` at 9bf8f89, read through `~/vsps_ro3/c_now`.
+ 
+ Checks made on 2026-11-27:
+-- 42/42 batch-1 files match their `.sha256` sidecars.
+-- The 12 stage-2 files and the two `ex_*` files match `scripts/c_attr/STORED_SHA256` and their sidecars.
+-- `c_attr_lists.json` and the 17 Flickr30K files match their sidecars.
++- The batch-1 files match their `.sha256` sidecars.
++- The stage-2 and `ex_*` files match `scripts/c_attr/STORED_SHA256` and their sidecars.
++- `c_attr_lists.json` and the Flickr30K files match their sidecars.
+ - `c_attr.py` and `c_attr_score.py` match `scripts/c_attr/SHA256SUMS`.
+-
+-What each group is used for:
+-- `perm` p1 and p2 files: hashed, not read in v1 (OQ-5).
+-- `t2_*_f30k_val` files: hashed, **not read unless OQ-3 is answered yes**.
+-- `c2_*` files: SR3 only.
++- `lists.json`, `ov_test_files.tsv` and `c_conf_carve_order.json` match their registration `SHA256SUMS` or REG2 pins.
++- The gold pins are the values in code or a registration, cited beside each one.
+ 
+ The host STOPs on any per-file mismatch.
+ 
++### 2.1 PUSH LIST (the only files pushed to the host)
++
++Decodes, shown lists, SR3 and English (54 files):
++
+ ```
+-a74ff8b9a909564b4a3cf4387535ac71220a84e42600a0296b6939ce44c15c85  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-perm-k4-last-T1-p1-mvi-b1.preds.json
+-acba64b1961f04ef68de5ac91987e83cd6d83756e70055a4e48961a75ad2b0d0  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-perm-k4-last-T1-p2-mvi-b1.preds.json
+ 10e3aa226b624286d0b980c04ad201b7da8293fe1135a765ee8586742616fcfd  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-rand-k4--T1-d0-mvi-b1.preds.json
+ 3b6f81e451b6ced65ffd2439d6447a787964263ef884d320153ebc0c61cde5ae  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-rand-k4--T1-d1-mvi-b1.preds.json
+ 42f42f902957a342bd5edd716b5f284112eb7f1be933b76aff49803e09b14f4b  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-rand-k4--T1-d2-mvi-b1.preds.json
+ 3fdcc1852790732f6fee6c976cdd831841da2e321f94080f741e35f956bee6b1  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-ret-k4-last-T1-mvi-b1.preds.json
+ 086810b19b315e258cb7b00c9a46508dc9c72ff6c2d94aadfcbf6ea6986c4603  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-zs-b1.preds.json
+-ddc71af2cb39ef25eed35336593535de1eb4a670f4cdc6673a1d36f46daebdb1  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_xm_dev500-perm-k4-last-T1-p1-mvi-b1.preds.json
+-bcd4ae6789c73321332905fe1995a70727c21fc8d23807fd8a21559b9346255b  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_xm_dev500-perm-k4-last-T1-p2-mvi-b1.preds.json
+ d039b247360d23125e45f2e8f0361f25ccb678026055ac141e1ac95471c1c354  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_xm_dev500-rand-k4--T1-d0-mvi-b1.preds.json
+ 0f105532737b426a42edb52a8cc165a45fb35cbff26146d7fee81da6c462f074  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_xm_dev500-rand-k4--T1-d1-mvi-b1.preds.json
+ 3f70c33eed306c514f9032637d7076d056d506ad92cce85a55af22ce6d51d879  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_xm_dev500-rand-k4--T1-d2-mvi-b1.preds.json
+ a6b913a53b063d59f26e462e4c400d0cf6b493b4ce121137d93ef70896a588bd  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_xm_dev500-ret-k4-last-T1-mvi-b1.preds.json
+ f26f0a9afa32b2825af1a793f2f48433aca2d434cd32cf3dbb08d663ce4ebd66  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_xm_dev500-zs-b1.preds.json
+-6988f53290bc581a6f4d6b54b6b539c0d8e76594f21e6d6d7a6a4ba284b03f57  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_ov_dev_b-perm-k4-last-T2-p1-mvi-b1.preds.json
+-c8a99f20953293a1b2352c3e3ebc4c241b309d957ecfbc843976cc74f70b6476  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_ov_dev_b-perm-k4-last-T2-p2-mvi-b1.preds.json
+ ea4c8843bfb0eeea0d0f99416090dbb23e802cee17c5b161e8d1ddf968762109  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_ov_dev_b-rand-k4--T2-d0-mvi-b1.preds.json
+ 11574e77a0754760aebe1598058d3832ca599453d12e55e2a1ef215e90316bb1  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_ov_dev_b-rand-k4--T2-d1-mvi-b1.preds.json
+ 3042e7d819ad7807047245ed66b81f9872c554f369b6e7191e796c2d4c1749a2  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_ov_dev_b-rand-k4--T2-d2-mvi-b1.preds.json
+ b1351e111fd8924b273e6e42ca0399b0dad3321ae87a6b5d229ff2bca151131f  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_ov_dev_b-ret-k4-last-T2-mvi-b1.preds.json
+ 1802a3df629d4eee135e8af8205a4246bd84ed438cbb7c81d32d5c5ee6a2f790  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_ov_dev_b-zs-b1.preds.json
+-77bcad05d13501cb2b9e8218bef1e6baad55a846a1b938b6ecbface1f4b0eb23  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_xm_dev500-perm-k4-last-T2-p1-mvi-b1.preds.json
+-42e5a885a24343ef3804d905c62e35a6a6099cfdd121770da4fe022e0dd88470  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_xm_dev500-perm-k4-last-T2-p2-mvi-b1.preds.json
+ c4065cf881f32e6ab2f5dd9a098f612b42a33b6108e0fb9695365cf00822edea  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_xm_dev500-rand-k4--T2-d0-mvi-b1.preds.json
+ 2814ceaaf2789cb05973105502eea78d4ba5afdaf0daf916556e3897ceaa1dbd  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_xm_dev500-rand-k4--T2-d1-mvi-b1.preds.json
+ 817f470adf0f1240cf908cdea99558af942aa0088bbaf8ed6191d046137ece29  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_xm_dev500-rand-k4--T2-d2-mvi-b1.preds.json
+ cbb6ba9ddb28c25ac8987bfb316b381bf111a77b98d725874d630fc1f8cb466a  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_xm_dev500-ret-k4-last-T2-mvi-b1.preds.json
+ 5aa4e78bcba4704d035f38bfe3c5cb21572eb60edd8ce5e4bce08f1983c8fe86  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_xm_dev500-zs-b1.preds.json
+-a3c634a1757d1185f1a21dd8c576bd77c1fb179d7b6a889ee54540df590ad022  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_ov_dev_b-perm-k8-first-T1-p1-mvi-b1.preds.json
+-daaa7b49a7541dcddad55c38da35f6d69cd54ad7c4d31c5ba62bc9272c02174c  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_ov_dev_b-perm-k8-first-T1-p2-mvi-b1.preds.json
+ 75f076e75da3e04649329770bf05cf700e705a330af9f2dcb5bb5712363ed4f0  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_ov_dev_b-rand-k8--T1-d0-mvi-b1.preds.json
+ 367afdfcaa981a6670b2039021e8eb88947591911ee6f1415d88439341d6b3b0  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_ov_dev_b-rand-k8--T1-d1-mvi-b1.preds.json
+ 70b626e3ae65cedc16bbe5045c6ced0908665f156d80a3ebecdd3c30b8a33ed2  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_ov_dev_b-rand-k8--T1-d2-mvi-b1.preds.json
+ f7298a01b94044eb9d416b34cbd9986fd34b350350543bce295ead7677f2829f  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_ov_dev_b-ret-k8-first-T1-mvi-b1.preds.json
+ c71290437e5bc102561aee80232134980aac00a9f30d7a77429113d0daed179a  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_ov_dev_b-zs-b1.preds.json
+-fff51b3bb2d0cd59f824a24f60c5dfe537c3021ee857e110f5c2b550e594c29a  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_xm_dev500-perm-k8-first-T1-p1-mvi-b1.preds.json
+-7b9e125e180299fcb4da452c719dfcd6687a1a0cd8f80b03a5922583eb0d42f8  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_xm_dev500-perm-k8-first-T1-p2-mvi-b1.preds.json
+ 77b1e648e091d850e24e9f70a43354a9e3086cfd57886a749ef4d56d5936d8d0  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_xm_dev500-rand-k8--T1-d0-mvi-b1.preds.json
+ 24c394e0517869c6367104390e78c639973ee3d547a0f30d2d29ff1954a34c1f  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_xm_dev500-rand-k8--T1-d1-mvi-b1.preds.json
+ b407070e347c7af6e841872be2a34385162851792774bcf739057737df839686  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_xm_dev500-rand-k8--T1-d2-mvi-b1.preds.json
+@@ -96,6 +85,48 @@
+ 36721db79e5c845c9529a36b298a23782596fbccafb3d2329cba06f4a15fcf6b  .session_backup/machines/M1/root/outputs/c_t1/out/t1_qwen25vl_7b_f30k_carve-rand-k8--T1-d0-mcoco.preds.json
+ cc4fd3ef632b70d617ace695c2080b939d7ecb40def1e760f198e9dfc2208422  .session_backup/machines/M1/root/outputs/c_t1/out/t1_qwen25vl_7b_f30k_carve-ret-k8-first-T1-mcoco.preds.json
+ 7b0b115d6c2ceec44fad94f89e3d52b83913177ca471d7e101043be29667dd15  .session_backup/machines/M1/root/outputs/c_t1/out/t1_qwen25vl_7b_f30k_carve-zs.preds.json
++```
++
++Code, lists, gold and loaders:
++
++```
++d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070  (paper repo) scripts/score_coco_probe.py
++c0d9dd30e3222ab6542a7e1acfbb9bd3899e4b6db5c896b0adc4d805c1005a8b  (paper repo) scripts/match_openviic.py
++a3bd7b93bdcc85cc6ce34a0676796cafd4e23497f3deae17b3f6ff60f2e31dc0  scripts/c_attr/c_attr.py
++cca5e3270a4699672b06f1580d08af265dc55b447cd3b241233d6ec8611d99c0  scripts/c_attr/c_attr_score.py
++9a79403f4fc38609282d40082ab7f878133edca8aff9e0dc2462db467b7193f0  scripts/xm3600_oiv7.py
++0f99e36e96c86685c212f34cde318d155b5fe1400bcbbd4db18eddfc89d159e9  scripts/c_stage2/score2.py
++eebcd95b78b1dc98398550b1f89fea5622e8cbd9f20ad6b07b0d9292ba745968  manuscript/prereg/2026-10-30_c_t1/c_t1_f30k_lists.json
++5c479f03e8be544f4cd12b5d997b5dc92b6c622df061760cd02f6ba82f6b4371  manuscript/prereg/2026-10-22_c_stage1/lists.json
++99d4fc49cc8283d1555d37b975cca5a32598ea0ec571d8bef8cf811df2c33695  manuscript/prereg/2026-10-25_c_test/ov_test_files.tsv   (ids + sha256 only; W3 check)
++8e11bad51c77adc54c05b91a86f7b6f5a1f2d0e9032f06faf80f05e438d42850  manuscript/prereg/2026-11-18_c_conf/c_conf_carve_order.json   (ids only; W3 check)
++550cfe06b06084976e81286531f7f4e52bea717e29004c699ccaf1e48919bdff  ncs-data/datasets/openviic/uit-openviic-annotation-dev.json   (host data folder; pin c_attr_score.py l.84-85, C-CONF host run doc row 7)
++0da82355b65ab284fe55fc0d3c4101090301767347a02721890556618ca4905f  datasets/c_xm_dev500/xm_dev500_data.json   (host data folder; pin c_attr_score.py l.86)
++395990db603ab8bafd5c7ab2746b22058bb1e75b78b3eb56ad755931364ac137  Flickr30K CSV nlphuji/flickr30k @2b239bef   (pin c_attr.py l.81)
++bac3953a511a9793c22e928a29b68ae05dbf9654502abcbe7b64fd9f6d74c8b2  data/xm3600/oiv7_labels.json   (public OIV7 human-verified labels; not Paper A XM600 gold)
++84a4373a0efb7fd6d93fe19b0e7ceb6c1b855c233d13b9b78a9a33655c9fdce3  data/datasets/xm3600/oiv7/oidv7-class-descriptions.csv
++27f2b1ca3f2bf47d43c8f00e8409472c8d571eb720d47b8107a1c77bd208d16a  data/xm3600/vi_oiv7_map.json
++263015f9dc46ebe2cea80055e04ed39baf80a356f4e027cd3756464279135bef  data/xm3600/manifest.json   (provenance, read at the code read)
++9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793  VnCoreNLP-1.2.jar   (pin REG2 l.275; score2.py l.153)
++```
++
++**Not used:** the laptop file `data/datasets/openviic/uit-openviic-annotation-dev.json` has sha256 `2a68a3eb4d41926deb524aa8f98c80f112472474906d73d9763c790fb0cac847`, which is **not** the pin `550cfe06…`. It is never pushed or used (OQ-11).
++
++### 2.2 HASH-ONLY LIST (never pushed, never opened)
++
++```
++a74ff8b9a909564b4a3cf4387535ac71220a84e42600a0296b6939ce44c15c85  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-perm-k4-last-T1-p1-mvi-b1.preds.json
++acba64b1961f04ef68de5ac91987e83cd6d83756e70055a4e48961a75ad2b0d0  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_ov_dev_b-perm-k4-last-T1-p2-mvi-b1.preds.json
++ddc71af2cb39ef25eed35336593535de1eb4a670f4cdc6673a1d36f46daebdb1  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_xm_dev500-perm-k4-last-T1-p1-mvi-b1.preds.json
++bcd4ae6789c73321332905fe1995a70727c21fc8d23807fd8a21559b9346255b  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_aya_vision_8b_xm_dev500-perm-k4-last-T1-p2-mvi-b1.preds.json
++6988f53290bc581a6f4d6b54b6b539c0d8e76594f21e6d6d7a6a4ba284b03f57  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_ov_dev_b-perm-k4-last-T2-p1-mvi-b1.preds.json
++c8a99f20953293a1b2352c3e3ebc4c241b309d957ecfbc843976cc74f70b6476  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_ov_dev_b-perm-k4-last-T2-p2-mvi-b1.preds.json
++77bcad05d13501cb2b9e8218bef1e6baad55a846a1b938b6ecbface1f4b0eb23  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_xm_dev500-perm-k4-last-T2-p1-mvi-b1.preds.json
++42e5a885a24343ef3804d905c62e35a6a6099cfdd121770da4fe022e0dd88470  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_internvl3_8b_xm_dev500-perm-k4-last-T2-p2-mvi-b1.preds.json
++a3c634a1757d1185f1a21dd8c576bd77c1fb179d7b6a889ee54540df590ad022  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_ov_dev_b-perm-k8-first-T1-p1-mvi-b1.preds.json
++daaa7b49a7541dcddad55c38da35f6d69cd54ad7c4d31c5ba62bc9272c02174c  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_ov_dev_b-perm-k8-first-T1-p2-mvi-b1.preds.json
++fff51b3bb2d0cd59f824a24f60c5dfe537c3021ee857e110f5c2b550e594c29a  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_xm_dev500-perm-k8-first-T1-p1-mvi-b1.preds.json
++7b9e125e180299fcb4da452c719dfcd6687a1a0cd8f80b03a5922583eb0d42f8  .session_backup/machines/ATTR_H1/root/outputs/c_attr_b1/out/at_qwen25vl_7b_xm_dev500-perm-k8-first-T1-p2-mvi-b1.preds.json
+ 6454200db8472ec7f730768ec42126d8b23370e2f297eaec37fc617996a7ae6f  .session_backup/machines/M1/root/outputs/c_t2/out/t2_aya_vision_8b_f30k_val-rand-k4--T1-d0-mcoco.preds.json
+ 002b3d0bf7fb00377ca98a10ab972263b1c577239b8255fa6e3fd376f403480c  .session_backup/machines/M1/root/outputs/c_t2/out/t2_aya_vision_8b_f30k_val-ret-k4-last-T1-mcoco.preds.json
+ d4a4f79314fb316b419737bf2384ab98b834bef209e59129248b66b1fa8b9167  .session_backup/machines/M1/root/outputs/c_t2/out/t2_aya_vision_8b_f30k_val-zs.preds.json
+@@ -104,38 +135,35 @@
+ 4f718184bc82c2222329830c5330239615af8c7ba65d64c648e612e31829ee6e  .session_backup/machines/M1/root/outputs/c_t2/out/t2_qwen25vl_7b_f30k_val-rand-k8--T1-d0-mcoco.preds.json
+ 2a51bed293620474a44006d857d92c82203530882c53681f396a0b582f45aa83  .session_backup/machines/M1/root/outputs/c_t2/out/t2_qwen25vl_7b_f30k_val-ret-k8-first-T1-mcoco.preds.json
+ 2fe6a1c28dc5dd4a5ac88dcecb22e1481236cc6b9ac570bb22b8f124b265dc37  .session_backup/machines/M1/root/outputs/c_t2/out/t2_qwen25vl_7b_f30k_val-zs.preds.json
+-d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070  (paper repo) scripts/score_coco_probe.py
+-c0d9dd30e3222ab6542a7e1acfbb9bd3899e4b6db5c896b0adc4d805c1005a8b  (paper repo) scripts/match_openviic.py
+-a3bd7b93bdcc85cc6ce34a0676796cafd4e23497f3deae17b3f6ff60f2e31dc0  scripts/c_attr/c_attr.py
+-cca5e3270a4699672b06f1580d08af265dc55b447cd3b241233d6ec8611d99c0  scripts/c_attr/c_attr_score.py
++f79ea6a9c59157216fdf1662ce320c35a1befe48a87cfb36a174a7cfef0244f8  .session_backup/machines/ATTR_H1/root/c_attr_score/led/ovb.jsonl
++f8e375a3866bbb94b3739889bba3890b02452b6b08bafe782fbcfd455a3ceb81  .session_backup/machines/ATTR_H1/root/c_attr_score/led/xm_b1.jsonl
++324550c3b86a8632d02b3a59394b622336bfb72df965bfff4121fb49526c3895  .session_backup/machines/ATTR_H1/root/c_attr_score/led/ova.jsonl
++ca6754718587a13448b705883de7e60cc1c6641b6b6107fa713b6a356521d312  .session_backup/machines/ATTR_H1/root/c_attr_score/led/bat_ov_dev_b.jsonl
++00310e595cbbd5d7f5b6b11ef6fff8deb86e7d7f0f1623ac220f5086bd39cf49  .session_backup/machines/ATTR_H1/root/c_attr_score/led/bat_xm_dev500.jsonl
+ ```
+ 
+-These are pinned at code time; the code read must confirm each hash before any input is opened:
+-- references: OpenViIC dev, XM3600 Vietnamese, Flickr30K train;
+-- the XM-dev500 Open Images verified labels;
+-- the RDRSegmenter / VnCoreNLP 1.2 jar.
+-
+-Each one is loaded by the existing kit loaders, exactly as `c_attr_score.py` loads it.
+-
+ ## 3. Never opened, never pushed
+ 
+-- OV-test (`ledger_ov_test_*`, `c_test/**`);
+-- KTVIC test;
+-- XM-test2500 (`ledger_xm_test*`);
+-- `c_en/**`, which holds COCO test and NoCaps val;
+-- Flickr30K test (`c_t3/**`);
+-- `.session_backup/machines/CONF_H1/**` (C-CONF, registration 2 pending; carve and confirm halves untouched);
+-- every C-RAA output.
++- OV-test images, captions and outputs (`ledger_ov_test_*`, `c_test/**`). Only the id/sha list `ov_test_files.tsv` is used, for the W3 check.
++- KTVIC test.
++- XM-test2500 (`ledger_xm_test*`). Only its ids in `lists.json` are used, for the W3 check.
++- `c_en/**`, which holds COCO test and NoCaps val.
++- Flickr30K test (`c_t3/**`).
++- **Flickr30K val (`c_t2/**`, the rehearsal used once)** [W1].
++- `.session_backup/machines/CONF_H1/**` (C-CONF registration 2 is pending; the carve and confirm halves are untouched). Only the id list `c_conf_carve_order.json` is used, for the W3 check.
++- Every C-RAA output.
++- The C-ATTR per-image ledgers (`c_attr_score/led/*`) [N1].
+ 
+-The push list is the explicit file list of §2. There is no directory push.
++The push list is the explicit PUSH LIST of §2. Files of the HASH-ONLY LIST are never pushed or opened. There is no directory push. [W1]
+ 
+ ## 4. Steps and stops
+ 
+ | step | action | stop if |
+ |---|---|---|
+-| 0 | judge GO on the prereg, then commit (gatekeeper) | – |
+-| 1 | write `c_n3d.py`, `test_c_n3d.py` and the planted-cell toy set; judge code read | the code opens an input before the read |
+-| 2 | rent or share a host; push the §2 list; check sha256 per file | any mismatch |
+-| 3 | self-tests and mutants on the host (planted flags, precedence, Holm, group recomputation inside the bootstrap, decidability rule) | any test fails, or any mutant survives |
++| 0 | judge round-2 GO on the prereg, then commit (gatekeeper) | – |
++| 1 | write `c_n3d.py`, `test_c_n3d.py` and the planted-cell toy set (flags, precedence, placebo difference, Holm with a NOT DECIDABLE row at p̃ = 1, the exact rng call); judge code read | the code opens an input before the read |
++| 2 | rent a host that meets the §1 host rule [W2]; push the PUSH LIST; check sha256 per file | any mismatch |
++| 2a [W3] | before any decode file is opened: intersect the image ids and image sha256 values of OV-dev-B (925), XM-dev500 (500) and the Flickr30K carve (1,000) with `ov_test_files.tsv` (`99d4fc49cc8283d1555d37b975cca5a32598ea0ec571d8bef8cf811df2c33695`) and with `c_conf_carve_order.json` (`8e11bad51c77adc54c05b91a86f7b6f5a1f2d0e9032f06faf80f05e438d42850`); intersect the XM-dev500 ids with the XM-test2500 ids (`lists.json`); print counts only | **any count above 0** |
++| 3 | self-tests and mutants on the host | any test fails, or any mutant survives |
+ | 4 | one run, in the section 10 order of the prereg | the 4.0 CPU-h cap |
+ | 5 | pull the decision file, sha256 it, write the LOG line, delete per-image intermediates on the host, then clean the host files | – |
+--- OPEN_QUESTIONS_C_N3D_v1.md	2026-11-27 19:16:16.308936595 +0700
++++ OPEN_QUESTIONS_C_N3D_v2.md	2026-11-27 19:28:40.226917593 +0700
+@@ -1,16 +1,17 @@
+-# OPEN QUESTIONS C-N3D v1 (2026-11-27T12:14Z)
++# OPEN QUESTIONS C-N3D v2 (v1 2026-11-27T12:14Z; revised under CC-509)
+ 
+ Each question gives a recommendation and a default. The default holds unless a judge or the PI rules otherwise. All of these are reversible design items (delegation rule), except where a question is marked PI.
+ 
+ | id | question | recommendation | default |
+ |---|---|---|---|
+-| OQ-1 | How does N3D relate to C-RAA step T8? T8 plans the same categories on fresh tier-1 OV-dev-B decodes, "to fix the rules before the carve". | N3D **replaces** T8's dry-run. N3D's frozen rules (section 5, at its commit hash) become the rules C-RAA tier 2 inherits unchanged. T8 is dropped from tier 1, which saves 0.57 GPU-h of `zs` decodes. Running both would put two sets of rules on one set. | replace T8; C-RAA NOTE adds one line citing the N3D commit |
+-| OQ-2 | Should OV-dev-A nominate first (a two-step design like the attribution study)? | **No.** OV-dev-A has no batch-1 `zs` decode, so nominating there would mix decode policies. The family is small (m = 6) and fixed now. | register directly on OV-dev-B; XM-dev500 descriptive |
+-| OQ-3 | Should Flickr30K val (1,014, the rehearsal used once) join the English rows? | **No.** It was "used once" under its registration, and InternVL3 has no `rand` there. The carve is enough for a descriptive English row. | carve only; val files hashed and never pushed |
+-| OQ-4 | Decode policy of the Flickr30K carve decodes (batched or batch size 1)? | Read it from the c_t1 run record during the code read, and print it as a row label. If the decodes were batched, label the English rows "A1 not met; batched decode; descriptive". | label per the record |
+-| OQ-5 | Split τ_pair by category using `perm` (for example BO among images where `ret` < `perm` − 10)? | Not in v1. It adds a second family on the same set with little power. Revisit only if H1 passes. | no |
+-| OQ-6 | Gold for BO and ZL on XM-dev500: verified Open Images labels where they decide, and the reference union otherwise? | Yes. Print the share decided each way. Use the companion kit's verified-precision rule unchanged, loaded by hash. | as in prereg section 5 |
+-| OQ-7 | Has any per-image ret-minus-rand distribution, or any category share, been seen on OV-dev-B or XM-dev500? | A judge should grep the LOG and `manuscript/reviews/` for "per-image", "ret < rand", "loser" and "failure". Any hit is added to prereg section 7 and the affected row is labelled post hoc. | none known to the drafter |
+-| OQ-8 | Are the thresholds right (D ≥ +0.10; coverage point ≥ 0.60 with a test against 0.50; \|L\|, \|W\| ≥ 30)? | Keep them. The power is low, and the text says so. Do not lower the thresholds to buy power. | keep |
+-| OQ-9 | Does the result enter the abstract or the contributions? (**PI**) | No. Section 6.10.10 and the supplement only; the PI decides after the rewrite. | not in abstract |
+-| OQ-10 | Host: should this share a host with C-CONF or B-D1? | Yes, as a separate job after that host's registered job ends. N3D's CPU must not overlap a registered GPU run's timing. | share after the other job |
++| OQ-1 | How does N3D relate to C-RAA step T8? | **RULED (CC-509 ruling 3): N3D supersedes T8.** T8 is withdrawn from the C-RAA run order; T1–T7 are unchanged. craa-prep drops T8 (its `zs` runs, 0.57 GPU-h, and the `raa_failcat` call) and logs one line citing CC-509. If C-RAA tier 2 inherits N3D's rules, it needs its own code and its own code read. | closed |
++| OQ-2 | Should OV-dev-A nominate first? | **No.** OV-dev-A has no batch-1 `zs` decode, so nominating there would mix decode policies. | register directly on OV-dev-B; XM-dev500 descriptive |
++| OQ-3 | Should Flickr30K val join the English rows? | **No.** It is the rehearsal that was used once, and REG2 binding 1 says it is never staged. Its files are on the HASH-ONLY LIST [W1]. | closed: never pushed |
++| OQ-4 | Decode policy of the Flickr30K carve decodes? | Read it from the c_t1 run record during the code read, and print it as a row label. If the decodes were batched, label the rows "A1 not met; batched decode; descriptive". | label per the record |
++| OQ-5 | Split τ_pair by category with `perm`? | Not in v2. The `perm` files are hash-only [W1]. | no |
++| OQ-6 | Gold for BO and ZL on XM-dev500? | Verified OIV7 labels through `xm3600_oiv7.statuses`, unchanged, and the reference union otherwise. The pins are fixed in prereg §4 [W6c]. | as in prereg |
++| OQ-7 | Have per-image values been seen? | The CC-509 grep found none. The C-ATTR per-image ledgers exist and are hash-only [N1]. | closed |
++| OQ-8 | Are the thresholds right? | Keep them: Δ ≥ +0.10; C_L ≥ 0.60 tested against 0.50, with C_L − C_W ≥ +0.10; at least 30 images per group. The power is about 0.4–0.5 at a true +0.10 (prereg §6). | keep |
++| OQ-9 | Does the result enter the abstract or the contributions? (**PI**) | No. It goes in Section 6.10.10 and the supplement only, and the PI decides after the rewrite. | not in the abstract |
++| OQ-10 | Which host? [W2] | A rented host only: a dedicated rental, or a host rented for a non-C-CONF job (for example B-D1) after its registered job ends. Never a host that holds, or will hold, any OV-test byte, the C-CONF token or a C-CONF output. | as stated |
++| OQ-11 (new) | The laptop OpenViIC dev annotation file hashes to `2a68a3eb…`, while the pin used by C-ATTR and C-CONF is `550cfe06…` (host data folder `ncs-data/`). Why? | Do not open either file to find out. At the code read, compare their sizes and modification times, and check the Drive copy's hash. Use only the file that equals the pin, and STOP otherwise. The 2a68a3eb copy is never pushed. | pin 550cfe06; STOP on mismatch |
+--- RUBRIC_NOTE_C_N3D_v1.md	2026-11-27 19:16:27.240202080 +0700
++++ RUBRIC_NOTE_C_N3D_v2.md	2026-11-27 19:28:49.199641486 +0700
+@@ -1,33 +1,44 @@
+-# RUBRIC NOTE C-N3D v1 (2026-11-27T12:14Z)
++# RUBRIC NOTE C-N3D v2 (v1 2026-11-27T12:14Z; revised under CC-509)
+ 
+ Rubric `RUBRIC_v1.md` (sha256 3071ed8d…), JOURNAL weights. The baseline is BENCH_C_2026-11-27: 76.4, with C9 at level 4.
+ 
+ ## Target criterion: C9, Quality of analysis (weight 8)
+ 
+-Level 5 reads "analysis explains why the results arise: ablations or controlled contrasts, **error or failure analysis with categories**, subgroup or sensitivity analysis, alternative explanations tested, limits stated per claim". The paper already has every element except the categorised failure analysis (BENCH C9: "there is still no categorised failure analysis, and the 'why' stays open").
++Level 5 reads "analysis explains why the results arise: ablations or controlled contrasts, **error or failure analysis with categories**, subgroup or sensitivity analysis, alternative explanations tested, limits stated per claim". The paper already has every element except the categorised failure analysis.
++
++In v2 the verdicts use placebo-differenced contrasts (W4, W5). A PASS can therefore no longer come from the score definition alone, and a reviewer has less reason to discount it.
+ 
+ | outcome | C9 level [P] | points | P(outcome) [P] |
+ |---|---|---|---|
+-| H1 or H2 PASS for at least one backbone, with S1 DETECTED | 5 | +1.6 | about 0.25 |
+-| H3 PASS only (rules cover failures, no enrichment) | 5 is arguable; a categorised analysis exists, but "why" is weak | +1.6 at P about 0.5 | about 0.2 |
+-| NULL, with a clean table and G0 | 4 → 5 unlikely; it supports level 4 | 0 to +1.6, P about 0.3 | about 0.4 |
+-| G0 at the noise floor on OV-dev-B | 4 | 0 | about 0.15 |
+-
+-Expected gain [P]: about +0.7 to +0.9 points. The benchmark's "+1.6 at P 0.4" sits inside this range. The route to 80 still needs K1 + K2 (BENCH §5): 76.4 + 2.0 + 1.4 + 1.6 = 81.4 if C9 reaches level 5.
++| H1 or H2 PASS for at least one backbone (placebo-differenced) | 5 | +1.6 | about 0.3 |
++| H3 PASS only | 5 is arguable | +1.6 at P about 0.4 | about 0.15 |
++| NULL, **with the G0 rows and the placebo rows printed** [N3] | a categorised failure analysis exists (a level-5 element), but "why" is weak | +1.6 at P about 0.3 | about 0.55 |
++
++Expected gain [P]: about +0.6 to +0.8 points. This matches CC-509 ruling 4.
++
++**C9 credit for a NULL result is argued only if the G0 and placebo rows are printed. [N3]**
++
++The route to 80 still needs K1 + K2:
++- 76.4 + 2.0 + 1.4 + 1.6 = 81.4 if C9 reaches level 5.
++- BENCH l.120 gives N3(d) "P 0.4 alone".
++- BENCH l.105 gives P(all three) about 0.3–0.35. [N2]
+ 
+ ## Other criteria
+ 
+-- **C2, C5:** no change. This is not a method, and it claims no new element.
+-- **C7:** neutral. The new rows add development-only intervals.
+-- **C8:** no change.
+-- **H1 (honesty):** the rows must keep the label "development, re-used sets, non-confirmatory; rule-based, no human labels". Section 7 lists every number already seen.
+-- **H2 (originality):** error categories are a standard practice. Do not claim that categorised failure analysis is new. The categories reuse Paper C's own instruments (Section 3.4 neighbour-only rule, the near-verbatim statistic) and T8's list.
+-- **Integrity:** no new gold, no AI-silver; the VLM verifier is excluded. No test set is used. C-CONF's carve and confirm halves are untouched.
+-
+-## What the judge should check
+-
+-1. Section 7, numbers already seen, is complete (OQ-7 grep).
+-2. The precedence and multi-label rules are fixed, and SR6 tests precedence dependence.
+-3. The H1 and H2 comparison bases (W, and the placebo P through G0) answer selection on per-image noise.
+-4. No input outside COMPUTE §2 is used; the never-open list is complete.
+-5. The NULL wording in section 8 is reportable as it stands.
++- **C2, C5:** no change. This is not a method, and it claims no new element. **No novelty is claimed for a categorised failure analysis; it is standard practice** [N3]. **C7:** neutral. **C8:** no change.
++- **H1 honesty:** keep the development labels; §7 lists every number already seen, including the derivable SD of d and the W7 count.
++- **H2 originality:** the categories reuse Paper C's own instruments and T8's list. N3D supersedes T8 (CC-509).
++- **Integrity:**
++  - no new gold, no AI-silver; the VLM verifier is excluded;
++  - the verified labels are public OIV7 labels, not Paper A's gold;
++  - no test set is used, and the W3 custody check runs before any decode file is opened;
++  - no C-CONF host is used.
++
++## What the round-2 judge should check
++
++1. W4: the placebo-differenced Δ is computed with the same flag rules on the d1 caption against its own shown list.
++2. W5: the H3 PASS conditions and the printed C_W, C_all, C_P− and C_P+.
++3. W1–W3: the PUSH LIST and HASH-ONLY LIST, the host rule, and step 2a.
++4. W6: Holm treats NOT DECIDABLE as p̃ = 1 with m = 6; the rng call is exact; the gold pins and loaders are fixed.
++5. W7: the count of 335 appears in every OV-dev-B table note.
++6. The new OQ-11: the OpenViIC dev annotation hash differs between the laptop copy and the pin.
