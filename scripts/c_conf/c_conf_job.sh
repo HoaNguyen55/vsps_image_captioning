@@ -38,7 +38,7 @@ EXPECT=${2:?usage: c_conf_job.sh MODE <expected HEAD>}
 case $MODE in selftest|block0|rehearsal|test) ;; *) echo "unknown mode $MODE"; exit 2;; esac
 DRY=${C_CONF_DRY:-0}
 dry() { [ "$DRY" = 1 ]; }
-FREEZE=2026-11-27T11:00:00Z   # G6 = 2026-11-27 18:00 (UTC+7), §10.1
+FREEZE=2026-12-01T11:00:00Z   # G6 = 2026-12-01 18:00 (UTC+7), §10.1
 R=/root; FORCE=()
 if dry; then
   R=${C_CONF_ROOT:-/root}; FREEZE=${C_CONF_FREEZE_UTC:-$FREEZE}

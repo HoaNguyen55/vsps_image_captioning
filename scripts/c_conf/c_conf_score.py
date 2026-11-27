@@ -94,7 +94,7 @@ S_BATCH = ("decoding one image at a time on another machine and software stack c
 #: §7.2 Δ_batch: the record fields that must be equal between the first look and C-CONF (§6.4a), else NOT RUN
 BATCH_RECORD = ("kit_sha256", "jar_sha256", "score_field", "annotation_sha256", "list_sha256")
 #: G6 (§10.1) and §10.2
-G6_UTC = "2026-11-27T11:00:00Z"  # 2026-11-27 18:00 (UTC+7)
+G6_UTC = "2026-12-01T11:00:00Z"  # 2026-12-01 18:00 (UTC+7)
 G6_TS = calendar.timegm(time.strptime(G6_UTC, "%Y-%m-%dT%H:%M:%SZ"))
 CLOCK = time.time
 CAP_CEIL_H, CAP_FACTOR, PULL_SCORE_S = 30.0, 1.5, 24 * 3600
@@ -147,9 +147,9 @@ def boot_idx(n: int, seed: int = BOOT_SEED) -> np.ndarray:
 
 
 def g6_open() -> None:
-    """G6 (§10.1): at and after 2026-11-27 18:00 (UTC+7) every unfinished step is NOT RUN, scoring included."""
+    """G6 (§10.1): at and after 2026-12-01 18:00 (UTC+7) every unfinished step is NOT RUN, scoring included."""
     if CLOCK() >= G6_TS:
-        raise SystemExit(f"REFUSED: G6 ({G6_UTC} = 2026-11-27 18:00 VN) has passed: every unfinished step is NOT RUN")
+        raise SystemExit(f"REFUSED: G6 ({G6_UTC} = 2026-12-01 18:00 VN) has passed: every unfinished step is NOT RUN")
 
 
 # ------------------------------------------------------------------------------------------------ §7.3-7.4

@@ -268,8 +268,10 @@ def selftest_plan(S) -> None:
     cap_s = full["cap_s"]
     assert not S.timecheck(cap_s, now, now + cap_s + 23 * 3600)["ok"], "X5: the cap plus 24 h, not the cap alone"
     assert S.timecheck(cap_s, now, now + cap_s + 24 * 3600)["ok"], "X5 boundary inclusive"
-    vn = datetime(2026, 11, 27, 18, 0, tzinfo=timezone(timedelta(hours=7))).timestamp()
-    assert S.G6_TS == vn == calendar.timegm((2026, 11, 27, 11, 0, 0)), "G6 = 2026-11-27 18:00 (UTC+7)"
+    vn = datetime(2026, 12, 1, 18, 0, tzinfo=timezone(timedelta(hours=7))).timestamp()
+    assert S.G6_TS == vn == calendar.timegm((2026, 12, 1, 11, 0, 0)), "G6 = 2026-12-01 18:00 (UTC+7)"
+    assert f"\nFREEZE={S.G6_UTC} " in (HERE / "c_conf_job.sh").read_text(encoding="utf-8"), \
+        "the literal FREEZE of c_conf_job.sh equals G6_UTC"
     saved = S.CLOCK
     try:
         S.CLOCK = lambda: S.G6_TS
