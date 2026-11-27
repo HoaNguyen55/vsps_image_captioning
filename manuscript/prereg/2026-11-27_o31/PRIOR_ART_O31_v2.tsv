@@ -1,0 +1,29 @@
+id	year	title	venue	how_read	closest_to	status_vs_O31	note
+2609.35294	2026	Beyond Saying Less: Fine-Grained Alignment for Informative and Faithful Vision-Language Models	arXiv	abstract (S2)	D1 goal; D2 credit	TAKEN (goal, EN, RL)	on-policy RL (SCAPO) on Qwen2.5-VL-7B (same base as O31); DOPA presence/absence labels are MODEL-MADE (Qwen3.6-27B, label-specific re-queries) with HUMAN SPOT CHECKS on 5,000 COCO train images; no SFT-on-verified-captions arm; no operating-point -> student-recall analysis (CC-501 C11, abstract + HTML)
+2605.20278	2026	ClaimDiff-RL: Fine-Grained Caption RL through Visual Claim Comparison	arXiv	abstract (S2)	D1 goal	TAKEN (faithfulness-coverage trade-off, EN, RL); PARTLY TAKEN for the 'practical dial'	reference-conditioned claim differences; judge Gemini-3-Pro-Preview, actor Qwen3-VL-32B; TUNABLE OPERATING POINTS via reward and severity weights; 160-image human diagnostic; no SFT-data filtering (CC-501 C11)
+2605.07394	2026	BalCapRL: A Balanced Framework for RL-Based MLLM Image Captioning	arXiv	abstract (S2)	D1 goal	PARTLY TAKEN	RL with correctness + reference coverage + linguistic rewards
+2503.07906	2025	Painting with Words (DeCapBench, DCScore, FeedQuill)	ICLR 2025	abstract (S2)	D1 data; D1 verifier; D3	PARTLY TAKEN (incl. the cross-family verifier)	statement-level verification by an ENSEMBLE OF OPEN VLMs (InternVL-2, LLaVA-NeXT); two reward models (precision, unit count) + PPO; LLaVA 7B/13B; less hallucination with more detail (CC-501 C11)
+2411.09018	2024	Bridging the Visual Gap: KnowAda (knowledge-adapted captions)	NAACL 2025	abstract (S2)	D1 data	PARTLY TAKEN	adapts training captions to model knowledge; DNLI proposition evaluation; small VLMs; EN
+2402.09801	2024	EFUF: Efficient Fine-Grained Unlearning Framework	EMNLP 2024	abstract (S2)	D2	PARTLY TAKEN	gradient ascent on hallucinated spans (CLIP-detected), no paired data
+2503.02846	2025	Mask-DPO: Fine-grained Factuality Alignment of LLMs	ICLR 2025	abstract (S2)	D2, D3	PARTLY TAKEN	sentence-level factuality masks in DPO (text LLMs)
+2507.12455	2025	SENTINEL: Sentence-Level Early Intervention	ICCV 2025	abstract (S2)	D1 data, D3	PARTLY TAKEN	own outputs verified by two open-vocabulary detectors -> in-domain C-DPO pairs; EN
+2311.13614	2023	HalluciDoctor	CVPR 2024	title + MT4 related work (verified there)	D1 data	PARTLY TAKEN	detect and remove hallucinations in machine-made instruction data, retrain
+-	2026	(own) MT4 / GESD: gold-edited self-distillation, Vietnamese	draft, not submitted	own draft (journal_draft_MT4)	D2	own prior work	edits own captions with COCO gold or detector; Gate 1 NO-GO; boundary in direction note §3
+-	2026	(own) FAIR 2026 VSPS	FAIR 2026	own paper	D1	own prior work (baseline)	precision-first verifier; recall 57.1->37.1
+2402.08680	2025	Mitigating Object Hallucination via Image-Grounded Guidance (MARINE)	ICML 2025	title (OpenAlex)	baseline family	not overlapping	inference-time guidance; possible comparator
+2402.10412	2024	Measuring and Reducing LLM Hallucination without Gold-Standard Answers	arXiv	title (OpenAlex)	no-gold setting	not overlapping	text LLMs
+-	2025	Detecting and Mitigating Hallucination in LVLMs via Fine-Grained AI Feedback (HSA-DPO)	AAAI 2025	title (OpenAlex)	D3	PARTLY TAKEN for D3	sentence-level AI feedback, severity-aware DPO
+-	2024	ViGoR: fine-grained reward modeling	ECCV 2024	title (OpenAlex)	D3	not overlapping D1	reward model for grounding
+-	2025	HalLoc: token-level localization of hallucinations	CVPR 2025	title (OpenAlex)	verifier	not overlapping	synthetic token-level detector; usable for ranking only (not gold)
+-	2024	UNIHD / MHaluBench: Unified Hallucination Detection for MLLMs	ACL 2024	title (OpenAlex); facts from VSPS_HIGH_RECALL_DEEP_RESEARCH	verifier eval	not overlapping	claim-level labels; candidate EN yardstick (small)
+-	2024	Pelican: claim decomposition + program-of-thought verification	EMNLP 2024	title (OpenAlex)	verifier	PARTLY TAKEN for verifier design	inference-time correction, large models
+-	2024	FaithScore	EMNLP Findings 2024	known (proposal [5])	evaluation	not overlapping	atomic-fact verification as a metric
+2506.11073	2025	CLAIM: multilingual object hallucination, cross-lingual attention intervention	ACL 2025	abstract (S2)	EN-VI arm	not overlapping	non-English queries hallucinate more; training-free
+2404.07922	2024	LaVy: Vietnamese MLLM	arXiv	title (S2)	Vietnamese	not overlapping	no hallucination fine-tuning
+2408.12480	2024	Vintern-1B	arXiv	known (proposal [29])	verifier	tool	FAIR verifier
+-	2024	A Novel Pretrained General-purpose VLM for Vietnamese	ACM TALLIP	title (S2)	Vietnamese	not overlapping	no hallucination focus
+2604.27712	2026	Vietnamese scene-text image captioning (dataset + graph framework)	arXiv	title (OpenAlex)	Vietnamese	not overlapping	scene text
+-	2026	Self-Correction Can Amplify Hallucinations: Fact-Level Repair with Graph-Based Evidence Routing	EMNLP 2026	title (OpenAlex)	FAIR 2028 (repair)	relevant later	cite for config 4 / FAIR 2028
+2610.23610	2026	Not Every Mention Is a Claim: Rethinking Object Hallucination Detection	arXiv	title (OpenAlex)	evaluation (Obj. 3.2)	to read	possibly close to Paper A territory; check before the FAIR 2027 draft
+2405.14622	2024	Calibrated Self-Rewarding VLMs	NeurIPS 2024	title (S2)	D3	not overlapping	self-reward preference
+2504.13123	2025	Low-hallucination Synthetic Captions for VLM Pre-training	arXiv	abstract (S2)	D1 data	not overlapping	pre-training scale
