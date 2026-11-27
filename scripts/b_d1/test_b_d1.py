@@ -187,6 +187,19 @@ def pins_and_closure():
 
 
 @check
+def closure_strict_main():
+    """CC-506e1: the env snippet runs from the committed file scripts/b_d1/env_toy.py and passes the closure check;
+    code fed through stdin from the tree root stays a closure FAULT (the check is not relaxed for non-file names)."""
+    import subprocess
+    run = lambda args, inp=None: subprocess.run([sys.executable, "-X", "utf8", "-I", "-B", *args], input=inp,
+                                                capture_output=True, text=True, cwd=D.ROOT, timeout=300)
+    r = run(["scripts/b_d1/env_toy.py", "--closure-only"])
+    assert r.returncode == 0 and "CLOSURE OK" in r.stdout, "the committed env file failed the closure check"
+    r = run(["-"], "import sys\nsys.path.insert(0, 'scripts/b_d1')\nimport b_d1\nprint('LOADED')\n")
+    assert r.returncode != 0 and "LOADED" not in r.stdout and "<stdin>" in r.stdout + r.stderr, "stdin code passed"
+
+
+@check
 def member_sets():
     assert len(D.F_DEV) == 54 and len(D.F_UTS) == 18 and len(D.F_ALL) == 72 and D.F_ALL[:54] == D.F_DEV
     assert BF.F0N == "rdr.tw.pk.cf" and BF.F0N in D.F_DEV

@@ -16,21 +16,7 @@ NCS_DATA=$EMPTY $PY -X utf8 -I -B scripts/b_d1/mutants_b_d1.py --jobs "${JOBS:-2
 e=0
 if [ "${2:-}" = "--env" ]; then
   WH=$3
-  $PY -X utf8 -I -B - "$WH" <<'EOF'; e=$?
-import argparse, json, sys
-from pathlib import Path
-sys.path.insert(0, "scripts/b_d1")
-import b_d1 as D
-BF, FM = D.BF, D.FM
-wh = Path(sys.argv[1])
-a = argparse.Namespace(pyvi_wheel=str(wh / "pyvi-0.1.1-py2.py3-none-any.whl"),
-                       uts_wheel=str(wh / "underthesea-9.5.0-py3-none-any.whl"))
-rec = BF.env_record(a)
-BF.env_check(rec)
-f3 = {u: [x["equal"] for x in FM.f3(u)] for u in ("rdr", "pyvi", "uts")}
-print(json.dumps({"env": rec, "F3_equal": f3}))
-print("ENV OK")
-EOF
+  $PY -X utf8 -I -B scripts/b_d1/env_toy.py "$WH"; e=$?  # CC-506e1: a file, not stdin (closure check)
 fi
 rm -rf "$EMPTY"
 echo "run_tests: selftest rc=$t mutants rc=$m env rc=$e"

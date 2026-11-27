@@ -145,6 +145,10 @@ MUT = [  # (id, old, new, check): each old occurs exactly once in b_d1.py
     ('J44 AER per-class used as primary', 'aer = claims_aer(M, comps, G, sig_c, W)\n', 'aer = claims_aer(M, comps, G, sig_c, W, per_class=True)\n', 'h1_h2_tests_and_holm'),
     ('J45 G0 sig gate dropped (v2)', 's["member_mismatch"] == 0 and s["sig_mismatch"] == 0', 's["member_mismatch"] == 0', 'g0_sig_gate'),
     ('J46 A3 max member rate over F (v2)', '"pos": max(per_member[m][0] for m in F_DEV) / n', '"pos": max(v[0] for v in per_member.values()) / n', 'a3_rule_on_f0'),
+    # CC-506e1: the closure check stays strict for non-file __main__ names
+    ('E1 closure skips names that are not files', 'if f and str(Path(f).resolve()).startswith(str(ROOT) + os.sep)',
+     'if f and Path(f).is_file() and str(Path(f).resolve()).startswith(str(ROOT) + os.sep)', 'closure_strict_main'),
+    ('E2 closure extras ignored', '    extra = sorted(loaded - set(PINS))', '    extra = []', 'closure_strict_main'),
 ]
 
 
@@ -157,7 +161,7 @@ def tree(dst: Path) -> None:
         (dst / rel).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(ROOT / rel, dst / rel)
     (dst / "scripts/b_d1").mkdir(parents=True, exist_ok=True)
-    for f in ("b_d1.py", "test_b_d1.py"):
+    for f in ("b_d1.py", "test_b_d1.py", "env_toy.py"):
         shutil.copy2(HERE / f, dst / "scripts/b_d1" / f)
 
 
