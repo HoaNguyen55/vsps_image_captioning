@@ -1,0 +1,26 @@
+2026-11-28T03:36:38Z run_test t1 head 19cf8ef1cca06c292b8197db9481d77dfb73ad3f token a417edb5 decision 56ce48ca
+2026-11-28T03:36:39Z PREFLIGHT OK head 19cf8ef1cca06c292b8197db9481d77dfb73ad3f mode test
+2026-11-28T03:36:39Z START D1r_qwen25vl_7b attempt 1 (left 1800 min)
+2026-11-28T03:37:37Z OK D1r_qwen25vl_7b
+2026-11-28T03:37:37Z START D1_qwen25vl_7b attempt 1 (left 1799 min)
+2026-11-28T03:38:33Z OK D1_qwen25vl_7b
+2026-11-28T03:38:33Z STEP D1 qwen25vl_7b PASS
+2026-11-28T03:38:33Z START D1r_lmcap attempt 1 (left 1798 min)
+2026-11-28T03:39:44Z OK D1r_lmcap
+2026-11-28T03:39:44Z START D1_lmcap attempt 1 (left 1796 min)
+2026-11-28T03:40:54Z OK D1_lmcap
+2026-11-28T03:40:54Z STEP D1 lmcap PASS
+2026-11-28T03:40:54Z START D1r_internvl3_8b attempt 1 (left 1795 min)
+2026-11-28T03:42:09Z OK D1r_internvl3_8b
+2026-11-28T03:42:09Z START D1_internvl3_8b attempt 1 (left 1794 min)
+2026-11-28T03:43:23Z OK D1_internvl3_8b
+2026-11-28T03:43:23Z STEP D1 internvl3_8b PASS
+2026-11-28T03:43:23Z START D1r_aya_vision_8b attempt 1 (left 1793 min)
+2026-11-28T03:44:53Z OK D1r_aya_vision_8b
+2026-11-28T03:44:53Z START D1_aya_vision_8b attempt 1 (left 1791 min)
+2026-11-28T03:46:17Z OK D1_aya_vision_8b
+2026-11-28T03:46:17Z STEP D1 aya_vision_8b PASS
+2026-11-28T03:46:17Z CAP PLAN test: P 15.32 GPU-h, cap 22.98 GPU-h, runners qwen25vl_7b lmcap internvl3_8b aya_vision_8b, dropped none; time check passed
+2026-11-28T03:46:17Z CAP and TIME CHECK logged: runners qwen25vl_7b lmcap internvl3_8b aya_vision_8b; dropped 
+2026-11-28T03:46:17Z PAUSE after T.0: log the cap line and the time check (/root/outputs/c_conf_t/CAP.json sha256 1df8ae78d7699758f333613e8f94d4d74b406fd74ff3018df5960e93688eb4b8), then run test again
+2026-11-28T03:46:17Z run_test t1 rc 0

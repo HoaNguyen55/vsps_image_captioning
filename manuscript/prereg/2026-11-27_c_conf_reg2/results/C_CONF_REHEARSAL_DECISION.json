@@ -1,0 +1,388 @@
+{
+ "label": "TIER 2 / DEV-CONFIRM (C-CONF), OV-CARVE",
+ "n": 2000,
+ "claims": {
+  "qwen25vl_7b": {
+   "carve": {
+    "d": 8.408474318664293,
+    "lo": 7.201529291027988,
+    "hi": 9.734211703350145,
+    "lo90": 7.342416693319076,
+    "hi90": 9.526862957106351,
+    "p": 0.0004997501249375312,
+    "model": "qwen25vl_7b",
+    "estimand": "tau_pair",
+    "R": 3,
+    "D": 2
+   },
+   "carve_pass": true,
+   "SE": 0.6575216222788219,
+   "P_m": 1.0,
+   "share_ok": true,
+   "margin_ok": true,
+   "family": [
+    "aya_vision_8b",
+    "internvl3_8b",
+    "qwen25vl_7b"
+   ],
+   "status": "TEST FAMILY"
+  },
+  "internvl3_8b": {
+   "carve": {
+    "d": 5.292546359403154,
+    "lo": 4.074510205926497,
+    "hi": 6.433720934377406,
+    "lo90": 4.234727459994344,
+    "hi90": 6.295200582866947,
+    "p": 0.0004997501249375312,
+    "model": "internvl3_8b",
+    "estimand": "tau_pair",
+    "R": 3,
+    "D": 2
+   },
+   "carve_pass": true,
+   "SE": 0.6375344314381077,
+   "P_m": 1.0,
+   "share_ok": true,
+   "margin_ok": true,
+   "family": [
+    "aya_vision_8b",
+    "internvl3_8b",
+    "qwen25vl_7b"
+   ],
+   "status": "TEST FAMILY"
+  },
+  "aya_vision_8b": {
+   "carve": {
+    "d": 7.051840706426805,
+    "lo": 6.049432491298329,
+    "hi": 8.166665902309507,
+    "lo90": 6.241641345590867,
+    "hi90": 7.960866650773263,
+    "p": 0.0004997501249375312,
+    "model": "aya_vision_8b",
+    "estimand": "tau_pair",
+    "R": 3,
+    "D": 2
+   },
+   "carve_pass": true,
+   "SE": 0.5315107457811336,
+   "P_m": 1.0,
+   "share_ok": true,
+   "margin_ok": true,
+   "family": [
+    "aya_vision_8b",
+    "internvl3_8b",
+    "qwen25vl_7b"
+   ],
+   "status": "TEST FAMILY"
+  }
+ },
+ "entered": [
+  "qwen25vl_7b",
+  "internvl3_8b",
+  "aya_vision_8b"
+ ],
+ "joint_share": 1.0,
+ "positive_control": "DETECTED",
+ "look": true,
+ "sentence": null,
+ "rows_development": {
+  "qwen25vl_7b|tau_any": {
+   "d": 10.29553139929434,
+   "lo": 9.381328321397913,
+   "hi": 11.22755261604988,
+   "lo90": 9.520382015017278,
+   "hi90": 11.109491519254568,
+   "p": 0.0004997501249375312,
+   "model": "qwen25vl_7b",
+   "estimand": "tau_any",
+   "R": 3,
+   "D": 2,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "qwen25vl_7b|tau_sel": {
+   "d": 8.024842394208857,
+   "lo": 6.787554194038629,
+   "hi": 9.281735689418658,
+   "lo90": 6.98343760855517,
+   "hi90": 9.096038872142639,
+   "p": 0.0004997501249375312,
+   "model": "qwen25vl_7b",
+   "estimand": "tau_sel",
+   "R": 3,
+   "D": 2,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "qwen25vl_7b|tau_marg": {
+   "d": -0.38363192445543604,
+   "lo": -1.065860241408956,
+   "hi": 0.3342550685403475,
+   "lo90": -0.9661204437177296,
+   "hi90": 0.2350482885817266,
+   "p": 0.8490754622688655,
+   "model": "qwen25vl_7b",
+   "estimand": "tau_marg",
+   "R": 3,
+   "D": 2,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "qwen25vl_7b|placebo_d1_d2": {
+   "d": 0.7991422367909209,
+   "lo": -0.21360747492209614,
+   "hi": 1.8342610647029913,
+   "lo90": -0.08321694088296318,
+   "hi90": 1.6616446535233598,
+   "p": 0.07296351824087956,
+   "model": "qwen25vl_7b",
+   "estimand": "placebo rand_d1 - rand_d2",
+   "flag": false,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "qwen25vl_7b|placebo_p1_p2": {
+   "d": 1.0208445313922816,
+   "lo": -0.05241912187815492,
+   "hi": 2.153963929517135,
+   "lo90": 0.11025038901398966,
+   "hi90": 1.9989668279996433,
+   "p": 0.03298350824587706,
+   "model": "qwen25vl_7b",
+   "estimand": "placebo perm_p1 - perm_p2",
+   "flag": false,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "internvl3_8b|tau_any": {
+   "d": 10.284046591735486,
+   "lo": 9.313707057342974,
+   "hi": 11.256860553941669,
+   "lo90": 9.444816877141294,
+   "hi90": 11.105647720330829,
+   "p": 0.0004997501249375312,
+   "model": "internvl3_8b",
+   "estimand": "tau_any",
+   "R": 3,
+   "D": 2,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "internvl3_8b|tau_sel": {
+   "d": 5.35727741661951,
+   "lo": 4.163043646474336,
+   "hi": 6.5254197558364435,
+   "lo90": 4.365629319226102,
+   "hi90": 6.348855378656333,
+   "p": 0.0004997501249375312,
+   "model": "internvl3_8b",
+   "estimand": "tau_sel",
+   "R": 3,
+   "D": 2,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "internvl3_8b|tau_marg": {
+   "d": 0.06473105721635619,
+   "lo": -0.6485774573005033,
+   "hi": 0.8103229336244201,
+   "lo90": -0.5363308806106855,
+   "hi90": 0.7019570110886183,
+   "p": 0.43228385807096453,
+   "model": "internvl3_8b",
+   "estimand": "tau_marg",
+   "R": 3,
+   "D": 2,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "internvl3_8b|placebo_d1_d2": {
+   "d": -0.9503250158948475,
+   "lo": -2.0230120640262355,
+   "hi": 0.13814425809297665,
+   "lo90": -1.8719658982234375,
+   "hi90": -0.05599048744284088,
+   "p": 0.9600199900049975,
+   "model": "internvl3_8b",
+   "estimand": "placebo rand_d1 - rand_d2",
+   "flag": false,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "internvl3_8b|placebo_p1_p2": {
+   "d": 0.765298165562033,
+   "lo": -0.45307371056993684,
+   "hi": 1.919346320034422,
+   "lo90": -0.21267896623504717,
+   "hi90": 1.7764880578442084,
+   "p": 0.09295352323838081,
+   "model": "internvl3_8b",
+   "estimand": "placebo perm_p1 - perm_p2",
+   "flag": false,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "aya_vision_8b|tau_any": {
+   "d": 13.791744602082904,
+   "lo": 12.941832254117177,
+   "hi": 14.590662405664098,
+   "lo90": 13.094700202423002,
+   "hi90": 14.470438855382715,
+   "p": 0.0004997501249375312,
+   "model": "aya_vision_8b",
+   "estimand": "tau_any",
+   "R": 3,
+   "D": 2,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "aya_vision_8b|tau_sel": {
+   "d": 6.153455261279863,
+   "lo": 5.168197497751323,
+   "hi": 7.183731987075274,
+   "lo90": 5.340173582966845,
+   "hi90": 7.024266685792761,
+   "p": 0.0004997501249375312,
+   "model": "aya_vision_8b",
+   "estimand": "tau_sel",
+   "R": 3,
+   "D": 2,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "aya_vision_8b|tau_marg": {
+   "d": -0.8983854451469426,
+   "lo": -1.4882532700859976,
+   "hi": -0.3039679182345373,
+   "lo90": -1.3962835258780877,
+   "hi90": -0.3841501057201804,
+   "p": 0.999000499750125,
+   "model": "aya_vision_8b",
+   "estimand": "tau_marg",
+   "R": 3,
+   "D": 2,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "aya_vision_8b|placebo_d1_d2": {
+   "d": 0.1371759005160591,
+   "lo": -0.7785991257860772,
+   "hi": 0.9852346734383082,
+   "lo90": -0.6224376676104253,
+   "hi90": 0.876562073743925,
+   "p": 0.3963018490754623,
+   "model": "aya_vision_8b",
+   "estimand": "placebo rand_d1 - rand_d2",
+   "flag": false,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "aya_vision_8b|placebo_p1_p2": {
+   "d": 0.9273903565328752,
+   "lo": -0.08122973812872115,
+   "hi": 1.9233376735958498,
+   "lo90": 0.0964784814307878,
+   "hi90": 1.7514550306393497,
+   "p": 0.03548225887056472,
+   "model": "aya_vision_8b",
+   "estimand": "placebo perm_p1 - perm_p2",
+   "flag": false,
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "lmcap|tau_sel": {
+   "d": 7.763841033979502,
+   "lo": 6.702870469291969,
+   "hi": 8.796469281193716,
+   "lo90": 6.862599689036214,
+   "hi90": 8.65182890635038,
+   "p": 0.0004997501249375312,
+   "model": "lmcap",
+   "estimand": "tau_sel",
+   "wording": "re-implementation of the LMCap recipe by this study; not the authors' code; not a statement about the published numbers",
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "lmcap|tau_pair": {
+   "d": 7.3663829374518235,
+   "lo": 6.251950356706102,
+   "hi": 8.41754467093077,
+   "lo90": 6.457975412785286,
+   "hi90": 8.251649387838826,
+   "p": 0.0004997501249375312,
+   "model": "lmcap",
+   "estimand": "tau_pair",
+   "wording": "re-implementation of the LMCap recipe by this study; not the authors' code; not a statement about the published numbers",
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  },
+  "lmcap|tau_marg": {
+   "d": 0.3974580965276786,
+   "lo": -0.010128097560415416,
+   "hi": 0.783143568417293,
+   "lo90": 0.06486952123439998,
+   "hi90": 0.7205733730574206,
+   "p": 0.02798600699650175,
+   "model": "lmcap",
+   "estimand": "tau_marg",
+   "wording": "re-implementation of the LMCap recipe by this study; not the authors' code; not a statement about the published numbers",
+   "row": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+   "rule": "none (development row)"
+  }
+ },
+ "variance": {
+  "qwen25vl_7b": {
+   "sigma2_w": 283.6100378066091,
+   "draw_part": 0.04726833963443485,
+   "total": 0.40672685465783176,
+   "share": 0.11621642164297319
+  },
+  "internvl3_8b": {
+   "sigma2_w": 309.4474354794639,
+   "draw_part": 0.051574572579910646,
+   "total": 0.36134836536242704,
+   "share": 0.1427281192435508
+  },
+  "aya_vision_8b": {
+   "sigma2_w": 211.48485637898227,
+   "draw_part": 0.03524747606316371,
+   "total": 0.25670985162808785,
+   "share": 0.13730472687206802
+  }
+ },
+ "row_label": "rehearsal on 2,000 OpenViIC training images used as queries, own cluster removed; development",
+ "record": {
+  "stage": "rehearsal",
+  "utc": "2026-11-19T21:09:21Z",
+  "tree": {
+   "sums_sha256": "220d9c655556b6e9812b719a9f93f352fd2f033d7681854b284f279ebe50da86",
+   "files": 138
+  },
+  "env": {
+   "python": "3.12.3",
+   "packages_sha256": "e95831b6f8c56dfe7f66d652420bd5cfc708c0cd2412f84bd4a632863703ee2d",
+   "java": "openjdk version \"21.0.13.1\" 2026-11-17\nOpenJDK Runtime Environment (build 21.0.13.1+2-1-24.04.1-Ubuntu)\nOpenJDK 64-Bit Server VM (build 21.0.13.1+2-1-24.04.1-Ubuntu, mixed mode, sharing)",
+   "jar_sha256": "9e2811cdbc2ddfc71d04be5dc36e185c88dcd1ad4d5d69e4ff2e1369dccf7793",
+   "kit_b": {
+    "b2_controls.py": "6f2a7258606097e6125bfae2c2bba26a84ff60238548cf82e470d696825af6a3",
+    "cay_audit.py": "7334ced30bde7be514765563a3628c56d2a4c4cc18537795a2770171139b871c",
+    "exchangeability_audit.py": "f30758e372061a15cbab30a568a397f57442f2701e0ffd9cc2372f20901d66a0",
+    "protocol_pilot.py": "6aee428207a2d1a045cd72d054e26a2e2ac8d9c2e414cb0c161e3b95dffd92bf",
+    "ptb_protocol.py": "ea5fbe6e1528e339abfcb9ba00bdd0c4d4e4bde07ae6edd30fffaa72d60754d2",
+    "punctuation_audit.py": "a7e8024030f56cbff07124278cd631964b7b1197607426d7212fd665b6c2f9b1"
+   },
+   "vncorenlp_models": {
+    "models/wordsegmenter/vi-vocab": "0a47c5b55bbce163029d37730a67b9479740388695c29c106c112b815613eaa5",
+    "models/wordsegmenter/wordsegmenter.rdr": "9e62f96bd93e37a24f364238e8d8ae986fa5dad6dbc9f4eae622ab3651b7fa06"
+   }
+  },
+  "parity_7_1": {
+   "preds_sha256": "f7298a01b94044eb9d416b34cbd9986fd34b350350543bce295ead7677f2829f",
+   "ledger_sha256": "f79ea6a9c59157216fdf1662ce320c35a1befe48a87cfb36a174a7cfef0244f8",
+   "n": 925,
+   "result": "ok"
+  }
+ }
+}
