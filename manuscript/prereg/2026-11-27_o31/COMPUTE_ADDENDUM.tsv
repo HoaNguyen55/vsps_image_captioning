@@ -1,0 +1,51 @@
+section	item	job	tier	gpu_h_3090	cap_h	runs_after	speed_source	cumulative_h_after_G2_core_plan	nights_after_G2_core_plan
+REG	registered	G3 dev pilot (S1, S2@OP*, S2@OP_mid; decodes)	1	15.00	as COMPUTE_PLAN	P1 K0 PASS	COMPUTE_PLAN G3	15.00	1-2
+REG	registered	G4 ablations A-2, A-3, A-4	1	15.00	as COMPUTE_PLAN	G3 read, K1 not fired	COMPUTE_PLAN G4	30.00	2-3
+CORE	E-B1	S0-two decode, tier 1	1	0.70	1	G3 read, K1 not fired	3.2 s/image (COMPUTE_PLAN)	30.70	4-4
+CORE	E-B3	SFT S2-recipe at OP_25 and OP_75 (2 x 4.3)	1	8.60	12	G3 read, K1 not fired	4.3 h per S2 SFT (COMPUTE_PLAN)	39.30	4-4
+CORE	E-B3	tier-1 decodes of OP_25 and OP_75 students	1	1.40	2	the two SFT runs	3.2 s/image	40.70	4-5
+CORE	E-B4	C-VCD tier 1 (2 passes per token)	1	1.40	2	G3 read, K1 not fired	2 x decode (review F05)	42.11	5-5
+CORE	E-B4	C-DeCo tier 1 (1.2 x decode)	1	0.84	2	G3 read, K1 not fired	1.2 x decode (review F05; DeCo paper latency claim not re-checked)	42.95	5-5
+CORE	E-B4	C-SEN Vietnamese tier 1	1	0.70	1	G3 read, PS-1 to PS-3	3.2 s/image	43.65	5-5
+CORE	E-B4	English tier 1 on UIT-ViIC 231: C-SEN, S0, S2	1	0.62	1	G3 read, PS-1 to PS-3	3.2 s/image	44.27	5-5
+CORE	E-B5	verifier rules on UIT-ViIC 231 (P-a, P-b)	1	2.00	3	G3 read (P-a needs G3's S0 decode)	probe speeds of COMPUTE_PLAN; detectors and CLIP estimated	46.27	5-5
+CORE	E-B6	A-8: SFT + tier-1 decodes	1	5.00	7	G3 read, K1 not fired (with A-3 in G4)	4.3 h SFT; 3.2 s/image	51.27	5-6
+REG	registered	G7 seeds 43, 44 for S1 and S2	1	16.00	as COMPUTE_PLAN	tier-1 freeze commit	COMPUTE_PLAN G7	67.27	6-7
+REG	registered	T2 decodes + V-COCO probes + V_FAIR (T2v)	2	74.00	as COMPUTE_PLAN	tier-1 freeze; W25 pass	COMPUTE_PLAN T2 67 + T2v 7	141.27	7-15
+CORE	E-B1	S0-two decode, tier 2	2	4.50	6	within T2	4.5 h per 5,000 (COMPUTE_PLAN)	145.77	15-15
+CORE	E-B3	tier-2 decodes of OP_25, OP_mid, OP_75 students (3 x 4.5)	2	13.50	18	within T2	4.5 h per 5,000	159.27	15-16
+CORE	E-B4	C-VCD tier 2	2	9.00	12	within T2	2 x decode	168.27	16-17
+CORE	E-B4	C-DeCo tier 2	2	5.40	8	within T2	1.2 x decode	173.67	17-18
+CORE	E-B4	C-SEN English tier 2	2	4.50	6	within T2, PS-1 to PS-3	4.5 h per 5,000	178.17	18-18
+MODULE	M1	Gemma-3-4B probes on the pool (176k x 0.2 s, estimate)	1	9.78	13	G3 read; smoke pass	unmeasured estimate; smoke replaces it	61.04 (CORE + M1)	6-7 (CORE + M1)
+MODULE	M1	Gemma probes on P-a and P-b (UIT-ViIC 231)	1	0.20	1	G3 read	estimate	61.24 (CORE + M1)	7-7 (CORE + M1)
+MODULE	M1	A-7 SFT + tier-1 decodes	1	5.00	7	the M1 probes	4.3 h SFT; 3.2 s/image	66.25 (CORE + M1)	7-7 (CORE + M1)
+MODULE	M2	2 SFT of Gemma-3-4B on S1 and S2 stores	1	8.60	12	G3 read	planning value 4.3 h each	59.87 (CORE + M2)	6-6 (CORE + M2)
+MODULE	M2	tier-1 decodes of M2-S0, M2-S1, M2-S2	1	2.10	3	the M2 SFT	3.2 s/image (planning)	61.97 (CORE + M2)	6-7 (CORE + M2)
+MODULE	M2	tier-2 decodes of M2-S0, M2-S1, M2-S2	2	13.50	18	within T2	4.5 h per 5,000 (planning)	202.37 (CORE + M2)	19-21 (CORE + M2)
+MODULE	M3	MME for S0, S1, S2 (3 x 2,374 short answers)	1	1.50	2	G3 read; laptop overlap pass	estimate	52.77 (CORE + M3)	6-6 (CORE + M3)
+MODULE	M4	count claims and rewarded-error rate (CPU)	-	0.00	0	G3 decodes; T2 decodes	CPU only	51.27 (CORE + M4)	6-6 (CORE + M4)
+MODULE	M5	S0 detailed decodes of the training pool	1	3.35	5	G3 read	3.2 s/image	54.62 (CORE + M5)	6-6 (CORE + M5)
+MODULE	M5	CLIP scoring of subsentences	1	0.50	1	the pool decodes	estimate	55.12 (CORE + M5)	6-6 (CORE + M5)
+MODULE	M5	EFUF-style merger-only training, 1 epoch	1	3.00	4	CLIP scoring	estimate	58.12 (CORE + M5)	6-6 (CORE + M5)
+MODULE	M5	C-EFUF tier-1 decodes	1	0.70	1	the training	3.2 s/image	58.82 (CORE + M5)	6-6 (CORE + M5)
+MODULE	M5	C-EFUF tier-2 decode	2	4.50	6	within T2	4.5 h per 5,000	190.22 (CORE + M5)	19-20 (CORE + M5)
+section	what	gpu_h_3090	nights_alone_at_10h	registered_plus_this_h	nights_after_G2_registered_plus_this
+SUMMARY	registered only (G3, G4, G7, T2 incl. T2v; no A-5, A-6, T3)	120.00	12	120.00	12
+SUMMARY	CORE only (E-B1 to E-B8)	58.17	6	178.17	18
+SUMMARY	CORE tier-1 part	21.27	3	141.27	15
+SUMMARY	CORE tier-2 part	36.90	4	156.90	16
+SUMMARY	module M1 alone	14.98	2	134.98	14
+SUMMARY	CORE + M1	73.15	8	193.15	20
+SUMMARY	module M2 alone	24.20	3	144.20	15
+SUMMARY	CORE + M2	82.37	9	202.37	21
+SUMMARY	module M3 alone	1.50	1	121.50	13
+SUMMARY	CORE + M3	59.67	6	179.67	18
+SUMMARY	module M4 alone	0.00	0	120.00	12
+SUMMARY	CORE + M4	58.17	6	178.17	18
+SUMMARY	module M5 alone	12.05	2	132.05	14
+SUMMARY	CORE + M5	70.22	8	190.22	20
+SUMMARY	CORE + all modules	110.90	12	230.90	24
+NOTE	nights are counted after G2 ends, at 10 GPU-hours per night, with jobs packed back to back in registered order (P1 is CPU; G3; the G4 block with the CORE tier-1 jobs; G7; T2 with the CORE tier-2 jobs). The optional A-5 and A-6 and the tier-3 step T3 are not counted. Module rows assume CORE plus that one module, with its tier-1 part after the G4 block and its tier-2 part at the end of T2.
+NOTE	speeds are COMPUTE_PLAN v3 planning values for one RTX 3090 (3.2 s per detailed decode, 4.5 h per 5,000-image decode, 4.3 h per S2-type SFT, 0.07 s Vintern probe, 0.47 s InternVL3 probe); rows marked estimate have no measured anchor and the job smoke replaces them. Caps of new jobs are ceil(1.3 x planned GPU-hours), counted as wall time from launch.json (ERRATUM_O31_2 E7).
+NOTE	no addition has tier-3 hours; the registered T3 (about 56 + 6 GPU-hours) is unchanged.

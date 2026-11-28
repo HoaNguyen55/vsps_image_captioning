@@ -1,0 +1,216 @@
+OPEN FOR JUDGE: ERRATUM_O31_4_DRAFT.md (2026-11-28)
+Each item carries a tag:
+  CONFLICT = a review item conflicts with the registration as written
+  DEFAULT  = a setting has more than one published value, or its published value could not be read
+  ROLE     = a set's registered role may not cover the proposed use
+  CHOICE   = the writer chose between alternatives
+  PI       = needs the investigator's own word
+Each item gives the writer's recommendation and the default if there is no answer.
+
+A. CONFLICTS BETWEEN REVIEW ITEMS AND THE REGISTRATION
+
+A1 CONFLICT. Tier-3 rows proposed by F01 (c), F02 and F05.
+  The brief allows tier 3 only for a quantity the registration already puts there. Every addition therefore stops at tier 2, and COMPUTE_ADDENDUM holds no tier-3 hours.
+  Open: may the tier-3 panel add the zero-GPU rows E-B1 (a) CMP of S2 against S0 and E-B1 (b) S0-trunc, computed from the registered tier-3 S0 and S2 decodes?
+  Recommendation: decide this at the tier-3 panel, not now. Default: no tier-3 row.
+
+A2 CONFLICT. A third verifier family as a member of the K0 grid (the brief's M1 option).
+  Adding a family set to the grid changes the set over which OP* and K0 are chosen, and the registered grid is frozen. M1 offers the swap ablation A-7 only.
+  Recommendation: swap ablation only. If the PI wants the grid variant, it needs its own amendment before the first P1 output.
+  Default: swap ablation only.
+
+A3 CONFLICT. F18 (reword the headline as "rho = x [CI]") and F10 (a) (a per-seed condition on the headline).
+  Both edit the registered headline rule of §6.1, so neither is taken. R-a prints the CI of rho in the same sentence, and per-seed values are already registered.
+  Default: as drafted.
+
+A4 CONFLICT. F03 (c) ("dev-confirmed" wording).
+  K6 forbids calling a development result confirmed. Not taken.
+
+A5 CONFLICT. R-a computes the CI of rho at tier 3, if tier 3 is reached.
+  rho is a registered tier-3 quantity and its replicates are already drawn, so I read this as within the brief. A stricter reading puts R-a at tier 2 only.
+  Recommendation: allow it at tier 3. Default: tier 2 only.
+
+A6 CONFLICT. E-B7 power reading.
+  The brief says "before G3", but SE(D) needs S1 and S2 outputs, which exist only after G3. So:
+  - PR-0 is arithmetic, fixed now;
+  - PR-1 is read at the G3 read;
+  - both forms are committed before the first G3 output.
+  The reading is advisory and neither fires nor waives K1 or K2. A PI decision to stop on it would lie outside the registration and be reported (K6).
+  Open: is this advisory form acceptable, or does the judge want it removed so that no discretionary stop exists?
+  Recommendation: keep it advisory.
+
+B. DEFAULT SETTINGS WITH MORE THAN ONE PUBLISHED VALUE, OR NOT READ IN THEIR PRIMARY SOURCE
+
+B1 DEFAULT. VCD.
+  - alpha 1, beta 0.1 and noise step 500 are verified in SENTINEL Table 12 and in the group's port scripts/baselines.py (1b7bf812), which FAIR used.
+  - The VCD paper's own §4.1 and App. A values were not read verbatim in the primary source. The page as read also showed a POPE noise step printed as "999999", possibly a rendering error.
+  - The VCD paper samples tokens; the port and this erratum use greedy selection over the contrastive distribution.
+  Recommendation: greedy, for comparability with S0 and with FAIR's VCD row. State the deviation in the paper.
+
+B2 DEFAULT. DeCo.
+  - The candidate layers are 20 to 28 (paper §3.1 and §4.1, not read verbatim). The tested 7B models have 32 decoder layers (their public configurations, not re-checked here). Qwen2.5-VL-7B has 28 decoder layers (config.json), and DeCo reports no Qwen2.5-VL model.
+  - Writer's mapping: the same relative depth, which gives layers 18 to 24 (first decoder layer = 1). The alternative is the literal range 20 to 27.
+  - alpha is given as "a range of 0.1 to 0.6" in the paper and as 0.6 in the README. The writer chose 0.6.
+  - top-p 0.9 and top-k 20 come from the README only.
+  - The official code must be read before C09 is written, and any difference comes back here.
+
+B3 DEFAULT. EFUF CLIP score.
+  - Paper Eq. 1 takes the maximum over windows; the repository has average_top_k = 4 by default. The writer chose the maximum (the paper).
+  - CLIP ViT-B/32, 48 px patches and window 4 come from the repository, not read verbatim.
+  - The text prompt form for an object (bare name, or a template) and the score scale (100 x cosine) are to be read in insight/clip.py before C12 and C21 are written.
+  - The batch size for M5 training is the repository default, not yet read.
+
+B4 DEFAULT. SENTINEL detectors.
+  The checkpoints and thresholds of GroundingDINO and YOLO-World were not readable (model/detector/*.py returned HTTP 503).
+  - Rule as drafted: use the values in the released code at a pinned commit, recorded with file and line before any detector output.
+  - If a value is absent there, the judge names the detector's own published default before any output.
+  - Also open: whether the released code prompts GroundingDINO per class or with all class names joined.
+
+B5 DEFAULT. EFUF published thresholds (32 / 23 / 27.5) were calibrated on English captions of COCO images.
+  M5 applies them unchanged, with no tuning, to the English class names of Vietnamese mentions on KTVIC images. This is a stated deviation in what is scored, not a tuned value.
+
+C. SET ROLES
+
+C1 ROLE. UIT-ViIC test 231 for the four-rule verifier comparison (E-B5).
+  §3.2 ("Dev: UIT-ViIC test 231 (spent)") and the §3.3 table ("instance-gold dev for the student and for V-COCO") cover V-COCO use.
+  The balanced set P-b (all present classes plus 6 absent classes per image) goes beyond the registered V-COCO units. §5 says POPE is not registered; P-b is not the POPE benchmark, but it is POPE-like in form.
+  Recommendation: allow it as a descriptive development row that can change no verdict.
+
+C2 ROLE. UIT-ViIC test 231 references for the lexicon-validity row R-d.
+  The set's gold is "COCO instances ∪ Vietnamese refs" (§3.3), so reading the references for counts is within its role.
+
+C3 ROLE. KTVIC test 558 for the transfer ratio (E-B3).
+  "dose-response" is a listed role of the set (§3.3).
+
+C4 ROLE. M-HalDetect validation labels for M4 (b).
+  V-EN is a development role (§3.2). M4 (b) restricts itself to M0's operating set, which excludes Karpathy-test images and other owners' images. It runs on CPU with labels and COCO instances only.
+
+C5 ROLE / CUSTODY. Outside image sets that may hold COCO val2014 images: Visual Genome (C-SEN overlap pass) and MME (M3).
+  Some of their images could belong to KV-4,224. Under ERRATUM_O31_2 E1 O-H8 they are checked on the laptop before any byte goes to the PI's PC:
+  - for C-SEN, the training images are never placed on the PC;
+  - for MME, a hit is removed before the push.
+  Open: confirm this reading of O-H8.
+
+C6 ROLE. The SENTINEL training image list (PS-2).
+  The released image_data.jsonl may not be the list used for the Qwen2.5-VL adapter; the model card names no data. The precondition fails closed (NOT RUN) unless a per-model file or an author statement identifies it.
+
+D. CHOICES THE WRITER MADE
+
+D1 CHOICE. T-4 places OP_strict = S1 (fixed budget B = 9) at the strict end, as registered for A-1.
+  The first step of the dial therefore also changes the budget. The alternative strict end is A-8 (FAIR verdicts with the scaled budget, E-B6), which would cost one more tier-2 decode (4.5 h).
+  Recommendation: keep S1 as registered. The 2 x 2 of E-B6 reports the budget share.
+
+D2 CHOICE. T-4 tests the R ordering only.
+  F04 proposed testing R and h. h is reported with its predicted direction (not decreasing), but it is not tested, because "h rises" is not a claim of the paper and it would add a member to family T.
+
+D3 CHOICE. The T-4 variance.
+  It is a normal approximation with an image-bootstrap variance plus 2 x a pooled between-seed variance (S1 and S2, three seeds each, 4 df). The alternative is the image bootstrap only, which ignores training noise for single-seed points.
+  Recommendation: as drafted, with the 4 df stated in the paper.
+
+D4 CHOICE. OP_25 and OP_75 are chosen over all 30 grid points, whether or not they meet P_floor, mirroring the OP_mid rule of E7.
+  The alternative restricts them to points that meet P_floor.
+  Recommendation: as drafted (it spans the dial).
+
+D5 CHOICE. The shorter-prompt S0 decode uses PROMPTS["two"] (two sentences; the repository's length-matched control). Alternatives:
+  - "short" (one sentence; far shorter than S2);
+  - "instructed" (a precision-instruction prompt, which answers a different question, "is a clever prompt enough?").
+  No new prompt string is written.
+
+D6 CHOICE. The upper bound 12 for j in S0-trunc, and the sentence rule (end punctuation, line breaks, a final fragment counts).
+
+D7 CHOICE. Family T has four members: T-1, T-2, T-3 and T-4.
+  - The dominance members use p = max(p_R, p_h).
+  - A NOT_IDENTIFIED or NOT RUN member enters Holm with p = 1.
+  - No module joins T, so dropping a module changes no adjusted p.
+
+D8 CHOICE. C-SEN is run in English at tiers 1 and 2 (its training language) and in Vietnamese at tier 1 only.
+  The alternative also runs Vietnamese at tier 2 (+4.5 h).
+
+D9 CHOICE. M1 and M2 both use google/gemma-3-4b-it.
+  - It is outside the Qwen and InternVL lines.
+  - It runs in bf16 within 24 GB.
+  - Its card states support from transformers 4.50.0, so the existing PY environment works.
+  - It states "over 140 languages"; Vietnamese performance is not checked, and the smoke check decides.
+  - Its encoder (SigLIP-based per the Gemma 3 report) was not re-checked.
+  - It is gated: the PI's account must accept its terms (an admin item, low priority).
+  Alternatives considered:
+  - Llama-3.2-11B-Vision (Vietnamese not among its listed languages; gated);
+  - Aya Vision 8B (CC BY-NC; gated);
+  - Idefics3-8B (Llama 3.1 language model; Vietnamese weak; not checked).
+
+D10 CHOICE. M3 uses MME rather than MMBench-EN dev.
+  MME is scored deterministically (yes/no, accuracy and accuracy+), with no language-model answer extraction, and is the benchmark FeedQuill and HalluciDoctor report. MME's source pin and licence are not yet checked.
+
+D11 CHOICE. M4 (a) count-claim rules: numerals 2 to 10 and digits 2 to 99, the word "một" excluded, the fixed classifier list, and claims made unscorable by any crowd instance of the class.
+  All of these are the writer's choices.
+
+D12 CHOICE. M5 is EFUF-style rather than HALVA-style.
+  EFUF has a full-text dissection, public code and published defaults, and needs no generated hallucinated variants. HALVA would need an LLM to write augmented negatives.
+
+D13 CHOICE. New random seeds:
+  - 20261129 for the random absent classes of P-b;
+  - 20261130 for the seed draw of R-b;
+  - 20261131 for the self-BLEU sample of R-e.
+  The registered seeds (20261127 and 20261128) are reused only where the registration uses them.
+
+D14 CHOICE. The caps of new jobs are ceil(1.3 x planned GPU-hours), counted as E7.
+  The registered caps are about 1.2 to 1.5 x plan.
+
+D15 CHOICE. The whole erratum is committed once, before the first P1 output.
+  The alternative is two commits: E-B3's chooser and R-c before P1, the rest before G3.
+
+D16 CHOICE. Planning speeds that have no measured anchor are estimates that the job's own smoke replaces:
+  - Gemma probes 0.2 s;
+  - Gemma SFT 4.3 h;
+  - DeCo 1.2 x decode;
+  - EFUF training 3.0 h;
+  - MME 1.5 h.
+
+D17 CHOICE. C-SEN overlap (PS-3) removes overlapping images and re-scores every system in the C-SEN rows on the reduced set.
+  The brief's wording ("if its training images do not overlap the evaluation images") can also be read strictly: any hit on a set means no C-SEN row on that set.
+  Recommendation: remove hits, as §3.5 does for the registered sets; the counts are reported. Default if the judge reads the brief strictly: any hit makes the C-SEN rows on that set NOT RUN.
+
+D18 CHOICE. G-5 runs every new GPU job only after the G3 read and only if K1 has not fired.
+  A K1 stop therefore leaves no comparator row (E-B4), no verifier-rule row (E-B5) and no S0-two row. The zero-GPU rows (E-B1 (a), (b), E-B2 at tier 1, E-B7, E-B8) are still computed (G-5 as drafted).
+  Alternative: also run the tier-1 GPU rows of E-B1 (c), E-B4 and E-B5 (about 6.3 h: 0.7 + 3.6 + 2.0) after a K1 stop, for the brief development report.
+  Recommendation: as drafted, because K1 says "stop after seed 42".
+
+D19 CHOICE. S0-filter (E-B2) deletes every sentence that mentions a class whose verdict is not SUPPORTED (REJECTED or UNCERTAIN), as worded in F02.
+  The alternative deletes only sentences with a REJECTED class, which keeps more recall.
+  Recommendation: as drafted, with one variant only. The other variant would be a second baseline chosen after its output, if added later.
+
+D20 CHOICE. "0 GPU-hours" for E-B2 at tier 1 and for P-a in E-B5 rests on the tier-1 V-COCO probes that §7 names ("V-COCO on UIT-ViIC 231") but that COMPUTE_PLAN v3 does not budget as a row.
+  If those probes are not run under a registered job, they cost about 0.12 GPU-hours: about 800 propositions × (0.07 + 0.47) s.
+  Open: which job runs them (G3's tail, or E-B5's job).
+
+D21 CHOICE. Reading thresholds the writer set. Both are descriptive and change no verdict:
+  - E-B3: "TR_R point < 0.5" triggers the sentence "the student does not follow the supervision recall";
+  - E-B5: "FA difference CI upper bound at most +5.0 points" on P-b is H4's registered FA bound, applied as a descriptive reading on another set.
+  Alternatives: no reading threshold (numbers only).
+
+E. ITEMS FOR THE PI
+
+E1 PI. A DPO comparator (RLAIF-V, OPA-DPO, a Mask-DPO-style or SENTINEL-style retraining on the O31 pool).
+  It is deferred by the proposal (Table 2, FAIR 2029) and needs the PI's own word. It is not in this erratum.
+  Recommendation: not for FAIR 2027.
+
+E2 PI. Does evaluating the released SENTINEL adapter, which was trained with DPO by its authors, need a PI line under Table 2?
+  Recommendation: no. The group runs no preference optimisation, and the adapter is a comparator only.
+  Default: as drafted (C-SEN kept).
+
+E3 PI. Gemma 3 is gated (M1, M2): the licence must be accepted on the account whose read token the PC uses. Needed only if M1 or M2 is kept.
+
+E4 PI. Keep or drop each module M1 to M5, before the first G3 output. The writer recommends, in order of value per GPU-hour:
+  - M4 (0 h);
+  - M3 (1.5 h);
+  - M5 (12.1 h);
+  - M2 (24.2 h);
+  - M1 (15.0 h).
+
+E5 PI. Q1 (KV-4,224 as tier 3) is unchanged and still due before the first G3 output. This erratum depends on nothing at tier 3.
+
+F. NOT TAKEN BUT AVAILABLE
+
+F1 F11 (mention policy against perception).
+  It could become a module if committed before the first G3 output: dev about 4.5 h, tier 2 about 12 h. It is not drafted here, because its two predictions need their own power reading.
+F2 F10 (d) (a second learning rate). About 10 h at tier 1. Not taken.
