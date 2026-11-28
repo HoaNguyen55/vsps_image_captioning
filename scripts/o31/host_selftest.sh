@@ -79,7 +79,7 @@ say "H2 PASS (every REUSED file equals its pin)"
 
 # H3 -------------------------------------------------------------------------------------------------------------
 mkdir -p "$TMPDIR"
-PY="$PY" VSPS_REPO="$REPO" "$HERE/run_tests.sh" > "$OUT/run_tests.log" 2>&1 || fail "H3 run_tests.sh (see run_tests.log)"
+PY="$PY" VSPS_REPO="$REPO" bash "$HERE/run_tests.sh" > "$OUT/run_tests.log" 2>&1 || fail "H3 run_tests.sh (see run_tests.log)"
 grep -E "^[0-9]+/[0-9]+ passed$" "$OUT/run_tests.log" | tail -1 | { read -r l; say "H3 tests $l"; }
 grep -E "killed; survived \[\]; bad sites \[\]$" "$OUT/run_tests.log" > /dev/null || fail "H3 mutant survivors"
 if [ -n "${JMUT:-}" ]; then

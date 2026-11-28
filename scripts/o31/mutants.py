@@ -1,5 +1,6 @@
 """Mutation check: each mutant edits a COPY of the package (never the package itself); the copy's test_o31.py must
-fail on every one. Own mutants M01-M27, W3/W5, G01-G30 (g12b), S/G31-G37/O (g12c), X/Q/V (g12d), and the 35 judge mutants of CC-504.
+fail on every one. Own mutants M01-M27, W3/W5, G01-G30 (g12b), S/G31-G37/O (g12c), X/Q/V (g12d),
+P/C/T/G41-G49/A/H (PKG1: C06, C23, C24, C22, C13, N9, the host_selftest call), and the 35 judge mutants of CC-504.
 
     $PY -I -B mutants.py        exit 0 iff every mutant is killed and every mutation site exists exactly once
 """
@@ -218,6 +219,89 @@ MUTANTS += [  # g12d: CC-521 W4 (stems, F3), W5 (release tree F1, seed F2), W7 (
     ("V02 g12 Vintern binding skipped", "g12.py", "    stage1.check_vintern(a.vintern)\n", ""),
 ]
 
+LAUNCHERS += ("ops5.py", "a8store.py", "g3v.py", "host_selftest.sh")  # PKG1 launchers and the host self-test
+MUTANTS += [  # PKG1: CODE_NEEDS C06, C23, C24, C22, C13; CC-526 N9; the host_selftest call
+    ("P01 M-C06a P_floor applied", "points.py", 'if p["sft_sha256"] not in excl]',
+     'if p["sft_sha256"] not in excl and p["P"] >= d["P_floor"]]'),
+    ("P02 M-C06b OP_mid sha not excluded", "points.py",
+     'excl = {s1["sft_sha256"], d["op_star"]["sft_sha256"], d["op_mid"]["sft_sha256"]}',
+     'excl = {s1["sft_sha256"], d["op_star"]["sft_sha256"]}'),
+    ("P03 M-C06c tie to lower P", "points.py", '(abs(ip[1]["R"] - t), -ip[1]["P"], ip[0])',
+     '(abs(ip[1]["R"] - t), ip[1]["P"], ip[0])'),
+    ("P04 M-C06d identified with gap < 1.0", "points.py", "small = [g for g in gaps if g < GAP]",
+     "small = [g for g in gaps if g < 0.0]"),
+    ("P05 M-C06e no eligible point returns a point", "points.py", "        if not el:\n            step = 4",
+     "        if False:\n            step = 4"),
+    ("P06 M-C06f decimal arithmetic", "points.py", '(abs(ip[1]["R"] - t), -ip[1]["P"], ip[0])',
+     '(abs(__import__("decimal").Decimal(repr(ip[1]["R"])) - __import__("decimal").Decimal(repr(t))), -ip[1]["P"], ip[0])'),
+    ("P07 M-C06g equal R in grid order", "points.py", 'by_r = sorted(five, key=lambda lp: lp[1]["R"])',
+     'by_r = sorted(five, key=lambda lp: (lp[1]["R"], -1 if lp[1]["grid_index"] is None else lp[1]["grid_index"]))'),
+    ("P08 K0 FAIL not NOT RUN", "points.py", '    if not d["pass"]:\n        return {**out, "result": "NOT RUN"',
+     '    if d["op_star"] is None:\n        return {**out, "result": "NOT RUN"'),
+    ("P09 t25 at the midpoint", "points.py", "    t25 = a + 0.25 * (b - a)\n", "    t25 = a + 0.5 * (b - a)\n"),
+    ("P10 OP_25 sha not excluded for OP_75", "points.py", '        excl.add(p["sft_sha256"])\n', ""),
+    ("P11 preview accepted", "points.py", 'if k0.get("complete") is not True or k0.get("decision") is None:',
+     'if k0.get("decision") is None and k0.get("preview_no_verdict") is None:'),
+    ("P12 grid order unchecked", "points.py",
+     '    if [p.get("op") for p in k0.get("points", [])] != [[a, r, list(f)] for a, r, f in verify.grid()]:',
+     "    if False:"),
+    ("P13 edge misses tau_rej 0.30", "points.py", "EDGE_TAU_ACC, EDGE_TAU_REJ = (0.50, 0.90), (0.10, 0.30)",
+     "EDGE_TAU_ACC, EDGE_TAU_REJ = (0.50, 0.90), (0.10,)"),
+    ("P14 guard ignores the result", "points.py", 'if rec.get("schema") != SCHEMA or rec.get("result") != "IDENTIFIED":',
+     'if rec.get("schema") != SCHEMA:'),
+    ("P15 guard ignores the store sha", "points.py",
+     '    if hashlib.sha256(Path(store_sft).read_bytes()).hexdigest() != rec["five"][label]["sft_sha256"]:',
+     "    if False:"),
+    ("P16 guard ignores the sha line", "points.py", "    if not line or line[0] != sha:", "    if False:"),
+    ("C01 M-C23a ops5 accepts a preview", "ops5.py", '    k0 = json.loads(raw.decode("utf-8"))\n',
+     '    k0 = json.loads(raw.decode("utf-8"))\n    k0 = {**k0, "complete": True, "decision": k0["decision"] or k0["preview_no_verdict"]}\n'),
+    ("C02 M-C23b ops5 overwrites", "ops5.py",
+     '    if target.exists():\n        raise SystemExit(f"REFUSED {target} exists: ops5.json is written once")\n'
+     '    fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o444)',
+     "    fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o644)"),
+    ("C03 M-C23c ops5 merges a second k0.json", "ops5.py", "    if len(a.k0) != 1:", "    if not a.k0:"),
+    ("C04 M-C23d ops5 writes before C06 returns", "ops5.py", "    res = points.extra_points(k0)\n",
+     '    a.out.mkdir(parents=True, exist_ok=True)\n    (a.out / "ops5.json").write_text("{}")\n'
+     "    res = points.extra_points(k0)\n    (a.out / \"ops5.json\").unlink()\n"),
+    ("T01 M-C24a sigma2 ddof 0", "t4.py", "np.mean([np.var(r_s1, ddof=1), np.var(r_s2, ddof=1)])",
+     "np.mean([np.var(r_s1, ddof=0), np.var(r_s2, ddof=0)])"),
+    ("T02 M-C24b one sigma2_seed", "t4.py", "den = [vk + 2 * s2 for vk in v]", "den = [vk + s2 for vk in v]"),
+    ("T03 M-C24c min instead of max", "t4.py", '"p": max(pk)', '"p": min(pk)'),
+    ("T04 M-C24d pairs by label", "t4.py", '    order = ops5["order_by_R"]', '    order = ops5["order_by_label"]'),
+    ("T05 M-C24e reads a k0.json", "t4.py", 'if rec.get("schema") != points.SCHEMA or "points" in rec or "decision" in rec:',
+     "if False:"),
+    ("T06 zero denominator only when all k", "t4.py", "if any(x == 0 for x in den):", "if all(x == 0 for x in den):"),
+    ("T07 decodes read before the ops5 result", "t4.py",
+     '    if ops5.get("result") != "IDENTIFIED":\n        return',
+     '    load_columns()\n    if ops5.get("result") != "IDENTIFIED":\n        return'),
+    ("T08 p_k = Phi(z)", "t4.py", "pk = [1.0 - phi(zk) for zk in z]", "pk = [phi(zk) for zk in z]"),
+    ("T09 V_k ddof defaulted", "t4.py", "    if vk_ddof is None:\n        raise", "    if vk_ddof is None:\n        vk_ddof = 0\n    if False:\n        raise"),
+    ("T10 OP_mid student not A-1", "t4.py", '"OP_mid": "A-1"', '"OP_mid": "OP_mid"'),
+    ("P17 R-order record in label order", "points.py", '"five_in_R_order": [{"label": lab, **e} for lab, e in by_r]',
+     '"five_in_R_order": [{"label": lab, **e} for lab, e in five]'),
+    ("G41 M-C22a question from the class name", "vcoco.py", 'q_plus(p["text_vi"]) for p in props', 'q_plus(p["cls"]) for p in props'),
+    ("G42 M-C22b cap not applied", "vcoco.py", "G3V_CAP_H = 1.0", "G3V_CAP_H = 30.0"),
+    ("G43 M-C22c K1 gate applied to G3v", "vcoco.py", "    t0 = clock(root)\n",
+     '    t0 = clock(root)\n    if any(p.name.startswith("K1") for p in Path(root).parent.iterdir()):\n        return 0\n'),
+    ("G44 second launch clock accepted", "vcoco.py",
+     '            if json.loads(fl.read_text()).get("t0") != rec["t0"]:', "            if False:"),
+    ("G45 another job's clock accepted", "vcoco.py", '        if rec.get("job") != JOB:', "        if False:"),
+    ("G46 decode sidecar unchecked", "vcoco.py", "    if not line or line[0] != hashlib.sha256(preds_path.read_bytes()).hexdigest():",
+     "    if False:"),
+    ("G47 image custody unchecked", "vcoco.py", "        if got != h or got not in allowed:", "        if False:"),
+    ("G48 K4 stop not reported NOT RUN", "vcoco.py", '    st["row"] = "NOT RUN" if "NOT RUN" in vals else',
+     '    st["row"] = "INCOMPLETE" if "NOT RUN" in vals else'),
+    ("G49 G3v size not 231", "g3v.py", "    if len(items) != vcoco.UIT_TEST_N:", "    if False:"),
+    ("A01 M-C13a scaled=False", "a8.py", 'return arm_store(records, True, "A8", store_dir, build)',
+     'return arm_store(records, False, "A8", store_dir, build)'),
+    ("A02 M-C13b O31 verdicts applied", "a8.py", 'return arm_store(records, True, "A8", store_dir, build)',
+     'from . import verify\n    return arm_store([verify.apply_states(r, {}, ("vintern",), 0.5, 0.1)[0] for r in records], True, '
+     '"A8", store_dir, build)'),
+    ("A03 A-8 without person_uncap", "a8.py", "    unc, ust = store.uncap(records)\n", "    unc, ust = records, {}\n"),
+    ("A04 a8store.py ignores the exclusions", "a8store.py", '    recs = [r for r in recs if r["file_name"] not in drop]\n', ""),
+    ("H01 host_selftest calls run_tests.sh by path", "host_selftest.sh", 'bash "$HERE/run_tests.sh"', '"$HERE/run_tests.sh"'),
+]
+
 
 def main() -> int:
     py = sys.executable
@@ -235,7 +319,7 @@ def main() -> int:
             path.chmod(0o644)
             path.write_text(text.replace(old, new), encoding="utf-8")
             r = subprocess.run([py, "-I", "-B", str(dst / "test_o31.py")], capture_output=True, text=True,
-                               env={**os.environ, "O31_SRC": str(dst / "src")})
+                               env={**os.environ, "O31_SRC": str(dst / "src"), "O31_FAILFAST": "1"})
             killed = r.returncode != 0
             fails = [ln.split(":")[0][5:] for ln in r.stdout.splitlines() if ln.startswith("FAIL")]
             print(f"{'killed  ' if killed else 'SURVIVED'} {name}  {fails[:3]}")

@@ -4,7 +4,9 @@ The package is imported from $O31_SRC (default ./src) so mutants.py can point it
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
+import io
 import json
 import math
 import os
@@ -23,6 +25,7 @@ sys.path.insert(0, os.environ.get("O31_SRC", str(HERE / "src")))
 import numpy as np  # noqa: E402
 
 from o31 import REPO, REUSED, decode, extract, gate, metrics, no_forbidden, overlap, probe, repo, store, train, verify  # noqa: E402
+from o31 import a8, points, t4, vcoco  # noqa: E402  PKG1 (ERRATUM_O31_4, ERRATUM_O31_5)
 from o31.verify import REJECTED, SUPPORTED, UNCERTAIN  # noqa: E402
 
 V, I = ("vintern",), ("vintern", "internvl3")
@@ -1722,6 +1725,470 @@ def test_s35_pass_exclude_file():
 
 
 
+# ------------------------------------------------------------------ PKG1 (ERRATUM_O31_4, ERRATUM_O31_5): C06, C23, C24, C22, C13
+_GRID_FAMS = {"V": ["vintern"], "V+I": ["vintern", "internvl3"]}
+
+
+def _k0f(R, P=None, sh=None, s1=(36.6, 42.6, "S1"), complete=True):
+    """A P1-form k0.json (30 points in E7 order, real op form) with the decision of the committed gate.choose."""
+    pts = [{"op": [a, r, list(f)], "R": R[i], "P": P[i] if P else 41.0, "sft_sha256": sh[i] if sh else f"h{i}",
+            "store": f"p{i:02d}"} for i, (a, r, f) in enumerate(verify.grid())]
+    s = {"R": s1[0], "P": s1[1], "sft_sha256": s1[2], "store": "S1"}
+    c = gate.choose(pts, s)
+    k = {"s1": s, "points": pts, "complete": complete, "decision": c if complete else None,
+         "preview_no_verdict": None if complete else c}
+    return json.loads(json.dumps(k))  # as json.loads returns it (E4-1)
+
+
+def _base_R():
+    return [44 - 10 * (a - .5) + r if f == ("vintern",) else 50 - 10 * (a - .5) + r for a, r, f in verify.grid()]
+
+
+def _ruling1_cases():
+    """The fixtures of CC-525r2a ruling 1 (parta_adv.py), in the real k0.json form; expected results from the text."""
+    C = {}
+    C["distinct stores"] = (_k0f(_base_R()), "IDENTIFIED")
+    C["OP* = OP_mid"] = (_k0f([30.0] * 15 + [48.0] * 15), "NOT_IDENTIFIED")
+    C["all 30 one store"] = (_k0f([48.0] * 30, sh=["X"] * 30), "NOT_IDENTIFIED")
+    C["three grid stores"] = (_k0f([37.5] * 10 + [42.3] * 10 + [48.0] * 10, sh=["A"] * 10 + ["B"] * 10 + ["C"] * 10),
+                              "NOT_IDENTIFIED")
+    C["label order != R order"] = (_k0f([38.0] * 8 + [40.0] * 7 + [44.0] * 8 + [48.0] * 7,
+                                        sh=["A"] * 8 + ["B"] * 7 + ["C"] * 8 + ["D"] * 7), "IDENTIFIED")
+    R = [30.0] * 30
+    R[29], R[5], R[12], R[20] = 48.0, 44.0, 41.0, 46.5
+    C["OP_25 beyond OP_mid"] = (_k0f(R), "IDENTIFIED")
+    R = [36.0] * 30
+    R[3], R[20], R[29], R[10], R[25] = 39.0, 39.9, 48.0, 42.3, 45.15
+    P = [41.0] * 30
+    P[3], P[20] = 40.0, 41.5
+    C["decimal tie, P differs"] = (_k0f(R, P), "IDENTIFIED")
+    C["decimal tie, P equal"] = (_k0f(R), "IDENTIFIED")
+    C["b == a"] = (_k0f([47.5] + [30.0] * 29, s1=(47.5, 42.6, "S1")), "NOT_IDENTIFIED")
+    R = [47.2] + [60.0] * 14 + [30.0] * 15
+    P = [41.0] + [10.0] * 14 + [41.0] * 15
+    C["b < a"] = (_k0f(R, P, s1=(55.0, 42.6, "S1")), "NOT_IDENTIFIED")
+    C["K0 FAIL (no feasible)"] = (_k0f(_base_R(), P=[30.0] * 30), "NOT RUN")
+    C["K0 FAIL (R < 47.1)"] = (_k0f([x - 10 for x in _base_R()], P=[38.0 if i % 2 else 41.0 for i in range(30)]), "NOT RUN")
+    R, P, sh = [30.0] * 30, [41.0] * 30, [f"h{i}" for i in range(30)]
+    R[4], P[4], sh[4] = 36.6, 42.6, "S1"
+    R[29], P[29] = 48.0, 40.8
+    R[25] = R[26] = 55.0
+    P[25] = P[26] = 30.0
+    C["OP_mid byte twin of S1"] = (_k0f(R, P, sh), "NOT_IDENTIFIED")
+    return C
+
+
+def _dyadic(Pa, Pb, ia, ib, same_r=None):
+    R = [30.0] * 30
+    R[29], R[14], R[27] = 48.5, 42.5, 45.5
+    if same_r:
+        R[same_r[0]] = R[same_r[1]] = 39.5
+    else:
+        R[ia], R[ib] = 39.25, 39.75
+    P = [41.0] * 30
+    if not same_r:
+        P[ia], P[ib] = Pa, Pb
+    return _k0f(R, P, s1=(36.5, 42.6, "S1"))
+
+
+def test_points_ruling1_fixtures():
+    for name, (k, want) in _ruling1_cases().items():
+        got = points.extra_points(k)
+        assert got["result"] == want, (name, got["result"], got["reason"])
+    by_r = points.extra_points(_ruling1_cases()["label order != R order"][0])
+    assert by_r["order_by_R"] != by_r["order_by_label"] and by_r["order_by_R"][0] == "OP_strict"
+    beyond = points.extra_points(_ruling1_cases()["OP_25 beyond OP_mid"][0])
+    assert beyond["order_by_R"].index("OP_25") > beyond["order_by_R"].index("OP_mid"), beyond["order_by_R"]
+    same = points.extra_points(_ruling1_cases()["OP* = OP_mid"][0])
+    assert 0.0 in same["gaps"] and same["reason"].startswith("adjacent")
+    one = points.extra_points(_ruling1_cases()["all 30 one store"][0])
+    assert "step 4" in one["reason"] and one["op_25"] is None
+    three = points.extra_points(_ruling1_cases()["three grid stores"][0])
+    assert "step 5" in three["reason"] and three["op_25"] is not None
+
+
+def test_points_ieee_double_tie_and_tie_levels():
+    eq = points.extra_points(_ruling1_cases()["decimal tie, P equal"][0])
+    assert eq["op_25"]["grid_index"] == 20 and eq["t25"] == 36.6 + 0.25 * (48.0 - 36.6)  # doubles: 39.9 is nearer
+    pd = points.extra_points(_ruling1_cases()["decimal tie, P differs"][0])
+    assert pd["op_25"]["grid_index"] == 20
+    assert points.extra_points(_dyadic(40.9, 41.3, 3, 20))["op_25"]["grid_index"] == 20  # level 1: higher P
+    assert points.extra_points(_dyadic(41.3, 40.9, 3, 20))["op_25"]["grid_index"] == 3
+    assert points.extra_points(_dyadic(41.0, 41.0, 20, 3))["op_25"]["grid_index"] == 3  # level 2: earlier grid point
+    assert points.extra_points(_dyadic(0, 0, 0, 0, same_r=(7, 22)))["op_25"]["grid_index"] == 7
+
+
+def test_points_floor_not_applied_and_shas_excluded():
+    R = [30.0] * 30
+    R[29], R[14], R[27], R[3] = 48.5, 42.5, 45.5, 39.5
+    P = [41.0] * 30
+    P[3] = 20.0  # far below P_floor; still eligible (E4-2 step 3)
+    k = _k0f(R, P, s1=(36.5, 42.6, "S1"))
+    got = points.extra_points(k)
+    assert got["op_25"]["grid_index"] == 3 and got["result"] == "IDENTIFIED"
+    sh = [f"h{i}" for i in range(30)]
+    sh[2] = k["decision"]["op_mid"]["sft_sha256"]  # a byte twin of OP_mid lies on t25: never eligible
+    R2 = list(R)
+    R2[2], R2[3] = 39.5, 39.0
+    P2 = list(P)
+    P2[3] = 41.0
+    got = points.extra_points(_k0f(R2, P2, sh, s1=(36.5, 42.6, "S1")))
+    assert got["op_25"]["grid_index"] == 3, got["op_25"]
+
+
+def test_points_equal_r_in_label_order():
+    """OP_mid (grid index 5) and OP_25 (grid index 9) share R 42.5: the R order keeps the label order (E4-3)."""
+    R = [30.0] * 30
+    R[29], R[27], R[5], R[9] = 48.5, 45.5, 42.5, 42.5
+    got = points.extra_points(_k0f(R, s1=(36.5, 42.6, "S1")))
+    assert got["five"]["OP_mid"]["grid_index"] == 5 and got["five"]["OP_25"]["grid_index"] == 9
+    assert got["order_by_R"] == ["OP_strict", "OP_25", "OP_mid", "OP_75", "OP*"] and got["result"] == "NOT_IDENTIFIED"
+    assert [e["label"] for e in got["five_in_R_order"]] == got["order_by_R"]
+    assert [e["label"] for e in got["five_in_label_order"]] == list(points.LABELS)
+    lab = points.extra_points(_ruling1_cases()["label order != R order"][0])
+    assert [e["R"] for e in lab["five_in_R_order"]] == sorted(e["R"] for e in lab["five_in_label_order"])
+
+
+def test_points_refuses_preview_and_bad_order():
+    k = _k0f(_base_R(), complete=False)
+    _raises(lambda: points.extra_points(k), "REFUSED not P1")
+    k = _k0f(_base_R())
+    k["decision"] = None
+    _raises(lambda: points.extra_points(k), "REFUSED not P1")
+    k = _k0f(_base_R())
+    k["points"] = k["points"][::-1]
+    _raises(lambda: points.extra_points(k), "E7 order")
+
+
+def test_points_edge_row():
+    k = _k0f(_base_R())
+    e = points.edge_row(k)
+    assert k["decision"]["op_star"]["op"] == [0.5, 0.3, ["vintern", "internvl3"]] and e["edge"] is True
+    for a_, r_, want in ((0.7, 0.2, False), (0.9, 0.2, True), (0.5, 0.2, True), (0.7, 0.1, True), (0.7, 0.3, True),
+                         (0.6, 0.2, False)):
+        R = [30.0] * 30
+        R[[i for i, (a, r, f) in enumerate(verify.grid()) if (a, r, f) == (a_, r_, ("vintern", "internvl3"))][0]] = 48.0
+        assert points.edge_row(_k0f(R))["edge"] is want, (a_, r_)
+    assert points.edge_row(_k0f(_base_R(), P=[30.0] * 30))["edge"] is None
+
+
+def _ops5_dir(d, k0, name="k0.json"):
+    p = Path(d) / name
+    p.write_text(json.dumps(k0))
+    return p
+
+
+def _run_ops5(*args):
+    env = {**os.environ, "O31_SRC": os.environ.get("O31_SRC", str(HERE / "src"))}
+    return subprocess.run([sys.executable, "-I", "-B", str(HERE / "ops5.py"), *map(str, args)], capture_output=True,
+                          text=True, env=env)
+
+
+def test_ops5_writer_once_from_one_p1_file():
+    with tempfile.TemporaryDirectory() as d:
+        k0 = _k0f(_base_R())
+        kp = _ops5_dir(d, k0)
+        r = _run_ops5("--k0", kp, "--out", f"{d}/o")
+        assert r.returncode == 0, r.stderr[-800:]
+        body = json.loads(Path(f"{d}/o/ops5.json").read_text())
+        assert {k: body[k] for k in points.extra_points(k0)} == json.loads(json.dumps(points.extra_points(k0)))
+        assert body["k0_sha256"] == hashlib.sha256(kp.read_bytes()).hexdigest() and body["result"] == "IDENTIFIED"
+        sha = hashlib.sha256(Path(f"{d}/o/ops5.json").read_bytes()).hexdigest()
+        assert Path(f"{d}/o/ops5.json.sha256").read_text().split()[0] == sha and sha in r.stdout
+        assert body["edge_row_E4_5"]["edge"] is True
+        before = Path(f"{d}/o/ops5.json").read_bytes()
+        r = _run_ops5("--k0", kp, "--out", f"{d}/o")
+        assert r.returncode != 0 and Path(f"{d}/o/ops5.json").read_bytes() == before  # written once
+        r = _run_ops5("--k0", kp, "--k0", _ops5_dir(d, k0, "k0b.json"), "--out", f"{d}/two")
+        assert r.returncode != 0 and "one k0.json" in r.stderr and not Path(f"{d}/two/ops5.json").exists()
+        r = _run_ops5("--k0", _ops5_dir(d, _k0f(_base_R(), complete=False), "prev.json"), "--out", f"{d}/prev")
+        assert r.returncode != 0 and "REFUSED not P1" in r.stderr and not Path(f"{d}/prev/ops5.json").exists()
+        bad = _k0f(_base_R())
+        bad["points"] = bad["points"][:29]
+        r = _run_ops5("--k0", _ops5_dir(d, bad, "bad.json"), "--out", f"{d}/bad")
+        assert r.returncode != 0 and not Path(f"{d}/bad/ops5.json").exists()  # nothing written before C06 returns
+
+
+def _all18():
+    """The 18 fixture cases of CC-525r2a ruling 1 with their results under the committed text (a preview is refused)."""
+    c = dict(_ruling1_cases())
+    c["dyadic level 1 (a)"] = (_dyadic(40.9, 41.3, 3, 20), "IDENTIFIED")
+    c["dyadic level 1 (b)"] = (_dyadic(41.3, 40.9, 3, 20), "IDENTIFIED")
+    c["dyadic level 2"] = (_dyadic(41.0, 41.0, 20, 3), "IDENTIFIED")
+    c["identical R, distinct shas"] = (_dyadic(0, 0, 0, 0, same_r=(7, 22)), "IDENTIFIED")
+    c["P1 file incomplete"] = (_k0f(_base_R(), complete=False), "REFUSED")
+    return c
+
+
+def test_ops5_equals_c06_on_the_18_fixtures():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("ops5_under_test", HERE / "ops5.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    cases = _all18()
+    assert len(cases) == 18
+    with tempfile.TemporaryDirectory() as d:
+        for n, (name, (k0, want)) in enumerate(cases.items()):
+            kp, out = _ops5_dir(d, k0, f"k{n}.json"), Path(d) / f"o{n}"
+            if want == "REFUSED":
+                _raises(lambda: m.main(["--k0", str(kp), "--out", str(out)]), "REFUSED not P1")
+                assert not (out / "ops5.json").exists()
+                continue
+            with contextlib.redirect_stdout(io.StringIO()):
+                assert m.main(["--k0", str(kp), "--out", str(out)]) == 0
+            body = json.loads((out / "ops5.json").read_text())
+            ref = json.loads(json.dumps(points.extra_points(k0)))
+            assert body["result"] == want and {k: body[k] for k in ref} == ref, name
+            assert (out / "ops5.json.sha256").read_text().split()[0] == hashlib.sha256((out / "ops5.json").read_bytes()).hexdigest()
+
+
+def _ops5_file(d, k0=None):
+    k0 = k0 or _k0f(_base_R())
+    _run_ops5("--k0", _ops5_dir(d, k0), "--out", d)
+    return Path(d) / "ops5.json"
+
+
+def test_require_identified_guard():
+    with tempfile.TemporaryDirectory() as d:
+        o = _ops5_file(d)
+        rec = json.loads(o.read_text())
+        st = Path(d) / "sft.jsonl"
+        st.write_text("invented store row\n")
+        _raises(lambda: points.require_identified(o, "OP_25", st), "not the OP_25 store")
+        rec_sha = hashlib.sha256(st.read_bytes()).hexdigest()
+        rec["five"]["OP_25"]["sft_sha256"] = rec_sha
+        o2 = Path(d) / "o2"
+        o2.mkdir()
+        (o2 / "ops5.json").write_text(json.dumps(rec))
+        _raises(lambda: points.require_identified(o2 / "ops5.json", "OP_25", st), "sha256")  # no sha line
+        (o2 / "ops5.json.sha256").write_text(hashlib.sha256((o2 / "ops5.json").read_bytes()).hexdigest() + "  ops5.json\n")
+        assert points.require_identified(o2 / "ops5.json", "OP_25", st)["sft_sha256"] == rec_sha
+        _raises(lambda: points.require_identified(o2 / "ops5.json", "OP_mid", st), "not an E-B3 extra point")
+        rec["result"] = "NOT_IDENTIFIED"
+        (o2 / "ops5.json").write_text(json.dumps(rec))
+        (o2 / "ops5.json.sha256").write_text(hashlib.sha256((o2 / "ops5.json").read_bytes()).hexdigest() + "  ops5.json\n")
+        _raises(lambda: points.require_identified(o2 / "ops5.json", "OP_25", st), "not IDENTIFIED")
+
+
+def _t4_ops5(order):
+    return {"schema": points.SCHEMA, "result": "IDENTIFIED", "order_by_R": order,
+            "order_by_label": list(points.LABELS)}
+
+
+def _t4_cols(n=40, seed=3):
+    rng = np.random.default_rng(seed)
+    g = rng.integers(1, 5, n).astype(float)
+    tp = {}
+    for j, s in enumerate(("S1", "OP_25", "A-1", "OP_75", "S2")):
+        tp[s] = np.minimum(g, rng.binomial(g.astype(int), 0.3 + 0.1 * j)).astype(float)
+    return {"g": g, "tp": tp}
+
+
+def test_t4_statistic_by_hand():
+    cols = _t4_cols()
+    order = ["OP_strict", "OP_25", "OP_mid", "OP_75", "OP*"]
+    res = t4.t4(_t4_ops5(order), lambda: cols, [40.0, 41.0, 43.0], [50.0, 52.0, 51.0], vk_ddof=1, b=300, seed=7)
+    g = cols["g"]
+    stu = [t4.STUDENT[x] for x in order]
+    reps = [[] for _ in range(4)]
+    for idx in metrics.index_chunks(len(g), 300, 7):
+        r = [100 * cols["tp"][s][idx].sum(1) / g[idx].sum(1) for s in stu]
+        for k in range(4):
+            reps[k].append(r[k + 1] - r[k])
+    v = [float(np.var(np.concatenate(x), ddof=1)) for x in reps]
+    s2 = (np.var([40.0, 41.0, 43.0], ddof=1) + np.var([50.0, 52.0, 51.0], ddof=1)) / 2
+    pr = [100 * cols["tp"][s].sum() / g.sum() for s in stu]
+    z = [(pr[k + 1] - pr[k]) / math.sqrt(v[k] + 2 * s2) for k in range(4)]
+    assert res["label"] == "COMPUTED" and abs(res["sigma2_seed"] - s2) < 1e-12
+    assert t4.STUDENT == {"OP_strict": "S1", "OP_25": "OP_25", "OP_mid": "A-1", "OP_75": "OP_75", "OP*": "S2"}  # E-B3
+    assert all(abs(a - b) < 1e-9 for a, b in zip(res["V"], v)) and all(abs(a - b) < 1e-9 for a, b in zip(res["z"], z))
+    assert abs(res["p"] - max(1 - 0.5 * (1 + math.erf(x / math.sqrt(2))) for x in z)) < 1e-12
+    assert abs(t4.sigma2_seed([1.0, 2.0, 3.0], [2.0, 4.0, 6.0]) - 2.5) < 1e-12
+    assert abs(t4.phi(0.0) - 0.5) < 1e-15 and abs(t4.phi(1.96) - 0.9750021048517795) < 1e-12
+
+
+def test_t4_order_from_ops5_and_refusals():
+    cols = _t4_cols()
+    order = ["OP_25", "OP_strict", "OP_mid", "OP*", "OP_75"]  # R order differs from the label order
+    res = t4.t4(_t4_ops5(order), lambda: cols, [40.0, 41.0, 43.0], [50.0, 52.0, 51.0], vk_ddof=1, b=50, seed=1)
+    g = cols["g"]
+    pr = [100 * cols["tp"][t4.STUDENT[x]].sum() / g.sum() for x in order]
+    assert res["Delta"] == [pr[k + 1] - pr[k] for k in range(4)] and res["order_by_R"] == order
+
+    def boom():
+        raise AssertionError("decodes read although ops5.json is not IDENTIFIED")
+    for lab in ("NOT_IDENTIFIED", "NOT RUN"):
+        r = t4.t4({"schema": points.SCHEMA, "result": lab}, boom, [], [], vk_ddof=None)
+        assert r["label"] == lab and r["p"] == 1.0
+    _raises(lambda: t4.t4(_t4_ops5(order), lambda: cols, [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]), "ddof of V_k")
+
+
+def test_t4_zero_denominator_at_any_k():
+    cols = _t4_cols()
+    cols["tp"]["A-1"] = cols["tp"]["OP_25"].copy()  # k = 2 has Delta = 0 in every replicate: V_2 = 0
+    order = ["OP_strict", "OP_25", "OP_mid", "OP_75", "OP*"]
+    res = t4.t4(_t4_ops5(order), lambda: cols, [40.0, 40.0, 40.0], [50.0, 50.0, 50.0], vk_ddof=1, b=50, seed=1)
+    assert res["label"] == "NOT_IDENTIFIED" and res["p"] == 1.0 and res["V"][1] == 0.0 and res["V"][0] > 0
+
+
+def test_t4_reads_ops5_only():
+    with tempfile.TemporaryDirectory() as d:
+        o = _ops5_file(d)
+        assert t4.load_ops5(o)["result"] == "IDENTIFIED"
+        k = Path(d) / "k0.json"
+        _raises(lambda: t4.load_ops5(k), "never a k0.json")
+        (Path(d) / "ops5.json.sha256").write_text("0" * 64 + "  ops5.json\n")
+        _raises(lambda: t4.load_ops5(o), "sha256")
+
+
+def _a8_records():
+    heads = ["chó", "mèo", "xe máy", "bàn", "ghế", "ô tô", "con ngựa", "cây", "quả bóng", "tivi", "cái ô", "xe đạp"]
+    recs = []
+    for i in range(3):
+        r = _fair_rec(heads)
+        r.update(image_id=str(i), file_name=f"{i}.jpg", reference_captions=[f"Mây tím có {h} lơ lửng." for h in heads[:4]])
+        for j, p in enumerate(r["propositions"]):
+            p["evidence"] = {"probes": [{"model": VIN, "question_vi": f"Trong ảnh có {heads[j]} không?"}]}
+        recs.append(r)
+    return recs
+
+
+def test_a8_is_s1_arm_with_the_scaled_budget():
+    recs, tab = _k0_records()
+    s1 = gate.run_k0(recs, {"vintern": tab})["s1"]
+    mine = a8.arm_store(recs, False, "S1", None)
+    keys = ("R", "P", "rows", "sft_sha256", "uncap", "mean_budget", "store", "n")
+    assert {k: mine[k] for k in keys} == {k: s1[k] for k in keys}
+    recs = _a8_records()
+    unc, _ = store.uncap(recs)
+    rows, rep = store.rebuild(unc, scaled=True)
+    rows9, _ = store.rebuild(unc, scaled=False)
+    with tempfile.TemporaryDirectory() as d:
+        got = a8.a8_store(recs, d)
+        assert got["sft_sha256"] == store.store_sha(rows) != store.store_sha(rows9) and got["store"] == "A8"
+        assert got["mean_budget"] == 15 and (Path(d) / "A8" / "sft.jsonl").exists()
+        assert hashlib.sha256((Path(d) / "A8" / "sft.jsonl").read_bytes()).hexdigest() == got["sft_sha256"]
+    assert [p["verification"]["status"] for p in recs[0]["propositions"]] == ["SUPPORTED"] * 12  # caller unchanged
+
+
+def test_a8_launcher_refuses_overwrite():
+    env = {**os.environ, "O31_SRC": os.environ.get("O31_SRC", str(HERE / "src"))}
+    with tempfile.TemporaryDirectory() as d:
+        (Path(d) / "rec").mkdir()
+        for r in _a8_records():
+            (Path(d) / "rec" / f"{r['image_id']}.json").write_text(json.dumps(r, ensure_ascii=False), encoding="utf-8")
+        (Path(d) / "ex.txt").write_text("2.jpg\n")
+        cmd = [sys.executable, "-I", "-B", str(HERE / "a8store.py"), "--records", f"{d}/rec", "--exclude", f"{d}/ex.txt",
+               "--store-dir", f"{d}/st", "--out", f"{d}/a8.json"]
+        r = subprocess.run(cmd, capture_output=True, text=True, env=env)
+        assert r.returncode == 0, r.stderr[-800:]
+        res = json.loads(Path(f"{d}/a8.json").read_text())
+        assert res["inputs"]["n_records"] == 2 and res["inputs"]["n_excluded"] == 1 and "Mây" not in json.dumps(res)
+        r = subprocess.run(cmd, capture_output=True, text=True, env=env)
+        assert r.returncode != 0 and "exists" in r.stderr
+
+
+_PA_CAPS = ["Chó tím ngủ cạnh ghế bay, rồi một chiếc ô tô nhỏ ghé qua.", "Mèo bạc ôm tivi trên bàn đá.",
+            "Xe đạp hồng chở chó lùn qua cây cầu mây."]
+
+
+def _pa_inputs(d, n=10):
+    from PIL import Image
+    d = Path(d)
+    (d / "img").mkdir(exist_ok=True)
+    items, preds = [], {}
+    for k in range(n):
+        f = f"im{k:03d}.png"
+        Image.new("RGB", (8, 8), (k * 20 % 255, 9, 9)).save(d / "img" / f)
+        items.append((f"id{k}", f, hashlib.sha256((d / "img" / f).read_bytes()).hexdigest()))
+        preds[f"id{k}"] = _PA_CAPS[k % 3]
+    pp = d / "s0.preds.json"
+    pp.write_text(json.dumps(preds, ensure_ascii=False), encoding="utf-8")
+    (d / "s0.preds.json.sha256").write_text(hashlib.sha256(pp.read_bytes()).hexdigest() + "  s0.preds.json\n")
+    return items, pp
+
+
+def test_g3v_pa_builder_q_plus_on_matched_phrase():
+    with tempfile.TemporaryDirectory() as d:
+        items, pp = _pa_inputs(d)
+        preds = vcoco.read_decode(pp, items)
+        work, units = vcoco.pa_work(preds, items)
+        assert [f for f, _ in work] == sorted(f for _i, f, _h in items)
+        props = extract.entity_propositions(_PA_CAPS[0])
+        assert units[0]["classes"] == [p["cls"] for p in props] == extract.ordered_classes(_PA_CAPS[0])
+        assert [q for _k, q in work[0][1]] == [f"Trong ảnh có {p['text_vi']} không" for p in props]
+        repo()
+        from rescap.pipeline.verify import build_questions
+        assert work[0][1][0][1] == build_questions({"type": "entity", "subject": {"text_vi": props[0]["text_vi"]}})[0]
+        assert all(k == verify.qkey(q) for _f, qs in work for k, q in qs)
+        pp.write_text(pp.read_text(encoding="utf-8") + " ", encoding="utf-8")
+        _raises(lambda: vcoco.read_decode(pp, items), "sidecar")
+        _raises(lambda: vcoco.check_images(items, Path(d) / "img", set()), "not the registered")
+        assert vcoco.check_images(items, Path(d) / "img", {h for _i, _f, h in items}) is None
+
+
+def _g3v_run(d, items, pp, fam_done=("vintern", "internvl3")):
+    preds = vcoco.read_decode(pp, items)
+    work, _units = vcoco.pa_work(preds, items)
+    rc = {}
+    for f in fam_done:
+        rc[f] = vcoco.run_family(_fake_probe(), work, Path(d) / "g3v", f, lambda n: n)
+    return rc
+
+
+def test_g3v_job_clock_cap_and_k1():
+    with tempfile.TemporaryDirectory() as d:
+        items, pp = _pa_inputs(d)
+        (Path(d) / "K1_fired.json").write_text('{"fired": true}')  # G3v runs whatever K1 shows (G-5)
+        assert _g3v_run(d, items, pp) == {"vintern": 0, "internvl3": 0}
+        st = vcoco.status(Path(d) / "g3v")
+        assert st == {"vintern": "DONE", "internvl3": "DONE", "row": "DONE"}
+        t0 = json.loads((Path(d) / "g3v" / "launch.json").read_text())["t0"]
+        assert all(json.loads((Path(d) / "g3v" / f / "launch.json").read_text())["t0"] == t0 for f in vcoco.FAMILIES)
+    with tempfile.TemporaryDirectory() as d:
+        items, pp = _pa_inputs(d)
+        root = Path(d) / "g3v"
+        root.mkdir()
+        (root / "launch.json").write_text(json.dumps({"t0": time.time() - 2 * 3600, "job": "G3v", "cap_h": 1.0}))
+        assert _g3v_run(d, items, pp, ("vintern",)) == {"vintern": 4}
+        assert vcoco.status(root)["row"] == "NOT RUN"
+    with tempfile.TemporaryDirectory() as d:
+        items, pp = _pa_inputs(d)
+        root = Path(d) / "g3v"
+        root.mkdir()
+        (root / "launch.json").write_text(json.dumps({"t0": time.time(), "job": "G3"}))
+        _raises(lambda: _g3v_run(d, items, pp, ("vintern",)), "clock of job")
+        (root / "launch.json").write_text(json.dumps({"t0": time.time(), "job": "G3v"}))
+        (root / "vintern").mkdir()
+        (root / "vintern" / "launch.json").write_text(json.dumps({"t0": 1.0, "family": "vintern"}))
+        _raises(lambda: _g3v_run(d, items, pp, ("vintern",)), "second launch clock")
+
+
+def test_g3v_launcher_status_and_size():
+    env = {**os.environ, "O31_SRC": os.environ.get("O31_SRC", str(HERE / "src"))}
+    with tempfile.TemporaryDirectory() as d:
+        items, pp = _pa_inputs(d, n=10)  # >= 20 probes for the smoke rule; not the 231 of G-1
+        tsv = Path(d) / "items.tsv"
+        tsv.write_text("".join("\t".join(it) + "\n" for it in items))
+        r = subprocess.run([sys.executable, "-I", "-B", str(HERE / "g3v.py"), "run", "--family", "vintern", "--preds",
+                            str(pp), "--items", str(tsv), "--images", f"{d}/img", "--snapshot", d, "--out", f"{d}/g"],
+                           capture_output=True, text=True, env=env)
+        assert r.returncode != 0 and "231 UIT-ViIC test images" in r.stderr and not Path(f"{d}/g").exists()
+        _g3v_run(d, items, pp, ("vintern",))
+        r = subprocess.run([sys.executable, "-I", "-B", str(HERE / "g3v.py"), "status", "--out", f"{d}/g3v"],
+                           capture_output=True, text=True, env=env)
+        assert json.loads(r.stdout) == {"vintern": "DONE", "internvl3": "INCOMPLETE", "row": "INCOMPLETE"}
+
+
+def test_host_selftest_calls_scripts_through_bash():
+    """A committed script may lose its mode bit (git archive gives 644): every .sh is called through bash."""
+    lines = (HERE / "host_selftest.sh").read_text(encoding="utf-8").splitlines()
+    calls = [ln for ln in lines if re.search(r'"\$HERE/[^"]+\.sh"', ln) and not ln.lstrip().startswith("#")]
+    assert calls and all(re.search(r'\bbash "\$HERE/[^"]+\.sh"', ln) for ln in calls), calls
+    rt = (HERE / "run_tests.sh").read_text(encoding="utf-8")
+    assert "sha256sum -c PROTECTED_071c8dc.sha256" in rt
+
+
 def test_zz_import_closure_pinned():
     """W2: runs last; every repo file loaded by the suite (incl. run_k0 through the real builder and person_uncap)
     is in REUSED, so repo() sha-checks it."""
@@ -1742,6 +2209,8 @@ def main() -> int:
         except Exception as e:  # noqa: BLE001 - report every failing test, exit non-zero
             bad += 1
             print(f"FAIL {name}: {type(e).__name__}: {e}")
+            if os.environ.get("O31_FAILFAST") == "1":  # mutant runs: a kill needs one failing test
+                break
     print(f"{len(tests) - bad}/{len(tests)} passed")
     return 1 if bad else 0
 
