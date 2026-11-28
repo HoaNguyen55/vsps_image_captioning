@@ -14,7 +14,7 @@
 # H-G (HG=1, GPU, before G1/G2): download the three pinned models (Vintern b98f263e and Qwen2.5-VL-7B cc594898 into the HF cache with
 #     refs/main = the pin, as E1b/E1a; InternVL3-8B-hf 259a3b64 via decode_hf_vlm.fetch; B-N1 file pins checked), then
 #     g12.py smoke on 5 already-explored M-HalDetect val images (CC-501 ruling 6): token check, finite s, median
-#     mass >= 0.5 over 20 probes, InternVL3 batch-8 agreement on those 5 images, student batch-5 token equality
+#     mass >= 0.5 over 20 probes, InternVL3 batch-8 agreement on those 5 images, student batch-1 repeat equality and non-empty captions (batch-5 parity and first differing positions recorded only; Q13 decides the decode batch)
 # Writes counts and shas only. Exit 0 iff every item passes; the last line of OUT/host_selftest.log says so.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"

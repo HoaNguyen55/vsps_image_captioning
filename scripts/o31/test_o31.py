@@ -1225,6 +1225,100 @@ def test_g12_smoke_custody_and_exit_code():
             probe.explored, probe.load = saved
 
 
+def test_g12_first_diff():
+    """CC-529 W3 (i): the first index where two token-id lists differ; a length difference counts at the shorter length."""
+    g = _g12()
+    assert g.first_diff([1, 2, 3], [1, 2, 3]) is None and g.first_diff([], []) is None
+    assert g.first_diff([1, 2, 3], [1, 5, 3]) == 1
+    assert g.first_diff([1, 2], [1, 2, 3]) == 2 and g.first_diff([1, 2, 3], [1, 2]) == 2
+
+
+def _fake_student_gen(mode):
+    """A stand-in for decode.make_generate's gen: images -> [(token ids, caption, hit_max)]. Image k is told by its pixel
+    (_png). Invented ids; stop id 9; image 4 runs to the budget (no stop id). No model."""
+    calls = {"b1": 0}
+
+    def gen(images):
+        out = []
+        for j, im in enumerate(images):
+            k = im.getpixel((0, 0))[0]
+            ids, hit = ([10 + k, 20 + k, 30 + k, 40 + k], True) if k == 4 else ([10 + k, 20 + k, 9], False)
+            cap = f"invented caption {k}"
+            if len(images) == 5 and mode == "b5" and k in (1, 2, 3):
+                ids = ids[:2] if k == 2 else [10 + k, 99, 9]
+            if len(images) == 5 and mode == "same" and k == 0 and j == 2:
+                ids = [10, 88, 9]
+            if len(images) == 1:
+                calls["b1"] += 1
+                if mode == "repeat" and calls["b1"] == 8:  # image 2 of the second batch-1 pass
+                    ids = [12, 77, 9]
+            if mode == "empty" and k == 3:
+                ids, cap = [9], ""
+            out.append((ids, cap, hit))
+        return out
+    return gen
+
+
+def _smoke_student(mode):
+    """g12 cmd_smoke --family student on five synthetic PNGs, with fakes of decode.load_student and make_generate.
+    Returns (exit code, smoke_student.json as text, the printed line)."""
+    import argparse
+    g = _g12()
+    seen = {}
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        names = [f"x{k}.png" for k in range(5)]
+        for k, n in enumerate(names):
+            _png(d / n, k)
+        saved = probe.explored, decode.load_student, decode.make_generate
+        buf = io.StringIO()
+        try:
+            probe.explored = lambda *a, **k: None
+            decode.load_student = lambda snap, adapter: seen.update(adapter=adapter) or (None, None, {"revision": "r"})
+            decode.make_generate = lambda model, proc, prompt: seen.update(prompt=prompt) or _fake_student_gen(mode)
+            with contextlib.redirect_stdout(buf):
+                rc = g.cmd_smoke(argparse.Namespace(family="student", snapshot=d, images=d, names=names, out=d / "o"))
+        finally:
+            probe.explored, decode.load_student, decode.make_generate = saved
+        raw = (d / "o" / "smoke_student.json").read_text()
+    assert seen == {"adapter": None, "prompt": decode.PROMPTS["vi"]}, seen
+    assert "invented caption" not in raw  # ids, positions and counts only, never caption text
+    return rc, json.loads(raw), json.loads(buf.getvalue())
+
+
+def test_g12_smoke_student_b5_recorded_only():
+    """CC-529 W3 (v): only batch 5 differs -> exit 0 with token_equal_b5 false; the first differing positions, the
+    same-image batch, the stop ids and the token counts are recorded and never decide."""
+    rc, rec, line = _smoke_student("ok")
+    assert rc == 0 and line == {"family": "student", "ok": True} and rec["ok_student"] and rec["token_equal_b5"], rec
+    assert rec["repeat_equal_b1"] and rec["same_image_b5_equal"] and rec["b5_first_diff"] == [None] * 5
+    assert rec["b5_n_diff"] == 0 and rec["n"] == 5 and rec["revision"] == "r"
+    assert rec["n_tokens"] == [3, 3, 3, 3, 4] == rec["n_tokens_b5"]
+    assert rec["hit_max_b1"] == [False] * 4 + [True] and rec["stop_id_b1"] == [9, 9, 9, 9, None]
+    assert sorted(rec["image_sha256"]) == [f"x{k}.png" for k in range(5)]
+    rc, rec, line = _smoke_student("b5")
+    assert rc == 0 and line["ok"] is True and rec["ok_student"] and rec["token_equal_b5"] is False, rec
+    assert rec["b5_first_diff"] == [None, 1, 2, 1, None] and rec["b5_n_diff"] == 3, rec
+    assert rec["n_tokens_b5"] == [3, 3, 2, 3, 4] and rec["n_tokens"] == [3, 3, 3, 3, 4]
+    assert rec["repeat_equal_b1"] and rec["same_image_b5_equal"]
+    rc, rec, line = _smoke_student("same")
+    assert rc == 0 and rec["token_equal_b5"] and rec["same_image_b5_equal"] is False, rec
+
+
+def test_g12_smoke_student_repeat_mismatch_exits_2():
+    """CC-529 W3 (v): a batch-1 repeat mismatch exits 2 (batch 5 equal)."""
+    rc, rec, line = _smoke_student("repeat")
+    assert rc == 2 and line == {"family": "student", "ok": False}, (rc, line)
+    assert rec["repeat_equal_b1"] is False and rec["ok_student"] is False and rec["token_equal_b5"], rec
+
+
+def test_g12_smoke_student_empty_caption_exits_2():
+    """CC-529 W3 (v): an empty batch-1 caption exits 2 (repeat and batch 5 equal)."""
+    rc, rec, line = _smoke_student("empty")
+    assert rc == 2 and line["ok"] is False and rec["ok_student"] is False, (rc, rec)
+    assert rec["repeat_equal_b1"] and rec["token_equal_b5"] and rec["stop_id_b1"][3] == 9 and rec["n_tokens"][3] == 1
+
+
 def test_g12_probe_inputs_record_and_default_refused():
     """N1: the refused list defaults to exclusion.json; OUT/inputs.json holds the input shas and counts."""
     import argparse
@@ -2187,6 +2281,88 @@ def test_host_selftest_calls_scripts_through_bash():
     assert calls and all(re.search(r'\bbash "\$HERE/[^"]+\.sh"', ln) for ln in calls), calls
     rt = (HERE / "run_tests.sh").read_text(encoding="utf-8")
     assert "sha256sum -c PROTECTED_071c8dc.sha256" in rt
+
+
+def _w_k0(R, sh=None, s1=(36.0, 42.5, "S1"), P=None):
+    """CC-530: P1-form file; OP* and OP_mid from the committed gate.choose; all P 41.0 unless given."""
+    return _k0f(R, P or [41.0] * 30, sh, s1=s1)
+
+
+def test_cc530_separation_boundary_and_s1_twin():
+    """CC-530 W2: an adjacent gap of exactly 1.0 is IDENTIFIED and one of 0.995 is not (E4-3, < 1.0); a byte twin of the
+    S1 store is never eligible (E4-2 step 3) although it lies nearest t25."""
+    R = [30.0] * 30
+    R[29], R[14], R[3], R[20] = 48.0, 42.0, 37.0, 45.0  # OP*, OP_mid (target 42.0), t25 = 39.0, t75 = 45.0
+    got = points.extra_points(_w_k0(R))
+    assert got["op_25"]["grid_index"] == 3 and got["gaps"][0] == 1.0 and got["result"] == "IDENTIFIED", got["gaps"]
+    R[3] = 36.995
+    got = points.extra_points(_w_k0(R))
+    assert got["op_25"]["grid_index"] == 3 and got["gaps"][0] < 1.0 and got["result"] == "NOT_IDENTIFIED", got["gaps"]
+    R = [30.0] * 30
+    R[29], R[14], R[3], R[20] = 48.0, 42.0, 36.0, 45.0
+    sh = [f"h{i}" for i in range(30)]
+    sh[3] = "S1"  # byte twin of the S1 store: same bytes, same R and P
+    P = [41.0] * 30
+    P[3] = 42.5
+    got = points.extra_points(_w_k0(R, sh, P=P))
+    assert got["op_25"]["grid_index"] == 20 and got["op_25"]["sft_sha256"] != "S1", got["op_25"]
+    _raises(lambda: points.extra_points({**_w_k0(R), "complete": "true"}), "REFUSED not P1")
+
+
+def test_cc530_edge_row_reads_op_star_only():
+    """CC-530 W2: E4-5 reads OP*, not OP_mid: interior OP* (0.70, 0.20, V+I) with an edge OP_mid (0.50, 0.10, V)."""
+    R = [30.0] * 30
+    R[22], R[0] = 48.0, 42.0
+    k = _w_k0(R)
+    assert k["decision"]["op_star"]["op"] == [0.7, 0.2, ["vintern", "internvl3"]] and k["decision"]["op_mid"]["op"][:2] == [0.5, 0.1]
+    assert points.edge_row(k)["edge"] is False
+
+
+def test_cc530_ops5_output_hygiene():
+    """CC-530 W2: stdout holds the result and the sha only, stderr is empty, the file is read-only, k0_sha256 is the sha of
+    the raw bytes as gate.main writes them (indent 1), and the guard refuses another schema."""
+    with tempfile.TemporaryDirectory() as d:
+        k0 = _k0f(_base_R())
+        kp = Path(d) / "k0.json"
+        kp.write_text(json.dumps(k0, indent=1) + "\n", encoding="utf-8")
+        r = _run_ops5("--k0", kp, "--out", f"{d}/o")
+        assert r.returncode == 0 and r.stderr == "" and set(json.loads(r.stdout)) == {"result", "ops5_sha256"}, r.stdout
+        o = Path(d) / "o" / "ops5.json"
+        assert o.stat().st_mode & 0o222 == 0
+        rec = json.loads(o.read_text())
+        assert rec["k0_sha256"] == hashlib.sha256(kp.read_bytes()).hexdigest()
+        st = Path(d) / "sft.jsonl"
+        st.write_text("invented store row\n")
+        rec["five"]["OP_25"]["sft_sha256"] = hashlib.sha256(st.read_bytes()).hexdigest()
+        rec["schema"] = "o31.ops5.v0"
+        o2 = Path(d) / "o2"
+        o2.mkdir()
+        (o2 / "ops5.json").write_text(json.dumps(rec))
+        (o2 / "ops5.json.sha256").write_text(hashlib.sha256((o2 / "ops5.json").read_bytes()).hexdigest() + "  ops5.json\n")
+        _raises(lambda: points.require_identified(o2 / "ops5.json", "OP_25", st), "not IDENTIFIED")
+
+
+def test_cc530_g3v_cap_reaches_the_pass_and_input_refusals():
+    """CC-530 W2: the 1 h G3v cap is the cap of probe_job's pass (G-5); read_decode refuses an id mismatch; pa_work
+    refuses two P-a propositions with one question; sigma2_seed refuses other than three seeds per student."""
+    seen, orig = {}, probe.probe_job
+    probe.probe_job = lambda *a, **k: seen.update(k) or 0
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            assert vcoco.run_family(None, [], Path(d) / "g3v", "vintern", None) == 0
+    finally:
+        probe.probe_job = orig
+    assert seen.get("cap_h") == vcoco.G3V_CAP_H == 1.0, seen
+    with tempfile.TemporaryDirectory() as d:
+        items, pp = _pa_inputs(d)
+        _raises(lambda: vcoco.read_decode(pp, items[:-1]), "image ids differ")
+        orig_ep = extract.entity_propositions
+        extract.entity_propositions = lambda c: [{"cls": "dog", "text_vi": "chó"}, {"cls": "cat", "text_vi": "chó"}]
+        try:
+            _raises(lambda: vcoco.pa_work(vcoco.read_decode(pp, items), items), "share one question")
+        finally:
+            extract.entity_propositions = orig_ep
+    _raises(lambda: t4.sigma2_seed([1.0, 2.0], [1.0, 2.0, 3.0]), "three tier-2")
 
 
 def test_zz_import_closure_pinned():

@@ -113,6 +113,13 @@ def cmd_parity_decide(a) -> int:
     return 0
 
 
+def first_diff(a: list, b: list):
+    """First index where two token-id lists differ (a length difference counts at the shorter length); None if equal."""
+    if a == b:
+        return None
+    return next((i for i, (x, y) in enumerate(zip(a, b)) if x != y), min(len(a), len(b)))
+
+
 def cmd_smoke(a) -> int:
     probe.explored(a.names, a.images)
     load = image_loader(a.images, set())
@@ -121,9 +128,18 @@ def cmd_smoke(a) -> int:
         model, proc, info = decode.load_student(a.snapshot, None)
         gen = decode.make_generate(model, proc, decode.PROMPTS["vi"])
         ims = [load(n) for n in a.names]
-        b1 = [gen([im])[0][0] for im in ims]
-        b5 = [r[0] for r in gen(ims)]
-        rec = {**info, "n": 5, "token_equal_b5": b1 == b5, "n_tokens": [len(x) for x in b1]}
+        r1 = [gen([im])[0] for im in ims]
+        b1 = [t[0] for t in r1]
+        b1r = [gen([im])[0][0] for im in ims]
+        b5 = [t[0] for t in gen(ims)]
+        same = [t[0] for t in gen([ims[0]] * 5)]
+        diff = [first_diff(x, y) for x, y in zip(b1, b5)]
+        rec = {**info, "n": 5, "n_tokens": [len(x) for x in b1], "n_tokens_b5": [len(x) for x in b5],
+               "hit_max_b1": [t[2] for t in r1], "stop_id_b1": [None if t[2] else t[0][-1] for t in r1],
+               "repeat_equal_b1": b1 == b1r, "token_equal_b5": b1 == b5, "b5_first_diff": diff,
+               "b5_n_diff": sum(d is not None for d in diff),
+               "same_image_b5_equal": all(x == b1[0] for x in same),
+               "ok_student": b1 == b1r and all(t[1] for t in r1)}
     else:
         fn, info = probe.load(a.family, a.snapshot)
         items = [(n, [(probe.qkey(q), q) for q in SMOKE_QUESTIONS]) for n in a.names]
@@ -134,7 +150,7 @@ def cmd_smoke(a) -> int:
             rec["parity_5_images"] = {k: p[k] for k in ("n_probes", "n_bad", "max_abs_diff")}
     rec["image_sha256"] = {n: sha(a.images / n) for n in a.names}
     (a.out / f"smoke_{a.family}.json").write_text(json.dumps(rec) + "\n")
-    ok = rec.get("smoke", {}).get("ok", True) and rec.get("token_equal_b5", True)
+    ok = rec.get("smoke", {}).get("ok", True) and rec.get("ok_student", True)
     print(json.dumps({"family": a.family, "ok": ok}))
     return 0 if ok else 2
 

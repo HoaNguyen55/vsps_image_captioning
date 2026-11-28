@@ -83,6 +83,7 @@ E1a disclosed that the revision and the attention kernel of the FAIR stage-1 run
   - TMPDIR, HF_HOME, PIP_CACHE_DIR and OUT are inside it;
   - there is no `.git`.
 - In H-G, Qwen now goes into the HF cache (as Vintern), so stage-1 can load it by hub id, and `stage1.check_qwen` checks it. Its header says "the PI's PC", not a rented host (N2).
+- H-G student smoke (CC-529 W3): it requires student batch-1 repeat equality and non-empty captions (batch-5 parity and first differing positions recorded only; Q13 decides the decode batch).
 - No file names the system interpreter or the administrator home folder; every Python call goes through `$PY` or `$PY_LB`.
 
 ## Order on the PI's PC (after each reserved window's end line, E1 O-H6)

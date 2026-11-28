@@ -1,6 +1,7 @@
 """Mutation check: each mutant edits a COPY of the package (never the package itself); the copy's test_o31.py must
 fail on every one. Own mutants M01-M27, W3/W5, G01-G30 (g12b), S/G31-G37/O (g12c), X/Q/V (g12d),
-P/C/T/G41-G49/A/H (PKG1: C06, C23, C24, C22, C13, N9, the host_selftest call), and the 35 judge mutants of CC-504.
+P/C/T/G41-G49/A/H (PKG1: C06, C23, C24, C22, C13, N9, the host_selftest call), SM (pkgS: CC-529 W3, the student
+smoke), and the 35 judge mutants of CC-504.
 
     $PY -I -B mutants.py        exit 0 iff every mutant is killed and every mutation site exists exactly once
 """
@@ -300,6 +301,17 @@ MUTANTS += [  # PKG1: CODE_NEEDS C06, C23, C24, C22, C13; CC-526 N9; the host_se
     ("A03 A-8 without person_uncap", "a8.py", "    unc, ust = store.uncap(records)\n", "    unc, ust = records, {}\n"),
     ("A04 a8store.py ignores the exclusions", "a8store.py", '    recs = [r for r in recs if r["file_name"] not in drop]\n', ""),
     ("H01 host_selftest calls run_tests.sh by path", "host_selftest.sh", 'bash "$HERE/run_tests.sh"', '"$HERE/run_tests.sh"'),
+]
+MUTANTS += [  # pkgS: CC-529 W3, the student smoke of g12.py
+    ("SM01 smoke verdict on batch-5 equality", "g12.py", 'rec.get("ok_student", True)', 'rec.get("token_equal_b5", True)'),
+    ("SM02 repeat equality not required", "g12.py", '"ok_student": b1 == b1r and all(', '"ok_student": all('),
+    ("SM03 empty caption accepted", "g12.py", '"ok_student": b1 == b1r and all(t[1] for t in r1)}', '"ok_student": b1 == b1r}'),
+    ("SM04 first_diff ignores a length difference", "g12.py", "if x != y), min(len(a), len(b)))", "if x != y), None)"),
+    ("SM05 first_diff counts from 1", "g12.py", "enumerate(zip(a, b))", "enumerate(zip(a, b), 1)"),
+    ("SM06 repeat pass reuses the first pass", "g12.py", "        b1r = [gen([im])[0][0] for im in ims]\n",
+     "        b1r = b1\n"),
+    ("SM07 same-image batch not of copies", "g12.py", "gen([ims[0]] * 5)", "gen(ims)"),
+    ("SM08 stop id from the first token", "g12.py", "None if t[2] else t[0][-1]", "None if t[2] else t[0][0]"),
 ]
 
 
