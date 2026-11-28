@@ -9,8 +9,9 @@ recorded stage-1 question (Q+ text) wrapped by m0.instruct, byte-identical to E1
 - internvl3 (G2): OpenGVLab/InternVL3-8B-hf @ 259a3b64 (the E2b pin, B-N1 registry 9ff02dc2), loaded by
   decode_hf_vlm.load unchanged; one forward pass, softmax at the last position; Q+ only (erratum E3). This class needs
   transformers >= 4.52 (E2b ran it in venv-lb, transformers 4.57.6); 4.51.3 cannot load it.
-- Batch (Q13 analogue): batch 8 only if, on the first 50 images, every probe's s at batch 8 is within PROBE_TOL
-  (= m0.EQUIV_TOL 1e-3) of batch 1 and the top token is equal; otherwise batch 1. Vintern stays at batch 1 (E1b).
+- Batch: 1 for both families. Vintern as E1b. InternVL3 by ERRATUM_O31_G2: on the registered 24 GB GPU the batch-8
+  pass of the ERRATUM_O31_2 E4 rule cannot be computed, so its condition cannot be met. probe_job keeps that parity
+  path (PROBE_TOL = m0.EQUIV_TOL 1e-3, first 50 images) for a family whose "batch" holds 8; no registered family does.
 - Output: shards of SHARD_IMAGES images; a shard is written to *.partial, renamed when complete and its sha256 is
   appended to SHARDS.sha256; a rerun skips verified shards and resumes the partial one. finalize() writes the E3
   table probes.jsonl (+ .sha256). Non-finite s, a STOP marker or the cap -> STOP. Logs print counts only.
@@ -39,8 +40,8 @@ FAMILIES = {
     "vintern": {"repo": FAIR_MODEL, "revision": "b98f263eab246eb5269ade64edbdca8a887dc44d", "transformers": "4.51.3",
                 "questions": "all", "batch": (1,), "cap_h": 3.5},
     "internvl3": {"repo": "OpenGVLab/InternVL3-8B-hf", "revision": "259a3b64a14623c0ec91a045cb43f7c5af5fa6af",
-                  "registry_key": "internvl3_8b", "transformers": "4.57.6", "questions": "q_plus", "batch": BATCHES,
-                  "cap_h": 30.0},
+                  "registry_key": "internvl3_8b", "transformers": "4.57.6", "questions": "q_plus", "batch": (1,),
+                  "cap_h": 48.0},  # ERRATUM_O31_G2: batch 1 (E4 clarified); G2 cap 48 h from launch.json t0 (E7)
 }
 REGISTRY = "manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json"  # B-N1, sha 9ff02dc2 (E2b's pin source)
 TOUCHED_SHA = "91db7e2fbb3d479f79ed19fca4aa100399730910cd7511f832576350f26f9b63"  # m0 dev_touched_ids.txt (e1e2 PIN)

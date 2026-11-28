@@ -302,6 +302,11 @@ MUTANTS += [  # PKG1: CODE_NEEDS C06, C23, C24, C22, C13; CC-526 N9; the host_se
     ("A04 a8store.py ignores the exclusions", "a8store.py", '    recs = [r for r in recs if r["file_name"] not in drop]\n', ""),
     ("H01 host_selftest calls run_tests.sh by path", "host_selftest.sh", 'bash "$HERE/run_tests.sh"', '"$HERE/run_tests.sh"'),
 ]
+MUTANTS += [  # CC-534 (ERRATUM_O31_G2): InternVL3 probes at batch 1; G2 cap 48 h from launch.json t0
+    ("G50 InternVL3 batch 8 again", "probe.py", '"questions": "q_plus", "batch": (1,),', '"questions": "q_plus", "batch": BATCHES,'),
+    ("G51 G2 cap back to 30 h", "probe.py", '"cap_h": 48.0},', '"cap_h": 30.0},'),
+    ("G52 G2 cap 49 h", "probe.py", '"cap_h": 48.0},', '"cap_h": 49.0},'),
+]
 MUTANTS += [  # pkgS: CC-529 W3, the student smoke of g12.py
     ("SM01 smoke verdict on batch-5 equality", "g12.py", 'rec.get("ok_student", True)', 'rec.get("token_equal_b5", True)'),
     ("SM02 repeat equality not required", "g12.py", '"ok_student": b1 == b1r and all(', '"ok_student": all('),

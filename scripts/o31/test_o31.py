@@ -793,9 +793,9 @@ def test_probe_instruct_equals_m0_and_pins():
     reg = json.loads((REPO / probe.REGISTRY).read_text(encoding="utf-8"))["models"]
     assert reg["internvl3_8b"]["hub_id"] == fam["internvl3"]["repo"] and reg["internvl3_8b"]["revision"] == fam["internvl3"]["revision"]
     assert reg["qwen25vl_7b"]["revision"] == decode.SETTINGS["revision"] and reg["qwen25vl_7b"]["hub_id"] == decode.SETTINGS["base"]
-    assert fam["vintern"]["batch"] == (1,) and fam["internvl3"]["batch"] == (1, 8)
+    assert fam["vintern"]["batch"] == (1,) and fam["internvl3"]["batch"] == (1,)  # ERRATUM_O31_G2
     assert (fam["vintern"]["transformers"], fam["internvl3"]["transformers"]) == ("4.51.3", "4.57.6")
-    assert (fam["vintern"]["cap_h"], fam["internvl3"]["cap_h"]) == (3.5, 30.0)  # COMPUTE_PLAN v3 G1, G2 caps
+    assert (fam["vintern"]["cap_h"], fam["internvl3"]["cap_h"]) == (3.5, 48.0)  # COMPUTE_PLAN v3 G1; ERRATUM_O31_G2 G2
     assert (probe.PROBE_TOL, probe.PARITY_IMAGES, probe.SMOKE_N, probe.MASS_FLOOR) == (1e-3, 50, 20, 0.5)
     assert probe.PROBE_TOL == m0.EQUIV_TOL
 
@@ -921,13 +921,21 @@ def test_run_pass_stops():
 
 def test_probe_job_parity_decides_batch():
     items = _items(55, n_q=2)
+    probe.FAMILIES["_b8"] = dict(probe.FAMILIES["internvl3"], batch=(1, 8))  # the E4 parity path (no registered user)
+    try:
+        _parity_cases(items)
+    finally:
+        del probe.FAMILIES["_b8"]
+
+
+def _parity_cases(items):
     with tempfile.TemporaryDirectory() as d:
         out = Path(d) / "a"
-        assert probe.probe_job(_fake_probe(), items, out, "internvl3", lambda n: n) == 0
+        assert probe.probe_job(_fake_probe(), items, out, "_b8", lambda n: n) == 0
         assert json.loads((out / "smoke.json").read_text())["batch"] == 8
         assert {json.loads(x)["batch"] for x in (out / "probes.jsonl").read_text().splitlines()} == {8}
         out = Path(d) / "b"  # batch-dependent scores (> 1e-3): parity fails -> batch 1
-        assert probe.probe_job(_fake_probe(batch_bias=0.01), items, out, "internvl3", lambda n: n) == 0
+        assert probe.probe_job(_fake_probe(batch_bias=0.01), items, out, "_b8", lambda n: n) == 0
         assert json.loads((out / "smoke.json").read_text())["batch"] == 1
         out = Path(d) / "c"  # Vintern: batch 1 always (E1b)
         assert probe.probe_job(_fake_probe(), items, out, "vintern", lambda n: n) == 0
@@ -935,6 +943,28 @@ def test_probe_job_parity_decides_batch():
         out = Path(d) / "e"
         low = lambda ims, qs: [(0.5, 0.3, "x", 1) for _ in qs]  # noqa: E731
         assert probe.probe_job(low, items, out, "vintern", lambda n: n) == 2 and (out / probe.STOP).exists()
+
+
+def test_probe_job_internvl3_batch1_erratum_g2():
+    """ERRATUM_O31_G2: InternVL3 runs at batch 1 (no batch-8 call, no parity key) under the 48 h G2 cap from t0."""
+    items, sizes, fake = _items(55, n_q=9), [], _fake_probe()
+
+    def fn(images, questions):
+        sizes.append(len(questions))
+        return fake(images, questions)
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d) / "g2"
+        assert probe.probe_job(fn, items, out, "internvl3", lambda n: n) == 0
+        rec = json.loads((out / "smoke.json").read_text())
+        assert rec["batch"] == 1 and "parity" not in rec and rec["smoke"]["ok"]
+        assert set(sizes) == {1} and len(sizes) == 9 * (50 + 55)
+        assert {json.loads(x)["batch"] for x in (out / "probes.jsonl").read_text().splitlines()} == {1}
+        for age_h, rc in ((47.5, 0), (48.5, 4)):  # cap from launch.json t0, the wait before a relaunch included
+            o = Path(d) / f"cap{age_h}"
+            o.mkdir()
+            (o / "launch.json").write_text(json.dumps({"t0": time.time() - age_h * 3600}) + "\n")
+            assert probe.probe_job(fake, items, o, "internvl3", lambda n: n) == rc
+            assert (o / probe.STOP).exists() == (rc == 4)
 
 
 def test_probe_job_logs_no_question_text():
