@@ -3,7 +3,7 @@
 # host: the O31 venv). VSPS_REPO = the repo snapshot holding the REUSED files (sha-checked on import).
 set -euo pipefail
 cd "$(dirname "$0")"
-PY="${PY:-$HOME/.venvs/c_stage1_lists/bin/python}"
+PY="${PY:-$HOME/.venvs/o31_g12/bin/python}"
 export VSPS_REPO="${VSPS_REPO:-/mnt/d/vsps_image_captioning}"
 sha256sum -c SHA256SUMS --quiet
 "$PY" -I -B test_o31.py

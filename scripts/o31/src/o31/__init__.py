@@ -18,7 +18,7 @@ sys.dont_write_bytecode = True  # the repo is read-only for this package; -I imp
 HERE = Path(__file__).resolve().parent
 REPO = Path(os.environ.get("VSPS_REPO", "/mnt/d/vsps_image_captioning"))
 
-#: file -> sha256 of every repo file this package imports, reads or replicates; all clean in git at 3319dd7.
+#: file -> sha256 of every repo file this package imports, reads or replicates; all clean in git at 3319dd7 (and unchanged at 561ac69).
 REUSED = {
     "scripts/score_coco_probe.py": "d11db7e192f689980bb2b2bb717d852d9aa339ad857ce9411fe7bdd6fe416070",
     "rescap/chair.py": "e47d249ac7290070f2387d3fa8b22dac77728265ad276f55aa6520f5cbc591a3",
@@ -56,7 +56,24 @@ REUSED = {
     "scripts/c_stage1/decode_icl.py": "fa5a251160d4fd4fb0cd130af33614283863a84e6ed7905f3da81bb6255010db",
     "scripts/g2b/decode_qwen3vl.py": "8a855ef483c933621776099b6f9de3b60c4fbfaaf706bb40c74e7d84d9dfb5e5",
     "scripts/lb/decode_hf_vlm.py": "e2de18811e2ffeb61ed72cb2399d41123e9a8f6ccd73a5ec35f778dcbe2f5ac4",
-    "scripts/vsps_j_m0/m0.py": "5d3c02f414bd5743d437ec399e07431b4d38d970b16b901c52a9a657505ef7b2",  # read (not imported): E3 model string
+    "scripts/vsps_j_m0/m0.py": "5d3c02f414bd5743d437ec399e07431b4d38d970b16b901c52a9a657505ef7b2",  # E3 string; G1 m0.probe
+    # G1/G2 probe runner and student decoder (host paths)
+    "rescap/vlm/vintern.py": "dbde92aae0d73275c347e76ce045285c9ad5862e64d84564eb73a223b8cf1096",
+    "rescap/vlm/qwen_vl.py": "0990c54a930337a6f4e7ac38a9cc2d32259f60caf868417776b18ad3ed3930a7",
+    "scripts/evaluate.py": "a68d56826d90d8a409493cd6f49007e906c6cb4f5668314edb9b8e7a632e8236",  # read: settings
+    "manuscript/prereg/2026-10-19_b_n1_vi_leaderboard.json": "9ff02dc259258de1add426abd02131f2122e3476a81f9a076066ed6d74906134",
+    "manuscript/prereg/2026-10-31_vsps_j_m0/dev_touched_ids.txt": "91db7e2fbb3d479f79ed19fca4aa100399730910cd7511f832576350f26f9b63",
+    "manuscript/prereg/2026-10-31_vsps_j_m0/fetch_images.txt": "7f148c8e515bf567f811da84a1e327a6e05d20a85e2939f5088fa1a45a359a3c",
+    "manuscript/prereg/2026-10-31_vsps_j_m0/karpathy_test_val_ids.txt": "88e40e3cd2ae6dd3bf3c1f514a085cb61a36b503abde298d57a1bb2bc8acd7fb",
+    "manuscript/prereg/2026-10-21_dev_pools/exclusion.json": "c52a96d18925b974878ae1a970c3f9133fb3482216676fd41871eeabb68cc77f",
+    # g12c (CC-519 W2, W3): G1 stage-1 wrapper and the §3.5 launcher
+    "scripts/generate_stage1.py": "ad965ceb077106e03e2c49026d122e7a5aed76b0e76b1443f18636e7174637b2",
+    "configs/main.env": "2ea67f5fe8fa13d98e4c65b5d5d4cf5892ac779222ba40195c8e9cb03440aeca",  # read: FAIR stage-1 flags
+    "scripts/grl/id_counts.py": "0c590058a908c0683366e385b70c68ca77b4ff80902b7a1398f216ce6e55d859",  # m0.kv4224 (laptop)
+    "data/lb/sets/ktvic_test.tsv": "456243c0cfc82b0c3cc4ad52c694e11b4d9702f3ca14cd8103c3a82cd74a90eb",
+    "data/lb/sets/uitviic_test.tsv": "dbadc28724d7a07b599325cd996084934d76e6c4c6a885e64e8de333d6a6665b",
+    "manuscript/prereg/2026-10-27_c_en/cen_coco_test.tsv": "67555b281d87b01a0f742214da552be0f7c4f4977f543db98a9acd2901787eb1",
+    "data/screening/val_manifest.json": "79f3628c156c955698afb66393f4a3e2496c82c78427d603d19887fde6e18790",  # F3
 }
 COCO80_VI = REPO / "data/coco_probe/coco80_vi.json"  # the tracked repo file, read through its sha pin
 COCO80_VI_SHA = REUSED["data/coco_probe/coco80_vi.json"]
@@ -74,7 +91,8 @@ def repo() -> Path:
     bad = [f for f, s in REUSED.items() if not (REPO / f).is_file() or sha_file(REPO / f) != s]
     if bad:
         raise SystemExit(f"FAULT reused repo files missing or changed under {REPO}: {bad}")
-    roots = [REPO, REPO / "scripts", REPO / "scripts/c_stage1", REPO / "scripts/w25"]
+    roots = [REPO, REPO / "scripts", REPO / "scripts/c_stage1", REPO / "scripts/w25", REPO / "scripts/vsps_j_m0",
+             REPO / "scripts/lb"]
     sys.path[:0] = [str(r) for r in roots if str(r) not in sys.path]
     repo._done = True
     return REPO

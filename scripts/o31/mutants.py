@@ -1,5 +1,5 @@
-"""Mutation check: each mutant edits a COPY of src/ (never src/ itself); test_o31.py must fail on every one.
-Own mutants M01-M25, W3/W5 mutants (CC-504), and the 35 judge mutants J01-J35 of CC-504 (J34 re-pointed).
+"""Mutation check: each mutant edits a COPY of the package (never the package itself); the copy's test_o31.py must
+fail on every one. Own mutants M01-M27, W3/W5, G01-G30 (g12b), S/G31-G37/O (g12c), X/Q/V (g12d), and the 35 judge mutants of CC-504.
 
     $PY -I -B mutants.py        exit 0 iff every mutant is killed and every mutation site exists exactly once
 """
@@ -50,6 +50,42 @@ MUTANTS = [
     ("M26 --exclude ignored", "gate.py", 'recs = [r for r in recs if r["file_name"] not in drop]', "recs = recs"),
     ("M27 reported sha not the written store", "gate.py", "sha = store.write_store(rows, Path(store_dir) / name) if store_dir",
      "sha = store.write_store(rows[::-1], Path(store_dir) / name) and store.store_sha(rows) if store_dir"),
+    # G1/G2 probe runner and student decoder
+    ("G01 vintern asks Q+ only", "probe.py", '            if mode == "all":', "            if False:"),
+    ("G02 lower-case yes word dropped", "probe.py", 'YES_WORDS = ("Có", "có", " Có", " có")', 'YES_WORDS = ("Có", " Có")'),
+    ("G03 probe right padding", "probe.py", '    tok.padding_side = "left"', '    tok.padding_side = "right"'),
+    ("G04 probe first position", "probe.py", "net(**enc).logits[:, -1]", "net(**enc).logits[:, 0]"),
+    ("G05 s = p(yes) unnormalised", "probe.py", "[(a / (a + b) if a + b > 0", "[(a if a + b > 0"),
+    ("G06 parity tolerance 1e-2", "probe.py", "PROBE_TOL, PARITY_IMAGES, BATCHES = 1e-3, 50, (1, 8)",
+     "PROBE_TOL, PARITY_IMAGES, BATCHES = 1e-2, 50, (1, 8)"),
+    ("G07 parity image floor dropped", "probe.py", "ok = n_images >= PARITY_IMAGES and", "ok ="),
+    ("G08 parity ignores top token", "probe.py", ' or k1[k]["top"] != kb[k]["top"]]', "]"),
+    ("G09 resume re-asks done pairs", "probe.py", "todo = [(key, q) for key, q in qs if (name, key) not in have]",
+     "todo = list(qs)"),
+    ("G10 non-finite s kept", "probe.py", "                        if not math.isfinite(s):\n", "                        if False:\n"),
+    ("G11 shard sha not re-checked", "probe.py", "        if _sha(out / name) != sha:", "        if False:"),
+    ("G12 batch 8 without parity", "probe.py", 'rec["batch"] = 8 if rec["parity"]["ok"] else 1', 'rec["batch"] = 8'),
+    ("G13 smoke mass floor dropped", "probe.py", "statistics.median(masses) >= MASS_FLOOR", "True"),
+    ("G14 finalize pair check dropped", "probe.py", "if sorted(got) != sorted(want) or len(set(got)) != len(got):",
+     "if False:"),
+    ("G15 explored check dropped", "probe.py", "    if bad or len(names) != 5 or len(set(names)) != 5:", "    if False:"),
+    ("G16 vintern batch 8", "probe.py", '"questions": "all", "batch": (1,)', '"questions": "all", "batch": (1, 8)'),
+    ("G17 decode right padding", "decode.py", '    processor.tokenizer.padding_side = "left"', '    processor.tokenizer.padding_side = "right"'),
+    ("G18 until_eos drops the stop token", "decode.py", "return ids[:k + 1], False", "return ids[:k], False"),
+    ("G19 S0/adapter rule dropped", "decode.py", 'if (cfg.get("system") == "S0") != (cfg.get("adapter") is None):', "if False:"),
+    ("G20 decode re-decodes done images", "decode.py", "todo = [it for it in items if it[0] not in have]", "todo = list(items)"),
+    ("G21 decode image sha unchecked", "decode.py", "if hashlib.sha256(b).hexdigest() != h:", "if False:"),
+    ("G22 parity record ignores mismatches", "decode.py", 'return record.get("batch") == 8 and record.get("mismatches") == {}',
+     'return record.get("batch") == 8'),
+    ("G23 mixed-batch resume allowed", "decode.py", 'if any(r["batch"] != batch for r in have.values()):', "if False:"),
+    ("G24 adapter base unchecked", "decode.py", 'if cfg.get("base_model_name_or_path") != SETTINGS["base"]:', "if False:"),
+    ("G25 max_new_tokens 200", "decode.py", '"max_new_tokens": 160,', '"max_new_tokens": 200,'),
+    ("G26 Q13 decision ignores a system", "decode.py", "    for s in SYSTEMS:\n        a, b = tok_b1.get(s, {}), tok_b8.get(s, {})",
+     "    for s in SYSTEMS[:2]:\n        a, b = tok_b1.get(s, {}), tok_b8.get(s, {})"),
+    ("G27 smoke allows Karpathy test images", "probe.py", "or int(m.group(1)) in kar \\", "\\"),
+    ("G28 smoke ignores refused bytes", "probe.py", "                or _sha(folder / n) in refused:", "                or False:"),
+    ("G29 merged tables overwrite", "gate.py", "            if dup:\n                raise", "            if False:\n                raise"),
+    ("G30 second table of a family dropped", "gate.py", "        spec.setdefault(f, []).append(p)", "        spec[f] = [p]"),
     # W5 (CC-504)
     ("W5a old model string", "verify.py", 'FAIR_MODEL = "5CD-AI/Vintern-1B-v3_5"', 'FAIR_MODEL = "vintern-1b"'),
     ("W5b no-Q+ sent to UNCERTAIN", "verify.py", "        if k is None:\n", "        if False:\n"),
@@ -109,6 +145,78 @@ def _judge() -> list:
 
 
 MUTANTS += _judge()
+LAUNCHERS = ("g12.py", "s35.py")
+MUTANTS += [  # g12c: CC-519 W2 (G1 stage-1 wrapper), W3 (§3.5 launcher), N1, E4-E6
+    ("S01 max-entities 10", "stage1.py", '"--max-entities", "8"', '"--max-entities", "10"'),
+    ("S02 logit verifier", "stage1.py", '"--verifier-tiles", "4")', '"--verifier-tiles", "4", "--logit-verifier")'),
+    ("S03 70 new images", "stage1.py", "N_TRAIN, N_RECORDS, N_NEW = 3769, 3700, 69", "N_TRAIN, N_RECORDS, N_NEW = 3769, 3700, 70"),
+    ("S05 records outside train", "stage1.py", "if not set(TWINS) <= have or not have <= set(names):",
+     "if not set(TWINS) <= have:"),
+    ("S06 new count unchecked", "stage1.py", 'if len(new) != N_NEW or set(TWINS) & {i["file_name"] for i in new}:', "if False:"),
+    ("S07 train json unpinned", "stage1.py", "if _sha(train_json) != KTVIC_TRAIN_SHA:", "if False:"),
+    ("S08 tarball unpinned", "stage1.py", "if _sha(tar) != RECORDS_TAR_SHA:", "if False:"),
+    ("S09 refused image allowed", "stage1.py", '\n           or _sha(kt / "images" / i["file_name"]) in refused]', "]"),
+    ("S10 QWEN_MAX_PIXELS allowed", "stage1.py", 'if os.environ.get("QWEN_MAX_PIXELS"):', "if False:"),
+    ("S11 online hub allowed", "stage1.py", 'if os.environ.get("HF_HUB_OFFLINE") != "1":', "if False:"),
+    ("S12 transformers unchecked", "stage1.py", "if transformers.__version__ != TRANSFORMERS:", "if False:"),
+    ("S13 cap timer off", "stage1.py", "    timer.start()\n", ""),
+    ("S14 cap spent before start", "stage1.py", "    if left <= 0:", "    if False:"),
+    ("S15 STOP ignored", "stage1.py",
+     '    if (out / STOP).exists():\n        raise SystemExit(f"REFUSED: {out / STOP} exists; no resume without a ruling")\n    lf',
+     "    lf"),
+    ("S16 done without all 69", "stage1.py", "return 0 if rc == 0 and got == want else 5", "return 0 if rc == 0 else 5"),
+    ("S17 cap stop unreported", "stage1.py", "    if g._stop:\n", "    if False:\n"),
+    ("S18 Qwen refs/main unchecked", "stage1.py",
+     'snap.name != QWEN["revision"] or not ref.is_file() \\\n            or ref.read_text().strip() != QWEN["revision"]:',
+     'snap.name != QWEN["revision"]:'),
+    ("S19 Qwen file pins unchecked", "stage1.py", "    LB.check_snapshot(m, snap)\n", ""),
+    ("S20 FAIR flags not passed", "stage1.py", '"--out", str(rec_dir), *FAIR_ARGS]', '"--out", str(rec_dir)]'),
+    ("G31 G2 partial records", "probe.py", "if n != N_TRAIN or not set(TWINS) <= drop:", "if not set(TWINS) <= drop:"),
+    ("G32 G2 twins kept", "probe.py", "if n != N_TRAIN or not set(TWINS) <= drop:", "if n != N_TRAIN:"),
+    ("G33 g12 G2 check skipped", "g12.py", '    if a.family == "internvl3":\n        probe.g2_inputs(a.records, a.exclude)\n', ""),
+    ("G34 refused default empty", "g12.py", "else probe.refused_shas()", "else set()"),
+    ("G35 other English prompt", "g12.py", "    if prompt != decode.PROMPTS[a.lang]:\n", "    if False:\n"),
+    ("G36 E6 string", "decode.py", 'PROMPTS["en"] = "Describe this image in detail in English."',
+     'PROMPTS["en"] = "Describe this image in English."'),
+    ("G37 g12 stage1 env unchecked", "g12.py", "    stage1.check_env()\n", ""),
+    ("O01 pool 3769", "overlap.py", 'EXPECT_N = {"pool": 3767,', 'EXPECT_N = {"pool": 3769,'),
+    ("O02 tier3 4000", "overlap.py", '"karpathy_test": 5000, "tier3": 4224}', '"karpathy_test": 5000, "tier3": 4000}'),
+    ("O03 id list unpinned", "overlap.py", "if hashlib.sha256((root / rel).read_bytes()).hexdigest() != want:", "if False:"),
+    ("O04 twins in pool", "overlap.py", "for n in sorted(set(names) - set(TWINS))]", "for n in sorted(set(names))]"),
+    ("O05 unreadable kept", "overlap.py", '    if f["unreadable"]:\n        raise SystemExit(f"FAULT {name}',
+     '    if False:\n        raise SystemExit(f"FAULT {name}'),
+    ("O06 image sha unchecked", "overlap.py", "if any(s is not None and s != got", "if False and any(s is not None and s != got"),
+    ("O07 SSCD weights unpinned", "overlap.py", "w25.ok_sscd(sscd)", "str(sscd)"),
+    ("O08 KV features unpinned", "overlap.py", "kv = w25.load(kval, KV_FEATS_SHA)", "kv = w25.load(kval)"),
+    ("O09 KV count unchecked", "overlap.py",
+     'if len(want) != EXPECT_N["tier3"] or len(keep) != len(want) or kv["unreadable"]:', 'if kv["unreadable"]:'),
+    ("O10 pass without every set", "overlap.py", "if set(feat_files) != set(EXPECT_N):", "if False:"),
+    ("O11 pass count unchecked", "overlap.py", 'if len(f["ids"]) != expect[k] or', 'if False and len(f["ids"]) != expect[k] or'),
+    ("O12 twins not excluded", "overlap.py", 'excl = sorted(set(TWINS) | set(res["removed"]["pool"]))',
+     'excl = sorted(set(res["removed"]["pool"]))'),
+    ("O13 s35 pool train unpinned", "s35.py",
+     "if a.train is None or hashlib.sha256(a.train.read_bytes()).hexdigest() != stage1.KTVIC_TRAIN_SHA:",
+     "if a.train is None:"),
+]
+MUTANTS += [  # g12d: CC-521 W4 (stems, F3), W5 (release tree F1, seed F2), W7 (snapshot binding)
+    ("X01 record names as .jpg", "stage1.py", 'names = {Path(m.name).stem for m in tf if', 'names = {Path(m.name).stem + ".jpg" for m in tf if'),
+    ("X02 stems not mapped", "stage1.py", "have = {by_stem.get(s, s) for s in stems}", "have = set(stems)"),
+    ("X03 shared stem allowed", "stage1.py", "    if len(by_stem) != N_TRAIN:\n", "    if False:\n"),
+    ("X04 screening list unchecked", "stage1.py", 'if sorted(i["file_name"] for i in new) != sorted(screen):', "if False:"),
+    ("X06 seed not set", "stage1.py", "    seed_all()\n", ""),
+    ("X07 attention not recorded", "stage1.py",
+     'rec.setdefault("attn_implementation", getattr(self, "attn_implementation", None))', "pass"),
+    ("X08 HEAD rescap kept", "stage1.py", "        del sys.modules[k]\n", "        pass\n"),
+    ("X09 release tree appended", "stage1.py", 'sys.path[:0] = [str(tree), str(tree / "scripts")]',
+     'sys.path += [str(tree), str(tree / "scripts")]'),
+    ("X10 release pins unchecked", "stage1.py", "if bad or files != set(pins):", "if files != set(pins):"),
+    ("X11 extra release files", "stage1.py", "if bad or files != set(pins):", "if bad:"),
+    ("X12 records matched by name", "stage1.py", 'want = sorted(Path(i["file_name"]).stem for i in new)',
+     'want = sorted(i["file_name"] for i in new)'),
+    ("Q01 Qwen snapshot not bound", "stage1.py", "    check_cache(snap, QWEN)\n", ""),
+    ("V01 Vintern snapshot not bound", "stage1.py", "    check_cache(snap, VINTERN)\n", ""),
+    ("V02 g12 Vintern binding skipped", "g12.py", "    stage1.check_vintern(a.vintern)\n", ""),
+]
 
 
 def main() -> int:
@@ -117,8 +225,8 @@ def main() -> int:
     with tempfile.TemporaryDirectory(prefix="o31_mut_") as tmp:
         for name, f, old, new in MUTANTS:
             dst = Path(tmp) / name.split()[0]
-            shutil.copytree(HERE / "src", dst, ignore=shutil.ignore_patterns("__pycache__"))
-            path = dst / "o31" / f
+            shutil.copytree(HERE, dst, ignore=shutil.ignore_patterns("__pycache__", "*.log", "*.diff", "*.txt"))
+            path = dst / f if f in LAUNCHERS else dst / "src" / "o31" / f  # launchers: the copy's own g12.py / s35.py
             text = path.read_text(encoding="utf-8")
             if text.count(old) != 1:
                 bad_site.append(name)
@@ -126,8 +234,8 @@ def main() -> int:
                 continue
             path.chmod(0o644)
             path.write_text(text.replace(old, new), encoding="utf-8")
-            r = subprocess.run([py, "-I", "-B", str(HERE / "test_o31.py")], capture_output=True, text=True,
-                               env={**os.environ, "O31_SRC": str(dst)})
+            r = subprocess.run([py, "-I", "-B", str(dst / "test_o31.py")], capture_output=True, text=True,
+                               env={**os.environ, "O31_SRC": str(dst / "src")})
             killed = r.returncode != 0
             fails = [ln.split(":")[0][5:] for ln in r.stdout.splitlines() if ln.startswith("FAIL")]
             print(f"{'killed  ' if killed else 'SURVIVED'} {name}  {fails[:3]}")

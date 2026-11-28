@@ -4,7 +4,7 @@ Per family f: s_f = p(yes) / (p(yes) + p(no)) at the answer position (M0 token s
 Per family state: YES if s_f >= tau_acc, NO if s_f <= tau_rej, else UNSURE; a missing or NaN score is UNSURE.
 Combined: SUPPORTED if any family says YES; REJECTED only if every declared family says NO; else UNCERTAIN.
 With all scores present this equals §4.2 (max_f s_f >= tau_acc / max_f s_f <= tau_rej). Spatial relations are
-always UNCERTAIN. Torch is imported only inside probe_model().
+always UNCERTAIN. The probe runner is probe.py.
 """
 from __future__ import annotations
 
@@ -95,9 +95,3 @@ def apply_states(rec: dict, tables: dict[str, dict[str, float]], families: tuple
         p.setdefault("verification", {})["status"] = st
         n[st] += 1
     return out, n
-
-
-def probe_model(*_a, **_k):  # pragma: no cover - GPU host only, after the prereg commit
-    """InternVL3-8B / Vintern single-probe runner. Not run before the commit (CC-501 ruling 6)."""
-    import torch  # noqa: F401
-    raise NotImplementedError("probe runner: written and run on the host after the prereg commit")

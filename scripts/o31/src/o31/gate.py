@@ -64,6 +64,19 @@ def load_table(path) -> dict:
     return t
 
 
+def merge_tables(paths: list) -> dict:
+    """Several tables of one family (P1: E1b's probes.jsonl for 3,700 images + G1's for the 69 new ones) as one;
+    an (image, qkey) present in two inputs is a FAULT."""
+    out: dict = {}
+    for p in paths:
+        for im, qs in load_table(p).items():
+            dup = out.get(im, {}).keys() & qs.keys()
+            if dup:
+                raise SystemExit(f"FAULT {len(dup)} (image, q) pairs appear in two tables of one family")
+            out.setdefault(im, {}).update(qs)
+    return out
+
+
 def run_k0(records: list[dict], tables: dict[str, dict], build=None, store_dir=None) -> dict:
     """records: RAW (pre-neutralization) stage-1 records with file_name and reference_captions; tables:
     {family: load_table}. Erratum E4 order for every arm: statuses -> person_uncap -> build.
@@ -130,7 +143,7 @@ def main(argv=None) -> int:
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--records", required=True, type=Path)
-    ap.add_argument("--table", action="append", default=[], help="family=path")
+    ap.add_argument("--table", action="append", default=[], help="family=path; repeat a family to merge tables")
     ap.add_argument("--exclude", type=Path, help="file names removed by the §3.5 (a) overlap pass, one per line")
     ap.add_argument("--out", required=True, type=Path)
     ap.add_argument("--store-dir", required=True, type=Path, help="host folder for each arm's sft.jsonl (E5)")
@@ -139,11 +152,14 @@ def main(argv=None) -> int:
     drop = set(a.exclude.read_text(encoding="utf-8").split()) if a.exclude else set()
     recs = [json.loads(p.read_text(encoding="utf-8")) for p in files]
     recs = [r for r in recs if r["file_name"] not in drop]
-    spec = dict(t.split("=", 1) for t in a.table)
-    res = run_k0(recs, {f: load_table(p) for f, p in spec.items()}, store_dir=a.store_dir)
+    spec: dict = {}
+    for t in a.table:  # repeated --table F=path entries of one family are merged (merge_tables)
+        f, p = t.split("=", 1)
+        spec.setdefault(f, []).append(p)
+    res = run_k0(recs, {f: merge_tables(ps) for f, ps in spec.items()}, store_dir=a.store_dir)
     res["inputs"] = {"n_records": len(recs), "n_excluded": len(files) - len(recs),
                      "exclude_sha256": sha_file(a.exclude) if a.exclude else None,
-                     "tables": {f: sha_file(Path(p)) for f, p in spec.items()}}
+                     "tables": {f: [sha_file(Path(p)) for p in ps] for f, ps in spec.items()}}
     a.out.write_text(json.dumps(res, indent=1) + "\n", encoding="utf-8")
     d = res["decision"] or res["preview_no_verdict"] or {}
     print(json.dumps({"complete": res["complete"], "pass": d.get("pass"), "P_floor": d.get("P_floor")}))

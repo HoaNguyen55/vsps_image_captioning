@@ -13,6 +13,7 @@ import re
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 sys.dont_write_bytecode = True
@@ -21,7 +22,7 @@ sys.path.insert(0, os.environ.get("O31_SRC", str(HERE / "src")))
 
 import numpy as np  # noqa: E402
 
-from o31 import REPO, REUSED, decode, extract, gate, metrics, no_forbidden, overlap, repo, store, train, verify  # noqa: E402
+from o31 import REPO, REUSED, decode, extract, gate, metrics, no_forbidden, overlap, probe, repo, store, train, verify  # noqa: E402
 from o31.verify import REJECTED, SUPPORTED, UNCERTAIN  # noqa: E402
 
 V, I = ("vintern",), ("vintern", "internvl3")
@@ -367,17 +368,21 @@ def test_k0_launcher_isolated_with_stores_and_exclude():
             (d / "rec" / f"{r['image_id']}.json").write_text(json.dumps(r, ensure_ascii=False), encoding="utf-8")
         (d / "rec" / "_report_shard0.json").write_text("{}", encoding="utf-8")  # generate_stage1 side file: skipped
         rows = [{"image": im, "q": q, "p_yes": v} for im, t in tab.items() for q, v in t.items()]
-        (d / "probes.jsonl").write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in rows), encoding="utf-8")
+        (d / "probes.jsonl").write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in rows if x["image"] != "2.jpg"),
+                                        encoding="utf-8")
+        (d / "g1.jsonl").write_text("".join(json.dumps(x, ensure_ascii=False) + "\n" for x in rows if x["image"] == "2.jpg"),
+                                    encoding="utf-8")
         (d / "excl.txt").write_text("3.jpg\n", encoding="utf-8")
         cmd = [sys.executable, "-I", "-B", str(HERE / "k0.py"), "--records", str(d / "rec"), "--table",
-               f"vintern={d / 'probes.jsonl'}", "--exclude", str(d / "excl.txt"), "--store-dir", str(d / "stores"),
+               f"vintern={d / 'probes.jsonl'}", "--table", f"vintern={d / 'g1.jsonl'}", "--exclude", str(d / "excl.txt"), "--store-dir", str(d / "stores"),
                "--out", str(d / "k0.json")]
         env = {**os.environ, "O31_SRC": os.environ.get("O31_SRC", str(HERE / "src"))}
         r = subprocess.run(cmd, capture_output=True, text=True, env=env, cwd=d)
         assert r.returncode == 0, r.stderr[-2000:]
         res = json.loads((d / "k0.json").read_text(encoding="utf-8"))
         assert res["inputs"]["n_records"] == 3 and res["inputs"]["n_excluded"] == 1
-        assert res["inputs"]["tables"]["vintern"] == hashlib.sha256((d / "probes.jsonl").read_bytes()).hexdigest()
+        assert res["inputs"]["tables"]["vintern"] == [hashlib.sha256((d / f).read_bytes()).hexdigest()
+                                                      for f in ("probes.jsonl", "g1.jsonl")]
         assert res["decision"] is None and res["preview_no_verdict"] is not None and len(res["points"]) == 15
         for arm in [res["s1"]] + res["points"]:
             f = d / "stores" / arm["store"] / "sft.jsonl"
@@ -702,6 +707,1019 @@ def test_repo_sha_refuses_changed_file():
         out = subprocess.run([sys.executable, "-B", "-c", code], capture_output=True, text=True, env=env).stdout.strip()
     assert out == "REFUSED", out
     assert len(REUSED) >= 15
+
+
+# ------------------------------------------------------------------ G1/G2 probe runner and student decoder (CC-504 follow-up)
+_TINY: dict = {}
+
+
+def _tiny():
+    """A tiny random Qwen2.5-VL (real transformers classes, CPU, nothing downloaded) and its processor."""
+    if _TINY:
+        return _TINY["proc"], _TINY["net"]
+    import torch
+    import transformers as tf
+    from tokenizers import Tokenizer, models, pre_tokenizers
+
+    torch.manual_seed(0)
+    sp = ["<|im_start|>", "<|im_end|>", "<|vision_start|>", "<|vision_end|>", "<|image_pad|>", "<|video_pad|>"]
+    words = ["<unk>", "<pad>"] + sp + ["user", "assistant", "có", "không", "Có", "Không", "Trong", "ảnh", "người",
+                                       "xe", "chó", "bàn", "Chỉ", "trả", "lời", "'có'", "hoặc", "'không'.", "?",
+                                       "Mô", "tả", "chi", "tiết", "bức", "này", "bằng", "tiếng", "Việt."]
+    words += [f"w{i}" for i in range(30)]
+    tk = Tokenizer(models.WordLevel({w: i for i, w in enumerate(words)}, unk_token="<unk>"))
+    tk.pre_tokenizer = pre_tokenizers.WhitespaceSplit()
+    tok = tf.Qwen2TokenizerFast(tokenizer_object=tk, unk_token="<unk>", pad_token="<pad>", eos_token="<|im_end|>",
+                                additional_special_tokens=sp)
+    tpl = ("{% for m in messages %}<|im_start|> {{ m['role'] }} {% for c in m['content'] %}{% if c['type'] == 'image' %}"
+           "<|vision_start|> <|image_pad|> <|vision_end|> {% else %}{{ c['text'] }} {% endif %}{% endfor %}<|im_end|> "
+           "{% endfor %}{% if add_generation_prompt %}<|im_start|> assistant {% endif %}")
+    ip = tf.Qwen2VLImageProcessor(min_pixels=4 * 28 * 28, max_pixels=8 * 28 * 28, patch_size=14, merge_size=2,
+                                  temporal_patch_size=2)
+    proc = tf.Qwen2_5_VLProcessor(image_processor=ip, tokenizer=tok, chat_template=tpl)
+    cfg = tf.Qwen2_5_VLConfig(
+        vocab_size=len(words), hidden_size=32, intermediate_size=64, num_hidden_layers=2, num_attention_heads=4,
+        num_key_value_heads=2, max_position_embeddings=512, rope_scaling={"type": "mrope", "mrope_section": [1, 1, 2]},
+        image_token_id=words.index("<|image_pad|>"), video_token_id=words.index("<|video_pad|>"),
+        vision_start_token_id=words.index("<|vision_start|>"), vision_end_token_id=words.index("<|vision_end|>"),
+        bos_token_id=2, eos_token_id=3, pad_token_id=1,
+        vision_config=dict(depth=2, hidden_size=16, out_hidden_size=32, intermediate_size=32, num_heads=2, patch_size=14,
+                           spatial_merge_size=2, temporal_patch_size=2, window_size=56, fullatt_block_indexes=[1]))
+    net = tf.Qwen2_5_VLForConditionalGeneration(cfg).eval()
+    net.generation_config.pad_token_id, net.generation_config.eos_token_id = 1, 3
+    _TINY.update(proc=proc, net=net)
+    return proc, net
+
+
+def _imgs(n):
+    from PIL import Image
+    return [Image.new("RGB", (40 + 7 * (i % 9), 30 + 11 * (i % 7)), (37 * i % 255, 120, (200 - 13 * i) % 255)) for i in range(n)]
+
+
+def _probe_records():
+    recs = []
+    for i in range(3):
+        props = []
+        for j, h in enumerate(("người", "xe", "chó")):
+            q = f"Trong ảnh có {h} không?"
+            props.append({"id": f"P{j}", "type": "entity", "verification": {"status": "UNCERTAIN"},
+                          "evidence": {"probes": [{"model": VIN, "question_vi": q},
+                                                  {"model": VIN, "question_vi": f"Trong ảnh không có {h} phải không?"},
+                                                  {"model": "Qwen/Qwen2.5-VL-7B-Instruct", "question_vi": "khác?"}]}})
+        props.append({"id": "PR", "type": "entity", "verification": {"status": "REJECTED"}})
+        recs.append({"image_id": str(i), "file_name": f"{2 - i}.jpg", "propositions": props})
+    return recs
+
+
+def test_probe_work_modes():
+    recs = _probe_records()
+    v, i = probe.work(recs, "vintern"), probe.work(recs, "internvl3")
+    assert [n for n, _ in v] == ["0.jpg", "1.jpg", "2.jpg"] == [n for n, _ in i]
+    assert len(v[0][1]) == 6 and len(i[0][1]) == 3  # E1b: every unique Vintern question; G2: Q+ only (E3)
+    assert [k for k, _q in i[0][1]] == [verify.qkey(f"Trong ảnh có {h} không?") for h in ("người", "xe", "chó")]
+    assert all(q.endswith("không?") for _k, q in i[0][1])
+
+
+def test_probe_instruct_equals_m0_and_pins():
+    repo()
+    import m0
+    for q in ("Trong ảnh có chó không?", "Có xe", "x?"):
+        assert probe.instruct(q) == m0.instruct(q)
+    fam = probe.FAMILIES
+    assert fam["vintern"]["repo"] == m0.MODEL["repo"] and fam["vintern"]["revision"] == m0.MODEL["revision"]
+    reg = json.loads((REPO / probe.REGISTRY).read_text(encoding="utf-8"))["models"]
+    assert reg["internvl3_8b"]["hub_id"] == fam["internvl3"]["repo"] and reg["internvl3_8b"]["revision"] == fam["internvl3"]["revision"]
+    assert reg["qwen25vl_7b"]["revision"] == decode.SETTINGS["revision"] and reg["qwen25vl_7b"]["hub_id"] == decode.SETTINGS["base"]
+    assert fam["vintern"]["batch"] == (1,) and fam["internvl3"]["batch"] == (1, 8)
+    assert (fam["vintern"]["transformers"], fam["internvl3"]["transformers"]) == ("4.51.3", "4.57.6")
+    assert (fam["vintern"]["cap_h"], fam["internvl3"]["cap_h"]) == (3.5, 30.0)  # COMPUTE_PLAN v3 G1, G2 caps
+    assert (probe.PROBE_TOL, probe.PARITY_IMAGES, probe.SMOKE_N, probe.MASS_FLOOR) == (1e-3, 50, 20, 0.5)
+    assert probe.PROBE_TOL == m0.EQUIV_TOL
+
+
+def test_yes_no_ids_and_token_ok():
+    proc, _net = _tiny()
+    tok = proc.tokenizer
+    yes, no = probe.yes_no_ids(tok)
+    assert {tok.convert_tokens_to_ids(w) for w in ("Có", "có")} <= set(yes) and \
+        {tok.convert_tokens_to_ids(w) for w in ("Không", "không")} <= set(no)
+    assert probe.token_ok(tok, yes, no) and not probe.token_ok(tok, yes, yes) and not probe.token_ok(tok, no, yes)
+
+
+def _direct_s(proc, net, im, q):
+    import torch
+    msgs = [{"role": "user", "content": [{"type": "image"}, {"type": "text", "text": probe.instruct(q)}]}]
+    enc = proc(text=[proc.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True)], images=[im],
+               return_tensors="pt")
+    with torch.no_grad():
+        pr = torch.softmax(net(**enc).logits[0, -1].float(), dim=-1)
+    yes, no = probe.yes_no_ids(proc.tokenizer)
+    a, b = pr[yes].sum().item(), pr[no].sum().item()
+    return a / (a + b), a + b
+
+
+def test_hf_probe_score_and_batch_parity():
+    proc, net = _tiny()
+    fn = probe.make_hf_probe(proc, net)
+    ims = _imgs(50)
+    qs = ["Trong ảnh có người không?", "Trong ảnh có chó không? w1 w2 w3"]
+    s, mass, top, n_tok = fn([ims[0]], [qs[0]])[0]
+    ds, dm = _direct_s(proc, net, ims[0], qs[0])
+    assert abs(s - ds) < 1e-6 and abs(mass - dm) < 1e-6 and 0 < mass <= 1 and n_tok > 0
+    items = [(f"{k}.png", [(verify.qkey(q), q) for q in qs]) for k in range(50)]
+    load = {f"{k}.png": ims[k] for k in range(50)}.get
+    r1, r2 = probe.probe_rows(fn, items, 1, load), probe.probe_rows(fn, items, 2, load)
+    assert probe.batch_parity(r1, r2, 50)["ok"], probe.batch_parity(r1, r2, 50)
+
+
+def test_batch_parity_rule():
+    b1 = [{"image": f"{k}", "q": "a", "p_yes": 0.5, "top": "có"} for k in range(50)]
+    near = [dict(r, p_yes=0.5 + 2 ** -10) for r in b1]
+    assert probe.batch_parity(b1, near, 50)["ok"]                      # |d| = 0.00098 < 1e-3
+    assert not probe.batch_parity(b1, [dict(r, p_yes=0.5011) for r in b1], 50)["ok"]
+    assert not probe.batch_parity(b1, [dict(r, top="không") if r["image"] == "3" else r for r in b1], 50)["ok"]
+    assert not probe.batch_parity(b1, b1, 49)["ok"] and not probe.batch_parity(b1, b1[:-1], 50)["ok"]
+
+
+def test_probe_smoke_rule():
+    rows = [{"p_yes": 0.4, "mass": 0.5} for _ in range(20)]
+    assert probe.smoke(rows)["ok"] and not probe.smoke(rows[:19])["ok"]
+    assert not probe.smoke([dict(r, mass=0.49) for r in rows])["ok"]
+    assert not probe.smoke([dict(rows[0], p_yes=float("nan"))] + rows[1:])["ok"]
+
+
+def _fake_probe(calls=None, fail_after=None, batch_bias=0.0):
+    def fn(images, questions):
+        out = []
+        for q in questions:
+            if calls is not None:
+                calls.append(q)
+                if fail_after is not None and len(calls) > fail_after:
+                    raise KeyboardInterrupt
+            h = int(hashlib.sha256(q.encode()).hexdigest()[:8], 16) / 0xFFFFFFFF
+            out.append((min(1.0, h + batch_bias * (len(questions) > 1)), 0.9, "có", 7))
+        return out
+    return fn
+
+
+def _items(n_img, n_q=3):
+    return [(f"{k:03d}.jpg", [(f"q{k}_{j}", f"Câu {k} {j}?") for j in range(n_q)]) for k in range(n_img)]
+
+
+def test_run_pass_resume_shards_finalize():
+    items = _items(5)
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        calls = []
+        try:
+            probe.run_pass(_fake_probe(calls, fail_after=8), items, out, 1, lambda n: n, 1.0, shard_images=2)
+        except KeyboardInterrupt:
+            pass
+        assert (out / "shard_00000.jsonl").exists() and (out / "shard_00001.jsonl.partial").exists()
+        calls2 = []
+        assert probe.run_pass(_fake_probe(calls2), items, out, 1, lambda n: n, 1.0, shard_images=2) == 0
+        assert len(calls2) == 15 - 8  # only the pairs not yet written
+        f = probe.finalize(items, out, shard_images=2)
+        assert f["rows"] == 15
+        tab = gate.load_table(out / "probes.jsonl")
+        assert set(tab) == {n for n, _ in items} and all(len(v) == 3 for v in tab.values())
+        assert (out / "probes.jsonl.sha256").read_text().split()[0] == f["sha256"]
+        more = items[:4] + [(items[4][0], items[4][1] + [("extra", "Câu thêm?")])]
+        try:
+            probe.finalize(more, out, shard_images=2)
+        except SystemExit as e:
+            assert "work pairs" in str(e)
+        else:
+            raise AssertionError("rows that are not the work pairs accepted")
+        (out / "shard_00000.jsonl").write_text("tampered\n")
+        try:
+            probe.finalize(items, out, shard_images=2)
+        except SystemExit as e:
+            assert "FAULT" in str(e)
+        else:
+            raise AssertionError("tampered shard accepted")
+
+
+def test_run_pass_stops():
+    items = _items(3)
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        bad = lambda ims, qs: [(float("nan"), 0.0, "x", 1) for _ in qs]  # noqa: E731
+        assert probe.run_pass(bad, items, out, 1, lambda n: n, 1.0) == 2 and (out / probe.STOP).exists()
+        try:
+            probe.run_pass(_fake_probe(), items, out, 1, lambda n: n, 1.0)
+        except SystemExit as e:
+            assert "REFUSED" in str(e)
+        else:
+            raise AssertionError("resumed after a STOP")
+    with tempfile.TemporaryDirectory() as d:
+        assert probe.run_pass(_fake_probe(), items, Path(d), 1, lambda n: n, 0.5, t0=time.time() - 3600) == 4
+
+
+def test_probe_job_parity_decides_batch():
+    items = _items(55, n_q=2)
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d) / "a"
+        assert probe.probe_job(_fake_probe(), items, out, "internvl3", lambda n: n) == 0
+        assert json.loads((out / "smoke.json").read_text())["batch"] == 8
+        assert {json.loads(x)["batch"] for x in (out / "probes.jsonl").read_text().splitlines()} == {8}
+        out = Path(d) / "b"  # batch-dependent scores (> 1e-3): parity fails -> batch 1
+        assert probe.probe_job(_fake_probe(batch_bias=0.01), items, out, "internvl3", lambda n: n) == 0
+        assert json.loads((out / "smoke.json").read_text())["batch"] == 1
+        out = Path(d) / "c"  # Vintern: batch 1 always (E1b)
+        assert probe.probe_job(_fake_probe(), items, out, "vintern", lambda n: n) == 0
+        assert json.loads((out / "smoke.json").read_text())["batch"] == 1
+        out = Path(d) / "e"
+        low = lambda ims, qs: [(0.5, 0.3, "x", 1) for _ in qs]  # noqa: E731
+        assert probe.probe_job(low, items, out, "vintern", lambda n: n) == 2 and (out / probe.STOP).exists()
+
+
+def test_probe_job_logs_no_question_text():
+    import contextlib
+    import io
+    items = _items(10)
+    buf = io.StringIO()
+    with tempfile.TemporaryDirectory() as d, contextlib.redirect_stdout(buf):
+        probe.probe_job(_fake_probe(), items, Path(d), "vintern", lambda n: n)
+    assert "Câu" not in buf.getvalue() and "DONE" in buf.getvalue()
+
+
+def test_probe_inputs_custody():
+    from PIL import Image
+    m0d = REPO / probe.M0_DIR
+    touched = {int(x) for x in (m0d / "dev_touched_ids.txt").read_text().split()}
+    kar = {int(x) for x in (m0d / "karpathy_test_val_ids.txt").read_text().split()}
+    fetched = [n for n in (m0d / "fetch_images.txt").read_text().split()
+               if int(n[-16:-4]) in touched and int(n[-16:-4]) not in kar]
+    kar_name = next(n for n in (m0d / "fetch_images.txt").read_text().split() if int(n[-16:-4]) in kar)
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        for k, n in enumerate(fetched[:5] + [kar_name, "COCO_val2014_000000000001.jpg", "00000001335.jpg"]):
+            Image.new("RGB", (8, 8), (k * 20, 0, 0)).save(d / n)  # synthetic stand-in bytes
+        five = fetched[:5]
+        probe.explored(five, d, refused=set())
+        refused_one = {hashlib.sha256((d / five[2]).read_bytes()).hexdigest()}
+        for names, ref in ((five[:4] + [kar_name], set()), (five[:4] + ["COCO_val2014_000000000001.jpg"], set()),
+                           (five[:4] + ["00000001335.jpg"], set()), (five[:4], set()), (five[:4] + [five[0]], set()),
+                           (five, refused_one)):
+            try:
+                probe.explored(names, d, refused=ref)
+            except SystemExit as e:
+                assert "REFUSED" in str(e)
+            else:
+                raise AssertionError(f"accepted {names}")
+    assert len(probe.refused_shas()) >= 558 + 231
+    with tempfile.TemporaryDirectory() as d:
+        for sub in ("a", "b"):
+            (Path(d) / sub).mkdir()
+            (Path(d) / sub / "x.json").write_text(json.dumps({"file_name": "1.jpg", "propositions": []}))
+        try:
+            probe.records([Path(d) / "a", Path(d) / "b"], None)
+        except SystemExit as e:
+            assert "duplicate" in str(e)
+        else:
+            raise AssertionError("duplicate record accepted")
+        (Path(d) / "ex.txt").write_text("1.jpg\n")
+        assert probe.records([Path(d) / "a"], Path(d) / "ex.txt") == []
+
+
+def test_merge_tables_two_inputs():
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        (d / "a.jsonl").write_text(json.dumps({"image": "1.jpg", "q": "k", "p_yes": 0.2}) + "\n")
+        (d / "b.jsonl").write_text(json.dumps({"image": "2.jpg", "q": "k", "p_yes": 0.7}) + "\n")
+        assert gate.merge_tables([d / "a.jsonl", d / "b.jsonl"]) == {"1.jpg": {"k": 0.2}, "2.jpg": {"k": 0.7}}
+        (d / "c.jsonl").write_text(json.dumps({"image": "1.jpg", "q": "k", "p_yes": 0.9}) + "\n")
+        try:
+            gate.merge_tables([d / "a.jsonl", d / "c.jsonl"])
+        except SystemExit as e:
+            assert "FAULT" in str(e)
+        else:
+            raise AssertionError("overlapping tables accepted")
+
+
+def test_decode_settings_equal_evaluate():
+    import ast
+    src = (REPO / "scripts/evaluate.py").read_text(encoding="utf-8")
+    assert re.search(r'"--max-new-tokens", type=int, default=160\)', src) and decode.SETTINGS["max_new_tokens"] == 160
+    assert re.search(r'"--max-vision-tokens", type=int, default=512\)', src) and decode.SETTINGS["max_pixels"] == 512 * 784
+    assert "min_pixels=256 * P" in src and decode.SETTINGS["min_pixels"] == 256 * 784
+    assert 'attn_implementation="sdpa"' in src and decode.SETTINGS["attn"] == "sdpa"
+    node = next(n for n in ast.walk(ast.parse(src)) if isinstance(n, ast.Assign)
+                and any(isinstance(t, ast.Name) and t.id == "PROMPTS" for t in n.targets))
+    assert ast.literal_eval(node.value)["detailed"] == decode.PROMPTS["vi"]
+
+
+def test_decode_tiny_batch_parity_and_eos():
+    proc, net = _tiny()
+    gen = decode.make_generate(proc and net, proc, decode.PROMPTS["vi"], max_new_tokens=8) if False else \
+        decode.make_generate(net, proc, decode.PROMPTS["vi"], max_new_tokens=8)
+    ims = _imgs(5)
+    solo = [gen([im])[0] for im in ims]
+    batched = gen(ims[:3]) + gen(ims[3:])
+    assert [r[0] for r in solo] == [r[0] for r in batched] and [r[2] for r in solo] == [r[2] for r in batched]
+    assert decode.until_eos([5, 6, 3, 1, 1], {3, 1}) == ([5, 6, 3], False)
+    assert decode.until_eos([5, 6, 7], {3}) == ([5, 6, 7], True)
+
+
+def test_decode_run_resume_sha_and_custody():
+    from PIL import Image
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        items = []
+        for k in range(5):
+            Image.new("RGB", (30, 30), (k * 40, 0, 0)).save(d / f"{k}.png")
+            items.append((str(k), f"{k}.png", hashlib.sha256((d / f"{k}.png").read_bytes()).hexdigest()))
+        n_calls = []
+
+        def gen(ims):
+            n_calls.append(len(ims))
+            if sum(n_calls) > 4 and len(n_calls) == 3:
+                raise KeyboardInterrupt
+            return [([7, 3], "w1", False) for _ in ims]
+        try:
+            decode.run(gen, items, d, d / "o", 2)
+        except KeyboardInterrupt:
+            pass
+        n_calls.clear()
+        seen = []
+        r = decode.run(lambda ims: seen.extend(ims) or [([7, 3], "w1", False) for _ in ims], items, d, d / "o", 2)
+        assert len(seen) == 1  # four images were already in the partial file
+        assert r["n"] == 5 and json.loads((d / "o.preds.json").read_text()) == {str(k): "w1" for k in range(5)}
+        assert (d / "o.preds.json.sha256").read_text().split()[0] == r["sha256"]
+        for bad, why in ((lambda: decode.run(gen, items, d, d / "o", 1), "REFUSED"),
+                         (lambda: decode.run(gen, [("9", "0.png", "0" * 64)], d, d / "p", 1), "FAULT")):
+            try:
+                bad()
+            except SystemExit as e:
+                assert why in str(e), e
+            else:
+                raise AssertionError(why)
+
+
+def test_decode_check_and_parity_record():
+    decode.check({"system": "S0", "batch": 1, "lang": "vi", "adapter": None})
+    decode.check({"system": "S2", "batch": 8, "lang": "vi", "adapter": "a", "parity_passed": True})
+    for bad in ({"system": "S0", "batch": 1, "lang": "vi", "adapter": "a"},
+                {"system": "S1", "batch": 1, "lang": "vi", "adapter": None},
+                {"system": "S1", "batch": 1, "lang": "vi", "adapter": "a", "max_new_tokens": 161}):
+        try:
+            decode.check(bad)
+        except ValueError:
+            continue
+        raise AssertionError(f"accepted {bad}")
+    assert decode.parity_passed({"batch": 8, "mismatches": {}})
+    assert not decode.parity_passed({"batch": 8, "mismatches": {"S1": ["3"]}}) and not decode.parity_passed({})
+
+
+def test_decode_adapter_check_and_effect():
+    import copy
+    import transformers as tf
+    from peft import LoraConfig, PeftModel, get_peft_model
+    proc, net = _tiny()
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        net.save_pretrained(d / "base")
+        pm = get_peft_model(copy.deepcopy(net), LoraConfig(r=4, lora_alpha=8, target_modules=["q_proj", "v_proj"],
+                                                           init_lora_weights=False))
+        pm.save_pretrained(d / "ad")
+        cfg = json.loads((d / "ad/adapter_config.json").read_text())
+        (d / "ad/adapter_config.json").write_text(json.dumps({**cfg, "base_model_name_or_path": decode.SETTINGS["base"]}))
+        assert len(decode.check_adapter(d / "ad")) == 64
+        (d / "ad/adapter_config.json").write_text(json.dumps({**cfg, "base_model_name_or_path": "Qwen/other"}))
+        try:
+            decode.check_adapter(d / "ad")
+        except SystemExit:
+            pass
+        else:
+            raise AssertionError("adapter of another base accepted")
+        m2 = PeftModel.from_pretrained(tf.Qwen2_5_VLForConditionalGeneration.from_pretrained(d / "base").eval(),
+                                       str(d / "ad")).eval()
+        m2.generation_config.pad_token_id, m2.generation_config.eos_token_id = 1, 3
+        im = _imgs(1)
+        a = decode.make_generate(net, proc, decode.PROMPTS["vi"], 8)(im)[0][0]
+        b = decode.make_generate(m2, proc, decode.PROMPTS["vi"], 8)(im)[0][0]
+        assert a != b
+
+
+def test_g12_launcher_parity_decide():
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        for sname in decode.SYSTEMS:
+            t = {str(k): [1, 2, k] for k in range(50)}
+            b8 = dict(t, **({"7": [9]} if sname == "S2" else {}))
+            (d / f"{sname}.tokens.json").write_text(json.dumps({"b1": t, "b8": b8}))
+        env = {**os.environ, "O31_SRC": os.environ.get("O31_SRC", str(HERE / "src"))}
+        r = subprocess.run([sys.executable, "-I", "-B", str(HERE / "g12.py"), "parity-decide", "--out", str(d)],
+                           capture_output=True, text=True, env=env)
+        assert r.returncode == 0, r.stderr[-1500:]
+        res = json.loads((d / "parity.json").read_text())
+        assert res == {"batch": 1, "mismatches": {"S2": ["7"]}}
+        r = subprocess.run([sys.executable, "-I", "-B", str(HERE / "g12.py"), "--help"], capture_output=True, text=True,
+                           env=env)
+        assert r.returncode == 0 and "smoke" in r.stdout
+
+
+# ------------------------------------------------------------------ g12c (CC-519 W1-W3, N1, E3-E6)
+def _raises(fn, needle):
+    try:
+        fn()
+    except SystemExit as e:
+        assert needle in str(e), (needle, str(e))
+    else:
+        raise AssertionError(f"no SystemExit ({needle})")
+
+
+def _g12():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("g12_under_test", HERE / "g12.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def _png(path, k):
+    from PIL import Image
+    Image.new("RGB", (8, 8), (k % 256, (7 * k) % 256, 3)).save(path, format="PNG")
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def test_probe_cap_clock_survives_resume():
+    """K03: a resumed job keeps launch.json t0 (ERRATUM_O31_2 E7), so an old t0 stops it at the cap."""
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        (out / "launch.json").write_text(json.dumps({"t0": time.time() - 7200}) + "\n")
+        assert probe.probe_job(_fake_probe(), _items(10), out, "vintern", lambda n: n, cap_h=1.0) == 4
+        assert json.loads((out / "launch.json").read_text())["t0"] < time.time() - 7000
+
+
+def test_finalize_refuses_non_finite_after_resume():
+    """K09: run_pass writes the non-finite row before its halt; after a resume that pair is skipped, so finalize's
+    check is the only guard."""
+    items = _items(2)
+    with tempfile.TemporaryDirectory() as d:
+        out = Path(d)
+        bad_q = items[0][1][0][1]
+        nan_one = lambda ims, qs: [(float("nan") if q == bad_q else 0.5, 0.9, "có", 7) for q in qs]  # noqa: E731
+        assert probe.run_pass(nan_one, items, out, 1, lambda n: n, 1.0) == 2
+        (out / probe.STOP).unlink()  # a ruling-permitted resume
+        assert probe.run_pass(_fake_probe(), items, out, 1, lambda n: n, 1.0) == 0
+        _raises(lambda: probe.finalize(items, out), "non-finite")
+
+
+def test_probe_explored_fetched_and_touched():
+    """K12, K13: a smoke image must be both fetched and touched (lists of a stand-in M0 folder)."""
+    m0d = REPO / probe.M0_DIR
+    touched = sorted(int(x) for x in (m0d / "dev_touched_ids.txt").read_text().split())
+    untouched = next(i for i in range(1, 10**6) if i not in set(touched))
+    name = lambda i: f"COCO_val2014_{i:012d}.jpg"  # noqa: E731
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        md = d / "m0"
+        md.mkdir()
+        (md / "dev_touched_ids.txt").write_bytes((m0d / "dev_touched_ids.txt").read_bytes())
+        fetched = [name(i) for i in touched[:5]] + [name(untouched)]
+        (md / "fetch_images.txt").write_text("\n".join(fetched) + "\n")
+        (md / "karpathy_test_val_ids.txt").write_text("")
+        for k, n in enumerate(fetched + [name(touched[5])]):
+            _png(d / n, k)
+        probe.explored(fetched[:5], d, refused=set(), m0_dir=md)
+        _raises(lambda: probe.explored(fetched[:4] + [name(untouched)], d, refused=set(), m0_dir=md), "REFUSED")
+        _raises(lambda: probe.explored(fetched[:4] + [name(touched[5])], d, refused=set(), m0_dir=md), "REFUSED")
+        (md / "dev_touched_ids.txt").write_text("1\n")
+        _raises(lambda: probe.explored(fetched[:5], d, refused=set(), m0_dir=md), "FAULT")
+
+
+def test_g12_image_loader_refuses_listed_bytes():
+    """L04."""
+    g = _g12()
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        h = _png(d / "a.png", 1)
+        _raises(lambda: g.image_loader(d, {h})("a.png"), "refused image")
+        assert g.image_loader(d, {"0" * 64})("a.png").size == (8, 8)
+
+
+def test_g12_smoke_custody_and_exit_code():
+    """L03: custody is checked before any model load; L05: a failed smoke exits 2 (host_selftest relies on it)."""
+    import argparse
+    g = _g12()
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        names = [f"x{k}.png" for k in range(5)]
+        for k, n in enumerate(names):
+            _png(d / n, k)
+        ns = argparse.Namespace(family="vintern", snapshot=d, images=d, names=names, out=d / "o")
+        _raises(lambda: g.cmd_smoke(ns), "REFUSED smoke images")
+        saved = probe.explored, probe.load
+        try:
+            probe.explored = lambda *a, **k: None
+            probe.load = lambda fam, snap: ((lambda ims, qs: [(0.5, 0.3, "x", 1) for _ in qs]), {"revision": "r"})
+            assert g.cmd_smoke(ns) == 2
+            probe.load = lambda fam, snap: ((lambda ims, qs: [(0.5, 0.9, "có", 1) for _ in qs]), {"revision": "r"})
+            assert g.cmd_smoke(ns) == 0
+        finally:
+            probe.explored, probe.load = saved
+
+
+def test_g12_probe_inputs_record_and_default_refused():
+    """N1: the refused list defaults to exclusion.json; OUT/inputs.json holds the input shas and counts."""
+    import argparse
+    g = _g12()
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        (d / "r").mkdir()
+        for n in ("1.jpg", "2.jpg"):
+            (d / "r" / f"{n[:-4]}.json").write_text(json.dumps({"file_name": n, "propositions": []}))
+        (d / "ex.txt").write_text("2.jpg\n")
+        seen = {}
+        saved = probe.load, probe.probe_job
+        try:
+            probe.load = lambda fam, snap: (None, {"revision": "rev1"})
+            probe.probe_job = lambda fn, items, out, fam, loader: seen.update(items=items, loader=loader) or 0
+            ns = argparse.Namespace(family="vintern", records=[d / "r"], exclude=d / "ex.txt", images=d,
+                                    snapshot=d, refused_sha=None, out=d / "o")
+            assert g.cmd_probe(ns) == 0
+            ns.family = "internvl3"
+            _raises(lambda: g.cmd_probe(ns), "REFUSED G2")
+        finally:
+            probe.load, probe.probe_job = saved
+        rec = json.loads((d / "o/inputs.json").read_text())
+        assert rec["n_records"] == 1 and rec["n_refused"] == len(probe.refused_shas()) and rec["snapshot_revision"] == "rev1"
+        assert rec["file_names_sha256"] == probe.sha_lines(["1.jpg"])
+        assert rec["exclude_sha256"] == hashlib.sha256(b"2.jpg\n").hexdigest()
+
+
+def test_g2_one_job_after_g1():
+    """ERRATUM_O31_2 E4: G2 runs once over all 3,769 records (3,700 + G1's 69) with both twins excluded."""
+    from o31 import stage1
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        a, b = d / "a", d / "b"
+        a.mkdir(), b.mkdir()
+        for k in range(3700):
+            (a / f"{k:011d}.json").write_text("{}")
+        (d / "ex.txt").write_text("\n".join(stage1.TWINS) + "\n")
+        _raises(lambda: probe.g2_inputs([a], d / "ex.txt"), "REFUSED G2")
+        for k in range(69):
+            (b / f"n{k}.json").write_text("{}")
+        (d / "ex1.txt").write_text(stage1.TWINS[0] + "\n")
+        _raises(lambda: probe.g2_inputs([a, b], d / "ex1.txt"), "REFUSED G2")
+        probe.g2_inputs([a, b], d / "ex.txt")
+
+
+def test_decode_e5_e6_prompt_and_g12_refusals():
+    """E6: the English prompt is exactly the erratum string (= evaluate.py detailed_en); g12 decode refuses any other
+    (L01) and parity-decode refuses 49 images (L02); manifest ids must be unique (D08)."""
+    import ast
+    e6 = "Describe this image in detail in English."
+    assert decode.PROMPTS["en"] == e6 and hashlib.sha256(e6.encode()).hexdigest().startswith("525a4e1b")
+    src = (REPO / "scripts/evaluate.py").read_text(encoding="utf-8")
+    node = next(n for n in ast.walk(ast.parse(src)) if isinstance(n, ast.Assign)
+                and any(isinstance(t, ast.Name) and t.id == "PROMPTS" for t in n.targets))
+    assert ast.literal_eval(node.value)["detailed_en"] == e6
+    assert "four" not in (HERE / "g12.py").read_text() and "four_bit" not in (Path(decode.__file__)).read_text()
+    g = _g12()
+    with tempfile.TemporaryDirectory() as d:
+        base = ["decode", "--system", "S0", "--snapshot", d, "--items", d, "--images", d, "--out", f"{d}/o",
+                "--lang", "en", "--batch", "1"]
+        _raises(lambda: g.main(base), "needs --en-prompt")
+        _raises(lambda: g.main(base + ["--en-prompt", "Describe this image."]), "differs from the ERRATUM_O31_2 E6")
+        tsv = Path(d) / "i.tsv"
+        tsv.write_text("".join(f"{k}\t{k}.png\t{'0' * 64}\n" for k in range(49)))
+        _raises(lambda: g.main(["parity-decode", "--system", "S0", "--snapshot", d, "--items", str(tsv), "--images", d,
+                                "--out", f"{d}/p"]), "exactly 50")
+        tsv.write_text("1\ta.png\th\n1\tb.png\th\n")
+        _raises(lambda: decode.read_items(tsv), "not distinct")
+
+
+# ------------------------------------------------------------------ G1 stage-1 wrapper (W2)
+def test_stage1_settings_are_fair():
+    """FAIR_ARGS = configs/main.env's stage-1 values (generate_stage1 run unchanged); K = 5 sampled verifier (no
+    --logit-verifier), colour cross-check on; counts and pins as registered."""
+    from o31 import stage1
+    env = dict(re.findall(r"^(\w+)\s*\?=\s*(\S+)", (REPO / "configs/main.env").read_text(), re.M))
+    a = list(stage1.FAIR_ARGS)
+    flag = lambda f: a[a.index(f) + 1]  # noqa: E731
+    assert (flag("--generator"), flag("--verifier"), flag("--max-entities"), flag("--max-pairs"),
+            flag("--verifier-tiles")) == (env["GENERATOR"], env["VERIFIER"], env["MAX_ENTITIES"], env["MAX_PAIRS"],
+                                          env["VERIFIER_TILES"]) == ("qwen2.5-vl-7b", "vintern-1b", "8", "8", "4")
+    assert len(a) == 10 and "--logit-verifier" not in a and "--no-colour-cross-check" not in a
+    assert (stage1.N_TRAIN, stage1.N_RECORDS, stage1.N_NEW, stage1.CAP_H) == (3769, 3700, 69, 3.5)
+    assert stage1.CAP_H == probe.FAMILIES["vintern"]["cap_h"] and stage1.TRANSFORMERS == "4.51.3"
+    assert stage1.TWINS == ("00000003589.jpg", "00000007511.jpg")
+    assert stage1.RECORDS_TAR_SHA.startswith("b312de68") and stage1.KTVIC_TRAIN_SHA.startswith("72ee9b57")
+    assert stage1.QWEN["revision"] == decode.SETTINGS["revision"] == probe.registry_entry("qwen25vl_7b")["revision"]
+    import rescap.pipeline.generate, rescap.pipeline.realize, rescap.pipeline.select, rescap.pipeline.verify  # noqa: E401,F401
+    import rescap.vlm.qwen_vl, rescap.vlm.registry, rescap.vlm.vintern  # noqa: E401,F401  (closure: main()'s imports)
+
+
+def _train_items(n=3769):
+    """Invented KTVIC-train items with mixed extensions (F3: .jpg, .png, .jpeg, .JPG)."""
+    ext = (".jpg", ".png", ".jpeg", ".JPG")
+    return [{"image_id": str(k), "file_name": f"t{k:06d}{ext[k % 4]}", "captions": []} for k in range(1, n + 1)]
+
+
+def test_stage1_new_items():
+    from o31 import stage1
+    items = _train_items()
+    items[0]["file_name"], items[1]["file_name"] = stage1.TWINS  # the twins hold records
+    names = [i["file_name"] for i in items]
+    stems = {Path(n).stem for n in names[:3700]}  # the tarball names records by stem (F3)
+    new = stage1.new_items(items, stems)
+    assert [i["file_name"] for i in new] == names[3700:] and len(new) == 69
+    assert {Path(i["file_name"]).suffix for i in new} == {".jpg", ".png", ".jpeg", ".JPG"}
+    _raises(lambda: stage1.new_items(items[:-1], stems), "FAULT")
+    _raises(lambda: stage1.new_items(items, stems - {Path(stage1.TWINS[0]).stem}), "FAULT")
+    _raises(lambda: stage1.new_items(items, stems | {Path(names[-1]).stem}), "FAULT")
+    _raises(lambda: stage1.new_items(items, stems | {"zz"}), "FAULT")
+    dup = [dict(i) for i in items]
+    dup[5]["file_name"] = Path(dup[6]["file_name"]).stem + ".png" if not dup[6]["file_name"].endswith(".png") else \
+        Path(dup[6]["file_name"]).stem + ".jpg"
+    _raises(lambda: stage1.new_items(dup, stems), "share a stem")
+
+
+def _stage(d, n_new_images=69):
+    """A staged NCS_DATA folder: train_data.json (invented, 3,769 images with mixed extensions incl. the twins), the
+    69 new images, and a records tarball of 3,700 empty records named by stem (twins included)."""
+    import tarfile
+    from o31 import stage1
+    kt = d / "datasets" / "ktvic"
+    (kt / "images").mkdir(parents=True)
+    items = _train_items()
+    items[3588]["file_name"], items[100]["file_name"] = stage1.TWINS
+    imgs = [{"id": int(i["image_id"]), "filename": i["file_name"]} for i in items]
+    anns = [{"image_id": int(i["image_id"]), "caption": f"zqx {i['image_id']} vwk"} for i in items]
+    (kt / "train_data.json").write_text(json.dumps({"images": imgs, "annotations": anns}), encoding="utf-8")
+    have = [i["file_name"] for i in items[:3700]]  # twins (items 100, 3588) included
+    new = [i["file_name"] for i in items if i["file_name"] not in set(have)]
+    shas = [_png(kt / "images" / n, k) for k, n in enumerate(new[:n_new_images])]
+    tar = d / "records.tar.gz"
+    with tarfile.open(tar, "w:gz") as tf:
+        for n in have:
+            p = d / f"{Path(n).stem}.json"
+            p.write_text("{}")
+            tf.add(p, arcname=f"stage1/{p.name}")
+            p.unlink()
+    return kt.parent.parent, kt / "train_data.json", tar, shas, new
+
+
+def _pins(train, tar):
+    from o31 import stage1
+    saved = stage1.KTVIC_TRAIN_SHA, stage1.RECORDS_TAR_SHA
+    stage1.KTVIC_TRAIN_SHA = hashlib.sha256(train.read_bytes()).hexdigest()
+    stage1.RECORDS_TAR_SHA = hashlib.sha256(tar.read_bytes()).hexdigest()
+    return saved
+
+
+def test_stage1_prepare_manifest_and_custody():
+    import shutil
+    import generate_stage1 as gs
+    from o31 import stage1
+    with tempfile.TemporaryDirectory() as d:
+        stage, train, tar, shas, new = _stage(Path(d))
+        _raises(lambda: stage1.prepare(stage, train, tar, gs, refused=set(), screen=new), "72ee9b57")
+        saved = _pins(train, tar)
+        try:
+            got = stage1.prepare(stage, train, tar, gs, refused=set(), screen=new[::-1])
+            assert [i["file_name"] for i in got] == new and len(got) == 69
+            m = json.loads((stage / "datasets/ktvic" / stage1.MANIFEST).read_text(encoding="utf-8"))["images"]
+            assert m == got and m[0]["captions"] == [f"zqx {m[0]['image_id']} vwk"]  # train_data.json captions
+            _raises(lambda: stage1.prepare(stage, train, tar, gs, refused=set(), screen=new[:-1] + ["x.jpg"]),
+                    "val_manifest")
+            other = Path(d) / "elsewhere" / train.name  # same bytes, not the staged copy (A14)
+            other.parent.mkdir()
+            shutil.copy(train, other)
+            _raises(lambda: stage1.prepare(stage, other, tar, gs, refused=set(), screen=new), "staged copy")
+            _raises(lambda: stage1.prepare(stage, train, tar, gs, refused={shas[3]}, screen=new), "missing or refused")
+            (stage / "datasets/ktvic/images" / new[5]).unlink()
+            _raises(lambda: stage1.prepare(stage, train, tar, gs, refused=set(), screen=new), "missing or refused")
+            stage1.RECORDS_TAR_SHA = "0" * 64
+            _raises(lambda: stage1.prepare(stage, train, tar, gs, refused=set(), screen=new), "b312de68")
+        finally:
+            stage1.KTVIC_TRAIN_SHA, stage1.RECORDS_TAR_SHA = saved
+    names = stage1.screen_names()
+    assert len(names) == 69 == len(set(names)) and all(n.endswith(".jpg") for n in names)
+
+
+def test_stage1_run_argv_records_seed_and_cap():
+    import random
+    import generate_stage1 as gs
+    from o31 import stage1
+    ext = (".jpg", ".png", ".jpeg", ".JPG")
+    new = [{"image_id": str(k), "file_name": f"n{k:03d}{ext[k % 4]}", "captions": []} for k in range(69)]
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        stage = d / "stage"
+        draws = []
+
+        def fake(write=69):
+            def main():
+                assert sys.argv[1:] == ["--source", stage1.MANIFEST, "--out", str(d / "o" / "records"),
+                                        *stage1.FAIR_ARGS], sys.argv
+                assert gs.KTVIC == stage / "datasets" / "ktvic"
+                draws.append(random.random())
+                rd = Path(sys.argv[4])
+                rd.mkdir(parents=True, exist_ok=True)
+                for i in new[:write]:
+                    (rd / f"{Path(i['file_name']).stem}.json").write_text("{}")
+                (rd / "_report_shard0of1.json").write_text("{}")
+                return 0
+            return main
+        assert stage1.run(d / "o", stage, new, gs, main=fake(68)) == 5
+        assert stage1.run(d / "o", stage, new, gs, main=fake()) == 0
+        assert draws == [random.Random(42).random()] * 2  # F2: seeded once before main(), each run
+        rec = json.loads((d / "o/g1_stage1.json").read_text())
+        assert rec["records"] == 69 and rec["seed"] == 42 and rec["release_commit"] == "1f30d09"
+        assert rec["names_sha256"] == probe.sha_lines(sorted(Path(i["file_name"]).stem for i in new))
+        t0 = json.loads((d / "o/launch.json").read_text())["t0"]
+        (d / "o2").mkdir()
+        (d / "o2/launch.json").write_text(json.dumps({"t0": time.time() - 4 * 3600}) + "\n")
+        assert stage1.run(d / "o2", stage, new, gs, main=fake()) == 4 and (d / "o2" / probe.STOP).exists()
+        _raises(lambda: stage1.run(d / "o2", stage, new, gs, main=fake()), "REFUSED")
+
+        def slow():
+            t = time.time()
+            while not gs._stop and time.time() - t < 20:
+                time.sleep(0.02)
+            return 0
+        (d / "o3").mkdir()
+        (d / "o3/launch.json").write_text(json.dumps({"t0": time.time() - 3.5 * 3600 + 1.0}) + "\n")
+        assert stage1.run(d / "o3", stage, new, gs, main=slow) == 4 and (d / "o3" / probe.STOP).exists()
+        assert json.loads((d / "o/launch.json").read_text())["t0"] == t0
+
+
+_RELEASE_STUB = {
+    "rescap/__init__.py": "",
+    "rescap/pipeline/__init__.py": "",
+    "rescap/pipeline/generate.py": "", "rescap/pipeline/verify.py": "", "rescap/pipeline/select.py": "",
+    "rescap/pipeline/realize.py": "", "rescap/vlm/__init__.py": "", "rescap/vlm/registry.py": "",
+    "rescap/vlm/vintern.py": "",
+    "rescap/vlm/qwen_vl.py": "class QwenVLAdapter:\n    attn_implementation = None\n\n    def load(self):\n"
+                             "        self.attn_implementation = 'sdpa'\n        return self\n",
+    "scripts/generate_stage1.py": (
+        "import json, sys\nfrom pathlib import Path\nsys.path.insert(0, str(Path(__file__).resolve().parents[1]))\n"
+        "KTVIC = None\n_stop = False\n\n\ndef load_manifest(source):\n"
+        "    return json.loads((KTVIC / source).read_text())['images']\n\n\ndef main():\n"
+        "    from rescap.vlm.qwen_vl import QwenVLAdapter\n    QwenVLAdapter().load()\n"
+        "    out = Path(sys.argv[sys.argv.index('--out') + 1])\n    out.mkdir(parents=True, exist_ok=True)\n"
+        "    for i in load_manifest(sys.argv[sys.argv.index('--source') + 1]):\n"
+        "        (out / (Path(i['file_name']).stem + '.json')).write_text('{}')\n    return 0\n"),
+}
+
+
+def test_stage1_release_tree_fresh_process():
+    """F1 (CC-521 W5): after the HEAD imports of cmd_stage1's order, use_release loads generate_stage1 and rescap from
+    the pinned release tree (a stand-in tree here, with its own pins), records the generator's attention
+    implementation and the seed; a changed or extra file is refused."""
+    from o31 import stage1
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        tree = d / "release"
+        for rel, text in _RELEASE_STUB.items():
+            (tree / rel).parent.mkdir(parents=True, exist_ok=True)
+            (tree / rel).write_text(text)
+        pins = {rel: hashlib.sha256((tree / rel).read_bytes()).hexdigest() for rel in _RELEASE_STUB}
+        (d / "pins.json").write_text(json.dumps(pins))
+        kt = d / "stage/datasets/ktvic"
+        kt.mkdir(parents=True)
+        new = [{"image_id": "1", "file_name": "a.png", "captions": []}, {"image_id": "2", "file_name": "b.JPG",
+                                                                         "captions": []}]
+        (kt / stage1.MANIFEST).write_text(json.dumps({"images": new}))
+        script = d / "job.py"
+        script.write_text(
+            "import json, sys\nfrom pathlib import Path\nsys.path.insert(0, sys.argv[1])\n"
+            "from o31 import repo, stage1\nrepo()\nimport m0, rescap.pipeline.generate, rescap.vlm.qwen_vl  # HEAD first\n"
+            "d = Path(sys.argv[2])\ng = stage1.use_release(d / 'release', json.loads((d / 'pins.json').read_text()))\n"
+            "import rescap.pipeline.generate as G, rescap.vlm.qwen_vl as Q\n"
+            "rc = stage1.run(d / 'o', d / 'stage', json.loads(sys.argv[3]), g, cap_h=1.0)\n"
+            "print(json.dumps({'rc': rc, 'files': [G.__file__, Q.__file__, g.__file__],\n"
+            "                  'rec': json.loads((d / 'o/g1_stage1.json').read_text())}))\n")
+        r = subprocess.run([sys.executable, "-I", "-B", str(script), str(Path(stage1.__file__).parents[1]), str(d),
+                            json.dumps(new)], capture_output=True, text=True, env=os.environ)
+        assert r.returncode == 0, r.stderr[-1500:]
+        out = json.loads(r.stdout.strip().splitlines()[-1])
+        assert out["rc"] == 0 and all(Path(f).resolve().is_relative_to(tree.resolve()) for f in out["files"]), out
+        assert out["rec"]["attn_implementation"] == "sdpa" and out["rec"]["seed"] == 42 and out["rec"]["records"] == 2
+        assert out["rec"]["generate_stage1_sha256"] == pins["scripts/generate_stage1.py"]
+        (tree / "rescap/vlm/registry.py").write_text("# changed\n")
+        _raises(lambda: stage1.use_release(tree, pins), "1 changed")
+        (tree / "rescap/vlm/registry.py").write_text("")
+        (tree / "rescap/extra.py").write_text("")
+        _raises(lambda: stage1.use_release(tree, pins), "1 extra or missing")
+    assert stage1.RELEASE["scripts/generate_stage1.py"].startswith("e9d911a1c32d4e3a") and len(stage1.RELEASE) == 26
+    assert set(stage1.RELEASE_MODULES) <= {k[:-3].replace("/", ".") for k in stage1.RELEASE}
+
+
+def test_launchers_fresh_process():
+    """g12.py stage1 checks the environment first and s35.py pass refuses missing inputs, each in a fresh process
+    (no module preloaded by the suite)."""
+    env = {**os.environ, "O31_SRC": os.environ.get("O31_SRC", str(HERE / "src")), "QWEN_MAX_PIXELS": "1"}
+    with tempfile.TemporaryDirectory() as d:
+        r = subprocess.run([sys.executable, "-I", "-B", str(HERE / "g12.py"), "stage1", *sum(
+            ([f"--{k}", d] for k in ("stage", "train", "records-tar", "release", "qwen", "vintern", "out")), [])],
+            capture_output=True, text=True, env=env, cwd=d)
+        assert r.returncode != 0 and "QWEN_MAX_PIXELS" in r.stderr and "Traceback" not in r.stderr, r.stderr[-800:]
+        r = subprocess.run([sys.executable, "-I", "-B", str(HERE / "s35.py"), "pass", "--feats", d, "--out", f"{d}/o"],
+                           capture_output=True, text=True, env=env, cwd=d)
+        assert r.returncode != 0 and "REFUSED a feature file is missing" in r.stderr and "Traceback" not in r.stderr, \
+            r.stderr[-800:]
+
+
+def test_stage1_env_and_model_bindings():
+    import argparse
+    import m0
+    from o31 import stage1
+    saved = {k: os.environ.get(k) for k in ("QWEN_MAX_PIXELS", "HF_HUB_OFFLINE", "HF_HOME")}
+    try:
+        os.environ.pop("QWEN_MAX_PIXELS", None)
+        os.environ["HF_HUB_OFFLINE"] = "1"
+        stage1.check_env()
+        os.environ["QWEN_MAX_PIXELS"] = str(512 * 784)
+        _raises(stage1.check_env, "QWEN_MAX_PIXELS")
+        os.environ.pop("QWEN_MAX_PIXELS")
+        os.environ.pop("HF_HUB_OFFLINE")
+        _raises(stage1.check_env, "HF_HUB_OFFLINE")
+        os.environ["HF_HUB_OFFLINE"] = "1"
+        pin, stage1.TRANSFORMERS = stage1.TRANSFORMERS, "9.9.9"
+        try:
+            _raises(stage1.check_env, "needs transformers 9.9.9")
+        finally:
+            stage1.TRANSFORMERS = pin
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            os.environ["HF_HOME"] = str(d / "hf")
+            snap = d / "hf/hub/models--Qwen--Qwen2.5-VL-7B-Instruct/snapshots" / stage1.QWEN["revision"]
+            snap.mkdir(parents=True)
+            _raises(lambda: stage1.check_qwen(snap), "HF cache")  # no refs/main
+            (snap.parent.parent / "refs").mkdir()
+            (snap.parent.parent / "refs/main").write_text("0" * 40)
+            _raises(lambda: stage1.check_qwen(snap), "HF cache")  # refs/main is not the pin (A16)
+            (snap.parent.parent / "refs/main").write_text(stage1.QWEN["revision"])
+            _raises(lambda: stage1.check_qwen(snap), "pinned file")
+            away = d / "copy/hub/models--Qwen--Qwen2.5-VL-7B-Instruct/snapshots" / stage1.QWEN["revision"]
+            away.mkdir(parents=True)
+            _raises(lambda: stage1.check_qwen(away), "not the HF_HOME cache")  # W7: checked != loaded
+            vin = d / "hf/hub/models--5CD-AI--Vintern-1B-v3_5/snapshots" / stage1.VINTERN["revision"]
+            vin.mkdir(parents=True)
+            stage1.check_vintern(vin)
+            _raises(lambda: stage1.check_vintern(d / "copy" / vin.name), "not the HF_HOME cache")
+            g = _g12()
+            ns = argparse.Namespace(stage=d, train=d, records_tar=d, release=d / "rel", qwen=snap, vintern=d / vin.name,
+                                    out=d / "o")
+            keep = stage1.check_env, stage1.check_qwen, m0.check_model
+            try:
+                stage1.check_env = stage1.check_qwen = lambda *a: None
+
+                def sentinel(_snap):
+                    raise SystemExit("SENTINEL m0.check_model")
+                m0.check_model = sentinel
+                _raises(lambda: g.cmd_stage1(ns), "not the HF_HOME cache")  # g12 binds Vintern before its pins
+                ns.vintern = vin
+                _raises(lambda: g.cmd_stage1(ns), "SENTINEL")  # C02: the Vintern pins are checked
+                m0.check_model = lambda *a: None
+                seen = []
+
+                def rel(tree):
+                    seen.append(tree)
+                    raise SystemExit("SENTINEL use_release")
+                keep_rel, stage1.use_release = stage1.use_release, rel
+                try:
+                    _raises(lambda: g.cmd_stage1(ns), "SENTINEL use_release")  # F1 (CC-521r2): g12 loads the 1f30d09 tree
+                finally:
+                    stage1.use_release = keep_rel
+                assert seen == [ns.release]
+            finally:
+                stage1.check_env, stage1.check_qwen, m0.check_model = keep
+    finally:
+        for k, v in saved.items():
+            os.environ.pop(k, None) if v is None else os.environ.__setitem__(k, v)
+
+
+# ------------------------------------------------------------------ §3.5 launcher (W3)
+def _s35():
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("s35_under_test", HERE / "s35.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def test_s35_sets_and_pins():
+    from o31 import stage1
+    assert overlap.EXPECT_N == {"pool": 3767, "ktvic_test": 558, "uit_test": 231, "karpathy_test": 5000, "tier3": 4224}
+    for k in ("ktvic_test", "uit_test", "karpathy_test"):
+        rows = overlap.set_rows(k)
+        assert len(rows) == overlap.EXPECT_N[k] and all((r[2] is None) == (k == "karpathy_test") for r in rows)
+    assert overlap.set_rows("karpathy_test")[0][1].startswith("COCO_val2014_")
+    saved = dict(overlap.LISTS)
+    try:
+        overlap.LISTS["uit_test"] = (saved["uit_test"][0], "0" * 64, 2)
+        _raises(lambda: overlap.set_rows("uit_test"), "differs from its pin")
+    finally:
+        overlap.LISTS.update(saved)
+    items = _train_items()
+    items[0]["file_name"], items[1]["file_name"] = stage1.TWINS
+    pool = overlap.set_rows("pool", items)
+    assert len(pool) == 3767 and not set(stage1.TWINS) & {r[0] for r in pool} and pool == sorted(pool)
+    _raises(lambda: overlap.set_rows("pool", _train_items()), "FAULT")
+    assert overlap.KV_FEATS_SHA.startswith("9783f7a6")
+    import w25
+    assert w25.CEN_FEATS["coco_kval"] == overlap.KV_FEATS_SHA
+
+
+def test_s35_feats_checks():
+    import w25
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        sscd = d / "sscd.pt"
+        sscd.write_bytes(b"stand-in weights")
+        shas = [_png(d / f"{k}.png", k) for k in range(3)]
+
+        def feat(paths, sscd_path, workers=4, unreadable=()):
+            n = len(paths)
+            return {"sha": [hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in paths],
+                    **{k: np.arange(n, dtype=np.uint64) for k in ("phash", "dhash", "phash_m", "dhash_m")},
+                    "sscd": np.eye(n, 512, dtype=np.float32), "unreadable": list(unreadable)}
+        rows = [(str(k), f"{k}.png", shas[k] if k else None) for k in range(3)]
+        _raises(lambda: overlap.feats("x", rows, d, sscd, d / "a.npz", features=feat), "9f26bd4c")
+        saved = w25.SSCD_SHA
+        w25.SSCD_SHA = hashlib.sha256(sscd.read_bytes()).hexdigest()
+        try:
+            assert overlap.feats("x", rows, d, sscd, d / "a.npz", features=feat) == {"set": "x", "n": 3}
+            f = w25.load(d / "a.npz")
+            assert f["ids"] == ["0", "1", "2"] and f["sha"] == shas and not f["unreadable"]
+            _raises(lambda: overlap.feats("x", rows, d, sscd, d / "a.npz", features=feat), "REFUSED")
+            bad = [rows[0], (rows[1][0], rows[1][1], "0" * 64), rows[2]]
+            _raises(lambda: overlap.feats("x", bad, d, sscd, d / "b.npz", features=feat), "differs from the sha")
+            un = lambda *a, **k: feat(*a, unreadable=(1,), **k)  # noqa: E731
+            _raises(lambda: overlap.feats("x", rows, d, sscd, d / "c.npz", features=un), "cannot be hashed")
+        finally:
+            w25.SSCD_SHA = saved
+        s = _s35()
+        (d / "t.json").write_text("{}")
+        _raises(lambda: s.main(["feats", "--set", "pool", "--images", str(d), "--sscd", str(sscd), "--train",
+                                str(d / "t.json"), "--out", str(d / "p.npz")]), "72ee9b57")
+
+
+def _save_feats(path, f):
+    repo()
+    import w25
+    w25.save(path, f["ids"], {**f, "unreadable": []}, set=path.stem)
+
+
+def test_s35_kv_rows():
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        n = 4230
+        f = _feats(list(range(n)), [f"s{k}" for k in range(n)], range(n), range(n), np.eye(n, 4, dtype=np.float32))
+        _save_feats(d / "kval.npz", f)
+        _raises(lambda: overlap.kv_feats(d / "kval.npz", d / "kv.npz", kv_ids=lambda: set(range(4224))), "9783f7a6")
+        saved = overlap.KV_FEATS_SHA
+        overlap.KV_FEATS_SHA = hashlib.sha256((d / "kval.npz").read_bytes()).hexdigest()
+        try:
+            want = set(range(3, 4227))
+            assert overlap.kv_feats(d / "kval.npz", d / "kv.npz", kv_ids=lambda: want)["n"] == 4224
+            import w25
+            got = w25.load(d / "kv.npz")
+            assert set(got["ids"]) == {str(i) for i in want} and got["sha"][0] == "s3" and int(got["phash"][0]) == 3
+            _raises(lambda: overlap.kv_feats(d / "kval.npz", d / "kv2.npz", kv_ids=lambda: set(range(4226, 4230 + 4220))),
+                    "FAULT KV-4,224")
+            _raises(lambda: overlap.kv_feats(d / "kval.npz", d / "kv3.npz", kv_ids=lambda: set(range(4000))),
+                    "FAULT KV-4,224")
+        finally:
+            overlap.KV_FEATS_SHA = saved
+
+
+def test_s35_pass_exclude_file():
+    from o31 import stage1
+    far = 0xFFFFFFFFFFFFFFFF
+    sets = {"pool": _feats(["a.jpg", "b.jpg", "c.jpg"], ["s0", "s1", "s2"], [1, 2, 3], [1, 2, 3],
+                           [_unit(1, 0, 0, 0), _unit(0, 1, 0, 0), _unit(0, 0, 1, 0)]),
+            "ktvic_test": _feats(["k0"], ["s1"], [far], [far], [_unit(0, 0, 0, 1)]),  # b.jpg: byte twin
+            "uit_test": _feats(["u0"], ["su"], [0x0F0F0F0F0F0F0F0F], [0x0F0F0F0F0F0F0F0F], [_unit(0, 1, 1, 0)]),
+            "karpathy_test": _feats(["c0"], ["sc"], [far], [far], [_unit(0, 0, 0, 1)]),
+            "tier3": _feats(["9"], ["s2"], [far], [far], [_unit(0, 0, 0, 1)])}  # c.jpg: byte twin of a KV image
+    expect = {k: len(v["ids"]) for k, v in sets.items()}
+    with tempfile.TemporaryDirectory() as d:
+        d = Path(d)
+        for k, f in sets.items():
+            _save_feats(d / f"{k}.npz", f)
+        files = {k: d / f"{k}.npz" for k in sets}
+        rec = overlap.run_pass(files, d / "out", expect=expect)
+        assert rec["removed"]["pool"] == ["b.jpg", "c.jpg"] and rec["removed"]["tier3"] == []
+        assert (d / "out/exclude_p1.txt").read_text().split() == sorted(["b.jpg", "c.jpg", *stage1.TWINS])
+        assert rec["n_exclude_p1"] == 4 and set(rec["inputs_sha256"]) == set(sets)
+        _raises(lambda: overlap.run_pass({k: v for k, v in files.items() if k != "tier3"}, d / "o2", expect=expect),
+                "REFUSED")
+        _raises(lambda: overlap.run_pass(files, d / "o3", expect={**expect, "pool": 4}), "FAULT pool")
+        _raises(lambda: overlap.run_pass(files, d / "o4"), "FAULT")  # the registered counts
+        dup = dict(sets["karpathy_test"], ids=["c0", "c0"], sha=["sc", "sd"])
+        dup = {k: (np.concatenate([v, v]) if isinstance(v, np.ndarray) else v) for k, v in dup.items()}
+        _save_feats(d / "dup.npz", dup)
+        _raises(lambda: overlap.run_pass({**files, "karpathy_test": d / "dup.npz"}, d / "o5",
+                                         expect={**expect, "karpathy_test": 2}), "distinct")  # N3 (B09)
+
 
 
 def test_zz_import_closure_pinned():
