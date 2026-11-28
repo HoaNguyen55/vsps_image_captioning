@@ -1,0 +1,10 @@
+section	item	job	tier	gpu_h_3090	cap_h	runs_after	speed_source	note
+DESC	O1	S0 cut at every j in (1..12, full), re-extracted, read at each student's recall; tiers 1 and 2	1, 2	0.00	0	the registered decodes it reads (G3 at tier 1, T2 at tier 2)	CPU only	no GPU job; it never causes a decode
+DESC	O2	verifier states at OP_25, OP_mid, OP_75 and OP* on P-b from the stored family scores; VR-FAIR row copied from E-B5; slope of seed-42 student R on RT	1 (P-b), 2 (students)	0.00	0	ops5.json IDENTIFIED; E-B5's P-b job; the five seed-42 tier-2 decodes	CPU only	NOT RUN, with no re-probe, if the P-b family scores are not stored
+MODULE	M6	S0 detailed decodes of the images of the OP* store (FAIR detailed prompt, G-3); skipped if M5's pool decode exists and covers them	pool (training images)	3.35	5	G3 read, K1 not fired, the investigator's yes recorded before the first G3 output	3,767 x 3.2 s per detailed decode (COMPUTE_PLAN v3); at most the 3,767 pool images	the same decode as M5's first job; 0 GPU-hours when it is reused
+MODULE	M6	S-len store build (CPU) + SFT (S2 recipe, seed 42, N_steps) + tier-1 decodes (KTVIC test 558, UIT-ViIC test 231)	1	5.00	7	the S0 decodes of the store's images	4.3 h per S2-type SFT; 789 x 3.2 s (COMPUTE_PLAN v3)	its own launch.json; K3 and K4 apply to this job alone
+MODULE	M6	S-len tier-2 decode (Karpathy test list of the registered tier-2 rows)	2	4.50	6	within T2, as its own job after the tier-1 freeze commit	4.5 h per 5,000 (COMPUTE_PLAN v3)	never inside a registered launch
+SUMMARY	O1 + O2	all	-	0.00	0	-	-	CPU only
+SUMMARY	M6 alone, own S0 decode	all	-	12.85	18	-	-	sum of the three job caps
+SUMMARY	M6 alone, M5's decode reused	all	-	9.50	13	-	-	CC-528 O3 gave about 9.5 GPU-hours, cap 13, for a construction from the stage-1 records, which is not possible (ERRATUM_O31_6 E6-5)
+NOTE	-	caps are ceil(1.3 x planned GPU-hours) per job, counted as wall time from the job's own launch.json (ERRATUM_O31_2 E7); K4 applies to that job alone; speeds are COMPUTE_PLAN v3 planning values for one RTX 3090	-	-	-	-	-	no addition has tier-3 hours; no registered cap changes
